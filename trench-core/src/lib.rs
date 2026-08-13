@@ -1,8 +1,10 @@
+pub mod arma_endpoint;
 pub mod armadillo;
 pub mod cartridge;
 pub mod cascade;
 pub mod compiler;
 pub mod minifloat;
+pub mod praat_endpoint;
 pub mod response;
 pub mod stage_law;
 
