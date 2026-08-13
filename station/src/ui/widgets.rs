@@ -4,7 +4,7 @@
 use eframe::egui::{Color32, Pos2, Rect, Vec2};
 
 use super::input::{Id, Response, Ui};
-use super::paint::{self, fill, hairline, outline, text, text_right};
+use super::paint::{self, fill, hairline, label, label_center, num_right, outline};
 use super::theme;
 
 /// A rectangular command. Returns true on the frame it is released inside.
@@ -15,97 +15,22 @@ pub fn button(ui: &mut Ui, id: Id, rect: Rect, label: &str, enabled: bool) -> bo
         Response::empty()
     };
     let (bg, edge, ink) = if !enabled {
-        (theme::PANEL, theme::RULE, theme::FAINT)
+        (theme::SURFACE_HI, theme::SURFACE_HI, theme::TEXT_FAINT)
     } else if r.held {
         (
-            theme::mix(theme::PANEL, theme::ACCENT, 0.30),
+            theme::mix(theme::SURFACE, theme::ACCENT, 0.30),
             theme::ACCENT,
-            theme::INK_HI,
+            theme::TEXT,
         )
     } else if r.hovered {
-        (theme::PANEL_HI, theme::RULE_HI, theme::INK_HI)
+        (theme::SURFACE_HI, theme::LINE_HI, theme::TEXT)
     } else {
-        (theme::PANEL, theme::RULE, theme::INK)
+        (theme::SURFACE, theme::LINE, theme::TEXT_DIM)
     };
     fill(ui.p, rect, bg);
     outline(ui.p, rect, edge);
-    paint::text_center(ui.p, rect.center(), label, theme::T_SMALL, ink);
+    label_center(ui.p, rect.center(), label, theme::T_BODY, ink);
     r.clicked && enabled
-}
-
-/// A latching state, drawn as a marked cell rather than a checkbox.
-pub fn toggle(ui: &mut Ui, id: Id, rect: Rect, label: &str, on: bool) -> bool {
-    let r = ui.region(id, rect);
-    let edge = if on {
-        theme::ACCENT
-    } else if r.hovered {
-        theme::RULE_HI
-    } else {
-        theme::RULE
-    };
-    fill(
-        ui.p,
-        rect,
-        if on {
-            theme::mix(theme::PANEL, theme::ACCENT, 0.18)
-        } else {
-            theme::PANEL
-        },
-    );
-    outline(ui.p, rect, edge);
-    let mark = Rect::from_min_size(
-        rect.min + Vec2::new(5.0, rect.height() * 0.5 - 3.0),
-        Vec2::splat(6.0),
-    );
-    fill(ui.p, mark, if on { theme::ACCENT } else { theme::FAINT });
-    text(
-        ui.p,
-        Pos2::new(rect.left() + 17.0, rect.top() + rect.height() * 0.5 - 6.0),
-        label,
-        theme::T_SMALL,
-        if on { theme::INK_HI } else { theme::INK },
-    );
-    r.clicked
-}
-
-/// One of a set. Returns true when this tab is chosen.
-pub fn tab(ui: &mut Ui, id: Id, rect: Rect, index: &str, label: &str, active: bool) -> bool {
-    let r = ui.region(id, rect);
-    fill(
-        ui.p,
-        rect,
-        if active {
-            theme::mix(theme::PANEL, theme::ACCENT, 0.16)
-        } else {
-            theme::PANEL
-        },
-    );
-    outline(
-        ui.p,
-        rect,
-        if active {
-            theme::ACCENT
-        } else if r.hovered {
-            theme::RULE_HI
-        } else {
-            theme::RULE
-        },
-    );
-    text(
-        ui.p,
-        rect.min + Vec2::new(8.0, rect.height() * 0.5 - 5.0),
-        index,
-        theme::T_MICRO,
-        if active { theme::ACCENT } else { theme::DIM },
-    );
-    text(
-        ui.p,
-        rect.min + Vec2::new(30.0, rect.height() * 0.5 - 6.0),
-        label,
-        theme::T_SMALL,
-        if active { theme::INK_HI } else { theme::INK },
-    );
-    r.clicked
 }
 
 /// How a value maps onto its track.
@@ -175,19 +100,19 @@ pub fn slider(
         ui.p,
         Pos2::new(rect.left(), mid),
         Pos2::new(rect.right(), mid),
-        theme::RULE,
+        theme::LINE,
     );
     let x = rect.left() + t * rect.width();
     hairline(
         ui.p,
         Pos2::new(rect.left(), mid),
         Pos2::new(x, mid),
-        theme::mix(theme::RULE, theme::ACCENT, 0.7),
+        theme::mix(theme::LINE, theme::ACCENT, 0.7),
     );
     let c = if r.held || r.hovered {
         theme::ACCENT
     } else {
-        theme::INK
+        theme::TEXT_DIM
     };
     ui.p.circle_filled(Pos2::new(x, mid), 3.5, c);
     out
@@ -285,11 +210,11 @@ pub fn number_field(
 
     let editing = st.editing.is_some();
     let bg = if editing {
-        theme::mix(theme::PANEL, theme::ACCENT, 0.12)
+        theme::mix(theme::SURFACE, theme::ACCENT, 0.12)
     } else if r.hovered || r.held {
-        theme::PANEL_HI
+        theme::SURFACE_HI
     } else {
-        theme::PANEL
+        theme::SURFACE
     };
     fill(ui.p, rect, bg);
     outline(
@@ -300,31 +225,31 @@ pub fn number_field(
         } else if editing {
             theme::ACCENT
         } else if r.hovered {
-            theme::RULE_HI
+            theme::LINE_HI
         } else {
-            theme::RULE
+            theme::LINE
         },
     );
-    text(
+    label(
         ui.p,
         rect.min + Vec2::new(5.0, 3.0),
         style.label,
-        theme::T_MICRO,
-        theme::DIM,
+        theme::T_SMALL,
+        theme::TEXT_DIM,
     );
     let shown = match &st.editing {
         Some(b) => b.clone(),
         None => format!("{:.*}{}", style.decimals, out.unwrap_or(value), style.unit),
     };
-    text_right(
+    num_right(
         ui.p,
         Pos2::new(rect.right() - 5.0, rect.top() + rect.height() - 15.0),
         &shown,
         theme::T_BODY,
-        if valid { theme::INK_HI } else { theme::BAD },
+        if valid { theme::TEXT } else { theme::BAD },
     );
     if editing {
-        let w = paint::text_width(ui.p, &shown, theme::T_BODY);
+        let w = paint::num_width(ui.p, &shown, theme::T_BODY);
         let cx = rect.right() - 5.0 - w
             + paint::char_width(ui.p, theme::T_BODY) * st.cursor.min(shown.len()) as f32;
         let y = rect.top() + rect.height() - 15.0;
@@ -344,9 +269,9 @@ pub fn row(ui: &mut Ui, id: Id, rect: Rect, selected: bool, accent: Option<Color
     let bg = if selected {
         theme::SELECT
     } else if r.hovered {
-        theme::PANEL_HI
+        theme::SURFACE_HI
     } else {
-        theme::PANEL
+        theme::SURFACE
     };
     fill(ui.p, rect, bg);
     if let Some(c) = accent {

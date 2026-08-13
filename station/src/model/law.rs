@@ -53,14 +53,10 @@ pub struct Grammar {
     /// Names for the declared axes, in axis order. Extra entries are ignored;
     /// missing ones fall back to the axis's own name.
     #[serde(default)]
-    pub axis_names: Vec<String>,
+    pub corner_names: Vec<String>,
     /// Names for lanes, in lane order.
     #[serde(default)]
-    pub lane_names: Vec<String>,
-    /// Names for frames, in corner order. A frame is easier to steer toward by
-    /// what it sounds like than by its address, so the operator may name it.
-    #[serde(default)]
-    pub frame_names: Vec<String>,
+    pub section_names: Vec<String>,
     /// The response view's frequency span.
     #[serde(default = "default_lo")]
     pub display_lo_hz: f64,
@@ -85,9 +81,9 @@ fn default_watch() -> f64 {
 impl Default for Grammar {
     fn default() -> Self {
         Self {
-            axis_names: Vec::new(),
-            lane_names: Vec::new(),
-            frame_names: Vec::new(),
+            corner_names: Vec::new(),
+            section_names: Vec::new(),
+
             display_lo_hz: default_lo(),
             display_hi_hz: default_hi(),
             pole_radius_watch: default_watch(),
@@ -96,25 +92,16 @@ impl Default for Grammar {
 }
 
 impl Grammar {
-    pub fn axis_name(&self, i: usize, fallback: &str) -> String {
-        self.axis_names
+    pub fn corner_name(&self, i: usize, fallback: &str) -> String {
+        self.corner_names
             .get(i)
             .cloned()
             .unwrap_or_else(|| fallback.to_string())
     }
 
-    pub fn lane_name(&self, i: usize, fallback: &str) -> String {
-        self.lane_names
+    pub fn section_name(&self, i: usize, fallback: &str) -> String {
+        self.section_names
             .get(i)
-            .cloned()
-            .unwrap_or_else(|| fallback.to_string())
-    }
-
-    /// A frame's name when one is declared, otherwise its address.
-    pub fn frame_name(&self, i: usize, fallback: &str) -> String {
-        self.frame_names
-            .get(i)
-            .filter(|s| !s.trim().is_empty())
             .cloned()
             .unwrap_or_else(|| fallback.to_string())
     }
@@ -342,7 +329,7 @@ pub fn measure_body(p: &Project, q: &str) -> Option<(f64, String)> {
             let mut best: Option<(f64, f64, usize, usize)> = None;
             for i in 0..=steps {
                 let t = i as f32 / steps as f32;
-                let mut coords = vec![0.0f32; p.topology.axis_count()];
+                let mut coords = vec![0.0f32; p.form().map(|f| f.axis_count()).unwrap_or(0)];
                 if coords.is_empty() {
                     return None;
                 }
@@ -373,11 +360,7 @@ pub fn measure_body(p: &Project, q: &str) -> Option<(f64, String)> {
                 "{} and {} at {} {:.0}",
                 super::lane::LaneId(a as u32),
                 super::lane::LaneId(b as u32),
-                p.topology
-                    .axes
-                    .first()
-                    .map(|x| x.name.clone())
-                    .unwrap_or_default(),
+                "morph",
                 at * 100.0
             );
             Some(if q == "meet_st" {
@@ -393,7 +376,7 @@ pub fn measure_body(p: &Project, q: &str) -> Option<(f64, String)> {
 /// Reads every law against one selected frame and the whole object.
 pub fn read_all(p: &Project, laws: &[Law], frame: usize) -> Vec<Reading> {
     let response = p
-        .frames
+        .frames()
         .get(frame)
         .map(|f| analysis::analyse(&f.values, p.sample_rate()));
     laws.iter()
@@ -403,7 +386,7 @@ pub fn read_all(p: &Project, laws: &[Law], frame: usize) -> Vec<Reading> {
                 Scope::Frame => {
                     let r = response.as_ref()?;
                     let v = measure_frame(r, &l.q)?;
-                    (v, p.frames.get(frame)?.label.clone())
+                    (v, p.frames().get(frame)?.label.clone())
                 }
             };
             Some(Reading {
@@ -419,7 +402,7 @@ pub fn read_all(p: &Project, laws: &[Law], frame: usize) -> Vec<Reading> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::topology::Topology;
+    use crate::model::object::ObjectForm;
 
     fn factory() -> Project {
         let raw = std::fs::read("../ref/presets/P2k_013_talking_hedz.bin").unwrap();
@@ -456,7 +439,7 @@ mod tests {
     #[test]
     fn every_known_quantity_is_measurable_on_a_real_body() {
         let p = factory();
-        let r = analysis::analyse(&p.frames[0].values, p.sample_rate());
+        let r = analysis::analyse(&p.frames()[0].values, p.sample_rate());
         for q in KNOWN_QUANTITIES {
             let got = measure_frame(&r, q).is_some() || measure_body(&p, q).is_some();
             assert!(got, "quantity {q} is declared known but measures nothing");
@@ -500,25 +483,19 @@ mod tests {
     }
 
     #[test]
-    fn grammar_renames_axes_and_lanes_without_touching_the_project() {
+    fn grammar_renames_corners_and_sections_without_touching_the_project() {
         let g: Grammar =
-            serde_json::from_str(r#"{"axis_names":["SWEEP"],"lane_names":["AIR","BODY"]}"#)
+            serde_json::from_str(r#"{"corner_names":["Open"],"section_names":["Air","Body"]}"#)
                 .unwrap();
-        assert_eq!(g.axis_name(0, "M"), "SWEEP");
-        assert_eq!(g.axis_name(1, "Q"), "Q");
-        assert_eq!(g.lane_name(1, "L2"), "BODY");
-        assert_eq!(g.lane_name(5, "L6"), "L6");
+        assert_eq!(g.corner_name(0, "M0 Q0"), "Open");
+        assert_eq!(g.corner_name(1, "M100 Q0"), "M100 Q0");
+        assert_eq!(g.section_name(1, "S2"), "Body");
+        assert_eq!(g.section_name(5, "S6"), "S6");
     }
 
     #[test]
-    fn body_scope_measurement_works_at_a_non_three_axis_topology() {
-        let p = Project::blank(
-            "flat",
-            Topology::new(vec![crate::model::topology::Axis::new("a", "A")]),
-            3,
-        );
-        // A pass-through object has no conjugate poles, so there is nothing to
-        // meet — and that must be reported as no reading, not as zero.
+    fn body_scope_measurement_reports_nothing_on_an_object_with_no_poles() {
+        let p = Project::new_object("t", ObjectForm::Square, 44_100.0);
         assert!(measure_body(&p, "meet_st").is_none());
     }
 }

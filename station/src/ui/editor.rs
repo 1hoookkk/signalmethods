@@ -8,7 +8,7 @@
 use eframe::egui::{Key, Pos2, Rect, Vec2};
 
 use super::input::{Id, Ui};
-use super::paint::{self, fill, hairline, outline, text};
+use super::paint::{self, fill, hairline, num, outline};
 use super::theme;
 
 /// A parse or validation failure, located in the buffer.
@@ -246,14 +246,14 @@ impl TextEditor {
     /// Paints the editor and handles pointer selection. Returns true when the
     /// buffer changed this frame.
     pub fn show(&mut self, ui: &mut Ui, id: Id, rect: Rect) -> bool {
-        fill(ui.p, rect, theme::PANEL);
+        fill(ui.p, rect, theme::SURFACE);
         outline(
             ui.p,
             rect,
             if ui.focused(id) {
-                theme::RULE_HI
+                theme::LINE_HI
             } else {
-                theme::RULE
+                theme::LINE
             },
         );
 
@@ -332,7 +332,7 @@ impl TextEditor {
                 fill(
                     &clip,
                     Rect::from_min_size(Pos2::new(rect.left(), y), Vec2::new(rect.width(), lh)),
-                    theme::mix(theme::PANEL, c, 0.16),
+                    theme::mix(theme::SURFACE, c, 0.16),
                 );
             }
 
@@ -352,23 +352,23 @@ impl TextEditor {
                 }
             }
 
-            text(
+            num(
                 &clip,
                 Pos2::new(rect.left() + 6.0, y),
                 format!("{:>3}", li + 1),
-                theme::T_MICRO,
+                theme::T_SMALL,
                 if self.errors.iter().any(|e| e.line == li + 1) {
                     theme::BAD
                 } else {
-                    theme::FAINT
+                    theme::TEXT_FAINT
                 },
             );
-            text(
+            num(
                 &clip,
                 Pos2::new(inner.left(), y),
                 &lines[li],
                 fs,
-                theme::INK,
+                theme::TEXT,
             );
         }
 
@@ -391,7 +391,7 @@ impl TextEditor {
                     Pos2::new(rect.right() - 4.0, inner.top() + (inner.height() - h) * t),
                     Vec2::new(3.0, h),
                 ),
-                theme::RULE_HI,
+                theme::LINE_HI,
             );
         }
         changed

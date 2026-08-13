@@ -1,32 +1,35 @@
 mod app;
 mod model;
 mod ui;
-mod views;
-mod views_cube;
-mod views_ingest;
-mod views_perceptual;
-mod views_runtime;
-mod views_sos;
+mod view;
 
 use std::path::PathBuf;
 
 use model::project::Project;
-use model::topology::Topology;
 
 fn main() -> eframe::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let laws_path = match args.get(1) {
-        Some(a) => PathBuf::from(a),
-        None => default_laws_path(),
-    };
+    let laws_path = PathBuf::from(match args.get(1) {
+        Some(a) => a.clone(),
+        None => default_laws_path().display().to_string(),
+    });
 
-    // An object may be named on the command line; without one the Station opens
-    // on an empty project rather than refusing to start.
+    // `--new 4d` / `--new cube` starts on a new object of that form.
+    if let Some(i) = args.iter().position(|a| a == "--new") {
+        let form = match args.get(i + 1).map(|s| s.as_str()) {
+            Some("cube") => model::object::ObjectForm::Cube,
+            _ => model::object::ObjectForm::Square,
+        };
+        let project = Project::new_object(format!("untitled.{}", form.extension()), form, 44_100.0);
+        return run(project, laws_path);
+    }
+
+    // A named object opens on start; without one the Station opens empty.
     let project = match args.first() {
         Some(a) => {
             let path = PathBuf::from(a);
             let name = path
-                .file_stem()
+                .file_name()
                 .map(|s| s.to_string_lossy().to_string())
                 .unwrap_or_else(|| "imported".into());
             match std::fs::read(&path)
@@ -40,9 +43,13 @@ fn main() -> eframe::Result<()> {
                 }
             }
         }
-        None => Project::blank("untitled", Topology::packed_runtime(), 7),
+        None => Project::empty(),
     };
 
+    run(project, laws_path)
+}
+
+fn run(project: Project, laws_path: PathBuf) -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([1440.0, 900.0])
@@ -53,15 +60,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Station",
         options,
-        Box::new(|_| Ok(Box::new(app::Station::new(project, laws_path)))),
+        Box::new(|cc| {
+            ui::theme::install_fonts(&cc.egui_ctx);
+            Ok(Box::new(app::Station::new(project, laws_path)))
+        }),
     )
 }
 
-/// Where the laws live when none is named.
-///
-/// The repository layout is tried first so a run from the source tree behaves
-/// as before, then the directory the executable sits in, so a copied binary
-/// finds the files shipped beside it instead of silently starting with no laws.
+/// Laws beside the executable when the repository layout is not present.
 fn default_laws_path() -> PathBuf {
     let repo = PathBuf::from("station/laws.json");
     if repo.exists() {

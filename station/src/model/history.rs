@@ -84,14 +84,16 @@ impl History {
 mod tests {
     use super::*;
     use crate::model::lane::LaneValue;
-    use crate::model::topology::Topology;
+    use crate::model::object::ObjectForm;
 
     fn proj() -> Project {
-        Project::blank("t", Topology::packed_runtime(), 3)
+        Project::new_object("t", ObjectForm::Square, 44_100.0)
     }
 
     fn edit(p: &mut Project, w: u16) {
-        p.frames[0].values[0] = LaneValue::from_words([w; 5]);
+        if let Some(o) = p.object.as_mut() {
+            o.frames[0].values[0] = LaneValue::from_words([w; 5]);
+        }
     }
 
     #[test]
@@ -106,15 +108,15 @@ mod tests {
         edit(&mut p, 222);
 
         assert!(h.undo(&mut p));
-        assert_eq!(p.frames[0].values[0].words[0], 111);
+        assert_eq!(p.frames()[0].values[0].words[0], 111);
         assert!(h.undo(&mut p));
-        assert!(p.frames[0].values[0].is_identity());
+        assert!(p.frames()[0].values[0].is_identity());
         assert!(!h.can_undo());
 
         assert!(h.redo(&mut p));
-        assert_eq!(p.frames[0].values[0].words[0], 111);
+        assert_eq!(p.frames()[0].values[0].words[0], 111);
         assert!(h.redo(&mut p));
-        assert_eq!(p.frames[0].values[0].words[0], 222);
+        assert_eq!(p.frames()[0].values[0].words[0], 222);
         assert!(!h.can_redo());
     }
 
