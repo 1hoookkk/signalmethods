@@ -139,21 +139,18 @@ pub fn status(st: &mut Station, ui: &mut Ui, r: Rect) {
         theme::LINE,
     );
 
-    // Laws report; they never gate.
-    if !st.project.is_empty() && !st.laws.laws.is_empty() {
-        let readings = crate::model::law::read_all(&st.project, &st.laws.laws, st.selected_corner);
-        let held = readings.iter().filter(|x| x.ok).count();
-        let total = readings.len();
-        let c = if held == total {
-            theme::GOOD
-        } else {
-            theme::WARN
-        };
-        ui.p.circle_filled(Pos2::new(r.left() + PAD + 4.0, r.center().y), 3.5, c);
+    // What is open: corners, sections carrying signal, and order.
+    if let Some(form) = st.project.form() {
+        let active = st.project.active_lanes().len();
         label(
             ui.p,
-            Pos2::new(r.left() + PAD + 14.0, r.top() + 6.0),
-            format!("{held} of {total} laws hold"),
+            Pos2::new(r.left() + PAD, r.top() + 6.0),
+            format!(
+                "{} corners   ·   {active} of {} sections   ·   order {}",
+                form.corner_count(),
+                st.project.lane_capacity(),
+                st.project.order_at(st.selected_corner)
+            ),
             theme::T_SMALL,
             theme::TEXT_DIM,
         );
@@ -167,7 +164,7 @@ pub fn status(st: &mut Station, ui: &mut Ui, r: Rect) {
         };
         label(
             ui.p,
-            Pos2::new(r.left() + 190.0, r.top() + 6.0),
+            Pos2::new(r.left() + 330.0, r.top() + 6.0),
             &st.note,
             theme::T_SMALL,
             c,

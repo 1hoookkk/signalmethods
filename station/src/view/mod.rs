@@ -4,7 +4,6 @@ pub mod breakdown;
 pub mod chrome;
 pub mod cube;
 pub mod export;
-pub mod laws;
 pub mod object;
 pub mod response;
 pub mod sections;
@@ -46,7 +45,6 @@ pub fn draw(st: &mut Station, ui: &mut Ui, full: Rect) {
         match st.screen {
             Screen::Object => object::draw(st, ui, body),
             Screen::Sections => sections::draw(st, ui, body),
-            Screen::Laws => laws::draw(st, ui, body),
             Screen::Export => export::draw(st, ui, body),
         }
     }
@@ -57,18 +55,16 @@ pub fn draw(st: &mut Station, ui: &mut Ui, full: Rect) {
     }
 }
 
-/// The corner's name, from grammar when one is declared.
+/// A corner reads by its address.
 pub fn corner_name(st: &Station, i: usize) -> String {
-    let fallback = st
-        .project
+    st.project
         .frames()
         .get(i)
         .map(|f| f.label.clone())
-        .unwrap_or_default();
-    st.grammar.corner_name(i, &fallback)
+        .unwrap_or_default()
 }
 
-/// The section's name, from grammar when one is declared.
-pub fn section_name(st: &Station, i: usize) -> String {
-    st.grammar.section_name(i, &format!("S{}", i + 1))
+/// A section reads by its slot.
+pub fn section_name(_st: &Station, i: usize) -> String {
+    format!("S{}", i + 1)
 }

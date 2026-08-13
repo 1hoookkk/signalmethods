@@ -7,9 +7,9 @@ use eframe::egui::{self, Key};
 
 use crate::model::analysis::{self, CascadeResponse};
 use crate::model::history::History;
-use crate::model::law::{self, Grammar, LawFile};
 use crate::model::object::ObjectForm;
 use crate::model::project::Project;
+use crate::model::settings::Settings;
 use crate::model::store;
 use crate::ui::editor::TextEditor;
 use crate::ui::input::{Id, InputFrame, Ui, UiState};
@@ -22,22 +22,15 @@ use crate::view;
 pub enum Screen {
     Object,
     Sections,
-    Laws,
     Export,
 }
 
 impl Screen {
-    pub const ALL: [Screen; 4] = [
-        Screen::Object,
-        Screen::Sections,
-        Screen::Laws,
-        Screen::Export,
-    ];
+    pub const ALL: [Screen; 3] = [Screen::Object, Screen::Sections, Screen::Export];
     pub fn label(self) -> &'static str {
         match self {
             Screen::Object => "Object",
             Screen::Sections => "Sections",
-            Screen::Laws => "Laws",
             Screen::Export => "Export",
         }
     }
@@ -62,11 +55,7 @@ pub struct Station {
     pub history: History,
     pub path: Option<PathBuf>,
 
-    pub laws_editor: TextEditor,
-    pub grammar_editor: TextEditor,
-    pub laws: LawFile,
-    pub grammar: Grammar,
-    pub laws_path: PathBuf,
+    pub settings: Settings,
 
     pub selected_corner: usize,
     pub selected_lane: usize,
@@ -94,26 +83,18 @@ pub struct Station {
 }
 
 impl Station {
-    pub fn new(project: Project, laws_path: PathBuf) -> Self {
+    pub fn new(project: Project) -> Self {
         let coords = vec![0.0; project.form().map(|f| f.axis_count()).unwrap_or(0)];
         let live = analysis::analyse(
             &project.cascade_at(&coords).unwrap_or_default(),
             project.sample_rate(),
         );
-        let laws_text =
-            std::fs::read_to_string(&laws_path).unwrap_or_else(|_| "{\n  \"laws\": []\n}\n".into());
-        let grammar_text = std::fs::read_to_string(laws_path.with_file_name("grammar.json"))
-            .unwrap_or_else(|_| DEFAULT_GRAMMAR.to_string());
 
         let mut s = Self {
             history: History::new(&project),
             project,
             path: None,
-            laws: LawFile::default(),
-            grammar: Grammar::default(),
-            laws_editor: TextEditor::new(laws_text),
-            grammar_editor: TextEditor::new(grammar_text),
-            laws_path,
+            settings: Settings::default(),
             selected_corner: 0,
             selected_lane: 0,
             coords,
@@ -130,8 +111,6 @@ impl Station {
             live,
             dirty_response: true,
         };
-        s.apply_laws();
-        s.apply_grammar();
         s.note.clear();
         s
     }
@@ -161,75 +140,6 @@ impl Station {
 
     pub fn dirty(&self) -> bool {
         self.history.dirty(&self.project)
-    }
-
-    // Laws and grammar are guidance. Neither gates an edit; a law that does not
-    // hold is a diagnostic the operator reads while continuing to work.
-
-    pub fn apply_laws(&mut self) {
-        let text = self.laws_editor.text.clone();
-        match law::parse_laws(&text) {
-            Ok(f) => {
-                self.laws_editor.errors = law::unknown_quantities(&text, &f);
-                let n = f.laws.len();
-                let bad = self.laws_editor.errors.len();
-                self.laws = f;
-                self.laws_editor.commit();
-                if bad > 0 {
-                    self.say(
-                        format!("{n} laws applied, {bad} unmeasurable"),
-                        NoteKind::Warn,
-                    );
-                } else {
-                    self.say(format!("{n} laws applied"), NoteKind::Plain);
-                }
-            }
-            Err(e) => {
-                let line = e.line;
-                self.laws_editor.errors = vec![e];
-                self.say(
-                    format!("laws unchanged, line {line} malformed"),
-                    NoteKind::Error,
-                );
-            }
-        }
-    }
-
-    pub fn apply_grammar(&mut self) {
-        let text = self.grammar_editor.text.clone();
-        match law::parse_grammar(&text) {
-            Ok(g) => {
-                let problems = g.check();
-                self.grammar_editor.errors = problems
-                    .iter()
-                    .map(|m| crate::ui::editor::Located {
-                        line: 1,
-                        column: 1,
-                        message: m.clone(),
-                        fatal: false,
-                    })
-                    .collect();
-                self.grammar = g;
-                self.grammar_editor.commit();
-                self.touch();
-                if problems.is_empty() {
-                    self.say("grammar applied", NoteKind::Plain);
-                } else {
-                    self.say(
-                        format!("grammar applied, {} warnings", problems.len()),
-                        NoteKind::Warn,
-                    );
-                }
-            }
-            Err(e) => {
-                let line = e.line;
-                self.grammar_editor.errors = vec![e];
-                self.say(
-                    format!("grammar unchanged, line {line} malformed"),
-                    NoteKind::Error,
-                );
-            }
-        }
     }
 
     pub fn new_object(&mut self, form: ObjectForm) {
@@ -399,7 +309,7 @@ impl Station {
     }
 
     fn shortcuts(&mut self, input: &InputFrame) {
-        if self.path_bar.is_some() || (self.screen == Screen::Laws && self.ui.focus.is_some()) {
+        if self.path_bar.is_some() || self.ui.focus.is_some() {
             return;
         }
         if !input.ctrl {
@@ -426,8 +336,6 @@ impl Station {
         }
     }
 }
-
-const DEFAULT_GRAMMAR: &str = "{\n  \"corner_names\": [],\n  \"section_names\": [],\n  \"display_lo_hz\": 20.0,\n  \"display_hi_hz\": 20000.0,\n  \"pole_radius_watch\": 0.995\n}\n";
 
 impl eframe::App for Station {
     fn update(&mut self, ctx: &egui::Context, _f: &mut eframe::Frame) {

@@ -1,6 +1,6 @@
 //! The response panel: a compact instrument at the side, not a backdrop.
 
-use eframe::egui::{Pos2, Rect, Vec2};
+use eframe::egui::{Pos2, Rect};
 
 use crate::app::Station;
 use crate::model::analysis::CascadeResponse;
@@ -67,7 +67,7 @@ pub fn plot_into(
     if resp.total.is_empty() {
         return;
     }
-    let (lo_hz, hi_hz) = (st.grammar.display_lo_hz, st.grammar.display_hi_hz);
+    let (lo_hz, hi_hz) = (st.settings.display_lo_hz, st.settings.display_hi_hz);
     let (lo_db, hi_db) = resp.display_span();
     frequency_rules(ui.p, plot, lo_hz, hi_hz, true);
     db_rules(ui.p, plot, lo_db, hi_db, true);

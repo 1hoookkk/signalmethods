@@ -22,7 +22,7 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect, resp: &CascadeResponse) {
         return;
     }
 
-    let (lo_hz, hi_hz) = (st.grammar.display_lo_hz, st.grammar.display_hi_hz);
+    let (lo_hz, hi_hz) = (st.settings.display_lo_hz, st.settings.display_hi_hz);
     let n = active.len();
     let gap = 8.0;
     let w = ((inner.width() - gap * (n - 1) as f32) / n as f32).max(40.0);

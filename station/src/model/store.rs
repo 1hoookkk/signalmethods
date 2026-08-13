@@ -75,13 +75,17 @@ mod tests {
         assert!(back.is_empty());
     }
 
+    /// A legacy import survives a project round trip and then writes the
+    /// native seven-section square, not the 240-byte body it came from.
     #[test]
-    fn an_imported_object_round_trips_and_still_exports_identically() {
+    fn an_imported_object_round_trips_and_writes_native() {
         let raw = factory();
         let p = Project::from_packed("f", &raw, 44_100.0).unwrap();
         let back = from_json(&to_json(&p).unwrap()).unwrap();
         assert_eq!(p, back);
-        assert_eq!(back.to_body_bytes().unwrap(), raw);
+        let native = back.to_body_bytes().unwrap();
+        assert_eq!(native.len(), 280);
+        assert_eq!(native, p.to_body_bytes().unwrap());
     }
 
     #[test]

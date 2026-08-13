@@ -121,7 +121,7 @@ fn corner_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     // The sections it carries, as a list of readings rather than a wall of
     // little graphs.
     let mut y = plot.bottom() + 10.0;
-    let watch = st.grammar.pole_radius_watch;
+    let watch = st.settings.pole_radius_watch;
     if active.is_empty() {
         label(
             ui.p,

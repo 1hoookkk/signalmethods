@@ -160,8 +160,8 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect) {
             ),
             &cr.grid,
             &cr.total,
-            st.grammar.display_lo_hz,
-            st.grammar.display_hi_hz,
+            st.settings.display_lo_hz,
+            st.settings.display_hi_hz,
             c,
         );
     }

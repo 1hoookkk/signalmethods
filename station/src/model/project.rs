@@ -5,7 +5,7 @@
 //! rather than a manufactured pass-through filter.
 
 use serde::{Deserialize, Serialize};
-use trench_core::minifloat::{PackedCorners, IDENTITY_STAGE, NUM_CORNERS};
+use trench_core::minifloat::PackedCorners;
 
 use super::lane::{LaneId, LaneSpec, LaneValue};
 use super::object::ObjectForm;
@@ -180,8 +180,32 @@ impl Project {
                 ObjectForm::Cube.body_bytes()
             )
         })?;
-        let packed = PackedCorners::from_body_bytes(bytes).map_err(|e| e.to_string())?;
         let capacity = form.section_capacity();
+        // 240 legacy arrives through the crate, which mirrors the four corners
+        // and pads the seventh section with the pass-through sentinel. Native
+        // lengths are read straight, corner by corner.
+        let words: Vec<Vec<[u16; 5]>> = if ObjectForm::is_legacy_len(bytes.len()) {
+            let packed = PackedCorners::from_body_bytes(bytes).map_err(|e| e.to_string())?;
+            (0..form.corner_count())
+                .map(|ci| (0..capacity).map(|si| packed.words[ci][si]).collect())
+                .collect()
+        } else {
+            let mut i = 0;
+            (0..form.corner_count())
+                .map(|_| {
+                    (0..capacity)
+                        .map(|_| {
+                            let mut w = [0u16; 5];
+                            for x in w.iter_mut() {
+                                *x = u16::from_le_bytes([bytes[i], bytes[i + 1]]);
+                                i += 2;
+                            }
+                            w
+                        })
+                        .collect()
+                })
+                .collect()
+        };
         let lanes: Vec<LaneSpec> = (0..capacity)
             .map(|i| LaneSpec::new(LaneId(i as u32)))
             .collect();
@@ -192,7 +216,7 @@ impl Project {
                     label: form.label_of(&address),
                     address,
                     values: (0..capacity)
-                        .map(|si| LaneValue::from_words(packed.words[ci][si]))
+                        .map(|si| LaneValue::from_words(words[ci][si]))
                         .collect(),
                 }
             })
@@ -217,49 +241,33 @@ impl Project {
             .as_ref()
             .ok_or_else(|| "there is no object to export".to_string())?;
 
-        match o.form {
-            ObjectForm::Cube => {
-                let mut words = [[IDENTITY_STAGE; trench_core::cascade::NUM_STAGES]; NUM_CORNERS];
-                for (ci, frame) in o.frames.iter().enumerate() {
-                    let slot = o.form.index_of(&frame.address).ok_or_else(|| {
-                        format!("corner {ci} is not addressable in a {}", o.form.name())
-                    })?;
-                    for (si, v) in frame.values.iter().enumerate() {
-                        words[slot][si] = v.words;
-                    }
+        // Native layout for both forms: corner by corner, seven sections,
+        // five little-endian words each. Corner topology differs; order does
+        // not.
+        let mut out = Vec::with_capacity(o.form.body_bytes());
+        let mut ordered: Vec<Option<&Frame>> = vec![None; o.form.corner_count()];
+        for (ci, frame) in o.frames.iter().enumerate() {
+            let slot = o
+                .form
+                .index_of(&frame.address)
+                .ok_or_else(|| format!("corner {ci} is not addressable in a {}", o.form.name()))?;
+            ordered[slot] = Some(frame);
+        }
+        for (ci, frame) in ordered.iter().enumerate() {
+            let frame = frame.ok_or_else(|| format!("corner {ci} is missing"))?;
+            for si in 0..trench_core::cascade::NUM_STAGES {
+                let w = frame
+                    .values
+                    .get(si)
+                    .copied()
+                    .unwrap_or(LaneValue::IDENTITY)
+                    .words;
+                for x in w {
+                    out.extend_from_slice(&x.to_le_bytes());
                 }
-                Ok(PackedCorners { words }.to_native_bytes().to_vec())
-            }
-            ObjectForm::Square => {
-                // The 240-byte body holds four corners of six sections. The
-                // format mirrors them onto the far plane itself, so the square
-                // is written through that path rather than assembled by hand.
-                let mut legacy = [[IDENTITY_STAGE; trench_core::minifloat::LEGACY_STAGES];
-                    trench_core::minifloat::LEGACY_CORNERS];
-                for (ci, frame) in o.frames.iter().enumerate() {
-                    let slot = o.form.index_of(&frame.address).ok_or_else(|| {
-                        format!("corner {ci} is not addressable in a {}", o.form.name())
-                    })?;
-                    for (si, v) in frame.values.iter().enumerate() {
-                        if si >= trench_core::minifloat::LEGACY_STAGES {
-                            if !v.is_identity() {
-                                return Err(format!(
-                                    "a square holds {} sections; section {} carries content, so save it as a cube",
-                                    trench_core::minifloat::LEGACY_STAGES,
-                                    si + 1
-                                ));
-                            }
-                            continue;
-                        }
-                        legacy[slot][si] = v.words;
-                    }
-                }
-                PackedCorners::from_legacy_words(&legacy)
-                    .to_legacy_bytes()
-                    .map(|b| b.to_vec())
-                    .ok_or_else(|| "this square cannot be written as a 240-byte body".to_string())
             }
         }
+        Ok(out)
     }
 
     /// Swaps what two sections hold at one corner, crossing their trajectories
@@ -345,25 +353,49 @@ mod tests {
         assert_eq!(p.frames().len(), form.corner_count());
     }
 
+    /// The six authored sections survive a legacy import unchanged.
     #[test]
-    fn an_imported_object_exports_byte_for_byte() {
+    fn legacy_import_preserves_every_authored_word() {
         let raw = factory();
         let p = Project::from_packed("f", &raw, 44_100.0).unwrap();
-        assert_eq!(p.to_body_bytes().unwrap(), raw);
+        let packed = PackedCorners::from_body_bytes(&raw).unwrap();
+        for ci in 0..4 {
+            for si in 0..6 {
+                assert_eq!(p.frames()[ci].values[si].words, packed.words[ci][si]);
+            }
+        }
     }
 
+    /// Seven sections either way; only the corner count differs.
     #[test]
-    fn a_square_round_trips_at_240_and_a_cube_at_560() {
+    fn a_square_writes_280_and_a_cube_560() {
         let sq = Project::new_object("s", ObjectForm::Square, 44_100.0);
-        assert_eq!(sq.to_body_bytes().unwrap().len(), 240);
+        assert_eq!(sq.lane_capacity(), 7);
+        assert_eq!(sq.to_body_bytes().unwrap().len(), 280);
         let cu = Project::new_object("c", ObjectForm::Cube, 44_100.0);
+        assert_eq!(cu.lane_capacity(), 7);
         assert_eq!(cu.to_body_bytes().unwrap().len(), 560);
+    }
+
+    /// A legacy 240 body imports as a seven-section square whose seventh
+    /// section is pass-through, and then writes native.
+    #[test]
+    fn legacy_import_becomes_a_seven_section_square() {
+        let p = Project::from_packed("f", &factory(), 44_100.0).unwrap();
+        assert_eq!(p.form(), Some(ObjectForm::Square));
+        assert_eq!(p.lane_capacity(), 7);
+        assert!(p.frames()[0].values[6].is_identity());
+        let native = p.to_body_bytes().unwrap();
+        assert_eq!(native.len(), 280);
+        // And it reads back identically.
+        let back = Project::from_packed("f", &native, 44_100.0).unwrap();
+        assert_eq!(back.frames(), p.frames());
     }
 
     #[test]
     fn an_unrecognised_body_length_is_refused_with_the_reason() {
         let e = Project::from_packed("x", &[0u8; 100], 44_100.0).unwrap_err();
-        assert!(e.contains("240"), "{e}");
+        assert!(e.contains("280"), "{e}");
         assert!(e.contains("560"), "{e}");
     }
 

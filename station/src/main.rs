@@ -9,10 +9,6 @@ use model::project::Project;
 
 fn main() -> eframe::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let laws_path = PathBuf::from(match args.get(1) {
-        Some(a) => a.clone(),
-        None => default_laws_path().display().to_string(),
-    });
 
     // `--new 4d` / `--new cube` starts on a new object of that form.
     if let Some(i) = args.iter().position(|a| a == "--new") {
@@ -21,7 +17,7 @@ fn main() -> eframe::Result<()> {
             _ => model::object::ObjectForm::Square,
         };
         let project = Project::new_object(format!("untitled.{}", form.extension()), form, 44_100.0);
-        return run(project, laws_path);
+        return run(project);
     }
 
     // A named object opens on start; without one the Station opens empty.
@@ -46,10 +42,10 @@ fn main() -> eframe::Result<()> {
         None => Project::empty(),
     };
 
-    run(project, laws_path)
+    run(project)
 }
 
-fn run(project: Project, laws_path: PathBuf) -> eframe::Result<()> {
+fn run(project: Project) -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([1440.0, 900.0])
@@ -62,24 +58,7 @@ fn run(project: Project, laws_path: PathBuf) -> eframe::Result<()> {
         options,
         Box::new(|cc| {
             ui::theme::install_fonts(&cc.egui_ctx);
-            Ok(Box::new(app::Station::new(project, laws_path)))
+            Ok(Box::new(app::Station::new(project)))
         }),
     )
-}
-
-/// Laws beside the executable when the repository layout is not present.
-fn default_laws_path() -> PathBuf {
-    let repo = PathBuf::from("station/laws.json");
-    if repo.exists() {
-        return repo;
-    }
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            let beside = dir.join("laws.json");
-            if beside.exists() {
-                return beside;
-            }
-        }
-    }
-    repo
 }
