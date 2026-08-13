@@ -1,0 +1,149 @@
+//! Interpolation across declared axes, in encoded word space.
+//!
+//! Two rules decide everything here.
+//!
+//! The first is the domain. Interpolation happens on the stored words, never on
+//! decoded biquad coefficients. Blending `b1`/`b2` directly drags pole
+//! trajectories inward toward the origin and drops the middle of a sweep; the
+//! stored words are the log-polar radius/angle pair, so moving along them keeps
+//! the sweep on its arc.
+//!
+//! The second is the shape. Multilinear interpolation is a tensor product, so
+//! it reduces one axis at a time and the axis order does not change the result
+//! beyond word rounding. Reducing axis 0 first, then axis 1, and so on
+//! reproduces the runtime's morph-then-Q-then-third-axis path exactly at three
+//! axes, and extends to any axis count without a second rule.
+
+use trench_core::cascade::NUM_COEFFS;
+use trench_core::minifloat::lerp_u16;
+
+use super::lane::LaneValue;
+
+/// Interpolates one lane across every declared axis.
+///
+/// `corners` is indexed by corner address, axis 0 varying fastest, and must
+/// hold exactly `2^coords.len()` entries. `coords` is one position per axis.
+pub fn lane_at(corners: &[LaneValue], coords: &[f32]) -> LaneValue {
+    debug_assert_eq!(corners.len(), 1usize << coords.len());
+    let mut words = [0u16; NUM_COEFFS];
+    for (wi, word) in words.iter_mut().enumerate() {
+        // Reduce one axis per pass. Axis 0 is bit 0, so the pair that differs
+        // only in the current axis is always adjacent.
+        let mut level: Vec<u16> = corners.iter().map(|c| c.words[wi]).collect();
+        for &t in coords {
+            level = level
+                .chunks_exact(2)
+                .map(|pair| lerp_u16(pair[0], pair[1], t))
+                .collect();
+        }
+        *word = level[0];
+    }
+    LaneValue::from_words(words)
+}
+
+/// Interpolates every lane of a frame set at one position.
+pub fn cascade_at(corner_lanes: &[Vec<LaneValue>], coords: &[f32]) -> Vec<LaneValue> {
+    if corner_lanes.is_empty() {
+        return Vec::new();
+    }
+    let lane_count = corner_lanes[0].len();
+    (0..lane_count)
+        .map(|li| {
+            let column: Vec<LaneValue> = corner_lanes.iter().map(|c| c[li]).collect();
+            lane_at(&column, coords)
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use trench_core::minifloat::PackedCorners;
+
+    fn packed_fixture() -> PackedCorners {
+        // A real factory body, so the comparison runs on shipped words rather
+        // than on values chosen to make the test pass.
+        let raw = std::fs::read("../ref/presets/P2k_013_talking_hedz.bin")
+            .expect("factory preset is present");
+        PackedCorners::from_body_bytes(&raw).expect("factory preset decodes")
+    }
+
+    /// The generalised N-axis path must reproduce the runtime's trilinear
+    /// interpolation bit for bit, or the Station is not showing the runtime.
+    #[test]
+    fn three_axes_match_the_runtime_word_for_word() {
+        let packed = packed_fixture();
+        let corners: Vec<Vec<LaneValue>> = (0..8)
+            .map(|ci| {
+                (0..trench_core::cascade::NUM_STAGES)
+                    .map(|si| LaneValue::from_words(packed.words[ci][si]))
+                    .collect()
+            })
+            .collect();
+
+        for &(m, q, z) in &[
+            (0.0f32, 0.0f32, 0.0f32),
+            (1.0, 1.0, 1.0),
+            (0.5, 0.5, 0.5),
+            (0.25, 0.75, 0.125),
+            (0.3333, 0.6667, 0.9),
+            (0.07, 0.93, 0.42),
+        ] {
+            let want = packed.interpolate_words(m, q, z);
+            let got = cascade_at(&corners, &[m, q, z]);
+            for si in 0..trench_core::cascade::NUM_STAGES {
+                assert_eq!(
+                    got[si].words, want[si],
+                    "stage {si} at ({m},{q},{z}) diverged from the runtime"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn every_corner_is_returned_exactly_at_its_own_address() {
+        let packed = packed_fixture();
+        let corners: Vec<Vec<LaneValue>> = (0..8)
+            .map(|ci| {
+                (0..trench_core::cascade::NUM_STAGES)
+                    .map(|si| LaneValue::from_words(packed.words[ci][si]))
+                    .collect()
+            })
+            .collect();
+        for ci in 0..8 {
+            let coords = [
+                (ci & 1) as f32,
+                ((ci >> 1) & 1) as f32,
+                ((ci >> 2) & 1) as f32,
+            ];
+            let got = cascade_at(&corners, &coords);
+            for si in 0..trench_core::cascade::NUM_STAGES {
+                assert_eq!(got[si].words, packed.words[ci][si], "corner {ci} stage {si}");
+            }
+        }
+    }
+
+    /// Four axes are not a special case of three; they are the same reduction
+    /// run one more time.
+    #[test]
+    fn four_axes_recover_all_sixteen_corners() {
+        let corners: Vec<LaneValue> = (0..16)
+            .map(|i| LaneValue::from_words([i as u16 * 1000; NUM_COEFFS]))
+            .collect();
+        for i in 0..16 {
+            let coords = [
+                (i & 1) as f32,
+                ((i >> 1) & 1) as f32,
+                ((i >> 2) & 1) as f32,
+                ((i >> 3) & 1) as f32,
+            ];
+            assert_eq!(lane_at(&corners, &coords).words[0], i as u16 * 1000);
+        }
+    }
+
+    #[test]
+    fn a_zero_axis_object_is_its_single_corner() {
+        let only = LaneValue::from_words([7; NUM_COEFFS]);
+        assert_eq!(lane_at(&[only], &[]).words, [7; NUM_COEFFS]);
+    }
+}
