@@ -1,0 +1,13 @@
+* text=auto
+*.rs text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.body binary
+*.body240 binary
+*.bin binary
+*.raw binary
+*.wav binary
+*.png binary
+*.pdf binary
+
