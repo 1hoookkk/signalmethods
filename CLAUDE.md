@@ -16,12 +16,14 @@ processing lens.
 - **Pass-through Padding:** Unused biquads must execute as identity pass-through
   stages (`a_1 = 0`, `a_2 = 0`, `b_1 = 0`, `b_2 = 0`).
 
-### Corner Grid Topology
+### Frame Topology
 
-- Morphing takes place over a 2D control surface interpolated across 4 boundary
-  states (corners): `M0_Q0`, `M0_Q100`, `M100_Q0`, and `M100_Q100`.
-- Interpolation is calculated via bilinear parameter blending across morph
-  position (`M ∈ [0, 100]`) and resonance/quality factor (`Q ∈ [0, 100]`).
+- Do not hardcode a fixed corner count, frame count, or axis count.
+- The loaded authored object declares its topology. It may be a cube or a 4D
+  object.
+- Read the active axes, frames, corner addressing, and interpolation order from
+  the current format and implementation. Do not infer missing axes or force a
+  lower-dimensional object into a higher-dimensional shape.
 
 ## 2. INTERPOLATION MATH: LOG-POLAR SPACE
 
@@ -75,7 +77,7 @@ processing lens.
 
 ### DC Gain Normalization
 
-- All 4 grid corners must be analytically clamped to unity gain at DC
+- All declared frames must be analytically clamped to unity gain at DC
   (`z = 1 / 0 Hz`) to prevent saturation during rapid frame transitions.
 
 ## 5. RESPONSE DIRECTIVES
@@ -87,3 +89,23 @@ processing lens.
 - When delivering code implementations (C++, JUCE, Python), include exact
   log-polar conversion math, biquad state preservation, and DC gain
   normalization routines.
+
+## 6. STATION APPLICATION
+
+- Build the Station as a fully functional Rust authoring application.
+- `eframe`/`egui` may provide the native window, event delivery, font access,
+  clipboard access, and a canvas painter.
+- Do not use stock/default visible UI widgets. Do not use default buttons,
+  sliders, combo boxes, menus, tables, inspectors, property grids, or themed
+  panels. Every visible surface and control must be custom-painted and must use
+  explicit hit testing and input handling.
+- The visual language is a mature utility workstation: dense, legible,
+  restrained, response-led, and free of decorative consumer-app styling.
+- Laws and authoring grammar must be editable inside the Station. They are
+  operator-authored data, not hardcoded universal truths.
+- The Station must derive topology from the loaded object. Do not assume a
+  fixed number of axes, frames, corners, or sections. Support the topology the
+  current format actually declares, including cube and 4D objects.
+- Reference screenshots may guide layout, hierarchy, color discipline, and
+  interaction density only. They are stale and are not product specifications
+  or DSP evidence.
