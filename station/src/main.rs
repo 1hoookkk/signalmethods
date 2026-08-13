@@ -14,11 +14,10 @@ use model::topology::Topology;
 
 fn main() -> eframe::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let laws_path = PathBuf::from(
-        args.get(1)
-            .cloned()
-            .unwrap_or_else(|| "station/laws.json".into()),
-    );
+    let laws_path = match args.get(1) {
+        Some(a) => PathBuf::from(a),
+        None => default_laws_path(),
+    };
 
     // An object may be named on the command line; without one the Station opens
     // on an empty project rather than refusing to start.
@@ -55,4 +54,25 @@ fn main() -> eframe::Result<()> {
         options,
         Box::new(|_| Ok(Box::new(app::Station::new(project, laws_path)))),
     )
+}
+
+/// Where the laws live when none is named.
+///
+/// The repository layout is tried first so a run from the source tree behaves
+/// as before, then the directory the executable sits in, so a copied binary
+/// finds the files shipped beside it instead of silently starting with no laws.
+fn default_laws_path() -> PathBuf {
+    let repo = PathBuf::from("station/laws.json");
+    if repo.exists() {
+        return repo;
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            let beside = dir.join("laws.json");
+            if beside.exists() {
+                return beside;
+            }
+        }
+    }
+    repo
 }
