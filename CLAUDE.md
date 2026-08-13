@@ -75,10 +75,11 @@ processing lens.
   `1 + z^-1` or scalar identity and converting the stage into an all-pole
   resonator.
 
-### DC Gain Normalization
+### Gain Anchoring
 
-- All declared frames must be analytically clamped to unity gain at DC
-  (`z = 1 / 0 Hz`) to prevent saturation during rapid frame transitions.
+- Do not naively force `|H(z)| = 1.0` at DC (`z = 1`, `0 Hz`). Any gain anchor
+  or normalization constraint must be explicitly authored or declared by the
+  loaded format and verified against the live implementation.
 
 ## 5. RESPONSE DIRECTIVES
 
@@ -91,5 +92,5 @@ processing lens.
 - Reject linear coefficient interpolation (`b_1`, `b_2`) in favor of log-polar
   `k_1`, `k_2` domain mapping.
 - When delivering code implementations (C++, JUCE, Python), include exact
-  log-polar conversion math, biquad state preservation, and DC gain
-  normalization routines.
+  log-polar conversion math, biquad state preservation, and explicit authored
+  gain handling.
