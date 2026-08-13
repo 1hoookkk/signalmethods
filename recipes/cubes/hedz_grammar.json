@@ -1,0 +1,437 @@
+{
+ "name": "hedz_grammar",
+ "sample_rate_hz": 44100.0,
+ "_frames": "index = m | q<<1 | z<<2",
+ "_construction": "Talking Hedz's construction at 14th order. Two SPANNING ends (S1 zero far below its pole so it rises; S7 zero far above at r=1.0 so it falls with a hard null) carry the envelope. Five CONTAINED voices sit between them, each zero +4 st above its own pole. facts.py CONTAINED_SECTION_PCT / SPANNING_SECTION_PCT.",
+ "_axes": "Morph moves the voices up a fifth. Freq. Tracking shifts them up a fourth. Transform 2 is INTENSITY ONLY - every pole bandwidth x0.32 and gain up, no frequency change anywhere. ref/MORPHEUS_AXIS_GRAMMAR.md: amplitude 2%/1%/42%.",
+ "sections": [
+  {
+   "label": "S1 spanning-rise - pole 9k, zero 330 Hz, lifts the whole band",
+   "frames": [
+    {
+     "pole_hz": 9000.0,
+     "pole_bw_hz": 420.0,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": -3.0
+    },
+    {
+     "pole_hz": 9000.0,
+     "pole_bw_hz": 420.0,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": -3.0
+    },
+    {
+     "pole_hz": 10080.000000000002,
+     "pole_bw_hz": 420.0,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": -3.0
+    },
+    {
+     "pole_hz": 10080.000000000002,
+     "pole_bw_hz": 420.0,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": -3.0
+    },
+    {
+     "pole_hz": 9000.0,
+     "pole_bw_hz": 134.4,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": 3.0
+    },
+    {
+     "pole_hz": 9000.0,
+     "pole_bw_hz": 134.4,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": 3.0
+    },
+    {
+     "pole_hz": 10080.000000000002,
+     "pole_bw_hz": 134.4,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": 3.0
+    },
+    {
+     "pole_hz": 10080.000000000002,
+     "pole_bw_hz": 134.4,
+     "zero_hz": 330.0,
+     "zero_bw_hz": 900.0,
+     "gain_db": 3.0
+    }
+   ]
+  },
+  {
+   "label": "S2 contained voice, zero +4 st",
+   "frames": [
+    {
+     "pole_hz": 520.0,
+     "pole_bw_hz": 140.0,
+     "zero_hz": 655.2,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 779.1,
+     "pole_bw_hz": 140.0,
+     "zero_hz": 981.6,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 694.1,
+     "pole_bw_hz": 140.0,
+     "zero_hz": 874.5,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 1040.0,
+     "pole_bw_hz": 140.0,
+     "zero_hz": 1310.3,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 520.0,
+     "pole_bw_hz": 44.8,
+     "zero_hz": 655.2,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 779.1,
+     "pole_bw_hz": 44.8,
+     "zero_hz": 981.6,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 694.1,
+     "pole_bw_hz": 44.8,
+     "zero_hz": 874.5,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 1040.0,
+     "pole_bw_hz": 44.8,
+     "zero_hz": 1310.3,
+     "zero_bw_hz": 1400.0,
+     "gain_db": 4.0
+    }
+   ]
+  },
+  {
+   "label": "S3 contained voice, zero +4 st",
+   "frames": [
+    {
+     "pole_hz": 900.0,
+     "pole_bw_hz": 150.0,
+     "zero_hz": 1133.9,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 1348.5,
+     "pole_bw_hz": 150.0,
+     "zero_hz": 1699.0,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 1201.4,
+     "pole_bw_hz": 150.0,
+     "zero_hz": 1513.6,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 1800.0,
+     "pole_bw_hz": 150.0,
+     "zero_hz": 2267.9,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 900.0,
+     "pole_bw_hz": 48.0,
+     "zero_hz": 1133.9,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 1348.5,
+     "pole_bw_hz": 48.0,
+     "zero_hz": 1699.0,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 1201.4,
+     "pole_bw_hz": 48.0,
+     "zero_hz": 1513.6,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 1800.0,
+     "pole_bw_hz": 48.0,
+     "zero_hz": 2267.9,
+     "zero_bw_hz": 1500.0,
+     "gain_db": 4.0
+    }
+   ]
+  },
+  {
+   "label": "S4 contained voice, zero +4 st",
+   "frames": [
+    {
+     "pole_hz": 1500.0,
+     "pole_bw_hz": 170.0,
+     "zero_hz": 1889.9,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 2247.5,
+     "pole_bw_hz": 170.0,
+     "zero_hz": 2831.6,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 2002.3,
+     "pole_bw_hz": 170.0,
+     "zero_hz": 2522.7,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 3000.0,
+     "pole_bw_hz": 170.0,
+     "zero_hz": 3779.8,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 1500.0,
+     "pole_bw_hz": 54.4,
+     "zero_hz": 1889.9,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 2247.5,
+     "pole_bw_hz": 54.4,
+     "zero_hz": 2831.6,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 2002.3,
+     "pole_bw_hz": 54.4,
+     "zero_hz": 2522.7,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 3000.0,
+     "pole_bw_hz": 54.4,
+     "zero_hz": 3779.8,
+     "zero_bw_hz": 1700.0,
+     "gain_db": 4.0
+    }
+   ]
+  },
+  {
+   "label": "S5 contained voice, zero +4 st",
+   "frames": [
+    {
+     "pole_hz": 2400.0,
+     "pole_bw_hz": 200.0,
+     "zero_hz": 3023.8,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 3595.9,
+     "pole_bw_hz": 200.0,
+     "zero_hz": 4530.6,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 3203.6,
+     "pole_bw_hz": 200.0,
+     "zero_hz": 4036.3,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 4800.0,
+     "pole_bw_hz": 200.0,
+     "zero_hz": 6047.6,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 2400.0,
+     "pole_bw_hz": 64.0,
+     "zero_hz": 3023.8,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 3595.9,
+     "pole_bw_hz": 64.0,
+     "zero_hz": 4530.6,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 3203.6,
+     "pole_bw_hz": 64.0,
+     "zero_hz": 4036.3,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 4800.0,
+     "pole_bw_hz": 64.0,
+     "zero_hz": 6047.6,
+     "zero_bw_hz": 2000.0,
+     "gain_db": 4.0
+    }
+   ]
+  },
+  {
+   "label": "S6 contained voice, zero +4 st",
+   "frames": [
+    {
+     "pole_hz": 3900.0,
+     "pole_bw_hz": 260.0,
+     "zero_hz": 4913.7,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 5843.4,
+     "pole_bw_hz": 260.0,
+     "zero_hz": 7362.2,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 5205.9,
+     "pole_bw_hz": 260.0,
+     "zero_hz": 6559.0,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 7800.0,
+     "pole_bw_hz": 260.0,
+     "zero_hz": 9827.4,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 0.0
+    },
+    {
+     "pole_hz": 3900.0,
+     "pole_bw_hz": 83.2,
+     "zero_hz": 4913.7,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 5843.4,
+     "pole_bw_hz": 83.2,
+     "zero_hz": 7362.2,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 5205.9,
+     "pole_bw_hz": 83.2,
+     "zero_hz": 6559.0,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 4.0
+    },
+    {
+     "pole_hz": 7800.0,
+     "pole_bw_hz": 83.2,
+     "zero_hz": 9827.4,
+     "zero_bw_hz": 2600.0,
+     "gain_db": 4.0
+    }
+   ]
+  },
+  {
+   "label": "S7 spanning-fall - pole low, perfect null at 7 kHz",
+   "frames": [
+    {
+     "pole_hz": 210.0,
+     "pole_bw_hz": 130.0,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 249.7334941505714,
+     "pole_bw_hz": 130.0,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 210.0,
+     "pole_bw_hz": 130.0,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 249.7334941505714,
+     "pole_bw_hz": 130.0,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 210.0,
+     "pole_bw_hz": 41.6,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 249.7334941505714,
+     "pole_bw_hz": 41.6,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 210.0,
+     "pole_bw_hz": 41.6,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    },
+    {
+     "pole_hz": 249.7334941505714,
+     "pole_bw_hz": 41.6,
+     "zero_hz": 7000.0,
+     "zero_bw_hz": 0.0,
+     "gain_db": 9.5
+    }
+   ]
+  }
+ ],
+ "_limit": "SCALE ceiling is 4.0 linear = +12.04 dB (stage_law scale_max = COMBINE_K); gains held at or under +9.5."
+}

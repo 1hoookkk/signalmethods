@@ -1,0 +1,100 @@
+{
+  "name": "first",
+  "sample_rate_hz": 44100.0,
+  "_frames": "index = m | q<<1 | z<<2 : 0 m0q0z0, 1 m1q0z0, 2 m0q1z0, 3 m1q1z0, 4 m0q0z1, 5 m1q0z1, 6 m0q1z1, 7 m1q1z1",
+  "_axes": "Morph raises every Fc by a fifth. Freq. Tracking narrows the six parametric poles. Transform 2 lifts sections 4-7 an octave and +4 dB, and opens the low pass section an octave.",
+  "_sections": "S1 is E-MU's Low Pass Section: pole at Fc, zero at 2.5 kHz so the fall stops and the section is a shelf, not an endless rolloff. Talking Hedz opposes its ends the same way — its S1 rises and its S6 falls, which is why the total sits at 0 dB. S2-S7 are Parametric Equalizer Sections: pole and zero at the same Fc, pole ten times tighter, so each is a boost over unity rather than a bandpass.",
+  "sections": [
+    {
+      "label": "low pass section - Fc, shelving zero at 2.5 kHz",
+      "frames": [
+        {"pole_hz":  400.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz":  600.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz":  400.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz":  600.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz":  800.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz": 1200.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz":  800.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0},
+        {"pole_hz": 1200.0, "pole_bw_hz": 600.0, "zero_hz":  2500.0, "zero_bw_hz":  900.0, "gain_db": -28.0}
+      ]
+    },
+    {
+      "label": "parametric — Fc 520, held through Transform 2",
+      "frames": [
+        {"pole_hz": 520.0, "pole_bw_hz": 140.0, "zero_hz": 520.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 780.0, "pole_bw_hz": 140.0, "zero_hz": 780.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 520.0, "pole_bw_hz":  63.0, "zero_hz": 520.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 780.0, "pole_bw_hz":  63.0, "zero_hz": 780.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 520.0, "pole_bw_hz": 140.0, "zero_hz": 520.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 780.0, "pole_bw_hz": 140.0, "zero_hz": 780.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 520.0, "pole_bw_hz":  63.0, "zero_hz": 520.0, "zero_bw_hz": 1400.0, "gain_db": 0.0},
+        {"pole_hz": 780.0, "pole_bw_hz":  63.0, "zero_hz": 780.0, "zero_bw_hz": 1400.0, "gain_db": 0.0}
+      ]
+    },
+    {
+      "label": "parametric — Fc 900, held through Transform 2",
+      "frames": [
+        {"pole_hz":  900.0, "pole_bw_hz": 150.0, "zero_hz":  900.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz": 1350.0, "pole_bw_hz": 150.0, "zero_hz": 1350.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz":  900.0, "pole_bw_hz":  67.5, "zero_hz":  900.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz": 1350.0, "pole_bw_hz":  67.5, "zero_hz": 1350.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz":  900.0, "pole_bw_hz": 150.0, "zero_hz":  900.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz": 1350.0, "pole_bw_hz": 150.0, "zero_hz": 1350.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz":  900.0, "pole_bw_hz":  67.5, "zero_hz":  900.0, "zero_bw_hz": 1500.0, "gain_db": 0.0},
+        {"pole_hz": 1350.0, "pole_bw_hz":  67.5, "zero_hz": 1350.0, "zero_bw_hz": 1500.0, "gain_db": 0.0}
+      ]
+    },
+    {
+      "label": "parametric — Fc 1500, +1 octave and +4 dB on Transform 2",
+      "frames": [
+        {"pole_hz": 1500.0, "pole_bw_hz": 170.0, "zero_hz": 1500.0, "zero_bw_hz": 1700.0, "gain_db": 0.0},
+        {"pole_hz": 2250.0, "pole_bw_hz": 170.0, "zero_hz": 2250.0, "zero_bw_hz": 1700.0, "gain_db": 0.0},
+        {"pole_hz": 1500.0, "pole_bw_hz":  76.5, "zero_hz": 1500.0, "zero_bw_hz": 1700.0, "gain_db": 0.0},
+        {"pole_hz": 2250.0, "pole_bw_hz":  76.5, "zero_hz": 2250.0, "zero_bw_hz": 1700.0, "gain_db": 0.0},
+        {"pole_hz": 3000.0, "pole_bw_hz": 170.0, "zero_hz": 3000.0, "zero_bw_hz": 1700.0, "gain_db": 4.0},
+        {"pole_hz": 4500.0, "pole_bw_hz": 170.0, "zero_hz": 4500.0, "zero_bw_hz": 1700.0, "gain_db": 4.0},
+        {"pole_hz": 3000.0, "pole_bw_hz":  76.5, "zero_hz": 3000.0, "zero_bw_hz": 1700.0, "gain_db": 4.0},
+        {"pole_hz": 4500.0, "pole_bw_hz":  76.5, "zero_hz": 4500.0, "zero_bw_hz": 1700.0, "gain_db": 4.0}
+      ]
+    },
+    {
+      "label": "parametric — Fc 2400, +1 octave and +4 dB on Transform 2",
+      "frames": [
+        {"pole_hz": 2400.0, "pole_bw_hz": 200.0, "zero_hz": 2400.0, "zero_bw_hz": 2000.0, "gain_db": 0.0},
+        {"pole_hz": 3600.0, "pole_bw_hz": 200.0, "zero_hz": 3600.0, "zero_bw_hz": 2000.0, "gain_db": 0.0},
+        {"pole_hz": 2400.0, "pole_bw_hz":  90.0, "zero_hz": 2400.0, "zero_bw_hz": 2000.0, "gain_db": 0.0},
+        {"pole_hz": 3600.0, "pole_bw_hz":  90.0, "zero_hz": 3600.0, "zero_bw_hz": 2000.0, "gain_db": 0.0},
+        {"pole_hz": 4800.0, "pole_bw_hz": 200.0, "zero_hz": 4800.0, "zero_bw_hz": 2000.0, "gain_db": 4.0},
+        {"pole_hz": 7200.0, "pole_bw_hz": 200.0, "zero_hz": 7200.0, "zero_bw_hz": 2000.0, "gain_db": 4.0},
+        {"pole_hz": 4800.0, "pole_bw_hz":  90.0, "zero_hz": 4800.0, "zero_bw_hz": 2000.0, "gain_db": 4.0},
+        {"pole_hz": 7200.0, "pole_bw_hz":  90.0, "zero_hz": 7200.0, "zero_bw_hz": 2000.0, "gain_db": 4.0}
+      ]
+    },
+    {
+      "label": "parametric — Fc 3600, +1 octave and +4 dB on Transform 2",
+      "frames": [
+        {"pole_hz":  3600.0, "pole_bw_hz": 240.0, "zero_hz":  3600.0, "zero_bw_hz": 2400.0, "gain_db": 0.0},
+        {"pole_hz":  5400.0, "pole_bw_hz": 240.0, "zero_hz":  5400.0, "zero_bw_hz": 2400.0, "gain_db": 0.0},
+        {"pole_hz":  3600.0, "pole_bw_hz": 108.0, "zero_hz":  3600.0, "zero_bw_hz": 2400.0, "gain_db": 0.0},
+        {"pole_hz":  5400.0, "pole_bw_hz": 108.0, "zero_hz":  5400.0, "zero_bw_hz": 2400.0, "gain_db": 0.0},
+        {"pole_hz":  7200.0, "pole_bw_hz": 240.0, "zero_hz":  7200.0, "zero_bw_hz": 2400.0, "gain_db": 4.0},
+        {"pole_hz": 10800.0, "pole_bw_hz": 240.0, "zero_hz": 10800.0, "zero_bw_hz": 2400.0, "gain_db": 4.0},
+        {"pole_hz":  7200.0, "pole_bw_hz": 108.0, "zero_hz":  7200.0, "zero_bw_hz": 2400.0, "gain_db": 4.0},
+        {"pole_hz": 10800.0, "pole_bw_hz": 108.0, "zero_hz": 10800.0, "zero_bw_hz": 2400.0, "gain_db": 4.0}
+      ]
+    },
+    {
+      "label": "parametric — Fc 6000, +1 octave and +4 dB on Transform 2",
+      "frames": [
+        {"pole_hz":  6000.0, "pole_bw_hz": 300.0, "zero_hz":  6000.0, "zero_bw_hz": 3000.0, "gain_db": 0.0},
+        {"pole_hz":  9000.0, "pole_bw_hz": 300.0, "zero_hz":  9000.0, "zero_bw_hz": 3000.0, "gain_db": 0.0},
+        {"pole_hz":  6000.0, "pole_bw_hz": 135.0, "zero_hz":  6000.0, "zero_bw_hz": 3000.0, "gain_db": 0.0},
+        {"pole_hz":  9000.0, "pole_bw_hz": 135.0, "zero_hz":  9000.0, "zero_bw_hz": 3000.0, "gain_db": 0.0},
+        {"pole_hz": 12000.0, "pole_bw_hz": 300.0, "zero_hz": 12000.0, "zero_bw_hz": 3000.0, "gain_db": 4.0},
+        {"pole_hz": 18000.0, "pole_bw_hz": 300.0, "zero_hz": 18000.0, "zero_bw_hz": 3000.0, "gain_db": 4.0},
+        {"pole_hz": 12000.0, "pole_bw_hz": 135.0, "zero_hz": 12000.0, "zero_bw_hz": 3000.0, "gain_db": 4.0},
+        {"pole_hz": 18000.0, "pole_bw_hz": 135.0, "zero_hz": 18000.0, "zero_bw_hz": 3000.0, "gain_db": 4.0}
+      ]
+    }
+  ]
+}
