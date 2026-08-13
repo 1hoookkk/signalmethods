@@ -1,5 +1,6 @@
 mod app;
 mod model;
+mod ui;
 mod body;
 mod cube;
 mod law;
