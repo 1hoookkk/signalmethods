@@ -31,6 +31,42 @@ pub fn biquad_of(lane: &LaneValue) -> [f64; NUM_COEFFS] {
     kernel_to_biquad(stage_words_to_kernel(lane.words))
 }
 
+/// Bandwidth and Q of a conjugate pole pair, derived from where the poles sit
+/// and nothing else.
+///
+/// A pole pair at radius `r` and angle `theta` has a resonance whose half-power
+/// width follows from the radius: as `r` approaches the unit circle the
+/// resonance narrows. `bw_hz` is that width, `q` is centre over width, and
+/// `bw_oct` is the same width expressed in octaves.
+///
+/// These are geometric readings of a pole position. They carry no filter type
+/// with them: naming a lane's Q here does not make it a peaking section, and
+/// nothing downstream treats it as one.
+#[derive(Clone, Copy, Debug)]
+pub struct PoleShape {
+    pub bw_hz: f64,
+    pub bw_oct: f64,
+    pub q: f64,
+}
+
+pub fn pole_shape(hz: f64, r: f64, sample_rate_hz: f64) -> Option<PoleShape> {
+    if !(0.0..1.0).contains(&r) || hz <= 0.0 || sample_rate_hz <= 0.0 {
+        return None;
+    }
+    // Half-power bandwidth of a two-pole resonance, in Hz.
+    let bw_hz = -(sample_rate_hz / std::f64::consts::PI) * r.ln();
+    if !bw_hz.is_finite() || bw_hz <= 0.0 {
+        return None;
+    }
+    let lo = (hz - bw_hz * 0.5).max(1e-6);
+    let hi = hz + bw_hz * 0.5;
+    Some(PoleShape {
+        bw_hz,
+        bw_oct: (hi / lo).log2(),
+        q: hz / bw_hz,
+    })
+}
+
 /// The complete picture of one cascade at one position.
 pub struct CascadeResponse {
     pub grid: Vec<f64>,
@@ -48,8 +84,6 @@ pub struct CascadeResponse {
 pub struct LaneMetrics {
     pub pole_hz: Option<f64>,
     pub pole_r: Option<f64>,
-    pub zero_hz: Option<f64>,
-    pub zero_r: Option<f64>,
     pub scale: f64,
     /// Largest magnitude of this lane alone, in dB.
     pub peak_db: f64,
@@ -97,13 +131,10 @@ pub fn analyse(lanes: &[LaneValue], sample_rate_hz: f64) -> CascadeResponse {
                 _ => (None, None),
             };
             let (pole_hz, pole_r) = conj(g.pole);
-            let (zero_hz, zero_r) = conj(g.zero);
             let b = biquad_of(lane);
             LaneMetrics {
                 pole_hz,
                 pole_r,
-                zero_hz,
-                zero_r,
                 scale: g.scale,
                 peak_db: per_lane[i].iter().cloned().fold(f64::MIN, f64::max),
                 cumulative_peak_db: cumulative[i].iter().cloned().fold(f64::MIN, f64::max),
@@ -247,6 +278,64 @@ mod tests {
             worst > r.total_peak_db() + 20.0,
             "intermediate {worst:.1} dB should tower over the total {:.1} dB",
             r.total_peak_db()
+        );
+    }
+
+    /// The reading has to track the geometry it is read from: a pole nearer the
+    /// circle is a narrower, higher-Q resonance, and a pole at the origin has
+    /// no resonance to measure.
+    #[test]
+    fn pole_shape_follows_the_pole_radius() {
+        let a = pole_shape(1000.0, 0.90, SR).expect("0.90 has a width");
+        let b = pole_shape(1000.0, 0.99, SR).expect("0.99 has a width");
+        assert!(b.bw_hz < a.bw_hz, "nearer the circle must be narrower");
+        assert!(b.q > a.q, "narrower must read as higher Q");
+        assert!(b.bw_oct < a.bw_oct);
+        // A pole on or outside the circle is not a resonance this can measure.
+        assert!(pole_shape(1000.0, 1.0, SR).is_none());
+        assert!(pole_shape(1000.0, -0.1, SR).is_none());
+        assert!(pole_shape(0.0, 0.9, SR).is_none());
+    }
+
+    /// The width is the actual half-power width of the response, not a label.
+    #[test]
+    fn pole_shape_matches_the_measured_minus_three_db_width() {
+        let hz = 1000.0;
+        let r = 0.98;
+        let mut lane = LaneValue::IDENTITY;
+        lane.set_roots(
+            &StageRoots {
+                pole_hz: hz,
+                pole_r: r,
+                // Zero at the origin, so the shape measured is the pole's.
+                zero_hz: hz,
+                zero_r: 0.0,
+                scale: 1.0,
+            },
+            SR,
+        )
+        .unwrap();
+        let shape = pole_shape(hz, r, SR).unwrap();
+
+        let b = biquad_of(&lane);
+        let at = |f: f64| mag_db(trench_core::response::biquad_stage_complex(&b, f, SR));
+        let peak = at(hz);
+        // Walk out to where the response has fallen 3 dB and compare widths.
+        let mut lo = hz;
+        while lo > 1.0 && at(lo) > peak - 3.0 {
+            lo -= 0.5;
+        }
+        let mut hi = hz;
+        while hi < SR * 0.49 && at(hi) > peak - 3.0 {
+            hi += 0.5;
+        }
+        let measured = hi - lo;
+        let ratio = measured / shape.bw_hz;
+        assert!(
+            (0.8..1.25).contains(&ratio),
+            "derived width {:.1} Hz vs measured {:.1} Hz",
+            shape.bw_hz,
+            measured
         );
     }
 

@@ -77,6 +77,9 @@ pub struct Station {
     pub display_axes: (usize, usize),
     pub workspace: Workspace,
 
+    /// The corner whose sections are open for surgery, if any.
+    pub sos_corner: Option<usize>,
+
     /// Viewing angles for the topology object.
     pub cube_yaw: f32,
     pub cube_pitch: f32,
@@ -129,6 +132,7 @@ impl Station {
             coords,
             display_axes,
             workspace: Workspace::Topology,
+            sos_corner: None,
             cube_yaw: 0.62,
             cube_pitch: 0.42,
             warp_mid: 0.5,

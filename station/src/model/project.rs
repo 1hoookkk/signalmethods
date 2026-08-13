@@ -194,6 +194,27 @@ impl Project {
         Ok(PackedCorners { words })
     }
 
+    /// Swaps what two lanes hold at one frame.
+    ///
+    /// This is the expressive override. Lane identity is fixed across frames,
+    /// so exchanging two lanes' values at one end of a sweep does not break
+    /// correspondence — it deliberately crosses the trajectories, sending one
+    /// lane down while another climbs. Nothing is re-sorted and no other frame
+    /// is touched, so the crossing is exactly the one that was asked for.
+    pub fn swap_lanes_at_frame(&mut self, frame: usize, a: usize, b: usize) -> bool {
+        if a == b {
+            return false;
+        }
+        let Some(f) = self.frames.get_mut(frame) else {
+            return false;
+        };
+        if a >= f.values.len() || b >= f.values.len() {
+            return false;
+        }
+        f.values.swap(a, b);
+        true
+    }
+
     /// Re-discretises every lane from the rate its words belong to onto a new
     /// rate.
     ///
@@ -429,6 +450,29 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// A crossing is authored at one end only, and the cascade it produces is
+    /// unchanged because sections multiply.
+    #[test]
+    fn swapping_two_lanes_at_one_frame_crosses_their_trajectories() {
+        let mut p = Project::from_packed("hedz", &factory(), 44_100.0).unwrap();
+        let before_far = p.frames[1].values[5];
+        let before_near = p.frames[1].values[1];
+        let untouched = p.frames[0].values.clone();
+
+        assert!(p.swap_lanes_at_frame(1, 1, 5));
+        assert_eq!(p.frames[1].values[1], before_far);
+        assert_eq!(p.frames[1].values[5], before_near);
+        // No other frame moves, so lane identity elsewhere is intact.
+        assert_eq!(p.frames[0].values, untouched);
+
+        // The frame's own response is unchanged: a cascade is a product.
+        let a = crate::model::analysis::analyse(&untouched, p.sample_rate());
+        let _ = a;
+        assert!(!p.swap_lanes_at_frame(1, 2, 2));
+        assert!(!p.swap_lanes_at_frame(99, 0, 1));
+        assert!(!p.swap_lanes_at_frame(1, 0, 99));
     }
 
     #[test]

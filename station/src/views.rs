@@ -48,6 +48,11 @@ pub fn draw(st: &mut Station, ui: &mut Ui, full: Rect) {
         Workspace::Runtime => runtime_workspace(st, ui, body),
     }
 
+    // The section editor takes the whole working area when a corner is open.
+    if st.sos_corner.is_some() {
+        crate::views_sos::draw(st, ui, body);
+    }
+
     status_bar(st, ui, status);
     if st.path_bar.is_some() {
         path_bar(st, ui, full);
@@ -425,7 +430,7 @@ pub fn axis_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         text(
             ui.p,
             Pos2::new(r.left() + 8.0, y),
-            format!("{name}{}", if displayed { "  ·shown" } else { "" }),
+            &name,
             theme::T_MICRO,
             if displayed { theme::ACCENT } else { theme::DIM },
         );
@@ -589,10 +594,10 @@ pub fn cumulative_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         theme::INK_HI,
         2.0,
     );
-    text(
+    text_right(
         ui.p,
-        Pos2::new(plot.left() + 4.0, plot.bottom() - 12.0),
-        "white total   ·   amber selected lane alone   ·   tinted running product",
+        Pos2::new(plot.right() - 4.0, plot_r.top() + 6.0),
+        "white total  ·  amber selected lane  ·  tinted running product",
         theme::T_MICRO,
         theme::FAINT,
     );
@@ -611,7 +616,7 @@ pub fn lane_matrix_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     text(
         ui.p,
         matrix_r.min + Vec2::new(8.0, 6.0),
-        "LANE MATRIX  —  a lane holds its identity across every frame",
+        "LANE MATRIX      pole Hz / radius",
         theme::T_MICRO,
         theme::DIM,
     );
@@ -678,7 +683,7 @@ pub fn lane_matrix_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             let g = v.geometry(sr);
             let (label, col) = match g.pole {
                 trench_core::stage_law::RootPair::Conjugate { hz, r: rr } => (
-                    format!("{hz:.0} Hz  {rr:.3}"),
+                    format!("{hz:>6.0}  {rr:.3}"),
                     if rr >= watch { theme::BAD } else { theme::INK },
                 ),
                 _ if v.is_identity() => ("pass".to_string(), theme::FAINT),
@@ -742,9 +747,9 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
             ui.p,
             r.min + Vec2::new(8.0, 40.0),
             if lane.is_identity() {
-                "This lane is the pass-through identity. Give it a pole to author it."
+                "pass-through"
             } else {
-                "This lane does not hold a conjugate pole and zero pair, so the root view cannot edit it. Its stored words are shown above and are preserved exactly."
+                "real-axis roots — not editable as a conjugate pair"
             },
             theme::T_SMALL,
             theme::DIM,
@@ -887,15 +892,6 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
             ("lane peak", format!("{:+.2} dB", m.peak_db)),
             ("cascade so far", format!("{:+.2} dB", m.cumulative_peak_db)),
             ("lane at DC", format!("{:+.2} dB", m.dc_db)),
-            (
-                "zero",
-                match (m.zero_hz, m.zero_r) {
-                    // A zero on the circle is a hard notch; a zero collapsing
-                    // toward the origin is a lane dissolving into all-pole.
-                    (Some(hz), Some(zr)) => format!("{hz:.0} Hz  r {zr:.4}"),
-                    _ => "not a conjugate pair".into(),
-                },
-            ),
         ];
         for (i, (k, v)) in readings.iter().enumerate() {
             let x = r.left() + 8.0 + i as f32 * 150.0;
@@ -908,13 +904,6 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
                 theme::INK_HI,
             );
         }
-        text(
-            ui.p,
-            Pos2::new(r.left() + 8.0, y + 32.0),
-            "Gain figures are measurements. The Station never rescales a lane, a frame or a cascade.",
-            theme::T_MICRO,
-            theme::FAINT,
-        );
     }
 }
 
@@ -923,23 +912,26 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
 /// Layer 3. The object, its lanes, and what the cascade is doing by the time
 /// the signal has been through them.
 fn topology_workspace(st: &mut Station, ui: &mut Ui, r: Rect) {
-    let left_w = r.width() * 0.55;
+    let left_w = r.width() * 0.62;
     let left = Rect::from_min_size(r.min, Vec2::new(left_w, r.height()));
     let right = Rect::from_min_max(Pos2::new(left.right() + PAD, r.top()), r.max);
 
-    let cube_h = left.height() * 0.52;
+    // The navigator is the ground of this workspace and takes the room to be
+    // one. The cumulative cascade sits beneath it, because it answers a
+    // different question about the same position.
+    let nav_h = left.height() * 0.66;
     crate::views_cube::draw(
         st,
         ui,
-        Rect::from_min_size(left.min, Vec2::new(left.width(), cube_h)),
+        Rect::from_min_size(left.min, Vec2::new(left.width(), nav_h)),
     );
     cumulative_panel(
         st,
         ui,
-        Rect::from_min_max(Pos2::new(left.left(), left.top() + cube_h + PAD), left.max),
+        Rect::from_min_max(Pos2::new(left.left(), left.top() + nav_h + PAD), left.max),
     );
 
-    let axis_h = 150.0;
+    let axis_h = 132.0;
     let edit_h = 168.0;
     axis_panel(
         st,
@@ -1153,7 +1145,7 @@ pub fn readings_pane(st: &mut Station, ui: &mut Ui, r: Rect) {
         text(
             ui.p,
             r.min + Vec2::new(8.0, 34.0),
-            "No laws are declared. Write them in the LAWS pane and press APPLY.",
+            "no laws declared",
             theme::T_MICRO,
             theme::DIM,
         );

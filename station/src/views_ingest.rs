@@ -252,19 +252,5 @@ fn classify_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         );
     }
 
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 26.0),
-        "A lane is a pole/zero pair and a scale. No filter role is inferred from it.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 14.0),
-        "Audio ingestion (LPC, STFT) needs a decoder and is not built into this Station.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
     let _ = paint::char_width(ui.p, theme::T_MICRO);
 }

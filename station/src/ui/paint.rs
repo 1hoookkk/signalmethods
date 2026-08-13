@@ -88,7 +88,7 @@ pub fn frequency_rules(p: &Painter, r: Rect, lo: f64, hi: f64, labels: bool) {
             };
             text(
                 p,
-                Pos2::new(x + 3.0, r.bottom() - 11.0),
+                Pos2::new(x + 3.0, r.bottom() - 28.0),
                 s,
                 theme::T_MICRO,
                 theme::FAINT,
@@ -169,7 +169,7 @@ pub fn curve(
     }
 }
 
-/// Filled area under a curve, the reference language's response fill.
+/// Filled area under a curve.
 #[allow(clippy::too_many_arguments)]
 pub fn curve_fill(
     p: &Painter,
@@ -198,7 +198,7 @@ pub fn curve_fill(
     }
 }
 
-/// A small index chip, e.g. `C03`, as used across the reference language.
+/// A small index chip, e.g. `C03`.
 pub fn chip(p: &Painter, at: Pos2, s: &str, c: Color32) -> Rect {
     let w = text_width(p, s, theme::T_MICRO) + 8.0;
     let r = Rect::from_min_size(at, Vec2::new(w, 13.0));

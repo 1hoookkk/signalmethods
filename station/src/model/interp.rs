@@ -41,6 +41,25 @@ pub fn lane_at(corners: &[LaneValue], coords: &[f32]) -> LaneValue {
     LaneValue::from_words(words)
 }
 
+/// How much each corner contributes at a position.
+///
+/// These are the multilinear weights the interpolation itself uses, so the
+/// blend an operator reads is the blend the filter is made of, not a separate
+/// estimate of it. Weight of a corner is the product over axes of the distance
+/// to the opposite face, and they sum to one.
+pub fn corner_weights(coords: &[f32]) -> Vec<f32> {
+    let n = 1usize << coords.len();
+    (0..n)
+        .map(|ci| {
+            coords
+                .iter()
+                .enumerate()
+                .map(|(a, &t)| if (ci >> a) & 1 == 1 { t } else { 1.0 - t })
+                .product()
+        })
+        .collect()
+}
+
 /// Interpolates every lane of a frame set at one position.
 pub fn cascade_at(corner_lanes: &[Vec<LaneValue>], coords: &[f32]) -> Vec<LaneValue> {
     if corner_lanes.is_empty() {
@@ -139,6 +158,47 @@ mod tests {
             ];
             assert_eq!(lane_at(&corners, &coords).words[0], i as u16 * 1000);
         }
+    }
+
+    #[test]
+    fn corner_weights_sum_to_one_and_pick_out_corners() {
+        for coords in [
+            vec![0.0f32, 0.0, 0.0],
+            vec![1.0, 1.0, 1.0],
+            vec![0.5, 0.5, 0.5],
+            vec![0.2, 0.9, 0.35],
+            vec![0.3, 0.7, 0.1, 0.6],
+        ] {
+            let w = corner_weights(&coords);
+            assert_eq!(w.len(), 1 << coords.len());
+            let sum: f32 = w.iter().sum();
+            assert!((sum - 1.0).abs() < 1e-5, "weights summed to {sum}");
+            assert!(w.iter().all(|x| *x >= -1e-6));
+        }
+        // At a corner, that corner carries everything.
+        let w = corner_weights(&[1.0, 0.0, 1.0]);
+        assert!((w[0b101] - 1.0).abs() < 1e-6, "{w:?}");
+    }
+
+    /// The blend an operator reads has to be the blend the filter is made of.
+    #[test]
+    fn corner_weights_reconstruct_the_interpolated_lane() {
+        let packed = packed_fixture();
+        let corners: Vec<LaneValue> = (0..8)
+            .map(|ci| LaneValue::from_words(packed.words[ci][0]))
+            .collect();
+        let coords = [0.37f32, 0.62, 0.18];
+        let w = corner_weights(&coords);
+        // Weighted sum of the corner words, in the same word domain the
+        // interpolation works in.
+        let want: f64 = (0..8)
+            .map(|ci| w[ci] as f64 * corners[ci].words[0] as f64)
+            .sum();
+        let got = lane_at(&corners, &coords).words[0] as f64;
+        assert!(
+            (got - want).abs() < 4.0,
+            "weights disagree with the interpolation: {got} vs {want}"
+        );
     }
 
     #[test]

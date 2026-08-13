@@ -268,26 +268,4 @@ pub fn linters(st: &mut Station, ui: &mut Ui, r: Rect) {
         );
         y += 32.0;
     }
-
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 40.0),
-        "Gain readings are measurements.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 28.0),
-        "The Station does not rescale or re-anchor an authored response.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 16.0),
-        "No 4D packed contract exists; a 4D project saves as a Station project only.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
 }

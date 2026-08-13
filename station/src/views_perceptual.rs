@@ -189,21 +189,6 @@ fn bisection_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             theme::INK,
         );
     }
-
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 26.0),
-        "The warp moves where the object is sampled. Authored frames are untouched.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
-    text(
-        ui.p,
-        Pos2::new(r.left() + 8.0, r.bottom() - 14.0),
-        "Live audition needs an output device and is not built into this Station.",
-        theme::T_MICRO,
-        theme::FAINT,
-    );
 }
 
 /// The sweep as the operator would hear it: the response at even steps of

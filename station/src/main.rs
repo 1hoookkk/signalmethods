@@ -6,6 +6,7 @@ mod views_cube;
 mod views_ingest;
 mod views_perceptual;
 mod views_runtime;
+mod views_sos;
 
 use std::path::PathBuf;
 

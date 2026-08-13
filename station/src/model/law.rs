@@ -57,6 +57,10 @@ pub struct Grammar {
     /// Names for lanes, in lane order.
     #[serde(default)]
     pub lane_names: Vec<String>,
+    /// Names for frames, in corner order. A frame is easier to steer toward by
+    /// what it sounds like than by its address, so the operator may name it.
+    #[serde(default)]
+    pub frame_names: Vec<String>,
     /// The response view's frequency span.
     #[serde(default = "default_lo")]
     pub display_lo_hz: f64,
@@ -83,6 +87,7 @@ impl Default for Grammar {
         Self {
             axis_names: Vec::new(),
             lane_names: Vec::new(),
+            frame_names: Vec::new(),
             display_lo_hz: default_lo(),
             display_hi_hz: default_hi(),
             pole_radius_watch: default_watch(),
@@ -101,6 +106,15 @@ impl Grammar {
     pub fn lane_name(&self, i: usize, fallback: &str) -> String {
         self.lane_names
             .get(i)
+            .cloned()
+            .unwrap_or_else(|| fallback.to_string())
+    }
+
+    /// A frame's name when one is declared, otherwise its address.
+    pub fn frame_name(&self, i: usize, fallback: &str) -> String {
+        self.frame_names
+            .get(i)
+            .filter(|s| !s.trim().is_empty())
             .cloned()
             .unwrap_or_else(|| fallback.to_string())
     }
