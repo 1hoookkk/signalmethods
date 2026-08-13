@@ -1,0 +1,26 @@
+{
+  "_": "Your laws. The station measures, you decide. Edit this file and press R.",
+  "_quantities": [
+    "order          poles carrying signal, 2 per conjugate section",
+    "crown_db       tallest point above the frame's own median",
+    "dip_db         deepest point below the frame's own median",
+    "tilt_db        low band minus high band, positive means it falls",
+    "peaks          local maxima above 4 dB prominence",
+    "gap_oct        smallest gap between neighbouring poles, octaves",
+    "zero_min_st    zero nearest its own pole, semitones",
+    "zero_max_st    zero furthest from its own pole, semitones",
+    "scale_spread_db  loudest section level minus quietest",
+    "meet_st        closest any two poles pass across the wheel",
+    "meet_at        where on the wheel that happens, 0..1"
+  ],
+  "laws": [
+    { "on": "frame", "q": "order",          "min": 12,    "max": 14,   "why": "every section carrying a conjugate pair" },
+    { "on": "frame", "q": "crown_db",       "min": 10.0,  "max": 26.0, "why": "corpus median 17.8" },
+    { "on": "frame", "q": "dip_db",         "min": 40.0,  "max": 100.0,"why": "corpus median 69.8, deep notches are the mechanism" },
+    { "on": "frame", "q": "tilt_db",        "min": -40.0, "max": 40.0, "why": "corpus median 25.5" },
+    { "on": "frame", "q": "peaks",          "min": 3,     "max": 6,    "why": "corpus median 4" },
+    { "on": "frame", "q": "gap_oct",        "min": 0.25,  "max": 3.0,  "why": "under 3 st two poles fuse and arrive hot" },
+    { "on": "frame", "q": "scale_spread_db","min": 0.0,   "max": 0.1,  "why": "author geometry, not gain" },
+    { "on": "body",  "q": "meet_st",        "min": 0.0,   "max": 3.0,  "why": "something should meet, or the wheel is a crossfade" }
+  ]
+}

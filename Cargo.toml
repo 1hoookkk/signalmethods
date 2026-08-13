@@ -1,0 +1,14 @@
+[workspace]
+members = ["trench-core", "station"]
+resolver = "2"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+# Response evaluation and packed decoding run on every repaint. Keep the
+# authoring core optimized in development builds.
+[profile.dev.package.trench-core]
+opt-level = 3

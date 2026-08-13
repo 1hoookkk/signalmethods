@@ -1,0 +1,13 @@
+[package]
+name = "trench-core"
+version = "0.1.0"
+edition = "2021"
+
+# Authoring core only: pack, decode, interpolate, response. No audio engine,
+# no FFI, no plugin surface, so it builds without the runtime stack.
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
