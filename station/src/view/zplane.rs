@@ -1,82 +1,63 @@
-//! The pole/zero surface.
+//! Where the roots sit, on the ARMAdillo plot.
 //!
-//! The upper half of the unit disc: angle is frequency, distance from the
-//! origin is radius. A section's pole and zero are dragged here directly, and
-//! the writes go through the crate's validator, so a placement the encoder
-//! could not store is refused rather than rounded into something else.
+//! Angle is `theta' = pi(10 + log2(theta/pi))/10` and radial distance is
+//! `R' = 20 log10(1/(1-R))`, drawn linear in dB so equal radial steps are
+//! equal dB. Both come from `trench_core::armadillo`; nothing is re-derived
+//! here.
+//!
+//! A root below the floor of the plot is left off it. The transform returns a
+//! negative angle for those, and the crate is explicit that they are excluded
+//! rather than moved onto the rim.
+//!
+//! This is an inspector. Roots are placed by the fitter or typed as numbers;
+//! this pane says where they landed.
 
 use eframe::egui::{Pos2, Rect, Stroke, Vec2};
 
-use trench_core::stage_law::{RootPair, StageRoots};
+use trench_core::armadillo::{
+    display_radius_from_r_prime_db, on_plot, r_prime_db_from_radius, theta_prime_from_hz, RIM_DB,
+};
+use trench_core::stage_law::RootPair;
 
-use crate::app::{NoteKind, Station};
-use crate::model::lane::{refusal_text, LaneValue};
-use crate::ui::input::{Id, Ui};
-use crate::ui::paint::{hairline, label, num};
+use crate::app::Station;
+use crate::ui::input::Ui;
+use crate::ui::paint::{hairline, label, line, num};
 use crate::ui::theme;
 
-/// What the pointer is holding.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Grab {
-    Pole,
-    Zero,
+/// Screen position of a root, or `None` when it is off the plot.
+fn place(centre: Pos2, rho_max: f32, hz: f64, r: f64, fs: f64) -> Option<Pos2> {
+    let theta_prime = theta_prime_from_hz(hz, fs).ok()?;
+    if !on_plot(theta_prime) {
+        return None;
+    }
+    let db = r_prime_db_from_radius(r).ok()?;
+    let rho = display_radius_from_r_prime_db(db.clamp(0.0, RIM_DB), rho_max as f64) as f32;
+    Some(Pos2::new(
+        centre.x + rho * theta_prime.cos() as f32,
+        centre.y - rho * theta_prime.sin() as f32,
+    ))
 }
 
-fn to_screen(disc: Rect, radius_px: f32, hz: f64, r: f64, sr: f64) -> Pos2 {
-    let theta = std::f64::consts::PI * (hz / (sr * 0.5)).clamp(0.0, 1.0);
-    let origin = Pos2::new(disc.center().x, disc.bottom());
-    Pos2::new(
-        origin.x + (r * theta.cos()) as f32 * radius_px,
-        origin.y - (r * theta.sin()) as f32 * radius_px,
-    )
-}
+pub fn draw(st: &Station, ui: &mut Ui, r: Rect, corner: usize, selected_lane: usize) {
+    let fs = st.project.sample_rate();
+    let rho_max = (r.width() * 0.5).min(r.height() - 16.0).max(20.0);
+    let centre = Pos2::new(r.center().x, r.bottom() - 12.0);
 
-fn from_screen(disc: Rect, radius_px: f32, p: Pos2, sr: f64) -> (f64, f64) {
-    let origin = Pos2::new(disc.center().x, disc.bottom());
-    let dx = ((p.x - origin.x) / radius_px) as f64;
-    let dy = ((origin.y - p.y) / radius_px).max(0.0) as f64;
-    let r = (dx * dx + dy * dy).sqrt().clamp(0.0, 0.999_9);
-    let theta = dy.atan2(dx).clamp(0.0, std::f64::consts::PI);
-    let hz = theta / std::f64::consts::PI * (sr * 0.5);
-    (hz, r)
-}
-
-/// Draws the surface for one section and applies any drag to it.
-pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect, corner: usize, lane: usize) {
-    let sr = st.project.sample_rate();
-    let Some(frame) = st.project.frames().get(corner) else {
-        return;
-    };
-    let value = frame.values[lane];
-
-    let radius_px = (r.width() * 0.46).min(r.height() - 26.0).max(30.0);
-    let disc = Rect::from_min_max(
-        Pos2::new(r.center().x - radius_px, r.bottom() - radius_px - 18.0),
-        Pos2::new(r.center().x + radius_px, r.bottom() - 18.0),
-    );
-    let origin = Pos2::new(disc.center().x, disc.bottom());
-
-    // The unit circle, as an arc, plus radius rings and frequency spokes.
-    for ring in [0.25f32, 0.5, 0.75, 1.0] {
-        let n = 64;
+    // The rim, and rings at even dB so radial distance reads as resonance.
+    for (db, heavy) in [(24.0, false), (48.0, false), (72.0, false), (RIM_DB, true)] {
+        let rho = display_radius_from_r_prime_db(db, rho_max as f64) as f32;
+        let n = 48;
         let mut prev: Option<Pos2> = None;
         for i in 0..=n {
-            let t = i as f32 / n as f32 * std::f32::consts::PI;
-            let p = Pos2::new(
-                origin.x + t.cos() * radius_px * ring,
-                origin.y - t.sin() * radius_px * ring,
-            );
+            let a = i as f32 / n as f32 * std::f32::consts::PI;
+            let p = Pos2::new(centre.x + a.cos() * rho, centre.y - a.sin() * rho);
             if let Some(q) = prev {
-                crate::ui::paint::line(
+                line(
                     ui.p,
                     q,
                     p,
-                    if ring >= 1.0 {
-                        theme::LINE_HI
-                    } else {
-                        theme::mix(theme::SURFACE, theme::LINE, 0.7)
-                    },
-                    if ring >= 1.0 { 1.4 } else { 1.0 },
+                    if heavy { theme::LINE_HI } else { theme::LINE },
+                    1.0,
                 );
             }
             prev = Some(p);
@@ -84,29 +65,32 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect, corner: usize, lane: usize) 
     }
     hairline(
         ui.p,
-        Pos2::new(origin.x - radius_px, origin.y),
-        Pos2::new(origin.x + radius_px, origin.y),
+        Pos2::new(centre.x - rho_max, centre.y),
+        Pos2::new(centre.x + rho_max, centre.y),
         theme::LINE,
     );
-    // Frequency spokes at decade-ish landmarks.
+
+    // Decade spokes, placed through the same transform as the roots.
     for hz in [100.0f64, 1_000.0, 10_000.0] {
-        if hz >= sr * 0.5 {
+        let Ok(tp) = theta_prime_from_hz(hz, fs) else {
+            continue;
+        };
+        if !on_plot(tp) {
             continue;
         }
-        let theta = std::f64::consts::PI * hz / (sr * 0.5);
-        let p = Pos2::new(
-            origin.x + theta.cos() as f32 * radius_px,
-            origin.y - theta.sin() as f32 * radius_px,
+        let tip = Pos2::new(
+            centre.x + tp.cos() as f32 * rho_max,
+            centre.y - tp.sin() as f32 * rho_max,
         );
         hairline(
             ui.p,
-            origin,
-            p,
-            theme::mix(theme::SURFACE, theme::LINE, 0.5),
+            centre,
+            tip,
+            theme::mix(theme::SURFACE, theme::LINE, 0.6),
         );
         num(
             ui.p,
-            p + Vec2::new(-8.0, -14.0),
+            tip + Vec2::new(-10.0, -14.0),
             if hz >= 1000.0 {
                 format!("{:.0}k", hz / 1000.0)
             } else {
@@ -117,133 +101,58 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect, corner: usize, lane: usize) 
         );
     }
 
-    let Some(roots) = value.roots(sr) else {
-        // Nothing conjugate to place. A click puts a root on the surface where
-        // the pointer is, which is how a section starts carrying signal.
-        let id = Id::of(("zplane-empty", corner, lane));
-        let resp = ui.region(id, disc);
-        if let (true, Some(p)) = (resp.clicked, resp.pointer) {
-            let (hz, rr) = from_screen(disc, radius_px, p, sr);
-            let seed = StageRoots {
-                pole_hz: hz.max(20.0),
-                pole_r: rr.clamp(0.0, 0.98),
-                zero_hz: hz.max(20.0),
-                zero_r: 0.0,
-                scale: 1.0,
-            };
-            apply(st, corner, lane, seed);
-        }
-        label(
-            ui.p,
-            Pos2::new(disc.left(), disc.top() - 18.0),
-            "empty",
-            theme::T_SMALL,
-            theme::TEXT_FAINT,
-        );
+    // Every section of this corner, so correspondence is visible at a glance.
+    let Some(frame) = st.project.frames().get(corner) else {
         return;
     };
-
-    let pole_at = to_screen(disc, radius_px, roots.pole_hz, roots.pole_r, sr);
-    let zero_at = to_screen(disc, radius_px, roots.zero_hz, roots.zero_r, sr);
-
-    // Drag targets. The pole is on top, since it is the one usually moved.
-    let id = Id::of(("zplane", corner, lane));
-    let zr = ui.region(
-        id.child("zero"),
-        Rect::from_center_size(zero_at, Vec2::splat(20.0)),
-    );
-    let pr = ui.region(
-        id.child("pole"),
-        Rect::from_center_size(pole_at, Vec2::splat(20.0)),
-    );
-
-    let mut next = roots;
-    let mut changed = false;
-    if pr.held {
-        if let Some(p) = pr.pointer {
-            let (hz, rr) = from_screen(disc, radius_px, p, sr);
-            next.pole_hz = hz.max(1.0);
-            next.pole_r = rr;
-            changed = true;
+    let mut off_plot = 0usize;
+    for (li, v) in frame.values.iter().enumerate() {
+        if v.is_identity() {
+            continue;
         }
-    } else if zr.held {
-        if let Some(p) = zr.pointer {
-            let (hz, rr) = from_screen(disc, radius_px, p, sr);
-            next.zero_hz = hz.max(1.0);
-            next.zero_r = rr;
-            changed = true;
+        let g = v.geometry(fs);
+        let c = theme::corner_color(li);
+        let sel = li == selected_lane;
+
+        if let RootPair::Conjugate { hz, r: rr } = g.zero {
+            if rr > 0.0 {
+                match place(centre, rho_max, hz, rr, fs) {
+                    Some(p) => {
+                        ui.p.circle_stroke(p, 4.0, Stroke::new(1.2, theme::TEXT_FAINT));
+                    }
+                    None => off_plot += 1,
+                }
+            }
+        }
+        if let RootPair::Conjugate { hz, r: rr } = g.pole {
+            match place(centre, rho_max, hz, rr, fs) {
+                Some(p) => {
+                    let w = if sel { 2.4 } else { 1.4 };
+                    let s = if sel { 6.0 } else { 4.5 };
+                    line(ui.p, p + Vec2::new(-s, -s), p + Vec2::new(s, s), c, w);
+                    line(ui.p, p + Vec2::new(-s, s), p + Vec2::new(s, -s), c, w);
+                }
+                None => off_plot += 1,
+            }
         }
     }
-
-    // Zero, hollow.
-    ui.p.circle_stroke(zero_at, 6.0, Stroke::new(1.8, theme::TEXT_DIM));
-    // Pole, a filled cross.
-    let c = if pr.held || pr.hovered {
-        theme::ACCENT
-    } else {
-        theme::corner_color(corner)
-    };
-    crate::ui::paint::line(
-        ui.p,
-        pole_at + Vec2::new(-6.0, -6.0),
-        pole_at + Vec2::new(6.0, 6.0),
-        c,
-        2.2,
-    );
-    crate::ui::paint::line(
-        ui.p,
-        pole_at + Vec2::new(-6.0, 6.0),
-        pole_at + Vec2::new(6.0, -6.0),
-        c,
-        2.2,
-    );
 
     label(
         ui.p,
-        Pos2::new(disc.left(), disc.top() - 18.0),
-        "pole ×    zero ○",
+        r.min,
+        "pole ×   zero ○   radial dB",
         theme::T_SMALL,
         theme::TEXT_FAINT,
     );
-
-    if changed {
-        apply(st, corner, lane, next);
+    if off_plot > 0 {
+        // Rossum excludes roots below the floor rather than piling them on the
+        // rim, so they are counted here instead of drawn somewhere wrong.
+        num(
+            ui.p,
+            Pos2::new(r.left(), r.top() + 14.0),
+            format!("{off_plot} below plot floor"),
+            theme::T_SMALL,
+            theme::WARN,
+        );
     }
-}
-
-fn apply(st: &mut Station, corner: usize, lane: usize, roots: StageRoots) {
-    let sr = st.project.sample_rate();
-    let Some(obj) = st.project.object.as_ref() else {
-        return;
-    };
-    let mut v: LaneValue = obj.frames[corner].values[lane];
-    // Only checkpoint when the write will actually land.
-    match v.set_roots(&roots, sr) {
-        Ok(()) => {
-            st.checkpoint();
-            if let Some(o) = st.project.object.as_mut() {
-                o.frames[corner].values[lane] = v;
-            }
-            st.touch();
-            st.say("", NoteKind::Plain);
-        }
-        Err(e) => st.say(refusal_text(e), NoteKind::Warn),
-    }
-}
-
-/// Reads a section's roots, when it has them.
-pub fn roots_of(st: &Station, corner: usize, lane: usize) -> Option<StageRoots> {
-    let sr = st.project.sample_rate();
-    st.project.frames().get(corner)?.values.get(lane)?.roots(sr)
-}
-
-/// True when the section holds a conjugate pole.
-pub fn has_pole(st: &Station, corner: usize, lane: usize) -> bool {
-    let sr = st.project.sample_rate();
-    st.project
-        .frames()
-        .get(corner)
-        .and_then(|f| f.values.get(lane))
-        .map(|v| matches!(v.geometry(sr).pole, RootPair::Conjugate { r, .. } if r > 0.0))
-        .unwrap_or(false)
 }

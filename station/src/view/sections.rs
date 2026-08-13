@@ -129,26 +129,31 @@ fn editor(st: &mut Station, ui: &mut Ui, r: Rect) {
     let title = format!("{} · C{}", super::section_name(st, li), ci + 1);
     let inner = panel(ui.p, r, &title);
 
-    let surface_w = (inner.width() * 0.52).clamp(200.0, 420.0);
-    let surface = Rect::from_min_size(inner.min, Vec2::new(surface_w, inner.height() - 42.0));
-    zplane::draw(st, ui, surface, ci, li);
-
-    let fx = surface.right() + PAD * 2.0;
+    // Geometry first, as numbers. The root plot is an inspector beside them.
+    let plot_w = (inner.width() * 0.30).clamp(150.0, 260.0);
+    let fx = inner.left();
     let sr = st.project.sample_rate();
     let lim = authoring_limits_at(sr);
-    let Some(roots) = zplane::roots_of(st, ci, li) else {
+    let Some(roots) = st
+        .project
+        .frames()
+        .get(ci)
+        .and_then(|f| f.values.get(li))
+        .and_then(|v| v.roots(sr))
+    else {
         return;
     };
 
     // Numbers, for placement that has to be exact.
     let id = Id::of(("sec", ci, li));
-    let fw = ((inner.right() - fx - PAD) / 2.0).clamp(90.0, 150.0);
-    let specs: [(&'static str, f64); 5] = [
+    let fw = ((inner.right() - plot_w - PAD * 2.0 - fx) / 2.0).clamp(90.0, 160.0);
+    // Pole and zero are authored. Scale is not a fifth part of the geometry:
+    // it is the section's level, and the fitter sets it from the residual.
+    let specs: [(&'static str, f64); 4] = [
         ("Pole Hz", roots.pole_hz),
         ("Pole r", roots.pole_r),
         ("Zero Hz", roots.zero_hz),
         ("Zero r", roots.zero_r),
-        ("Gain", roots.scale),
     ];
     let mut edited: Option<(usize, f64)> = None;
     for (k, (name, value)) in specs.iter().enumerate() {
@@ -170,7 +175,7 @@ fn editor(st: &mut Station, ui: &mut Ui, r: Rect) {
     }
 
     // Derived readings from the pole's position.
-    let ry = inner.top() + 3.0 * 44.0 + 6.0;
+    let ry = inner.top() + 2.0 * 44.0 + 10.0;
     if let Some(shape) = pole_shape(roots.pole_hz, roots.pole_r, sr) {
         reading(
             ui.p,
@@ -187,6 +192,24 @@ fn editor(st: &mut Station, ui: &mut Ui, r: Rect) {
             theme::TEXT,
         );
     }
+    reading(
+        ui.p,
+        Pos2::new(fx, ry + 38.0),
+        "level",
+        format!("{:+.2} dB", 20.0 * roots.scale.max(1e-9).log10()),
+        theme::TEXT_DIM,
+    );
+
+    zplane::draw(
+        st,
+        ui,
+        Rect::from_min_size(
+            Pos2::new(inner.right() - plot_w, inner.top()),
+            Vec2::new(plot_w, inner.height() - 34.0),
+        ),
+        ci,
+        li,
+    );
 
     // Ordering, available but not dominant.
     let n = st.project.lane_capacity();
@@ -270,8 +293,7 @@ fn editor(st: &mut Station, ui: &mut Ui, r: Rect) {
             0 => next.pole_hz = v,
             1 => next.pole_r = v,
             2 => next.zero_hz = v,
-            3 => next.zero_r = v,
-            _ => next.scale = v,
+            _ => next.zero_r = v,
         }
         let sr = st.project.sample_rate();
         if let Some(o) = st.project.object.as_ref() {
