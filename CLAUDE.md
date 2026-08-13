@@ -84,6 +84,10 @@ processing lens.
 
 - Focus exclusively on DSP equations, Z-plane root positions, biquad
   structures, and coefficient transformations.
+- Do not use RBJ Audio EQ Cookbook assumptions. Do not infer cookbook filter
+  types, coefficient recipes, Q/bandwidth mappings, gain conventions, or
+  normalization rules. A section is a generic pole/zero SOS lane unless the
+  loaded format explicitly declares something more.
 - Reject linear coefficient interpolation (`b_1`, `b_2`) in favor of log-polar
   `k_1`, `k_2` domain mapping.
 - When delivering code implementations (C++, JUCE, Python), include exact
