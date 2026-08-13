@@ -5,8 +5,11 @@
 //! capability. Collapsing any two is how a Station starts claiming a format can
 //! store something it cannot.
 
+pub mod analysis;
+pub mod history;
 pub mod interp;
 pub mod lane;
+pub mod law;
 pub mod project;
 pub mod store;
 pub mod topology;

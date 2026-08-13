@@ -1,0 +1,7 @@
+{
+  "axis_names": [],
+  "lane_names": [],
+  "display_lo_hz": 20.0,
+  "display_hi_hz": 20000.0,
+  "pole_radius_watch": 0.995
+}
