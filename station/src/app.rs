@@ -17,22 +17,35 @@ use crate::ui::widgets::FieldState;
 use crate::ui::{paint, theme};
 use crate::views;
 
+/// The four workspaces, one per abstraction layer. Measurement, perceptual
+/// intent, structure and runtime are kept apart on purpose: the boundary
+/// between acoustic intent and packed registers is the whole point of the
+/// architecture, and one crowded screen destroys it.
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Tab {
-    Frames,
-    Cascade,
-    Lanes,
-    Laws,
+pub enum Workspace {
+    /// Layer 1 — measurement, import and root classification.
+    Ingestion,
+    /// Layer 2 — perceptual intent and the psychophysical warp.
+    Perceptual,
+    /// Layer 3 — topology, lane discipline and the cumulative cascade.
+    Topology,
+    /// Layer 4 — packed registers, linters and export.
+    Runtime,
 }
 
-impl Tab {
-    pub const ALL: [Tab; 4] = [Tab::Frames, Tab::Cascade, Tab::Lanes, Tab::Laws];
+impl Workspace {
+    pub const ALL: [Workspace; 4] = [
+        Workspace::Ingestion,
+        Workspace::Perceptual,
+        Workspace::Topology,
+        Workspace::Runtime,
+    ];
     pub fn label(self) -> &'static str {
         match self {
-            Tab::Frames => "FRAMES",
-            Tab::Cascade => "CASCADE",
-            Tab::Lanes => "LANES",
-            Tab::Laws => "LAWS",
+            Workspace::Ingestion => "INGESTION",
+            Workspace::Perceptual => "PERCEPTUAL",
+            Workspace::Topology => "TOPOLOGY & LANES",
+            Workspace::Runtime => "RUNTIME & EXPORT",
         }
     }
 }
@@ -62,7 +75,16 @@ pub struct Station {
     pub coords: Vec<f32>,
     /// Which two axes the working projection shows.
     pub display_axes: (usize, usize),
-    pub tab: Tab,
+    pub workspace: Workspace,
+
+    /// Viewing angles for the topology object.
+    pub cube_yaw: f32,
+    pub cube_pitch: f32,
+
+    /// Psychophysical warp: where the perceived midpoint of a sweep sits.
+    /// 0.5 is no warp. Applied to the first axis when `warp_on` is set.
+    pub warp_mid: f32,
+    pub warp_on: bool,
 
     pub ui: UiState,
     pub fields: HashMap<u64, FieldState>,
@@ -107,7 +129,11 @@ impl Station {
             selected_lane: 0,
             coords,
             display_axes,
-            tab: Tab::Frames,
+            workspace: Workspace::Topology,
+            cube_yaw: 0.62,
+            cube_pitch: 0.42,
+            warp_mid: 0.5,
+            warp_on: false,
             ui: UiState::default(),
             fields: HashMap::new(),
             note: String::new(),
@@ -141,11 +167,31 @@ impl Station {
         self.history.record(&before);
     }
 
+    /// The working position after the psychophysical warp.
+    ///
+    /// The warp is a monotone reparametrisation of travel along the first
+    /// axis, so that the middle of the operator's motion lands where the
+    /// middle of the transition is heard rather than where the arithmetic
+    /// midpoint falls. It moves where the object is sampled; it never alters
+    /// the authored frames.
+    pub fn warped_coords(&self) -> Vec<f32> {
+        let mut c = self.coords.clone();
+        if self.warp_on {
+            if let Some(first) = c.first_mut() {
+                *first = warp(*first, self.warp_mid);
+            }
+        }
+        c
+    }
+
     pub fn recompute(&mut self) {
         if !self.dirty_response {
             return;
         }
-        let lanes = self.project.cascade_at(&self.coords).unwrap_or_default();
+        let lanes = self
+            .project
+            .cascade_at(&self.warped_coords())
+            .unwrap_or_default();
         self.live = analysis::analyse(&lanes, self.project.sample_rate());
         self.dirty_response = false;
     }
@@ -384,7 +430,7 @@ impl Station {
             return;
         }
         // Text focus owns the keyboard; only the path bar and editors take it.
-        let editing = matches!(self.tab, Tab::Laws) && self.ui.focus.is_some();
+        let editing = matches!(self.workspace, Workspace::Runtime) && self.ui.focus.is_some();
         if editing {
             return;
         }
@@ -484,4 +530,52 @@ pub fn stack(area: Rect, heights: &[f32]) -> Vec<Rect> {
         y += h;
     }
     out
+}
+
+/// A monotone warp of travel through a chosen midpoint.
+///
+/// `mid` is where the perceived middle of the sweep sits. At 0.5 this is the
+/// identity. The curve is two straight segments joined at the anchor, which is
+/// monotone by construction, so a sweep can be re-timed without it ever
+/// doubling back on itself.
+pub fn warp(t: f32, mid: f32) -> f32 {
+    let t = t.clamp(0.0, 1.0);
+    let mid = mid.clamp(0.02, 0.98);
+    if t <= 0.5 {
+        t / 0.5 * mid
+    } else {
+        mid + (t - 0.5) / 0.5 * (1.0 - mid)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::warp;
+
+    #[test]
+    fn warp_is_the_identity_at_the_arithmetic_midpoint() {
+        for i in 0..=10 {
+            let t = i as f32 / 10.0;
+            assert!((warp(t, 0.5) - t).abs() < 1e-6, "warp({t}) moved");
+        }
+    }
+
+    #[test]
+    fn warp_moves_the_midpoint_and_keeps_the_ends() {
+        assert!((warp(0.0, 0.25) - 0.0).abs() < 1e-6);
+        assert!((warp(1.0, 0.25) - 1.0).abs() < 1e-6);
+        assert!((warp(0.5, 0.25) - 0.25).abs() < 1e-6);
+    }
+
+    #[test]
+    fn warp_never_doubles_back() {
+        for mid in [0.05, 0.25, 0.5, 0.75, 0.95] {
+            let mut prev = -1.0;
+            for i in 0..=100 {
+                let v = warp(i as f32 / 100.0, mid);
+                assert!(v >= prev - 1e-6, "warp went backwards at mid {mid}");
+                prev = v;
+            }
+        }
+    }
 }

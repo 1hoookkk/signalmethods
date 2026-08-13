@@ -195,6 +195,32 @@ impl Project {
         Ok(PackedCorners { words })
     }
 
+    /// Re-discretises every lane from the rate its words belong to onto a new
+    /// rate.
+    ///
+    /// Stored words belong to the rate they were authored at. Reading them at
+    /// another rate unchanged moves every pole and zero, so a legacy body read
+    /// at a modern rate would have its formants shifted. `recompile_stage_words`
+    /// takes the roots back through the inverse bilinear transform, preserves
+    /// the intended continuous frequencies, and re-discretises at the target
+    /// rate. Identity lanes are left exactly as they are so a pass-through does
+    /// not acquire content.
+    pub fn retune(&mut self, to_rate: f64) {
+        let from = self.interp.sample_rate_hz;
+        if !to_rate.is_finite() || to_rate <= 0.0 || (to_rate - from).abs() < 1e-9 {
+            return;
+        }
+        for frame in &mut self.frames {
+            for v in &mut frame.values {
+                if v.is_identity() {
+                    continue;
+                }
+                v.words = trench_core::stage_law::recompile_stage_words(v.words, from, to_rate);
+            }
+        }
+        self.interp.sample_rate_hz = to_rate;
+    }
+
     /// What the operator is told about packed export, in one line.
     pub fn packed_capability_text(&self) -> String {
         match self.packed_capability() {
@@ -364,6 +390,67 @@ mod tests {
             let got = p.cascade_at(&coords).unwrap();
             assert_eq!(got, p.frames[ci].values, "corner {ci}");
         }
+    }
+
+    /// The point of re-discretising: the continuous frequency an authored pole
+    /// stands at must survive a change of host rate.
+    #[test]
+    fn retune_preserves_pole_frequencies_across_rates() {
+        let legacy = 39_062.5;
+        let host = 48_000.0;
+        let mut p = Project::from_packed("hedz", &factory(), legacy).unwrap();
+
+        let before: Vec<Option<f64>> = p.frames[1]
+            .values
+            .iter()
+            .map(|v| match v.geometry(legacy).pole {
+                trench_core::stage_law::RootPair::Conjugate { hz, .. } => Some(hz),
+                _ => None,
+            })
+            .collect();
+
+        p.retune(host);
+        assert_eq!(p.sample_rate(), host);
+
+        let after: Vec<Option<f64>> = p.frames[1]
+            .values
+            .iter()
+            .map(|v| match v.geometry(host).pole {
+                trench_core::stage_law::RootPair::Conjugate { hz, .. } => Some(hz),
+                _ => None,
+            })
+            .collect();
+
+        for (i, (a, b)) in before.iter().zip(&after).enumerate() {
+            if let (Some(a), Some(b)) = (a, b) {
+                // Encoding is coarse at the top of the band; a few percent is
+                // quantisation, a 22% shift would be the rate ratio itself.
+                let ratio = b / a;
+                assert!(
+                    (ratio - 1.0).abs() < 0.06,
+                    "lane {i} moved from {a:.1} Hz to {b:.1} Hz on retune"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn retune_leaves_pass_through_lanes_untouched() {
+        let mut p = Project::blank("v", Topology::packed_runtime(), 7);
+        p.retune(96_000.0);
+        assert!(p
+            .frames
+            .iter()
+            .all(|f| f.values.iter().all(|v| v.is_identity())));
+        assert_eq!(p.sample_rate(), 96_000.0);
+    }
+
+    #[test]
+    fn retune_refuses_a_nonsense_rate() {
+        let mut p = Project::blank("v", Topology::packed_runtime(), 7);
+        p.retune(0.0);
+        p.retune(f64::NAN);
+        assert_eq!(p.sample_rate(), 44_100.0);
     }
 
     #[test]

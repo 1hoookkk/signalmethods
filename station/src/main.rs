@@ -2,6 +2,10 @@ mod app;
 mod model;
 mod ui;
 mod views;
+mod views_cube;
+mod views_ingest;
+mod views_perceptual;
+mod views_runtime;
 
 use std::path::PathBuf;
 

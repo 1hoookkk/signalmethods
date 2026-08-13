@@ -6,7 +6,7 @@
 
 use eframe::egui::{Pos2, Rect, Vec2};
 
-use crate::app::{PathIntent, Station, Tab, CMD_H, HEAD_H, PAD, STATUS_H, TAB_H};
+use crate::app::{PathIntent, Station, Workspace, CMD_H, HEAD_H, PAD, STATUS_H, TAB_H};
 use crate::model::analysis;
 use crate::model::law;
 use crate::model::project::{Origin, PackedCapability};
@@ -41,11 +41,11 @@ pub fn draw(st: &mut Station, ui: &mut Ui, full: Rect) {
     commands(st, ui, cmd);
     tab_strip(st, ui, tabs);
 
-    match st.tab {
-        Tab::Frames => frames_view(st, ui, body),
-        Tab::Cascade => cascade_view(st, ui, body),
-        Tab::Lanes => lanes_view(st, ui, body),
-        Tab::Laws => laws_view(st, ui, body),
+    match st.workspace {
+        Workspace::Ingestion => crate::views_ingest::draw(st, ui, body),
+        Workspace::Perceptual => crate::views_perceptual::draw(st, ui, body),
+        Workspace::Topology => topology_workspace(st, ui, body),
+        Workspace::Runtime => runtime_workspace(st, ui, body),
     }
 
     status_bar(st, ui, status);
@@ -176,8 +176,8 @@ fn commands(st: &mut Station, ui: &mut Ui, r: Rect) {
 
 fn tab_strip(st: &mut Station, ui: &mut Ui, r: Rect) {
     let id = Id::of("tabs");
-    let w = 150.0;
-    for (i, t) in Tab::ALL.iter().enumerate() {
+    let w = 178.0;
+    for (i, t) in Workspace::ALL.iter().enumerate() {
         let b = Rect::from_min_size(
             Pos2::new(r.left() + PAD + i as f32 * (w + 4.0), r.top()),
             Vec2::new(w, r.height()),
@@ -188,9 +188,9 @@ fn tab_strip(st: &mut Station, ui: &mut Ui, r: Rect) {
             b,
             &format!("{:02}", i + 1),
             t.label(),
-            st.tab == *t,
+            st.workspace == *t,
         ) {
-            st.tab = *t;
+            st.workspace = *t;
         }
     }
 }
@@ -287,10 +287,8 @@ fn path_bar(st: &mut Station, ui: &mut Ui, full: Rect) {
 
 /// Every authored frame as its own response card, laid out from the declared
 /// corner count. The grid is computed, never a fixed two-by-four.
-fn frames_view(st: &mut Station, ui: &mut Ui, r: Rect) {
-    let side = 300.0f32.min(r.width() * 0.30);
-    let grid_r = Rect::from_min_max(r.min, Pos2::new(r.right() - side - PAD, r.bottom()));
-    let side_r = Rect::from_min_max(Pos2::new(r.right() - side, r.top()), r.max);
+pub fn frame_cards(st: &mut Station, ui: &mut Ui, r: Rect) {
+    let grid_r = r;
 
     let n = st.project.frames.len();
     if n == 0 {
@@ -383,10 +381,9 @@ fn frames_view(st: &mut Station, ui: &mut Ui, r: Rect) {
         );
     }
 
-    axis_panel(st, ui, side_r);
 }
 
-fn frame_label(st: &Station, i: usize) -> String {
+pub fn frame_label(st: &Station, i: usize) -> String {
     let f = &st.project.frames[i];
     st.project
         .topology
@@ -407,7 +404,7 @@ fn frame_label(st: &Station, i: usize) -> String {
 
 /// One slider per declared axis, plus the choice of which two axes the working
 /// projection shows. Axes that are not displayed keep an explicit coordinate.
-fn axis_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
+pub fn axis_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
     text(
@@ -507,10 +504,8 @@ fn axis_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
 
 /// The signal so far. Sections multiply, so a safe total can hide a very loud
 /// middle; the running product after each lane is what shows it.
-fn cascade_view(st: &mut Station, ui: &mut Ui, r: Rect) {
-    let side = 320.0f32.min(r.width() * 0.32);
-    let plot_r = Rect::from_min_max(r.min, Pos2::new(r.right() - side - PAD, r.bottom()));
-    let list_r = Rect::from_min_max(Pos2::new(r.right() - side, r.top()), r.max);
+pub fn cumulative_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
+    let plot_r = r;
 
     fill(ui.p, plot_r, theme::PANEL);
     outline(ui.p, plot_r, theme::RULE);
@@ -576,11 +571,10 @@ fn cascade_view(st: &mut Station, ui: &mut Ui, r: Rect) {
         2.0,
     );
 
-    lane_list(st, ui, list_r);
 }
 
 /// Per-lane readings, including the intermediate peak that reveals build-up.
-fn lane_list(st: &mut Station, ui: &mut Ui, r: Rect) {
+pub fn lane_list(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
     text(
@@ -670,10 +664,8 @@ fn lane_list(st: &mut Station, ui: &mut Ui, r: Rect) {
 /// The lane matrix and the root editor. Editing writes through
 /// `LaneValue::set_roots`, so the crate's own validator decides what may be
 /// stored and a refusal leaves the lane untouched.
-fn lanes_view(st: &mut Station, ui: &mut Ui, r: Rect) {
-    let editor_h = 150.0;
-    let matrix_r = Rect::from_min_max(r.min, Pos2::new(r.right(), r.bottom() - editor_h - PAD));
-    let edit_r = Rect::from_min_max(Pos2::new(r.left(), r.bottom() - editor_h), r.max);
+pub fn lane_matrix_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
+    let matrix_r = r;
 
     fill(ui.p, matrix_r, theme::PANEL);
     outline(ui.p, matrix_r, theme::RULE);
@@ -756,12 +748,11 @@ fn lanes_view(st: &mut Station, ui: &mut Ui, r: Rect) {
         }
     }
 
-    root_editor(st, ui, edit_r);
 }
 
 /// Pole, zero and scale for the selected lane at the selected frame, in the
 /// representation the format actually stores.
-fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
+pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
 
@@ -960,35 +951,82 @@ fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
 
 // ── 04 LAWS ─────────────────────────────────────────────────────────────
 
-fn laws_view(st: &mut Station, ui: &mut Ui, r: Rect) {
-    let col = (r.width() - PAD * 2.0) / 3.0;
-    let laws_r = Rect::from_min_size(r.min, Vec2::new(col, r.height()));
-    let gram_r = Rect::from_min_size(
-        Pos2::new(laws_r.right() + PAD, r.top()),
-        Vec2::new(col, r.height()),
-    );
-    let read_r = Rect::from_min_max(Pos2::new(gram_r.right() + PAD, r.top()), r.max);
+/// Layer 3. The object, its lanes, and what the cascade is doing by the time
+/// the signal has been through them.
+fn topology_workspace(st: &mut Station, ui: &mut Ui, r: Rect) {
+    let left_w = r.width() * 0.55;
+    let left = Rect::from_min_size(r.min, Vec2::new(left_w, r.height()));
+    let right = Rect::from_min_max(Pos2::new(left.right() + PAD, r.top()), r.max);
 
-    editor_pane(
+    let cube_h = left.height() * 0.52;
+    crate::views_cube::draw(
         st,
         ui,
-        laws_r,
-        "LAWS",
-        Id::of("laws-editor"),
-        true,
+        Rect::from_min_size(left.min, Vec2::new(left.width(), cube_h)),
     );
-    editor_pane(
+    cumulative_panel(
         st,
         ui,
-        gram_r,
-        "GRAMMAR",
-        Id::of("grammar-editor"),
-        false,
+        Rect::from_min_max(
+            Pos2::new(left.left(), left.top() + cube_h + PAD),
+            left.max,
+        ),
     );
+
+    let axis_h = 150.0;
+    let edit_h = 168.0;
+    axis_panel(
+        st,
+        ui,
+        Rect::from_min_size(right.min, Vec2::new(right.width(), axis_h)),
+    );
+    lane_matrix_panel(
+        st,
+        ui,
+        Rect::from_min_max(
+            Pos2::new(right.left(), right.top() + axis_h + PAD),
+            Pos2::new(right.right(), right.bottom() - edit_h - PAD),
+        ),
+    );
+    root_editor(
+        st,
+        ui,
+        Rect::from_min_max(Pos2::new(right.left(), right.bottom() - edit_h), right.max),
+    );
+}
+
+/// Layer 4. Packed registers, the linters, the declared laws and grammar, and
+/// what export can honestly produce.
+fn runtime_workspace(st: &mut Station, ui: &mut Ui, r: Rect) {
+    let top_h = r.height() * 0.46;
+    let top = Rect::from_min_size(r.min, Vec2::new(r.width(), top_h));
+    let bottom = Rect::from_min_max(Pos2::new(r.left(), top.bottom() + PAD), r.max);
+
+    let reg_w = top.width() * 0.62;
+    crate::views_runtime::registers(
+        st,
+        ui,
+        Rect::from_min_size(top.min, Vec2::new(reg_w, top.height())),
+    );
+    crate::views_runtime::linters(
+        st,
+        ui,
+        Rect::from_min_max(Pos2::new(top.left() + reg_w + PAD, top.top()), top.max),
+    );
+
+    let col = (bottom.width() - PAD * 2.0) / 3.0;
+    let laws_r = Rect::from_min_size(bottom.min, Vec2::new(col, bottom.height()));
+    let gram_r = Rect::from_min_size(
+        Pos2::new(laws_r.right() + PAD, bottom.top()),
+        Vec2::new(col, bottom.height()),
+    );
+    let read_r = Rect::from_min_max(Pos2::new(gram_r.right() + PAD, bottom.top()), bottom.max);
+    editor_pane(st, ui, laws_r, "LAWS", Id::of("laws-editor"), true);
+    editor_pane(st, ui, gram_r, "GRAMMAR", Id::of("grammar-editor"), false);
     readings_pane(st, ui, read_r);
 }
 
-fn editor_pane(st: &mut Station, ui: &mut Ui, r: Rect, title: &str, id: Id, is_laws: bool) {
+pub fn editor_pane(st: &mut Station, ui: &mut Ui, r: Rect, title: &str, id: Id, is_laws: bool) {
     let dirty = if is_laws {
         st.laws_editor.dirty()
     } else {
@@ -1060,7 +1098,7 @@ fn short(s: &str) -> String {
     }
 }
 
-fn readings_pane(st: &mut Station, ui: &mut Ui, r: Rect) {
+pub fn readings_pane(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
     let readings = law::read_all(&st.project, &st.laws.laws, st.selected_frame);
