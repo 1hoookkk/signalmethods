@@ -93,23 +93,3 @@ processing lens.
 - When delivering code implementations (C++, JUCE, Python), include exact
   log-polar conversion math, biquad state preservation, and DC gain
   normalization routines.
-
-## 6. STATION APPLICATION
-
-- Build the Station as a fully functional Rust authoring application.
-- `eframe`/`egui` may provide the native window, event delivery, font access,
-  clipboard access, and a canvas painter.
-- Do not use stock/default visible UI widgets. Do not use default buttons,
-  sliders, combo boxes, menus, tables, inspectors, property grids, or themed
-  panels. Every visible surface and control must be custom-painted and must use
-  explicit hit testing and input handling.
-- The visual language is a mature utility workstation: dense, legible,
-  restrained, response-led, and free of decorative consumer-app styling.
-- Laws and authoring grammar must be editable inside the Station. They are
-  operator-authored data, not hardcoded universal truths.
-- The Station must derive topology from the loaded object. Do not assume a
-  fixed number of axes, frames, corners, or sections. Support the topology the
-  current format actually declares, including cube and 4D objects.
-- Reference screenshots may guide layout, hierarchy, color discipline, and
-  interaction density only. They are stale and are not product specifications
-  or DSP evidence.
