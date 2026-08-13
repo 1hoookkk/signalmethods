@@ -177,13 +177,25 @@ mod tests {
     fn cumulative_is_the_running_sum_of_the_lanes_in_db() {
         let mut a = LaneValue::IDENTITY;
         a.set_roots(
-            &StageRoots { pole_hz: 400.0, pole_r: 0.95, zero_hz: 900.0, zero_r: 0.7, scale: 1.0 },
+            &StageRoots {
+                pole_hz: 400.0,
+                pole_r: 0.95,
+                zero_hz: 900.0,
+                zero_r: 0.7,
+                scale: 1.0,
+            },
             SR,
         )
         .unwrap();
         let mut b = LaneValue::IDENTITY;
         b.set_roots(
-            &StageRoots { pole_hz: 2000.0, pole_r: 0.93, zero_hz: 5000.0, zero_r: 0.6, scale: 1.0 },
+            &StageRoots {
+                pole_hz: 2000.0,
+                pole_r: 0.93,
+                zero_hz: 5000.0,
+                zero_r: 0.6,
+                scale: 1.0,
+            },
             SR,
         )
         .unwrap();
@@ -206,13 +218,25 @@ mod tests {
         let mut boost = LaneValue::IDENTITY;
         boost
             .set_roots(
-                &StageRoots { pole_hz: 1000.0, pole_r: 0.995, zero_hz: 1000.0, zero_r: 0.0, scale: 1.0 },
+                &StageRoots {
+                    pole_hz: 1000.0,
+                    pole_r: 0.995,
+                    zero_hz: 1000.0,
+                    zero_r: 0.0,
+                    scale: 1.0,
+                },
                 SR,
             )
             .unwrap();
         let mut cut = LaneValue::IDENTITY;
         cut.set_roots(
-            &StageRoots { pole_hz: 1000.0, pole_r: 0.0, zero_hz: 1000.0, zero_r: 0.995, scale: 1.0 },
+            &StageRoots {
+                pole_hz: 1000.0,
+                pole_r: 0.0,
+                zero_hz: 1000.0,
+                zero_r: 0.995,
+                scale: 1.0,
+            },
             SR,
         )
         .unwrap();
@@ -231,7 +255,13 @@ mod tests {
     fn analysis_never_normalises_the_response() {
         let mut loud = LaneValue::IDENTITY;
         loud.set_roots(
-            &StageRoots { pole_hz: 800.0, pole_r: 0.99, zero_hz: 8000.0, zero_r: 0.5, scale: 3.0 },
+            &StageRoots {
+                pole_hz: 800.0,
+                pole_r: 0.99,
+                zero_hz: 8000.0,
+                zero_r: 0.5,
+                scale: 3.0,
+            },
             SR,
         )
         .unwrap();

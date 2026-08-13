@@ -259,7 +259,9 @@ impl Cascade {
         }
         if self.grit > 0.0 {
             let frac = self.grit as f64;
-            if frac > self.activity { self.activity = frac; }
+            if frac > self.activity {
+                self.activity = frac;
+            }
         }
         self.boost += self.boost_delta;
         if !self.boost.is_finite() {

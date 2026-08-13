@@ -90,7 +90,10 @@ pub fn registers(st: &mut Station, ui: &mut Ui, r: Rect) {
         if selected {
             fill(
                 ui.p,
-                Rect::from_min_size(Pos2::new(r.left() + 4.0, y - 2.0), Vec2::new(r.width() - 8.0, 15.0)),
+                Rect::from_min_size(
+                    Pos2::new(r.left() + 4.0, y - 2.0),
+                    Vec2::new(r.width() - 8.0, 15.0),
+                ),
                 theme::SELECT,
             );
         }
@@ -114,7 +117,11 @@ pub fn registers(st: &mut Station, ui: &mut Ui, r: Rect) {
                 Pos2::new(r.left() + 82.0 + wi as f32 * 50.0, y),
                 format!("{w:04X}"),
                 theme::T_MICRO,
-                if v.is_identity() { theme::FAINT } else { theme::INK },
+                if v.is_identity() {
+                    theme::FAINT
+                } else {
+                    theme::INK
+                },
             );
         }
         text(
@@ -136,7 +143,13 @@ pub fn registers(st: &mut Station, ui: &mut Ui, r: Rect) {
 pub fn linters(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
-    text(ui.p, r.min + Vec2::new(8.0, 6.0), "LINTERS", theme::T_MICRO, theme::DIM);
+    text(
+        ui.p,
+        r.min + Vec2::new(8.0, 6.0),
+        "LINTERS",
+        theme::T_MICRO,
+        theme::DIM,
+    );
     divider(
         ui.p,
         Pos2::new(r.left() + 8.0, r.top() + 22.0),
@@ -182,13 +195,21 @@ pub fn linters(st: &mut Station, ui: &mut Ui, r: Rect) {
                 theme::GOOD
             },
         ),
-        None => ("pole radius, worst".into(), "no conjugate poles".into(), theme::DIM),
+        None => (
+            "pole radius, worst".into(),
+            "no conjugate poles".into(),
+            theme::DIM,
+        ),
     });
 
     rows.push((
         "real-axis root pairs".into(),
         format!("{real_pairs}"),
-        if real_pairs > 0 { theme::WARN } else { theme::DIM },
+        if real_pairs > 0 {
+            theme::WARN
+        } else {
+            theme::DIM
+        },
     ));
 
     rows.push(match worst {
@@ -231,8 +252,20 @@ pub fn linters(st: &mut Station, ui: &mut Ui, r: Rect) {
 
     let mut y = r.top() + 30.0;
     for (k, v, c) in rows {
-        text(ui.p, Pos2::new(r.left() + 8.0, y), &k, theme::T_MICRO, theme::DIM);
-        text(ui.p, Pos2::new(r.left() + 8.0, y + 12.0), &v, theme::T_SMALL, c);
+        text(
+            ui.p,
+            Pos2::new(r.left() + 8.0, y),
+            &k,
+            theme::T_MICRO,
+            theme::DIM,
+        );
+        text(
+            ui.p,
+            Pos2::new(r.left() + 8.0, y + 12.0),
+            &v,
+            theme::T_SMALL,
+            c,
+        );
         y += 32.0;
     }
 

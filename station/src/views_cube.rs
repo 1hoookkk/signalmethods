@@ -26,19 +26,39 @@ struct P3 {
 /// dimension.
 fn axis_direction(i: usize) -> P3 {
     match i {
-        0 => P3 { x: 1.0, y: 0.0, z: 0.0 },
-        1 => P3 { x: 0.0, y: 0.0, z: 1.0 },
-        2 => P3 { x: 0.0, y: 1.0, z: 0.0 },
+        0 => P3 {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        1 => P3 {
+            x: 0.0,
+            y: 0.0,
+            z: 1.0,
+        },
+        2 => P3 {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0,
+        },
         n => {
             let s = 0.62_f32.powi(n as i32 - 2);
-            P3 { x: 0.72 * s, y: 0.52 * s, z: 0.72 * s }
+            P3 {
+                x: 0.72 * s,
+                y: 0.52 * s,
+                z: 0.72 * s,
+            }
         }
     }
 }
 
 /// Position of a coordinate vector in viewing space, centred on the origin.
 fn position(coords: &[f32]) -> P3 {
-    let mut p = P3 { x: 0.0, y: 0.0, z: 0.0 };
+    let mut p = P3 {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
     for (i, &c) in coords.iter().enumerate() {
         let d = axis_direction(i);
         let t = c * 2.0 - 1.0;
@@ -59,10 +79,7 @@ fn project(p: P3, yaw: f32, pitch: f32, r: Rect, scale: f32) -> Pos2 {
     let z2 = p.y * sp + z1 * cp;
     let d = 5.0;
     let k = d / (d + z2);
-    Pos2::new(
-        r.center().x + x1 * scale * k,
-        r.center().y - y1 * scale * k,
-    )
+    Pos2::new(r.center().x + x1 * scale * k, r.center().y - y1 * scale * k)
 }
 
 fn depth(p: P3, yaw: f32, pitch: f32) -> f32 {
@@ -162,7 +179,12 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect) {
 
     // Corners, far ones first so near ones sit on top.
     let mut order: Vec<usize> = (0..n_frames).collect();
-    order.sort_by(|&a, &b| pts[b].1.partial_cmp(&pts[a].1).unwrap_or(std::cmp::Ordering::Equal));
+    order.sort_by(|&a, &b| {
+        pts[b]
+            .1
+            .partial_cmp(&pts[a].1)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     let mut clicked: Option<usize> = None;
     for &i in &order {
@@ -216,11 +238,7 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect) {
         Pos2::new(live.x, live.y + 9.0),
         theme::ACCENT,
     );
-    ui.p.circle_stroke(
-        live,
-        5.0,
-        eframe::egui::Stroke::new(1.5, theme::ACCENT),
-    );
+    ui.p.circle_stroke(live, 5.0, eframe::egui::Stroke::new(1.5, theme::ACCENT));
 
     if let Some(i) = clicked {
         st.selected_frame = i;

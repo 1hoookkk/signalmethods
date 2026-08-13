@@ -613,13 +613,21 @@ pub fn audit_kernel_surface(
         packing: packing_audit(&curves, &packed_curves),
     }
 }
-pub fn kernel_cascade_mag_db(corner: &[[f64; NUM_COEFFS]], frequency_hz: f64, sample_rate_hz: f64) -> f64 {
+pub fn kernel_cascade_mag_db(
+    corner: &[[f64; NUM_COEFFS]],
+    frequency_hz: f64,
+    sample_rate_hz: f64,
+) -> f64 {
     corner
         .iter()
         .map(|stage| kernel_stage_mag_db(stage, frequency_hz, sample_rate_hz))
         .sum()
 }
-pub fn biquad_cascade_mag_db(corner: &[[f64; NUM_COEFFS]], frequency_hz: f64, sample_rate_hz: f64) -> f64 {
+pub fn biquad_cascade_mag_db(
+    corner: &[[f64; NUM_COEFFS]],
+    frequency_hz: f64,
+    sample_rate_hz: f64,
+) -> f64 {
     corner
         .iter()
         .map(|stage| biquad_stage_mag_db(stage, frequency_hz, sample_rate_hz))

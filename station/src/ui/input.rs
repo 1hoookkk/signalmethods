@@ -6,7 +6,6 @@
 //! what keeps hover, press-and-drag-off, click-release and keyboard focus
 //! behaving the same way everywhere.
 
-use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 use eframe::egui::{Key, Painter, Pos2, Rect, Vec2};
@@ -32,9 +31,8 @@ impl Id {
 }
 
 /// What happened to one region this frame.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Response {
-    pub rect: Rect,
     pub hovered: bool,
     /// The button went down inside this region this frame.
     pub pressed: bool,
@@ -46,23 +44,6 @@ pub struct Response {
     /// Pointer position, when there is one.
     pub pointer: Option<Pos2>,
     pub double_clicked: bool,
-    pub scroll: f32,
-}
-
-impl Default for Response {
-    fn default() -> Self {
-        Self {
-            rect: Rect::NOTHING,
-            hovered: false,
-            pressed: false,
-            clicked: false,
-            held: false,
-            drag_delta: Vec2::ZERO,
-            pointer: None,
-            double_clicked: false,
-            scroll: 0.0,
-        }
-    }
 }
 
 impl Response {
@@ -87,18 +68,37 @@ pub struct InputFrame {
     pub paste: Option<String>,
     pub shift: bool,
     pub ctrl: bool,
-    pub alt: bool,
 }
 
 impl InputFrame {
     pub fn read(ctx: &eframe::egui::Context) -> Self {
         ctx.input(|i| {
             let keys = [
-                Key::ArrowLeft, Key::ArrowRight, Key::ArrowUp, Key::ArrowDown,
-                Key::Backspace, Key::Delete, Key::Enter, Key::Tab, Key::Escape,
-                Key::Home, Key::End, Key::PageUp, Key::PageDown,
-                Key::A, Key::C, Key::V, Key::X, Key::Z, Key::Y, Key::S,
-                Key::N, Key::O, Key::E, Key::R, Key::F,
+                Key::ArrowLeft,
+                Key::ArrowRight,
+                Key::ArrowUp,
+                Key::ArrowDown,
+                Key::Backspace,
+                Key::Delete,
+                Key::Enter,
+                Key::Tab,
+                Key::Escape,
+                Key::Home,
+                Key::End,
+                Key::PageUp,
+                Key::PageDown,
+                Key::A,
+                Key::C,
+                Key::V,
+                Key::X,
+                Key::Z,
+                Key::Y,
+                Key::S,
+                Key::N,
+                Key::O,
+                Key::E,
+                Key::R,
+                Key::F,
             ]
             .into_iter()
             .filter(|k| i.key_pressed(*k))
@@ -121,14 +121,15 @@ impl InputFrame {
                 down: i.pointer.primary_down(),
                 pressed: i.pointer.primary_pressed(),
                 released: i.pointer.primary_released(),
-                double_click: i.pointer.button_double_clicked(eframe::egui::PointerButton::Primary),
+                double_click: i
+                    .pointer
+                    .button_double_clicked(eframe::egui::PointerButton::Primary),
                 delta: i.pointer.delta(),
                 scroll: i.raw_scroll_delta,
                 keys,
                 text,
                 shift: i.modifiers.shift,
                 ctrl: i.modifiers.ctrl || i.modifiers.mac_cmd,
-                alt: i.modifiers.alt,
             }
         })
     }
@@ -144,7 +145,6 @@ impl InputFrame {
 pub struct UiState {
     pub active: Option<Id>,
     pub focus: Option<Id>,
-    pub scroll: HashMap<Id, f32>,
     /// Value a drag started from, so a drag is absolute rather than an
     /// accumulation of rounded deltas.
     pub drag_origin: Option<(Id, Pos2, f64)>,
@@ -155,10 +155,6 @@ pub struct UiState {
 impl UiState {
     pub fn begin_frame(&mut self) {
         self.claimed.clear();
-    }
-
-    pub fn has_focus(&self, id: Id) -> bool {
-        self.focus == Some(id)
     }
 }
 
@@ -191,10 +187,8 @@ impl<'a> Ui<'a> {
         let active = self.state.active == Some(id);
 
         let mut r = Response {
-            rect,
             hovered: inside && self.state.active.is_none(),
             pointer,
-            scroll: if inside { self.input.scroll.y } else { 0.0 },
             ..Default::default()
         };
 
@@ -221,7 +215,11 @@ impl<'a> Ui<'a> {
     pub fn background(&mut self, rect: Rect) {
         if self.input.pressed
             && self.state.active.is_none()
-            && self.input.pointer.map(|q| rect.contains(q)).unwrap_or(false)
+            && self
+                .input
+                .pointer
+                .map(|q| rect.contains(q))
+                .unwrap_or(false)
         {
             self.state.focus = None;
         }

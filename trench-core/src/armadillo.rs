@@ -176,12 +176,27 @@ mod tests {
     fn anchors_at_both_ends_of_the_domain() {
         for fs in RATES {
             let lo = display_lo_hz(fs);
-            close_rel(theta_from_hz(lo, fs), PI / 1024.0, 1e-15, "fs/2048 -> pi/1024");
-            close(theta_prime_from_hz(lo, fs).unwrap(), 0.0, 1e-12, "fs/2048 -> theta' = 0");
+            close_rel(
+                theta_from_hz(lo, fs),
+                PI / 1024.0,
+                1e-15,
+                "fs/2048 -> pi/1024",
+            );
+            close(
+                theta_prime_from_hz(lo, fs).unwrap(),
+                0.0,
+                1e-12,
+                "fs/2048 -> theta' = 0",
+            );
 
             let hi = display_hi_hz(fs);
             close_rel(theta_from_hz(hi, fs), PI, 1e-15, "fs/2 -> theta = pi");
-            close(theta_prime_from_hz(hi, fs).unwrap(), PI, 1e-12, "fs/2 -> theta' = pi");
+            close(
+                theta_prime_from_hz(hi, fs).unwrap(),
+                PI,
+                1e-12,
+                "fs/2 -> theta' = pi",
+            );
         }
     }
 
@@ -218,7 +233,12 @@ mod tests {
 
     #[test]
     fn the_radial_law_round_trips_and_is_strictly_monotone() {
-        close(r_prime_db_from_radius(0.0).unwrap(), 0.0, 1e-15, "r = 0 -> R' = 0 dB");
+        close(
+            r_prime_db_from_radius(0.0).unwrap(),
+            0.0,
+            1e-15,
+            "r = 0 -> R' = 0 dB",
+        );
 
         let mut prev = -1.0f64;
         for i in 0..=400 {
@@ -244,7 +264,12 @@ mod tests {
     #[test]
     fn the_radius_precision_ceiling_is_where_we_think_it_is() {
         let r = radius_from_r_prime_db(133.0).unwrap();
-        close(r_prime_db_from_radius(r).unwrap(), 133.0, 1e-9, "R' exact to 133 dB");
+        close(
+            r_prime_db_from_radius(r).unwrap(),
+            133.0,
+            1e-9,
+            "R' exact to 133 dB",
+        );
 
         let r = radius_from_r_prime_db(196.0).unwrap();
         let back = r_prime_db_from_radius(r).unwrap();
@@ -252,7 +277,12 @@ mod tests {
             (back - 196.0).abs() > 1e-9,
             "past ~140 dB the gap has lost its low bits"
         );
-        close(back, 196.0, 1e-5, "and degrades gracefully, not catastrophically");
+        close(
+            back,
+            196.0,
+            1e-5,
+            "and degrades gracefully, not catastrophically",
+        );
     }
 
     #[test]
@@ -270,7 +300,12 @@ mod tests {
         let mut d = 0.0f64;
         while d <= RIM_DB {
             let rho = display_radius_from_r_prime_db(d, rho_max);
-            close(r_prime_db_from_display_radius(rho, rho_max), d, 1e-12, "display round-trip");
+            close(
+                r_prime_db_from_display_radius(rho, rho_max),
+                d,
+                1e-12,
+                "display round-trip",
+            );
             d += 6.0;
         }
     }
@@ -282,7 +317,10 @@ mod tests {
         for fs in RATES {
             let lim = authoring_limits_at(fs);
             let tp = theta_prime_from_hz(lim.authoring_freq_max_hz, fs).unwrap();
-            assert!(tp < PI, "the authoring ceiling is strictly inside the semicircle");
+            assert!(
+                tp < PI,
+                "the authoring ceiling is strictly inside the semicircle"
+            );
             assert!(tp > 0.0, "the authoring ceiling is above the domain floor");
             close(
                 lim.display_freq_min_hz,
@@ -302,13 +340,34 @@ mod tests {
     #[test]
     fn the_domain_is_ten_octaves_and_tracks_fs() {
         for w in RATES.windows(2) {
-            assert!(display_lo_hz(w[1]) > display_lo_hz(w[0]), "floor rises with fs");
-            assert!(display_hi_hz(w[1]) > display_hi_hz(w[0]), "ceiling rises with fs");
+            assert!(
+                display_lo_hz(w[1]) > display_lo_hz(w[0]),
+                "floor rises with fs"
+            );
+            assert!(
+                display_hi_hz(w[1]) > display_hi_hz(w[0]),
+                "ceiling rises with fs"
+            );
         }
-        close_rel(display_lo_hz(48_000.0), 23.4375, 1e-15, "48k floor is 23.4375 Hz");
-        close_rel(display_hi_hz(48_000.0), 24_000.0, 1e-15, "48k ceiling is 24000 Hz");
+        close_rel(
+            display_lo_hz(48_000.0),
+            23.4375,
+            1e-15,
+            "48k floor is 23.4375 Hz",
+        );
+        close_rel(
+            display_hi_hz(48_000.0),
+            24_000.0,
+            1e-15,
+            "48k ceiling is 24000 Hz",
+        );
         for fs in RATES {
-            close_rel(display_hi_hz(fs) / display_lo_hz(fs), 1024.0, 1e-12, "ten octaves");
+            close_rel(
+                display_hi_hz(fs) / display_lo_hz(fs),
+                1024.0,
+                1e-12,
+                "ten octaves",
+            );
         }
     }
 
@@ -322,10 +381,19 @@ mod tests {
 
         assert_eq!(theta_prime_from_theta(nan), Err(ArmaError::NotFinite));
         assert_eq!(theta_prime_from_theta(inf), Err(ArmaError::NotFinite));
-        assert_eq!(theta_prime_from_theta(0.0), Err(ArmaError::NonPositiveAngle));
-        assert_eq!(theta_prime_from_theta(-1.0), Err(ArmaError::NonPositiveAngle));
+        assert_eq!(
+            theta_prime_from_theta(0.0),
+            Err(ArmaError::NonPositiveAngle)
+        );
+        assert_eq!(
+            theta_prime_from_theta(-1.0),
+            Err(ArmaError::NonPositiveAngle)
+        );
 
-        assert_eq!(theta_prime_from_hz(nan, 48_000.0), Err(ArmaError::NotFinite));
+        assert_eq!(
+            theta_prime_from_hz(nan, 48_000.0),
+            Err(ArmaError::NotFinite)
+        );
         assert_eq!(theta_prime_from_hz(1000.0, 0.0), Err(ArmaError::NotFinite));
         assert_eq!(theta_prime_from_hz(1000.0, nan), Err(ArmaError::NotFinite));
         assert_eq!(hz_from_prime(nan, 48_000.0), Err(ArmaError::NotFinite));
@@ -343,10 +411,21 @@ mod tests {
         let fs = 48_000.0;
         let below = display_lo_hz(fs) * 0.5; // one octave under the floor
         let tp = theta_prime_from_hz(below, fs).expect("below the floor still transforms");
-        close(tp, -PI / 10.0, 1e-12, "half the floor frequency is one octave below zero");
+        close(
+            tp,
+            -PI / 10.0,
+            1e-12,
+            "half the floor frequency is one octave below zero",
+        );
         assert!(!on_plot(tp), "a sub-floor pole is off the plot");
-        assert!(on_plot(theta_prime_from_hz(display_lo_hz(fs), fs).unwrap()), "the floor is on");
-        assert!(on_plot(theta_prime_from_hz(display_hi_hz(fs), fs).unwrap()), "Nyquist is on");
+        assert!(
+            on_plot(theta_prime_from_hz(display_lo_hz(fs), fs).unwrap()),
+            "the floor is on"
+        );
+        assert!(
+            on_plot(theta_prime_from_hz(display_hi_hz(fs), fs).unwrap()),
+            "Nyquist is on"
+        );
         assert!(
             !on_plot(theta_prime_from_hz(display_hi_hz(fs) * 1.5, fs).unwrap()),
             "past Nyquist is off the plot"
@@ -391,17 +470,33 @@ mod tests {
         // would mean the display had started deciding what the encoder may hold.
         // (20.0 on its own is legitimate — it is the decibel constant.)
         for token in [
-            "log2(hz / 20", "log2(hz/20", "(hz / 20.0).log2", // the 20 Hz-anchored law
-            "44100", "44_100", "48000", "48_000", "96000", "96_000", // a mirrored rate
-            "0.99997", "0.49", "0.499", // radius / frequency ceilings
-            "FREQ_MAX", "DEFAULT_AUTHORING_SR", "authoring_limits",
-            ".clamp(", ".min(", ".max(", // the exclusion must not become a clamp
+            "log2(hz / 20",
+            "log2(hz/20",
+            "(hz / 20.0).log2", // the 20 Hz-anchored law
+            "44100",
+            "44_100",
+            "48000",
+            "48_000",
+            "96000",
+            "96_000", // a mirrored rate
+            "0.99997",
+            "0.49",
+            "0.499", // radius / frequency ceilings
+            "FREQ_MAX",
+            "DEFAULT_AUTHORING_SR",
+            "authoring_limits",
+            ".clamp(",
+            ".min(",
+            ".max(", // the exclusion must not become a clamp
         ] {
             assert!(!code.contains(token), "policy token in the map: {token:?}");
         }
 
         // Positively: the domain is derived from fs, ten octaves below Nyquist.
-        assert!(code.contains("2048"), "the map derives its floor as fs/2048");
+        assert!(
+            code.contains("2048"),
+            "the map derives its floor as fs/2048"
+        );
         assert!(code.contains("fs: f64"), "the map takes fs as a parameter");
     }
 }

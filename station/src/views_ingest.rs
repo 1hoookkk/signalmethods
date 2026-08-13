@@ -22,7 +22,11 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect) {
     let left = Rect::from_min_size(r.min, Vec2::new(left_w, r.height()));
     let right = Rect::from_min_max(Pos2::new(left.right() + PAD, r.top()), r.max);
 
-    source_panel(st, ui, Rect::from_min_size(left.min, Vec2::new(left.width(), 232.0)));
+    source_panel(
+        st,
+        ui,
+        Rect::from_min_size(left.min, Vec2::new(left.width(), 232.0)),
+    );
     classify_panel(
         st,
         ui,
@@ -47,7 +51,13 @@ pub fn draw(st: &mut Station, ui: &mut Ui, r: Rect) {
 fn source_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
-    text(ui.p, r.min + Vec2::new(8.0, 6.0), "SOURCE", theme::T_MICRO, theme::DIM);
+    text(
+        ui.p,
+        r.min + Vec2::new(8.0, 6.0),
+        "SOURCE",
+        theme::T_MICRO,
+        theme::DIM,
+    );
     divider(
         ui.p,
         Pos2::new(r.left() + 8.0, r.top() + 22.0),
@@ -75,7 +85,9 @@ fn source_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             match st.project.origin {
                 crate::model::project::Origin::Native => "authored in Station".into(),
                 crate::model::project::Origin::PackedNative => "packed body, 560 bytes".into(),
-                crate::model::project::Origin::PackedLegacy => "packed body, 240 bytes legacy".into(),
+                crate::model::project::Origin::PackedLegacy => {
+                    "packed body, 240 bytes legacy".into()
+                }
             },
         ),
         (
@@ -87,15 +99,24 @@ fn source_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             ),
         ),
         ("lanes", format!("{} SOS lanes", st.project.lane_count())),
-        (
-            "word rate",
-            format!("{:.4} Hz", st.project.sample_rate()),
-        ),
+        ("word rate", format!("{:.4} Hz", st.project.sample_rate())),
     ];
     let mut y = r.top() + 64.0;
     for (k, v) in facts {
-        text(ui.p, Pos2::new(r.left() + 8.0, y), k, theme::T_MICRO, theme::DIM);
-        text_right(ui.p, Pos2::new(r.right() - 8.0, y), v, theme::T_MICRO, theme::INK);
+        text(
+            ui.p,
+            Pos2::new(r.left() + 8.0, y),
+            k,
+            theme::T_MICRO,
+            theme::DIM,
+        );
+        text_right(
+            ui.p,
+            Pos2::new(r.right() - 8.0, y),
+            v,
+            theme::T_MICRO,
+            theme::INK,
+        );
         y += 14.0;
     }
 
@@ -126,7 +147,13 @@ fn source_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         } else {
             format!("{rate:.0}")
         };
-        if widgets::button(ui, id.child(("rate", i)), b, label.trim_end_matches('0').trim_end_matches('.'), !current) {
+        if widgets::button(
+            ui,
+            id.child(("rate", i)),
+            b,
+            label.trim_end_matches('0').trim_end_matches('.'),
+            !current,
+        ) {
             st.checkpoint();
             st.project.retune(*rate);
             st.touch();
@@ -156,7 +183,9 @@ fn classify_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     );
 
     let sr = st.project.sample_rate();
-    let fi = st.selected_frame.min(st.project.frames.len().saturating_sub(1));
+    let fi = st
+        .selected_frame
+        .min(st.project.frames.len().saturating_sub(1));
     if st.project.frames.is_empty() {
         return;
     }
@@ -172,10 +201,9 @@ fn classify_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             RootPair::Conjugate { hz, r } => {
                 (format!("conjugate {hz:>7.0} Hz r{r:.4}"), theme::INK)
             }
-            RootPair::RealPair { root_a, root_b } => (
-                format!("real pair  {root_a:+.4} {root_b:+.4}"),
-                theme::WARN,
-            ),
+            RootPair::RealPair { root_a, root_b } => {
+                (format!("real pair  {root_a:+.4} {root_b:+.4}"), theme::WARN)
+            }
             RootPair::Degenerate => ("degenerate".to_string(), theme::FAINT),
         }
     };
@@ -187,13 +215,19 @@ fn classify_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         }
         let v = st.project.frames[fi].values[li];
         let g = v.geometry(sr);
-        let name = st.grammar.lane_name(li, &st.project.lanes[li].id.to_string());
+        let name = st
+            .grammar
+            .lane_name(li, &st.project.lanes[li].id.to_string());
         text(
             ui.p,
             Pos2::new(r.left() + 8.0, y),
             &name,
             theme::T_MICRO,
-            if li == st.selected_lane { theme::ACCENT } else { theme::INK },
+            if li == st.selected_lane {
+                theme::ACCENT
+            } else {
+                theme::INK
+            },
         );
         if v.is_identity() {
             text(

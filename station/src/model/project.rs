@@ -128,8 +128,7 @@ impl Project {
             return None;
         }
         let ordered = self.corner_ordered()?;
-        let corner_lanes: Vec<Vec<LaneValue>> =
-            ordered.iter().map(|f| f.values.clone()).collect();
+        let corner_lanes: Vec<Vec<LaneValue>> = ordered.iter().map(|f| f.values.clone()).collect();
         Some(super::interp::cascade_at(&corner_lanes, coords))
     }
 
@@ -235,9 +234,7 @@ impl Project {
     /// What the packed runtime format can honestly hold of this project.
     pub fn packed_capability(&self) -> PackedCapability {
         if self.topology.axis_count() != 3 {
-            return PackedCapability::Refused(ExportRefusal::AxisCount(
-                self.topology.axis_count(),
-            ));
+            return PackedCapability::Refused(ExportRefusal::AxisCount(self.topology.axis_count()));
         }
         if self.lane_count() > NUM_STAGES {
             return PackedCapability::Refused(ExportRefusal::LaneCount(self.lane_count()));

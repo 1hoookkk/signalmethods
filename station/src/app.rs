@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use eframe::egui::{self, Key, Pos2, Rect, Vec2};
+use eframe::egui::{self, Key};
 
 use crate::model::analysis::{self, CascadeResponse};
 use crate::model::history::History;
@@ -109,12 +109,11 @@ impl Station {
         );
         let display_axes = (0, 1.min(project.topology.axis_count().saturating_sub(1)));
 
-        let laws_text = std::fs::read_to_string(&laws_path).unwrap_or_else(|_| {
-            "{\n  \"laws\": []\n}\n".to_string()
-        });
+        let laws_text = std::fs::read_to_string(&laws_path)
+            .unwrap_or_else(|_| "{\n  \"laws\": []\n}\n".to_string());
         let grammar_path = laws_path.with_file_name("grammar.json");
-        let grammar_text = std::fs::read_to_string(&grammar_path)
-            .unwrap_or_else(|_| default_grammar_text());
+        let grammar_text =
+            std::fs::read_to_string(&grammar_path).unwrap_or_else(|_| default_grammar_text());
 
         let mut s = Self {
             project,
@@ -146,10 +145,6 @@ impl Station {
         s.apply_laws();
         s.apply_grammar();
         s
-    }
-
-    pub fn field(&mut self, id: Id) -> &mut FieldState {
-        self.fields.entry(id.0).or_default()
     }
 
     pub fn say(&mut self, msg: impl Into<String>, bad: bool) {
@@ -381,7 +376,7 @@ impl Station {
                 let path = if path.to_string_lossy().contains('.') {
                     path
                 } else {
-                    path.with_extension("station.json")
+                    path.with_extension(store::PROJECT_EXTENSION)
                 };
                 self.save_to(&path)
             }
@@ -391,7 +386,10 @@ impl Station {
     }
 
     pub fn undo(&mut self) {
-        let mut p = std::mem::replace(&mut self.project, Project::blank("", Topology::new(vec![]), 0));
+        let mut p = std::mem::replace(
+            &mut self.project,
+            Project::blank("", Topology::new(vec![]), 0),
+        );
         let ok = self.history.undo(&mut p);
         self.project = p;
         self.clamp_selection();
@@ -400,7 +398,10 @@ impl Station {
     }
 
     pub fn redo(&mut self) {
-        let mut p = std::mem::replace(&mut self.project, Project::blank("", Topology::new(vec![]), 0));
+        let mut p = std::mem::replace(
+            &mut self.project,
+            Project::blank("", Topology::new(vec![]), 0),
+        );
         let ok = self.history.redo(&mut p);
         self.project = p;
         self.clamp_selection();
@@ -412,8 +413,12 @@ impl Station {
         if self.coords.len() != self.project.topology.axis_count() {
             self.coords = vec![0.0; self.project.topology.axis_count()];
         }
-        self.selected_frame = self.selected_frame.min(self.project.frames.len().saturating_sub(1));
-        self.selected_lane = self.selected_lane.min(self.project.lane_count().saturating_sub(1));
+        self.selected_frame = self
+            .selected_frame
+            .min(self.project.frames.len().saturating_sub(1));
+        self.selected_lane = self
+            .selected_lane
+            .min(self.project.lane_count().saturating_sub(1));
         let n = self.project.topology.axis_count();
         if n > 0 {
             self.display_axes.0 = self.display_axes.0.min(n - 1);
@@ -518,19 +523,6 @@ pub const CMD_H: f32 = 26.0;
 pub const TAB_H: f32 = 26.0;
 pub const STATUS_H: f32 = 22.0;
 pub const PAD: f32 = 8.0;
-
-pub fn stack(area: Rect, heights: &[f32]) -> Vec<Rect> {
-    let mut y = area.top();
-    let mut out = Vec::new();
-    for &h in heights {
-        out.push(Rect::from_min_size(
-            Pos2::new(area.left(), y),
-            Vec2::new(area.width(), h),
-        ));
-        y += h;
-    }
-    out
-}
 
 /// A monotone warp of travel through a chosen midpoint.
 ///

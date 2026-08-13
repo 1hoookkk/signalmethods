@@ -17,7 +17,11 @@ pub fn button(ui: &mut Ui, id: Id, rect: Rect, label: &str, enabled: bool) -> bo
     let (bg, edge, ink) = if !enabled {
         (theme::PANEL, theme::RULE, theme::FAINT)
     } else if r.held {
-        (theme::mix(theme::PANEL, theme::ACCENT, 0.30), theme::ACCENT, theme::INK_HI)
+        (
+            theme::mix(theme::PANEL, theme::ACCENT, 0.30),
+            theme::ACCENT,
+            theme::INK_HI,
+        )
     } else if r.hovered {
         (theme::PANEL_HI, theme::RULE_HI, theme::INK_HI)
     } else {
@@ -49,7 +53,10 @@ pub fn toggle(ui: &mut Ui, id: Id, rect: Rect, label: &str, on: bool) -> bool {
         },
     );
     outline(ui.p, rect, edge);
-    let mark = Rect::from_min_size(rect.min + Vec2::new(5.0, rect.height() * 0.5 - 3.0), Vec2::splat(6.0));
+    let mark = Rect::from_min_size(
+        rect.min + Vec2::new(5.0, rect.height() * 0.5 - 3.0),
+        Vec2::splat(6.0),
+    );
     fill(ui.p, mark, if on { theme::ACCENT } else { theme::FAINT });
     text(
         ui.p,
@@ -64,8 +71,26 @@ pub fn toggle(ui: &mut Ui, id: Id, rect: Rect, label: &str, on: bool) -> bool {
 /// One of a set. Returns true when this tab is chosen.
 pub fn tab(ui: &mut Ui, id: Id, rect: Rect, index: &str, label: &str, active: bool) -> bool {
     let r = ui.region(id, rect);
-    fill(ui.p, rect, if active { theme::mix(theme::PANEL, theme::ACCENT, 0.16) } else { theme::PANEL });
-    outline(ui.p, rect, if active { theme::ACCENT } else if r.hovered { theme::RULE_HI } else { theme::RULE });
+    fill(
+        ui.p,
+        rect,
+        if active {
+            theme::mix(theme::PANEL, theme::ACCENT, 0.16)
+        } else {
+            theme::PANEL
+        },
+    );
+    outline(
+        ui.p,
+        rect,
+        if active {
+            theme::ACCENT
+        } else if r.hovered {
+            theme::RULE_HI
+        } else {
+            theme::RULE
+        },
+    );
     text(
         ui.p,
         rect.min + Vec2::new(8.0, rect.height() * 0.5 - 5.0),
@@ -92,14 +117,14 @@ pub enum Scale {
 }
 
 impl Scale {
-    fn to_t(self, v: f64, lo: f64, hi: f64) -> f64 {
+    fn norm(self, v: f64, lo: f64, hi: f64) -> f64 {
         match self {
             Scale::Linear => (v - lo) / (hi - lo),
             Scale::Log => (v.max(1e-12) / lo).log10() / (hi / lo).log10(),
         }
         .clamp(0.0, 1.0)
     }
-    fn from_t(self, t: f64, lo: f64, hi: f64) -> f64 {
+    fn denorm(self, t: f64, lo: f64, hi: f64) -> f64 {
         let t = t.clamp(0.0, 1.0);
         match self {
             Scale::Linear => lo + (hi - lo) * t,
@@ -134,9 +159,9 @@ pub fn slider(
                     // Fine drag: move a tenth of the pointer travel from where
                     // the drag began, so precision does not need a second control.
                     let dt = ((q.x - origin.x) / rect.width()) as f64 * 0.1;
-                    scale.from_t(scale.to_t(start, lo, hi) + dt, lo, hi)
+                    scale.denorm(scale.norm(start, lo, hi) + dt, lo, hi)
                 } else {
-                    scale.from_t(raw_t, lo, hi)
+                    scale.denorm(raw_t, lo, hi)
                 };
                 out = Some(v.clamp(lo.min(hi), hi.max(lo)));
             }
@@ -144,12 +169,26 @@ pub fn slider(
     }
 
     let shown = out.unwrap_or(value);
-    let t = scale.to_t(shown, lo, hi) as f32;
+    let t = scale.norm(shown, lo, hi) as f32;
     let mid = rect.center().y;
-    hairline(ui.p, Pos2::new(rect.left(), mid), Pos2::new(rect.right(), mid), theme::RULE);
+    hairline(
+        ui.p,
+        Pos2::new(rect.left(), mid),
+        Pos2::new(rect.right(), mid),
+        theme::RULE,
+    );
     let x = rect.left() + t * rect.width();
-    hairline(ui.p, Pos2::new(rect.left(), mid), Pos2::new(x, mid), theme::mix(theme::RULE, theme::ACCENT, 0.7));
-    let c = if r.held || r.hovered { theme::ACCENT } else { theme::INK };
+    hairline(
+        ui.p,
+        Pos2::new(rect.left(), mid),
+        Pos2::new(x, mid),
+        theme::mix(theme::RULE, theme::ACCENT, 0.7),
+    );
+    let c = if r.held || r.hovered {
+        theme::ACCENT
+    } else {
+        theme::INK
+    };
     ui.p.circle_filled(Pos2::new(x, mid), 3.5, c);
     out
 }
@@ -157,18 +196,10 @@ pub fn slider(
 /// A numeric readout that is also a control: drag vertically to change it,
 /// click to type into it. The typed form is owned by the caller so the field
 /// stays a pure function of state.
+#[derive(Default)]
 pub struct FieldState {
     pub editing: Option<String>,
     pub cursor: usize,
-}
-
-impl Default for FieldState {
-    fn default() -> Self {
-        Self {
-            editing: None,
-            cursor: 0,
-        }
-    }
 }
 
 pub struct FieldStyle {
@@ -308,13 +339,7 @@ pub fn number_field(
 }
 
 /// A selectable row. Returns true when chosen.
-pub fn row(
-    ui: &mut Ui,
-    id: Id,
-    rect: Rect,
-    selected: bool,
-    accent: Option<Color32>,
-) -> Response {
+pub fn row(ui: &mut Ui, id: Id, rect: Rect, selected: bool, accent: Option<Color32>) -> Response {
     let r = ui.region(id, rect);
     let bg = if selected {
         theme::SELECT
@@ -337,37 +362,6 @@ pub fn row(
     r
 }
 
-/// A vertical scroller. Returns the offset to draw content at, and paints its
-/// own bar. Content taller than the view is the only case that scrolls.
-pub fn scroll_area(ui: &mut Ui, id: Id, rect: Rect, content_h: f32) -> f32 {
-    let max = (content_h - rect.height()).max(0.0);
-    let cur = ui.state.scroll.get(&id).copied().unwrap_or(0.0);
-    let r = ui.region(id.child("scroll"), rect);
-    let mut off = cur;
-    if r.hovered || r.held {
-        off -= r.scroll;
-    }
-    off = off.clamp(0.0, max);
-    ui.state.scroll.insert(id, off);
-
-    if max > 0.0 {
-        let track = Rect::from_min_size(
-            Pos2::new(rect.right() - 3.0, rect.top()),
-            Vec2::new(3.0, rect.height()),
-        );
-        fill(ui.p, track, theme::mix(theme::BG, theme::RULE, 0.5));
-        let frac = rect.height() / content_h;
-        let h = (rect.height() * frac).max(18.0);
-        let y = rect.top() + (rect.height() - h) * (off / max);
-        fill(
-            ui.p,
-            Rect::from_min_size(Pos2::new(track.left(), y), Vec2::new(3.0, h)),
-            theme::RULE_HI,
-        );
-    }
-    off
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -375,16 +369,16 @@ mod tests {
     #[test]
     fn log_scale_round_trips_across_the_audio_band() {
         for v in [20.0, 100.0, 1000.0, 18_000.0] {
-            let t = Scale::Log.to_t(v, 20.0, 20_000.0);
-            let back = Scale::Log.from_t(t, 20.0, 20_000.0);
+            let t = Scale::Log.norm(v, 20.0, 20_000.0);
+            let back = Scale::Log.denorm(t, 20.0, 20_000.0);
             assert!((back - v).abs() < 1e-6, "{v} -> {t} -> {back}");
         }
     }
 
     #[test]
     fn linear_scale_round_trips_and_clamps() {
-        assert!((Scale::Linear.from_t(0.5, 0.0, 1.0) - 0.5).abs() < 1e-12);
-        assert_eq!(Scale::Linear.from_t(2.0, 0.0, 1.0), 1.0);
-        assert_eq!(Scale::Linear.to_t(-5.0, 0.0, 1.0), 0.0);
+        assert!((Scale::Linear.denorm(0.5, 0.0, 1.0) - 0.5).abs() < 1e-12);
+        assert_eq!(Scale::Linear.denorm(2.0, 0.0, 1.0), 1.0);
+        assert_eq!(Scale::Linear.norm(-5.0, 0.0, 1.0), 0.0);
     }
 }

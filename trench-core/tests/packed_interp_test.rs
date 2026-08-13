@@ -13,7 +13,7 @@
 
 mod tests {
     use trench_core::cascade::{NUM_COEFFS, NUM_STAGES};
-    use trench_core::minifloat::{LegacyCornerData, decode, encode, lerp_u16, PackedCorners};
+    use trench_core::minifloat::{decode, encode, lerp_u16, LegacyCornerData, PackedCorners};
 
     // ── synthetic cartridge with Q variation ──────────────────────────
 

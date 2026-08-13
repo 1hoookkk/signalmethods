@@ -28,7 +28,7 @@ pub const SELECT: Color32 = Color32::from_rgb(0x2a, 0x3d, 0x54);
 pub fn frame_color(index: usize, total: usize) -> Color32 {
     let half = (total / 2).max(1);
     let warm = index >= half && total > 1;
-    let hue = (index as f32 * 0.6180339887) % 1.0;
+    let hue = (index as f32 * 0.618_034) % 1.0;
     let (s, v) = if warm { (0.62, 0.90) } else { (0.52, 0.82) };
     hsv(hue, s, v)
 }
@@ -45,11 +45,7 @@ fn hsv(h: f32, s: f32, v: f32) -> Color32 {
         4 => (t, p, v),
         _ => (v, p, q),
     };
-    Color32::from_rgb(
-        (r * 255.0) as u8,
-        (g * 255.0) as u8,
-        (b * 255.0) as u8,
-    )
+    Color32::from_rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
 }
 
 /// Everything is monospace. Alignment carries the hierarchy here, not weight.
@@ -61,16 +57,11 @@ pub const T_MICRO: f32 = 9.0;
 pub const T_SMALL: f32 = 10.0;
 pub const T_BODY: f32 = 11.0;
 pub const T_HEAD: f32 = 13.0;
-pub const T_TITLE: f32 = 17.0;
 
 /// Fades a colour toward the background without an alpha layer, so overlapping
 /// marks keep exact colours.
 pub fn mix(a: Color32, b: Color32, t: f32) -> Color32 {
     let t = t.clamp(0.0, 1.0);
     let f = |x: u8, y: u8| (x as f32 + (y as f32 - x as f32) * t) as u8;
-    Color32::from_rgb(
-        f(a.r(), b.r()),
-        f(a.g(), b.g()),
-        f(a.b(), b.b()),
-    )
+    Color32::from_rgb(f(a.r(), b.r()), f(a.g(), b.g()), f(a.b(), b.b()))
 }

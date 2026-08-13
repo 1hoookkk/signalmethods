@@ -12,8 +12,8 @@
 //! different interiors, so stage correspondence MUST be solved from interior
 //! behaviour (this is what the tf-oracle fitter's correspondence search does).
 
-use trench_core::minifloat::LEGACY_STAGES as NUM_STAGES;
 use trench_core::minifloat::PackedCorners;
+use trench_core::minifloat::LEGACY_STAGES as NUM_STAGES;
 use trench_core::response::biquad_cascade_complex;
 use trench_core::stage_law::{words_from_geometry, RootPair, StageGeometry, DEFAULT_AUTHORING_SR};
 

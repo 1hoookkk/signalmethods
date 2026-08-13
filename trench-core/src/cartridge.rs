@@ -171,8 +171,7 @@ impl Cartridge {
             ));
         }
         const LABELS: [&str; LEGACY_CORNERS] = ["M0_Q0", "M100_Q0", "M0_Q100", "M100_Q100"];
-        let mut packed_words =
-            [[crate::minifloat::IDENTITY_STAGE; NUM_STAGES]; NUM_CORNERS];
+        let mut packed_words = [[crate::minifloat::IDENTITY_STAGE; NUM_STAGES]; NUM_CORNERS];
         let mut boosts = [1.0f64; NUM_CORNERS];
         for (idx, (kf, expected_label)) in raw.keyframes.iter().zip(LABELS).enumerate() {
             if kf.label != expected_label {

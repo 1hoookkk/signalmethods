@@ -117,8 +117,8 @@ mod tests {
                 ((ci >> 2) & 1) as f32,
             ];
             let got = cascade_at(&corners, &coords);
-            for si in 0..trench_core::cascade::NUM_STAGES {
-                assert_eq!(got[si].words, packed.words[ci][si], "corner {ci} stage {si}");
+            for (si, lane) in got.iter().enumerate() {
+                assert_eq!(lane.words, packed.words[ci][si], "corner {ci} stage {si}");
             }
         }
     }

@@ -65,7 +65,11 @@ fn bisection_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             "identity".into()
         },
         theme::T_SMALL,
-        if st.warp_on { theme::ACCENT } else { theme::DIM },
+        if st.warp_on {
+            theme::ACCENT
+        } else {
+            theme::DIM
+        },
     );
 
     // The curve itself, drawn on a square field: x is the operator's travel,
@@ -117,10 +121,7 @@ fn bisection_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     }
 
     // The anchor is dragged directly on the field.
-    let anchor = Pos2::new(
-        field.center().x,
-        field.bottom() - mid * field.height(),
-    );
+    let anchor = Pos2::new(field.center().x, field.bottom() - mid * field.height());
     let hit = Rect::from_center_size(anchor, Vec2::splat(22.0));
     let resp = ui.region(id.child("anchor"), hit);
     if resp.held {

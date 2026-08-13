@@ -125,10 +125,6 @@ impl TextEditor {
         self.text.len()
     }
 
-    pub fn line_count(&self) -> usize {
-        self.text.lines().count().max(1)
-    }
-
     /// Line and column (both 0-based) of a byte offset.
     pub fn line_col(&self, offset: usize) -> (usize, usize) {
         let upto = &self.text[..offset.min(self.text.len())];
@@ -254,7 +250,11 @@ impl TextEditor {
         outline(
             ui.p,
             rect,
-            if ui.focused(id) { theme::RULE_HI } else { theme::RULE },
+            if ui.focused(id) {
+                theme::RULE_HI
+            } else {
+                theme::RULE
+            },
         );
 
         let fs = theme::T_BODY;
@@ -272,15 +272,16 @@ impl TextEditor {
         }
         let mut line_len: Vec<usize> = self.text.split('\n').map(|l| l.len()).collect();
         let content_h = line_len.len() as f32 * lh;
-        self.scroll = self.scroll.clamp(0.0, (content_h - inner.height()).max(0.0));
+        self.scroll = self
+            .scroll
+            .clamp(0.0, (content_h - inner.height()).max(0.0));
 
         // Pointer places the caret, and dragging extends the selection.
         if let Some(q) = r.pointer {
             if r.pressed || (r.held && ui.input.down) {
                 let li = (((q.y - inner.top() + self.scroll) / lh).floor().max(0.0) as usize)
                     .min(line_len.len().saturating_sub(1));
-                let ci = (((q.x - inner.left()) / cw).round().max(0.0) as usize)
-                    .min(line_len[li]);
+                let ci = (((q.x - inner.left()) / cw).round().max(0.0) as usize).min(line_len[li]);
                 let off = self.offset_of(li, ci);
                 self.caret = off;
                 if r.pressed && !ui.input.shift {
@@ -314,10 +315,15 @@ impl TextEditor {
         let first = (self.scroll / lh).floor().max(0.0) as usize;
         let last = ((self.scroll + inner.height()) / lh).ceil() as usize + 1;
 
-        for li in first..last.min(lines.len()) {
+        for (li, line_text) in lines
+            .iter()
+            .enumerate()
+            .take(last.min(lines.len()))
+            .skip(first)
+        {
             let y = inner.top() + li as f32 * lh - self.scroll;
             let ls = self.line_start(li);
-            let le = ls + lines[li].len();
+            let le = ls + line_text.len();
 
             // Error rows are marked across the whole line, in the gutter and
             // behind the text, so a located failure is impossible to miss.
@@ -325,10 +331,7 @@ impl TextEditor {
                 let c = if e.fatal { theme::BAD } else { theme::WARN };
                 fill(
                     &clip,
-                    Rect::from_min_size(
-                        Pos2::new(rect.left(), y),
-                        Vec2::new(rect.width(), lh),
-                    ),
+                    Rect::from_min_size(Pos2::new(rect.left(), y), Vec2::new(rect.width(), lh)),
                     theme::mix(theme::PANEL, c, 0.16),
                 );
             }
@@ -360,7 +363,13 @@ impl TextEditor {
                     theme::FAINT
                 },
             );
-            text(&clip, Pos2::new(inner.left(), y), &lines[li], fs, theme::INK);
+            text(
+                &clip,
+                Pos2::new(inner.left(), y),
+                &lines[li],
+                fs,
+                theme::INK,
+            );
         }
 
         // Caret.

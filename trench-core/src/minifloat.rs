@@ -166,7 +166,9 @@ impl PackedCorners {
     }
     pub fn from_native_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
         if bytes.len() != BODY_BYTES {
-            return Err("native body must be exactly 560 bytes (8 corners × 7 stages × 5 u16 words)");
+            return Err(
+                "native body must be exactly 560 bytes (8 corners × 7 stages × 5 u16 words)",
+            );
         }
         let mut words = [[[0u16; NUM_COEFFS]; NUM_STAGES]; NUM_CORNERS];
         let mut i = 0;

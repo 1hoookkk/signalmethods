@@ -568,7 +568,10 @@ mod recompile {
                 back.zero_hz
             );
             assert!((back.pole_r - roots.pole_r).abs() < 1e-3);
-            assert!((back.zero_r - 1.0).abs() < 1e-9, "traveling null left the circle");
+            assert!(
+                (back.zero_r - 1.0).abs() < 1e-9,
+                "traveling null left the circle"
+            );
         }
     }
     #[test]

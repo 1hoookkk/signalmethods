@@ -108,7 +108,7 @@ impl Grammar {
     /// Grammar errors that are the grammar's own fault, not the project's.
     pub fn check(&self) -> Vec<String> {
         let mut out = Vec::new();
-        if !(self.display_lo_hz > 0.0) || !self.display_lo_hz.is_finite() {
+        if !self.display_lo_hz.is_finite() || self.display_lo_hz <= 0.0 {
             out.push("display_lo_hz must be a positive frequency".into());
         }
         if self.display_hi_hz <= self.display_lo_hz {
@@ -359,10 +359,18 @@ pub fn measure_body(p: &Project, q: &str) -> Option<(f64, String)> {
                 "{} and {} at {} {:.0}",
                 super::lane::LaneId(a as u32),
                 super::lane::LaneId(b as u32),
-                p.topology.axes.first().map(|x| x.name.clone()).unwrap_or_default(),
+                p.topology
+                    .axes
+                    .first()
+                    .map(|x| x.name.clone())
+                    .unwrap_or_default(),
                 at * 100.0
             );
-            Some(if q == "meet_st" { (d, note) } else { (at, note) })
+            Some(if q == "meet_st" {
+                (d, note)
+            } else {
+                (at, note)
+            })
         }
         _ => None,
     }
@@ -445,8 +453,20 @@ mod tests {
     fn laws_read_against_a_real_body_and_report_pass_or_fail() {
         let p = factory();
         let laws = vec![
-            Law { on: Scope::Frame, q: "order".into(), min: 0.0, max: 14.0, why: String::new() },
-            Law { on: Scope::Frame, q: "crown_db".into(), min: 1e9, max: 2e9, why: String::new() },
+            Law {
+                on: Scope::Frame,
+                q: "order".into(),
+                min: 0.0,
+                max: 14.0,
+                why: String::new(),
+            },
+            Law {
+                on: Scope::Frame,
+                q: "crown_db".into(),
+                min: 1e9,
+                max: 2e9,
+                why: String::new(),
+            },
         ];
         let rd = read_all(&p, &laws, 0);
         assert_eq!(rd.len(), 2);
@@ -467,10 +487,9 @@ mod tests {
 
     #[test]
     fn grammar_renames_axes_and_lanes_without_touching_the_project() {
-        let g: Grammar = serde_json::from_str(
-            r#"{"axis_names":["SWEEP"],"lane_names":["AIR","BODY"]}"#,
-        )
-        .unwrap();
+        let g: Grammar =
+            serde_json::from_str(r#"{"axis_names":["SWEEP"],"lane_names":["AIR","BODY"]}"#)
+                .unwrap();
         assert_eq!(g.axis_name(0, "M"), "SWEEP");
         assert_eq!(g.axis_name(1, "Q"), "Q");
         assert_eq!(g.lane_name(1, "L2"), "BODY");
@@ -479,7 +498,11 @@ mod tests {
 
     #[test]
     fn body_scope_measurement_works_at_a_non_three_axis_topology() {
-        let p = Project::blank("flat", Topology::new(vec![crate::model::topology::Axis::new("a", "A")]), 3);
+        let p = Project::blank(
+            "flat",
+            Topology::new(vec![crate::model::topology::Axis::new("a", "A")]),
+            3,
+        );
         // A pass-through object has no conjugate poles, so there is nothing to
         // meet — and that must be reported as no reading, not as zero.
         assert!(measure_body(&p, "meet_st").is_none());

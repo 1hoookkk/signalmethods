@@ -99,11 +99,7 @@ fn header(st: &mut Station, ui: &mut Ui, r: Rect) {
 
     // Dirty state is a mark, not a word, so it reads at a glance.
     if st.dirty() {
-        ui.p.circle_filled(
-            Pos2::new(r.right() - 12.0, r.center().y),
-            3.5,
-            theme::DIRTY,
-        );
+        ui.p.circle_filled(Pos2::new(r.right() - 12.0, r.center().y), 3.5, theme::DIRTY);
     }
     text_right(
         ui.p,
@@ -161,10 +157,7 @@ fn commands(st: &mut Station, ui: &mut Ui, r: Rect) {
     // Export capability is stated here, next to the button that would do it,
     // rather than discovered after a failure.
     let cap = st.project.packed_capability_text();
-    let refused = matches!(
-        st.project.packed_capability(),
-        PackedCapability::Refused(_)
-    );
+    let refused = matches!(st.project.packed_capability(), PackedCapability::Refused(_));
     text_right(
         ui.p,
         Pos2::new(r.right() - PAD, r.top() + 7.0),
@@ -326,11 +319,7 @@ pub fn frame_cards(st: &mut Station, ui: &mut Ui, r: Rect) {
             st.coords = addr.iter().map(|&c| c as f32).collect();
             st.touch();
         }
-        outline(
-            ui.p,
-            card,
-            if selected { color } else { theme::RULE },
-        );
+        outline(ui.p, card, if selected { color } else { theme::RULE });
 
         let plot = Rect::from_min_max(
             Pos2::new(card.left() + 8.0, card.top() + 20.0),
@@ -364,7 +353,12 @@ pub fn frame_cards(st: &mut Station, ui: &mut Ui, r: Rect) {
             1.6,
         );
 
-        paint::chip(ui.p, card.min + Vec2::new(6.0, 4.0), &format!("C{:02}", i + 1), color);
+        paint::chip(
+            ui.p,
+            card.min + Vec2::new(6.0, 4.0),
+            &format!("C{:02}", i + 1),
+            color,
+        );
         text(
             ui.p,
             card.min + Vec2::new(46.0, 5.0),
@@ -380,7 +374,6 @@ pub fn frame_cards(st: &mut Station, ui: &mut Ui, r: Rect) {
             theme::DIM,
         );
     }
-
 }
 
 pub fn frame_label(st: &Station, i: usize) -> String {
@@ -483,7 +476,13 @@ pub fn axis_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         let (lo_db, hi_db) = st.live.display_span();
         fill(ui.p, plot, theme::BG);
         outline(ui.p, plot, theme::RULE);
-        frequency_rules(ui.p, plot, st.grammar.display_lo_hz, st.grammar.display_hi_hz, true);
+        frequency_rules(
+            ui.p,
+            plot,
+            st.grammar.display_lo_hz,
+            st.grammar.display_hi_hz,
+            true,
+        );
         db_rules(ui.p, plot, lo_db, hi_db, true);
         curve(
             ui.p,
@@ -554,8 +553,28 @@ pub fn cumulative_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             hi_hz,
             lo_db,
             hi_db,
-            if selected { col } else { theme::mix(theme::PANEL, col, 0.55) },
+            if selected {
+                col
+            } else {
+                theme::mix(theme::PANEL, col, 0.55)
+            },
             if selected { 2.0 } else { 1.0 },
+        );
+    }
+    // The selected lane alone, so its own contribution can be told apart from
+    // the running product it sits inside.
+    if let Some(own) = st.live.per_lane.get(st.selected_lane) {
+        curve(
+            ui.p,
+            plot,
+            &st.live.grid,
+            own,
+            lo_hz,
+            hi_hz,
+            lo_db,
+            hi_db,
+            theme::WARN,
+            1.2,
         );
     }
     curve(
@@ -570,93 +589,13 @@ pub fn cumulative_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
         theme::INK_HI,
         2.0,
     );
-
-}
-
-/// Per-lane readings, including the intermediate peak that reveals build-up.
-pub fn lane_list(st: &mut Station, ui: &mut Ui, r: Rect) {
-    fill(ui.p, r, theme::PANEL);
-    outline(ui.p, r, theme::RULE);
     text(
         ui.p,
-        r.min + Vec2::new(8.0, 6.0),
-        "LANES  —  identity, not order",
-        theme::T_MICRO,
-        theme::DIM,
-    );
-    text_right(
-        ui.p,
-        Pos2::new(r.right() - 8.0, r.top() + 6.0),
-        format!("{} Hz", st.project.sample_rate() as i64),
+        Pos2::new(plot.left() + 4.0, plot.bottom() - 12.0),
+        "white total   ·   amber selected lane alone   ·   tinted running product",
         theme::T_MICRO,
         theme::FAINT,
     );
-
-    let id = Id::of("lanelist");
-    let row_h = 40.0;
-    let watch = st.grammar.pole_radius_watch;
-    let n = st.project.lane_count();
-    for i in 0..n {
-        let y = r.top() + 24.0 + i as f32 * row_h;
-        if y + row_h > r.bottom() {
-            break;
-        }
-        let row_r = Rect::from_min_size(
-            Pos2::new(r.left() + 4.0, y),
-            Vec2::new(r.width() - 8.0, row_h - 3.0),
-        );
-        let col = theme::frame_color(i, n);
-        let selected = i == st.selected_lane;
-        if widgets::row(ui, id.child(i), row_r, selected, Some(col)).clicked {
-            st.selected_lane = i;
-        }
-        let m = st.live.lane_metrics.get(i).copied();
-        let name = st
-            .grammar
-            .lane_name(i, &st.project.lanes[i].id.to_string());
-        text(
-            ui.p,
-            row_r.min + Vec2::new(8.0, 3.0),
-            &name,
-            theme::T_SMALL,
-            if selected { theme::INK_HI } else { theme::INK },
-        );
-        if let Some(m) = m {
-            let hot = m.pole_r.map(|x| x >= watch).unwrap_or(false);
-            text(
-                ui.p,
-                row_r.min + Vec2::new(8.0, 17.0),
-                match (m.pole_hz, m.pole_r) {
-                    (Some(hz), Some(rr)) => format!("pole {hz:>7.0} Hz  r {rr:.4}"),
-                    _ => if m.is_identity {
-                        "pass-through".to_string()
-                    } else {
-                        "no conjugate pole".to_string()
-                    },
-                },
-                theme::T_MICRO,
-                if hot { theme::BAD } else { theme::DIM },
-            );
-            text_right(
-                ui.p,
-                Pos2::new(row_r.right() - 8.0, row_r.top() + 3.0),
-                format!("{:+.1} dB", m.peak_db),
-                theme::T_MICRO,
-                theme::DIM,
-            );
-            text_right(
-                ui.p,
-                Pos2::new(row_r.right() - 8.0, row_r.top() + 17.0),
-                format!("so far {:+.1}", m.cumulative_peak_db),
-                theme::T_MICRO,
-                if m.cumulative_peak_db > 24.0 {
-                    theme::WARN
-                } else {
-                    theme::FAINT
-                },
-            );
-        }
-    }
 }
 
 // ── 03 LANES ────────────────────────────────────────────────────────────
@@ -694,7 +633,12 @@ pub fn lane_matrix_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     for fi in 0..n_f {
         let x = grid.left() + fi as f32 * cw;
         let c = theme::frame_color(fi, n_f);
-        paint::chip(ui.p, Pos2::new(x + 2.0, matrix_r.top() + 22.0), &format!("C{:02}", fi + 1), c);
+        paint::chip(
+            ui.p,
+            Pos2::new(x + 2.0, matrix_r.top() + 22.0),
+            &format!("C{:02}", fi + 1),
+            c,
+        );
     }
 
     let id = Id::of("matrix");
@@ -702,7 +646,9 @@ pub fn lane_matrix_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
     let watch = st.grammar.pole_radius_watch;
     for li in 0..n_l {
         let y = grid.top() + li as f32 * rh;
-        let name = st.grammar.lane_name(li, &st.project.lanes[li].id.to_string());
+        let name = st
+            .grammar
+            .lane_name(li, &st.project.lanes[li].id.to_string());
         text(
             ui.p,
             Pos2::new(matrix_r.left() + 8.0, y + 4.0),
@@ -747,7 +693,6 @@ pub fn lane_matrix_panel(st: &mut Station, ui: &mut Ui, r: Rect) {
             );
         }
     }
-
 }
 
 /// Pole, zero and scale for the selected lane at the selected frame, in the
@@ -756,14 +701,20 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
     fill(ui.p, r, theme::PANEL);
     outline(ui.p, r, theme::RULE);
 
-    let fi = st.selected_frame.min(st.project.frames.len().saturating_sub(1));
-    let li = st.selected_lane.min(st.project.lane_count().saturating_sub(1));
+    let fi = st
+        .selected_frame
+        .min(st.project.frames.len().saturating_sub(1));
+    let li = st
+        .selected_lane
+        .min(st.project.lane_count().saturating_sub(1));
     if st.project.frames.is_empty() || st.project.lane_count() == 0 {
         return;
     }
     let sr = st.project.sample_rate();
     let lane = st.project.frames[fi].values[li];
-    let name = st.grammar.lane_name(li, &st.project.lanes[li].id.to_string());
+    let name = st
+        .grammar
+        .lane_name(li, &st.project.lanes[li].id.to_string());
     text(
         ui.p,
         r.min + Vec2::new(8.0, 6.0),
@@ -800,7 +751,10 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
         );
         // Authoring a pass-through lane into a real one, without inventing a
         // filter role for it.
-        let b = Rect::from_min_size(Pos2::new(r.left() + 8.0, r.bottom() - 32.0), Vec2::new(150.0, 22.0));
+        let b = Rect::from_min_size(
+            Pos2::new(r.left() + 8.0, r.bottom() - 32.0),
+            Vec2::new(150.0, 22.0),
+        );
         if widgets::button(ui, Id::of("seed-lane"), b, "AUTHOR A POLE", true) {
             st.checkpoint();
             let seed = trench_core::stage_law::StageRoots {
@@ -933,11 +887,26 @@ pub fn root_editor(st: &mut Station, ui: &mut Ui, r: Rect) {
             ("lane peak", format!("{:+.2} dB", m.peak_db)),
             ("cascade so far", format!("{:+.2} dB", m.cumulative_peak_db)),
             ("lane at DC", format!("{:+.2} dB", m.dc_db)),
+            (
+                "zero",
+                match (m.zero_hz, m.zero_r) {
+                    // A zero on the circle is a hard notch; a zero collapsing
+                    // toward the origin is a lane dissolving into all-pole.
+                    (Some(hz), Some(zr)) => format!("{hz:.0} Hz  r {zr:.4}"),
+                    _ => "not a conjugate pair".into(),
+                },
+            ),
         ];
         for (i, (k, v)) in readings.iter().enumerate() {
-            let x = r.left() + 8.0 + i as f32 * 190.0;
+            let x = r.left() + 8.0 + i as f32 * 150.0;
             text(ui.p, Pos2::new(x, y), *k, theme::T_MICRO, theme::DIM);
-            text(ui.p, Pos2::new(x, y + 12.0), v, theme::T_SMALL, theme::INK_HI);
+            text(
+                ui.p,
+                Pos2::new(x, y + 12.0),
+                v,
+                theme::T_SMALL,
+                theme::INK_HI,
+            );
         }
         text(
             ui.p,
@@ -967,10 +936,7 @@ fn topology_workspace(st: &mut Station, ui: &mut Ui, r: Rect) {
     cumulative_panel(
         st,
         ui,
-        Rect::from_min_max(
-            Pos2::new(left.left(), left.top() + cube_h + PAD),
-            left.max,
-        ),
+        Rect::from_min_max(Pos2::new(left.left(), left.top() + cube_h + PAD), left.max),
     );
 
     let axis_h = 150.0;
@@ -1032,7 +998,13 @@ pub fn editor_pane(st: &mut Station, ui: &mut Ui, r: Rect, title: &str, id: Id, 
     } else {
         st.grammar_editor.dirty()
     };
-    text(ui.p, r.min + Vec2::new(2.0, 0.0), title, theme::T_MICRO, theme::DIM);
+    text(
+        ui.p,
+        r.min + Vec2::new(2.0, 0.0),
+        title,
+        theme::T_MICRO,
+        theme::DIM,
+    );
     if dirty {
         ui.p.circle_filled(Pos2::new(r.left() + 60.0, r.top() + 5.0), 3.0, theme::DIRTY);
         text(
@@ -1103,7 +1075,13 @@ pub fn readings_pane(st: &mut Station, ui: &mut Ui, r: Rect) {
     outline(ui.p, r, theme::RULE);
     let readings = law::read_all(&st.project, &st.laws.laws, st.selected_frame);
     let pass = readings.iter().filter(|x| x.ok).count();
-    text(ui.p, r.min + Vec2::new(8.0, 6.0), "READINGS", theme::T_MICRO, theme::DIM);
+    text(
+        ui.p,
+        r.min + Vec2::new(8.0, 6.0),
+        "READINGS",
+        theme::T_MICRO,
+        theme::DIM,
+    );
     text_right(
         ui.p,
         Pos2::new(r.right() - 8.0, r.top() + 6.0),
@@ -1125,7 +1103,13 @@ pub fn readings_pane(st: &mut Station, ui: &mut Ui, r: Rect) {
             break;
         }
         let c = if rd.ok { theme::GOOD } else { theme::BAD };
-        text(ui.p, Pos2::new(r.left() + 8.0, y), &rd.law.q, theme::T_SMALL, theme::INK);
+        text(
+            ui.p,
+            Pos2::new(r.left() + 8.0, y),
+            &rd.law.q,
+            theme::T_SMALL,
+            theme::INK,
+        );
         text_right(
             ui.p,
             Pos2::new(r.right() - 8.0, y),

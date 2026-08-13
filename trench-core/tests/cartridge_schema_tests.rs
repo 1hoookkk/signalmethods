@@ -128,7 +128,7 @@ fn cartridge_with_typed_spatial_profile_parses() {
         .as_ref()
         .expect("spatial_profile present");
 
-    assert!((sp.azimuth - 0.523_598_78_f32).abs() < 1e-5);
+    assert!((sp.azimuth - std::f32::consts::FRAC_PI_6).abs() < 1e-5);
     assert_eq!(sp.distance, 1.0);
     assert_eq!(sp.elevation, 0.0);
 

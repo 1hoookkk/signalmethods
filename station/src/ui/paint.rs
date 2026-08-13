@@ -1,7 +1,7 @@
 //! Drawing primitives. Every mark the Station puts on screen goes through this
 //! file; egui supplies a painter and nothing else.
 
-use eframe::egui::{Align2, Color32, FontId, Painter, Pos2, Rect, Stroke, Vec2};
+use eframe::egui::{Align2, Color32, Painter, Pos2, Rect, Stroke, Vec2};
 
 use super::theme;
 
@@ -62,13 +62,6 @@ pub fn divider(p: &Painter, a: Pos2, b: Pos2, c: Color32) {
     p.circle_filled(b, 1.5, c);
 }
 
-pub fn shrink(r: Rect, x: f32, y: f32) -> Rect {
-    Rect::from_min_size(
-        r.min + Vec2::new(x, y),
-        Vec2::new((r.width() - 2.0 * x).max(0.0), (r.height() - 2.0 * y).max(0.0)),
-    )
-}
-
 /// Maps a frequency onto a log x-axis.
 pub fn x_of_hz(r: Rect, hz: f64, lo: f64, hi: f64) -> f32 {
     r.left() + ((hz / lo).log10() / (hi / lo).log10()).clamp(0.0, 1.0) as f32 * r.width()
@@ -81,7 +74,12 @@ pub fn frequency_rules(p: &Painter, r: Rect, lo: f64, hi: f64, labels: bool) {
             continue;
         }
         let x = x_of_hz(r, d, lo, hi);
-        hairline(p, Pos2::new(x, r.top()), Pos2::new(x, r.bottom()), theme::mix(theme::BG, theme::RULE, 0.55));
+        hairline(
+            p,
+            Pos2::new(x, r.top()),
+            Pos2::new(x, r.bottom()),
+            theme::mix(theme::BG, theme::RULE, 0.55),
+        );
         if labels {
             let s = if d >= 1_000.0 {
                 format!("{:.0}k", d / 1000.0)
@@ -117,7 +115,11 @@ pub fn db_rules(p: &Painter, r: Rect, lo_db: f64, hi_db: f64, labels: bool) {
             p,
             Pos2::new(r.left(), y),
             Pos2::new(r.right(), y),
-            if zero { theme::RULE_HI } else { theme::mix(theme::BG, theme::RULE, 0.55) },
+            if zero {
+                theme::RULE_HI
+            } else {
+                theme::mix(theme::BG, theme::RULE, 0.55)
+            },
         );
         if labels {
             text(
@@ -138,6 +140,9 @@ pub fn y_of_db(r: Rect, db: f64, lo: f64, hi: f64) -> f32 {
 }
 
 /// A response curve over a log-frequency grid.
+// A plot needs its rect, its data, and both axis spans; bundling them into a
+// struct would only move the same values one level down.
+#[allow(clippy::too_many_arguments)]
 pub fn curve(
     p: &Painter,
     r: Rect,
@@ -165,6 +170,7 @@ pub fn curve(
 }
 
 /// Filled area under a curve, the reference language's response fill.
+#[allow(clippy::too_many_arguments)]
 pub fn curve_fill(
     p: &Painter,
     r: Rect,
@@ -200,28 +206,4 @@ pub fn chip(p: &Painter, at: Pos2, s: &str, c: Color32) -> Rect {
     outline(p, r, theme::mix(theme::BG, c, 0.5));
     text(p, r.min + Vec2::new(4.0, 2.0), s, theme::T_MICRO, c);
     r
-}
-
-pub fn label_value(
-    p: &Painter,
-    r: Rect,
-    key: &str,
-    value: impl ToString,
-    c: Color32,
-) {
-    text(p, r.left_top(), key, theme::T_MICRO, theme::DIM);
-    text_right(p, r.right_top(), value, theme::T_SMALL, c);
-}
-
-/// Dotted leader used between a key and its value in dense readouts.
-pub fn leader(p: &Painter, a: Pos2, b: Pos2, c: Color32) {
-    let mut x = a.x;
-    while x < b.x {
-        p.circle_filled(Pos2::new(x, a.y), 0.5, c);
-        x += 4.0;
-    }
-}
-
-pub fn font(size: f32) -> FontId {
-    theme::mono(size)
 }

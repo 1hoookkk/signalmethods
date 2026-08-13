@@ -68,8 +68,7 @@ pub fn save(p: &Project, path: &Path) -> Result<(), String> {
 }
 
 pub fn load(path: &Path) -> Result<Project, String> {
-    let text =
-        std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
     from_json(&text)
 }
 

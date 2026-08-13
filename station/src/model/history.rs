@@ -140,7 +140,10 @@ mod tests {
         edit(&mut p, 9);
         assert!(h.dirty(&p));
         h.undo(&mut p);
-        assert!(!h.dirty(&p), "undo returned to the saved state but reads dirty");
+        assert!(
+            !h.dirty(&p),
+            "undo returned to the saved state but reads dirty"
+        );
     }
 
     #[test]
