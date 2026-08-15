@@ -41,10 +41,24 @@ impl Workspace {
     }
 }
 
+#[derive(Clone, Copy)]
+pub struct PolePair {
+    pub hz: f64,
+    pub r: f64,
+}
+
+#[derive(Clone, Copy)]
+pub struct ZeroPair {
+    pub hz: f64,
+    pub r: f64,
+}
+
 #[derive(Clone)]
 pub struct Document {
     pub target: Option<Target>,
     pub workspace: Workspace,
+    pub pole_candidates: Vec<PolePair>,
+    pub zero_candidates: Vec<ZeroPair>,
     pub field: Field,
 }
 
@@ -53,6 +67,8 @@ impl Document {
         Self {
             target: None,
             workspace: Workspace::empty(),
+            pole_candidates: Vec::new(),
+            zero_candidates: Vec::new(),
             field: Field::empty(),
         }
     }

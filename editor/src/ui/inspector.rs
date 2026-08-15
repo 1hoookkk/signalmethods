@@ -162,8 +162,13 @@ fn pairing_ladder(
     let mut dragging: Option<usize> = None;
     for si in 0..NUM_STAGES {
         let row = rows[si];
-        let ink = theme::LANES[si % 7];
-        let lane = session.active_lanes()[si];
+        let (preview, mask) = session.preview();
+        let ink = if mask[si] {
+            theme::CHROME_DK
+        } else {
+            theme::LANES[si % 7]
+        };
+        let lane = preview[si];
         let selected = session.selection.section == Some(si);
         let cy = row.center().y;
         paint::label(
@@ -231,6 +236,9 @@ fn pairing_ladder(
         if rresp.hovered() {
             *legend = "L select".into();
         }
+        if mask[si] {
+            continue;
+        }
         let zresp = ui.interact(zrect, Id::new(("pair.zero", si)), Sense::click_and_drag());
         if zresp.hovered() {
             *legend = "L drag to another row — swaps zero pairs, the whole never moves".into();
@@ -285,15 +293,24 @@ fn draw_cascade_card(
         theme::INK,
     );
     let active = session
-        .active_lanes()
+        .document
+        .workspace
+        .lanes
         .iter()
         .filter(|l| l.pole_r > 0.0 || l.zero_r > 0.0)
         .count();
+    let np = session.document.pole_candidates.len();
+    let nz = session.document.zero_candidates.len();
+    let line = if np + nz > 0 {
+        format!("{active} / {}   poles {np} · zeros {nz}", NUM_STAGES)
+    } else {
+        format!("{active} / {}", NUM_STAGES)
+    };
     paint::label(
         painter,
         Pos2::new(inner.left() + 8.0, l2),
         Align2::LEFT_CENTER,
-        &format!("{active} / {}", NUM_STAGES),
+        &line,
         theme::SMALL,
         theme::INK_DIM,
     );
@@ -366,11 +383,13 @@ fn draw_card(
     let ink = theme::LANES[si % 7];
     painter.rect_filled(rect, 0.0, theme::CHROME);
     let inner = paint::raised(painter, rect);
-    let lane = session.active_lanes()[si];
+    let (preview, mask) = session.preview();
+    let lane = preview[si];
+    let provisional = mask[si];
     let law = session.document.workspace.laws[si];
     let selected = session.selection.section == Some(si);
-    let have_pole = lane.pole_r > 0.0;
-    let have_zero = lane.zero_r > 0.0;
+    let have_pole = !provisional && lane.pole_r > 0.0;
+    let have_zero = !provisional && lane.zero_r > 0.0;
     let idle = !have_pole && !have_zero;
     let ceiling = max_contiguous_pole_radius();
     let value_ink = if idle { theme::INK_DIM } else { theme::INK };

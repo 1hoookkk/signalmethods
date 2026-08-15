@@ -48,13 +48,19 @@ pub fn draw(
     );
     let gap = 5.0;
     let w = (inner.width() - gap * (NUM_STAGES as f32 - 1.0)) / NUM_STAGES as f32;
+    let (preview, mask) = session.preview();
+    let mut pnum = 0;
     for si in 0..NUM_STAGES {
         let chip = Rect::from_min_max(
             Pos2::new(inner.left() + si as f32 * (w + gap), inner.top()),
             Pos2::new(inner.left() + si as f32 * (w + gap) + w, inner.bottom()),
         );
         let ink = theme::LANES[si % 7];
-        let lane = session.active_lanes()[si];
+        let lane = preview[si];
+        let provisional = mask[si];
+        if provisional {
+            pnum += 1;
+        }
         let law = session.document.workspace.laws[si];
         let selected = session.selection.section == Some(si);
         let idle = lane.pole_r <= 0.0 && lane.zero_r <= 0.0;
@@ -69,15 +75,35 @@ pub fn draw(
             Pos2::new(ci.left() + 3.0, ci.top() + 3.0),
             Pos2::new(ci.left() + 9.0, ci.bottom() - 3.0),
         );
-        painter.rect_filled(swatch, 0.0, if idle { theme::faded(ink, 60) } else { ink });
+        painter.rect_filled(
+            swatch,
+            0.0,
+            if provisional {
+                theme::CHROME_DK
+            } else if idle {
+                theme::faded(ink, 60)
+            } else {
+                ink
+            },
+        );
         painter.rect_stroke(swatch, 0.0, Stroke::new(1.0, theme::CHROME_DEEP));
         paint::label(
             painter,
             Pos2::new(swatch.right() + 5.0, ci.center().y),
             Align2::LEFT_CENTER,
-            &format!("{}", si + 1),
+            &(if provisional {
+                format!("p{pnum}")
+            } else {
+                format!("{}", si + 1)
+            }),
             theme::SMALL,
-            if selected { theme::CHROME_LT } else { theme::INK },
+            if provisional {
+                theme::INK_DIM
+            } else if selected {
+                theme::CHROME_LT
+            } else {
+                theme::INK
+            },
         );
         if !idle {
             let spark = Rect::from_min_max(
@@ -86,6 +112,7 @@ pub fn draw(
             );
             if spark.width() > 24.0 {
                 let row = lane.biquad_at(crate::engine::response::SR);
+                let spark_alpha: u8 = if provisional { 90 } else if selected { 255 } else { 175 };
                 let n = 48;
                 let mut vals = Vec::with_capacity(n);
                 let mut lo = f64::INFINITY;
@@ -119,7 +146,7 @@ pub fn draw(
                     .collect();
                 painter.add(eframe::egui::Shape::line(
                     pts,
-                    Stroke::new(1.0, theme::faded(ink, if selected { 255 } else { 175 })),
+                    Stroke::new(1.0, theme::faded(ink, spark_alpha)),
                 ));
             }
         }

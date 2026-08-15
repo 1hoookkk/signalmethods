@@ -119,6 +119,35 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
             Command::SetTarget(idx)
         };
         command::apply(&mut session, services, cmd)?;
+        if fx.get("hand_zeros").and_then(|v| v.as_bool()).unwrap_or(false) {
+            let poles: Vec<f64> = session
+                .document
+                .pole_candidates
+                .iter()
+                .map(|p| p.hz)
+                .collect();
+            for (k, &hz) in poles.iter().enumerate() {
+                command::apply(
+                    &mut session,
+                    services,
+                    Command::AssignSection { section: k, hz },
+                )?;
+                let next = if k + 1 < poles.len() {
+                    poles[k + 1]
+                } else {
+                    (hz * 3.0).min(15_000.0)
+                };
+                command::apply(
+                    &mut session,
+                    services,
+                    Command::SetZero {
+                        section: k,
+                        hz: (hz * next).sqrt(),
+                        r: 1.0,
+                    },
+                )?;
+            }
+        }
     }
     Ok(session)
 }

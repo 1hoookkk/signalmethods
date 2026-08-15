@@ -38,7 +38,7 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         Pos2::new(panel_rect.left() - PAD, nav_rect.top() - PAD),
     );
     let well = paint::well(&painter, well_frame);
-    let well_response = ui.interact(well, Id::new("response.well"), Sense::hover());
+    let well_response = ui.interact(well, Id::new("response.well"), Sense::click());
 
     let ghost: Vec<(f64, f64)> = session
         .document
@@ -244,11 +244,17 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         }
     }
 
+    let (preview_lanes, preview_mask) = session.preview();
     if let Some(rows) = session.current_rows() {
         let comp_at = |hz: f64| -> f64 { rows.iter().map(|r| row_db(r, hz, SR)).sum() };
         for si in 0..trench_core::cascade::NUM_STAGES {
-            let lane = session.active_lanes()[si];
-            let ink = theme::LANES[si % 7];
+            let lane = preview_lanes[si];
+            let provisional = preview_mask[si];
+            let ink = if provisional {
+                theme::faded(theme::CURSOR, 140)
+            } else {
+                theme::LANES[si % 7]
+            };
             if lane.pole_r > 0.0 {
                 let hx = paint::log_x(lane.pole_hz, well);
                 let hy = paint::db_y(
@@ -261,9 +267,12 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                 let hrect = Rect::from_center_size(Pos2::new(hx, hy), eframe::egui::vec2(14.0, 14.0));
                 painter.circle_filled(Pos2::new(hx, hy), 4.5, ink);
                 painter.circle_stroke(Pos2::new(hx, hy), 4.5, Stroke::new(1.0, theme::CURSOR));
+                if provisional {
+                    continue;
+                }
                 let resp = ui.interact(hrect, Id::new(("well.pole", si)), Sense::click_and_drag());
                 if resp.hovered() {
-                    legend = "L drag · wheel width".into();
+                    legend = "L drag · wheel width · R remove".into();
                     let wheel = ui.input(|i| i.raw_scroll_delta.y);
                     if wheel != 0.0 {
                         cmds.push(Command::SetPole {
@@ -273,6 +282,10 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                                 .clamp(0.05, trench_core::stage_law::max_contiguous_pole_radius()),
                         });
                     }
+                }
+                if resp.secondary_clicked() {
+                    cmds.push(Command::BeginEdit);
+                    cmds.push(Command::SetPole { section: si, hz: 0.0, r: 0.0 });
                 }
                 if resp.drag_started() {
                     cmds.push(Command::BeginEdit);
@@ -302,7 +315,7 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                 painter.circle_stroke(Pos2::new(hx, hy), 4.5, Stroke::new(1.6, ink));
                 let resp = ui.interact(hrect, Id::new(("well.zero", si)), Sense::click_and_drag());
                 if resp.hovered() {
-                    legend = "L drag · wheel depth".into();
+                    legend = "L drag · wheel depth · R remove".into();
                     let wheel = ui.input(|i| i.raw_scroll_delta.y);
                     if wheel != 0.0 {
                         cmds.push(Command::SetZero {
@@ -311,6 +324,10 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                             r: (lane.zero_r - wheel as f64 * 0.0002).clamp(0.05, 1.0),
                         });
                     }
+                }
+                if resp.secondary_clicked() {
+                    cmds.push(Command::BeginEdit);
+                    cmds.push(Command::SetZero { section: si, hz: 0.0, r: 0.0 });
                 }
                 if resp.drag_started() {
                     cmds.push(Command::BeginEdit);
@@ -331,7 +348,20 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
     }
 
     let hover = well_response.hover_pos().filter(|p| well.contains(*p));
+    if well_response.double_clicked() {
+        if let (Some(si), Some(p)) = (focus, hover) {
+            cmds.push(Command::BeginEdit);
+            cmds.push(Command::SetZero {
+                section: si,
+                hz: paint::hz_at_x(p.x, well),
+                r: 1.0,
+            });
+        }
+    }
     if let Some(p) = hover {
+        if focus.is_some() && legend.starts_with("L —") {
+            legend = "2×L place a zero on the selected section".into();
+        }
         painter.line_segment(
             [Pos2::new(p.x, well.top()), Pos2::new(p.x, well.bottom())],
             Stroke::new(1.0, theme::faded(theme::CURSOR, 150)),

@@ -11,7 +11,13 @@ use trench_core::stage_law::{
 use crate::engine::fit;
 use crate::engine::response::SR;
 use crate::services::audio::Audio;
+use crate::domain::document::{lane_is_empty, PolePair, ZeroPair};
 use crate::session::state::{FitError, FitState, Session};
+
+pub enum FitTarget {
+    Sections,
+    Candidates,
+}
 
 enum FitMsg {
     Done(Box<ArmaFit>),
@@ -20,6 +26,7 @@ enum FitMsg {
 
 pub struct Jobs {
     rx: Option<Receiver<FitMsg>>,
+    fit_target: FitTarget,
     field_audio: Option<(f64, PackedCorners)>,
 }
 
@@ -27,6 +34,7 @@ impl Jobs {
     pub fn new() -> Self {
         Self {
             rx: None,
+            fit_target: FitTarget::Sections,
             field_audio: None,
         }
     }
@@ -44,9 +52,15 @@ impl Jobs {
             return;
         };
         session.history.push(&session.document);
-        let lanes = *session.active_lanes();
+        let (lanes, mask) = session.preview();
+        let provisional = mask.iter().any(|&m| m);
+        self.fit_target = if provisional && session.document.workspace.is_empty() {
+            FitTarget::Candidates
+        } else {
+            FitTarget::Sections
+        };
         let laws = session.document.workspace.laws;
-        let declared = session.document.workspace.declared();
+        let declared = session.document.workspace.declared() && !provisional;
         let (tx, rx) = channel();
         self.rx = Some(rx);
         session.fit = FitState::Running {
@@ -101,12 +115,32 @@ impl Jobs {
             }
         }
         if let Some(f) = done {
-            *session.active_lanes_mut() = f.roots;
-            let held = session
-                .active_lanes()
-                .iter()
-                .filter(|l| !crate::domain::document::lane_is_empty(l))
-                .count();
+            match self.fit_target {
+                FitTarget::Candidates => {
+                    session.document.pole_candidates = f
+                        .roots
+                        .iter()
+                        .filter(|l| l.pole_r > 0.0)
+                        .map(|l| PolePair {
+                            hz: l.pole_hz,
+                            r: l.pole_r,
+                        })
+                        .collect();
+                    session.document.zero_candidates = f
+                        .roots
+                        .iter()
+                        .filter(|l| l.zero_r > 0.0)
+                        .map(|l| ZeroPair {
+                            hz: l.zero_hz,
+                            r: l.zero_r,
+                        })
+                        .collect();
+                }
+                FitTarget::Sections => {
+                    *session.active_lanes_mut() = f.roots;
+                }
+            }
+            let held = f.roots.iter().filter(|l| !lane_is_empty(l)).count();
             session.fit = FitState::Complete {
                 rms_db: f.target_rms_db,
                 sections: held,
@@ -149,7 +183,8 @@ impl Jobs {
             }
         }
         let mut rows = [[1.0, 0.0, 0.0, 0.0, 0.0]; NUM_STAGES];
-        for (row, lane) in rows.iter_mut().zip(session.active_lanes()) {
+        let (preview, _) = session.preview();
+        for (row, lane) in rows.iter_mut().zip(preview.iter()) {
             *row = trench_core::minifloat::stage_words_to_biquad(words_from_roots_at(lane, rate));
         }
         audio.push_rows(rows);

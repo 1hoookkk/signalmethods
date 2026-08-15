@@ -63,14 +63,19 @@ pub fn draw(session: &Session, ui: &mut Ui) {
     let w = (rect.width() - PAD * 2.0 - gap * (cols - 1.0)) / cols;
     let h = ((rect.height() - PAD * 2.0 - gap * 2.0) / 3.0).min(w * 0.62);
     let top0 = rect.center().y - (h * 3.0 + gap * 2.0) / 2.0;
-    let all_modes = crate::engine::modes::modes(session.active_lanes(), SR);
+    let (preview, mask) = session.preview();
+    let all_modes = crate::engine::modes::modes(&preview, SR);
     for si in 0..NUM_STAGES {
         let x = rect.left() + PAD + si as f32 * (w + gap);
         let ink = theme::LANES[si % 7];
         let own = cell(
             &painter,
             Rect::from_min_size(Pos2::new(x, top0), eframe::egui::vec2(w, h)),
-            &format!("{}", si + 1),
+            &(if mask[si] {
+                format!("p {}", si + 1)
+            } else {
+                format!("{}", si + 1)
+            }),
         );
         let row = rows[si];
         let identity = row == [1.0, 0.0, 0.0, 0.0, 0.0];

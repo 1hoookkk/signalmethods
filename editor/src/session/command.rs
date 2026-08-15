@@ -3,7 +3,7 @@ use trench_core::cascade::NUM_STAGES;
 use trench_core::praat_endpoint;
 use trench_core::stage_law::StageRoots;
 
-use crate::domain::document::{lane_is_empty, Target, Workspace};
+use crate::domain::document::{lane_is_empty, PolePair, Target, Workspace, ZeroPair};
 use crate::engine::response::{row_db, SR};
 use crate::services::Services;
 use crate::session::state::{FitState, Selection, Session};
@@ -33,6 +33,15 @@ pub enum Command {
     Ride([f32; 3]),
     Undo,
     Redo,
+}
+
+fn section_exists(session: &Session, section: usize) -> Result<(), String> {
+    if session.selection.corner.is_none()
+        && lane_is_empty(&session.document.workspace.lanes[section])
+    {
+        return Err("assign the section first: candidates are not sections".into());
+    }
+    Ok(())
 }
 
 pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Result<(), String> {
@@ -149,8 +158,27 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                     lane.scale = per;
                 }
             }
-            ws.seed_name = Some(name);
-            session.document.workspace = ws;
+            let _ = name;
+            session.document.pole_candidates = ws
+                .lanes
+                .iter()
+                .take(placed)
+                .filter(|l| l.pole_r > 0.0)
+                .map(|l| PolePair {
+                    hz: l.pole_hz,
+                    r: l.pole_r,
+                })
+                .collect();
+            session.document.zero_candidates = ws
+                .lanes
+                .iter()
+                .take(placed)
+                .filter(|l| l.zero_r > 0.0)
+                .map(|l| ZeroPair {
+                    hz: l.zero_hz,
+                    r: l.zero_r,
+                })
+                .collect();
             session.fit = FitState::Idle;
             services.jobs.push_audio(session, &mut services.audio);
             Ok(())
@@ -162,6 +190,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetPole { section, hz, r } => {
+            section_exists(session, section)?;
             let lane = &mut session.active_lanes_mut()[section];
             lane.pole_hz = hz;
             lane.pole_r = r;
@@ -171,6 +200,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetZero { section, hz, r } => {
+            section_exists(session, section)?;
             let lane = &mut session.active_lanes_mut()[section];
             lane.zero_hz = hz;
             lane.zero_r = r;
@@ -180,6 +210,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetScale { section, scale } => {
+            section_exists(session, section)?;
             session.active_lanes_mut()[section].scale = scale;
             services.jobs.invalidate_field_audio();
             services.jobs.push_audio(session, &mut services.audio);
@@ -278,6 +309,45 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 law.writable = true;
             }
             let empty = lane_is_empty(&session.active_lanes()[section]);
+            if empty
+                && session.selection.corner.is_none()
+                && !session.document.pole_candidates.is_empty()
+            {
+                let pi = session
+                    .document
+                    .pole_candidates
+                    .iter()
+                    .enumerate()
+                    .min_by(|a, b| {
+                        (a.1.hz / hz).ln().abs().total_cmp(&(b.1.hz / hz).ln().abs())
+                    })
+                    .map(|(i, _)| i)
+                    .unwrap();
+                let pp = session.document.pole_candidates.remove(pi);
+                let zi = session
+                    .document
+                    .zero_candidates
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, z)| z.hz > pp.hz && z.hz < pp.hz * 2.5)
+                    .min_by(|a, b| a.1.hz.total_cmp(&b.1.hz))
+                    .map(|(i, _)| i);
+                let zp = zi.map(|i| session.document.zero_candidates.remove(i));
+                let lane = &mut session.document.workspace.lanes[section];
+                lane.pole_hz = pp.hz;
+                lane.pole_r = pp.r;
+                lane.scale = 1.0;
+                if let Some(zp) = zp {
+                    lane.zero_hz = zp.hz;
+                    lane.zero_r = zp.r;
+                }
+                session.document.workspace.laws[section].zone = [pp.hz / 1.3, pp.hz * 1.3];
+                session.selection.section = Some(section);
+                session.fit = FitState::Idle;
+                services.jobs.invalidate_field_audio();
+                services.jobs.push_audio(session, &mut services.audio);
+                return Ok(());
+            }
             if empty {
                 let mut pole = (hz, 0.95);
                 let mut zero: Option<(f64, f64)> = None;
@@ -347,6 +417,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::FitSection(si) => {
+            section_exists(session, si)?;
             services.jobs.fit_lane(session, si);
             Ok(())
         }
