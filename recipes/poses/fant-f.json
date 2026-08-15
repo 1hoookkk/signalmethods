@@ -1,0 +1,11 @@
+{
+  "name": "fant f",
+  "provenance": "Fant & Martony, STL-QPSR 1/1960 Fig I-7: [f] — zero 2500 Q1.8, pole 2700 Q1.8 (the bound pair), pole 15000 Q3.2 heavily damped; bandwidth = F/Q",
+  "formants": [
+    { "hz": 2700.0, "bandwidth_hz": 1500.0 },
+    { "hz": 15000.0, "bandwidth_hz": 4687.5 }
+  ],
+  "antiresonances": [
+    { "hz": 2500.0, "bandwidth_hz": 1388.9, "source": "bound" }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "fant sh",
+  "provenance": "Fant & Martony, STL-QPSR 1/1960 Fig I-8: [sh] full match — free zero 1000 Q2.5, poles 1500 Q3.2 / 2200 Q4 / free 2800 Q10 / 6000 Q2 / free 7000 Q1, zeros 1900 Q3.2 / 2500 Q4 / 5000 Q2; bound pairs carry the high-frequency attenuation; bandwidth = F/Q",
+  "formants": [
+    { "hz": 1500.0, "bandwidth_hz": 468.75 },
+    { "hz": 2200.0, "bandwidth_hz": 550.0 },
+    { "hz": 2800.0, "bandwidth_hz": 280.0 },
+    { "hz": 6000.0, "bandwidth_hz": 3000.0 },
+    { "hz": 7000.0, "bandwidth_hz": 7000.0 }
+  ],
+  "antiresonances": [
+    { "hz": 1000.0, "bandwidth_hz": 400.0, "source": "free" },
+    { "hz": 1900.0, "bandwidth_hz": 593.75, "source": "bound" },
+    { "hz": 2500.0, "bandwidth_hz": 625.0, "source": "bound" },
+    { "hz": 5000.0, "bandwidth_hz": 2500.0, "source": "bound" }
+  ]
+}

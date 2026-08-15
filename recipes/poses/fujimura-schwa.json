@@ -1,0 +1,9 @@
+{
+  "name": "fujimura schwa",
+  "provenance": "Fujimura & Lindqvist, STL-QPSR 3/1964: neutral vowel matched from closed-glottis sweep-tone measurement — poles 480(33), 1450(42), 2300(62) Hz (bandwidths in parentheses); higher poles published without bandwidths and omitted",
+  "formants": [
+    { "hz": 480.0, "bandwidth_hz": 33.0 },
+    { "hz": 1450.0, "bandwidth_hz": 42.0 },
+    { "hz": 2300.0, "bandwidth_hz": 62.0 }
+  ]
+}

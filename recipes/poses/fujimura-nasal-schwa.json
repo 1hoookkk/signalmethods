@@ -1,0 +1,13 @@
+{
+  "name": "fujimura nasalized schwa",
+  "provenance": "Fujimura & Lindqvist, STL-QPSR 3/1964: the same vowel nasalized, measured pole-zero split — poles 517(56), 1230(55), 1830(154) plus the extra nasal pole 270(46), nasal zero 312(60); the measured formant-antiformant-formant structure",
+  "formants": [
+    { "hz": 517.0, "bandwidth_hz": 56.0 },
+    { "hz": 1230.0, "bandwidth_hz": 55.0 },
+    { "hz": 1830.0, "bandwidth_hz": 154.0 },
+    { "hz": 270.0, "bandwidth_hz": 46.0 }
+  ],
+  "antiresonances": [
+    { "hz": 312.0, "bandwidth_hz": 60.0, "source": "nasal" }
+  ]
+}

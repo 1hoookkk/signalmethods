@@ -1,0 +1,11 @@
+{
+  "name": "fant s",
+  "provenance": "Fant & Martony, STL-QPSR 1/1960 Fig I-7: [s] as two poles and one zero — zero 4500 Q2.5, pole 5800 Q10, pole 8000 Q3.2; bandwidth = F/Q",
+  "formants": [
+    { "hz": 5800.0, "bandwidth_hz": 580.0 },
+    { "hz": 8000.0, "bandwidth_hz": 2500.0 }
+  ],
+  "antiresonances": [
+    { "hz": 4500.0, "bandwidth_hz": 1800.0, "source": "free" }
+  ]
+}
