@@ -6,7 +6,7 @@ use crate::session::command::Command;
 use crate::session::state::Session;
 use crate::ui::{paint, theme};
 
-pub const NAV_H: f32 = 26.0;
+pub const NAV_H: f32 = 76.0;
 
 fn fmt_hz(hz: f64) -> String {
     if hz >= 999.5 {
@@ -44,8 +44,8 @@ pub fn draw(
     );
     let gain_w = 96.0;
     let gw = Rect::from_min_max(
-        Pos2::new(rect.right() - cap - gain_w, rect.top() + 2.0),
-        Pos2::new(rect.right() - cap - 4.0, rect.bottom() - 2.0),
+        Pos2::new(rect.right() - cap - gain_w, rect.center().y - 10.0),
+        Pos2::new(rect.right() - cap - 4.0, rect.center().y + 10.0),
     );
     {
         let committed = &session.document.workspace.lanes;
@@ -101,13 +101,17 @@ pub fn draw(
     );
     let gap = 5.0;
     let w = (inner.width() - gap * (NUM_STAGES as f32 - 1.0)) / NUM_STAGES as f32;
+    let chip_rect = |si: usize| {
+        Rect::from_min_max(
+            Pos2::new(inner.left() + si as f32 * (w + gap), inner.top()),
+            Pos2::new(inner.left() + si as f32 * (w + gap) + w, inner.bottom()),
+        )
+    };
+    let chip_at = |p: Pos2| (0..NUM_STAGES).find(|&ti| chip_rect(ti).contains(p));
     let (preview, mask) = session.preview();
     let mut pnum = 0;
     for si in 0..NUM_STAGES {
-        let chip = Rect::from_min_max(
-            Pos2::new(inner.left() + si as f32 * (w + gap), inner.top()),
-            Pos2::new(inner.left() + si as f32 * (w + gap) + w, inner.bottom()),
-        );
+        let chip = chip_rect(si);
         let ink = theme::LANES[si % 7];
         let lane = preview[si];
         let provisional = mask[si];
@@ -124,9 +128,9 @@ pub fn draw(
         } else {
             paint::raised(painter, chip)
         };
-        let swatch = Rect::from_min_max(
+        let swatch = Rect::from_min_size(
             Pos2::new(ci.left() + 3.0, ci.top() + 3.0),
-            Pos2::new(ci.left() + 9.0, ci.bottom() - 3.0),
+            eframe::egui::vec2(8.0, 8.0),
         );
         painter.rect_filled(
             swatch,
@@ -142,7 +146,7 @@ pub fn draw(
         painter.rect_stroke(swatch, 0.0, Stroke::new(1.0, theme::CHROME_DEEP));
         paint::label(
             painter,
-            Pos2::new(swatch.right() + 5.0, ci.center().y),
+            Pos2::new(swatch.right() + 5.0, ci.top() + 7.0),
             Align2::LEFT_CENTER,
             &(if provisional {
                 format!("p{pnum}")
@@ -160,12 +164,12 @@ pub fn draw(
         );
         if !idle {
             let spark = Rect::from_min_max(
-                Pos2::new(swatch.right() + 18.0, ci.top() + 3.0),
-                Pos2::new(ci.right() - 44.0, ci.bottom() - 3.0),
+                Pos2::new(ci.left() + 4.0, ci.top() + 15.0),
+                Pos2::new(ci.right() - 4.0, ci.bottom() - 3.0),
             );
             if spark.width() > 24.0 {
                 let row = lane.biquad_at(crate::engine::response::SR);
-                let spark_alpha: u8 = if provisional { 90 } else if selected { 255 } else { 175 };
+                let spark_alpha: u8 = if provisional { 90 } else if selected { 255 } else { 205 };
                 let n = 48;
                 let mut vals = Vec::with_capacity(n);
                 let mut lo = f64::INFINITY;
@@ -199,7 +203,7 @@ pub fn draw(
                     .collect();
                 painter.add(eframe::egui::Shape::line(
                     pts,
-                    Stroke::new(1.0, theme::faded(ink, spark_alpha)),
+                    Stroke::new(1.3, theme::faded(ink, spark_alpha)),
                 ));
             }
         }
@@ -214,7 +218,7 @@ pub fn draw(
         };
         paint::label(
             painter,
-            Pos2::new(ci.right() - 4.0, ci.center().y),
+            Pos2::new(ci.right() - 4.0, ci.top() + 7.0),
             Align2::RIGHT_CENTER,
             &state,
             theme::SMALL,
@@ -228,7 +232,7 @@ pub fn draw(
         );
         let resp = ui.interact(chip, Id::new(("nav.section", si)), Sense::click_and_drag());
         if resp.hovered() {
-            *legend = "L select · drag onto the glass to assign".into();
+            *legend = "L select · drag onto a neighbour — swap sections · drag onto the glass to assign".into();
         }
         if resp.clicked() {
             let mut sel = session.selection;
@@ -254,6 +258,15 @@ pub fn draw(
                         Stroke::new(1.0, theme::faded(ink, 180)),
                     );
                     *legend = "release: its pole hunts here".into();
+                } else if let Some(ti) = chip_at(p) {
+                    if ti != si {
+                        painter.rect_stroke(
+                            chip_rect(ti),
+                            0.0,
+                            Stroke::new(1.4, theme::faded(ink, 220)),
+                        );
+                        *legend = "release: swap sections — order in the cascade".into();
+                    }
                 }
             }
         }
@@ -264,6 +277,10 @@ pub fn draw(
                         section: si,
                         hz: crate::ui::paint::hz_at_x(p.x, well),
                     });
+                } else if let Some(ti) = chip_at(p) {
+                    if ti != si {
+                        cmds.push(Command::SwapSections { a: si, b: ti });
+                    }
                 }
             }
         }
