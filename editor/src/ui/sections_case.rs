@@ -61,14 +61,15 @@ pub fn draw(session: &Session, ui: &mut Ui) {
     let gap = 8.0;
     let cols = NUM_STAGES as f32;
     let w = (rect.width() - PAD * 2.0 - gap * (cols - 1.0)) / cols;
-    let h = (rect.height() - PAD * 2.0 - gap * 2.0) / 3.0;
+    let h = ((rect.height() - PAD * 2.0 - gap * 2.0) / 3.0).min(w * 0.62);
+    let top0 = rect.center().y - (h * 3.0 + gap * 2.0) / 2.0;
     let all_modes = crate::engine::modes::modes(session.active_lanes(), SR);
     for si in 0..NUM_STAGES {
         let x = rect.left() + PAD + si as f32 * (w + gap);
         let ink = theme::LANES[si % 7];
         let own = cell(
             &painter,
-            Rect::from_min_size(Pos2::new(x, rect.top() + PAD), eframe::egui::vec2(w, h)),
+            Rect::from_min_size(Pos2::new(x, top0), eframe::egui::vec2(w, h)),
             &format!("{}", si + 1),
         );
         let row = rows[si];
@@ -88,7 +89,7 @@ pub fn draw(session: &Session, ui: &mut Ui) {
         let mode_cell = cell(
             &painter,
             Rect::from_min_size(
-                Pos2::new(x, rect.top() + PAD + h + gap),
+                Pos2::new(x, top0 + h + gap),
                 eframe::egui::vec2(w, h),
             ),
             &format!("mode {}", si + 1),
@@ -109,7 +110,7 @@ pub fn draw(session: &Session, ui: &mut Ui) {
         let sofar = cell(
             &painter,
             Rect::from_min_size(
-                Pos2::new(x, rect.top() + PAD + (h + gap) * 2.0),
+                Pos2::new(x, top0 + (h + gap) * 2.0),
                 eframe::egui::vec2(w, h),
             ),
             &format!("1..{}", si + 1),
