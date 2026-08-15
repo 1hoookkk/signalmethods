@@ -1,5 +1,5 @@
 [workspace]
-members = ["trench-core", "station"]
+members = ["trench-core", "author", "editor"]
 resolver = "2"
 
 [profile.dev]
