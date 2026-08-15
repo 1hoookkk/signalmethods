@@ -47,6 +47,7 @@ pub struct Session {
     pub scaffolds: Vec<(String, String)>,
     pub mouths: Vec<(usize, String)>,
     pub kept: Vec<(usize, String)>,
+    pub poses: Vec<String>,
 }
 
 impl Session {
@@ -65,6 +66,7 @@ impl Session {
             scaffolds: Vec::new(),
             mouths: Vec::new(),
             kept: Vec::new(),
+            poses: Vec::new(),
         }
     }
 

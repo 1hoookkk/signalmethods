@@ -1,0 +1,10 @@
+{
+  "name": "kerkhoff o (bot)",
+  "provenance": "Segers & Verhoeven 2005, Table 1 — Kerkhoff synthesizer, steady /o/ of /bot/: published formant frequencies and bandwidths",
+  "formants": [
+    { "hz": 460.0, "bandwidth_hz": 100.0 },
+    { "hz": 950.0, "bandwidth_hz": 100.0 },
+    { "hz": 2200.0, "bandwidth_hz": 130.0 },
+    { "hz": 3800.0, "bandwidth_hz": 150.0 }
+  ]
+}

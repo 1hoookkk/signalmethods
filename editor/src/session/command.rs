@@ -31,6 +31,8 @@ pub enum Command {
     FitSelection,
     FitPoles,
     PlaceSkeleton,
+    SetPoseTarget(usize),
+    PlacePose(usize),
     ApplyScaffold(usize),
     Keep,
     WriteStatic,
@@ -67,6 +69,12 @@ pub fn mirror_library(session: &mut Session, services: &Services) {
             crate::services::repository::Entry::Kept { name, .. } => Some((i, name.clone())),
             _ => None,
         })
+        .collect();
+    session.poses = services
+        .repository
+        .poses
+        .iter()
+        .map(|(n, _)| n.clone())
         .collect();
 }
 
@@ -518,6 +526,8 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             services.jobs.push_audio(session, &mut services.audio);
             Ok(())
         }
+        Command::SetPoseTarget(index) => pose_target(session, services, index, false),
+        Command::PlacePose(index) => pose_target(session, services, index, true),
         Command::ApplyScaffold(index) => {
             let (name, zeros) = services.repository.load_scaffold(index)?;
             session.history.push(&session.document);
@@ -662,6 +672,76 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
     }
+}
+
+
+fn pose_target(
+    session: &mut Session,
+    services: &mut Services,
+    index: usize,
+    place: bool,
+) -> Result<(), String> {
+    let (name, formants) = services.repository.load_pose(index)?;
+    session.history.push(&session.document);
+    let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+    let sr = crate::engine::response::SR;
+    let mut lanes: Vec<StageRoots> = Vec::new();
+    for &(hz, bw) in &formants {
+        if let Some((_, r)) = praat_endpoint::pole_from_frequency_bandwidth(hz, bw, sr) {
+            lanes.push(StageRoots {
+                pole_hz: hz,
+                pole_r: r.min(ceiling),
+                zero_hz: 0.0,
+                zero_r: 0.0,
+                scale: 1.0,
+            });
+        }
+    }
+    if lanes.is_empty() {
+        return Err(format!("{name}: no representable formants"));
+    }
+    let grid = author::envelope::grid();
+    let rows: Vec<[f64; 5]> = lanes.iter().map(|l| l.biquad_at(sr)).collect();
+    let mut curve: Vec<f64> = grid
+        .iter()
+        .map(|&hz| rows.iter().map(|r| row_db(r, hz, sr)).sum())
+        .collect();
+    let mean = curve.iter().sum::<f64>() / curve.len() as f64;
+    for v in curve.iter_mut() {
+        *v -= mean;
+    }
+    session.document.target = Some(Target {
+        name: name.clone(),
+        curve,
+    });
+    session.selection.entry = None;
+    session.selection.corner = None;
+    let mut placed = 0;
+    if place {
+        let mut slot = 0;
+        for lane in &lanes {
+            while slot < NUM_STAGES && !lane_is_empty(&session.document.workspace.lanes[slot]) {
+                slot += 1;
+            }
+            if slot >= NUM_STAGES {
+                break;
+            }
+            session.document.workspace.lanes[slot] = *lane;
+            placed += 1;
+        }
+    }
+    session.fit = FitState::Idle;
+    session.notice = Some((
+        false,
+        if place {
+            format!("{name} — all-pole target, {placed} poles placed")
+        } else {
+            format!("{name} — all-pole target")
+        },
+    ));
+    services.jobs.invalidate_field_audio();
+    services.jobs.push_audio(session, &mut services.audio);
+    Ok(())
 }
 
 #[cfg(test)]
@@ -853,6 +933,36 @@ mod tests {
         assert_eq!(zeros.len(), 2, "the fitter invents no zeros");
         let poles = f.roots.iter().filter(|l| l.pole_r > 0.0).count();
         assert!(poles >= 2, "sections fall out of the fit, got {poles}");
+    }
+
+    #[test]
+    fn a_published_formant_table_becomes_target_and_skeleton() {
+        let mut services = Services::new();
+        let mut session = crate::lab::session_for(&mut services, "empty").unwrap();
+        let i = services
+            .repository
+            .poses
+            .iter()
+            .position(|(n, _)| n == "kerkhoff o (bot)")
+            .expect("pose table in the library");
+        apply(&mut session, &mut services, Command::PlacePose(i)).unwrap();
+        assert_eq!(
+            session.document.target.as_ref().unwrap().name,
+            "kerkhoff o (bot)"
+        );
+        let table = [(460.0, 100.0), (950.0, 100.0), (2200.0, 130.0), (3800.0, 150.0)];
+        let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+        for (lane, &(hz, bw)) in session.document.workspace.lanes.iter().zip(table.iter()) {
+            assert_eq!(lane.pole_hz, hz, "the published frequency, exactly");
+            let (_, r) =
+                trench_core::praat_endpoint::pole_from_frequency_bandwidth(hz, bw, SR).unwrap();
+            assert_eq!(lane.pole_r, r.min(ceiling), "the praat-law radius, exactly");
+            assert_eq!(lane.zero_r, 0.0, "no invented zeros");
+        }
+        assert!(lane_is_empty(&session.document.workspace.lanes[4]));
+        let curve = &session.document.target.as_ref().unwrap().curve;
+        let mean = curve.iter().sum::<f64>() / curve.len() as f64;
+        assert!(mean.abs() < 1e-9, "the all-pole target is level-centered");
     }
 
     #[test]

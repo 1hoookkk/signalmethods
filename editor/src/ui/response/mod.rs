@@ -299,6 +299,7 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         enum Row {
             Mouth(usize, String),
             Divider,
+            Pose(usize, String),
             Scaffold(usize, String),
         }
         let mut items: Vec<Row> = session
@@ -306,6 +307,12 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
             .iter()
             .map(|(e, n)| Row::Mouth(*e, n.clone()))
             .collect();
+        if !session.poses.is_empty() {
+            items.push(Row::Divider);
+            for (i, n) in session.poses.iter().enumerate() {
+                items.push(Row::Pose(i, n.clone()));
+            }
+        }
         if !session.scaffolds.is_empty() {
             items.push(Row::Divider);
             for (i, (n, g)) in session.scaffolds.iter().enumerate() {
@@ -385,6 +392,27 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                         );
                         if resp.clicked() {
                             cmds.push(Command::SetTarget(*entry));
+                            list_open = false;
+                        }
+                    }
+                    Row::Pose(i, name) => {
+                        let resp = ui.interact(rr, Id::new(("target.row", k)), Sense::click());
+                        if resp.hovered() {
+                            painter.rect_filled(rr, 0.0, theme::CHROME_LT);
+                        }
+                        paint::label(
+                            &painter,
+                            Pos2::new(rr.left() + 5.0, rr.center().y),
+                            Align2::LEFT_CENTER,
+                            name,
+                            theme::SMALL,
+                            theme::INK,
+                        );
+                        if resp.secondary_clicked() {
+                            cmds.push(Command::PlacePose(*i));
+                            list_open = false;
+                        } else if resp.clicked() {
+                            cmds.push(Command::SetPoseTarget(*i));
                             list_open = false;
                         }
                     }

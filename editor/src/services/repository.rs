@@ -26,6 +26,7 @@ pub struct Repository {
     pub root: PathBuf,
     pub entries: Vec<Entry>,
     pub scaffolds: Vec<(String, String, PathBuf)>,
+    pub poses: Vec<(String, PathBuf)>,
 }
 
 pub struct ScaffoldZero {
@@ -59,6 +60,7 @@ impl Repository {
             root,
             entries: Vec::new(),
             scaffolds: Vec::new(),
+            poses: Vec::new(),
         };
         repo.rescan();
         repo
@@ -118,6 +120,46 @@ impl Repository {
                 }
             }
         }
+        self.poses.clear();
+        let dir = self.root.join("recipes").join("poses");
+        let mut paths: Vec<PathBuf> = std::fs::read_dir(&dir)
+            .map(|rd| {
+                rd.flatten()
+                    .map(|e| e.path())
+                    .filter(|p| p.extension().is_some_and(|x| x == "json"))
+                    .collect()
+            })
+            .unwrap_or_default();
+        paths.sort();
+        for path in paths {
+            if let Ok(text) = std::fs::read_to_string(&path) {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
+                    if let Some(name) = v.get("name").and_then(|n| n.as_str()) {
+                        self.poses.push((name.to_string(), path));
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn load_pose(&self, index: usize) -> Result<(String, Vec<(f64, f64)>), String> {
+        let (name, path) = self.poses.get(index).ok_or("not a pose")?;
+        let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+        let v: serde_json::Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+        let formants = v
+            .get("formants")
+            .and_then(|f| f.as_array())
+            .ok_or("pose has no formants")?
+            .iter()
+            .map(|f| {
+                Ok((
+                    f.get("hz").and_then(|x| x.as_f64()).ok_or("hz")?,
+                    f.get("bandwidth_hz").and_then(|x| x.as_f64()).ok_or("bandwidth_hz")?,
+                ))
+            })
+            .collect::<Result<Vec<_>, &str>>()
+            .map_err(|e| format!("pose field missing: {e}"))?;
+        Ok((name.clone(), formants))
     }
 
     pub fn load_scaffold(&self, index: usize) -> Result<(String, Vec<ScaffoldZero>), String> {

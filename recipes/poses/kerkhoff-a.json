@@ -1,0 +1,10 @@
+{
+  "name": "kerkhoff a (bart)",
+  "provenance": "Segers & Verhoeven 2005, Table 1 — Kerkhoff synthesizer, steady /a/ of /bart/: published formant frequencies and bandwidths",
+  "formants": [
+    { "hz": 780.0, "bandwidth_hz": 200.0 },
+    { "hz": 1320.0, "bandwidth_hz": 200.0 },
+    { "hz": 2600.0, "bandwidth_hz": 200.0 },
+    { "hz": 3500.0, "bandwidth_hz": 200.0 }
+  ]
+}
