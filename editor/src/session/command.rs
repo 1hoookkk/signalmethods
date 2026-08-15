@@ -56,18 +56,31 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             session.history.push(&session.document);
             session.selection.corner = None;
             let grid = author::envelope::grid();
-            let peaks = author::formants::peaks(&grid, &curve);
-            if peaks.is_empty() {
-                return Err(format!("{name}: no formant peaks found"));
-            }
             session.document.target = Some(Target {
                 name: name.clone(),
                 curve: curve.clone(),
             });
             session.selection.entry = Some(index);
             let mut ws = Workspace::empty();
+            let mut residual = curve.clone();
+            let mut tilts: Vec<StageRoots> = Vec::new();
+            for _ in 0..2 {
+                let Some(lane) = tilt_section(&residual, &grid) else {
+                    break;
+                };
+                let row = lane.biquad_at(SR);
+                for (v, &hz) in residual.iter_mut().zip(grid.iter()) {
+                    *v -= row_db(&row, hz, SR);
+                }
+                tilts.push(lane);
+            }
+            let peaks = author::formants::peaks(&grid, &residual);
+            if peaks.is_empty() && tilts.is_empty() {
+                return Err(format!("{name}: nothing measurable to seed"));
+            }
             let mut placed = 0;
-            for (fi, peak) in peaks.iter().take(NUM_STAGES).enumerate() {
+            let formant_budget = NUM_STAGES - tilts.len();
+            for (fi, peak) in peaks.iter().take(formant_budget).enumerate() {
                 if let Some((_, r)) = praat_endpoint::pole_from_frequency_bandwidth(
                     peak.hz,
                     peak.bandwidth_hz,
@@ -84,7 +97,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                     placed += 1;
                 }
             }
-            let inverted: Vec<f64> = curve.iter().map(|v| -v).collect();
+            let inverted: Vec<f64> = residual.iter().map(|v| -v).collect();
             let mut notches = author::formants::peaks(&grid, &inverted);
             for k in 0..placed {
                 let here = ws.lanes[k].pole_hz;
@@ -108,6 +121,14 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                     ws.lanes[k].zero_r = 0.93;
                 }
                 ws.laws[k].zone = [here / 1.3, here * 1.3];
+            }
+            for lane in tilts {
+                if placed >= NUM_STAGES {
+                    break;
+                }
+                ws.lanes[placed] = lane;
+                ws.laws[placed].zone = [lane.pole_hz / 2.0, lane.pole_hz * 2.0];
+                placed += 1;
             }
             if placed > 0 {
                 let rows: Vec<_> = ws
@@ -519,4 +540,46 @@ mod tests {
             "undo restores the document"
         );
     }
+}
+
+fn broad(curve: &[f64], grid: &[f64]) -> Vec<f64> {
+    let n = curve.len();
+    let mut out = vec![0.0; n];
+    for i in 0..n {
+        let mut acc = 0.0;
+        let mut count = 0.0;
+        for j in 0..n {
+            if (grid[j] / grid[i]).ln().abs() < 0.45 {
+                acc += curve[j];
+                count += 1.0;
+            }
+        }
+        out[i] = acc / count;
+    }
+    out
+}
+
+fn tilt_section(curve: &[f64], grid: &[f64]) -> Option<StageRoots> {
+    let b = broad(curve, grid);
+    let (mut imax, mut imin) = (0, 0);
+    for i in 0..b.len() {
+        if b[i] > b[imax] {
+            imax = i;
+        }
+        if b[i] < b[imin] {
+            imin = i;
+        }
+    }
+    if b[imax] - b[imin] < 10.0 {
+        return None;
+    }
+    let ph = grid[imax];
+    let pr = (-std::f64::consts::PI * (ph * 4.0).min(6_000.0) / SR).exp();
+    Some(StageRoots {
+        pole_hz: ph,
+        pole_r: pr,
+        zero_hz: grid[imin],
+        zero_r: 0.97,
+        scale: 1.0,
+    })
 }

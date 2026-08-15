@@ -129,7 +129,7 @@ pub fn draw(
                         [Pos2::new(p.x, well.top()), Pos2::new(p.x, well.bottom())],
                         Stroke::new(1.0, theme::faded(ink, 180)),
                     );
-                    *legend = "release: this section owns here".into();
+                    *legend = "release: its pole hunts here".into();
                 }
             }
         }
