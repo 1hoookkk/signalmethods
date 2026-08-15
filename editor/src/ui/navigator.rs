@@ -79,6 +79,50 @@ pub fn draw(
             theme::SMALL,
             if selected { theme::CHROME_LT } else { theme::INK },
         );
+        if !idle {
+            let spark = Rect::from_min_max(
+                Pos2::new(swatch.right() + 18.0, ci.top() + 3.0),
+                Pos2::new(ci.right() - 44.0, ci.bottom() - 3.0),
+            );
+            if spark.width() > 24.0 {
+                let row = lane.biquad_at(crate::engine::response::SR);
+                let n = 48;
+                let mut vals = Vec::with_capacity(n);
+                let mut lo = f64::INFINITY;
+                let mut hi = f64::NEG_INFINITY;
+                for i in 0..n {
+                    let f = crate::ui::paint::FREQ_LO
+                        * (crate::ui::paint::FREQ_HI / crate::ui::paint::FREQ_LO)
+                            .powf(i as f64 / (n - 1) as f64);
+                    let db = crate::engine::response::row_db(&row, f, crate::engine::response::SR);
+                    lo = lo.min(db);
+                    hi = hi.max(db);
+                    vals.push(db);
+                }
+                lo -= 2.0;
+                hi += 2.0;
+                if hi - lo < 12.0 {
+                    let mid = (hi + lo) / 2.0;
+                    lo = mid - 6.0;
+                    hi = mid + 6.0;
+                }
+                let pts: Vec<Pos2> = vals
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &db)| {
+                        Pos2::new(
+                            spark.left() + i as f32 / (n - 1) as f32 * spark.width(),
+                            spark.bottom()
+                                - ((db - lo) / (hi - lo)) as f32 * spark.height(),
+                        )
+                    })
+                    .collect();
+                painter.add(eframe::egui::Shape::line(
+                    pts,
+                    Stroke::new(1.0, theme::faded(ink, if selected { 255 } else { 175 })),
+                ));
+            }
+        }
         let state = if idle {
             "—".into()
         } else if !law.writable {

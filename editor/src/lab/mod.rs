@@ -142,6 +142,10 @@ pub fn draw(session: &Session, lab: &mut Lab, ui: &mut Ui) -> Vec<Command> {
             }
         },
         "response_only" => crate::ui::response::draw(session, ui, false).0,
+        "sections" => {
+            crate::ui::sections_case::draw(session, ui);
+            Vec::new()
+        }
         other => {
             let rect = ui.max_rect();
             let painter = ui.painter().clone();
