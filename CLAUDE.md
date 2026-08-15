@@ -98,6 +98,20 @@ Gray order seeded from their neighbour so lanes correspond → packed words →
   Zero travel is therefore authored: linear, stepwise at the boundary, or
   follow — the zero holds its relative place between its two neighbouring
   formants so it can never drift onto one.
+- **Vulcan firmware disassembly** — Rossum Morpheus module OS (reported
+  disassembly of the _VPG1 application image; addresses not independently
+  re-verified here). Execution: STM32F4 streams stage parameters over the
+  FMC bus to a hardware DSP; the stage loop runs strictly S1→S7, mapped 1:1
+  — no runtime re-ordering, re-pairing, or auto-normalization; gain comes
+  directly from the stored scale word. The 320-byte cube payload is not raw
+  roots: a mode switch dispatches seven filter families (LP/HP, parametric
+  EQ, the paravowels as parametric-EQ sections, resonator/formant sweepers,
+  full 8-corner morph), each with its own designer-level unpacker that
+  synthesizes pole-zero coordinates from center/bandwidth/gain vectors with
+  stability clamping. Documenting the 289 cubes requires porting those
+  per-mode unpackers, not a root decode. The transfer audio itself is
+  verified here: biphase mark at 6 kbaud, _VCB1 at byte 749, 289 records of
+  332 bytes at 1090+332n, names in the first 12 bytes.
 - **Not applicable.** EMU8000 programmer's guide; US5943427; US5952599; the
   NASA HRTF memorandum; Segers & Verhoeven 2005 (SLI perception study on the
   Kerkhoff synthesizer; its Table 1 carries published Dutch formant and
