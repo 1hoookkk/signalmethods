@@ -57,25 +57,20 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
             &painter,
             Pos2::new(x, strip.center().y),
             Align2::LEFT_CENTER,
-            name,
+            &format!("{name}:"),
             theme::SMALL,
             theme::INK_DIM,
         );
-        x += 12.0;
-        let fw = Rect::from_min_max(
-            Pos2::new(x, strip.top() + 3.0),
-            Pos2::new(x + 52.0, strip.bottom() - 3.0),
-        );
-        let inner = paint::field(&painter, fw);
+        x += 16.0;
         paint::label(
             &painter,
-            Pos2::new(inner.right() - 4.0, inner.center().y),
-            Align2::RIGHT_CENTER,
+            Pos2::new(x, strip.center().y),
+            Align2::LEFT_CENTER,
             &format!("{:.0}", value * 100.0),
             theme::BODY,
             theme::INK,
         );
-        x = fw.right() + 14.0;
+        x += 48.0;
     }
     if !cube {
         let pb = Rect::from_min_max(
@@ -100,9 +95,13 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         }
     }
 
+    let fkeys_rect = Rect::from_min_max(
+        Pos2::new(rect.left() + PAD, foot.top() - 8.0 - crate::ui::fkeys::FKEY_H),
+        Pos2::new(rect.right() - PAD, foot.top() - 8.0),
+    );
     let well_frame = Rect::from_min_max(
         Pos2::new(rect.left() + PAD, strip.bottom() + PAD),
-        Pos2::new(rect.right() - PAD, foot.top() - PAD),
+        Pos2::new(rect.right() - PAD, fkeys_rect.top() - PAD),
     );
     let well = paint::well(&painter, well_frame);
 
@@ -251,6 +250,22 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         [Pos2::new(px, py - 13.0), Pos2::new(px, py + 13.0)],
         Stroke::new(1.0, theme::faded(theme::HOT, 170)),
     );
+
+    let keys = [
+        (
+            eframe::egui::Key::F1,
+            "F1",
+            if session.audition.playing { "pause" } else { "play" },
+        ),
+        (eframe::egui::Key::F9, "F9", "undo"),
+        (eframe::egui::Key::F10, "F10", "redo"),
+    ];
+    match crate::ui::fkeys::draw(ui, &painter, fkeys_rect, &keys) {
+        Some(0) => cmds.push(Command::TogglePlay),
+        Some(1) => cmds.push(Command::Undo),
+        Some(2) => cmds.push(Command::Redo),
+        _ => {}
+    }
 
     let fi = paint::sunken(&painter, foot);
     painter.rect_filled(fi, 0.0, theme::CHROME);

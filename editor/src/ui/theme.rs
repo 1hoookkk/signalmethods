@@ -1,12 +1,12 @@
 use eframe::egui::Color32;
 
-pub const CHROME: Color32 = Color32::from_rgb(198, 194, 188);
-pub const CHROME_LT: Color32 = Color32::from_rgb(236, 233, 228);
-pub const CHROME_DK: Color32 = Color32::from_rgb(128, 124, 118);
-pub const CHROME_DEEP: Color32 = Color32::from_rgb(74, 71, 67);
-pub const INK: Color32 = Color32::from_rgb(38, 35, 31);
-pub const INK_DIM: Color32 = Color32::from_rgb(104, 100, 94);
-pub const FIELD: Color32 = Color32::from_rgb(233, 231, 226);
+pub const CHROME: Color32 = Color32::from_rgb(164, 178, 174);
+pub const CHROME_LT: Color32 = Color32::from_rgb(208, 218, 214);
+pub const CHROME_DK: Color32 = Color32::from_rgb(106, 120, 116);
+pub const CHROME_DEEP: Color32 = Color32::from_rgb(54, 64, 61);
+pub const INK: Color32 = Color32::from_rgb(22, 29, 27);
+pub const INK_DIM: Color32 = Color32::from_rgb(72, 86, 82);
+pub const FIELD: Color32 = Color32::from_rgb(230, 236, 232);
 pub const WELL: Color32 = Color32::from_rgb(6, 8, 9);
 pub const GRATICULE: Color32 = Color32::from_rgb(27, 35, 39);
 pub const WELL_DIM: Color32 = Color32::from_rgb(80, 98, 104);
@@ -17,7 +17,7 @@ pub const ASK_INK: Color32 = Color32::from_rgb(38, 100, 140);
 pub const NOW_INK: Color32 = Color32::from_rgb(26, 122, 66);
 pub const HOT: Color32 = Color32::from_rgb(255, 122, 60);
 pub const ALARM: Color32 = Color32::from_rgb(232, 80, 64);
-pub const TITLEBAR: Color32 = Color32::from_rgb(52, 68, 100);
+pub const TITLEBAR: Color32 = Color32::from_rgb(40, 68, 80);
 pub const ECHO: Color32 = Color32::from_rgb(126, 42, 34);
 
 pub const LANES: [Color32; 7] = [

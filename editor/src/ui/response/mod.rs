@@ -3,7 +3,7 @@ use eframe::egui::{Align2, Id, Pos2, Rect, Sense, Stroke, Ui};
 use crate::engine::response::{row_db, SR};
 use crate::session::command::Command;
 use crate::session::state::Session;
-use crate::ui::{inspector, navigator, paint, theme, transport};
+use crate::ui::{fkeys, inspector, navigator, paint, theme, transport};
 
 const STRIP_H: f32 = 30.0;
 const FOOT_H: f32 = 24.0;
@@ -39,13 +39,17 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         Pos2::new(rect.left() + PAD, rect.bottom() - PAD - FOOT_H),
         rect.right_bottom() - eframe::egui::vec2(PAD, PAD),
     );
+    let fkeys_rect = Rect::from_min_max(
+        Pos2::new(rect.left() + PAD, foot.top() - 8.0 - fkeys::FKEY_H),
+        Pos2::new(rect.right() - PAD, foot.top() - 8.0),
+    );
     let panel_rect = Rect::from_min_max(
         Pos2::new(rect.right() - PAD - inspector::PANEL_W, strip.bottom() + PAD),
-        Pos2::new(rect.right() - PAD, foot.top() - PAD),
+        Pos2::new(rect.right() - PAD, fkeys_rect.top() - PAD),
     );
     let nav_rect = Rect::from_min_max(
-        Pos2::new(rect.left() + PAD, foot.top() - PAD - navigator::NAV_H),
-        Pos2::new(panel_rect.left() - PAD, foot.top() - PAD),
+        Pos2::new(rect.left() + PAD, fkeys_rect.top() - PAD - navigator::NAV_H),
+        Pos2::new(panel_rect.left() - PAD, fkeys_rect.top() - PAD),
     );
     let well_frame = Rect::from_min_max(
         Pos2::new(rect.left() + PAD, strip.bottom() + PAD),
@@ -473,27 +477,42 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
             &painter,
             Pos2::new(x, strip.center().y),
             Align2::LEFT_CENTER,
-            name,
+            &format!("{name}:"),
             theme::SMALL,
             theme::INK_DIM,
         );
-        x += name.len() as f32 * 7.0 + 6.0;
-        let fw = Rect::from_min_max(
-            Pos2::new(x, strip.top() + 3.0),
-            Pos2::new(x + 74.0, strip.bottom() - 3.0),
+        x += name.len() as f32 * 7.0 + 10.0;
+        paint::label(
+            &painter,
+            Pos2::new(x, strip.center().y),
+            Align2::LEFT_CENTER,
+            &value.unwrap_or_else(|| "—".into()),
+            theme::BODY,
+            tint,
         );
-        let inner = paint::field(&painter, fw);
-        if let Some(v) = value {
-            paint::label(
-                &painter,
-                Pos2::new(inner.right() - 4.0, inner.center().y),
-                Align2::RIGHT_CENTER,
-                &v,
-                theme::BODY,
-                tint,
-            );
-        }
-        x = fw.right() + 16.0;
+        x += 82.0;
+    }
+    let fitting = matches!(session.fit, crate::session::state::FitState::Running { .. });
+    let keys = [
+        (
+            eframe::egui::Key::F1,
+            "F1",
+            if session.audition.playing { "pause" } else { "play" },
+        ),
+        (eframe::egui::Key::F2, "F2", "fit"),
+        (eframe::egui::Key::F3, "F3", "keep"),
+        (eframe::egui::Key::F4, "F4", "write"),
+        (eframe::egui::Key::F9, "F9", "undo"),
+        (eframe::egui::Key::F10, "F10", "redo"),
+    ];
+    match fkeys::draw(ui, &painter, fkeys_rect, &keys) {
+        Some(0) => cmds.push(Command::TogglePlay),
+        Some(1) if !fitting => cmds.push(Command::FitSelection),
+        Some(2) => cmds.push(Command::Keep),
+        Some(3) => cmds.push(Command::WriteStatic),
+        Some(4) => cmds.push(Command::Undo),
+        Some(5) => cmds.push(Command::Redo),
+        _ => {}
     }
 
     if ui.input(|i| i.key_pressed(eframe::egui::Key::Escape)) && focus.is_some() {
