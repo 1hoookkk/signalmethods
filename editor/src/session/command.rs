@@ -3,13 +3,14 @@ use trench_core::cascade::NUM_STAGES;
 use trench_core::praat_endpoint;
 use trench_core::stage_law::StageRoots;
 
-use crate::domain::document::{lane_is_empty, PolePair, Target, Workspace, ZeroPair};
+use crate::domain::document::{lane_is_empty, Document, PolePair, Target, Workspace, ZeroPair};
 use crate::engine::response::{row_db, SR};
 use crate::services::Services;
 use crate::session::state::{FitState, Selection, Session};
 
 pub enum Command {
     BeginEdit,
+    NewSession,
     Select(Selection),
     SetTarget(usize),
     SeedFromMouth(usize),
@@ -29,6 +30,7 @@ pub enum Command {
     SetGain { db: f64 },
     FitSelection,
     FitPoles,
+    PlaceSkeleton,
     ApplyScaffold(usize),
     Keep,
     WriteStatic,
@@ -81,6 +83,16 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
     match cmd {
         Command::BeginEdit => {
             session.history.push(&session.document);
+            Ok(())
+        }
+        Command::NewSession => {
+            session.history.push(&session.document);
+            session.document = Document::new();
+            session.selection = Selection::default();
+            session.fit = FitState::Idle;
+            session.notice = Some((false, "new — empty cascade, empty field".into()));
+            services.jobs.invalidate_field_audio();
+            services.jobs.push_audio(session, &mut services.audio);
             Ok(())
         }
         Command::Select(sel) => {
@@ -464,6 +476,48 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             services.jobs.fit_poles(session);
             Ok(())
         }
+        Command::PlaceSkeleton => {
+            let Some(target) = session.document.target.clone() else {
+                return Err("no target loaded".into());
+            };
+            let grid = author::envelope::grid();
+            let peaks = author::formants::peaks(&grid, &target.curve);
+            if peaks.is_empty() {
+                return Err(format!("{}: nothing measurable to place", target.name));
+            }
+            session.history.push(&session.document);
+            let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+            let mut placed = 0;
+            let mut slot = 0;
+            for peak in &peaks {
+                while slot < NUM_STAGES && !lane_is_empty(&session.active_lanes()[slot]) {
+                    slot += 1;
+                }
+                if slot >= NUM_STAGES {
+                    break;
+                }
+                let Some((_, r)) = trench_core::praat_endpoint::pole_from_frequency_bandwidth(
+                    peak.hz,
+                    peak.bandwidth_hz,
+                    crate::engine::response::SR,
+                ) else {
+                    continue;
+                };
+                let lane = &mut session.active_lanes_mut()[slot];
+                lane.pole_hz = peak.hz;
+                lane.pole_r = r.min(ceiling);
+                lane.scale = 1.0;
+                placed += 1;
+            }
+            session.fit = FitState::Idle;
+            session.notice = Some((
+                false,
+                format!("placed {placed} measured poles — {}", target.name),
+            ));
+            services.jobs.invalidate_field_audio();
+            services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
         Command::ApplyScaffold(index) => {
             let (name, zeros) = services.repository.load_scaffold(index)?;
             session.history.push(&session.document);
@@ -799,6 +853,71 @@ mod tests {
         assert_eq!(zeros.len(), 2, "the fitter invents no zeros");
         let poles = f.roots.iter().filter(|l| l.pole_r > 0.0).count();
         assert!(poles >= 2, "sections fall out of the fit, got {poles}");
+    }
+
+    #[test]
+    fn placing_the_skeleton_seats_measured_poles_and_nothing_else() {
+        let mut services = Services::new();
+        let mut session = crate::lab::session_for(&mut services, "empty").unwrap();
+        let mouth = services
+            .repository
+            .entries
+            .iter()
+            .position(|e| matches!(e, Entry::Mouth { .. }))
+            .expect("a mouth in the library");
+        apply(&mut session, &mut services, Command::SetTarget(mouth)).unwrap();
+        apply(&mut session, &mut services, Command::PlaceSkeleton).unwrap();
+        let grid = author::envelope::grid();
+        let peaks = author::formants::peaks(
+            &grid,
+            &session.document.target.as_ref().unwrap().curve,
+        );
+        let expected = peaks.len().min(NUM_STAGES);
+        let lanes = session.document.workspace.lanes;
+        let active = lanes.iter().filter(|l| !lane_is_empty(l)).count();
+        assert_eq!(active, expected, "one section per measured formant");
+        let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+        for (lane, peak) in lanes.iter().zip(peaks.iter()).take(expected) {
+            assert_eq!(lane.pole_hz, peak.hz, "the measured frequency, exactly");
+            let (_, r) = trench_core::praat_endpoint::pole_from_frequency_bandwidth(
+                peak.hz,
+                peak.bandwidth_hz,
+                SR,
+            )
+            .unwrap();
+            assert_eq!(lane.pole_r, r.min(ceiling), "the praat-law radius, exactly");
+            assert_eq!(lane.zero_r, 0.0, "no invented zeros");
+        }
+        for law in &session.document.workspace.laws {
+            assert!(law.writable && law.freedom == [true; 4], "laws untouched");
+        }
+        apply(
+            &mut session,
+            &mut services,
+            Command::SetZero {
+                section: 0,
+                hz: 900.0,
+                r: 0.95,
+            },
+        )
+        .unwrap();
+        apply(&mut session, &mut services, Command::SetGain { db: -20.0 }).unwrap();
+        let pairs = session.target_pairs().unwrap();
+        let rows: Vec<[f64; 5]> = session
+            .document
+            .workspace
+            .lanes
+            .iter()
+            .filter(|l| !lane_is_empty(l))
+            .map(|l| l.biquad_at(SR))
+            .collect();
+        let mut acc = 0.0;
+        for (hz, db) in &pairs {
+            let sum: f64 = rows.iter().map(|r| row_db(r, *hz, SR)).sum();
+            acc += (db - sum) * (db - sum);
+        }
+        let rms = (acc / pairs.len() as f64).sqrt();
+        assert!(rms.is_finite(), "the whole-cascade error is judgeable");
     }
 
     #[test]

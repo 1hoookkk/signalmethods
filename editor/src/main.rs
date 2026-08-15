@@ -12,7 +12,7 @@ use eframe::egui;
 fn main() -> eframe::Result {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut case = String::from("workstation");
-    let mut fixture = String::from("talking_hedz");
+    let mut fixture = String::from("empty");
     let mut shot: Option<std::path::PathBuf> = None;
     let mut i = 0;
     while i < args.len() {

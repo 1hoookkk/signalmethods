@@ -163,22 +163,31 @@ pub fn root_map(
             Stroke::new(1.0, theme::GRATICULE),
         );
     }
-    let mut db = 12.0;
+    let step = if well.height() < 90.0 {
+        48.0
+    } else if well.height() < 170.0 {
+        24.0
+    } else {
+        12.0
+    };
+    let mut db = step;
     while db < top_db {
         let y = well.bottom() - (db / top_db) as f32 * well.height();
         painter.line_segment(
             [Pos2::new(well.left(), y), Pos2::new(well.right(), y)],
             Stroke::new(1.0, theme::GRATICULE),
         );
-        paint::label(
-            painter,
-            Pos2::new(well.left() + 3.0, y - 1.0),
-            Align2::LEFT_BOTTOM,
-            &format!("{db:.0}"),
-            theme::SMALL,
-            theme::WELL_DIM,
-        );
-        db += 12.0;
+        if y > well.top() + 10.0 {
+            paint::label(
+                painter,
+                Pos2::new(well.left() + 3.0, y - 1.0),
+                Align2::LEFT_BOTTOM,
+                &format!("{db:.0}"),
+                theme::SMALL,
+                theme::WELL_DIM,
+            );
+        }
+        db += step;
     }
     let cy = well.bottom() - (rdb(ceiling) / top_db) as f32 * well.height();
     painter.line_segment(
@@ -226,6 +235,17 @@ pub fn root_map(
         let pp = Pos2::new(paint::log_x(lane.pole_hz, well), y_of(lane.pole_r));
         let zp = Pos2::new(paint::log_x(lane.zero_hz, well), y_of(lane.zero_r));
         let tag = |hz: f64, r: f64| format!("{} · {:.0}", fmt_hz2(hz), rdb(r));
+        let lp = painter.with_clip_rect(well);
+        let tag_at = |p: Pos2, above: bool, text: &str, color: Color32| {
+            let (x, anchor) = if p.x > well.right() - 76.0 {
+                (p.x - 8.0, Align2::RIGHT_CENTER)
+            } else {
+                (p.x + 8.0, Align2::LEFT_CENTER)
+            };
+            let y = (if above { p.y - 10.0 } else { p.y + 10.0 })
+                .clamp(well.top() + 6.0, well.bottom() - 6.0);
+            paint::label(&lp, Pos2::new(x, y), anchor, text, theme::SMALL, color);
+        };
         if has_pole && has_zero {
             painter.line_segment(
                 [pp, zp],
@@ -246,14 +266,7 @@ pub fn root_map(
                     ui.interact(prect, Id::new(("map.pole", si)), Sense::click_and_drag());
                 if resp.hovered() {
                     *legend = "L select · L drag — frequency and resonance".into();
-                    paint::label(
-                        painter,
-                        Pos2::new(pp.x + 8.0, pp.y - 10.0),
-                        Align2::LEFT_CENTER,
-                        &tag(lane.pole_hz, lane.pole_r),
-                        theme::SMALL,
-                        theme::CURSOR,
-                    );
+                    tag_at(pp, true, &tag(lane.pole_hz, lane.pole_r), theme::CURSOR);
                 }
                 if resp.clicked() {
                     let mut sel = session.selection;
@@ -290,14 +303,7 @@ pub fn root_map(
                     *legend =
                         "L drag — frequency and depth, top edge is the null · ctrl-drag re-pair"
                             .into();
-                    paint::label(
-                        painter,
-                        Pos2::new(zp.x + 8.0, zp.y + 10.0),
-                        Align2::LEFT_CENTER,
-                        &tag(lane.zero_hz, lane.zero_r),
-                        theme::SMALL,
-                        theme::CURSOR,
-                    );
+                    tag_at(zp, false, &tag(lane.zero_hz, lane.zero_r), theme::CURSOR);
                 }
                 if resp.clicked() {
                     let mut sel = session.selection;
@@ -351,24 +357,10 @@ pub fn root_map(
         }
         if selected {
             if has_pole {
-                paint::label(
-                    painter,
-                    Pos2::new(pp.x + 8.0, pp.y - 10.0),
-                    Align2::LEFT_CENTER,
-                    &tag(lane.pole_hz, lane.pole_r),
-                    theme::SMALL,
-                    ink,
-                );
+                tag_at(pp, true, &tag(lane.pole_hz, lane.pole_r), ink);
             }
             if has_zero {
-                paint::label(
-                    painter,
-                    Pos2::new(zp.x + 8.0, zp.y + 10.0),
-                    Align2::LEFT_CENTER,
-                    &tag(lane.zero_hz, lane.zero_r),
-                    theme::SMALL,
-                    ink,
-                );
+                tag_at(zp, false, &tag(lane.zero_hz, lane.zero_r), ink);
             }
         }
     }

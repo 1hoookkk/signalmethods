@@ -181,6 +181,10 @@ impl Jobs {
                 }
             }
             let held = f.roots.iter().filter(|l| !lane_is_empty(l)).count();
+            session.notice = Some((
+                false,
+                format!("fit landed — {held} sections · rms {rms:.2} dB"),
+            ));
             session.fit = FitState::Complete {
                 rms_db: rms,
                 sections: held,

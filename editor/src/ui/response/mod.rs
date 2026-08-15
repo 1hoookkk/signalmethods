@@ -212,22 +212,6 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         };
         paint::x3_trace(&painter.with_clip_rect(well), well, lo, hi, theme::NOW, &live_sample);
     }
-    if let Some(si) = focus {
-        let lane = session.active_lanes()[si];
-        if lane.pole_r > 0.0 || lane.zero_r > 0.0 {
-            let row = lane.biquad_at(SR);
-            let stage_sample = move |hz: f64| -> f64 { row_db(&row, hz, SR) };
-            paint::x3_trace(
-                &painter.with_clip_rect(well),
-                well,
-                lo,
-                hi,
-                theme::faded(theme::LANES[si % 7], 200),
-                &stage_sample,
-            );
-        }
-    }
-
     let hover = well_response.hover_pos().filter(|p| well.contains(*p));
     if well_response.double_clicked() {
         if let Some(p) = hover {
@@ -280,7 +264,11 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         list_open = !list_open;
     }
     let fitting = matches!(session.fit, FitState::Running { .. });
-    if bar_button(ui, &painter, &mut x, bar, "fit", Some(Key::F2)) && !fitting {
+    let fit_label = match focus {
+        Some(si) => format!("fit S{}", si + 1),
+        None => "fit".to_string(),
+    };
+    if bar_button(ui, &painter, &mut x, bar, &fit_label, Some(Key::F2)) && !fitting {
         cmds.push(Command::FitSelection);
     }
     if bar_button(ui, &painter, &mut x, bar, "fit poles", Some(Key::F3)) && !fitting {
@@ -372,6 +360,11 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                     }
                     Row::Mouth(entry, name) => {
                         let resp = ui.interact(rr, Id::new(("target.row", k)), Sense::click());
+                        if resp.secondary_clicked() {
+                            cmds.push(Command::SetTarget(*entry));
+                            cmds.push(Command::PlaceSkeleton);
+                            list_open = false;
+                        }
                         let current = session.selection.entry == Some(*entry);
                         if resp.hovered() {
                             painter.rect_filled(rr, 0.0, theme::CHROME_LT);
@@ -430,6 +423,14 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         })
     });
     let mut right = String::new();
+    if let Some(ci) = session.selection.corner {
+        right.push_str(&format!(
+            "editing corner m{} q{}{}  ·  ",
+            (ci & 1) * 100,
+            ((ci >> 1) & 1) * 100,
+            if ci & 4 != 0 { " t" } else { "" }
+        ));
+    }
     if fitting {
         right.push_str("fitting…  ·  ");
     }
@@ -519,6 +520,15 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
     }
 
     navigator::draw(session, ui, &painter, nav_rect, well, &mut cmds, &mut legend);
-    let _ = legend;
+    if !legend.is_empty() {
+        paint::label(
+            &painter,
+            Pos2::new(well.left() + 6.0, well.bottom() - 6.0),
+            Align2::LEFT_BOTTOM,
+            &legend,
+            theme::SMALL,
+            theme::faded(theme::CURSOR, 120),
+        );
+    }
     (cmds, back)
 }

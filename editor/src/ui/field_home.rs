@@ -12,7 +12,7 @@ const FOOT_H: f32 = 24.0;
 pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
     let mut cmds = Vec::new();
     let mut open: Option<usize> = None;
-    let mut legend = String::from("L —   M —   R —");
+    let mut legend = String::new();
     let rect = ui.max_rect();
     let painter = ui.painter().clone();
     painter.rect_filled(rect, 0.0, theme::CHROME);
@@ -34,6 +34,27 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
     let cube = session.document.field.slots[4..].iter().any(|s| s.is_some());
     let back_plane = cube && pos[2] > 0.5;
     let mut x = tb.right() + 8.0;
+    let nb = Rect::from_min_max(
+        Pos2::new(x, bar.top() + 3.0),
+        Pos2::new(x + 42.0, bar.bottom() - 3.0),
+    );
+    let ni = paint::raised(&painter, nb);
+    paint::label(
+        &painter,
+        Pos2::new(ni.center().x, ni.center().y),
+        Align2::CENTER_CENTER,
+        "new",
+        theme::SMALL,
+        theme::INK,
+    );
+    let resp = ui.interact(nb, Id::new("field.new"), Sense::click());
+    if resp.hovered() {
+        legend = "L start over — empty cascade, empty field (undo brings it back)".into();
+    }
+    if resp.clicked() {
+        cmds.push(Command::NewSession);
+    }
+    x = nb.right() + 8.0;
     if !cube {
         let pb = Rect::from_min_max(
             Pos2::new(x, bar.top() + 3.0),
@@ -306,6 +327,15 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         Stroke::new(1.0, theme::faded(theme::HOT, 170)),
     );
 
-    let _ = legend;
+    if !legend.is_empty() {
+        paint::label(
+            &painter,
+            Pos2::new(well.left() + 6.0, well.bottom() - 6.0),
+            Align2::LEFT_BOTTOM,
+            &legend,
+            theme::SMALL,
+            theme::faded(theme::CURSOR, 120),
+        );
+    }
     (cmds, open)
 }
