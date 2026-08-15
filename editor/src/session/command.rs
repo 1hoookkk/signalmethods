@@ -960,6 +960,91 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
+    fn cold_start_seed_families_compared() {
+        let mut services = Services::new();
+        let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+        let grid = author::envelope::grid();
+        let mouth_curve = |services: &Services, name: &str| -> Vec<f64> {
+            let idx = services
+                .repository
+                .entries
+                .iter()
+                .position(|e| matches!(e, Entry::Mouth { name: n, .. } if n == name))
+                .unwrap();
+            services.repository.load_mouth(idx).unwrap().1
+        };
+        let corpus_lanes = crate::lab::session_for(&mut services, "bend")
+            .unwrap()
+            .document
+            .workspace
+            .lanes;
+        for (mouth, pose_name) in [
+            ("s1-01-bahn-tense-a", "kerkhoff a (bart)"),
+            ("s1-04-boote-tense-o", "kerkhoff o (bot)"),
+        ] {
+            let curve = mouth_curve(&services, mouth);
+            let pairs: Vec<(f64, f64)> =
+                grid.iter().copied().zip(curve.iter().copied()).collect();
+            let open = [LaneLaw::OPEN; NUM_STAGES];
+
+            let cold = fit_frame(&pairs, [trench_core::stage_law::StageRoots::IDENTITY; NUM_STAGES], open, false)
+                .expect("cold fit converges");
+
+            let peaks = author::formants::peaks(&grid, &curve);
+            let mut skel = [trench_core::stage_law::StageRoots::IDENTITY; NUM_STAGES];
+            for (k, p) in peaks.iter().take(NUM_STAGES).enumerate() {
+                let (_, r) = trench_core::praat_endpoint::pole_from_frequency_bandwidth(
+                    p.hz,
+                    p.bandwidth_hz,
+                    SR,
+                )
+                .unwrap();
+                skel[k].pole_hz = p.hz;
+                skel[k].pole_r = r.min(ceiling);
+                skel[k].scale = 1.0;
+            }
+            let skeleton = crate::engine::lm::fit(&pairs, skel, open).expect("skeleton fit");
+
+            let pi = services
+                .repository
+                .poses
+                .iter()
+                .position(|(n, _)| n == pose_name)
+                .unwrap();
+            let (_, formants, _) = services.repository.load_pose(pi).unwrap();
+            let mut kl = [trench_core::stage_law::StageRoots::IDENTITY; NUM_STAGES];
+            for (k, &(hz, bw)) in formants.iter().take(NUM_STAGES).enumerate() {
+                let (_, r) =
+                    trench_core::praat_endpoint::pole_from_frequency_bandwidth(hz, bw, SR)
+                        .unwrap();
+                kl[k].pole_hz = hz;
+                kl[k].pole_r = r.min(ceiling);
+                kl[k].scale = 1.0;
+            }
+            let klatt = crate::engine::lm::fit(&pairs, kl, open).expect("klatt seed fit");
+
+            let corpus = crate::engine::lm::fit(&pairs, corpus_lanes, open).expect("corpus fit");
+
+            println!(
+                "{mouth}: cold {:.2} · skeleton {:.2} · klatt {:.2} · corpus {:.2} dB rms",
+                cold.target_rms_db,
+                skeleton.target_rms_db,
+                klatt.target_rms_db,
+                corpus.target_rms_db
+            );
+            for rms in [
+                cold.target_rms_db,
+                skeleton.target_rms_db,
+                klatt.target_rms_db,
+                corpus.target_rms_db,
+            ] {
+                assert!(rms.is_finite() && rms < 30.0, "a seed family failed to land: {rms}");
+            }
+        }
+    }
+
+    #[test]
     fn a_klatt_template_seeds_the_nasal_pair_and_excludes_the_glottal_zero() {
         let mut services = Services::new();
         let mut session = crate::lab::session_for(&mut services, "empty").unwrap();
