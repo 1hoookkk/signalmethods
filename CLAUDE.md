@@ -99,19 +99,25 @@ Gray order seeded from their neighbour so lanes correspond → packed words →
   follow — the zero holds its relative place between its two neighbouring
   formants so it can never drift onto one.
 - **Vulcan firmware disassembly** — Rossum Morpheus module OS (reported
-  disassembly of the _VPG1 application image; addresses not independently
-  re-verified here). Execution: STM32F4 streams stage parameters over the
-  FMC bus to a hardware DSP; the stage loop runs strictly S1→S7, mapped 1:1
-  — no runtime re-ordering, re-pairing, or auto-normalization; gain comes
-  directly from the stored scale word. The 320-byte cube payload is not raw
-  roots: a mode switch dispatches seven filter families (LP/HP, parametric
-  EQ, the paravowels as parametric-EQ sections, resonator/formant sweepers,
-  full 8-corner morph), each with its own designer-level unpacker that
-  synthesizes pole-zero coordinates from center/bandwidth/gain vectors with
-  stability clamping. Documenting the 289 cubes requires porting those
-  per-mode unpackers, not a root decode. The transfer audio itself is
-  verified here: biphase mark at 6 kbaud, _VCB1 at byte 749, 289 records of
-  332 bytes at 1090+332n, names in the first 12 bytes.
+  disassembly of the _VPG1 application image, audited with raw bytes;
+  addresses not independently re-verified here). Execution: STM32F4 streams
+  stage parameters over the FMC bus to a hardware DSP/FPGA; the stage loop
+  is proven at exactly 7 iterations across 8 corners, S1→S7 mapped 1:1 — no
+  runtime re-ordering, re-pairing, or auto-normalization. Coordinates on
+  the bus are 7-bit (0..127), emitted as the integer reflection 127−x with
+  a constant 0x7F companion byte (commands 0x15/0x75); command 0x5C carries
+  a 16-bit caller word (often literal 0x80) — an earlier reading of it as
+  the stored scale factor was retracted on audit. Neither 48000 nor 39062.5
+  appears in the binary and no rate-conversion arithmetic runs on the CPU:
+  the coordinate-to-Hz law lives in the FPGA (init microcode at
+  0x080391D0), and pinning it is an empirical calibration problem. The
+  320-byte cube payload is not raw roots: a 7-way mode switch (0x08033D94)
+  dispatches filter families (LP/HP, parametric EQ, the paravowels,
+  resonator/formant sweepers, full 8-corner morph), each a designer-level
+  unpacker that synthesizes stage parameters — documenting the 289 cubes
+  means porting those unpackers. The transfer audio itself is verified
+  here: biphase mark at 6 kbaud, _VCB1 at byte 749, 289 records of 332
+  bytes at 1090+332n, names in the first 12 bytes.
 - **Not applicable.** EMU8000 programmer's guide; US5943427; US5952599; the
   NASA HRTF memorandum; Segers & Verhoeven 2005 (SLI perception study on the
   Kerkhoff synthesizer; its Table 1 carries published Dutch formant and
