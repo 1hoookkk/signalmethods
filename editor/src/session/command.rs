@@ -30,6 +30,7 @@ pub enum Command {
     FitSelection,
     FitSection(usize),
     Keep,
+    WriteStatic,
     TogglePlay,
     Ride([f32; 3]),
     Undo,
@@ -462,6 +463,33 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             services.repository.write_frame(&mut frame)?;
             Ok(())
         }
+        Command::WriteStatic => {
+            let lanes = *session.active_lanes();
+            if lanes.iter().all(lane_is_empty) {
+                return Err("nothing to write".into());
+            }
+            let frame = Frame {
+                name: session
+                    .document
+                    .target
+                    .as_ref()
+                    .map(|t| t.name.clone())
+                    .unwrap_or_else(|| "static".into()),
+                sr_hz: SR,
+                provenance: String::new(),
+                words: String::new(),
+                lanes,
+                laws: session.document.workspace.laws,
+            };
+            let mut field = crate::domain::field::Field::empty();
+            for slot in field.slots[..4].iter_mut() {
+                *slot = Some(frame.clone());
+            }
+            let (packed, report) = crate::engine::fit::audit_field(&field)
+                .ok_or("assembly incomplete")?;
+            services.repository.write_static(&packed, &report)?;
+            Ok(())
+        }
         Command::TogglePlay => {
             services.audio.ensure_stream();
             if let Some(e) = services.audio.error.clone() {
@@ -643,6 +671,54 @@ mod tests {
             700.0,
             "undo restores the document"
         );
+    }
+
+    #[test]
+    fn an_empty_cascade_hand_authors_into_one_static_corner() {
+        let (mut session, mut services) = session_and_services();
+        assert!(session.document.workspace.is_empty());
+        assert!(session.document.target.is_none());
+        for (si, hz) in [(0usize, 500.0), (1, 1200.0), (2, 2600.0)] {
+            apply(
+                &mut session,
+                &mut services,
+                Command::AssignSection { section: si, hz },
+            )
+            .unwrap();
+        }
+        apply(
+            &mut session,
+            &mut services,
+            Command::SetZero {
+                section: 0,
+                hz: 900.0,
+                r: 1.0,
+            },
+        )
+        .unwrap();
+        apply(&mut session, &mut services, Command::SetGain { db: -24.0 }).unwrap();
+        let dir = services.repository.root.join("recipes").join("hero");
+        let listing = |d: &std::path::Path| -> std::collections::BTreeSet<std::path::PathBuf> {
+            std::fs::read_dir(d)
+                .map(|rd| rd.flatten().map(|e| e.path()).collect())
+                .unwrap_or_default()
+        };
+        let before = listing(&dir);
+        apply(&mut session, &mut services, Command::WriteStatic).unwrap();
+        let after = listing(&dir);
+        let new: Vec<_> = after.difference(&before).collect();
+        assert_eq!(new.len(), 1, "exactly one body written");
+        let path = new[0].clone();
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(bytes.len(), 240, "a 6-SOS static corner is a legacy body");
+        let packed = trench_core::minifloat::PackedCorners::from_body_bytes(&bytes).unwrap();
+        for ci in 1..4 {
+            assert_eq!(
+                packed.words[ci], packed.words[0],
+                "every corner holds the same response — the corner is static"
+            );
+        }
+        std::fs::remove_file(&path).unwrap();
     }
 }
 

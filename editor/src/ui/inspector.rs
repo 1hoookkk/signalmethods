@@ -478,6 +478,26 @@ fn draw_cascade_card(
     if resp.clicked() {
         cmds.push(Command::Keep);
     }
+    let wb = Rect::from_min_max(
+        Pos2::new(kb.left() - 56.0, l1 - 10.0),
+        Pos2::new(kb.left() - 4.0, l1 + 10.0),
+    );
+    let wi = paint::raised(painter, wb);
+    paint::label(
+        painter,
+        Pos2::new(wi.center().x, wi.center().y),
+        Align2::CENTER_CENTER,
+        "write",
+        theme::SMALL,
+        theme::INK,
+    );
+    let resp = ui.interact(wb, Id::new("cascade.write"), Sense::click());
+    if resp.hovered() {
+        *legend = "L write the body — this cascade at every corner, audited".into();
+    }
+    if resp.clicked() {
+        cmds.push(Command::WriteStatic);
+    }
 }
 
 fn draw_card(
