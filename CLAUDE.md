@@ -103,6 +103,23 @@ Gray order seeded from their neighbour so lanes correspond → packed words →
   Kerkhoff synthesizer; its Table 1 carries published Dutch formant and
   bandwidth values for /o/ and /a/).
 
+How the two lineages compose. The matching lineage (Fant/Mártony →
+Bell/Fujisaki/Stevens 1961 → Kjellin → Kerkhoff → Klatt → ARMAdillo) reduces
+one spectrum to the mechanism's coordinates: a production model, a
+comparator, and a strategy in the loop — analysis by synthesis. The Martens
+lineage reduces a corpus to the data's coordinates: PCA scores, inverse PCA,
+perceptual bisection — the Palette loop is analysis by synthesis with the
+ear as comparator. Bell 1961 closes by asking for a low-dimensional legal
+search space above pole-zero space; score space inside the data ellipsoid is
+that space, built statistically instead of articulatorily. Sandell &
+Martens' prototype-plus-deviations, Bell's quasi-invariants, and the
+factory's reused poses and held zero scaffolds are one principle. The
+pipeline is the composition, a stack of three inversions: judgments ↔ knob
+feel (rating models, bisection); corpus ↔ scores (inverse PCA, mean and
+rotation); spectrum ↔ legal sections (the fit). A corner is score → curve →
+sections → packed words. Taste enters only at the top, as judgments;
+measurement in the middle; the hardware at the bottom.
+
 ## The breakthrough
 
 In a serial cascade, a vowel is a lookup, not a search. Klatt 1980: "the
