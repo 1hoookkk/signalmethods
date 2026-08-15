@@ -1,0 +1,1158 @@
+[
+  {
+    "id": 0,
+    "name": "Null Cube"
+  },
+  {
+    "id": 1,
+    "name": "LPFlange.4"
+  },
+  {
+    "id": 2,
+    "name": "LPFlngBk.4"
+  },
+  {
+    "id": 3,
+    "name": "Flange2.4"
+  },
+  {
+    "id": 4,
+    "name": "CubeFlanger"
+  },
+  {
+    "id": 5,
+    "name": "Flange3.4"
+  },
+  {
+    "id": 6,
+    "name": "Flange4.4"
+  },
+  {
+    "id": 7,
+    "name": "Flange5"
+  },
+  {
+    "id": 8,
+    "name": "Flange6.4"
+  },
+  {
+    "id": 9,
+    "name": "Flange6R.4"
+  },
+  {
+    "id": 10,
+    "name": "Flange7.4"
+  },
+  {
+    "id": 11,
+    "name": "BriteFlng.4"
+  },
+  {
+    "id": 12,
+    "name": "Flng>Flng1"
+  },
+  {
+    "id": 13,
+    "name": "LP>Flng2"
+  },
+  {
+    "id": 14,
+    "name": "Flng>Flng3"
+  },
+  {
+    "id": 15,
+    "name": "Flng>Flng4"
+  },
+  {
+    "id": 16,
+    "name": "Flng>Flng5"
+  },
+  {
+    "id": 17,
+    "name": "Flng>Flng6"
+  },
+  {
+    "id": 18,
+    "name": "Flng>FlngT"
+  },
+  {
+    "id": 19,
+    "name": "Flng>FlngC"
+  },
+  {
+    "id": 20,
+    "name": "CO>FlngT"
+  },
+  {
+    "id": 21,
+    "name": "AEParLPVow"
+  },
+  {
+    "id": 22,
+    "name": "AEParaVowel"
+  },
+  {
+    "id": 23,
+    "name": "AOLpParaVow"
+  },
+  {
+    "id": 24,
+    "name": "AOParaVowel"
+  },
+  {
+    "id": 25,
+    "name": "AUParaVow.4"
+  },
+  {
+    "id": 26,
+    "name": "UOParaVow.4"
+  },
+  {
+    "id": 27,
+    "name": "SftEOVowl.4"
+  },
+  {
+    "id": 28,
+    "name": "SoftEOAE"
+  },
+  {
+    "id": 29,
+    "name": "Vocal Cube"
+  },
+  {
+    "id": 30,
+    "name": "C1-6Harms.4"
+  },
+  {
+    "id": 31,
+    "name": "Voce.4"
+  },
+  {
+    "id": 32,
+    "name": "ChoralComb.4"
+  },
+  {
+    "id": 33,
+    "name": "Bassutoi.4"
+  },
+  {
+    "id": 34,
+    "name": "Be-Ye.4"
+  },
+  {
+    "id": 35,
+    "name": "Ee-Yi.4"
+  },
+  {
+    "id": 36,
+    "name": "Ii-Yi.4"
+  },
+  {
+    "id": 37,
+    "name": "Uhrrrah.4"
+  },
+  {
+    "id": 38,
+    "name": "YeahYeah.4"
+  },
+  {
+    "id": 39,
+    "name": "Vow>Vow1"
+  },
+  {
+    "id": 40,
+    "name": "Vow>Vow2"
+  },
+  {
+    "id": 41,
+    "name": "YahYahs.4"
+  },
+  {
+    "id": 42,
+    "name": "YoYo.4"
+  },
+  {
+    "id": 43,
+    "name": "VowelSpace"
+  },
+  {
+    "id": 44,
+    "name": "BrickWaLP.4"
+  },
+  {
+    "id": 45,
+    "name": "BrickWaLP2"
+  },
+  {
+    "id": 46,
+    "name": "MdQ 2PoleLP"
+  },
+  {
+    "id": 47,
+    "name": "HiQ 2PoleLP"
+  },
+  {
+    "id": 48,
+    "name": "MdQ 4PoleLP"
+  },
+  {
+    "id": 49,
+    "name": "HiQ 4PoleLP"
+  },
+  {
+    "id": 50,
+    "name": "2 PoleLoQ.4"
+  },
+  {
+    "id": 51,
+    "name": "4 PoleLoQ.4"
+  },
+  {
+    "id": 52,
+    "name": "4 PoleMidQ.4"
+  },
+  {
+    "id": 53,
+    "name": "2pole>4pole"
+  },
+  {
+    "id": 54,
+    "name": "LowPassPlus"
+  },
+  {
+    "id": 55,
+    "name": "Low Past.4"
+  },
+  {
+    "id": 56,
+    "name": "APass.4"
+  },
+  {
+    "id": 57,
+    "name": "HPSweep.4"
+  },
+  {
+    "id": 58,
+    "name": "HiSwept1.4"
+  },
+  {
+    "id": 59,
+    "name": "HghsSwpt2.4"
+  },
+  {
+    "id": 60,
+    "name": "Hi Accent.4"
+  },
+  {
+    "id": 61,
+    "name": "HiPassSwp.4"
+  },
+  {
+    "id": 62,
+    "name": "DeepCombs.4"
+  },
+  {
+    "id": 63,
+    "name": "One Peak"
+  },
+  {
+    "id": 64,
+    "name": "More Peaks"
+  },
+  {
+    "id": 65,
+    "name": "Rev Peaks"
+  },
+  {
+    "id": 66,
+    "name": "Notcher2.4"
+  },
+  {
+    "id": 67,
+    "name": "Ntches2Oct.4"
+  },
+  {
+    "id": 68,
+    "name": "Odd>+"
+  },
+  {
+    "id": 69,
+    "name": "VarSlope.4"
+  },
+  {
+    "id": 70,
+    "name": "BassEQ 1.4"
+  },
+  {
+    "id": 71,
+    "name": "B BOOST.4"
+  },
+  {
+    "id": 72,
+    "name": "BssBOOST2.4"
+  },
+  {
+    "id": 73,
+    "name": "BassDrumEQ"
+  },
+  {
+    "id": 74,
+    "name": "Snare LPEQ2"
+  },
+  {
+    "id": 75,
+    "name": "HiHatLPEQ"
+  },
+  {
+    "id": 76,
+    "name": "HP LP PZ"
+  },
+  {
+    "id": 77,
+    "name": "PZ Notch"
+  },
+  {
+    "id": 78,
+    "name": "Band-aid"
+  },
+  {
+    "id": 79,
+    "name": "4>2 LowQHiQ"
+  },
+  {
+    "id": 80,
+    "name": "Wah4Vib.4"
+  },
+  {
+    "id": 81,
+    "name": "Wa Wa.4"
+  },
+  {
+    "id": 82,
+    "name": "BrassRez.4"
+  },
+  {
+    "id": 83,
+    "name": "Clr>Oboe"
+  },
+  {
+    "id": 84,
+    "name": "0>Muter"
+  },
+  {
+    "id": 85,
+    "name": "PZ Syn Horn"
+  },
+  {
+    "id": 86,
+    "name": "HP Brass"
+  },
+  {
+    "id": 87,
+    "name": "BrassyBlast"
+  },
+  {
+    "id": 88,
+    "name": "Brass Swell"
+  },
+  {
+    "id": 89,
+    "name": "BrsSwell2.4"
+  },
+  {
+    "id": 90,
+    "name": "LoVelTrum"
+  },
+  {
+    "id": 91,
+    "name": "Chiffin.4"
+  },
+  {
+    "id": 92,
+    "name": "ShakuFilter"
+  },
+  {
+    "id": 93,
+    "name": "Cym"
+  },
+  {
+    "id": 94,
+    "name": "VelMarim"
+  },
+  {
+    "id": 95,
+    "name": "EZ Vibez.4"
+  },
+  {
+    "id": 96,
+    "name": "Piano 1"
+  },
+  {
+    "id": 97,
+    "name": "Piano 2.4"
+  },
+  {
+    "id": 98,
+    "name": "EZ Rhodez.4"
+  },
+  {
+    "id": 99,
+    "name": "MoogVocodr.4"
+  },
+  {
+    "id": 100,
+    "name": "MoogVocSwp"
+  },
+  {
+    "id": 101,
+    "name": "StrngThng.4"
+  },
+  {
+    "id": 102,
+    "name": "StrSweep.4"
+  },
+  {
+    "id": 103,
+    "name": "BassXpress"
+  },
+  {
+    "id": 104,
+    "name": "Qbase.4"
+  },
+  {
+    "id": 105,
+    "name": "AcGtrRs.4"
+  },
+  {
+    "id": 106,
+    "name": "TubeSust.4"
+  },
+  {
+    "id": 107,
+    "name": "GtrSkwk"
+  },
+  {
+    "id": 108,
+    "name": "GuitXpress"
+  },
+  {
+    "id": 109,
+    "name": "G MajTrans.4"
+  },
+  {
+    "id": 110,
+    "name": "Tam"
+  },
+  {
+    "id": 111,
+    "name": "HOTwell.4"
+  },
+  {
+    "id": 112,
+    "name": "Bell Wah A"
+  },
+  {
+    "id": 113,
+    "name": "Bell Wah B"
+  },
+  {
+    "id": 114,
+    "name": "0>Bell-"
+  },
+  {
+    "id": 115,
+    "name": "0>Bell+"
+  },
+  {
+    "id": 116,
+    "name": "Bel>Crs>Bel"
+  },
+  {
+    "id": 117,
+    "name": "Chrs>Flng1"
+  },
+  {
+    "id": 118,
+    "name": "Chrs>Flng2"
+  },
+  {
+    "id": 119,
+    "name": "Ev/OdNtch.4"
+  },
+  {
+    "id": 120,
+    "name": "Odd/EvnNtch"
+  },
+  {
+    "id": 121,
+    "name": "NotchPeaks.4"
+  },
+  {
+    "id": 122,
+    "name": "LoudBoost.4"
+  },
+  {
+    "id": 123,
+    "name": "Swingshift"
+  },
+  {
+    "id": 124,
+    "name": "500up.4"
+  },
+  {
+    "id": 125,
+    "name": "C1Harmonic"
+  },
+  {
+    "id": 126,
+    "name": "Odd>Even"
+  },
+  {
+    "id": 127,
+    "name": "0>Shp1"
+  },
+  {
+    "id": 128,
+    "name": "0>Shp2"
+  },
+  {
+    "id": 129,
+    "name": "0>Shp3"
+  },
+  {
+    "id": 130,
+    "name": "Shp>Shp1"
+  },
+  {
+    "id": 131,
+    "name": "Lpeq Vel"
+  },
+  {
+    "id": 132,
+    "name": "PeakSweep.4"
+  },
+  {
+    "id": 133,
+    "name": "PowerSweeps"
+  },
+  {
+    "id": 134,
+    "name": "TSweep.4"
+  },
+  {
+    "id": 135,
+    "name": "SweepHiQ1.4"
+  },
+  {
+    "id": 136,
+    "name": "V>FcQuad.4"
+  },
+  {
+    "id": 137,
+    "name": "Nexus.4"
+  },
+  {
+    "id": 138,
+    "name": "Krators.4"
+  },
+  {
+    "id": 139,
+    "name": "Harmonix.4"
+  },
+  {
+    "id": 140,
+    "name": "GreenWorld.4"
+  },
+  {
+    "id": 141,
+    "name": "Comb/Swap.4"
+  },
+  {
+    "id": 142,
+    "name": "Comb/HP.4"
+  },
+  {
+    "id": 143,
+    "name": "Swirly"
+  },
+  {
+    "id": 144,
+    "name": "Cavatate.4"
+  },
+  {
+    "id": 145,
+    "name": "GentleRez.4"
+  },
+  {
+    "id": 146,
+    "name": "Bendup/Swap"
+  },
+  {
+    "id": 147,
+    "name": "Bendup"
+  },
+  {
+    "id": 148,
+    "name": "Skweezit"
+  },
+  {
+    "id": 149,
+    "name": "Lo/High.4"
+  },
+  {
+    "id": 150,
+    "name": "SubtleMove.4"
+  },
+  {
+    "id": 151,
+    "name": "BuzzyPad.4"
+  },
+  {
+    "id": 152,
+    "name": "Bw5kHz+6.4"
+  },
+  {
+    "id": 153,
+    "name": "Bw65Hz/2k.4"
+  },
+  {
+    "id": 154,
+    "name": "Bb80Hzbw1.4"
+  },
+  {
+    "id": 155,
+    "name": "HighsTwist.4"
+  },
+  {
+    "id": 156,
+    "name": "Cubix"
+  },
+  {
+    "id": 157,
+    "name": "HarmSweep.4"
+  },
+  {
+    "id": 158,
+    "name": "EvenCuts.4"
+  },
+  {
+    "id": 159,
+    "name": "OddCuts.4"
+  },
+  {
+    "id": 160,
+    "name": "PWMTrans.4"
+  },
+  {
+    "id": 161,
+    "name": "HiEndQ.4"
+  },
+  {
+    "id": 162,
+    "name": "BroadRes.4"
+  },
+  {
+    "id": 163,
+    "name": "ResoHose.4"
+  },
+  {
+    "id": 164,
+    "name": "HeeghCube"
+  },
+  {
+    "id": 165,
+    "name": "NoizCube"
+  },
+  {
+    "id": 166,
+    "name": "VeloctyTilt"
+  },
+  {
+    "id": 167,
+    "name": "Syn Wow.4"
+  },
+  {
+    "id": 168,
+    "name": "CombSweep.4"
+  },
+  {
+    "id": 169,
+    "name": "Diffuser.4"
+  },
+  {
+    "id": 170,
+    "name": "MdlySweep.4"
+  },
+  {
+    "id": 171,
+    "name": "StrongShimr"
+  },
+  {
+    "id": 172,
+    "name": "Acc.Vel-1"
+  },
+  {
+    "id": 173,
+    "name": "Acc.Vel-2"
+  },
+  {
+    "id": 174,
+    "name": "Vel2-Wind"
+  },
+  {
+    "id": 175,
+    "name": "Harmo"
+  },
+  {
+    "id": 176,
+    "name": "Start>EndA"
+  },
+  {
+    "id": 177,
+    "name": "Start>EndB"
+  },
+  {
+    "id": 178,
+    "name": "MovingPick1"
+  },
+  {
+    "id": 179,
+    "name": "MovingPick2"
+  },
+  {
+    "id": 180,
+    "name": "Mph+Trns1"
+  },
+  {
+    "id": 181,
+    "name": "0>Odds"
+  },
+  {
+    "id": 182,
+    "name": "Comb Voices"
+  },
+  {
+    "id": 183,
+    "name": "Odd-Ev Hrm"
+  },
+  {
+    "id": 184,
+    "name": "OddHrm+Rez"
+  },
+  {
+    "id": 185,
+    "name": "EvnHrm+Rez"
+  },
+  {
+    "id": 186,
+    "name": "MellowPeaks"
+  },
+  {
+    "id": 187,
+    "name": "AHmBnd.4"
+  },
+  {
+    "id": 188,
+    "name": "Vintage"
+  },
+  {
+    "id": 189,
+    "name": "MildQPole"
+  },
+  {
+    "id": 190,
+    "name": "Bonk>CO"
+  },
+  {
+    "id": 191,
+    "name": "Speaker"
+  },
+  {
+    "id": 192,
+    "name": "Expander"
+  },
+  {
+    "id": 193,
+    "name": "Separator"
+  },
+  {
+    "id": 194,
+    "name": "MildPolSwap"
+  },
+  {
+    "id": 195,
+    "name": "PoleCross.4"
+  },
+  {
+    "id": 196,
+    "name": "ApDistB6.4"
+  },
+  {
+    "id": 197,
+    "name": "Dave'sRave"
+  },
+  {
+    "id": 198,
+    "name": "Poles 1-7"
+  },
+  {
+    "id": 199,
+    "name": "2 Poles"
+  },
+  {
+    "id": 200,
+    "name": "4 Poles A"
+  },
+  {
+    "id": 201,
+    "name": "4 Poles B"
+  },
+  {
+    "id": 202,
+    "name": "4 Poles C"
+  },
+  {
+    "id": 203,
+    "name": "6 Poles"
+  },
+  {
+    "id": 204,
+    "name": "MultiPole"
+  },
+  {
+    "id": 205,
+    "name": "Tracker"
+  },
+  {
+    "id": 206,
+    "name": "Tracker 2"
+  },
+  {
+    "id": 207,
+    "name": "Tracker 3"
+  },
+  {
+    "id": 208,
+    "name": "Tracker5ths"
+  },
+  {
+    "id": 209,
+    "name": "InFifths.4"
+  },
+  {
+    "id": 210,
+    "name": "HarmTracker"
+  },
+  {
+    "id": 211,
+    "name": "1BndPrmtrcA"
+  },
+  {
+    "id": 212,
+    "name": "1BndPrmtrcB"
+  },
+  {
+    "id": 213,
+    "name": "1BndPrmtrcC"
+  },
+  {
+    "id": 214,
+    "name": "1BndPrmtrcD"
+  },
+  {
+    "id": 215,
+    "name": "MltiMetricA"
+  },
+  {
+    "id": 216,
+    "name": "MltiMetricB"
+  },
+  {
+    "id": 217,
+    "name": "MltiMetricC"
+  },
+  {
+    "id": 218,
+    "name": "Omni Metric"
+  },
+  {
+    "id": 219,
+    "name": "HarmncPeaks"
+  },
+  {
+    "id": 220,
+    "name": "HrmncPeaks2"
+  },
+  {
+    "id": 221,
+    "name": "InHarMetric"
+  },
+  {
+    "id": 222,
+    "name": "HarmShifter"
+  },
+  {
+    "id": 223,
+    "name": "HarmShiftr2"
+  },
+  {
+    "id": 224,
+    "name": "HarmShiftr3"
+  },
+  {
+    "id": 225,
+    "name": "Phaser"
+  },
+  {
+    "id": 226,
+    "name": "HrmncPhaser"
+  },
+  {
+    "id": 227,
+    "name": "HrmncPhsr2"
+  },
+  {
+    "id": 228,
+    "name": "Wide Bands"
+  },
+  {
+    "id": 229,
+    "name": "New Boost"
+  },
+  {
+    "id": 230,
+    "name": "VowelSpace2"
+  },
+  {
+    "id": 231,
+    "name": "VowelSpace3"
+  },
+  {
+    "id": 232,
+    "name": "Oh Shaper"
+  },
+  {
+    "id": 233,
+    "name": "Ah Shaper"
+  },
+  {
+    "id": 234,
+    "name": "Oo Shaper"
+  },
+  {
+    "id": 235,
+    "name": "FrmntShaper"
+  },
+  {
+    "id": 236,
+    "name": "Piano LP.4"
+  },
+  {
+    "id": 237,
+    "name": "PianoSndBrd"
+  },
+  {
+    "id": 238,
+    "name": "Strike Cube"
+  },
+  {
+    "id": 239,
+    "name": "Clav Curves"
+  },
+  {
+    "id": 240,
+    "name": "Symphony"
+  },
+  {
+    "id": 241,
+    "name": "String Cube"
+  },
+  {
+    "id": 242,
+    "name": "Swell Cube"
+  },
+  {
+    "id": 243,
+    "name": "Quartet.4"
+  },
+  {
+    "id": 244,
+    "name": "Mellotron.4"
+  },
+  {
+    "id": 245,
+    "name": "Cello"
+  },
+  {
+    "id": 246,
+    "name": "Key Squeak"
+  },
+  {
+    "id": 247,
+    "name": "Pluck.4"
+  },
+  {
+    "id": 248,
+    "name": "Pick It"
+  },
+  {
+    "id": 249,
+    "name": "El Pick It"
+  },
+  {
+    "id": 250,
+    "name": "ElGuit Cube"
+  },
+  {
+    "id": 251,
+    "name": "ElGuit Pick"
+  },
+  {
+    "id": 252,
+    "name": "Breather 1"
+  },
+  {
+    "id": 253,
+    "name": "Breather 2"
+  },
+  {
+    "id": 254,
+    "name": "WindNoise 1"
+  },
+  {
+    "id": 255,
+    "name": "WindNoise 2"
+  },
+  {
+    "id": 256,
+    "name": "Blow Cube"
+  },
+  {
+    "id": 257,
+    "name": "Overblow"
+  },
+  {
+    "id": 258,
+    "name": "Wind Filter"
+  },
+  {
+    "id": 259,
+    "name": "FlutBreth.4"
+  },
+  {
+    "id": 260,
+    "name": "VClarinet.4"
+  },
+  {
+    "id": 261,
+    "name": "New Mute.4"
+  },
+  {
+    "id": 262,
+    "name": "Trempeto.4"
+  },
+  {
+    "id": 263,
+    "name": "SfBrzando.4"
+  },
+  {
+    "id": 264,
+    "name": "UduFilter.4"
+  },
+  {
+    "id": 265,
+    "name": "Hip Kick"
+  },
+  {
+    "id": 266,
+    "name": "Cymbal Cube"
+  },
+  {
+    "id": 267,
+    "name": "ChimeFlange"
+  },
+  {
+    "id": 268,
+    "name": "CableRing.4"
+  },
+  {
+    "id": 269,
+    "name": "TensionWire"
+  },
+  {
+    "id": 270,
+    "name": "Auto Clang"
+  },
+  {
+    "id": 271,
+    "name": "Dragon Claw"
+  },
+  {
+    "id": 272,
+    "name": "Spectra"
+  },
+  {
+    "id": 273,
+    "name": "RippleSheet"
+  },
+  {
+    "id": 274,
+    "name": "Clear Water"
+  },
+  {
+    "id": 275,
+    "name": "Invisible"
+  },
+  {
+    "id": 276,
+    "name": "Wine Glass"
+  },
+  {
+    "id": 277,
+    "name": "SnakeCros.4"
+  },
+  {
+    "id": 278,
+    "name": "Analog.4"
+  },
+  {
+    "id": 279,
+    "name": "Skrtch Cube"
+  },
+  {
+    "id": 280,
+    "name": "KitchenSink"
+  },
+  {
+    "id": 281,
+    "name": "Head Pan 1"
+  },
+  {
+    "id": 282,
+    "name": "Head Pan 2"
+  },
+  {
+    "id": 283,
+    "name": "Arpeggio"
+  },
+  {
+    "id": 284,
+    "name": "HeavyFilt.4"
+  },
+  {
+    "id": 285,
+    "name": "Noiz Cube 2"
+  },
+  {
+    "id": 286,
+    "name": "Feedback"
+  },
+  {
+    "id": 287,
+    "name": "AllPoleDist"
+  },
+  {
+    "id": 288,
+    "name": "AllPoleDst2"
+  }
+]

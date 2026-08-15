@@ -1,0 +1,290 @@
+cube_id,name
+0,Null Cube
+1,LPFlange.4
+2,LPFlngBk.4
+3,Flange2.4
+4,CubeFlanger
+5,Flange3.4
+6,Flange4.4
+7,Flange5
+8,Flange6.4
+9,Flange6R.4
+10,Flange7.4
+11,BriteFlng.4
+12,Flng>Flng1
+13,LP>Flng2
+14,Flng>Flng3
+15,Flng>Flng4
+16,Flng>Flng5
+17,Flng>Flng6
+18,Flng>FlngT
+19,Flng>FlngC
+20,CO>FlngT
+21,AEParLPVow
+22,AEParaVowel
+23,AOLpParaVow
+24,AOParaVowel
+25,AUParaVow.4
+26,UOParaVow.4
+27,SftEOVowl.4
+28,SoftEOAE
+29,Vocal Cube
+30,C1-6Harms.4
+31,Voce.4
+32,ChoralComb.4
+33,Bassutoi.4
+34,Be-Ye.4
+35,Ee-Yi.4
+36,Ii-Yi.4
+37,Uhrrrah.4
+38,YeahYeah.4
+39,Vow>Vow1
+40,Vow>Vow2
+41,YahYahs.4
+42,YoYo.4
+43,VowelSpace
+44,BrickWaLP.4
+45,BrickWaLP2
+46,MdQ 2PoleLP
+47,HiQ 2PoleLP
+48,MdQ 4PoleLP
+49,HiQ 4PoleLP
+50,2 PoleLoQ.4
+51,4 PoleLoQ.4
+52,4 PoleMidQ.4
+53,2pole>4pole
+54,LowPassPlus
+55,Low Past.4
+56,APass.4
+57,HPSweep.4
+58,HiSwept1.4
+59,HghsSwpt2.4
+60,Hi Accent.4
+61,HiPassSwp.4
+62,DeepCombs.4
+63,One Peak
+64,More Peaks
+65,Rev Peaks
+66,Notcher2.4
+67,Ntches2Oct.4
+68,Odd>+
+69,VarSlope.4
+70,BassEQ 1.4
+71,B BOOST.4
+72,BssBOOST2.4
+73,BassDrumEQ
+74,Snare LPEQ2
+75,HiHatLPEQ
+76,HP LP PZ
+77,PZ Notch
+78,Band-aid
+79,4>2 LowQHiQ
+80,Wah4Vib.4
+81,Wa Wa.4
+82,BrassRez.4
+83,Clr>Oboe
+84,0>Muter
+85,PZ Syn Horn
+86,HP Brass
+87,BrassyBlast
+88,Brass Swell
+89,BrsSwell2.4
+90,LoVelTrum
+91,Chiffin.4
+92,ShakuFilter
+93,Cym
+94,VelMarim
+95,EZ Vibez.4
+96,Piano 1
+97,Piano 2.4
+98,EZ Rhodez.4
+99,MoogVocodr.4
+100,MoogVocSwp
+101,StrngThng.4
+102,StrSweep.4
+103,BassXpress
+104,Qbase.4
+105,AcGtrRs.4
+106,TubeSust.4
+107,GtrSkwk
+108,GuitXpress
+109,G MajTrans.4
+110,Tam
+111,HOTwell.4
+112,Bell Wah A
+113,Bell Wah B
+114,0>Bell-
+115,0>Bell+
+116,Bel>Crs>Bel
+117,Chrs>Flng1
+118,Chrs>Flng2
+119,Ev/OdNtch.4
+120,Odd/EvnNtch
+121,NotchPeaks.4
+122,LoudBoost.4
+123,Swingshift
+124,500up.4
+125,C1Harmonic
+126,Odd>Even
+127,0>Shp1
+128,0>Shp2
+129,0>Shp3
+130,Shp>Shp1
+131,Lpeq Vel
+132,PeakSweep.4
+133,PowerSweeps
+134,TSweep.4
+135,SweepHiQ1.4
+136,V>FcQuad.4
+137,Nexus.4
+138,Krators.4
+139,Harmonix.4
+140,GreenWorld.4
+141,Comb/Swap.4
+142,Comb/HP.4
+143,Swirly
+144,Cavatate.4
+145,GentleRez.4
+146,Bendup/Swap
+147,Bendup
+148,Skweezit
+149,Lo/High.4
+150,SubtleMove.4
+151,BuzzyPad.4
+152,Bw5kHz+6.4
+153,Bw65Hz/2k.4
+154,Bb80Hzbw1.4
+155,HighsTwist.4
+156,Cubix
+157,HarmSweep.4
+158,EvenCuts.4
+159,OddCuts.4
+160,PWMTrans.4
+161,HiEndQ.4
+162,BroadRes.4
+163,ResoHose.4
+164,HeeghCube
+165,NoizCube
+166,VeloctyTilt
+167,Syn Wow.4
+168,CombSweep.4
+169,Diffuser.4
+170,MdlySweep.4
+171,StrongShimr
+172,Acc.Vel-1
+173,Acc.Vel-2
+174,Vel2-Wind
+175,Harmo
+176,Start>EndA
+177,Start>EndB
+178,MovingPick1
+179,MovingPick2
+180,Mph+Trns1
+181,0>Odds
+182,Comb Voices
+183,Odd-Ev Hrm
+184,OddHrm+Rez
+185,EvnHrm+Rez
+186,MellowPeaks
+187,AHmBnd.4
+188,Vintage
+189,MildQPole
+190,Bonk>CO
+191,Speaker
+192,Expander
+193,Separator
+194,MildPolSwap
+195,PoleCross.4
+196,ApDistB6.4
+197,Dave'sRave
+198,Poles 1-7
+199,2 Poles
+200,4 Poles A
+201,4 Poles B
+202,4 Poles C
+203,6 Poles
+204,MultiPole
+205,Tracker
+206,Tracker 2
+207,Tracker 3
+208,Tracker5ths
+209,InFifths.4
+210,HarmTracker
+211,1BndPrmtrcA
+212,1BndPrmtrcB
+213,1BndPrmtrcC
+214,1BndPrmtrcD
+215,MltiMetricA
+216,MltiMetricB
+217,MltiMetricC
+218,Omni Metric
+219,HarmncPeaks
+220,HrmncPeaks2
+221,InHarMetric
+222,HarmShifter
+223,HarmShiftr2
+224,HarmShiftr3
+225,Phaser
+226,HrmncPhaser
+227,HrmncPhsr2
+228,Wide Bands
+229,New Boost
+230,VowelSpace2
+231,VowelSpace3
+232,Oh Shaper
+233,Ah Shaper
+234,Oo Shaper
+235,FrmntShaper
+236,Piano LP.4
+237,PianoSndBrd
+238,Strike Cube
+239,Clav Curves
+240,Symphony
+241,String Cube
+242,Swell Cube
+243,Quartet.4
+244,Mellotron.4
+245,Cello
+246,Key Squeak
+247,Pluck.4
+248,Pick It
+249,El Pick It
+250,ElGuit Cube
+251,ElGuit Pick
+252,Breather 1
+253,Breather 2
+254,WindNoise 1
+255,WindNoise 2
+256,Blow Cube
+257,Overblow
+258,Wind Filter
+259,FlutBreth.4
+260,VClarinet.4
+261,New Mute.4
+262,Trempeto.4
+263,SfBrzando.4
+264,UduFilter.4
+265,Hip Kick
+266,Cymbal Cube
+267,ChimeFlange
+268,CableRing.4
+269,TensionWire
+270,Auto Clang
+271,Dragon Claw
+272,Spectra
+273,RippleSheet
+274,Clear Water
+275,Invisible
+276,Wine Glass
+277,SnakeCros.4
+278,Analog.4
+279,Skrtch Cube
+280,KitchenSink
+281,Head Pan 1
+282,Head Pan 2
+283,Arpeggio
+284,HeavyFilt.4
+285,Noiz Cube 2
+286,Feedback
+287,AllPoleDist
+288,AllPoleDst2
