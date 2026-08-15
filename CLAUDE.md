@@ -88,8 +88,20 @@ Gray order seeded from their neighbour so lanes correspond → packed words →
   plane (no Transform axis; the knob defaults to distortion). Axes:
   Frequency, Morph, Transform. The original hardware morphed one axis in
   real time; the other two were set at note-on. The module ships 289 Cubes.
+- **Kerkhoff & Boves** — Eurospeech '93. A serial cascade of six second-order
+  pole-zero sections as a vocal tract. Time-varying poles can go unstable
+  even when every stationary parameter set is stable — pole parameters must
+  change smoothly; zeros are feedforward and may jump freely when
+  DC-normalized. Poles and zeros cannot move independently through a
+  transition: interpolating both between targets does not preserve the
+  intended shape, and a zero track crossing a pole track cancels the formant.
+  Zero travel is therefore authored: linear, stepwise at the boundary, or
+  follow — the zero holds its relative place between its two neighbouring
+  formants so it can never drift onto one.
 - **Not applicable.** EMU8000 programmer's guide; US5943427; US5952599; the
-  NASA HRTF memorandum.
+  NASA HRTF memorandum; Segers & Verhoeven 2005 (SLI perception study on the
+  Kerkhoff synthesizer; its Table 1 carries published Dutch formant and
+  bandwidth values for /o/ and /a/).
 
 ## The breakthrough
 
