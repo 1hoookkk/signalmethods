@@ -9,8 +9,9 @@ const STRIP_H: f32 = 30.0;
 const FOOT_H: f32 = 24.0;
 const PAD: f32 = 14.0;
 
-pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
+pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) {
     let mut cmds = Vec::new();
+    let mut back = false;
     let mut legend = String::from("L —   M —   R —");
     let rect = ui.max_rect();
     let painter = ui.painter().clone();
@@ -239,6 +240,40 @@ pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
         ("filter", now_db.map(|v| format!("{v:+.1}")), theme::NOW_INK),
     ];
     let mut x = strip.left();
+    if home {
+        let bb = Rect::from_min_max(
+            Pos2::new(x, strip.top() + 3.0),
+            Pos2::new(x + 52.0, strip.bottom() - 3.0),
+        );
+        let bi = paint::raised(&painter, bb);
+        paint::label(
+            &painter,
+            Pos2::new(bi.center().x, bi.center().y),
+            Align2::CENTER_CENTER,
+            "field",
+            theme::SMALL,
+            theme::INK,
+        );
+        let resp = ui.interact(bb, Id::new("fit.back"), Sense::click());
+        if resp.hovered() {
+            legend = "L back to the field".into();
+        }
+        if resp.clicked() || ui.input(|i| i.key_pressed(eframe::egui::Key::Escape)) {
+            back = true;
+        }
+        if let Some(ci) = session.selection.corner {
+            paint::label(
+                &painter,
+                Pos2::new(bb.right() + 10.0, strip.center().y),
+                Align2::LEFT_CENTER,
+                &format!("m{} q{}{}", (ci & 1) * 100, ((ci >> 1) & 1) * 100,
+                    if ci & 4 != 0 { " t" } else { "" }),
+                theme::SMALL,
+                theme::INK,
+            );
+        }
+        x = bb.right() + 70.0;
+    }
     for (name, value, tint) in fields {
         paint::label(
             &painter,
@@ -298,5 +333,5 @@ pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
             theme::INK,
         );
     }
-    cmds
+    (cmds, back)
 }

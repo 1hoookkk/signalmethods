@@ -11,8 +11,15 @@ use crate::session::command::{self, Command};
 use crate::session::state::Session;
 use crate::ui::{paint, theme};
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum Screen {
+    Home,
+    Fit,
+}
+
 pub struct Lab {
     pub case_name: String,
+    pub screen: Screen,
     pub shot: Option<PathBuf>,
     pub frames: u32,
     pub taken: bool,
@@ -70,6 +77,32 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
             }
         }
         session.document.workspace.seed_name = Some(name);
+        for ci in 0..4 {
+            let geoms: Vec<_> = packed.words[ci]
+                .iter()
+                .map(|&w| trench_core::stage_law::geometry_from_words_at(w, SR))
+                .collect();
+            let mut lanes = [StageRoots::IDENTITY; 7];
+            for (si, g) in geoms.iter().take(7).enumerate() {
+                if let (Some((ph, pr)), Some((zh, zr))) = (conj(g.pole), conj(g.zero)) {
+                    lanes[si] = StageRoots {
+                        pole_hz: ph,
+                        pole_r: pr,
+                        zero_hz: zh,
+                        zero_r: zr,
+                        scale: g.scale,
+                    };
+                }
+            }
+            session.document.field.slots[ci] = Some(author::frame::Frame {
+                name: format!("{rel} c{ci}"),
+                sr_hz: SR,
+                provenance: String::new(),
+                words: String::new(),
+                lanes,
+                laws: [author::frame::LaneLaw::OPEN; 7],
+            });
+        }
         return Ok(session);
     }
 
@@ -90,9 +123,25 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
     Ok(session)
 }
 
-pub fn draw(session: &Session, case: &str, ui: &mut Ui) -> Vec<Command> {
-    match case {
-        "response_only" => crate::ui::response::draw(session, ui),
+pub fn draw(session: &Session, lab: &mut Lab, ui: &mut Ui) -> Vec<Command> {
+    match lab.case_name.as_str() {
+        "workstation" => match lab.screen {
+            Screen::Home => {
+                let (cmds, open) = crate::ui::field_home::draw(session, ui);
+                if open.is_some() {
+                    lab.screen = Screen::Fit;
+                }
+                cmds
+            }
+            Screen::Fit => {
+                let (cmds, back) = crate::ui::response::draw(session, ui, true);
+                if back {
+                    lab.screen = Screen::Home;
+                }
+                cmds
+            }
+        },
+        "response_only" => crate::ui::response::draw(session, ui, false).0,
         other => {
             let rect = ui.max_rect();
             let painter = ui.painter().clone();

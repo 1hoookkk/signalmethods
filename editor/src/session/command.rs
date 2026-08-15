@@ -20,6 +20,8 @@ pub enum Command {
     SetScale { section: usize, scale: f64 },
     AssignCorner { corner: usize, entry: usize },
     ClearCorner { corner: usize },
+    TargetCorner(usize),
+    ExpandField,
     SwapSections { a: usize, b: usize },
     ClearWorkspace,
     FitSelection,
@@ -143,6 +145,40 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             session.document.field.slots[corner] = Some(frame);
             services.jobs.invalidate_field_audio();
             services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
+        Command::TargetCorner(ci) => {
+            let Some(frame) = session.document.field.slots[ci].clone() else {
+                return Err("corner is empty".into());
+            };
+            let rows: Vec<_> = frame.lanes.iter().map(|l| l.biquad_at(SR)).collect();
+            let curve: Vec<f64> = author::envelope::grid()
+                .iter()
+                .map(|&hz| rows.iter().map(|r| row_db(r, hz, SR)).sum())
+                .collect();
+            let code = format!(
+                "m{} q{}{}",
+                ci & 1,
+                (ci >> 1) & 1,
+                if ci & 4 != 0 { " t1" } else { "" }
+            );
+            session.document.target = Some(Target {
+                name: format!("{} · {code}", frame.name),
+                curve,
+            });
+            session.selection.corner = Some(ci);
+            session.selection.section = None;
+            session.fit = FitState::Idle;
+            services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
+        Command::ExpandField => {
+            session.history.push(&session.document);
+            let front: Vec<_> = session.document.field.slots[..4].to_vec();
+            for (i, f) in front.into_iter().enumerate() {
+                session.document.field.slots[i + 4] = f;
+            }
+            services.jobs.invalidate_field_audio();
             Ok(())
         }
         Command::ClearCorner { corner } => {

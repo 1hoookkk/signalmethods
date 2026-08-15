@@ -21,7 +21,7 @@ impl eframe::App for App {
         lab.frames += 1;
         let mut cmds = egui::CentralPanel::default()
             .frame(egui::Frame::none())
-            .show(ctx, |ui| crate::lab::draw(session, &lab.case_name, ui))
+            .show(ctx, |ui| crate::lab::draw(session, lab, ui))
             .inner;
         ctx.input(|i| {
             if i.modifiers.command && i.key_pressed(egui::Key::Z) {

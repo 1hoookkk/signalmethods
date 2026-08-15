@@ -11,7 +11,7 @@ use eframe::egui;
 
 fn main() -> eframe::Result {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let mut case = String::from("response_only");
+    let mut case = String::from("workstation");
     let mut fixture = String::from("talking_hedz");
     let mut shot: Option<std::path::PathBuf> = None;
     let mut i = 0;
@@ -53,6 +53,11 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
     let l = lab::Lab {
+        screen: if case == "workstation" {
+            lab::Screen::Home
+        } else {
+            lab::Screen::Fit
+        },
         case_name: case,
         shot,
         frames: 0,
