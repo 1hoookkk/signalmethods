@@ -77,6 +77,20 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
             }
         }
         session.document.workspace.seed_name = Some(name);
+        for si in 0..trench_core::cascade::NUM_STAGES {
+            if crate::domain::document::lane_is_empty(&session.document.workspace.lanes[si]) {
+                session.document.workspace.laws[si].writable = false;
+            }
+        }
+        if let Some(m) = fx.get("target_mouth").and_then(|v| v.as_str()) {
+            let idx = services
+                .repository
+                .entries
+                .iter()
+                .position(|e| matches!(e, Entry::Mouth { name, .. } if name == m))
+                .ok_or_else(|| format!("fixture target mouth {m} not in library"))?;
+            command::apply(&mut session, services, Command::SetTarget(idx))?;
+        }
         for ci in 0..4 {
             let geoms: Vec<_> = packed.words[ci]
                 .iter()

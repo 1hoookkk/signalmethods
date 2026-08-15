@@ -28,7 +28,7 @@ pub enum Command {
     ClearWorkspace,
     SetGain { db: f64 },
     FitSelection,
-    FitSection(usize),
+    FitPoles,
     Keep,
     WriteStatic,
     TogglePlay,
@@ -202,7 +202,6 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetZero { section, hz, r } => {
-            section_exists(session, section)?;
             let lane = &mut session.active_lanes_mut()[section];
             lane.zero_hz = hz;
             lane.zero_r = r;
@@ -434,9 +433,8 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             }
             Ok(())
         }
-        Command::FitSection(si) => {
-            section_exists(session, si)?;
-            services.jobs.fit_lane(session, si);
+        Command::FitPoles => {
+            services.jobs.fit_poles(session);
             Ok(())
         }
         Command::Keep => {
@@ -681,6 +679,110 @@ mod tests {
             session.document.field.slots[2].as_ref().unwrap().lanes[0].pole_hz,
             700.0,
             "undo restores the document"
+        );
+    }
+
+    #[test]
+    fn all_pole_fit_holds_hand_zeros_and_sections_fall_out() {
+        let (mut session, mut services) = session_and_services();
+        let mouth = services
+            .repository
+            .entries
+            .iter()
+            .position(|e| matches!(e, Entry::Mouth { .. }))
+            .expect("a mouth in the library");
+        apply(&mut session, &mut services, Command::SetTarget(mouth)).unwrap();
+        apply(
+            &mut session,
+            &mut services,
+            Command::SetZero {
+                section: 0,
+                hz: 1500.0,
+                r: 1.0,
+            },
+        )
+        .unwrap();
+        apply(
+            &mut session,
+            &mut services,
+            Command::SetZero {
+                section: 1,
+                hz: 3200.0,
+                r: 0.98,
+            },
+        )
+        .unwrap();
+        let pairs = session.target_pairs().unwrap();
+        let f = crate::engine::fit::fit_poles_frame(
+            &pairs,
+            session.document.workspace.lanes,
+            session.document.workspace.laws,
+        )
+        .expect("all-pole fit converges");
+        let zeros: Vec<(f64, f64)> = f
+            .roots
+            .iter()
+            .filter(|l| l.zero_r > 0.0)
+            .map(|l| (l.zero_hz, l.zero_r))
+            .collect();
+        assert!(zeros.contains(&(1500.0, 1.0)), "hand zero survives untouched");
+        assert!(zeros.contains(&(3200.0, 0.98)), "hand zero survives untouched");
+        assert_eq!(zeros.len(), 2, "the fitter invents no zeros");
+        let poles = f.roots.iter().filter(|l| l.pole_r > 0.0).count();
+        assert!(poles >= 2, "sections fall out of the fit, got {poles}");
+    }
+
+    #[test]
+    fn bend_a_factory_corner_to_a_new_target_in_legal_words() {
+        let mut services = Services::new();
+        let mut session = crate::lab::session_for(&mut services, "bend").unwrap();
+        let active = |lanes: &[trench_core::stage_law::StageRoots; NUM_STAGES]| {
+            lanes.iter().filter(|l| !lane_is_empty(l)).count()
+        };
+        assert_eq!(active(&session.document.workspace.lanes), 6, "six-SOS initial state");
+        assert!(
+            session.document.target.as_ref().unwrap().name.contains("bahn"),
+            "the target is the mouth, not the corner's own curve"
+        );
+        assert!(
+            !session.document.workspace.laws[6].writable,
+            "the untouched stage is held — nothing invents a section"
+        );
+        session.document.workspace.laws[2].writable = false;
+        let held = session.document.workspace.lanes[2];
+        let pairs = session.target_pairs().unwrap();
+        let f = fit_frame(
+            &pairs,
+            session.document.workspace.lanes,
+            session.document.workspace.laws,
+            true,
+        )
+        .expect("bend converges");
+        let mut lanes = f.roots;
+        crate::engine::fit::snap_to_words(&mut lanes);
+        assert_eq!(active(&lanes), 6, "section count survives the bend");
+        assert!(lane_is_empty(&lanes[6]), "the held identity stage stays identity");
+        assert_eq!(
+            (lanes[2].pole_hz, lanes[2].pole_r, lanes[2].zero_hz, lanes[2].zero_r),
+            (held.pole_hz, held.pole_r, held.zero_hz, held.zero_r),
+            "a held section is untouched"
+        );
+        for lane in lanes.iter().filter(|l| !lane_is_empty(l)) {
+            let mut once = *lane;
+            let mut arr = [trench_core::stage_law::StageRoots::IDENTITY; NUM_STAGES];
+            arr[0] = once;
+            crate::engine::fit::snap_to_words(&mut arr);
+            once = arr[0];
+            assert_eq!(
+                trench_core::stage_law::words_from_roots_at(lane, SR),
+                trench_core::stage_law::words_from_roots_at(&once, SR),
+                "snapped roots are stable on the encoded grid"
+            );
+        }
+        assert!(
+            f.target_rms_db < 6.0,
+            "the bend lands near the vowel, rms {:.2} dB",
+            f.target_rms_db
         );
     }
 

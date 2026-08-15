@@ -3,7 +3,9 @@ use author::frame::LaneLaw;
 use trench_core::arma_endpoint::{fit_arma, fit_arma_lane, fit_arma_planned, ArmaFit, FREE, NO_ZONES};
 use trench_core::cascade::{NUM_COEFFS, NUM_STAGES};
 use trench_core::minifloat::{PackedCorners, NUM_CORNERS};
-use trench_core::stage_law::{words_from_roots_at, StageRoots};
+use trench_core::stage_law::{
+    geometry_from_words_at, words_from_roots_at, RootPair, StageRoots,
+};
 
 use crate::domain::document::lane_is_empty;
 use crate::domain::field::Field;
@@ -46,6 +48,67 @@ pub fn fit_frame(
         }
     }
     fit_arma_planned(pairs, SR, &current, &freedom, &writable, &zones).or(filled)
+}
+
+pub fn snap_to_words(lanes: &mut [StageRoots; NUM_STAGES]) {
+    let c = |p: RootPair| match p {
+        RootPair::Conjugate { hz, r } => Some((hz, r)),
+        RootPair::Degenerate => Some((0.0, 0.0)),
+        RootPair::RealPair { .. } => None,
+    };
+    for lane in lanes.iter_mut() {
+        if lane.pole_r <= 0.0 && lane.zero_r <= 0.0 {
+            continue;
+        }
+        let g = geometry_from_words_at(words_from_roots_at(lane, SR), SR);
+        if let (Some((ph, pr)), Some((zh, zr))) = (c(g.pole), c(g.zero)) {
+            *lane = StageRoots {
+                pole_hz: ph,
+                pole_r: pr,
+                zero_hz: zh,
+                zero_r: zr,
+                scale: g.scale,
+            };
+        }
+    }
+}
+
+pub fn all_pole_laws(laws: &[LaneLaw; NUM_STAGES]) -> [LaneLaw; NUM_STAGES] {
+    std::array::from_fn(|si| LaneLaw {
+        writable: laws[si].writable,
+        freedom: [true, true, false, false],
+        zone: [0.0, f64::INFINITY],
+    })
+}
+
+pub fn fit_poles_frame(
+    pairs: &[(f64, f64)],
+    lanes: [StageRoots; NUM_STAGES],
+    laws: [LaneLaw; NUM_STAGES],
+) -> Option<ArmaFit> {
+    let plan = all_pole_laws(&laws);
+    let mut freedom = FREE;
+    let mut writable = [true; NUM_STAGES];
+    let mut zones = NO_ZONES;
+    for (si, law) in plan.iter().enumerate() {
+        freedom[si] = law.freedom;
+        writable[si] = law.writable;
+        zones[si] = law.zone;
+    }
+    let mut current = lanes;
+    for si in 0..NUM_STAGES {
+        if plan[si].writable && current[si].pole_r <= 0.0 {
+            let (zh, zr) = (current[si].zero_hz, current[si].zero_r);
+            if let Some(f) =
+                fit_arma_lane(pairs, SR, &current, si, &plan[si].freedom, &plan[si].zone)
+            {
+                current = f.roots;
+                current[si].zero_hz = zh;
+                current[si].zero_r = zr;
+            }
+        }
+    }
+    fit_arma_planned(pairs, SR, &current, &freedom, &writable, &zones)
 }
 
 pub fn fit_lane(

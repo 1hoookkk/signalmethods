@@ -75,6 +75,32 @@ impl Jobs {
         });
     }
 
+    pub fn fit_poles(&mut self, session: &mut Session) {
+        if self.running() {
+            return;
+        }
+        let Some(pairs) = session.target_pairs() else {
+            session.fit = FitState::Failed(FitError::NoTarget);
+            return;
+        };
+        session.history.push(&session.document);
+        let lanes = *session.active_lanes();
+        let laws = session.document.workspace.laws;
+        self.fit_target = FitTarget::Sections;
+        let (tx, rx) = channel();
+        self.rx = Some(rx);
+        session.fit = FitState::Running {
+            started: Instant::now(),
+            corners_done: 0,
+        };
+        std::thread::spawn(move || {
+            let _ = tx.send(match fit::fit_poles_frame(&pairs, lanes, laws) {
+                Some(f) => FitMsg::Done(Box::new(f)),
+                None => FitMsg::Failed(FitError::DidNotConverge),
+            });
+        });
+    }
+
     pub fn fit_lane(&mut self, session: &mut Session, lane: usize) {
         if self.running() {
             return;
@@ -137,7 +163,9 @@ impl Jobs {
                         .collect();
                 }
                 FitTarget::Sections => {
-                    *session.active_lanes_mut() = f.roots;
+                    let mut roots = f.roots;
+                    fit::snap_to_words(&mut roots);
+                    *session.active_lanes_mut() = roots;
                 }
             }
             let held = f.roots.iter().filter(|l| !lane_is_empty(l)).count();

@@ -388,18 +388,33 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
 
     let hover = well_response.hover_pos().filter(|p| well.contains(*p));
     if well_response.double_clicked() {
-        if let (Some(si), Some(p)) = (focus, hover) {
-            cmds.push(Command::BeginEdit);
-            cmds.push(Command::SetZero {
-                section: si,
-                hz: paint::hz_at_x(p.x, well),
-                r: 1.0,
+        if let Some(p) = hover {
+            let si = focus.or_else(|| {
+                (0..trench_core::cascade::NUM_STAGES)
+                    .find(|&si| crate::domain::document::lane_is_empty(&session.active_lanes()[si]))
             });
+            if let Some(si) = si {
+                cmds.push(Command::BeginEdit);
+                cmds.push(Command::SetZero {
+                    section: si,
+                    hz: paint::hz_at_x(p.x, well),
+                    r: 1.0,
+                });
+                if focus.is_none() {
+                    let mut sel = session.selection;
+                    sel.section = Some(si);
+                    cmds.push(Command::Select(sel));
+                }
+            }
         }
     }
     if let Some(p) = hover {
-        if focus.is_some() && legend.starts_with("L —") {
-            legend = "2×L place a zero on the selected section".into();
+        if legend.starts_with("L —") {
+            legend = if focus.is_some() {
+                "2×L place a zero on the selected section".into()
+            } else {
+                "2×L place a zero — the next free section takes it".into()
+            };
         }
         painter.line_segment(
             [Pos2::new(p.x, well.top()), Pos2::new(p.x, well.bottom())],
@@ -500,18 +515,20 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
             if session.audition.playing { "pause" } else { "play" },
         ),
         (eframe::egui::Key::F2, "F2", "fit"),
-        (eframe::egui::Key::F3, "F3", "keep"),
-        (eframe::egui::Key::F4, "F4", "write"),
+        (eframe::egui::Key::F3, "F3", "fit poles"),
+        (eframe::egui::Key::F4, "F4", "keep"),
+        (eframe::egui::Key::F5, "F5", "write"),
         (eframe::egui::Key::F9, "F9", "undo"),
         (eframe::egui::Key::F10, "F10", "redo"),
     ];
     match fkeys::draw(ui, &painter, fkeys_rect, &keys) {
         Some(0) => cmds.push(Command::TogglePlay),
         Some(1) if !fitting => cmds.push(Command::FitSelection),
-        Some(2) => cmds.push(Command::Keep),
-        Some(3) => cmds.push(Command::WriteStatic),
-        Some(4) => cmds.push(Command::Undo),
-        Some(5) => cmds.push(Command::Redo),
+        Some(2) if !fitting => cmds.push(Command::FitPoles),
+        Some(3) => cmds.push(Command::Keep),
+        Some(4) => cmds.push(Command::WriteStatic),
+        Some(5) => cmds.push(Command::Undo),
+        Some(6) => cmds.push(Command::Redo),
         _ => {}
     }
 

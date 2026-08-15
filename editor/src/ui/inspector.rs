@@ -162,17 +162,26 @@ fn root_map(
         painter,
         Pos2::new(rect.left() + 2.0, rect.top() + 6.0),
         Align2::LEFT_CENTER,
-        "pairing",
+        "roots",
         theme::SMALL,
         theme::INK_DIM,
     );
     let map = Rect::from_min_max(
         Pos2::new(rect.left() + 4.0, rect.top() + 18.0),
-        Pos2::new(rect.right() - 4.0, (rect.top() + 240.0).min(rect.bottom() - 4.0)),
+        Pos2::new(rect.right() - 4.0, rect.bottom() - 4.0),
     );
     let well = paint::well(painter, map);
-    let pole_y = well.top() + 16.0;
-    let zero_y = well.bottom() - 16.0;
+    let ceiling = max_contiguous_pole_radius();
+    let rdb = |r: f64| 20.0 * (1.0 / (1.0 - r.min(0.999_999))).log10();
+    let top_db = rdb(ceiling) + 6.0;
+    let y_of = |r: f64| {
+        (well.bottom() - (rdb(r.max(0.0)) / top_db) as f32 * well.height())
+            .clamp(well.top() + 4.0, well.bottom() - 2.0)
+    };
+    let r_at = |y: f32| {
+        let db = (((well.bottom() - y) / well.height()) as f64 * top_db).max(0.0);
+        1.0 - 10f64.powf(-db / 20.0)
+    };
     for f in [100.0, 1000.0, 10000.0] {
         let x = paint::log_x(f, well);
         painter.line_segment(
@@ -180,38 +189,40 @@ fn root_map(
             Stroke::new(1.0, theme::GRATICULE),
         );
     }
+    let mut db = 12.0;
+    while db < top_db {
+        let y = well.bottom() - (db / top_db) as f32 * well.height();
+        painter.line_segment(
+            [Pos2::new(well.left(), y), Pos2::new(well.right(), y)],
+            Stroke::new(1.0, theme::GRATICULE),
+        );
+        paint::label(
+            painter,
+            Pos2::new(well.left() + 3.0, y - 1.0),
+            Align2::LEFT_BOTTOM,
+            &format!("{db:.0}"),
+            theme::SMALL,
+            theme::WELL_DIM,
+        );
+        db += 12.0;
+    }
+    let cy = well.bottom() - (rdb(ceiling) / top_db) as f32 * well.height();
     painter.line_segment(
-        [Pos2::new(well.left(), pole_y), Pos2::new(well.right(), pole_y)],
-        Stroke::new(1.0, theme::faded(theme::WELL_DIM, 90)),
-    );
-    painter.line_segment(
-        [Pos2::new(well.left(), zero_y), Pos2::new(well.right(), zero_y)],
-        Stroke::new(1.0, theme::faded(theme::WELL_DIM, 90)),
-    );
-    paint::label(
-        painter,
-        Pos2::new(well.left() + 3.0, pole_y - 8.0),
-        Align2::LEFT_CENTER,
-        "poles",
-        theme::SMALL,
-        theme::WELL_DIM,
-    );
-    paint::label(
-        painter,
-        Pos2::new(well.left() + 3.0, zero_y + 8.0),
-        Align2::LEFT_CENTER,
-        "zeros",
-        theme::SMALL,
-        theme::WELL_DIM,
+        [Pos2::new(well.left(), cy), Pos2::new(well.right(), cy)],
+        Stroke::new(1.0, theme::faded(theme::ALARM, 110)),
     );
     let (preview, mask) = session.preview();
     let pointer = ui.input(|i| i.pointer.interact_pos());
-    let mut dragging: Option<(usize, f32)> = None;
+    let ctrl = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+    let mut repairing: Option<usize> = None;
     let mut zero_dots: Vec<(usize, Pos2)> = Vec::new();
     for si in 0..NUM_STAGES {
         let lane = preview[si];
         if lane.zero_r > 0.0 {
-            zero_dots.push((si, Pos2::new(paint::log_x(lane.zero_hz, well), zero_y)));
+            zero_dots.push((
+                si,
+                Pos2::new(paint::log_x(lane.zero_hz, well), y_of(lane.zero_r)),
+            ));
         }
     }
     for si in 0..NUM_STAGES {
@@ -228,29 +239,12 @@ fn root_map(
         if !has_pole && !has_zero {
             continue;
         }
-        let px = paint::log_x(lane.pole_hz, well);
-        let zx = paint::log_x(lane.zero_hz, well);
-        if has_pole {
-            let bw = bw_of(lane.pole_r);
-            let x0 = paint::log_x(lane.pole_hz - bw * 0.5, well);
-            let x1 = paint::log_x(lane.pole_hz + bw * 0.5, well);
-            painter.line_segment(
-                [Pos2::new(x0, pole_y), Pos2::new(x1, pole_y)],
-                Stroke::new(2.0, theme::faded(ink, if selected { 190 } else { 110 })),
-            );
-        }
-        if has_zero && lane.zero_r < 0.9999 {
-            let bw = bw_of(lane.zero_r);
-            let x0 = paint::log_x(lane.zero_hz - bw * 0.5, well);
-            let x1 = paint::log_x(lane.zero_hz + bw * 0.5, well);
-            painter.line_segment(
-                [Pos2::new(x0, zero_y), Pos2::new(x1, zero_y)],
-                Stroke::new(2.0, theme::faded(ink, if selected { 190 } else { 110 })),
-            );
-        }
+        let pp = Pos2::new(paint::log_x(lane.pole_hz, well), y_of(lane.pole_r));
+        let zp = Pos2::new(paint::log_x(lane.zero_hz, well), y_of(lane.zero_r));
+        let tag = |hz: f64, r: f64| format!("{} · {:.0}", fmt_hz2(hz), rdb(r));
         if has_pole && has_zero {
             painter.line_segment(
-                [Pos2::new(px, pole_y), Pos2::new(zx, zero_y)],
+                [pp, zp],
                 Stroke::new(
                     if selected { 2.0 } else { 1.2 },
                     theme::faded(ink, if selected { 255 } else { 170 }),
@@ -258,27 +252,21 @@ fn root_map(
             );
         }
         if has_pole {
-            painter.circle_filled(Pos2::new(px, pole_y), if selected { 5.0 } else { 4.0 }, ink);
-            if lane.pole_r >= max_contiguous_pole_radius() - 1e-6 {
-                painter.circle_stroke(
-                    Pos2::new(px, pole_y),
-                    7.0,
-                    Stroke::new(1.0, theme::ALARM),
-                );
+            painter.circle_filled(pp, if selected { 5.0 } else { 4.0 }, ink);
+            if lane.pole_r >= ceiling - 1e-6 {
+                painter.circle_stroke(pp, 7.0, Stroke::new(1.0, theme::ALARM));
             }
-            let prect = Rect::from_center_size(
-                Pos2::new(px, pole_y),
-                eframe::egui::vec2(14.0, 14.0),
-            );
+            let prect = Rect::from_center_size(pp, eframe::egui::vec2(14.0, 14.0));
             if !provisional {
-                let resp = ui.interact(prect, Id::new(("map.pole", si)), Sense::click());
+                let resp =
+                    ui.interact(prect, Id::new(("map.pole", si)), Sense::click_and_drag());
                 if resp.hovered() {
-                    *legend = "L select".into();
+                    *legend = "L select · L drag — frequency and resonance".into();
                     paint::label(
                         painter,
-                        Pos2::new(px + 8.0, pole_y - 10.0),
+                        Pos2::new(pp.x + 8.0, pp.y - 10.0),
                         Align2::LEFT_CENTER,
-                        &fmt_hz2(lane.pole_hz),
+                        &tag(lane.pole_hz, lane.pole_r),
                         theme::SMALL,
                         theme::CURSOR,
                     );
@@ -288,49 +276,89 @@ fn root_map(
                     sel.section = if selected { None } else { Some(si) };
                     cmds.push(Command::Select(sel));
                 }
+                if resp.drag_started() {
+                    cmds.push(Command::BeginEdit);
+                    let mut sel = session.selection;
+                    sel.section = Some(si);
+                    cmds.push(Command::Select(sel));
+                }
+                if resp.dragged() {
+                    if let Some(p) = resp.interact_pointer_pos() {
+                        cmds.push(Command::SetPole {
+                            section: si,
+                            hz: paint::hz_at_x(p.x, well),
+                            r: r_at(p.y).clamp(0.05, ceiling),
+                        });
+                    }
+                }
             }
         }
         if has_zero {
-            painter.circle_stroke(
-                Pos2::new(zx, zero_y),
-                if selected { 5.0 } else { 4.0 },
-                Stroke::new(1.6, ink),
-            );
+            painter.circle_stroke(zp, if selected { 5.0 } else { 4.0 }, Stroke::new(1.6, ink));
             if lane.zero_r >= 0.9999 {
-                painter.circle_filled(Pos2::new(zx, zero_y), 1.8, ink);
+                painter.circle_filled(zp, 1.8, ink);
             }
-            let zrect = Rect::from_center_size(
-                Pos2::new(zx, zero_y),
-                eframe::egui::vec2(14.0, 14.0),
-            );
+            let zrect = Rect::from_center_size(zp, eframe::egui::vec2(14.0, 14.0));
             if !provisional {
-                let resp = ui.interact(zrect, Id::new(("map.zero", si)), Sense::click_and_drag());
+                let resp =
+                    ui.interact(zrect, Id::new(("map.zero", si)), Sense::click_and_drag());
                 if resp.hovered() {
-                    *legend = "L drag to another zero — swaps pairs, the whole never moves".into();
+                    *legend =
+                        "L drag — frequency and depth, top edge is the null · ctrl-drag re-pair"
+                            .into();
                     paint::label(
                         painter,
-                        Pos2::new(zx + 8.0, zero_y + 10.0),
+                        Pos2::new(zp.x + 8.0, zp.y + 10.0),
                         Align2::LEFT_CENTER,
-                        &fmt_hz2(lane.zero_hz),
+                        &tag(lane.zero_hz, lane.zero_r),
                         theme::SMALL,
                         theme::CURSOR,
                     );
                 }
+                if resp.clicked() {
+                    let mut sel = session.selection;
+                    sel.section = if selected { None } else { Some(si) };
+                    cmds.push(Command::Select(sel));
+                }
+                if resp.drag_started() && !ctrl {
+                    cmds.push(Command::BeginEdit);
+                    let mut sel = session.selection;
+                    sel.section = Some(si);
+                    cmds.push(Command::Select(sel));
+                }
                 if resp.dragged() {
-                    dragging = Some((si, zx));
+                    if ctrl {
+                        repairing = Some(si);
+                        ui.memory_mut(|m| m.data.insert_temp(Id::new("map.repair"), si));
+                    } else if let Some(p) = resp.interact_pointer_pos() {
+                        let r = if p.y < well.top() + 8.0 {
+                            1.0
+                        } else {
+                            r_at(p.y).clamp(0.05, 1.0)
+                        };
+                        cmds.push(Command::SetZero {
+                            section: si,
+                            hz: paint::hz_at_x(p.x, well),
+                            r,
+                        });
+                    }
                 }
                 if resp.drag_stopped() {
-                    if let Some(p) = pointer {
-                        let target = zero_dots
-                            .iter()
-                            .filter(|(ti, _)| *ti != si)
-                            .min_by(|a, b| {
-                                a.1.distance(p).total_cmp(&b.1.distance(p))
-                            });
-                        if let Some(&(ti, at)) = target {
-                            if at.distance(p) < 40.0 {
-                                cmds.push(Command::BeginEdit);
-                                cmds.push(Command::SwapZeros { a: si, b: ti });
+                    let was = ui.memory(|m| m.data.get_temp::<usize>(Id::new("map.repair")));
+                    ui.memory_mut(|m| m.data.remove::<usize>(Id::new("map.repair")));
+                    if was == Some(si) {
+                        if let Some(p) = pointer {
+                            let target = zero_dots
+                                .iter()
+                                .filter(|(ti, _)| *ti != si)
+                                .min_by(|a, b| {
+                                    a.1.distance(p).total_cmp(&b.1.distance(p))
+                                });
+                            if let Some(&(ti, at)) = target {
+                                if at.distance(p) < 40.0 {
+                                    cmds.push(Command::BeginEdit);
+                                    cmds.push(Command::SwapZeros { a: si, b: ti });
+                                }
                             }
                         }
                     }
@@ -341,9 +369,9 @@ fn root_map(
             if has_pole {
                 paint::label(
                     painter,
-                    Pos2::new(px + 8.0, pole_y - 10.0),
+                    Pos2::new(pp.x + 8.0, pp.y - 10.0),
                     Align2::LEFT_CENTER,
-                    &fmt_hz2(lane.pole_hz),
+                    &tag(lane.pole_hz, lane.pole_r),
                     theme::SMALL,
                     ink,
                 );
@@ -351,16 +379,16 @@ fn root_map(
             if has_zero {
                 paint::label(
                     painter,
-                    Pos2::new(zx + 8.0, zero_y + 10.0),
+                    Pos2::new(zp.x + 8.0, zp.y + 10.0),
                     Align2::LEFT_CENTER,
-                    &fmt_hz2(lane.zero_hz),
+                    &tag(lane.zero_hz, lane.zero_r),
                     theme::SMALL,
                     ink,
                 );
             }
         }
     }
-    if let (Some((si, _zx)), Some(p)) = (dragging, pointer) {
+    if let (Some(si), Some(p)) = (repairing, pointer) {
         let ink = theme::LANES[si % 7];
         painter.circle_stroke(p, 4.5, Stroke::new(1.6, ink));
         if let Some(&(_, at)) = zero_dots
@@ -379,11 +407,11 @@ fn root_map(
 
 fn draw_cascade_card(
     session: &Session,
-    ui: &mut Ui,
+    _ui: &mut Ui,
     painter: &Painter,
     rect: Rect,
-    cmds: &mut Vec<Command>,
-    legend: &mut String,
+    _cmds: &mut Vec<Command>,
+    _legend: &mut String,
 ) {
     let card = Rect::from_min_max(
         rect.left_top(),
@@ -433,70 +461,15 @@ fn draw_cascade_card(
             theme::INK,
         );
     }
-    let fitting = matches!(session.fit, FitState::Running { .. });
-    let fb = Rect::from_min_max(
-        Pos2::new(inner.right() - 42.0, l1 - 10.0),
-        Pos2::new(inner.right() - 6.0, l1 + 10.0),
-    );
-    let fi = if fitting {
-        paint::sunken(painter, fb)
-    } else {
-        paint::raised(painter, fb)
-    };
-    paint::label(
-        painter,
-        Pos2::new(fi.center().x, fi.center().y),
-        Align2::CENTER_CENTER,
-        "fit",
-        theme::SMALL,
-        if fitting { theme::INK_DIM } else { theme::INK },
-    );
-    let resp = ui.interact(fb, Id::new("cascade.fit"), Sense::click());
-    if resp.hovered() {
-        *legend = "L fit the whole cascade to the target".into();
-    }
-    if resp.clicked() && !fitting {
-        cmds.push(Command::FitSelection);
-    }
-    let kb = Rect::from_min_max(
-        Pos2::new(fb.left() - 52.0, l1 - 10.0),
-        Pos2::new(fb.left() - 4.0, l1 + 10.0),
-    );
-    let ki = paint::raised(painter, kb);
-    paint::label(
-        painter,
-        Pos2::new(ki.center().x, ki.center().y),
-        Align2::CENTER_CENTER,
-        "keep",
-        theme::SMALL,
-        theme::INK,
-    );
-    let resp = ui.interact(kb, Id::new("cascade.keep"), Sense::click());
-    if resp.hovered() {
-        *legend = "L keep this response in the library".into();
-    }
-    if resp.clicked() {
-        cmds.push(Command::Keep);
-    }
-    let wb = Rect::from_min_max(
-        Pos2::new(kb.left() - 56.0, l1 - 10.0),
-        Pos2::new(kb.left() - 4.0, l1 + 10.0),
-    );
-    let wi = paint::raised(painter, wb);
-    paint::label(
-        painter,
-        Pos2::new(wi.center().x, wi.center().y),
-        Align2::CENTER_CENTER,
-        "write",
-        theme::SMALL,
-        theme::INK,
-    );
-    let resp = ui.interact(wb, Id::new("cascade.write"), Sense::click());
-    if resp.hovered() {
-        *legend = "L write the body — this cascade at every corner, audited".into();
-    }
-    if resp.clicked() {
-        cmds.push(Command::WriteStatic);
+    if matches!(session.fit, FitState::Running { .. }) {
+        paint::label(
+            painter,
+            Pos2::new(inner.right() - 8.0, l1),
+            Align2::RIGHT_CENTER,
+            "fitting…",
+            theme::SMALL,
+            theme::INK_DIM,
+        );
     }
 }
 
@@ -612,34 +585,9 @@ fn draw_card(
         cmds.push(Command::SetLaw { section: si, law: l });
     }
 
-    let fitting = matches!(session.fit, FitState::Running { .. });
-    let fb = Rect::from_min_max(
-        Pos2::new(inner.right() - 38.0, l1 - 9.0),
-        Pos2::new(inner.right() - 5.0, l1 + 9.0),
-    );
-    let fi = if fitting {
-        paint::sunken(painter, fb)
-    } else {
-        paint::raised(painter, fb)
-    };
-    paint::label(
-        painter,
-        Pos2::new(fi.center().x, fi.center().y),
-        Align2::CENTER_CENTER,
-        "fit",
-        theme::SMALL,
-        if fitting { theme::INK_DIM } else { theme::INK },
-    );
-    let resp = ui.interact(fb, Id::new(("section.fit", si)), Sense::click());
-    if resp.hovered() {
-        *legend = "L fit this section inside its range".into();
-    }
-    if resp.clicked() && !fitting {
-        cmds.push(Command::FitSection(si));
-    }
     let hb = Rect::from_min_max(
-        Pos2::new(fb.left() - 44.0, l1 - 9.0),
-        Pos2::new(fb.left() - 4.0, l1 + 9.0),
+        Pos2::new(inner.right() - 45.0, l1 - 9.0),
+        Pos2::new(inner.right() - 5.0, l1 + 9.0),
     );
     let (clicked, hov) = toggle(ui, painter, hb, Id::new(("section.hold", si)), "hold", !law.writable);
     if hov {
