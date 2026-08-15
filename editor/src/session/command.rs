@@ -26,6 +26,7 @@ pub enum Command {
     SwapZeros { a: usize, b: usize },
     AssignSection { section: usize, hz: f64 },
     ClearWorkspace,
+    SetGain { db: f64 },
     FitSelection,
     FitSection(usize),
     Keep,
@@ -405,6 +406,22 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             session.history.push(&session.document);
             session.document.workspace = Workspace::empty();
             session.fit = FitState::Idle;
+            services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
+        Command::SetGain { db } => {
+            let lanes = session.active_lanes_mut();
+            let active: Vec<usize> = (0..NUM_STAGES)
+                .filter(|&i| !lane_is_empty(&lanes[i]))
+                .collect();
+            if active.is_empty() {
+                return Err("no sections to carry gain".into());
+            }
+            let per = 10f64.powf(db / (20.0 * active.len() as f64));
+            for i in active {
+                lanes[i].scale = per;
+            }
+            services.jobs.invalidate_field_audio();
             services.jobs.push_audio(session, &mut services.audio);
             Ok(())
         }

@@ -42,9 +42,62 @@ pub fn draw(
         theme::SMALL,
         theme::INK_DIM,
     );
+    let gain_w = 96.0;
+    let gw = Rect::from_min_max(
+        Pos2::new(rect.right() - cap - gain_w, rect.top() + 2.0),
+        Pos2::new(rect.right() - cap - 4.0, rect.bottom() - 2.0),
+    );
+    {
+        let committed = &session.document.workspace.lanes;
+        let active: Vec<_> = committed
+            .iter()
+            .filter(|l| l.pole_r > 0.0 || l.zero_r > 0.0)
+            .collect();
+        let total_db: f64 = active
+            .iter()
+            .map(|l| 20.0 * l.scale.max(1e-9).log10())
+            .sum();
+        paint::label(
+            painter,
+            Pos2::new(gw.left() - 32.0, gw.center().y),
+            Align2::LEFT_CENTER,
+            "gain",
+            theme::SMALL,
+            theme::INK_DIM,
+        );
+        let inner_f = crate::ui::paint::field(painter, gw);
+        let text = if active.is_empty() {
+            "—".to_string()
+        } else {
+            format!("{total_db:+.1}")
+        };
+        paint::label(
+            painter,
+            Pos2::new(inner_f.right() - 4.0, inner_f.center().y),
+            Align2::RIGHT_CENTER,
+            &text,
+            theme::BODY,
+            if active.is_empty() { theme::INK_DIM } else { theme::INK },
+        );
+        let resp = ui
+            .interact(gw, Id::new("cascade.gain"), eframe::egui::Sense::click_and_drag())
+            .on_hover_cursor(eframe::egui::CursorIcon::ResizeHorizontal);
+        if resp.hovered() {
+            *legend = "L scrub cascade gain — one figure, spread across sections".into();
+        }
+        if !active.is_empty() {
+            if resp.drag_started() {
+                cmds.push(Command::BeginEdit);
+            }
+            if resp.dragged() {
+                let d = resp.drag_delta().x as f64 * 0.1;
+                cmds.push(Command::SetGain { db: total_db + d });
+            }
+        }
+    }
     let inner = Rect::from_min_max(
         Pos2::new(rect.left() + cap, rect.top()),
-        Pos2::new(rect.right() - cap, rect.bottom()),
+        Pos2::new(rect.right() - cap - gain_w - 40.0, rect.bottom()),
     );
     let gap = 5.0;
     let w = (inner.width() - gap * (NUM_STAGES as f32 - 1.0)) / NUM_STAGES as f32;
