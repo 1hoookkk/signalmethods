@@ -245,6 +245,7 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
     }
 
     let (preview_lanes, preview_mask) = session.preview();
+    let mut drag_delta: Option<(f64, f64)> = None;
     if let Some(rows) = session.current_rows() {
         let comp_at = |hz: f64| -> f64 { rows.iter().map(|r| row_db(r, hz, SR)).sum() };
         for si in 0..trench_core::cascade::NUM_STAGES {
@@ -267,6 +268,9 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                 let hrect = Rect::from_center_size(Pos2::new(hx, hy), eframe::egui::vec2(14.0, 14.0));
                 painter.circle_filled(Pos2::new(hx, hy), 4.5, ink);
                 painter.circle_stroke(Pos2::new(hx, hy), 4.5, Stroke::new(1.0, theme::CURSOR));
+                if lane.pole_r >= trench_core::stage_law::max_contiguous_pole_radius() - 1e-6 {
+                    painter.circle_stroke(Pos2::new(hx, hy), 7.0, Stroke::new(1.0, theme::ALARM));
+                }
                 if provisional {
                     continue;
                 }
@@ -292,12 +296,19 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                     let mut sel = session.selection;
                     sel.section = Some(si);
                     cmds.push(Command::Select(sel));
+                    ui.memory_mut(|m| {
+                        m.data.insert_temp(Id::new("drag.origin"), (lane.pole_hz, lane.pole_r))
+                    });
                 }
                 if resp.dragged() {
                     if let Some(p) = resp.interact_pointer_pos() {
                         let hz = paint::hz_at_x(p.x, well);
                         let r = (lane.pole_r + resp.drag_delta().y as f64 * -0.0015)
                             .clamp(0.05, trench_core::stage_law::max_contiguous_pole_radius());
+                        let (oh, or) = ui
+                            .memory(|m| m.data.get_temp(Id::new("drag.origin")))
+                            .unwrap_or((hz, r));
+                        drag_delta = Some((12.0 * (hz / oh).log2(), r - or));
                         cmds.push(Command::SetPole { section: si, hz, r });
                     }
                 }
@@ -313,6 +324,9 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                 .clamp(well.top() + 4.0, well.bottom() - 4.0);
                 let hrect = Rect::from_center_size(Pos2::new(hx, hy), eframe::egui::vec2(14.0, 14.0));
                 painter.circle_stroke(Pos2::new(hx, hy), 4.5, Stroke::new(1.6, ink));
+                if lane.zero_r >= 0.9999 {
+                    painter.circle_filled(Pos2::new(hx, hy), 1.8, ink);
+                }
                 let resp = ui.interact(hrect, Id::new(("well.zero", si)), Sense::click_and_drag());
                 if resp.hovered() {
                     legend = "L drag · wheel depth · R remove".into();
@@ -334,12 +348,19 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
                     let mut sel = session.selection;
                     sel.section = Some(si);
                     cmds.push(Command::Select(sel));
+                    ui.memory_mut(|m| {
+                        m.data.insert_temp(Id::new("drag.origin"), (lane.zero_hz, lane.zero_r))
+                    });
                 }
                 if resp.dragged() {
                     if let Some(p) = resp.interact_pointer_pos() {
                         let hz = paint::hz_at_x(p.x, well);
                         let r = (lane.zero_r + resp.drag_delta().y as f64 * -0.0015)
                             .clamp(0.05, 1.0);
+                        let (oh, or) = ui
+                            .memory(|m| m.data.get_temp(Id::new("drag.origin")))
+                            .unwrap_or((hz, r));
+                        drag_delta = Some((12.0 * (hz / oh).log2(), r - or));
                         cmds.push(Command::SetZero { section: si, hz, r });
                     }
                 }
@@ -386,6 +407,8 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         ("hz", cursor_hz.map(|v| format!("{v:.0}")), theme::INK),
         ("target", ask_db.map(|v| format!("{v:+.1}")), theme::ASK_INK),
         ("filter", now_db.map(|v| format!("{v:+.1}")), theme::NOW_INK),
+        ("Δst", drag_delta.map(|(st, _)| format!("{st:+.2}")), theme::INK),
+        ("Δr", drag_delta.map(|(_, dr)| format!("{dr:+.4}")), theme::INK),
     ];
     let mut x = strip.left();
     let tb = transport::draw(
@@ -415,7 +438,7 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         if resp.hovered() {
             legend = "L back to the field".into();
         }
-        if resp.clicked() || ui.input(|i| i.key_pressed(eframe::egui::Key::Escape)) {
+        if resp.clicked() || (ui.input(|i| i.key_pressed(eframe::egui::Key::Escape)) && focus.is_none()) {
             back = true;
         }
         if let Some(ci) = session.selection.corner {
@@ -457,6 +480,12 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
             );
         }
         x = fw.right() + 16.0;
+    }
+
+    if ui.input(|i| i.key_pressed(eframe::egui::Key::Escape)) && focus.is_some() {
+        let mut sel = session.selection;
+        sel.section = None;
+        cmds.push(Command::Select(sel));
     }
 
     navigator::draw(session, ui, &painter, nav_rect, well, &mut cmds, &mut legend);

@@ -22,6 +22,16 @@ fn r_of(bw: f64) -> f64 {
     (-std::f64::consts::PI * bw / SR).exp()
 }
 
+fn log_frac(hz: f64) -> f32 {
+    (((hz.max(paint::FREQ_LO) / paint::FREQ_LO).ln()
+        / (paint::FREQ_HI / paint::FREQ_LO).ln()) as f32)
+        .clamp(0.0, 1.0)
+}
+
+fn bw_frac(bw: f64) -> f32 {
+    (((bw.max(BW_MIN) / BW_MIN).ln() / (BW_MAX / BW_MIN).ln()) as f32).clamp(0.0, 1.0)
+}
+
 fn fmt_hz(hz: f64) -> String {
     if hz >= 9999.5 {
         format!("{:.1}k", hz / 1000.0)
@@ -46,6 +56,7 @@ fn scrub_field(
     id: Id,
     text: &str,
     tint: Color32,
+    frac: Option<f32>,
 ) -> Scrub {
     let inner = paint::field(painter, rect);
     let resp = ui
@@ -59,6 +70,13 @@ fn scrub_field(
         theme::SMALL,
         tint,
     );
+    if let Some(t) = frac {
+        let x = inner.left() + t.clamp(0.0, 1.0) * inner.width();
+        painter.line_segment(
+            [Pos2::new(x, inner.bottom() - 3.0), Pos2::new(x, inner.bottom())],
+            Stroke::new(2.0, theme::INK_DIM),
+        );
+    }
     Scrub {
         began: resp.drag_started(),
         dx: if resp.dragged() { resp.drag_delta().x } else { 0.0 },
@@ -212,6 +230,24 @@ fn root_map(
         }
         let px = paint::log_x(lane.pole_hz, well);
         let zx = paint::log_x(lane.zero_hz, well);
+        if has_pole {
+            let bw = bw_of(lane.pole_r);
+            let x0 = paint::log_x(lane.pole_hz - bw * 0.5, well);
+            let x1 = paint::log_x(lane.pole_hz + bw * 0.5, well);
+            painter.line_segment(
+                [Pos2::new(x0, pole_y), Pos2::new(x1, pole_y)],
+                Stroke::new(2.0, theme::faded(ink, if selected { 190 } else { 110 })),
+            );
+        }
+        if has_zero && lane.zero_r < 0.9999 {
+            let bw = bw_of(lane.zero_r);
+            let x0 = paint::log_x(lane.zero_hz - bw * 0.5, well);
+            let x1 = paint::log_x(lane.zero_hz + bw * 0.5, well);
+            painter.line_segment(
+                [Pos2::new(x0, zero_y), Pos2::new(x1, zero_y)],
+                Stroke::new(2.0, theme::faded(ink, if selected { 190 } else { 110 })),
+            );
+        }
         if has_pole && has_zero {
             painter.line_segment(
                 [Pos2::new(px, pole_y), Pos2::new(zx, zero_y)],
@@ -223,6 +259,13 @@ fn root_map(
         }
         if has_pole {
             painter.circle_filled(Pos2::new(px, pole_y), if selected { 5.0 } else { 4.0 }, ink);
+            if lane.pole_r >= max_contiguous_pole_radius() - 1e-6 {
+                painter.circle_stroke(
+                    Pos2::new(px, pole_y),
+                    7.0,
+                    Stroke::new(1.0, theme::ALARM),
+                );
+            }
             let prect = Rect::from_center_size(
                 Pos2::new(px, pole_y),
                 eframe::egui::vec2(14.0, 14.0),
@@ -253,6 +296,9 @@ fn root_map(
                 if selected { 5.0 } else { 4.0 },
                 Stroke::new(1.6, ink),
             );
+            if lane.zero_r >= 0.9999 {
+                painter.circle_filled(Pos2::new(zx, zero_y), 1.8, ink);
+            }
             let zrect = Rect::from_center_size(
                 Pos2::new(zx, zero_y),
                 eframe::egui::vec2(14.0, 14.0),
@@ -514,7 +560,15 @@ fn draw_card(
     } else {
         "—".into()
     };
-    let s = scrub_field(ui, painter, f, Id::new(("section.range", si)), &range_text, value_ink);
+    let s = scrub_field(
+        ui,
+        painter,
+        f,
+        Id::new(("section.range", si)),
+        &range_text,
+        value_ink,
+        law.has_zone().then(|| log_frac((law.zone[0] * law.zone[1]).sqrt())),
+    );
     if s.hovered {
         *legend = "L scrub · wheel width".into();
     }
@@ -583,7 +637,8 @@ fn draw_card(
     x += 34.0;
     let f = line(l2, x, 62.0);
     let s = scrub_field(ui, painter, f, Id::new(("section.pole.hz", si)),
-        &(if have_pole { fmt_hz(lane.pole_hz) } else { "—".into() }), value_ink);
+        &(if have_pole { fmt_hz(lane.pole_hz) } else { "—".into() }), value_ink,
+        have_pole.then(|| log_frac(lane.pole_hz)));
     if s.hovered {
         *legend = "L scrub · wheel fine".into();
     }
@@ -601,7 +656,8 @@ fn draw_card(
     x = f.right() + 6.0;
     let f = line(l2, x, 52.0);
     let s = scrub_field(ui, painter, f, Id::new(("section.pole.bw", si)),
-        &(if have_pole { format!("{:.0}", bw_of(lane.pole_r)) } else { "—".into() }), value_ink);
+        &(if have_pole { format!("{:.0}", bw_of(lane.pole_r)) } else { "—".into() }), value_ink,
+        have_pole.then(|| bw_frac(bw_of(lane.pole_r))));
     if s.hovered {
         *legend = "L scrub · wheel fine".into();
     }
@@ -647,7 +703,8 @@ fn draw_card(
     x += 34.0;
     let f = line(l3, x, 62.0);
     let s = scrub_field(ui, painter, f, Id::new(("section.zero.hz", si)),
-        &(if have_zero { fmt_hz(lane.zero_hz) } else { "—".into() }), value_ink);
+        &(if have_zero { fmt_hz(lane.zero_hz) } else { "—".into() }), value_ink,
+        have_zero.then(|| log_frac(lane.zero_hz)));
     if s.hovered {
         *legend = "L scrub · wheel fine".into();
     }
@@ -665,7 +722,8 @@ fn draw_card(
     x = f.right() + 6.0;
     let f = line(l3, x, 52.0);
     let s = scrub_field(ui, painter, f, Id::new(("section.zero.r", si)),
-        &(if have_zero { format!("{:.4}", lane.zero_r) } else { "—".into() }), value_ink);
+        &(if have_zero { format!("{:.4}", lane.zero_r) } else { "—".into() }), value_ink,
+        have_zero.then(|| lane.zero_r as f32));
     if s.hovered {
         *legend = "L scrub · wheel fine".into();
     }
