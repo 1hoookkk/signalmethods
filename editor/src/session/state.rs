@@ -35,7 +35,6 @@ pub enum FitError {
     NoTarget,
     SectionHeld(usize),
     DidNotConverge,
-    SectionFoundNothing(usize),
 }
 
 pub struct Session {

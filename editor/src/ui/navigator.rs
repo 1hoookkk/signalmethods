@@ -128,8 +128,10 @@ pub fn draw(
         } else {
             paint::raised(painter, chip)
         };
+        let thin = rect.height() < 40.0;
+        let head_y = if thin { ci.center().y } else { ci.top() + 7.0 };
         let swatch = Rect::from_min_size(
-            Pos2::new(ci.left() + 3.0, ci.top() + 3.0),
+            Pos2::new(ci.left() + 3.0, head_y - 4.0),
             eframe::egui::vec2(8.0, 8.0),
         );
         painter.rect_filled(
@@ -146,7 +148,7 @@ pub fn draw(
         painter.rect_stroke(swatch, 0.0, Stroke::new(1.0, theme::CHROME_DEEP));
         paint::label(
             painter,
-            Pos2::new(swatch.right() + 5.0, ci.top() + 7.0),
+            Pos2::new(swatch.right() + 5.0, head_y),
             Align2::LEFT_CENTER,
             &(if provisional {
                 format!("p{pnum}")
@@ -162,7 +164,7 @@ pub fn draw(
                 theme::INK
             },
         );
-        if !idle {
+        if !idle && !thin {
             let spark = Rect::from_min_max(
                 Pos2::new(ci.left() + 4.0, ci.top() + 15.0),
                 Pos2::new(ci.right() - 4.0, ci.bottom() - 3.0),
@@ -218,7 +220,7 @@ pub fn draw(
         };
         paint::label(
             painter,
-            Pos2::new(ci.right() - 4.0, ci.top() + 7.0),
+            Pos2::new(ci.right() - 4.0, head_y),
             Align2::RIGHT_CENTER,
             &state,
             theme::SMALL,

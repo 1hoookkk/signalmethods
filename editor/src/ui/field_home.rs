@@ -1,4 +1,4 @@
-use eframe::egui::{Align2, Id, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
+use eframe::egui::{Align2, Id, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 use crate::engine::response::{row_db, SR};
 use crate::session::command::Command;
@@ -17,29 +17,15 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
     let painter = ui.painter().clone();
     painter.rect_filled(rect, 0.0, theme::CHROME);
 
-    let banner = Rect::from_min_max(
+    let bar = Rect::from_min_max(
         rect.left_top() + Vec2::new(PAD, PAD),
-        Pos2::new(rect.right() - PAD, rect.top() + PAD + paint::BANNER_H),
-    );
-    paint::banner(
-        &painter,
-        banner,
-        "TRENCH Field Editing: the field",
-        concat!("v", env!("CARGO_PKG_VERSION")),
-    );
-    let strip = Rect::from_min_max(
-        Pos2::new(rect.left() + PAD, banner.bottom() + 6.0),
-        Pos2::new(rect.right() - PAD, banner.bottom() + 6.0 + STRIP_H),
-    );
-    let foot = Rect::from_min_max(
-        Pos2::new(rect.left() + PAD, rect.bottom() - PAD - FOOT_H),
-        rect.right_bottom() - Vec2::new(PAD, PAD),
+        Pos2::new(rect.right() - PAD, rect.top() + PAD + STRIP_H),
     );
     let tb = transport::draw(
         session,
         ui,
         &painter,
-        Pos2::new(strip.left(), strip.top() + 3.0),
+        Pos2::new(bar.left(), bar.top() + 3.0),
         &mut cmds,
         &mut legend,
     );
@@ -47,35 +33,11 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
     let pos = session.audition.pos;
     let cube = session.document.field.slots[4..].iter().any(|s| s.is_some());
     let back_plane = cube && pos[2] > 0.5;
-    let mut x = tb.right() + 16.0;
-    for (name, value) in [
-        ("m", pos[0]),
-        ("q", pos[1]),
-        ("t", pos[2]),
-    ] {
-        paint::label(
-            &painter,
-            Pos2::new(x, strip.center().y),
-            Align2::LEFT_CENTER,
-            &format!("{name}:"),
-            theme::SMALL,
-            theme::INK_DIM,
-        );
-        x += 16.0;
-        paint::label(
-            &painter,
-            Pos2::new(x, strip.center().y),
-            Align2::LEFT_CENTER,
-            &format!("{:.0}", value * 100.0),
-            theme::BODY,
-            theme::INK,
-        );
-        x += 48.0;
-    }
+    let mut x = tb.right() + 8.0;
     if !cube {
         let pb = Rect::from_min_max(
-            Pos2::new(x + 6.0, strip.top() + 3.0),
-            Pos2::new(x + 36.0, strip.bottom() - 3.0),
+            Pos2::new(x, bar.top() + 3.0),
+            Pos2::new(x + 30.0, bar.bottom() - 3.0),
         );
         let pi = paint::raised(&painter, pb);
         paint::label(
@@ -87,21 +49,25 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
             theme::INK,
         );
         let resp = ui.interact(pb, Id::new("field.expand"), Sense::click());
-        if resp.hovered() {
-            legend = "L add the back plane — a cube".into();
-        }
         if resp.clicked() {
             cmds.push(Command::ExpandField);
         }
+        x = pb.right() + 8.0;
+    }
+    if let Some((err, text)) = &session.notice {
+        paint::label(
+            &painter,
+            Pos2::new(x + 12.0, bar.center().y),
+            Align2::LEFT_CENTER,
+            text,
+            theme::SMALL,
+            if *err { theme::ALARM } else { theme::INK },
+        );
     }
 
-    let fkeys_rect = Rect::from_min_max(
-        Pos2::new(rect.left() + PAD, foot.top() - 8.0 - crate::ui::fkeys::FKEY_H),
-        Pos2::new(rect.right() - PAD, foot.top() - 8.0),
-    );
     let well_frame = Rect::from_min_max(
-        Pos2::new(rect.left() + PAD, strip.bottom() + PAD),
-        Pos2::new(rect.right() - PAD, fkeys_rect.top() - PAD),
+        Pos2::new(rect.left() + PAD, bar.bottom() + PAD),
+        Pos2::new(rect.right() - PAD, rect.bottom() - PAD),
     );
     let well = paint::well(&painter, well_frame);
 
@@ -251,49 +217,6 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         Stroke::new(1.0, theme::faded(theme::HOT, 170)),
     );
 
-    let keys = [
-        (
-            eframe::egui::Key::F1,
-            "F1",
-            if session.audition.playing { "pause" } else { "play" },
-        ),
-        (eframe::egui::Key::F9, "F9", "undo"),
-        (eframe::egui::Key::F10, "F10", "redo"),
-    ];
-    match crate::ui::fkeys::draw(ui, &painter, fkeys_rect, &keys) {
-        Some(0) => cmds.push(Command::TogglePlay),
-        Some(1) => cmds.push(Command::Undo),
-        Some(2) => cmds.push(Command::Redo),
-        _ => {}
-    }
-
-    let fi = paint::sunken(&painter, foot);
-    painter.rect_filled(fi, 0.0, theme::CHROME);
-    paint::label(
-        &painter,
-        Pos2::new(fi.left() + 4.0, fi.center().y),
-        Align2::LEFT_CENTER,
-        &format!("mouse  {legend}"),
-        theme::SMALL,
-        theme::ECHO,
-    );
-    if let Some((err, text)) = &session.notice {
-        paint::label(
-            &painter,
-            Pos2::new(fi.center().x, fi.center().y),
-            Align2::CENTER_CENTER,
-            text,
-            theme::SMALL,
-            if *err { theme::ALARM } else { theme::INK },
-        );
-    }
-    paint::label(
-        &painter,
-        Pos2::new(fi.right() - 4.0, fi.center().y),
-        Align2::RIGHT_CENTER,
-        "the field",
-        theme::SMALL,
-        theme::INK,
-    );
+    let _ = legend;
     (cmds, open)
 }

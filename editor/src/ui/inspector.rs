@@ -1,15 +1,13 @@
 use eframe::egui::{Align2, Color32, CursorIcon, Id, Painter, Pos2, Rect, Sense, Stroke, Ui};
 
-use trench_core::cascade::NUM_STAGES;
 use trench_core::stage_law::max_contiguous_pole_radius;
 
 use crate::engine::response::SR;
 use crate::session::command::Command;
-use crate::session::state::{FitState, Session};
+use crate::session::state::Session;
 use crate::ui::{paint, theme};
 
-pub const PANEL_W: f32 = 384.0;
-const CARD_H: f32 = 76.0;
+pub const CARD_H: f32 = 76.0;
 
 const BW_MIN: f64 = 8.0;
 const BW_MAX: f64 = 6000.0;
@@ -116,31 +114,6 @@ fn toggle(
     (resp.clicked(), resp.hovered())
 }
 
-pub fn draw(
-    session: &Session,
-    ui: &mut Ui,
-    painter: &Painter,
-    rect: Rect,
-    cmds: &mut Vec<Command>,
-    legend: &mut String,
-) {
-    match session.selection.section {
-        Some(si) => {
-            let card = Rect::from_min_max(
-                rect.left_top(),
-                Pos2::new(rect.right(), rect.top() + CARD_H),
-            );
-            draw_card(session, ui, painter, card, si, cmds, legend);
-        }
-        None => draw_cascade_card(session, ui, painter, rect, cmds, legend),
-    }
-    let map = Rect::from_min_max(
-        Pos2::new(rect.left(), rect.top() + CARD_H + 14.0),
-        rect.right_bottom(),
-    );
-    root_map(session, ui, painter, map, cmds, legend);
-}
-
 fn fmt_hz2(hz: f64) -> String {
     if hz >= 999.5 {
         format!("{:.1}k", hz / 1000.0)
@@ -149,13 +122,14 @@ fn fmt_hz2(hz: f64) -> String {
     }
 }
 
-fn root_map(
+pub fn root_map(
     session: &Session,
     ui: &mut Ui,
     painter: &Painter,
     rect: Rect,
     cmds: &mut Vec<Command>,
     legend: &mut String,
+    only: Option<usize>,
 ) {
     use trench_core::cascade::NUM_STAGES;
     paint::label(
@@ -227,6 +201,16 @@ fn root_map(
     }
     for si in 0..NUM_STAGES {
         let lane = preview[si];
+        if only.is_some_and(|o| o != si) {
+            if lane.zero_r > 0.0 {
+                painter.circle_stroke(
+                    Pos2::new(paint::log_x(lane.zero_hz, well), y_of(lane.zero_r)),
+                    3.0,
+                    Stroke::new(1.0, theme::faded(theme::LANES[si % 7], 70)),
+                );
+            }
+            continue;
+        }
         let provisional = mask[si];
         let selected = session.selection.section == Some(si);
         let ink = if provisional {
@@ -405,75 +389,7 @@ fn root_map(
 }
 
 
-fn draw_cascade_card(
-    session: &Session,
-    _ui: &mut Ui,
-    painter: &Painter,
-    rect: Rect,
-    _cmds: &mut Vec<Command>,
-    _legend: &mut String,
-) {
-    let card = Rect::from_min_max(
-        rect.left_top(),
-        Pos2::new(rect.right(), rect.top() + CARD_H),
-    );
-    painter.rect_filled(card, 0.0, theme::CHROME);
-    let inner = paint::raised(painter, card);
-    let l1 = inner.top() + 14.0;
-    let l2 = inner.top() + 40.0;
-    paint::label(
-        painter,
-        Pos2::new(inner.left() + 8.0, l1),
-        Align2::LEFT_CENTER,
-        "cascade",
-        theme::BODY,
-        theme::INK,
-    );
-    let active = session
-        .document
-        .workspace
-        .lanes
-        .iter()
-        .filter(|l| l.pole_r > 0.0 || l.zero_r > 0.0)
-        .count();
-    let np = session.document.pole_candidates.len();
-    let nz = session.document.zero_candidates.len();
-    let line = if np + nz > 0 {
-        format!("{active} / {}   poles {np} · zeros {nz}", NUM_STAGES)
-    } else {
-        format!("{active} / {}", NUM_STAGES)
-    };
-    paint::label(
-        painter,
-        Pos2::new(inner.left() + 8.0, l2),
-        Align2::LEFT_CENTER,
-        &line,
-        theme::SMALL,
-        theme::INK_DIM,
-    );
-    if let FitState::Complete { rms_db, .. } = &session.fit {
-        paint::label(
-            painter,
-            Pos2::new(inner.center().x, l2),
-            Align2::CENTER_CENTER,
-            &format!("rms {rms_db:.2}"),
-            theme::SMALL,
-            theme::INK,
-        );
-    }
-    if matches!(session.fit, FitState::Running { .. }) {
-        paint::label(
-            painter,
-            Pos2::new(inner.right() - 8.0, l1),
-            Align2::RIGHT_CENTER,
-            "fitting…",
-            theme::SMALL,
-            theme::INK_DIM,
-        );
-    }
-}
-
-fn draw_card(
+pub fn draw_card(
     session: &Session,
     ui: &mut Ui,
     painter: &Painter,
@@ -542,47 +458,6 @@ fn draw_card(
             ],
             Stroke::new(2.0, ink),
         );
-    }
-
-    let mut x = swatch.right() + 24.0;
-    paint::label(painter, Pos2::new(x, l1), Align2::LEFT_CENTER, "range", theme::SMALL, theme::INK_DIM);
-    x += 40.0;
-    let f = line(l1, x, 92.0);
-    let range_text = if law.has_zone() {
-        format!("{}–{}", fmt_hz(law.zone[0]), fmt_hz(law.zone[1]))
-    } else {
-        "—".into()
-    };
-    let s = scrub_field(
-        ui,
-        painter,
-        f,
-        Id::new(("section.range", si)),
-        &range_text,
-        value_ink,
-        law.has_zone().then(|| log_frac((law.zone[0] * law.zone[1]).sqrt())),
-    );
-    if s.hovered {
-        *legend = "L scrub · wheel width".into();
-    }
-    if s.dx != 0.0 || s.wheel != 0.0 {
-        if s.began {
-            cmds.push(Command::BeginEdit);
-        }
-        let mut l = law;
-        if !l.has_zone() {
-            let c = if have_pole { lane.pole_hz } else { 1000.0 };
-            l.zone = [c / 1.3, c * 1.3];
-        }
-        let shift = 2f64.powf(s.dx as f64 / 220.0);
-        let width = 2f64.powf(s.wheel as f64 * 0.001);
-        let center = (l.zone[0] * l.zone[1]).sqrt() * shift;
-        let half = (l.zone[1] / l.zone[0]).sqrt() * width;
-        l.zone = [
-            (center / half).max(paint::FREQ_LO * 0.5),
-            (center * half).min(SR * 0.49),
-        ];
-        cmds.push(Command::SetLaw { section: si, law: l });
     }
 
     let hb = Rect::from_min_max(

@@ -91,6 +91,9 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
                 .ok_or_else(|| format!("fixture target mouth {m} not in library"))?;
             command::apply(&mut session, services, Command::SetTarget(idx))?;
         }
+        if let Some(si) = fx.get("select").and_then(|v| v.as_u64()) {
+            session.selection.section = Some(si as usize);
+        }
         for ci in 0..4 {
             let geoms: Vec<_> = packed.words[ci]
                 .iter()

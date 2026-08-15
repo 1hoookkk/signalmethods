@@ -49,6 +49,7 @@ impl Jobs {
         }
         let Some(pairs) = session.target_pairs() else {
             session.fit = FitState::Failed(FitError::NoTarget);
+            session.notice = Some((true, "no target loaded".into()));
             return;
         };
         session.history.push(&session.document);
@@ -59,7 +60,19 @@ impl Jobs {
         } else {
             FitTarget::Sections
         };
-        let laws = session.document.workspace.laws;
+        let mut laws = session.document.workspace.laws;
+        if let Some(si) = session.selection.section {
+            if !laws[si].writable {
+                session.fit = FitState::Failed(FitError::SectionHeld(si));
+                session.notice = Some((true, format!("section {} is held", si + 1)));
+                return;
+            }
+            for (k, law) in laws.iter_mut().enumerate() {
+                if k != si {
+                    law.writable = false;
+                }
+            }
+        }
         let declared = session.document.workspace.declared() && !provisional;
         let (tx, rx) = channel();
         self.rx = Some(rx);
@@ -81,11 +94,24 @@ impl Jobs {
         }
         let Some(pairs) = session.target_pairs() else {
             session.fit = FitState::Failed(FitError::NoTarget);
+            session.notice = Some((true, "no target loaded".into()));
             return;
         };
         session.history.push(&session.document);
         let lanes = *session.active_lanes();
-        let laws = session.document.workspace.laws;
+        let mut laws = session.document.workspace.laws;
+        if let Some(si) = session.selection.section {
+            if !laws[si].writable {
+                session.fit = FitState::Failed(FitError::SectionHeld(si));
+                session.notice = Some((true, format!("section {} is held", si + 1)));
+                return;
+            }
+            for (k, law) in laws.iter_mut().enumerate() {
+                if k != si {
+                    law.writable = false;
+                }
+            }
+        }
         self.fit_target = FitTarget::Sections;
         let (tx, rx) = channel();
         self.rx = Some(rx);
@@ -101,35 +127,6 @@ impl Jobs {
         });
     }
 
-    pub fn fit_lane(&mut self, session: &mut Session, lane: usize) {
-        if self.running() {
-            return;
-        }
-        let Some(pairs) = session.target_pairs() else {
-            session.fit = FitState::Failed(FitError::NoTarget);
-            return;
-        };
-        let law = session.document.workspace.laws[lane];
-        if !law.writable {
-            session.fit = FitState::Failed(FitError::SectionHeld(lane));
-            return;
-        }
-        session.history.push(&session.document);
-        let lanes = *session.active_lanes();
-        let (tx, rx) = channel();
-        self.rx = Some(rx);
-        session.fit = FitState::Running {
-            started: Instant::now(),
-            corners_done: 0,
-        };
-        std::thread::spawn(move || {
-            let _ = tx.send(match fit::fit_lane(&pairs, lanes, lane, law) {
-                Some(f) => FitMsg::Done(Box::new(f)),
-                None => FitMsg::Failed(FitError::SectionFoundNothing(lane)),
-            });
-        });
-    }
-
     pub fn poll(&mut self, session: &mut Session, audio: &mut Audio) {
         let Some(rx) = &self.rx else { return };
         let mut done = None;
@@ -141,6 +138,7 @@ impl Jobs {
             }
         }
         if let Some(f) = done {
+            let mut rms = f.target_rms_db;
             match self.fit_target {
                 FitTarget::Candidates => {
                     session.document.pole_candidates = f
@@ -166,17 +164,39 @@ impl Jobs {
                     let mut roots = f.roots;
                     fit::snap_to_words(&mut roots);
                     *session.active_lanes_mut() = roots;
+                    if let Some(pairs) = session.target_pairs() {
+                        let rows: Vec<_> = roots
+                            .iter()
+                            .filter(|l| !lane_is_empty(l))
+                            .map(|l| l.biquad_at(SR))
+                            .collect();
+                        let mut acc = 0.0;
+                        for (hz, db) in &pairs {
+                            let sum: f64 =
+                                rows.iter().map(|r| crate::engine::response::row_db(r, *hz, SR)).sum();
+                            acc += (db - sum) * (db - sum);
+                        }
+                        rms = (acc / pairs.len() as f64).sqrt();
+                    }
                 }
             }
             let held = f.roots.iter().filter(|l| !lane_is_empty(l)).count();
             session.fit = FitState::Complete {
-                rms_db: f.target_rms_db,
+                rms_db: rms,
                 sections: held,
             };
             self.rx = None;
             self.invalidate_field_audio();
             self.push_audio(session, audio);
         } else if let Some(e) = failed {
+            session.notice = Some((
+                true,
+                match &e {
+                    FitError::NoTarget => "no target loaded".into(),
+                    FitError::SectionHeld(si) => format!("section {} is held", si + 1),
+                    FitError::DidNotConverge => "fit did not converge".into(),
+                },
+            ));
             session.fit = FitState::Failed(e);
             self.rx = None;
         }

@@ -1,6 +1,6 @@
 use author::body;
 use author::frame::LaneLaw;
-use trench_core::arma_endpoint::{fit_arma, fit_arma_lane, fit_arma_planned, ArmaFit, FREE, NO_ZONES};
+use trench_core::arma_endpoint::{fit_arma, fit_arma_lane, ArmaFit};
 use trench_core::cascade::{NUM_COEFFS, NUM_STAGES};
 use trench_core::minifloat::{PackedCorners, NUM_CORNERS};
 use trench_core::stage_law::{
@@ -28,26 +28,16 @@ pub fn fit_frame(
     if !declared {
         return fit_arma(pairs, SR);
     }
-    let mut freedom = FREE;
-    let mut writable = [true; NUM_STAGES];
-    let mut zones = NO_ZONES;
-    for (si, law) in laws.iter().enumerate() {
-        freedom[si] = law.freedom;
-        writable[si] = law.writable;
-        zones[si] = law.zone;
-    }
     let mut current = lanes;
-    let mut filled: Option<ArmaFit> = None;
     for si in 0..NUM_STAGES {
         if laws[si].writable && lane_is_empty(&current[si]) {
             if let Some(f) = fit_arma_lane(pairs, SR, &current, si, &laws[si].freedom, &laws[si].zone)
             {
                 current = f.roots;
-                filled = Some(f);
             }
         }
     }
-    fit_arma_planned(pairs, SR, &current, &freedom, &writable, &zones).or(filled)
+    crate::engine::lm::fit(pairs, current, laws)
 }
 
 pub fn snap_to_words(lanes: &mut [StageRoots; NUM_STAGES]) {
@@ -87,14 +77,6 @@ pub fn fit_poles_frame(
     laws: [LaneLaw; NUM_STAGES],
 ) -> Option<ArmaFit> {
     let plan = all_pole_laws(&laws);
-    let mut freedom = FREE;
-    let mut writable = [true; NUM_STAGES];
-    let mut zones = NO_ZONES;
-    for (si, law) in plan.iter().enumerate() {
-        freedom[si] = law.freedom;
-        writable[si] = law.writable;
-        zones[si] = law.zone;
-    }
     let mut current = lanes;
     for si in 0..NUM_STAGES {
         if plan[si].writable && current[si].pole_r <= 0.0 {
@@ -108,16 +90,7 @@ pub fn fit_poles_frame(
             }
         }
     }
-    fit_arma_planned(pairs, SR, &current, &freedom, &writable, &zones)
-}
-
-pub fn fit_lane(
-    pairs: &[(f64, f64)],
-    lanes: [StageRoots; NUM_STAGES],
-    lane: usize,
-    law: LaneLaw,
-) -> Option<ArmaFit> {
-    fit_arma_lane(pairs, SR, &lanes, lane, &law.freedom, &law.zone)
+    crate::engine::lm::fit(pairs, current, plan)
 }
 
 pub fn audit_field(field: &Field) -> Option<(PackedCorners, FieldReport)> {

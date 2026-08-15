@@ -426,11 +426,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::FitSelection => {
-            if let Some(si) = session.selection.section {
-                services.jobs.fit_lane(session, si);
-            } else {
-                services.jobs.fit_frame(session);
-            }
+            services.jobs.fit_frame(session);
             Ok(())
         }
         Command::FitPoles => {
@@ -730,6 +726,38 @@ mod tests {
         assert_eq!(zeros.len(), 2, "the fitter invents no zeros");
         let poles = f.roots.iter().filter(|l| l.pole_r > 0.0).count();
         assert!(poles >= 2, "sections fall out of the fit, got {poles}");
+    }
+
+    #[test]
+    fn fit_with_a_section_selected_moves_only_that_section() {
+        let mut services = Services::new();
+        let session = crate::lab::session_for(&mut services, "bend").unwrap();
+        let before = session.document.workspace.lanes;
+        let mut laws = session.document.workspace.laws;
+        for (k, law) in laws.iter_mut().enumerate() {
+            if k != 3 {
+                law.writable = false;
+            }
+        }
+        let pairs = session.target_pairs().unwrap();
+        let f = fit_frame(&pairs, before, laws, true).expect("scoped fit converges");
+        for k in 0..NUM_STAGES {
+            if k == 3 {
+                continue;
+            }
+            assert_eq!(
+                (before[k].pole_hz, before[k].pole_r, before[k].zero_hz, before[k].zero_r, before[k].scale),
+                (f.roots[k].pole_hz, f.roots[k].pole_r, f.roots[k].zero_hz, f.roots[k].zero_r, f.roots[k].scale),
+                "section {} moved while only section 4 was selected",
+                k + 1
+            );
+        }
+        assert!(
+            (before[3].pole_hz - f.roots[3].pole_hz).abs() > 1e-9
+                || (before[3].pole_r - f.roots[3].pole_r).abs() > 1e-9
+                || (before[3].zero_hz - f.roots[3].zero_hz).abs() > 1e-9,
+            "the selected section is the one that moves"
+        );
     }
 
     #[test]

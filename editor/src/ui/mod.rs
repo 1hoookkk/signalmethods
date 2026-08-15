@@ -1,6 +1,5 @@
 pub mod app;
 pub mod field_home;
-pub mod fkeys;
 pub mod paint;
 pub mod response;
 pub mod sections_case;
