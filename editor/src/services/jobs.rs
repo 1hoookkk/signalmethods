@@ -184,7 +184,9 @@ impl Jobs {
 
     pub fn push_audio(&mut self, session: &Session, audio: &mut Audio) {
         let rate = audio.rate;
-        {
+        let ride_field =
+            session.selection.corner.is_some() || session.document.workspace.is_empty();
+        if ride_field {
             if let Some(packed) = session.document.field.words_at(SR) {
                 let rebuild = match &self.field_audio {
                     Some((r, _)) => (*r - rate).abs() > 1e-9,

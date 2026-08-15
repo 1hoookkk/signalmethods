@@ -31,7 +31,7 @@ pub fn gain_for(rows: &CornerData, sample_rate_hz: f64) -> f32 {
                 .sum::<f64>()
         })
         .fold(f64::MIN, f64::max);
-    BASE_GAIN * 10f32.powf(-(peak_db.max(0.0) as f32) / 20.0)
+    BASE_GAIN * 10f32.powf(-(peak_db.clamp(-40.0, 200.0) as f32) / 20.0)
 }
 
 impl Audio {
