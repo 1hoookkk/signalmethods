@@ -46,6 +46,7 @@ pub struct Session {
     pub notice: Option<(bool, String)>,
     pub scaffolds: Vec<(String, String)>,
     pub mouths: Vec<(usize, String)>,
+    pub kept: Vec<(usize, String)>,
 }
 
 impl Session {
@@ -63,6 +64,7 @@ impl Session {
             notice: None,
             scaffolds: Vec::new(),
             mouths: Vec::new(),
+            kept: Vec::new(),
         }
     }
 

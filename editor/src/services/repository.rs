@@ -218,7 +218,14 @@ impl Repository {
         report: &FieldReport,
     ) -> Result<PathBuf, String> {
         if !report.audit.pass() || !report.relative_ok {
-            return Err("audit FAIL — the field was not written".into());
+            let mut why = report.audit.failures.join("; ");
+            if !report.relative_ok {
+                if !why.is_empty() {
+                    why.push_str("; ");
+                }
+                why.push_str("crown exceeds the frames ceiling");
+            }
+            return Err(format!("audit FAIL — {why} — the field was not written"));
         }
         let dir = self.root.join("recipes").join("hero");
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;

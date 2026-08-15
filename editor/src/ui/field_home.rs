@@ -54,6 +54,24 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         }
         x = pb.right() + 8.0;
     }
+    let wb = Rect::from_min_max(
+        Pos2::new(x, bar.top() + 3.0),
+        Pos2::new(x + 50.0, bar.bottom() - 3.0),
+    );
+    let wi = paint::raised(&painter, wb);
+    paint::label(
+        &painter,
+        Pos2::new(wi.center().x, wi.center().y),
+        Align2::CENTER_CENTER,
+        "write",
+        theme::SMALL,
+        theme::INK,
+    );
+    let resp = ui.interact(wb, Id::new("field.write"), Sense::click());
+    if resp.clicked() {
+        cmds.push(Command::WriteField);
+    }
+    x = wb.right() + 8.0;
     if let Some((err, text)) = &session.notice {
         paint::label(
             &painter,
@@ -194,14 +212,85 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         if resp.clicked() {
             if slot.is_some() {
                 cmds.push(Command::TargetCorner(ci));
+                open = Some(ci);
             } else {
-                let mut sel = session.selection;
-                sel.corner = Some(ci);
-                sel.section = None;
-                cmds.push(Command::Select(sel));
+                ui.memory_mut(|m| m.data.insert_temp(Id::new("field.assign"), ci));
             }
-            open = Some(ci);
         }
+        if resp.secondary_clicked() && slot.is_some() {
+            cmds.push(Command::ClearCorner { corner: ci });
+        }
+    }
+
+    let assign_id = Id::new("field.assign");
+    let mut assign = ui.memory(|m| m.data.get_temp::<usize>(assign_id));
+    if ui.input(|i| i.key_pressed(eframe::egui::Key::Escape)) {
+        assign = None;
+    }
+    if let Some(target_ci) = assign {
+        let row_h = 18.0;
+        let rows = 1 + session.kept.len();
+        let panel = Rect::from_min_max(
+            Pos2::new(well.left() + 8.0, well.top() + 8.0),
+            Pos2::new(
+                well.left() + 400.0,
+                (well.top() + 14.0 + row_h * rows as f32).min(well.bottom() - 8.0),
+            ),
+        );
+        let inner = paint::raised(&painter, panel);
+        painter.rect_filled(inner, 0.0, theme::CHROME);
+        for k in 0..rows {
+            let rr = Rect::from_min_max(
+                Pos2::new(inner.left() + 2.0, inner.top() + 2.0 + k as f32 * row_h),
+                Pos2::new(inner.right() - 2.0, inner.top() + 2.0 + (k + 1) as f32 * row_h),
+            );
+            if rr.bottom() > inner.bottom() {
+                break;
+            }
+            let resp = ui.interact(rr, Id::new(("field.assign.row", k)), Sense::click());
+            if resp.hovered() {
+                painter.rect_filled(rr, 0.0, theme::CHROME_LT);
+            }
+            if k == 0 {
+                paint::label(
+                    &painter,
+                    Pos2::new(rr.left() + 5.0, rr.center().y),
+                    Align2::LEFT_CENTER,
+                    "author this corner",
+                    theme::SMALL,
+                    theme::INK,
+                );
+                if resp.clicked() {
+                    let mut sel = session.selection;
+                    sel.corner = Some(target_ci);
+                    sel.section = None;
+                    cmds.push(Command::Select(sel));
+                    open = Some(target_ci);
+                    assign = None;
+                }
+            } else {
+                let (entry, name) = &session.kept[k - 1];
+                paint::label(
+                    &painter,
+                    Pos2::new(rr.left() + 5.0, rr.center().y),
+                    Align2::LEFT_CENTER,
+                    name,
+                    theme::SMALL,
+                    theme::INK,
+                );
+                if resp.clicked() {
+                    cmds.push(Command::AssignCorner {
+                        corner: target_ci,
+                        entry: *entry,
+                    });
+                    assign = None;
+                }
+            }
+        }
+    }
+    match assign {
+        Some(ci) => ui.memory_mut(|m| m.data.insert_temp(assign_id, ci)),
+        None => ui.memory_mut(|m| m.data.remove::<usize>(assign_id)),
     }
 
     let px = well.left() + pos[0] * well.width();

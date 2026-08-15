@@ -32,10 +32,40 @@ pub enum Command {
     ApplyScaffold(usize),
     Keep,
     WriteStatic,
+    WriteField,
     TogglePlay,
     Ride([f32; 3]),
     Undo,
     Redo,
+}
+
+pub fn mirror_library(session: &mut Session, services: &Services) {
+    session.scaffolds = services
+        .repository
+        .scaffolds
+        .iter()
+        .map(|(n, g, _)| (n.clone(), g.clone()))
+        .collect();
+    session.mouths = services
+        .repository
+        .entries
+        .iter()
+        .enumerate()
+        .filter_map(|(i, e)| match e {
+            crate::services::repository::Entry::Mouth { name, .. } => Some((i, name.clone())),
+            _ => None,
+        })
+        .collect();
+    session.kept = services
+        .repository
+        .entries
+        .iter()
+        .enumerate()
+        .filter_map(|(i, e)| match e {
+            crate::services::repository::Entry::Kept { name, .. } => Some((i, name.clone())),
+            _ => None,
+        })
+        .collect();
 }
 
 fn section_exists(session: &Session, section: usize) -> Result<(), String> {
@@ -479,8 +509,27 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 laws,
             };
             let path = services.repository.write_frame(&mut frame)?;
-            let rel = path.strip_prefix(&services.repository.root).unwrap_or(&path);
+            let rel = path
+                .strip_prefix(&services.repository.root)
+                .unwrap_or(&path)
+                .to_path_buf();
             session.notice = Some((false, format!("kept {}", rel.display())));
+            mirror_library(session, services);
+            Ok(())
+        }
+        Command::WriteField => {
+            let (packed, report) = crate::engine::fit::audit_field(&session.document.field)
+                .ok_or("assemble all four corners first")?;
+            let path = services.repository.write_field(&packed, &report)?;
+            let rel = path.strip_prefix(&services.repository.root).unwrap_or(&path);
+            session.notice = Some((
+                false,
+                format!(
+                    "wrote {} — crown {:.1} dB",
+                    rel.display(),
+                    report.audit.crown_max_db
+                ),
+            ));
             Ok(())
         }
         Command::WriteStatic => {
@@ -750,6 +799,167 @@ mod tests {
         assert_eq!(zeros.len(), 2, "the fitter invents no zeros");
         let poles = f.roots.iter().filter(|l| l.pole_r > 0.0).count();
         assert!(poles >= 2, "sections fall out of the fit, got {poles}");
+    }
+
+    #[test]
+    fn the_blueprint_two_measured_mouths_make_an_audited_morph_cube() {
+        use crate::engine::fit::audit_field;
+        let services = Services::new();
+        let root = services.repository.root.clone();
+        let text =
+            std::fs::read_to_string(root.join("recipes").join("tables").join("dvtd_formants.json"))
+                .unwrap();
+        let v: serde_json::Value = serde_json::from_str(&text).unwrap();
+        let peaks_of = |name: &str| -> Vec<(f64, f64)> {
+            v["mouths"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|m| m["name"] == name)
+                .unwrap()["peaks"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .take(5)
+                .map(|p| {
+                    (
+                        p["hz"].as_f64().unwrap(),
+                        p["bandwidth_hz"].as_f64().unwrap(),
+                    )
+                })
+                .collect()
+        };
+        let pose_u = peaks_of("s1-05-bude-tense-u");
+        let pose_a = peaks_of("s1-01-bahn-tense-a");
+        let zeros: [(usize, f64, f64); 3] = [
+            (2, 2014.4494901673877, 0.9601670564892275),
+            (3, 2971.2815971155155, 0.9722835945255858),
+            (5, 17960.825044314846, 0.9999981485290077),
+        ];
+        let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+        let lanes_for = |pose: &[(f64, f64)], bw_shrink: f64| {
+            let mut lanes = [trench_core::stage_law::StageRoots::IDENTITY; NUM_STAGES];
+            for (k, &(hz, bw)) in pose.iter().enumerate() {
+                let (_, r) = trench_core::praat_endpoint::pole_from_frequency_bandwidth(
+                    hz,
+                    bw * bw_shrink,
+                    SR,
+                )
+                .unwrap();
+                lanes[k].pole_hz = hz;
+                lanes[k].pole_r = r.min(ceiling);
+                lanes[k].scale = 1.0;
+            }
+            for &(si, zh, zr) in &zeros {
+                lanes[si].zero_hz = zh;
+                lanes[si].zero_r = zr;
+            }
+            lanes
+        };
+        let grid = author::envelope::grid();
+        let model = |lanes: &[trench_core::stage_law::StageRoots; NUM_STAGES]| -> Vec<f64> {
+            let rows: Vec<[f64; 5]> = lanes
+                .iter()
+                .filter(|l| !lane_is_empty(l))
+                .map(|l| l.biquad_at(SR))
+                .collect();
+            grid.iter()
+                .map(|&hz| rows.iter().map(|r| row_db(r, hz, SR)).sum())
+                .collect()
+        };
+        let spread_gain = |lanes: &mut [trench_core::stage_law::StageRoots; NUM_STAGES],
+                           db: f64| {
+            let active = lanes.iter().filter(|l| !lane_is_empty(l)).count();
+            let per = 10f64.powf(db / (20.0 * active as f64));
+            for l in lanes.iter_mut().filter(|l| !lane_is_empty(l)) {
+                l.scale *= per;
+            }
+        };
+        let mouth_curve = |name: &str| -> Vec<f64> {
+            let idx = services
+                .repository
+                .entries
+                .iter()
+                .position(|e| matches!(e, Entry::Mouth { name: n, .. } if n == name))
+                .unwrap();
+            services.repository.load_mouth(idx).unwrap().1
+        };
+        let curve_u = mouth_curve("s1-05-bude-tense-u");
+        let curve_a = mouth_curve("s1-01-bahn-tense-a");
+
+        let bw_of = |r: f64| -r.ln() * SR / std::f64::consts::PI;
+        let r_of = |bw: f64| (-std::f64::consts::PI * bw / SR).exp();
+        let mut rms = Vec::new();
+        let mut fitted_q0 = Vec::new();
+        for (pose, curve) in [(&pose_u, &curve_u), (&pose_a, &curve_a)] {
+            let seed = lanes_for(pose, 1.0);
+            let y = model(&seed);
+            let acc: f64 = curve
+                .iter()
+                .zip(y.iter())
+                .map(|(t, m)| (t - m) * (t - m))
+                .sum();
+            let seed_rms = (acc / grid.len() as f64).sqrt();
+            let mut laws = [LaneLaw::OPEN; NUM_STAGES];
+            for &(si, _, _) in &zeros {
+                laws[si].freedom[2] = false;
+                laws[si].freedom[3] = false;
+            }
+            let pairs: Vec<(f64, f64)> =
+                grid.iter().copied().zip(curve.iter().copied()).collect();
+            let f = crate::engine::lm::fit(&pairs, seed, laws).expect("blueprint fit converges");
+            println!(
+                "seed rms {:.2} dB -> fitted rms {:.2} dB",
+                seed_rms, f.target_rms_db
+            );
+            rms.push(f.target_rms_db);
+            fitted_q0.push(f.roots);
+        }
+        let mut corners = Vec::new();
+        for lanes in &fitted_q0 {
+            corners.push(*lanes);
+        }
+        for lanes in &fitted_q0 {
+            let mut hot = *lanes;
+            for l in hot.iter_mut().filter(|l| l.pole_r > 0.0) {
+                l.pole_r = r_of(bw_of(l.pole_r) * 0.1).min(ceiling);
+            }
+            let y = model(&hot);
+            let peak = y.iter().cloned().fold(f64::MIN, f64::max);
+            if peak > 30.0 {
+                spread_gain(&mut hot, 30.0 - peak);
+            }
+            corners.push(hot);
+        }
+
+        let mut session = Session::new();
+        for (ci, lanes) in corners.into_iter().enumerate() {
+            session.document.field.slots[ci] = Some(Frame {
+                name: format!("blueprint c{ci}"),
+                sr_hz: SR,
+                provenance: String::new(),
+                words: String::new(),
+                lanes,
+                laws: [LaneLaw::OPEN; NUM_STAGES],
+            });
+        }
+        let (packed, report) = audit_field(&session.document.field).expect("square assembly");
+        println!(
+            "audit: crown {:.1}..{:.1} dB · parity {:.1} · legacy {}",
+            report.audit.crown_min_db, report.audit.crown_max_db, report.audit.parity_db, report.legacy
+        );
+        assert!(
+            report.audit.pass() && report.relative_ok,
+            "blueprint cube fails the audit: {:?}",
+            report.audit.failures
+        );
+        assert!(report.is_square && report.legacy, "a 6-SOS square cube packs legacy");
+        let bytes = packed.to_legacy_bytes().unwrap();
+        assert_eq!(bytes.len(), 240);
+        assert!(
+            rms[0] < 12.0 && rms[1] < 12.0,
+            "the fitted corners should land near the measurement: {rms:?}"
+        );
     }
 
     #[test]
