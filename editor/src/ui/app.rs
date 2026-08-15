@@ -35,6 +35,7 @@ impl eframe::App for App {
         for cmd in cmds {
             if let Err(e) = crate::session::command::apply(session, services, cmd) {
                 eprintln!("{e}");
+                session.notice = Some((true, e));
             }
         }
         if matches!(session.fit, crate::session::state::FitState::Running { .. }) {

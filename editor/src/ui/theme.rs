@@ -17,6 +17,8 @@ pub const ASK_INK: Color32 = Color32::from_rgb(38, 100, 140);
 pub const NOW_INK: Color32 = Color32::from_rgb(26, 122, 66);
 pub const HOT: Color32 = Color32::from_rgb(255, 122, 60);
 pub const ALARM: Color32 = Color32::from_rgb(232, 80, 64);
+pub const TITLEBAR: Color32 = Color32::from_rgb(52, 68, 100);
+pub const ECHO: Color32 = Color32::from_rgb(126, 42, 34);
 
 pub const LANES: [Color32; 7] = [
     Color32::from_rgb(79, 195, 247),

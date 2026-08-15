@@ -460,7 +460,9 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 lanes,
                 laws,
             };
-            services.repository.write_frame(&mut frame)?;
+            let path = services.repository.write_frame(&mut frame)?;
+            let rel = path.strip_prefix(&services.repository.root).unwrap_or(&path);
+            session.notice = Some((false, format!("kept {}", rel.display())));
             Ok(())
         }
         Command::WriteStatic => {
@@ -487,7 +489,16 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             }
             let (packed, report) = crate::engine::fit::audit_field(&field)
                 .ok_or("assembly incomplete")?;
-            services.repository.write_static(&packed, &report)?;
+            let path = services.repository.write_static(&packed, &report)?;
+            let rel = path.strip_prefix(&services.repository.root).unwrap_or(&path);
+            session.notice = Some((
+                false,
+                format!(
+                    "wrote {} — crown {:.1} dB",
+                    rel.display(),
+                    report.audit.crown_max_db
+                ),
+            ));
             Ok(())
         }
         Command::TogglePlay => {

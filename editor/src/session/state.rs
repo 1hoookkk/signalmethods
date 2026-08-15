@@ -44,6 +44,7 @@ pub struct Session {
     pub audition: AuditionPosition,
     pub fit: FitState,
     pub history: History,
+    pub notice: Option<(bool, String)>,
 }
 
 impl Session {
@@ -58,6 +59,7 @@ impl Session {
             },
             fit: FitState::Idle,
             history: History::new(),
+            notice: None,
         }
     }
 

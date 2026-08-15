@@ -115,3 +115,49 @@ pub fn well(painter: &Painter, rect: Rect) -> Rect {
     painter.rect_filled(inner, 0.0, theme::WELL);
     inner
 }
+
+pub const BANNER_H: f32 = 22.0;
+
+pub fn banner(painter: &Painter, rect: Rect, title: &str, tag: &str) -> Rect {
+    let inner = raised(painter, rect);
+    painter.rect_filled(inner, 0.0, theme::TITLEBAR);
+    label(
+        painter,
+        Pos2::new(inner.center().x, inner.center().y),
+        Align2::CENTER_CENTER,
+        title,
+        theme::TITLE,
+        theme::CHROME_LT,
+    );
+    label(
+        painter,
+        Pos2::new(inner.right() - 5.0, inner.center().y),
+        Align2::RIGHT_CENTER,
+        tag,
+        theme::SMALL,
+        theme::faded(theme::CHROME_LT, 170),
+    );
+    inner
+}
+
+pub fn group(painter: &Painter, rect: Rect, title: &str) -> Rect {
+    edge(painter, rect, theme::CHROME_DK, theme::CHROME_LT);
+    edge(painter, rect.shrink(1.0), theme::CHROME_LT, theme::CHROME_DK);
+    if !title.is_empty() {
+        let w = title.len() as f32 * 6.4 + 10.0;
+        let tr = Rect::from_min_size(
+            Pos2::new(rect.left() + 8.0, rect.top() - 6.0),
+            eframe::egui::vec2(w, 12.0),
+        );
+        painter.rect_filled(tr, 0.0, theme::CHROME);
+        label(
+            painter,
+            tr.center(),
+            Align2::CENTER_CENTER,
+            title,
+            theme::SMALL,
+            theme::INK_DIM,
+        );
+    }
+    rect.shrink(2.0)
+}

@@ -17,9 +17,19 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
     let painter = ui.painter().clone();
     painter.rect_filled(rect, 0.0, theme::CHROME);
 
-    let strip = Rect::from_min_max(
+    let banner = Rect::from_min_max(
         rect.left_top() + Vec2::new(PAD, PAD),
-        Pos2::new(rect.right() - PAD, rect.top() + PAD + STRIP_H),
+        Pos2::new(rect.right() - PAD, rect.top() + PAD + paint::BANNER_H),
+    );
+    paint::banner(
+        &painter,
+        banner,
+        "TRENCH Field Editing: the field",
+        concat!("v", env!("CARGO_PKG_VERSION")),
+    );
+    let strip = Rect::from_min_max(
+        Pos2::new(rect.left() + PAD, banner.bottom() + 6.0),
+        Pos2::new(rect.right() - PAD, banner.bottom() + 6.0 + STRIP_H),
     );
     let foot = Rect::from_min_max(
         Pos2::new(rect.left() + PAD, rect.bottom() - PAD - FOOT_H),
@@ -242,17 +252,29 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         Stroke::new(1.0, theme::faded(theme::HOT, 170)),
     );
 
+    let fi = paint::sunken(&painter, foot);
+    painter.rect_filled(fi, 0.0, theme::CHROME);
     paint::label(
         &painter,
-        Pos2::new(foot.left(), foot.center().y),
+        Pos2::new(fi.left() + 4.0, fi.center().y),
         Align2::LEFT_CENTER,
-        &legend,
+        &format!("mouse  {legend}"),
         theme::SMALL,
-        theme::INK_DIM,
+        theme::ECHO,
     );
+    if let Some((err, text)) = &session.notice {
+        paint::label(
+            &painter,
+            Pos2::new(fi.center().x, fi.center().y),
+            Align2::CENTER_CENTER,
+            text,
+            theme::SMALL,
+            if *err { theme::ALARM } else { theme::INK },
+        );
+    }
     paint::label(
         &painter,
-        Pos2::new(foot.right(), foot.center().y),
+        Pos2::new(fi.right() - 4.0, fi.center().y),
         Align2::RIGHT_CENTER,
         "the field",
         theme::SMALL,

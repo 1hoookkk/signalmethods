@@ -17,9 +17,23 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
     let painter = ui.painter().clone();
     painter.rect_filled(rect, 0.0, theme::CHROME);
 
-    let strip = Rect::from_min_max(
+    let banner = Rect::from_min_max(
         rect.left_top() + eframe::egui::vec2(PAD, PAD),
-        Pos2::new(rect.right() - PAD, rect.top() + PAD + STRIP_H),
+        Pos2::new(rect.right() - PAD, rect.top() + PAD + paint::BANNER_H),
+    );
+    let title = format!(
+        "TRENCH Response Editing: {}",
+        session
+            .document
+            .target
+            .as_ref()
+            .map(|t| t.name.as_str())
+            .unwrap_or("untitled")
+    );
+    paint::banner(&painter, banner, &title, concat!("v", env!("CARGO_PKG_VERSION")));
+    let strip = Rect::from_min_max(
+        Pos2::new(rect.left() + PAD, banner.bottom() + 6.0),
+        Pos2::new(rect.right() - PAD, banner.bottom() + 6.0 + STRIP_H),
     );
     let foot = Rect::from_min_max(
         Pos2::new(rect.left() + PAD, rect.bottom() - PAD - FOOT_H),
@@ -488,36 +502,45 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         cmds.push(Command::Select(sel));
     }
 
+    paint::group(&painter, nav_rect.expand(5.0), "sections");
     navigator::draw(session, ui, &painter, nav_rect, well, &mut cmds, &mut legend);
+    paint::group(&painter, panel_rect.expand(5.0), "inspector");
     inspector::draw(session, ui, &painter, panel_rect, &mut cmds, &mut legend);
 
+    let fi = paint::sunken(&painter, foot);
+    painter.rect_filled(fi, 0.0, theme::CHROME);
     paint::label(
         &painter,
-        Pos2::new(foot.left(), foot.center().y),
+        Pos2::new(fi.left() + 4.0, fi.center().y),
         Align2::LEFT_CENTER,
-        &legend,
+        &format!("mouse  {legend}"),
         theme::SMALL,
-        theme::INK_DIM,
+        theme::ECHO,
     );
-    if let crate::session::state::FitState::Complete { rms_db, .. } = &session.fit {
+    if let Some((err, text)) = &session.notice {
         paint::label(
             &painter,
-            Pos2::new(foot.center().x, foot.center().y),
+            Pos2::new(fi.center().x, fi.center().y),
             Align2::CENTER_CENTER,
-            &format!("rms {rms_db:.2}"),
+            text,
             theme::SMALL,
-            theme::INK,
+            if *err { theme::ALARM } else { theme::INK },
         );
+    }
+    let mut right = String::new();
+    if let crate::session::state::FitState::Complete { rms_db, .. } = &session.fit {
+        right.push_str(&format!("rms {rms_db:.2}  ·  "));
     }
     if let Some(target) = &session.document.target {
-        paint::label(
-            &painter,
-            Pos2::new(foot.right(), foot.center().y),
-            Align2::RIGHT_CENTER,
-            &target.name,
-            theme::SMALL,
-            theme::INK,
-        );
+        right.push_str(&target.name);
     }
+    paint::label(
+        &painter,
+        Pos2::new(fi.right() - 4.0, fi.center().y),
+        Align2::RIGHT_CENTER,
+        &right,
+        theme::SMALL,
+        theme::INK,
+    );
     (cmds, back)
 }
