@@ -3,7 +3,7 @@ use eframe::egui::{Align2, Id, Pos2, Rect, Sense, Stroke, Ui};
 use crate::engine::response::{row_db, SR};
 use crate::session::command::Command;
 use crate::session::state::Session;
-use crate::ui::{paint, section_panel, theme};
+use crate::ui::{inspector, navigator, paint, theme};
 
 const STRIP_H: f32 = 30.0;
 const FOOT_H: f32 = 24.0;
@@ -25,12 +25,16 @@ pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
         rect.right_bottom() - eframe::egui::vec2(PAD, PAD),
     );
     let panel_rect = Rect::from_min_max(
-        Pos2::new(rect.right() - PAD - section_panel::PANEL_W, strip.bottom() + PAD),
+        Pos2::new(rect.right() - PAD - inspector::PANEL_W, strip.bottom() + PAD),
         Pos2::new(rect.right() - PAD, foot.top() - PAD),
+    );
+    let nav_rect = Rect::from_min_max(
+        Pos2::new(rect.left() + PAD, foot.top() - PAD - navigator::NAV_H),
+        Pos2::new(panel_rect.left() - PAD, foot.top() - PAD),
     );
     let well_frame = Rect::from_min_max(
         Pos2::new(rect.left() + PAD, strip.bottom() + PAD),
-        Pos2::new(panel_rect.left() - PAD, foot.top() - PAD),
+        Pos2::new(panel_rect.left() - PAD, nav_rect.top() - PAD),
     );
     let well = paint::well(&painter, well_frame);
     let well_response = ui.interact(well, Id::new("response.well"), Sense::hover());
@@ -263,7 +267,8 @@ pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
         x = fw.right() + 16.0;
     }
 
-    section_panel::draw(session, ui, &painter, panel_rect, &mut cmds, &mut legend);
+    navigator::draw(session, ui, &painter, nav_rect, &mut cmds, &mut legend);
+    inspector::draw(session, ui, &painter, panel_rect, &mut cmds, &mut legend);
 
     paint::label(
         &painter,

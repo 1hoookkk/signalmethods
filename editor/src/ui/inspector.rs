@@ -10,7 +10,6 @@ use crate::ui::{paint, theme};
 
 pub const PANEL_W: f32 = 384.0;
 const CARD_H: f32 = 76.0;
-const GAP: f32 = 5.0;
 
 const BW_MIN: f64 = 8.0;
 const BW_MAX: f64 = 6000.0;
@@ -107,17 +106,109 @@ pub fn draw(
     cmds: &mut Vec<Command>,
     legend: &mut String,
 ) {
-    let mut y = rect.top();
-    for si in 0..NUM_STAGES {
-        let card = Rect::from_min_max(
-            Pos2::new(rect.left(), y),
-            Pos2::new(rect.right(), y + CARD_H),
-        );
-        if card.bottom() > rect.bottom() + 1.0 {
-            break;
+    match session.selection.section {
+        Some(si) => {
+            let card = Rect::from_min_max(
+                rect.left_top(),
+                Pos2::new(rect.right(), rect.top() + CARD_H),
+            );
+            draw_card(session, ui, painter, card, si, cmds, legend);
         }
-        draw_card(session, ui, painter, card, si, cmds, legend);
-        y += CARD_H + GAP;
+        None => draw_cascade_card(session, ui, painter, rect, cmds, legend),
+    }
+}
+
+fn draw_cascade_card(
+    session: &Session,
+    ui: &mut Ui,
+    painter: &Painter,
+    rect: Rect,
+    cmds: &mut Vec<Command>,
+    legend: &mut String,
+) {
+    let card = Rect::from_min_max(
+        rect.left_top(),
+        Pos2::new(rect.right(), rect.top() + CARD_H),
+    );
+    painter.rect_filled(card, 0.0, theme::CHROME);
+    let inner = paint::raised(painter, card);
+    let l1 = inner.top() + 14.0;
+    let l2 = inner.top() + 40.0;
+    paint::label(
+        painter,
+        Pos2::new(inner.left() + 8.0, l1),
+        Align2::LEFT_CENTER,
+        "cascade",
+        theme::BODY,
+        theme::INK,
+    );
+    let active = session
+        .active_lanes()
+        .iter()
+        .filter(|l| l.pole_r > 0.0 || l.zero_r > 0.0)
+        .count();
+    paint::label(
+        painter,
+        Pos2::new(inner.left() + 8.0, l2),
+        Align2::LEFT_CENTER,
+        &format!("{active} / {}", NUM_STAGES),
+        theme::SMALL,
+        theme::INK_DIM,
+    );
+    if let FitState::Complete { rms_db, .. } = &session.fit {
+        paint::label(
+            painter,
+            Pos2::new(inner.center().x, l2),
+            Align2::CENTER_CENTER,
+            &format!("rms {rms_db:.2}"),
+            theme::SMALL,
+            theme::INK,
+        );
+    }
+    let fitting = matches!(session.fit, FitState::Running { .. });
+    let fb = Rect::from_min_max(
+        Pos2::new(inner.right() - 42.0, l1 - 10.0),
+        Pos2::new(inner.right() - 6.0, l1 + 10.0),
+    );
+    let fi = if fitting {
+        paint::sunken(painter, fb)
+    } else {
+        paint::raised(painter, fb)
+    };
+    paint::label(
+        painter,
+        Pos2::new(fi.center().x, fi.center().y),
+        Align2::CENTER_CENTER,
+        "fit",
+        theme::SMALL,
+        if fitting { theme::INK_DIM } else { theme::INK },
+    );
+    let resp = ui.interact(fb, Id::new("cascade.fit"), Sense::click());
+    if resp.hovered() {
+        *legend = "L fit the whole cascade to the target".into();
+    }
+    if resp.clicked() && !fitting {
+        cmds.push(Command::FitSelection);
+    }
+    let kb = Rect::from_min_max(
+        Pos2::new(fb.left() - 52.0, l1 - 10.0),
+        Pos2::new(fb.left() - 4.0, l1 + 10.0),
+    );
+    let ki = paint::raised(painter, kb);
+    paint::label(
+        painter,
+        Pos2::new(ki.center().x, ki.center().y),
+        Align2::CENTER_CENTER,
+        "keep",
+        theme::SMALL,
+        theme::INK,
+    );
+    let resp = ui.interact(kb, Id::new("cascade.keep"), Sense::click());
+    if resp.hovered() {
+        *legend = "L keep this response in the library".into();
+    }
+    if resp.clicked() {
+        cmds.push(Command::Keep);
     }
 }
 
