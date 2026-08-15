@@ -1,5 +1,6 @@
 {
   "name": "s6 null",
+  "gloss": "anti-aliasing notch at 17.96k, silence on the unit circle",
   "provenance": "measured: one identical stored zero in 26 of 33 factory presets, always slot 6; the anti-aliasing guard",
   "zeros": [
     { "section": 6, "hz": 17960.825044314846, "r": 0.9999981485290077 }

@@ -39,7 +39,7 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
         .repository
         .scaffolds
         .iter()
-        .map(|(n, _)| n.clone())
+        .map(|(n, g, _)| (n.clone(), g.clone()))
         .collect();
     session.mouths = services
         .repository

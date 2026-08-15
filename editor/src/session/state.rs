@@ -44,7 +44,7 @@ pub struct Session {
     pub fit: FitState,
     pub history: History,
     pub notice: Option<(bool, String)>,
-    pub scaffolds: Vec<String>,
+    pub scaffolds: Vec<(String, String)>,
     pub mouths: Vec<(usize, String)>,
 }
 

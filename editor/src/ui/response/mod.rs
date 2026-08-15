@@ -298,11 +298,6 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
     if bar_button(ui, &painter, &mut x, bar, "redo", Some(Key::F10)) {
         cmds.push(Command::Redo);
     }
-    for (i, name) in session.scaffolds.iter().enumerate() {
-        if bar_button(ui, &painter, &mut x, bar, name, None) {
-            cmds.push(Command::ApplyScaffold(i));
-        }
-    }
     if ui.input(|i| i.key_pressed(Key::Escape)) {
         if list_open {
             list_open = false;
@@ -312,65 +307,113 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
             cmds.push(Command::Select(sel));
         }
     }
-    if list_open && !session.mouths.is_empty() {
-        let row_h = 18.0;
-        let panel = Rect::from_min_max(
-            Pos2::new(well.left() + 8.0, well.top() + 8.0),
-            Pos2::new(
-                well.left() + 288.0,
-                (well.top() + 14.0 + row_h * session.mouths.len() as f32).min(well.bottom() - 8.0),
-            ),
-        );
-        let inner = paint::raised(&painter, panel);
-        painter.rect_filled(inner, 0.0, theme::CHROME);
-        let scroll_id = Id::new("target.list.scroll");
-        let mut offset = ui
-            .memory(|m| m.data.get_temp::<f32>(scroll_id))
-            .unwrap_or(0.0);
-        let visible = ((inner.height() - 4.0) / row_h).floor() as usize;
-        let max_off = session.mouths.len().saturating_sub(visible) as f32;
-        if ui.rect_contains_pointer(panel) {
-            let wheel = ui.input(|i| i.raw_scroll_delta.y);
-            offset = (offset - wheel / row_h * 0.5).clamp(0.0, max_off);
+    if list_open {
+        enum Row {
+            Mouth(usize, String),
+            Divider,
+            Scaffold(usize, String),
         }
-        ui.memory_mut(|m| m.data.insert_temp(scroll_id, offset));
-        let first = offset.floor() as usize;
-        for (k, (entry, name)) in session
+        let mut items: Vec<Row> = session
             .mouths
             .iter()
-            .enumerate()
-            .skip(first)
-            .take(visible)
-        {
-            let rr = Rect::from_min_max(
-                Pos2::new(inner.left() + 2.0, inner.top() + 2.0 + (k - first) as f32 * row_h),
+            .map(|(e, n)| Row::Mouth(*e, n.clone()))
+            .collect();
+        if !session.scaffolds.is_empty() {
+            items.push(Row::Divider);
+            for (i, (n, g)) in session.scaffolds.iter().enumerate() {
+                let label = if g.is_empty() {
+                    n.clone()
+                } else {
+                    format!("{n} — {g}")
+                };
+                items.push(Row::Scaffold(i, label));
+            }
+        }
+        if !items.is_empty() {
+            let row_h = 18.0;
+            let panel = Rect::from_min_max(
+                Pos2::new(well.left() + 8.0, well.top() + 8.0),
                 Pos2::new(
-                    inner.right() - 2.0,
-                    inner.top() + 2.0 + (k - first + 1) as f32 * row_h,
+                    well.left() + 400.0,
+                    (well.top() + 14.0 + row_h * items.len() as f32).min(well.bottom() - 8.0),
                 ),
             );
-            let resp = ui.interact(rr, Id::new(("target.row", k)), Sense::click());
-            let current = session.selection.entry == Some(*entry);
-            if resp.hovered() {
-                painter.rect_filled(rr, 0.0, theme::CHROME_LT);
-            } else if current {
-                painter.rect_filled(rr, 0.0, theme::CHROME_DK);
+            let inner = paint::raised(&painter, panel);
+            painter.rect_filled(inner, 0.0, theme::CHROME);
+            let scroll_id = Id::new("target.list.scroll");
+            let mut offset = ui
+                .memory(|m| m.data.get_temp::<f32>(scroll_id))
+                .unwrap_or(0.0);
+            let visible = ((inner.height() - 4.0) / row_h).floor() as usize;
+            let max_off = items.len().saturating_sub(visible) as f32;
+            if ui.rect_contains_pointer(panel) {
+                let wheel = ui.input(|i| i.raw_scroll_delta.y);
+                offset = (offset - wheel / row_h * 0.5).clamp(0.0, max_off);
             }
-            paint::label(
-                &painter,
-                Pos2::new(rr.left() + 5.0, rr.center().y),
-                Align2::LEFT_CENTER,
-                name,
-                theme::SMALL,
-                if current && !resp.hovered() {
-                    theme::CHROME_LT
-                } else {
-                    theme::INK
-                },
-            );
-            if resp.clicked() {
-                cmds.push(Command::SetTarget(*entry));
-                list_open = false;
+            ui.memory_mut(|m| m.data.insert_temp(scroll_id, offset));
+            let first = offset.floor() as usize;
+            for (k, item) in items.iter().enumerate().skip(first).take(visible) {
+                let rr = Rect::from_min_max(
+                    Pos2::new(inner.left() + 2.0, inner.top() + 2.0 + (k - first) as f32 * row_h),
+                    Pos2::new(
+                        inner.right() - 2.0,
+                        inner.top() + 2.0 + (k - first + 1) as f32 * row_h,
+                    ),
+                );
+                match item {
+                    Row::Divider => {
+                        painter.line_segment(
+                            [
+                                Pos2::new(rr.left() + 4.0, rr.center().y),
+                                Pos2::new(rr.right() - 4.0, rr.center().y),
+                            ],
+                            Stroke::new(1.0, theme::CHROME_DK),
+                        );
+                    }
+                    Row::Mouth(entry, name) => {
+                        let resp = ui.interact(rr, Id::new(("target.row", k)), Sense::click());
+                        let current = session.selection.entry == Some(*entry);
+                        if resp.hovered() {
+                            painter.rect_filled(rr, 0.0, theme::CHROME_LT);
+                        } else if current {
+                            painter.rect_filled(rr, 0.0, theme::CHROME_DK);
+                        }
+                        paint::label(
+                            &painter,
+                            Pos2::new(rr.left() + 5.0, rr.center().y),
+                            Align2::LEFT_CENTER,
+                            name,
+                            theme::SMALL,
+                            if current && !resp.hovered() {
+                                theme::CHROME_LT
+                            } else {
+                                theme::INK
+                            },
+                        );
+                        if resp.clicked() {
+                            cmds.push(Command::SetTarget(*entry));
+                            list_open = false;
+                        }
+                    }
+                    Row::Scaffold(i, label) => {
+                        let resp = ui.interact(rr, Id::new(("target.row", k)), Sense::click());
+                        if resp.hovered() {
+                            painter.rect_filled(rr, 0.0, theme::CHROME_LT);
+                        }
+                        paint::label(
+                            &painter,
+                            Pos2::new(rr.left() + 5.0, rr.center().y),
+                            Align2::LEFT_CENTER,
+                            label,
+                            theme::SMALL,
+                            theme::INK,
+                        );
+                        if resp.clicked() {
+                            cmds.push(Command::ApplyScaffold(*i));
+                            list_open = false;
+                        }
+                    }
+                }
             }
         }
     }

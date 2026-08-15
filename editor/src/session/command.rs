@@ -760,7 +760,7 @@ mod tests {
             .repository
             .scaffolds
             .iter()
-            .position(|(n, _)| n == "s6 null")
+            .position(|(n, _, _)| n == "s6 null")
             .expect("s6 null scaffold in the library");
         apply(&mut session, &mut services, Command::ApplyScaffold(i)).unwrap();
         let lane = session.document.workspace.lanes[5];

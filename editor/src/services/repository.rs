@@ -25,7 +25,7 @@ impl Entry {
 pub struct Repository {
     pub root: PathBuf,
     pub entries: Vec<Entry>,
-    pub scaffolds: Vec<(String, PathBuf)>,
+    pub scaffolds: Vec<(String, String, PathBuf)>,
 }
 
 pub struct ScaffoldZero {
@@ -108,7 +108,12 @@ impl Repository {
             if let Ok(text) = std::fs::read_to_string(&path) {
                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
                     if let Some(name) = v.get("name").and_then(|n| n.as_str()) {
-                        self.scaffolds.push((name.to_string(), path));
+                        let gloss = v
+                            .get("gloss")
+                            .and_then(|g| g.as_str())
+                            .unwrap_or("")
+                            .to_string();
+                        self.scaffolds.push((name.to_string(), gloss, path));
                     }
                 }
             }
@@ -116,7 +121,7 @@ impl Repository {
     }
 
     pub fn load_scaffold(&self, index: usize) -> Result<(String, Vec<ScaffoldZero>), String> {
-        let (name, path) = self.scaffolds.get(index).ok_or("not a scaffold")?;
+        let (name, _, path) = self.scaffolds.get(index).ok_or("not a scaffold")?;
         let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
         let v: serde_json::Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
         let zeros = v
