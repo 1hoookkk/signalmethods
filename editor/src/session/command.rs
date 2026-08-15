@@ -23,6 +23,7 @@ pub enum Command {
     TargetCorner(usize),
     ExpandField,
     SwapSections { a: usize, b: usize },
+    AssignSection { section: usize, hz: f64 },
     ClearWorkspace,
     FitSelection,
     FitSection(usize),
@@ -227,6 +228,68 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 ws.laws.swap(a, b);
                 ws.lane_jobs.swap(a, b);
             }
+            services.jobs.invalidate_field_audio();
+            services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
+        Command::AssignSection { section, hz } => {
+            session.history.push(&session.document);
+            let zone = [hz / 1.3, hz * 1.3];
+            {
+                let law = &mut session.document.workspace.laws[section];
+                law.zone = zone;
+                law.writable = true;
+            }
+            let empty = lane_is_empty(&session.active_lanes()[section]);
+            if empty {
+                let mut pole = (hz, 0.95);
+                let mut zero: Option<(f64, f64)> = None;
+                if let Some(t) = &session.document.target {
+                    let grid = author::envelope::grid();
+                    let peaks = author::formants::peaks(&grid, &t.curve);
+                    if let Some(p) = peaks
+                        .iter()
+                        .filter(|p| p.hz >= zone[0] && p.hz <= zone[1])
+                        .min_by(|a, b| {
+                            (a.hz / hz).ln().abs().total_cmp(&(b.hz / hz).ln().abs())
+                        })
+                    {
+                        if let Some((_, r)) = praat_endpoint::pole_from_frequency_bandwidth(
+                            p.hz,
+                            p.bandwidth_hz,
+                            SR,
+                        ) {
+                            pole = (p.hz, r);
+                        }
+                    }
+                    let inverted: Vec<f64> = t.curve.iter().map(|v| -v).collect();
+                    let notches = author::formants::peaks(&grid, &inverted);
+                    if let Some(n) = notches
+                        .iter()
+                        .filter(|n| n.hz > pole.0 && n.hz < pole.0 * 2.5)
+                        .min_by(|a, b| a.hz.total_cmp(&b.hz))
+                    {
+                        let r = praat_endpoint::pole_from_frequency_bandwidth(
+                            n.hz,
+                            n.bandwidth_hz,
+                            SR,
+                        )
+                        .map(|(_, r)| r.min(1.0))
+                        .unwrap_or(0.94);
+                        zero = Some((n.hz, r));
+                    }
+                }
+                let lane = &mut session.active_lanes_mut()[section];
+                lane.pole_hz = pole.0;
+                lane.pole_r = pole.1;
+                lane.scale = 1.0;
+                if let Some((zh, zr)) = zero {
+                    lane.zero_hz = zh;
+                    lane.zero_r = zr;
+                }
+            }
+            session.selection.section = Some(section);
+            session.fit = FitState::Idle;
             services.jobs.invalidate_field_audio();
             services.jobs.push_audio(session, &mut services.audio);
             Ok(())

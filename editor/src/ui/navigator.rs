@@ -21,6 +21,7 @@ pub fn draw(
     ui: &mut Ui,
     painter: &Painter,
     rect: Rect,
+    well: Rect,
     cmds: &mut Vec<Command>,
     legend: &mut String,
 ) {
@@ -101,14 +102,46 @@ pub fn draw(
                 theme::INK_DIM
             },
         );
-        let resp = ui.interact(chip, Id::new(("nav.section", si)), Sense::click());
+        let resp = ui.interact(chip, Id::new(("nav.section", si)), Sense::click_and_drag());
         if resp.hovered() {
-            *legend = "L select".into();
+            *legend = "L select · drag onto the glass to assign".into();
         }
         if resp.clicked() {
             let mut sel = session.selection;
             sel.section = if selected { None } else { Some(si) };
             cmds.push(Command::Select(sel));
+        }
+        if resp.dragged() {
+            if let Some(p) = resp.interact_pointer_pos() {
+                if well.contains(p) {
+                    let hz = crate::ui::paint::hz_at_x(p.x, well);
+                    let a = crate::ui::paint::log_x(hz / 1.3, well);
+                    let b = crate::ui::paint::log_x(hz * 1.3, well);
+                    painter.rect_filled(
+                        Rect::from_min_max(
+                            Pos2::new(a, well.top()),
+                            Pos2::new(b, well.bottom()),
+                        ),
+                        0.0,
+                        theme::faded(ink, 22),
+                    );
+                    painter.line_segment(
+                        [Pos2::new(p.x, well.top()), Pos2::new(p.x, well.bottom())],
+                        Stroke::new(1.0, theme::faded(ink, 180)),
+                    );
+                    *legend = "release: this section owns here".into();
+                }
+            }
+        }
+        if resp.drag_stopped() {
+            if let Some(p) = resp.interact_pointer_pos() {
+                if well.contains(p) {
+                    cmds.push(Command::AssignSection {
+                        section: si,
+                        hz: crate::ui::paint::hz_at_x(p.x, well),
+                    });
+                }
+            }
         }
     }
 }
