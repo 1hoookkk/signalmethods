@@ -27,6 +27,8 @@ pub enum Command {
     FitSelection,
     FitSection(usize),
     Keep,
+    TogglePlay,
+    Ride([f32; 3]),
     Undo,
     Redo,
 }
@@ -80,6 +82,31 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                     ws.lane_jobs[placed] = Some((fi + 1, peak.hz));
                     placed += 1;
                 }
+            }
+            let inverted: Vec<f64> = curve.iter().map(|v| -v).collect();
+            let mut notches = author::formants::peaks(&grid, &inverted);
+            for k in 0..placed {
+                let here = ws.lanes[k].pole_hz;
+                let next = if k + 1 < placed {
+                    ws.lanes[k + 1].pole_hz
+                } else {
+                    (here * 4.0).min(16_000.0)
+                };
+                let found = notches
+                    .iter()
+                    .position(|n| n.hz > here && n.hz < next)
+                    .map(|i| notches.remove(i));
+                if let Some(n) = found {
+                    let r = praat_endpoint::pole_from_frequency_bandwidth(n.hz, n.bandwidth_hz, SR)
+                        .map(|(_, r)| r.min(1.0))
+                        .unwrap_or(0.96);
+                    ws.lanes[k].zero_hz = n.hz;
+                    ws.lanes[k].zero_r = r;
+                } else {
+                    ws.lanes[k].zero_hz = (here * next).sqrt();
+                    ws.lanes[k].zero_r = 0.93;
+                }
+                ws.laws[k].zone = [here / 1.3, here * 1.3];
             }
             if placed > 0 {
                 let rows: Vec<_> = ws
@@ -245,6 +272,27 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 laws,
             };
             services.repository.write_frame(&mut frame)?;
+            Ok(())
+        }
+        Command::TogglePlay => {
+            services.audio.ensure_stream();
+            if let Some(e) = services.audio.error.clone() {
+                return Err(e);
+            }
+            session.audition.playing = !session.audition.playing;
+            if let Ok(mut s) = services.audio.shared.lock() {
+                s.playing = session.audition.playing;
+            }
+            if session.audition.playing {
+                services.jobs.push_audio(session, &mut services.audio);
+            }
+            Ok(())
+        }
+        Command::Ride(pos) => {
+            session.audition.pos = pos;
+            if session.audition.playing {
+                services.jobs.push_audio(session, &mut services.audio);
+            }
             Ok(())
         }
         Command::Undo => {

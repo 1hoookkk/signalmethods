@@ -122,7 +122,7 @@ impl Jobs {
 
     pub fn push_audio(&mut self, session: &Session, audio: &mut Audio) {
         let rate = audio.rate;
-        if session.selection.corner.is_some() {
+        {
             if let Some(packed) = session.document.field.words_at(SR) {
                 let rebuild = match &self.field_audio {
                     Some((r, _)) => (*r - rate).abs() > 1e-9,

@@ -3,7 +3,7 @@ use eframe::egui::{Align2, Id, Pos2, Rect, Sense, Stroke, Ui};
 use crate::engine::response::{row_db, SR};
 use crate::session::command::Command;
 use crate::session::state::Session;
-use crate::ui::{inspector, navigator, paint, theme};
+use crate::ui::{inspector, navigator, paint, theme, transport};
 
 const STRIP_H: f32 = 30.0;
 const FOOT_H: f32 = 24.0;
@@ -240,6 +240,15 @@ pub fn draw(session: &Session, ui: &mut Ui, home: bool) -> (Vec<Command>, bool) 
         ("filter", now_db.map(|v| format!("{v:+.1}")), theme::NOW_INK),
     ];
     let mut x = strip.left();
+    let tb = transport::draw(
+        session,
+        ui,
+        &painter,
+        Pos2::new(x, strip.top() + 3.0),
+        &mut cmds,
+        &mut legend,
+    );
+    x = tb.right() + 12.0;
     if home {
         let bb = Rect::from_min_max(
             Pos2::new(x, strip.top() + 3.0),
