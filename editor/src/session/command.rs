@@ -23,6 +23,7 @@ pub enum Command {
     TargetCorner(usize),
     ExpandField,
     SwapSections { a: usize, b: usize },
+    SwapZeros { a: usize, b: usize },
     AssignSection { section: usize, hz: f64 },
     ClearWorkspace,
     FitSelection,
@@ -249,6 +250,21 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 ws.laws.swap(a, b);
                 ws.lane_jobs.swap(a, b);
             }
+            services.jobs.invalidate_field_audio();
+            services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
+        Command::SwapZeros { a, b } => {
+            if a == b || a >= NUM_STAGES || b >= NUM_STAGES {
+                return Ok(());
+            }
+            session.history.push(&session.document);
+            let lanes = session.active_lanes_mut();
+            let (zh, zr) = (lanes[a].zero_hz, lanes[a].zero_r);
+            lanes[a].zero_hz = lanes[b].zero_hz;
+            lanes[a].zero_r = lanes[b].zero_r;
+            lanes[b].zero_hz = zh;
+            lanes[b].zero_r = zr;
             services.jobs.invalidate_field_audio();
             services.jobs.push_audio(session, &mut services.audio);
             Ok(())
