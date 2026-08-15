@@ -232,7 +232,10 @@ pub fn draw(session: &Session, ui: &mut Ui) -> (Vec<Command>, Option<usize>) {
         }
         if resp.clicked() {
             if slot.is_some() {
-                cmds.push(Command::TargetCorner(ci));
+                let mut sel = session.selection;
+                sel.corner = Some(ci);
+                sel.section = None;
+                cmds.push(Command::Select(sel));
                 open = Some(ci);
             } else {
                 ui.memory_mut(|m| m.data.insert_temp(Id::new("field.assign"), ci));

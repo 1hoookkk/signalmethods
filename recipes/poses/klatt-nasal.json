@@ -1,0 +1,11 @@
+{
+  "name": "klatt nasal pair",
+  "provenance": "Klatt 1980 cascade constants: nasal pole FNP 250 Hz, nasal zero FNZ 250 Hz, both at 100 Hz bandwidth (the pair cancels until nasalization splits it); the glottal zero FGZ 1500 Hz / BGZ 6000 Hz is source-stage, marked glottal so vocal-tract placement excludes it",
+  "formants": [
+    { "hz": 250.0, "bandwidth_hz": 100.0 }
+  ],
+  "antiresonances": [
+    { "hz": 250.0, "bandwidth_hz": 100.0, "source": "nasal" },
+    { "hz": 1500.0, "bandwidth_hz": 6000.0, "source": "glottal" }
+  ]
+}

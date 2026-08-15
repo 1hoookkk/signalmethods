@@ -517,6 +517,7 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
                 lane.scale = 1.0;
                 placed += 1;
             }
+            crate::engine::fit::snap_to_words(session.active_lanes_mut());
             session.fit = FitState::Idle;
             session.notice = Some((
                 false,
@@ -681,7 +682,7 @@ fn pose_target(
     index: usize,
     place: bool,
 ) -> Result<(), String> {
-    let (name, formants) = services.repository.load_pose(index)?;
+    let (name, formants, antiresonances) = services.repository.load_pose(index)?;
     session.history.push(&session.document);
     let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
     let sr = crate::engine::response::SR;
@@ -696,6 +697,28 @@ fn pose_target(
                 scale: 1.0,
             });
         }
+    }
+    let mut k = 0;
+    for (hz, bw, source) in &antiresonances {
+        if source == "glottal" {
+            continue;
+        }
+        let Some((_, r)) = praat_endpoint::pole_from_frequency_bandwidth(*hz, *bw, sr) else {
+            continue;
+        };
+        if k < lanes.len() {
+            lanes[k].zero_hz = *hz;
+            lanes[k].zero_r = r;
+        } else {
+            lanes.push(StageRoots {
+                pole_hz: 0.0,
+                pole_r: 0.0,
+                zero_hz: *hz,
+                zero_r: r,
+                scale: 1.0,
+            });
+        }
+        k += 1;
     }
     if lanes.is_empty() {
         return Err(format!("{name}: no representable formants"));
@@ -729,6 +752,7 @@ fn pose_target(
             session.document.workspace.lanes[slot] = *lane;
             placed += 1;
         }
+        crate::engine::fit::snap_to_words(&mut session.document.workspace.lanes);
     }
     session.fit = FitState::Idle;
     session.notice = Some((
@@ -936,6 +960,39 @@ mod tests {
     }
 
     #[test]
+    fn a_klatt_template_seeds_the_nasal_pair_and_excludes_the_glottal_zero() {
+        let mut services = Services::new();
+        let mut session = crate::lab::session_for(&mut services, "empty").unwrap();
+        let i = services
+            .repository
+            .poses
+            .iter()
+            .position(|(n, _)| n == "klatt nasal pair")
+            .expect("klatt template in the library");
+        apply(&mut session, &mut services, Command::PlacePose(i)).unwrap();
+        let lane = session.document.workspace.lanes[0];
+        assert!((lane.pole_hz / 250.0).ln().abs() < 0.007, "nasal pole at 250 Hz");
+        assert!((lane.zero_hz / 250.0).ln().abs() < 0.007, "nasal zero at 250 Hz");
+        for lane in &session.document.workspace.lanes {
+            assert!(
+                lane.zero_r <= 0.0 || (lane.zero_hz / 1500.0).ln().abs() > 0.05,
+                "the glottal zero is source-stage and must not be placed"
+            );
+        }
+        assert_eq!(
+            session
+                .document
+                .workspace
+                .lanes
+                .iter()
+                .filter(|l| !lane_is_empty(l))
+                .count(),
+            1,
+            "one canceling nasal section, nothing else"
+        );
+    }
+
+    #[test]
     fn a_published_formant_table_becomes_target_and_skeleton() {
         let mut services = Services::new();
         let mut session = crate::lab::session_for(&mut services, "empty").unwrap();
@@ -953,10 +1010,17 @@ mod tests {
         let table = [(460.0, 100.0), (950.0, 100.0), (2200.0, 130.0), (3800.0, 150.0)];
         let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
         for (lane, &(hz, bw)) in session.document.workspace.lanes.iter().zip(table.iter()) {
-            assert_eq!(lane.pole_hz, hz, "the published frequency, exactly");
+            assert!(
+                (lane.pole_hz / hz).ln().abs() < 0.007,
+                "the published frequency on the encoded grid: {} vs {hz}",
+                lane.pole_hz
+            );
             let (_, r) =
                 trench_core::praat_endpoint::pole_from_frequency_bandwidth(hz, bw, SR).unwrap();
-            assert_eq!(lane.pole_r, r.min(ceiling), "the praat-law radius, exactly");
+            assert!(
+                (lane.pole_r - r.min(ceiling)).abs() < 1e-3,
+                "the praat-law radius on the encoded grid"
+            );
             assert_eq!(lane.zero_r, 0.0, "no invented zeros");
         }
         assert!(lane_is_empty(&session.document.workspace.lanes[4]));
@@ -988,14 +1052,22 @@ mod tests {
         assert_eq!(active, expected, "one section per measured formant");
         let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
         for (lane, peak) in lanes.iter().zip(peaks.iter()).take(expected) {
-            assert_eq!(lane.pole_hz, peak.hz, "the measured frequency, exactly");
+            assert!(
+                (lane.pole_hz / peak.hz).ln().abs() < 0.007,
+                "the measured frequency on the encoded grid: {} vs {}",
+                lane.pole_hz,
+                peak.hz
+            );
             let (_, r) = trench_core::praat_endpoint::pole_from_frequency_bandwidth(
                 peak.hz,
                 peak.bandwidth_hz,
                 SR,
             )
             .unwrap();
-            assert_eq!(lane.pole_r, r.min(ceiling), "the praat-law radius, exactly");
+            assert!(
+                (lane.pole_r - r.min(ceiling)).abs() < 1e-3,
+                "the praat-law radius on the encoded grid"
+            );
             assert_eq!(lane.zero_r, 0.0, "no invented zeros");
         }
         for law in &session.document.workspace.laws {

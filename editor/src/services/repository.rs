@@ -142,7 +142,10 @@ impl Repository {
         }
     }
 
-    pub fn load_pose(&self, index: usize) -> Result<(String, Vec<(f64, f64)>), String> {
+    pub fn load_pose(
+        &self,
+        index: usize,
+    ) -> Result<(String, Vec<(f64, f64)>, Vec<(f64, f64, String)>), String> {
         let (name, path) = self.poses.get(index).ok_or("not a pose")?;
         let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
         let v: serde_json::Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
@@ -159,7 +162,29 @@ impl Repository {
             })
             .collect::<Result<Vec<_>, &str>>()
             .map_err(|e| format!("pose field missing: {e}"))?;
-        Ok((name.clone(), formants))
+        let antiresonances = v
+            .get("antiresonances")
+            .and_then(|f| f.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .map(|f| {
+                        Ok((
+                            f.get("hz").and_then(|x| x.as_f64()).ok_or("hz")?,
+                            f.get("bandwidth_hz")
+                                .and_then(|x| x.as_f64())
+                                .ok_or("bandwidth_hz")?,
+                            f.get("source")
+                                .and_then(|x| x.as_str())
+                                .unwrap_or("")
+                                .to_string(),
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, &str>>()
+            })
+            .transpose()
+            .map_err(|e| format!("pose field missing: {e}"))?
+            .unwrap_or_default();
+        Ok((name.clone(), formants, antiresonances))
     }
 
     pub fn load_scaffold(&self, index: usize) -> Result<(String, Vec<ScaffoldZero>), String> {
