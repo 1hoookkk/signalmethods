@@ -232,6 +232,12 @@ Executable in `author/tests/canon.rs` unless noted.
 
 ## Canon
 
+- The editor is an interactive inverse-design system for constructing legal
+  encoded serial-filter corner states. The whole response is the comparator;
+  the ordered sections are the realization; selection and hold define the
+  free variables; direct manipulation and FIT are two ways of changing those
+  same variables; the user judges the result. Runtime interpolation is fixed
+  and outside the authoring problem.
 - Generators author target curves; the fitter meets them. Components never
   become lanes.
 - PC space is an endpoint factory: corner scores → inverse PCA → one target
