@@ -19,11 +19,27 @@ impl eframe::App for App {
         } = self;
         services.jobs.poll(session, &mut services.audio);
         lab.frames += 1;
-        egui::CentralPanel::default()
+        let mut cmds = egui::CentralPanel::default()
             .frame(egui::Frame::none())
-            .show(ctx, |ui| {
-                crate::lab::draw(session, &lab.case_name, ui);
-            });
+            .show(ctx, |ui| crate::lab::draw(session, &lab.case_name, ui))
+            .inner;
+        ctx.input(|i| {
+            if i.modifiers.command && i.key_pressed(egui::Key::Z) {
+                cmds.push(if i.modifiers.shift {
+                    crate::session::command::Command::Redo
+                } else {
+                    crate::session::command::Command::Undo
+                });
+            }
+        });
+        for cmd in cmds {
+            if let Err(e) = crate::session::command::apply(session, services, cmd) {
+                eprintln!("{e}");
+            }
+        }
+        if matches!(session.fit, crate::session::state::FitState::Running { .. }) {
+            ctx.request_repaint_after(std::time::Duration::from_millis(120));
+        }
         if lab.shot.is_some() && !lab.taken {
             if lab.frames == 8 {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);

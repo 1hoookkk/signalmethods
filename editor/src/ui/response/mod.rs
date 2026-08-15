@@ -1,14 +1,17 @@
 use eframe::egui::{Align2, Id, Pos2, Rect, Sense, Stroke, Ui};
 
 use crate::engine::response::{row_db, SR};
+use crate::session::command::Command;
 use crate::session::state::Session;
-use crate::ui::{paint, theme};
+use crate::ui::{paint, section_row, theme};
 
 const STRIP_H: f32 = 30.0;
 const FOOT_H: f32 = 24.0;
 const PAD: f32 = 14.0;
 
-pub fn draw(session: &Session, ui: &mut Ui) {
+pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
+    let mut cmds = Vec::new();
+    let mut legend = String::from("L —   M —   R —");
     let rect = ui.max_rect();
     let painter = ui.painter().clone();
     painter.rect_filled(rect, 0.0, theme::CHROME);
@@ -21,9 +24,13 @@ pub fn draw(session: &Session, ui: &mut Ui) {
         Pos2::new(rect.left() + PAD, rect.bottom() - PAD - FOOT_H),
         rect.right_bottom() - eframe::egui::vec2(PAD, PAD),
     );
+    let row_rect = Rect::from_min_max(
+        Pos2::new(rect.left() + PAD, foot.top() - PAD - section_row::ROW_H),
+        Pos2::new(rect.right() - PAD, foot.top() - PAD),
+    );
     let well_frame = Rect::from_min_max(
         Pos2::new(rect.left() + PAD, strip.bottom() + PAD),
-        Pos2::new(rect.right() - PAD, foot.top() - PAD),
+        Pos2::new(rect.right() - PAD, row_rect.top() - PAD),
     );
     let well = paint::well(&painter, well_frame);
     let well_response = ui.interact(well, Id::new("response.well"), Sense::hover());
@@ -131,6 +138,23 @@ pub fn draw(session: &Session, ui: &mut Ui) {
         db += 12.0;
     }
 
+    let focus = session.selection.section;
+    if let Some(si) = focus {
+        let law = session.document.workspace.laws[si];
+        if law.has_zone() {
+            let a = paint::log_x(law.zone[0].max(paint::FREQ_LO), well);
+            let b = paint::log_x(law.zone[1].min(paint::FREQ_HI), well);
+            let band = Rect::from_min_max(Pos2::new(a, well.top()), Pos2::new(b, well.bottom()));
+            painter.rect_filled(band, 0.0, theme::faded(theme::LANES[si % 7], 16));
+            for x in [a, b] {
+                painter.line_segment(
+                    [Pos2::new(x, well.top()), Pos2::new(x, well.bottom())],
+                    Stroke::new(1.0, theme::faded(theme::LANES[si % 7], 90)),
+                );
+            }
+        }
+    }
+
     if let Some(target) = &session.document.target {
         let curve = &target.curve;
         let egrid = author::envelope::grid();
@@ -166,6 +190,21 @@ pub fn draw(session: &Session, ui: &mut Ui) {
             10.0 * (power as f64).log10()
         };
         paint::x3_trace(&painter.with_clip_rect(well), well, lo, hi, theme::NOW, &live_sample);
+    }
+    if let Some(si) = focus {
+        let lane = session.active_lanes()[si];
+        if lane.pole_r > 0.0 || lane.zero_r > 0.0 {
+            let row = lane.biquad_at(SR);
+            let stage_sample = move |hz: f64| -> f64 { row_db(&row, hz, SR) };
+            paint::x3_trace(
+                &painter.with_clip_rect(well),
+                well,
+                lo,
+                hi,
+                theme::faded(theme::LANES[si % 7], 200),
+                &stage_sample,
+            );
+        }
     }
 
     let hover = well_response.hover_pos().filter(|p| well.contains(*p));
@@ -224,14 +263,34 @@ pub fn draw(session: &Session, ui: &mut Ui) {
         x = fw.right() + 16.0;
     }
 
+    section_row::draw(
+        session,
+        ui,
+        &painter,
+        row_rect,
+        focus.unwrap_or(0),
+        &mut cmds,
+        &mut legend,
+    );
+
     paint::label(
         &painter,
         Pos2::new(foot.left(), foot.center().y),
         Align2::LEFT_CENTER,
-        "L —   M —   R —",
+        &legend,
         theme::SMALL,
         theme::INK_DIM,
     );
+    if let crate::session::state::FitState::Complete { rms_db, .. } = &session.fit {
+        paint::label(
+            &painter,
+            Pos2::new(foot.center().x, foot.center().y),
+            Align2::CENTER_CENTER,
+            &format!("rms {rms_db:.2}"),
+            theme::SMALL,
+            theme::INK,
+        );
+    }
     if let Some(target) = &session.document.target {
         paint::label(
             &painter,
@@ -242,4 +301,5 @@ pub fn draw(session: &Session, ui: &mut Ui) {
             theme::INK,
         );
     }
+    cmds
 }

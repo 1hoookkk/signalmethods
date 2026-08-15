@@ -18,6 +18,16 @@ pub const NOW_INK: Color32 = Color32::from_rgb(26, 122, 66);
 pub const HOT: Color32 = Color32::from_rgb(255, 122, 60);
 pub const ALARM: Color32 = Color32::from_rgb(232, 80, 64);
 
+pub const LANES: [Color32; 7] = [
+    Color32::from_rgb(79, 195, 247),
+    Color32::from_rgb(255, 179, 84),
+    Color32::from_rgb(124, 227, 139),
+    Color32::from_rgb(255, 110, 110),
+    Color32::from_rgb(181, 140, 255),
+    Color32::from_rgb(217, 160, 102),
+    Color32::from_rgb(255, 143, 208),
+];
+
 pub const TITLE: f32 = 11.5;
 pub const BODY: f32 = 12.5;
 pub const SMALL: f32 = 10.0;

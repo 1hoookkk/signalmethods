@@ -90,7 +90,7 @@ pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, St
     Ok(session)
 }
 
-pub fn draw(session: &Session, case: &str, ui: &mut Ui) {
+pub fn draw(session: &Session, case: &str, ui: &mut Ui) -> Vec<Command> {
     match case {
         "response_only" => crate::ui::response::draw(session, ui),
         other => {
@@ -105,6 +105,7 @@ pub fn draw(session: &Session, case: &str, ui: &mut Ui) {
                 theme::BODY,
                 theme::ALARM,
             );
+            Vec::new()
         }
     }
 }

@@ -9,6 +9,7 @@ use crate::services::Services;
 use crate::session::state::{FitState, Selection, Session};
 
 pub enum Command {
+    BeginEdit,
     Select(Selection),
     SetTarget(usize),
     SeedFromMouth(usize),
@@ -30,6 +31,10 @@ pub enum Command {
 
 pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Result<(), String> {
     match cmd {
+        Command::BeginEdit => {
+            session.history.push(&session.document);
+            Ok(())
+        }
         Command::Select(sel) => {
             session.selection = sel;
             services.jobs.push_audio(session, &mut services.audio);
@@ -105,7 +110,6 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetPole { section, hz, r } => {
-            session.history.push(&session.document);
             let lane = &mut session.active_lanes_mut()[section];
             lane.pole_hz = hz;
             lane.pole_r = r;
@@ -115,7 +119,6 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetZero { section, hz, r } => {
-            session.history.push(&session.document);
             let lane = &mut session.active_lanes_mut()[section];
             lane.zero_hz = hz;
             lane.zero_r = r;
@@ -125,14 +128,12 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             Ok(())
         }
         Command::SetScale { section, scale } => {
-            session.history.push(&session.document);
             session.active_lanes_mut()[section].scale = scale;
             services.jobs.invalidate_field_audio();
             services.jobs.push_audio(session, &mut services.audio);
             Ok(())
         }
         Command::SetLaw { section, law } => {
-            session.history.push(&session.document);
             session.document.workspace.laws[section] = law;
             Ok(())
         }
@@ -343,6 +344,7 @@ mod tests {
         .unwrap();
         assert_eq!(session.active_lanes()[0].pole_hz, 700.0);
 
+        apply(&mut session, &mut services, Command::BeginEdit).unwrap();
         apply(
             &mut session,
             &mut services,
