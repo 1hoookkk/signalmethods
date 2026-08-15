@@ -116,11 +116,11 @@ pub fn draw(
         }
         None => draw_cascade_card(session, ui, painter, rect, cmds, legend),
     }
-    let ladder = Rect::from_min_max(
+    let map = Rect::from_min_max(
         Pos2::new(rect.left(), rect.top() + CARD_H + 14.0),
         rect.right_bottom(),
     );
-    pairing_ladder(session, ui, painter, ladder, cmds, legend);
+    root_map(session, ui, painter, map, cmds, legend);
 }
 
 fn fmt_hz2(hz: f64) -> String {
@@ -131,7 +131,7 @@ fn fmt_hz2(hz: f64) -> String {
     }
 }
 
-fn pairing_ladder(
+fn root_map(
     session: &Session,
     ui: &mut Ui,
     painter: &Painter,
@@ -148,125 +148,188 @@ fn pairing_ladder(
         theme::SMALL,
         theme::INK_DIM,
     );
-    let row_h = 26.0;
-    let top = rect.top() + 16.0;
-    let rows: Vec<Rect> = (0..NUM_STAGES)
-        .map(|si| {
-            Rect::from_min_max(
-                Pos2::new(rect.left(), top + si as f32 * row_h),
-                Pos2::new(rect.right(), top + (si + 1) as f32 * row_h),
-            )
-        })
-        .collect();
+    let map = Rect::from_min_max(
+        Pos2::new(rect.left() + 4.0, rect.top() + 18.0),
+        Pos2::new(rect.right() - 4.0, (rect.top() + 240.0).min(rect.bottom() - 4.0)),
+    );
+    let well = paint::well(painter, map);
+    let pole_y = well.top() + 16.0;
+    let zero_y = well.bottom() - 16.0;
+    for f in [100.0, 1000.0, 10000.0] {
+        let x = paint::log_x(f, well);
+        painter.line_segment(
+            [Pos2::new(x, well.top()), Pos2::new(x, well.bottom())],
+            Stroke::new(1.0, theme::GRATICULE),
+        );
+    }
+    painter.line_segment(
+        [Pos2::new(well.left(), pole_y), Pos2::new(well.right(), pole_y)],
+        Stroke::new(1.0, theme::faded(theme::WELL_DIM, 90)),
+    );
+    painter.line_segment(
+        [Pos2::new(well.left(), zero_y), Pos2::new(well.right(), zero_y)],
+        Stroke::new(1.0, theme::faded(theme::WELL_DIM, 90)),
+    );
+    paint::label(
+        painter,
+        Pos2::new(well.left() + 3.0, pole_y - 8.0),
+        Align2::LEFT_CENTER,
+        "poles",
+        theme::SMALL,
+        theme::WELL_DIM,
+    );
+    paint::label(
+        painter,
+        Pos2::new(well.left() + 3.0, zero_y + 8.0),
+        Align2::LEFT_CENTER,
+        "zeros",
+        theme::SMALL,
+        theme::WELL_DIM,
+    );
+    let (preview, mask) = session.preview();
     let pointer = ui.input(|i| i.pointer.interact_pos());
-    let mut dragging: Option<usize> = None;
+    let mut dragging: Option<(usize, f32)> = None;
+    let mut zero_dots: Vec<(usize, Pos2)> = Vec::new();
     for si in 0..NUM_STAGES {
-        let row = rows[si];
-        let (preview, mask) = session.preview();
-        let ink = if mask[si] {
-            theme::CHROME_DK
+        let lane = preview[si];
+        if lane.zero_r > 0.0 {
+            zero_dots.push((si, Pos2::new(paint::log_x(lane.zero_hz, well), zero_y)));
+        }
+    }
+    for si in 0..NUM_STAGES {
+        let lane = preview[si];
+        let provisional = mask[si];
+        let selected = session.selection.section == Some(si);
+        let ink = if provisional {
+            theme::faded(theme::CURSOR, 110)
         } else {
             theme::LANES[si % 7]
         };
-        let lane = preview[si];
-        let selected = session.selection.section == Some(si);
-        let cy = row.center().y;
-        paint::label(
-            painter,
-            Pos2::new(row.left() + 6.0, cy),
-            Align2::LEFT_CENTER,
-            &format!("{}", si + 1),
-            theme::SMALL,
-            if selected { theme::INK } else { theme::INK_DIM },
-        );
-        let px = row.left() + 26.0;
-        if lane.pole_r > 0.0 {
-            painter.circle_filled(Pos2::new(px, cy), 4.0, ink);
-            paint::label(
-                painter,
-                Pos2::new(px + 8.0, cy),
-                Align2::LEFT_CENTER,
-                &fmt_hz2(lane.pole_hz),
-                theme::SMALL,
-                theme::INK,
-            );
-        } else {
-            painter.circle_stroke(Pos2::new(px, cy), 4.0, Stroke::new(1.0, theme::CHROME_DK));
-        }
-        let zx = row.right() - 66.0;
-        painter.line_segment(
-            [Pos2::new(px + 52.0, cy), Pos2::new(zx - 10.0, cy)],
-            Stroke::new(1.0, theme::CHROME_DK),
-        );
-        let zrect = Rect::from_center_size(
-            Pos2::new(zx, cy),
-            eframe::egui::vec2(16.0, row_h - 4.0),
-        );
-        if lane.zero_r > 0.0 {
-            painter.circle_stroke(Pos2::new(zx, cy), 4.5, Stroke::new(1.6, ink));
-            paint::label(
-                painter,
-                Pos2::new(zx + 9.0, cy),
-                Align2::LEFT_CENTER,
-                &fmt_hz2(lane.zero_hz),
-                theme::SMALL,
-                theme::INK,
-            );
-        } else {
-            painter.circle_stroke(Pos2::new(zx, cy), 4.5, Stroke::new(1.0, theme::CHROME_DK));
-            paint::label(
-                painter,
-                Pos2::new(zx + 9.0, cy),
-                Align2::LEFT_CENTER,
-                "—",
-                theme::SMALL,
-                theme::INK_DIM,
-            );
-        }
-        let rresp = ui.interact(
-            Rect::from_min_max(row.left_top(), Pos2::new(zx - 12.0, row.bottom())),
-            Id::new(("pair.row", si)),
-            Sense::click(),
-        );
-        if rresp.clicked() {
-            let mut sel = session.selection;
-            sel.section = if selected { None } else { Some(si) };
-            cmds.push(Command::Select(sel));
-        }
-        if rresp.hovered() {
-            *legend = "L select".into();
-        }
-        if mask[si] {
+        let has_pole = lane.pole_r > 0.0;
+        let has_zero = lane.zero_r > 0.0;
+        if !has_pole && !has_zero {
             continue;
         }
-        let zresp = ui.interact(zrect, Id::new(("pair.zero", si)), Sense::click_and_drag());
-        if zresp.hovered() {
-            *legend = "L drag to another row — swaps zero pairs, the whole never moves".into();
+        let px = paint::log_x(lane.pole_hz, well);
+        let zx = paint::log_x(lane.zero_hz, well);
+        if has_pole && has_zero {
+            painter.line_segment(
+                [Pos2::new(px, pole_y), Pos2::new(zx, zero_y)],
+                Stroke::new(
+                    if selected { 2.0 } else { 1.2 },
+                    theme::faded(ink, if selected { 255 } else { 170 }),
+                ),
+            );
         }
-        if zresp.dragged() {
-            dragging = Some(si);
+        if has_pole {
+            painter.circle_filled(Pos2::new(px, pole_y), if selected { 5.0 } else { 4.0 }, ink);
+            let prect = Rect::from_center_size(
+                Pos2::new(px, pole_y),
+                eframe::egui::vec2(14.0, 14.0),
+            );
+            if !provisional {
+                let resp = ui.interact(prect, Id::new(("map.pole", si)), Sense::click());
+                if resp.hovered() {
+                    *legend = "L select".into();
+                    paint::label(
+                        painter,
+                        Pos2::new(px + 8.0, pole_y - 10.0),
+                        Align2::LEFT_CENTER,
+                        &fmt_hz2(lane.pole_hz),
+                        theme::SMALL,
+                        theme::CURSOR,
+                    );
+                }
+                if resp.clicked() {
+                    let mut sel = session.selection;
+                    sel.section = if selected { None } else { Some(si) };
+                    cmds.push(Command::Select(sel));
+                }
+            }
         }
-        if zresp.drag_stopped() {
-            if let Some(p) = pointer {
-                for (ti, r) in rows.iter().enumerate() {
-                    if r.contains(p) && ti != si {
-                        cmds.push(Command::BeginEdit);
-                        cmds.push(Command::SwapZeros { a: si, b: ti });
+        if has_zero {
+            painter.circle_stroke(
+                Pos2::new(zx, zero_y),
+                if selected { 5.0 } else { 4.0 },
+                Stroke::new(1.6, ink),
+            );
+            let zrect = Rect::from_center_size(
+                Pos2::new(zx, zero_y),
+                eframe::egui::vec2(14.0, 14.0),
+            );
+            if !provisional {
+                let resp = ui.interact(zrect, Id::new(("map.zero", si)), Sense::click_and_drag());
+                if resp.hovered() {
+                    *legend = "L drag to another zero — swaps pairs, the whole never moves".into();
+                    paint::label(
+                        painter,
+                        Pos2::new(zx + 8.0, zero_y + 10.0),
+                        Align2::LEFT_CENTER,
+                        &fmt_hz2(lane.zero_hz),
+                        theme::SMALL,
+                        theme::CURSOR,
+                    );
+                }
+                if resp.dragged() {
+                    dragging = Some((si, zx));
+                }
+                if resp.drag_stopped() {
+                    if let Some(p) = pointer {
+                        let target = zero_dots
+                            .iter()
+                            .filter(|(ti, _)| *ti != si)
+                            .min_by(|a, b| {
+                                a.1.distance(p).total_cmp(&b.1.distance(p))
+                            });
+                        if let Some(&(ti, at)) = target {
+                            if at.distance(p) < 40.0 {
+                                cmds.push(Command::BeginEdit);
+                                cmds.push(Command::SwapZeros { a: si, b: ti });
+                            }
+                        }
                     }
                 }
             }
         }
+        if selected {
+            if has_pole {
+                paint::label(
+                    painter,
+                    Pos2::new(px + 8.0, pole_y - 10.0),
+                    Align2::LEFT_CENTER,
+                    &fmt_hz2(lane.pole_hz),
+                    theme::SMALL,
+                    ink,
+                );
+            }
+            if has_zero {
+                paint::label(
+                    painter,
+                    Pos2::new(zx + 8.0, zero_y + 10.0),
+                    Align2::LEFT_CENTER,
+                    &fmt_hz2(lane.zero_hz),
+                    theme::SMALL,
+                    ink,
+                );
+            }
+        }
     }
-    if let (Some(si), Some(p)) = (dragging, pointer) {
-        painter.circle_stroke(p, 4.5, Stroke::new(1.6, theme::LANES[si % 7]));
-        for (ti, r) in rows.iter().enumerate() {
-            if r.contains(p) && ti != si {
-                painter.rect_stroke(*r, 0.0, Stroke::new(1.0, theme::faded(theme::LANES[si % 7], 160)));
+    if let (Some((si, _zx)), Some(p)) = (dragging, pointer) {
+        let ink = theme::LANES[si % 7];
+        painter.circle_stroke(p, 4.5, Stroke::new(1.6, ink));
+        if let Some(&(_, at)) = zero_dots
+            .iter()
+            .filter(|(ti, _)| *ti != si)
+            .min_by(|a, b| a.1.distance(p).total_cmp(&b.1.distance(p)))
+        {
+            if at.distance(p) < 40.0 {
+                painter.circle_stroke(at, 8.0, Stroke::new(1.0, theme::faded(ink, 200)));
                 *legend = "release: swap zero pairs".into();
             }
         }
     }
 }
+
 
 fn draw_cascade_card(
     session: &Session,
