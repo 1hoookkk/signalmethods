@@ -29,6 +29,7 @@ pub enum Command {
     SetGain { db: f64 },
     FitSelection,
     FitPoles,
+    ApplyScaffold(usize),
     Keep,
     WriteStatic,
     TogglePlay,
@@ -433,6 +434,29 @@ pub fn apply(session: &mut Session, services: &mut Services, cmd: Command) -> Re
             services.jobs.fit_poles(session);
             Ok(())
         }
+        Command::ApplyScaffold(index) => {
+            let (name, zeros) = services.repository.load_scaffold(index)?;
+            session.history.push(&session.document);
+            for z in &zeros {
+                if z.section < 1 || z.section > NUM_STAGES {
+                    return Err(format!("scaffold section {} out of range", z.section));
+                }
+                let si = z.section - 1;
+                {
+                    let lane = &mut session.active_lanes_mut()[si];
+                    lane.zero_hz = z.hz;
+                    lane.zero_r = z.r;
+                }
+                let law = &mut session.document.workspace.laws[si];
+                law.freedom[2] = false;
+                law.freedom[3] = false;
+            }
+            session.fit = FitState::Idle;
+            session.notice = Some((false, format!("{name} — zeros seated and locked")));
+            services.jobs.invalidate_field_audio();
+            services.jobs.push_audio(session, &mut services.audio);
+            Ok(())
+        }
         Command::Keep => {
             let lanes = *session.active_lanes();
             if lanes.iter().all(lane_is_empty) {
@@ -726,6 +750,28 @@ mod tests {
         assert_eq!(zeros.len(), 2, "the fitter invents no zeros");
         let poles = f.roots.iter().filter(|l| l.pole_r > 0.0).count();
         assert!(poles >= 2, "sections fall out of the fit, got {poles}");
+    }
+
+    #[test]
+    fn a_scaffold_seats_measured_zeros_and_locks_them() {
+        let mut services = Services::new();
+        let mut session = crate::lab::session_for(&mut services, "empty").unwrap();
+        let i = services
+            .repository
+            .scaffolds
+            .iter()
+            .position(|(n, _)| n == "s6 null")
+            .expect("s6 null scaffold in the library");
+        apply(&mut session, &mut services, Command::ApplyScaffold(i)).unwrap();
+        let lane = session.document.workspace.lanes[5];
+        assert!((lane.zero_hz - 17960.825044314846).abs() < 1e-9);
+        assert!((lane.zero_r - 0.9999981485290077).abs() < 1e-12);
+        assert!(
+            !session.document.workspace.laws[5].freedom[2]
+                && !session.document.workspace.laws[5].freedom[3],
+            "scaffold zeros are locked against the fitter"
+        );
+        assert!(lane.pole_r <= 0.0, "the scaffold seats no poles");
     }
 
     #[test]

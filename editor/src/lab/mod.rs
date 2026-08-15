@@ -35,6 +35,22 @@ fn conj(p: RootPair) -> Option<(f64, f64)> {
 
 pub fn session_for(services: &mut Services, fixture: &str) -> Result<Session, String> {
     let mut session = Session::new();
+    session.scaffolds = services
+        .repository
+        .scaffolds
+        .iter()
+        .map(|(n, _)| n.clone())
+        .collect();
+    session.mouths = services
+        .repository
+        .entries
+        .iter()
+        .enumerate()
+        .filter_map(|(i, e)| match e {
+            Entry::Mouth { name, .. } => Some((i, name.clone())),
+            _ => None,
+        })
+        .collect();
     let path = services
         .repository
         .root

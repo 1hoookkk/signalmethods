@@ -25,6 +25,13 @@ impl Entry {
 pub struct Repository {
     pub root: PathBuf,
     pub entries: Vec<Entry>,
+    pub scaffolds: Vec<(String, PathBuf)>,
+}
+
+pub struct ScaffoldZero {
+    pub section: usize,
+    pub hz: f64,
+    pub r: f64,
 }
 
 fn find_root() -> Option<PathBuf> {
@@ -51,6 +58,7 @@ impl Repository {
         let mut repo = Self {
             root,
             entries: Vec::new(),
+            scaffolds: Vec::new(),
         };
         repo.rescan();
         repo
@@ -85,6 +93,47 @@ impl Repository {
         for (name, path) in cage::scan(&self.root.join("recipes").join("cages")) {
             self.entries.push(Entry::Cage { name, path });
         }
+        self.scaffolds.clear();
+        let dir = self.root.join("recipes").join("scaffolds");
+        let mut paths: Vec<PathBuf> = std::fs::read_dir(&dir)
+            .map(|rd| {
+                rd.flatten()
+                    .map(|e| e.path())
+                    .filter(|p| p.extension().is_some_and(|x| x == "json"))
+                    .collect()
+            })
+            .unwrap_or_default();
+        paths.sort();
+        for path in paths {
+            if let Ok(text) = std::fs::read_to_string(&path) {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
+                    if let Some(name) = v.get("name").and_then(|n| n.as_str()) {
+                        self.scaffolds.push((name.to_string(), path));
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn load_scaffold(&self, index: usize) -> Result<(String, Vec<ScaffoldZero>), String> {
+        let (name, path) = self.scaffolds.get(index).ok_or("not a scaffold")?;
+        let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+        let v: serde_json::Value = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+        let zeros = v
+            .get("zeros")
+            .and_then(|z| z.as_array())
+            .ok_or("scaffold has no zeros")?
+            .iter()
+            .map(|z| {
+                Ok(ScaffoldZero {
+                    section: z.get("section").and_then(|x| x.as_u64()).ok_or("section")? as usize,
+                    hz: z.get("hz").and_then(|x| x.as_f64()).ok_or("hz")?,
+                    r: z.get("r").and_then(|x| x.as_f64()).ok_or("r")?,
+                })
+            })
+            .collect::<Result<Vec<_>, &str>>()
+            .map_err(|e| format!("scaffold field missing: {e}"))?;
+        Ok((name.clone(), zeros))
     }
 
     pub fn load_mouth(&self, index: usize) -> Result<(String, Vec<f64>), String> {

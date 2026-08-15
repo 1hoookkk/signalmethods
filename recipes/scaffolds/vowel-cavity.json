@@ -1,0 +1,8 @@
+{
+  "name": "vowel cavity",
+  "provenance": "measured: bit-identical stored zeros shared by TalkingHedz, UbuOrator, AcidRavage, KlubKlassik, ToothComb (9 and 8 corner-occurrences); sections are the corpus modal slots (2014 Hz: slot 3 in 6 of 9; 2971 Hz: slot 4 in 5 of 8)",
+  "zeros": [
+    { "section": 3, "hz": 2014.4494901673877, "r": 0.9601670564892275 },
+    { "section": 4, "hz": 2971.2815971155155, "r": 0.9722835945255858 }
+  ]
+}

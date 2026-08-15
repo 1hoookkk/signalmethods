@@ -44,6 +44,8 @@ pub struct Session {
     pub fit: FitState,
     pub history: History,
     pub notice: Option<(bool, String)>,
+    pub scaffolds: Vec<String>,
+    pub mouths: Vec<(usize, String)>,
 }
 
 impl Session {
@@ -59,6 +61,8 @@ impl Session {
             fit: FitState::Idle,
             history: History::new(),
             notice: None,
+            scaffolds: Vec::new(),
+            mouths: Vec::new(),
         }
     }
 
