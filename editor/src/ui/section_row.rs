@@ -209,10 +209,10 @@ pub fn draw(
         });
     }
     x = f.right() + 6.0;
-    let t = fh(x, 18.0);
-    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.pole.lock_at", si)), "a", !law.freedom[0]);
+    let t = fh(x, 24.0);
+    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.pole.lock_at", si)), "at", !law.freedom[0]);
     if hov {
-        *legend = "L lock".into();
+        *legend = "L lock frequency".into();
     }
     if clicked {
         let mut l = law;
@@ -221,10 +221,10 @@ pub fn draw(
         cmds.push(Command::SetLaw { section: si, law: l });
     }
     x = t.right() + 3.0;
-    let t = fh(x, 18.0);
-    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.pole.lock_q", si)), "q", !law.freedom[1]);
+    let t = fh(x, 24.0);
+    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.pole.lock_q", si)), "bw", !law.freedom[1]);
     if hov {
-        *legend = "L lock".into();
+        *legend = "L lock width".into();
     }
     if clicked {
         let mut l = law;
@@ -271,10 +271,10 @@ pub fn draw(
         });
     }
     x = f.right() + 6.0;
-    let t = fh(x, 18.0);
-    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.zero.lock_at", si)), "a", !law.freedom[2]);
+    let t = fh(x, 24.0);
+    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.zero.lock_at", si)), "at", !law.freedom[2]);
     if hov {
-        *legend = "L lock".into();
+        *legend = "L lock frequency".into();
     }
     if clicked {
         let mut l = law;
@@ -283,10 +283,10 @@ pub fn draw(
         cmds.push(Command::SetLaw { section: si, law: l });
     }
     x = t.right() + 3.0;
-    let t = fh(x, 18.0);
-    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.zero.lock_q", si)), "q", !law.freedom[3]);
+    let t = fh(x, 24.0);
+    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.zero.lock_q", si)), "r", !law.freedom[3]);
     if hov {
-        *legend = "L lock".into();
+        *legend = "L lock depth".into();
     }
     if clicked {
         let mut l = law;
@@ -328,8 +328,8 @@ pub fn draw(
     }
 
     x = f.right() + 14.0;
-    let t = fh(x, 18.0);
-    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.hold", si)), "#", !law.writable);
+    let t = fh(x, 38.0);
+    let (clicked, hov) = toggle(ui, painter, t, Id::new(("row.hold", si)), "hold", !law.writable);
     if hov {
         *legend = "L hold — fitter may not rewrite".into();
     }

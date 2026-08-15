@@ -231,8 +231,8 @@ pub fn draw(session: &Session, ui: &mut Ui) -> Vec<Command> {
 
     let fields = [
         ("hz", cursor_hz.map(|v| format!("{v:.0}")), theme::INK),
-        ("ask", ask_db.map(|v| format!("{v:+.1}")), theme::ASK_INK),
-        ("now", now_db.map(|v| format!("{v:+.1}")), theme::NOW_INK),
+        ("target", ask_db.map(|v| format!("{v:+.1}")), theme::ASK_INK),
+        ("filter", now_db.map(|v| format!("{v:+.1}")), theme::NOW_INK),
     ];
     let mut x = strip.left();
     for (name, value, tint) in fields {
