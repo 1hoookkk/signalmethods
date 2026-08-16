@@ -1,0 +1,1312 @@
+{
+  "method": "5-point smoothed local maxima, prominence >= 6 dB, 120..5500 Hz, bandwidth from the -3 dB width, peaks closer than 3 st merged",
+  "mouths": [
+    {
+      "name": "s1-01-bahn-tense-a",
+      "peaks": [
+        {
+          "bandwidth_hz": 48.5,
+          "db": 23.98,
+          "hz": 517.1
+        },
+        {
+          "bandwidth_hz": 78.3,
+          "db": 20.4,
+          "hz": 1113.8
+        },
+        {
+          "bandwidth_hz": 81.4,
+          "db": 16.25,
+          "hz": 2316.0
+        },
+        {
+          "bandwidth_hz": 153.3,
+          "db": 16.8,
+          "hz": 3272.0
+        },
+        {
+          "bandwidth_hz": 149.7,
+          "db": 3.77,
+          "hz": 4258.7
+        }
+      ]
+    },
+    {
+      "name": "s1-02-beet-tense-e",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 23.92,
+          "hz": 253.1
+        },
+        {
+          "bandwidth_hz": 62.9,
+          "db": 21.01,
+          "hz": 1789.9
+        },
+        {
+          "bandwidth_hz": 123.9,
+          "db": 15.53,
+          "hz": 2357.1
+        },
+        {
+          "bandwidth_hz": 121.8,
+          "db": 15.12,
+          "hz": 2961.9
+        },
+        {
+          "bandwidth_hz": 124.1,
+          "db": 9.44,
+          "hz": 3530.9
+        },
+        {
+          "bandwidth_hz": 152.3,
+          "db": -8.96,
+          "hz": 4334.2
+        },
+        {
+          "bandwidth_hz": 189.2,
+          "db": 2.03,
+          "hz": 5382.9
+        }
+      ]
+    },
+    {
+      "name": "s1-03-tiere-tense-i",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 22.25,
+          "hz": 187.7
+        },
+        {
+          "bandwidth_hz": 63.3,
+          "db": 16.09,
+          "hz": 1800.4
+        },
+        {
+          "bandwidth_hz": 107.7,
+          "db": 17.54,
+          "hz": 2619.2
+        },
+        {
+          "bandwidth_hz": 287.6,
+          "db": 15.2,
+          "hz": 3159.0
+        },
+        {
+          "bandwidth_hz": 120.8,
+          "db": 0.78,
+          "hz": 4111.6
+        },
+        {
+          "bandwidth_hz": 240.7,
+          "db": 7.4,
+          "hz": 5136.5
+        }
+      ]
+    },
+    {
+      "name": "s1-04-boote-tense-o",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 23.14,
+          "hz": 263.7
+        },
+        {
+          "bandwidth_hz": 31.9,
+          "db": 16.55,
+          "hz": 681.0
+        },
+        {
+          "bandwidth_hz": 74.1,
+          "db": 6.47,
+          "hz": 2108.9
+        },
+        {
+          "bandwidth_hz": 96.5,
+          "db": 7.69,
+          "hz": 2744.8
+        },
+        {
+          "bandwidth_hz": 107.4,
+          "db": 8.76,
+          "hz": 3657.2
+        },
+        {
+          "bandwidth_hz": 152.6,
+          "db": -5.66,
+          "hz": 5227.6
+        }
+      ]
+    },
+    {
+      "name": "s1-05-bude-tense-u",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 22.58,
+          "hz": 194.5
+        },
+        {
+          "bandwidth_hz": 38.3,
+          "db": 9.29,
+          "hz": 653.6
+        },
+        {
+          "bandwidth_hz": 56.4,
+          "db": -0.54,
+          "hz": 1931.5
+        },
+        {
+          "bandwidth_hz": 94.8,
+          "db": -1.93,
+          "hz": 2697.0
+        },
+        {
+          "bandwidth_hz": 117.7,
+          "db": -4.02,
+          "hz": 3349.6
+        }
+      ]
+    },
+    {
+      "name": "s1-06-laehmung-tense-ae",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 29.36,
+          "hz": 436.3
+        },
+        {
+          "bandwidth_hz": 65.5,
+          "db": 26.19,
+          "hz": 1592.1
+        },
+        {
+          "bandwidth_hz": 118.2,
+          "db": 20.99,
+          "hz": 2236.1
+        },
+        {
+          "bandwidth_hz": 154.8,
+          "db": 19.55,
+          "hz": 2927.4
+        },
+        {
+          "bandwidth_hz": 124.4,
+          "db": 1.49,
+          "hz": 4233.8
+        },
+        {
+          "bandwidth_hz": 189.2,
+          "db": 6.06,
+          "hz": 5382.9
+        }
+      ]
+    },
+    {
+      "name": "s1-07-hoehle-tense-oe",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 22.42,
+          "hz": 235.9
+        },
+        {
+          "bandwidth_hz": 45.0,
+          "db": 17.12,
+          "hz": 1281.9
+        },
+        {
+          "bandwidth_hz": 63.6,
+          "db": 18.1,
+          "hz": 1811.0
+        },
+        {
+          "bandwidth_hz": 97.6,
+          "db": 13.38,
+          "hz": 2777.1
+        },
+        {
+          "bandwidth_hz": 117.0,
+          "db": 5.0,
+          "hz": 3330.0
+        },
+        {
+          "bandwidth_hz": 117.3,
+          "db": -8.58,
+          "hz": 3993.0
+        },
+        {
+          "bandwidth_hz": 146.5,
+          "db": -13.6,
+          "hz": 4988.3
+        }
+      ]
+    },
+    {
+      "name": "s1-08-guete-tense-y",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 19.49,
+          "hz": 153.8
+        },
+        {
+          "bandwidth_hz": 54.3,
+          "db": 8.34,
+          "hz": 1320.0
+        },
+        {
+          "bandwidth_hz": 62.2,
+          "db": 10.7,
+          "hz": 1769.1
+        },
+        {
+          "bandwidth_hz": 97.0,
+          "db": 2.87,
+          "hz": 2760.9
+        },
+        {
+          "bandwidth_hz": 146.0,
+          "db": -4.72,
+          "hz": 3572.5
+        },
+        {
+          "bandwidth_hz": 176.3,
+          "db": -13.01,
+          "hz": 5017.6
+        }
+      ]
+    },
+    {
+      "name": "s1-09-los-l",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 22.28,
+          "hz": 238.7
+        },
+        {
+          "bandwidth_hz": 65.9,
+          "db": 16.84,
+          "hz": 1601.4
+        },
+        {
+          "bandwidth_hz": 80.0,
+          "db": 16.05,
+          "hz": 2275.7
+        },
+        {
+          "bandwidth_hz": 128.4,
+          "db": 17.39,
+          "hz": 3122.2
+        },
+        {
+          "bandwidth_hz": 309.4,
+          "db": -3.83,
+          "hz": 4816.0
+        }
+      ]
+    },
+    {
+      "name": "s1-10-fahrt-f",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 22.47,
+          "hz": 299.9
+        },
+        {
+          "bandwidth_hz": 55.6,
+          "db": 17.13,
+          "hz": 1359.2
+        },
+        {
+          "bandwidth_hz": 83.2,
+          "db": 16.02,
+          "hz": 2036.0
+        },
+        {
+          "bandwidth_hz": 87.0,
+          "db": 11.1,
+          "hz": 2979.3
+        },
+        {
+          "bandwidth_hz": 122.2,
+          "db": 6.04,
+          "hz": 4160.1
+        },
+        {
+          "bandwidth_hz": 205.1,
+          "db": 10.3,
+          "hz": 5017.6
+        }
+      ]
+    },
+    {
+      "name": "s1-11-bass-s",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 19.07,
+          "hz": 190.0
+        },
+        {
+          "bandwidth_hz": 46.7,
+          "db": 10.47,
+          "hz": 1327.7
+        },
+        {
+          "bandwidth_hz": 69.6,
+          "db": 6.29,
+          "hz": 2370.9
+        },
+        {
+          "bandwidth_hz": 117.0,
+          "db": 3.68,
+          "hz": 3330.0
+        },
+        {
+          "bandwidth_hz": 167.3,
+          "db": 9.24,
+          "hz": 4760.0
+        }
+      ]
+    },
+    {
+      "name": "s1-12-schoen-sh",
+      "peaks": [
+        {
+          "bandwidth_hz": 48.1,
+          "db": 10.0,
+          "hz": 159.3
+        },
+        {
+          "bandwidth_hz": 74.9,
+          "db": 15.06,
+          "hz": 1821.6
+        },
+        {
+          "bandwidth_hz": 111.6,
+          "db": 7.42,
+          "hz": 2728.8
+        },
+        {
+          "bandwidth_hz": 123.4,
+          "db": -0.85,
+          "hz": 3510.3
+        },
+        {
+          "bandwidth_hz": 139.8,
+          "db": -1.06,
+          "hz": 4787.9
+        }
+      ]
+    },
+    {
+      "name": "s1-13-ich-c",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 18.56,
+          "hz": 151.2
+        },
+        {
+          "bandwidth_hz": 49.6,
+          "db": 11.0,
+          "hz": 1698.0
+        },
+        {
+          "bandwidth_hz": 92.6,
+          "db": 14.92,
+          "hz": 2634.5
+        },
+        {
+          "bandwidth_hz": 182.4,
+          "db": 21.68,
+          "hz": 3449.1
+        },
+        {
+          "bandwidth_hz": 170.2,
+          "db": -0.32,
+          "hz": 4844.3
+        }
+      ]
+    },
+    {
+      "name": "s1-14-ach-x",
+      "peaks": [
+        {
+          "bandwidth_hz": 57.5,
+          "db": 23.27,
+          "hz": 545.1
+        },
+        {
+          "bandwidth_hz": 71.6,
+          "db": 20.47,
+          "hz": 1113.8
+        },
+        {
+          "bandwidth_hz": 83.8,
+          "db": 17.84,
+          "hz": 2384.9
+        },
+        {
+          "bandwidth_hz": 136.9,
+          "db": 16.66,
+          "hz": 3330.0
+        },
+        {
+          "bandwidth_hz": 193.8,
+          "db": 19.09,
+          "hz": 4111.6
+        }
+      ]
+    },
+    {
+      "name": "s1-15-bass-lax-a",
+      "peaks": [
+        {
+          "bandwidth_hz": 49.0,
+          "db": 25.73,
+          "hz": 523.2
+        },
+        {
+          "bandwidth_hz": 57.0,
+          "db": 24.13,
+          "hz": 973.4
+        },
+        {
+          "bandwidth_hz": 111.8,
+          "db": 16.94,
+          "hz": 2384.9
+        },
+        {
+          "bandwidth_hz": 176.6,
+          "db": 14.39,
+          "hz": 3014.4
+        },
+        {
+          "bandwidth_hz": 159.6,
+          "db": -6.8,
+          "hz": 4542.1
+        }
+      ]
+    },
+    {
+      "name": "s1-16-bett-lax-ae",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 25.51,
+          "hz": 433.8
+        },
+        {
+          "bandwidth_hz": 72.0,
+          "db": 23.12,
+          "hz": 1537.1
+        },
+        {
+          "bandwidth_hz": 105.4,
+          "db": 21.75,
+          "hz": 2249.2
+        },
+        {
+          "bandwidth_hz": 173.5,
+          "db": 21.05,
+          "hz": 2961.9
+        },
+        {
+          "bandwidth_hz": 132.6,
+          "db": -8.69,
+          "hz": 4515.6
+        }
+      ]
+    },
+    {
+      "name": "s1-17-mit-lax-i",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.26,
+          "hz": 296.5
+        },
+        {
+          "bandwidth_hz": 77.1,
+          "db": 16.52,
+          "hz": 1458.2
+        },
+        {
+          "bandwidth_hz": 84.2,
+          "db": 19.37,
+          "hz": 2060.0
+        },
+        {
+          "bandwidth_hz": 121.1,
+          "db": 15.03,
+          "hz": 2944.6
+        },
+        {
+          "bandwidth_hz": 184.8,
+          "db": -3.78,
+          "hz": 5258.3
+        }
+      ]
+    },
+    {
+      "name": "s1-18-offen-lax-o",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.66,
+          "hz": 359.7
+        },
+        {
+          "bandwidth_hz": 31.7,
+          "db": 22.17,
+          "hz": 774.6
+        },
+        {
+          "bandwidth_hz": 81.9,
+          "db": 11.7,
+          "hz": 2329.6
+        },
+        {
+          "bandwidth_hz": 106.6,
+          "db": 12.8,
+          "hz": 3032.1
+        },
+        {
+          "bandwidth_hz": 136.3,
+          "db": 15.21,
+          "hz": 3877.7
+        },
+        {
+          "bandwidth_hz": 144.8,
+          "db": -5.25,
+          "hz": 4959.2
+        }
+      ]
+    },
+    {
+      "name": "s1-19-butter-lax-u",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 23.09,
+          "hz": 251.6
+        },
+        {
+          "bandwidth_hz": 31.0,
+          "db": 15.17,
+          "hz": 661.3
+        },
+        {
+          "bandwidth_hz": 75.4,
+          "db": 3.91,
+          "hz": 2146.2
+        },
+        {
+          "bandwidth_hz": 99.3,
+          "db": 7.84,
+          "hz": 2826.4
+        },
+        {
+          "bandwidth_hz": 203.8,
+          "db": 7.63,
+          "hz": 3900.5
+        }
+      ]
+    },
+    {
+      "name": "s1-20-muetter-lax-y",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.33,
+          "hz": 301.7
+        },
+        {
+          "bandwidth_hz": 48.0,
+          "db": 17.66,
+          "hz": 1167.2
+        },
+        {
+          "bandwidth_hz": 72.0,
+          "db": 16.32,
+          "hz": 2048.0
+        },
+        {
+          "bandwidth_hz": 100.5,
+          "db": 13.0,
+          "hz": 2859.7
+        },
+        {
+          "bandwidth_hz": 143.6,
+          "db": 13.05,
+          "hz": 4087.6
+        }
+      ]
+    },
+    {
+      "name": "s1-21-goetter-lax-oe",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 26.9,
+          "hz": 392.7
+        },
+        {
+          "bandwidth_hz": 49.7,
+          "db": 21.75,
+          "hz": 1216.1
+        },
+        {
+          "bandwidth_hz": 72.8,
+          "db": 16.56,
+          "hz": 2072.1
+        },
+        {
+          "bandwidth_hz": 130.7,
+          "db": 17.22,
+          "hz": 3177.6
+        },
+        {
+          "bandwidth_hz": 135.0,
+          "db": 6.6,
+          "hz": 4622.6
+        }
+      ]
+    },
+    {
+      "name": "s1-22-ehe-schwa",
+      "peaks": [
+        {
+          "bandwidth_hz": 35.6,
+          "db": 20.63,
+          "hz": 337.2
+        },
+        {
+          "bandwidth_hz": 73.7,
+          "db": 18.8,
+          "hz": 1573.5
+        },
+        {
+          "bandwidth_hz": 92.5,
+          "db": 17.89,
+          "hz": 2262.4
+        },
+        {
+          "bandwidth_hz": 127.6,
+          "db": 16.48,
+          "hz": 3104.0
+        }
+      ]
+    },
+    {
+      "name": "s2-01-bahn-tense-a",
+      "peaks": [
+        {
+          "bandwidth_hz": 44.1,
+          "db": 30.44,
+          "hz": 752.3
+        },
+        {
+          "bandwidth_hz": 115.5,
+          "db": 22.48,
+          "hz": 1416.1
+        },
+        {
+          "bandwidth_hz": 148.0,
+          "db": 22.11,
+          "hz": 3159.0
+        },
+        {
+          "bandwidth_hz": 259.6,
+          "db": 22.17,
+          "hz": 4016.4
+        }
+      ]
+    },
+    {
+      "name": "s2-02-beet-tense-e",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 23.87,
+          "hz": 319.9
+        },
+        {
+          "bandwidth_hz": 102.2,
+          "db": 23.12,
+          "hz": 2484.7
+        },
+        {
+          "bandwidth_hz": 177.2,
+          "db": 19.72,
+          "hz": 4334.2
+        },
+        {
+          "bandwidth_hz": 317.2,
+          "db": 4.12,
+          "hz": 5446.3
+        }
+      ]
+    },
+    {
+      "name": "s2-03-tiere-tense-i",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 19.6,
+          "hz": 217.3
+        },
+        {
+          "bandwidth_hz": 87.8,
+          "db": 15.45,
+          "hz": 2499.3
+        },
+        {
+          "bandwidth_hz": 185.6,
+          "db": 15.58,
+          "hz": 3510.3
+        },
+        {
+          "bandwidth_hz": 246.6,
+          "db": 20.1,
+          "hz": 4184.5
+        },
+        {
+          "bandwidth_hz": 242.1,
+          "db": 0.77,
+          "hz": 5106.5
+        }
+      ]
+    },
+    {
+      "name": "s2-04-boote-tense-o",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.33,
+          "hz": 416.4
+        },
+        {
+          "bandwidth_hz": 47.4,
+          "db": 19.37,
+          "hz": 902.1
+        },
+        {
+          "bandwidth_hz": 111.7,
+          "db": 9.23,
+          "hz": 3177.6
+        },
+        {
+          "bandwidth_hz": 142.8,
+          "db": 14.4,
+          "hz": 4063.8
+        }
+      ]
+    },
+    {
+      "name": "s2-05-bude-tense-u",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 24.23,
+          "hz": 335.3
+        },
+        {
+          "bandwidth_hz": 56.0,
+          "db": 13.45,
+          "hz": 870.9
+        },
+        {
+          "bandwidth_hz": 95.9,
+          "db": 2.79,
+          "hz": 2728.8
+        },
+        {
+          "bandwidth_hz": 108.9,
+          "db": 10.08,
+          "hz": 4649.7
+        }
+      ]
+    },
+    {
+      "name": "s2-06-laehmung-tense-ae",
+      "peaks": [
+        {
+          "bandwidth_hz": 43.8,
+          "db": 25.91,
+          "hz": 681.0
+        },
+        {
+          "bandwidth_hz": 133.4,
+          "db": 22.03,
+          "hz": 1897.9
+        },
+        {
+          "bandwidth_hz": 182.7,
+          "db": 17.74,
+          "hz": 2843.0
+        },
+        {
+          "bandwidth_hz": 262.6,
+          "db": 14.82,
+          "hz": 4063.8
+        },
+        {
+          "bandwidth_hz": 423.8,
+          "db": 13.86,
+          "hz": 5136.5
+        }
+      ]
+    },
+    {
+      "name": "s2-07-hoehle-tense-oe",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 23.85,
+          "hz": 388.1
+        },
+        {
+          "bandwidth_hz": 56.3,
+          "db": 20.66,
+          "hz": 1601.4
+        },
+        {
+          "bandwidth_hz": 95.2,
+          "db": 17.07,
+          "hz": 2329.6
+        },
+        {
+          "bandwidth_hz": 106.8,
+          "db": 10.48,
+          "hz": 3635.8
+        },
+        {
+          "bandwidth_hz": 268.4,
+          "db": 6.1,
+          "hz": 5136.5
+        }
+      ]
+    },
+    {
+      "name": "s2-08-guete-tense-y",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 23.57,
+          "hz": 299.9
+        },
+        {
+          "bandwidth_hz": 70.2,
+          "db": 16.79,
+          "hz": 1708.0
+        },
+        {
+          "bandwidth_hz": 79.5,
+          "db": 16.34,
+          "hz": 2262.4
+        },
+        {
+          "bandwidth_hz": 111.3,
+          "db": 8.7,
+          "hz": 3810.2
+        },
+        {
+          "bandwidth_hz": 200.4,
+          "db": 6.39,
+          "hz": 4872.8
+        }
+      ]
+    },
+    {
+      "name": "s2-09-los-l",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 21.95,
+          "hz": 303.5
+        },
+        {
+          "bandwidth_hz": 62.2,
+          "db": 18.43,
+          "hz": 1769.1
+        },
+        {
+          "bandwidth_hz": 101.1,
+          "db": 16.01,
+          "hz": 2876.5
+        },
+        {
+          "bandwidth_hz": 315.9,
+          "db": 16.44,
+          "hz": 4087.6
+        }
+      ]
+    },
+    {
+      "name": "s2-10-fahrt-f",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.68,
+          "hz": 482.0
+        },
+        {
+          "bandwidth_hz": 75.5,
+          "db": 20.79,
+          "hz": 1610.8
+        },
+        {
+          "bandwidth_hz": 89.9,
+          "db": 16.39,
+          "hz": 2558.5
+        },
+        {
+          "bandwidth_hz": 144.5,
+          "db": 10.22,
+          "hz": 4111.6
+        },
+        {
+          "bandwidth_hz": 187.0,
+          "db": 13.72,
+          "hz": 5320.2
+        }
+      ]
+    },
+    {
+      "name": "s2-11-bass-s",
+      "peaks": [
+        {
+          "bandwidth_hz": 38.2,
+          "db": 18.56,
+          "hz": 296.5
+        },
+        {
+          "bandwidth_hz": 67.8,
+          "db": 13.67,
+          "hz": 1649.0
+        },
+        {
+          "bandwidth_hz": 104.7,
+          "db": 9.76,
+          "hz": 2979.3
+        },
+        {
+          "bandwidth_hz": 164.4,
+          "db": 11.48,
+          "hz": 4677.1
+        }
+      ]
+    },
+    {
+      "name": "s2-12-schoen-sh",
+      "peaks": [
+        {
+          "bandwidth_hz": 31.5,
+          "db": 20.53,
+          "hz": 298.2
+        },
+        {
+          "bandwidth_hz": 62.5,
+          "db": 15.73,
+          "hz": 1779.4
+        },
+        {
+          "bandwidth_hz": 105.3,
+          "db": 13.84,
+          "hz": 2996.8
+        },
+        {
+          "bandwidth_hz": 319.9,
+          "db": 3.81,
+          "hz": 3900.5
+        },
+        {
+          "bandwidth_hz": 167.3,
+          "db": 11.0,
+          "hz": 4760.0
+        }
+      ]
+    },
+    {
+      "name": "s2-13-ich-c",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 25.82,
+          "hz": 325.6
+        },
+        {
+          "bandwidth_hz": 83.3,
+          "db": 20.89,
+          "hz": 2370.9
+        },
+        {
+          "bandwidth_hz": 128.4,
+          "db": 17.66,
+          "hz": 3122.2
+        },
+        {
+          "bandwidth_hz": 189.0,
+          "db": 19.8,
+          "hz": 4595.6
+        }
+      ]
+    },
+    {
+      "name": "s2-14-ach-x",
+      "peaks": [
+        {
+          "bandwidth_hz": 42.8,
+          "db": 29.25,
+          "hz": 730.6
+        },
+        {
+          "bandwidth_hz": 99.3,
+          "db": 24.09,
+          "hz": 1546.1
+        },
+        {
+          "bandwidth_hz": 116.9,
+          "db": 21.52,
+          "hz": 2859.7
+        },
+        {
+          "bandwidth_hz": 299.4,
+          "db": 19.92,
+          "hz": 4308.9
+        }
+      ]
+    },
+    {
+      "name": "s2-15-bass-lax-a",
+      "peaks": [
+        {
+          "bandwidth_hz": 40.6,
+          "db": 30.13,
+          "hz": 693.1
+        },
+        {
+          "bandwidth_hz": 85.0,
+          "db": 23.99,
+          "hz": 1209.0
+        },
+        {
+          "bandwidth_hz": 123.2,
+          "db": 16.9,
+          "hz": 2996.8
+        },
+        {
+          "bandwidth_hz": 226.5,
+          "db": 14.23,
+          "hz": 4308.9
+        }
+      ]
+    },
+    {
+      "name": "s2-16-bett-lax-ae",
+      "peaks": [
+        {
+          "bandwidth_hz": 33.9,
+          "db": 28.91,
+          "hz": 578.0
+        },
+        {
+          "bandwidth_hz": 80.5,
+          "db": 25.79,
+          "hz": 1718.0
+        },
+        {
+          "bandwidth_hz": 142.6,
+          "db": 18.19,
+          "hz": 2712.8
+        },
+        {
+          "bandwidth_hz": 354.0,
+          "db": 22.46,
+          "hz": 3946.5
+        }
+      ]
+    },
+    {
+      "name": "s2-17-mit-lax-i",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 28.09,
+          "hz": 363.9
+        },
+        {
+          "bandwidth_hz": 81.3,
+          "db": 21.87,
+          "hz": 1977.3
+        },
+        {
+          "bandwidth_hz": 169.3,
+          "db": 14.4,
+          "hz": 2634.5
+        },
+        {
+          "bandwidth_hz": 337.8,
+          "db": 21.84,
+          "hz": 3743.8
+        }
+      ]
+    },
+    {
+      "name": "s2-18-offen-lax-o",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.57,
+          "hz": 468.1
+        },
+        {
+          "bandwidth_hz": 81.7,
+          "db": 15.69,
+          "hz": 1075.3
+        },
+        {
+          "bandwidth_hz": 126.2,
+          "db": 10.84,
+          "hz": 3085.9
+        },
+        {
+          "bandwidth_hz": 519.5,
+          "db": 19.88,
+          "hz": 4063.8
+        }
+      ]
+    },
+    {
+      "name": "s2-19-butter-lax-u",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 27.99,
+          "hz": 379.1
+        },
+        {
+          "bandwidth_hz": 70.3,
+          "db": 11.98,
+          "hz": 1094.4
+        },
+        {
+          "bandwidth_hz": 123.2,
+          "db": 12.63,
+          "hz": 2996.8
+        },
+        {
+          "bandwidth_hz": 157.6,
+          "db": 19.71,
+          "hz": 3832.6
+        }
+      ]
+    },
+    {
+      "name": "s2-20-muetter-lax-y",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 28.08,
+          "hz": 413.9
+        },
+        {
+          "bandwidth_hz": 70.6,
+          "db": 21.73,
+          "hz": 1718.0
+        },
+        {
+          "bandwidth_hz": 86.3,
+          "db": 21.07,
+          "hz": 2455.7
+        },
+        {
+          "bandwidth_hz": 133.1,
+          "db": 16.71,
+          "hz": 3788.0
+        },
+        {
+          "bandwidth_hz": 166.3,
+          "db": 15.46,
+          "hz": 4732.2
+        }
+      ]
+    },
+    {
+      "name": "s2-21-goetter-lax-oe",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 32.71,
+          "hz": 532.5
+        },
+        {
+          "bandwidth_hz": 69.1,
+          "db": 23.73,
+          "hz": 1475.3
+        },
+        {
+          "bandwidth_hz": 99.2,
+          "db": 20.63,
+          "hz": 2427.1
+        },
+        {
+          "bandwidth_hz": 391.9,
+          "db": 21.12,
+          "hz": 4040.0
+        },
+        {
+          "bandwidth_hz": 202.7,
+          "db": 6.08,
+          "hz": 4959.2
+        }
+      ]
+    },
+    {
+      "name": "s2-22-ehe-schwa",
+      "peaks": [
+        {
+          "bandwidth_hz": 30.0,
+          "db": 30.74,
+          "hz": 511.1
+        },
+        {
+          "bandwidth_hz": 61.7,
+          "db": 24.97,
+          "hz": 1501.5
+        },
+        {
+          "bandwidth_hz": 105.8,
+          "db": 20.63,
+          "hz": 2573.5
+        },
+        {
+          "bandwidth_hz": 235.5,
+          "db": 12.42,
+          "hz": 3349.6
+        },
+        {
+          "bandwidth_hz": 142.0,
+          "db": 14.38,
+          "hz": 4040.0
+        },
+        {
+          "bandwidth_hz": 179.5,
+          "db": -1.61,
+          "hz": 5106.5
+        }
+      ]
+    }
+  ],
+  "schema": "trench-mouth-formants-v1",
+  "source": "peak-picked from the measured DVTD vocal-tract transfer functions on the fixed 1024-point log grid"
+}

@@ -1,0 +1,130 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 9468.265156443575,
+      "pole_r": 0.8955115398300292,
+      "scale_db": 3.509092381904974,
+      "zero_hz": 29.24834422129405,
+      "zero_r": 0.9197870953548163
+    },
+    {
+      "pole_hz": 890.7217904017269,
+      "pole_r": 0.9792891621904093,
+      "scale_db": -5.006979374755626,
+      "zero_hz": 1113.2221181282405,
+      "zero_r": 0.9458208214916753
+    },
+    {
+      "pole_hz": 1569.5775405292059,
+      "pole_r": 0.9772926957588467,
+      "scale_db": -5.006979374755626,
+      "zero_hz": 2014.4494901673877,
+      "zero_r": 0.9601670564892275
+    },
+    {
+      "pole_hz": 2348.033378825453,
+      "pole_r": 0.9969450062054321,
+      "scale_db": -5.006979374755626,
+      "zero_hz": 2971.2815971155155,
+      "zero_r": 0.9722835945255858
+    },
+    {
+      "pole_hz": 4606.882179817498,
+      "pole_r": 0.9478835774330029,
+      "scale_db": -5.006979374755626,
+      "zero_hz": 7921.931672591212,
+      "zero_r": 0.7501220603800091
+    },
+    {
+      "pole_hz": 32.27211592947293,
+      "pole_r": 0.8284565963472378,
+      "scale_db": 12.041199826559248,
+      "zero_hz": 6228.848348337561,
+      "zero_r": 1.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": false,
+      "zone": null
+    }
+  ],
+  "name": "frame-003",
+  "provenance": "fit of m1-artifact · m0 q0 · rms 7.95 dB",
+  "schema": "trench-frame-v1",
+  "sr_hz": 39062.5,
+  "words": ""
+}

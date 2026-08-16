@@ -1,0 +1,47 @@
+{
+  "profile": "trenchprofile-v1",
+  "family": "vocal-formant",
+  "description": "Fixed vowel formant tables (F1-F3), asymmetric Q-axes, tight morph corridors. Human voice and talkbox character filters.",
+
+  "frequency_domain": {
+    "cutoff_range_hz": [200, 4000],
+    "morph_axis_semantic": "vowel_interpolation",
+    "q_axis_semantic": "vocal_tract_width",
+    "min_cutoff_hz": 100,
+    "max_cutoff_hz": 5000
+  },
+
+  "resonance_budget": {
+    "max_resonance_db": 30.0,
+    "q0_default_resonance_db": 6.0,
+    "corner_reg_weight": 0.15
+  },
+
+  "q_attitude_rules": {
+    "allowed_behaviours": ["arm", "defuse", "flat"],
+    "max_arm_delta_r": 0.15,
+    "q_axis_max_octave_shift": 1.5
+  },
+
+  "voice_roles": {
+    "required": ["anchor", "mouth", "mouth"],
+    "bands": {
+      "anchor": [200, 800],
+      "mouth": [400, 3000],
+      "air": [2000, 5000],
+      "terminal": [2000, 5000]
+    }
+  },
+
+  "guide_pose_constraints": {
+    "min_cutoff_hz": 100,
+    "max_cutoff_hz": 5000,
+    "max_targets_per_guide": 3
+  },
+
+  "verification": {
+    "min_cutoff_travel_octaves": 2.0,
+    "max_bass_loss_db": 6.0,
+    "min_peak_count_morph_range": [2, 5]
+  }
+}

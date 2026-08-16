@@ -1,0 +1,47 @@
+{
+  "profile": "trenchprofile-v1",
+  "family": "eq-shaper",
+  "description": "Static or dynamically swept multi-band bell filters with flat Q attitudes. Graphic and parametric EQ curve emulations.",
+
+  "frequency_domain": {
+    "cutoff_range_hz": [20, 20000],
+    "morph_axis_semantic": "eq_curve_morph",
+    "q_axis_semantic": "bandwidth",
+    "min_cutoff_hz": 20,
+    "max_cutoff_hz": 20000
+  },
+
+  "resonance_budget": {
+    "max_resonance_db": 12.0,
+    "q0_default_resonance_db": 0.0,
+    "corner_reg_weight": 0.3
+  },
+
+  "q_attitude_rules": {
+    "allowed_behaviours": ["flat", "defuse"],
+    "max_arm_delta_r": 0.05,
+    "q_axis_max_octave_shift": 0.5
+  },
+
+  "voice_roles": {
+    "required": [],
+    "bands": {
+      "anchor": [20, 250],
+      "mouth": [100, 8000],
+      "air": [2000, 20000],
+      "terminal": [2000, 20000]
+    }
+  },
+
+  "guide_pose_constraints": {
+    "min_cutoff_hz": 20,
+    "max_cutoff_hz": 20000,
+    "max_targets_per_guide": 3
+  },
+
+  "verification": {
+    "min_cutoff_travel_octaves": 1.0,
+    "max_bass_loss_db": 6.0,
+    "min_peak_count_morph_range": [0, 6]
+  }
+}

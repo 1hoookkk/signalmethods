@@ -1,0 +1,38 @@
+{
+  "schema": "trench-formant-material-v1",
+  "source": "Kent & Vorperian, 'Static measurements of vowel formant frequencies and bandwidths: A review', J Commun Disord 2018. Extracted from Downloads/nihms971733.pdf Tables 1 and 5 and section 9.",
+  "seeding": "pole from (frequency_hz, bandwidth_hz) via praat_endpoint::pole_from_frequency_bandwidth; the paper calls Table 1 'a heuristic for formant estimation'",
+  "formant_ranges_hz": [
+    { "group": "2-year-old children, both sexes", "f1": [400, 1000], "f2": [1500, 3500], "f3": null, "mean_f0": 300 },
+    { "group": "4-year-old children, both sexes", "f1": [480, 1200], "f2": [1700, 3600], "f3": [3400, 4300], "mean_f0": 280 },
+    { "group": "6-year-old children, both sexes", "f1": [350, 1200], "f2": [1500, 3200], "f3": [3300, 3700], "mean_f0": 260 },
+    { "group": "12-year-old boys", "f1": [325, 900], "f2": [1300, 2700], "f3": [2700, 3300], "mean_f0": 230 },
+    { "group": "12-year-old girls", "f1": [375, 950], "f2": [1600, 3000], "f3": [3000, 3500], "mean_f0": 230 },
+    { "group": "14-year-old boys", "f1": [325, 850], "f2": [1300, 2700], "f3": [2700, 3300], "mean_f0": 180 },
+    { "group": "14-year-old girls", "f1": [400, 900], "f2": [1600, 2700], "f3": [2800, 3300], "mean_f0": 230 },
+    { "group": "16-year-old boys", "f1": [300, 750], "f2": [1250, 2300], "f3": [2300, 3000], "mean_f0": 130 },
+    { "group": "16-year-old girls", "f1": [400, 950], "f2": [1800, 2800], "f3": [2800, 3300], "mean_f0": 230 },
+    { "group": "18-year-old boys", "f1": [270, 750], "f2": [900, 2300], "f3": [2300, 3000], "mean_f0": 130 },
+    { "group": "18-year-old girls", "f1": [350, 900], "f2": [1300, 2800], "f3": [2700, 3400], "mean_f0": 230 }
+  ],
+  "bandwidths_hz": [
+    { "source": "Bogert (1953)", "speakers": "English, male adults", "b1": 130, "b2": 100, "b3": 185 },
+    { "source": "Childers & Wu (1993)", "speakers": "English, adults", "b1": 140, "b2": 149, "b3": 223 },
+    { "source": "Dunn (1961)", "speakers": "English, adults", "b1": 50, "b2": 64, "b3": 115 },
+    { "source": "Fant (1962)", "speakers": "Swedish, adults", "b1": 48, "b2": 50, "b3": 98 },
+    { "source": "Hana, Smith & Wolfe (2016)", "speakers": "Australian English, male adults", "b1": 85, "b2": 90, "b3": 85 },
+    { "source": "Hana et al. (2016)", "speakers": "Australian English, female adults", "b1": 75, "b2": 90, "b3": 90 },
+    { "source": "House & Stevens (1958)", "speakers": "English, adults", "b1": 52, "b2": 62, "b3": 67 },
+    { "source": "Krishna & Rajashekhar (2013)", "speakers": "Telugu, adults", "b1": 57, "b2": 136, "b3": 230 },
+    { "source": "Robb, Yates & Morgan (1997)", "speakers": "English, adults", "b1": 79, "b2": 99, "b3": null },
+    { "source": "Whiteside & Hodgson (1999)", "speakers": "English, 6- to 10-year-old children", "b1": 193, "b2": 190, "b3": 263 },
+    { "source": "Benavides et al. (2015)", "speakers": "Spanish, adults", "b1": 84, "b2": 117, "b3": 183 }
+  ],
+  "lifespan_bandwidth_summary": {
+    "infants_hz": 400,
+    "children_6_to_10_hz": 200,
+    "adults_hz": [50, 200],
+    "note": "women larger than men; section 9.2 tentative conclusion"
+  },
+  "adult_q": { "min": 8, "max": 30, "note": "Q = Fi/Bi computed from Bogert, Fant, House & Stevens" }
+}

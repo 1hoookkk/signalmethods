@@ -1,0 +1,133 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 11485.923426376317,
+      "pole_r": 0.8111090858933526,
+      "scale_db": -18.371561127109427,
+      "zero_hz": 7589.543300341029,
+      "zero_r": 0.4406970242553267
+    },
+    {
+      "pole_hz": 1101.668162406939,
+      "pole_r": 0.9950841237453636,
+      "scale_db": -0.27138882409318554,
+      "zero_hz": 898.8049372356011,
+      "zero_r": 0.8989638403896594
+    },
+    {
+      "pole_hz": 3173.295344727375,
+      "pole_r": 0.9696473918147385,
+      "scale_db": -0.27138882409318554,
+      "zero_hz": 2164.3115996584406,
+      "zero_r": 0.9541970149604195
+    },
+    {
+      "pole_hz": 2265.2454256064957,
+      "pole_r": 0.9932903258296231,
+      "scale_db": -0.27138882409318554,
+      "zero_hz": 2379.5549027664147,
+      "zero_r": 0.8139635256531769
+    },
+    {
+      "pole_hz": 8168.195013875168,
+      "pole_r": 0.9286364857446912,
+      "scale_db": -0.27138882409318554,
+      "zero_hz": 7494.018781613688,
+      "zero_r": 0.9247670473134707
+    },
+    {
+      "pole_hz": 510.3055701003195,
+      "pole_r": 0.996844558490191,
+      "scale_db": -0.27138882409318554,
+      "zero_hz": 8004.337312523523,
+      "zero_r": 0.6168412794734963
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": [
+        7589.100586921259,
+        12825.579991896928
+      ]
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": false,
+      "zone": null
+    }
+  ],
+  "name": "frame-002",
+  "provenance": "fit of s1-01-bahn-tense-a · rms 12.66 dB",
+  "schema": "trench-frame-v1",
+  "sr_hz": 39062.5,
+  "words": ""
+}

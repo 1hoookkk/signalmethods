@@ -1,0 +1,398 @@
+{
+  "schema": "trench-alphabet-v1",
+  "note": "Named roots for seeds and pins. Every anchor here is measured from ref/morpheus/cubes_decoded.json at the 39,062.5 Hz datum and carries the cube and corner it was read from; nothing is idealized. radii and carves_st stay empty \u2014 those names are Tyson's.",
+  "radii": {},
+  "carves_st": {},
+  "anchors": {
+    "idle-pole": {
+      "hz": 9381.77,
+      "r": 0.125031,
+      "source": "the corpus idle stage: a flat pole at 9381.77 Hz r=0.125 that fills unused slots in 160 of 289 cubes; measured at Be-Ye.4 corner 1 S6"
+    },
+    "off-zero": {
+      "hz": 0.3,
+      "r": 0.0,
+      "source": "the disabled root marker used by every all-pole pose; measured at Be-Ye.4 corner 1 S6"
+    },
+    "top-shelf-pole": {
+      "hz": 18229.49,
+      "r": 0.995606,
+      "source": "18229.49 Hz r=0.995606, the corpus's most reused single root: pole in 50 cubes, zero in 51; measured at AEParaVowel corner 0 S3"
+    },
+    "bell-low-pole-1": {
+      "hz": 350.33,
+      "r": 0.99992,
+      "source": "low bell ladder, S2 pole; the whole 7-stage pose is bit-identical at HOTwell.4 c0, 0>Bell- c4, 0>Bell- c5 and 0>Bell+ c4, and its pole-set recurs at Bell Wah A c4/c5 and Bell Wah B c0"
+    },
+    "bell-low-zero-1": {
+      "hz": 350.33,
+      "r": 0.997437,
+      "source": "low bell ladder, S1 zero; same bit-identical pose (HOTwell.4 c0, 0>Bell- c4/c5, 0>Bell+ c4)"
+    },
+    "bell-low-pole-2": {
+      "hz": 291.99,
+      "r": 0.999935,
+      "source": "low bell ladder, S3 pole; the whole 7-stage pose is bit-identical at HOTwell.4 c0, 0>Bell- c4, 0>Bell- c5 and 0>Bell+ c4, and its pole-set recurs at Bell Wah A c4/c5 and Bell Wah B c0"
+    },
+    "bell-low-zero-2": {
+      "hz": 291.99,
+      "r": 0.997925,
+      "source": "low bell ladder, S2 zero; same bit-identical pose (HOTwell.4 c0, 0>Bell- c4/c5, 0>Bell+ c4)"
+    },
+    "bell-low-pole-3": {
+      "hz": 238.34,
+      "r": 0.999947,
+      "source": "low bell ladder, S4 pole; the whole 7-stage pose is bit-identical at HOTwell.4 c0, 0>Bell- c4, 0>Bell- c5 and 0>Bell+ c4, and its pole-set recurs at Bell Wah A c4/c5 and Bell Wah B c0"
+    },
+    "bell-low-zero-3": {
+      "hz": 232.38,
+      "r": 0.998291,
+      "source": "low bell ladder, S3 zero; same bit-identical pose (HOTwell.4 c0, 0>Bell- c4/c5, 0>Bell+ c4)"
+    },
+    "bell-low-pole-4": {
+      "hz": 175.16,
+      "r": 0.99996,
+      "source": "low bell ladder, S5 pole; the whole 7-stage pose is bit-identical at HOTwell.4 c0, 0>Bell- c4, 0>Bell- c5 and 0>Bell+ c4, and its pole-set recurs at Bell Wah A c4/c5 and Bell Wah B c0"
+    },
+    "bell-low-zero-4": {
+      "hz": 175.16,
+      "r": 0.998718,
+      "source": "low bell ladder, S4 zero; same bit-identical pose (HOTwell.4 c0, 0>Bell- c4/c5, 0>Bell+ c4)"
+    },
+    "bell-low-pole-5": {
+      "hz": 119.17,
+      "r": 0.999973,
+      "source": "low bell ladder, S6 pole; the whole 7-stage pose is bit-identical at HOTwell.4 c0, 0>Bell- c4, 0>Bell- c5 and 0>Bell+ c4, and its pole-set recurs at Bell Wah A c4/c5 and Bell Wah B c0"
+    },
+    "bell-low-zero-5": {
+      "hz": 116.19,
+      "r": 0.999146,
+      "source": "low bell ladder, S5 zero; same bit-identical pose (HOTwell.4 c0, 0>Bell- c4/c5, 0>Bell+ c4)"
+    },
+    "bell-low-pole-6": {
+      "hz": 54.22,
+      "r": 0.999987,
+      "source": "low bell ladder, S7 pole; the whole 7-stage pose is bit-identical at HOTwell.4 c0, 0>Bell- c4, 0>Bell- c5 and 0>Bell+ c4, and its pole-set recurs at Bell Wah A c4/c5 and Bell Wah B c0"
+    },
+    "bell-low-zero-6": {
+      "hz": 54.22,
+      "r": 0.999573,
+      "source": "low bell ladder, S6 zero; same bit-identical pose (HOTwell.4 c0, 0>Bell- c4/c5, 0>Bell+ c4)"
+    },
+    "bell-high-pole-1": {
+      "hz": 11363.03,
+      "r": 0.997437,
+      "source": "high bell ladder, S2 pole; the 7-stage pose is bit-identical at HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6 and 0>Bell- c7, pole-set also at 0>Bell+ c6"
+    },
+    "bell-high-zero-1": {
+      "hz": 11363.03,
+      "r": 0.922863,
+      "source": "high bell ladder, S1 zero; same bit-identical pose (HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6/c7)"
+    },
+    "bell-high-pole-2": {
+      "hz": 9381.77,
+      "r": 0.997925,
+      "source": "high bell ladder, S3 pole; the 7-stage pose is bit-identical at HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6 and 0>Bell- c7, pole-set also at 0>Bell+ c6"
+    },
+    "bell-high-zero-2": {
+      "hz": 9343.62,
+      "r": 0.935562,
+      "source": "high bell ladder, S2 zero; same bit-identical pose (HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6/c7)"
+    },
+    "bell-high-pole-3": {
+      "hz": 7588.86,
+      "r": 0.998291,
+      "source": "high bell ladder, S4 pole; the 7-stage pose is bit-identical at HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6 and 0>Bell- c7, pole-set also at 0>Bell+ c6"
+    },
+    "bell-high-zero-3": {
+      "hz": 7359.98,
+      "r": 0.947756,
+      "source": "high bell ladder, S3 zero; same bit-identical pose (HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6/c7)"
+    },
+    "bell-high-pole-4": {
+      "hz": 5681.51,
+      "r": 0.998718,
+      "source": "high bell ladder, S5 pole; the 7-stage pose is bit-identical at HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6 and 0>Bell- c7, pole-set also at 0>Bell+ c6"
+    },
+    "bell-high-zero-4": {
+      "hz": 5681.51,
+      "r": 0.960211,
+      "source": "high bell ladder, S4 zero; same bit-identical pose (HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6/c7)"
+    },
+    "bell-high-pole-5": {
+      "hz": 3794.43,
+      "r": 0.999146,
+      "source": "high bell ladder, S6 pole; the 7-stage pose is bit-identical at HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6 and 0>Bell- c7, pole-set also at 0>Bell+ c6"
+    },
+    "bell-high-zero-5": {
+      "hz": 3756.28,
+      "r": 0.973268,
+      "source": "high bell ladder, S5 zero; same bit-identical pose (HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6/c7)"
+    },
+    "bell-high-pole-6": {
+      "hz": 1868.61,
+      "r": 0.999573,
+      "source": "high bell ladder, S7 pole; the 7-stage pose is bit-identical at HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6 and 0>Bell- c7, pole-set also at 0>Bell+ c6"
+    },
+    "bell-high-zero-6": {
+      "hz": 1878.14,
+      "r": 0.986207,
+      "source": "high bell ladder, S6 zero; same bit-identical pose (HOTwell.4 c2, Bell Wah B c2, 0>Bell- c6/c7)"
+    },
+    "octave-notch-1": {
+      "hz": 48.56,
+      "r": 0.999989,
+      "source": "octave notch ladder, rung 1; six near-unit zeros doubling 48.56 Hz to 1553.89 Hz, measured at Null Cube corner 1 and present with the same words at LPFlange.4 corner 1 under a different pairing; each rung recurs in 5 to 7 cubes"
+    },
+    "octave-notch-2": {
+      "hz": 97.12,
+      "r": 0.999977,
+      "source": "octave notch ladder, rung 2; six near-unit zeros doubling 48.56 Hz to 1553.89 Hz, measured at Null Cube corner 1 and present with the same words at LPFlange.4 corner 1 under a different pairing; each rung recurs in 5 to 7 cubes"
+    },
+    "octave-notch-3": {
+      "hz": 194.24,
+      "r": 0.999954,
+      "source": "octave notch ladder, rung 3; six near-unit zeros doubling 48.56 Hz to 1553.89 Hz, measured at Null Cube corner 1 and present with the same words at LPFlange.4 corner 1 under a different pairing; each rung recurs in 5 to 7 cubes"
+    },
+    "octave-notch-4": {
+      "hz": 388.47,
+      "r": 0.999908,
+      "source": "octave notch ladder, rung 4; six near-unit zeros doubling 48.56 Hz to 1553.89 Hz, measured at Null Cube corner 1 and present with the same words at LPFlange.4 corner 1 under a different pairing; each rung recurs in 5 to 7 cubes"
+    },
+    "octave-notch-5": {
+      "hz": 776.95,
+      "r": 0.999817,
+      "source": "octave notch ladder, rung 5; six near-unit zeros doubling 48.56 Hz to 1553.89 Hz, measured at Null Cube corner 1 and present with the same words at LPFlange.4 corner 1 under a different pairing; each rung recurs in 5 to 7 cubes"
+    },
+    "octave-notch-6": {
+      "hz": 1553.89,
+      "r": 0.999634,
+      "source": "octave notch ladder, rung 6; six near-unit zeros doubling 48.56 Hz to 1553.89 Hz, measured at Null Cube corner 1 and present with the same words at LPFlange.4 corner 1 under a different pairing; each rung recurs in 5 to 7 cubes"
+    },
+    "octave-lowpass-pole-1": {
+      "hz": 45.28,
+      "r": 0.997193,
+      "source": "lowpass pole ladder paired with the octave notches, rung 1; measured at Null Cube corner 1 S2, same words at LPFlange.4 corner 1; rungs recur in up to 6 cubes"
+    },
+    "octave-lowpass-pole-2": {
+      "hz": 90.56,
+      "r": 0.994385,
+      "source": "lowpass pole ladder paired with the octave notches, rung 2; measured at Null Cube corner 1 S3, same words at LPFlange.4 corner 1; rungs recur in up to 6 cubes"
+    },
+    "octave-lowpass-pole-3": {
+      "hz": 182.32,
+      "r": 0.98871,
+      "source": "lowpass pole ladder paired with the octave notches, rung 3; measured at Null Cube corner 1 S4, same words at LPFlange.4 corner 1; rungs recur in up to 6 cubes"
+    },
+    "octave-lowpass-pole-4": {
+      "hz": 367.02,
+      "r": 0.977297,
+      "source": "lowpass pole ladder paired with the octave notches, rung 4; measured at Null Cube corner 1 S5, same words at LPFlange.4 corner 1; rungs recur in up to 6 cubes"
+    },
+    "octave-lowpass-pole-5": {
+      "hz": 743.57,
+      "r": 0.956059,
+      "source": "lowpass pole ladder paired with the octave notches, rung 5; measured at Null Cube corner 1 S6, same words at LPFlange.4 corner 1; rungs recur in up to 6 cubes"
+    },
+    "octave-lowpass-pole-6": {
+      "hz": 1477.6,
+      "r": 0.914072,
+      "source": "lowpass pole ladder paired with the octave notches, rung 6; measured at Null Cube corner 1 S7, same words at LPFlange.4 corner 1; rungs recur in up to 6 cubes"
+    },
+    "be-ye-vowel-1": {
+      "hz": 433.77,
+      "r": 0.995118,
+      "source": "Be-Ye.4 corner 1 (M0 Q0) formant 1; a five-pole all-pole vowel pose whose seven stages are bit-identical to Ee-Yi.4 corner 5"
+    },
+    "be-ye-vowel-2": {
+      "hz": 1801.85,
+      "r": 0.982303,
+      "source": "Be-Ye.4 corner 1 (M0 Q0) formant 2; a five-pole all-pole vowel pose whose seven stages are bit-identical to Ee-Yi.4 corner 5"
+    },
+    "be-ye-vowel-3": {
+      "hz": 2688.17,
+      "r": 0.979251,
+      "source": "Be-Ye.4 corner 1 (M0 Q0) formant 3; a five-pole all-pole vowel pose whose seven stages are bit-identical to Ee-Yi.4 corner 5"
+    },
+    "be-ye-vowel-4": {
+      "hz": 2955.2,
+      "r": 0.980227,
+      "source": "Be-Ye.4 corner 1 (M0 Q0) formant 4; a five-pole all-pole vowel pose whose seven stages are bit-identical to Ee-Yi.4 corner 5"
+    },
+    "be-ye-vowel-5": {
+      "hz": 3279.45,
+      "r": 0.978274,
+      "source": "Be-Ye.4 corner 1 (M0 Q0) formant 5; a five-pole all-pole vowel pose whose seven stages are bit-identical to Ee-Yi.4 corner 5"
+    },
+    "uhrrrah-vowel-1": {
+      "hz": 398.01,
+      "r": 0.992188,
+      "source": "Uhrrrah.4 corner 1 (M0 Q0) formant 1; five-pole all-pole vowel pose, seven stages bit-identical to Vow>Vow2 corner 1"
+    },
+    "uhrrrah-vowel-2": {
+      "hz": 1620.65,
+      "r": 0.984257,
+      "source": "Uhrrrah.4 corner 1 (M0 Q0) formant 2; five-pole all-pole vowel pose, seven stages bit-identical to Vow>Vow2 corner 1"
+    },
+    "uhrrrah-vowel-3": {
+      "hz": 2364.52,
+      "r": 0.981326,
+      "source": "Uhrrrah.4 corner 1 (M0 Q0) formant 3; five-pole all-pole vowel pose, seven stages bit-identical to Vow>Vow2 corner 1"
+    },
+    "uhrrrah-vowel-4": {
+      "hz": 2783.54,
+      "r": 0.982303,
+      "source": "Uhrrrah.4 corner 1 (M0 Q0) formant 4; five-pole all-pole vowel pose, seven stages bit-identical to Vow>Vow2 corner 1"
+    },
+    "uhrrrah-vowel-5": {
+      "hz": 3069.64,
+      "r": 0.980227,
+      "source": "Uhrrrah.4 corner 1 (M0 Q0) formant 5; five-pole all-pole vowel pose, seven stages bit-identical to Vow>Vow2 corner 1"
+    },
+    "paravowel-a-pole-1": {
+      "hz": 495.76,
+      "r": 0.728571,
+      "source": "ParaVowel A scaffold, formant pole 1; measured at AEParLPVow corner 0 S1. The upper poles of this pose recur across AEParaVowel, AOParaVowel, AUParaVow.4, SoftEOAE and CO>FlngT (4843.47 Hz r=0.977297 in 6 cubes, 26 corners)"
+    },
+    "paravowel-a-pole-2": {
+      "hz": 776.95,
+      "r": 0.996338,
+      "source": "ParaVowel A scaffold, formant pole 2; measured at AEParLPVow corner 0 S2. The upper poles of this pose recur across AEParaVowel, AOParaVowel, AUParaVow.4, SoftEOAE and CO>FlngT (4843.47 Hz r=0.977297 in 6 cubes, 26 corners)"
+    },
+    "paravowel-a-pole-3": {
+      "hz": 1134.57,
+      "r": 0.99463,
+      "source": "ParaVowel A scaffold, formant pole 3; measured at AEParLPVow corner 0 S3. The upper poles of this pose recur across AEParaVowel, AOParaVowel, AUParaVow.4, SoftEOAE and CO>FlngT (4843.47 Hz r=0.977297 in 6 cubes, 26 corners)"
+    },
+    "paravowel-a-pole-4": {
+      "hz": 2783.54,
+      "r": 0.993378,
+      "source": "ParaVowel A scaffold, formant pole 4; measured at AEParLPVow corner 0 S4. The upper poles of this pose recur across AEParaVowel, AOParaVowel, AUParaVow.4, SoftEOAE and CO>FlngT (4843.47 Hz r=0.977297 in 6 cubes, 26 corners)"
+    },
+    "paravowel-a-pole-5": {
+      "hz": 3451.11,
+      "r": 0.990663,
+      "source": "ParaVowel A scaffold, formant pole 5; measured at AEParLPVow corner 0 S5. The upper poles of this pose recur across AEParaVowel, AOParaVowel, AUParaVow.4, SoftEOAE and CO>FlngT (4843.47 Hz r=0.977297 in 6 cubes, 26 corners)"
+    },
+    "paravowel-a-pole-6": {
+      "hz": 4843.47,
+      "r": 0.977297,
+      "source": "ParaVowel A scaffold, formant pole 6; measured at AEParLPVow corner 0 S6. The upper poles of this pose recur across AEParaVowel, AOParaVowel, AUParaVow.4, SoftEOAE and CO>FlngT (4843.47 Hz r=0.977297 in 6 cubes, 26 corners)"
+    },
+    "paravowel-a-zero-1": {
+      "hz": 695.88,
+      "r": 0.941651,
+      "source": "ParaVowel A scaffold, damped control zero 1; measured at AEParLPVow corner 0 S1; 4462.00 Hz r=0.685592 and 3355.74 Hz r=0.866239 each recur in 4 cubes"
+    },
+    "paravowel-a-zero-2": {
+      "hz": 1020.13,
+      "r": 0.918468,
+      "source": "ParaVowel A scaffold, damped control zero 2; measured at AEParLPVow corner 0 S2; 4462.00 Hz r=0.685592 and 3355.74 Hz r=0.866239 each recur in 4 cubes"
+    },
+    "paravowel-a-zero-3": {
+      "hz": 2726.32,
+      "r": 0.901374,
+      "source": "ParaVowel A scaffold, damped control zero 3; measured at AEParLPVow corner 0 S3; 4462.00 Hz r=0.685592 and 3355.74 Hz r=0.866239 each recur in 4 cubes"
+    },
+    "paravowel-a-zero-4": {
+      "hz": 3355.74,
+      "r": 0.866239,
+      "source": "ParaVowel A scaffold, damped control zero 4; measured at AEParLPVow corner 0 S4; 4462.00 Hz r=0.685592 and 3355.74 Hz r=0.866239 each recur in 4 cubes"
+    },
+    "paravowel-a-zero-5": {
+      "hz": 4462.0,
+      "r": 0.685592,
+      "source": "ParaVowel A scaffold, damped control zero 5; measured at AEParLPVow corner 0 S5; 4462.00 Hz r=0.685592 and 3355.74 Hz r=0.866239 each recur in 4 cubes"
+    },
+    "vocal-comb-pole-1": {
+      "hz": 538.68,
+      "r": 0.69536,
+      "source": "Vocal Cube corner 1 S1 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-pole-2": {
+      "hz": 388.47,
+      "r": 0.999298,
+      "source": "Vocal Cube corner 1 S2 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-pole-3": {
+      "hz": 321.72,
+      "r": 0.99942,
+      "source": "Vocal Cube corner 1 S3 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-pole-4": {
+      "hz": 257.42,
+      "r": 0.999527,
+      "source": "Vocal Cube corner 1 S4 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-pole-5": {
+      "hz": 163.24,
+      "r": 0.943849,
+      "source": "Vocal Cube corner 1 S5 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-pole-6": {
+      "hz": 130.5,
+      "r": 0.999763,
+      "source": "Vocal Cube corner 1 S6 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-pole-7": {
+      "hz": 64.35,
+      "r": 0.999882,
+      "source": "Vocal Cube corner 1 S7 pole; the interleaved pole/zero comb, each pole seated at the frequency of the zero one stage above"
+    },
+    "vocal-comb-zero-1": {
+      "hz": 388.47,
+      "r": 0.999084,
+      "source": "Vocal Cube corner 1 S1 zero; the interleaved pole/zero comb"
+    },
+    "vocal-comb-zero-2": {
+      "hz": 321.72,
+      "r": 0.999237,
+      "source": "Vocal Cube corner 1 S2 zero; the interleaved pole/zero comb"
+    },
+    "vocal-comb-zero-3": {
+      "hz": 257.42,
+      "r": 0.99939,
+      "source": "Vocal Cube corner 1 S3 zero; the interleaved pole/zero comb"
+    },
+    "vocal-comb-zero-4": {
+      "hz": 194.24,
+      "r": 0.999649,
+      "source": "Vocal Cube corner 1 S4 zero; the interleaved pole/zero comb"
+    },
+    "vocal-comb-zero-5": {
+      "hz": 130.5,
+      "r": 0.999695,
+      "source": "Vocal Cube corner 1 S5 zero; the interleaved pole/zero comb"
+    },
+    "vocal-comb-zero-6": {
+      "hz": 64.35,
+      "r": 0.999763,
+      "source": "Vocal Cube corner 1 S6 zero; the interleaved pole/zero comb"
+    },
+    "nyquist-trap-zero": {
+      "hz": 18229.49,
+      "r": 0.995606,
+      "source": "the corpus's stopband trap: this zero appears 181 times across the 289 cubes at 12k+; measured at Flange6R.4 corner 3 S1"
+    },
+    "bound-shelf-pole": {
+      "hz": 18000.6,
+      "r": 0.9014,
+      "source": "HF bound shelf, pole half: pole 18001/0.901 paired with zero 18916/0.987 recurs 25 times; measured at Flange2.4 corner 2 S2"
+    },
+    "bound-shelf-zero": {
+      "hz": 18916.1,
+      "r": 0.9868,
+      "source": "HF bound shelf, zero half of the same 25-occurrence pair; measured at Flange2.4 corner 2 S2"
+    },
+    "sub-anchor-pole": {
+      "hz": 300.33,
+      "r": 0.857,
+      "source": "low-end anchor, pole half: the corpus's most reused low root (25 cubes, 35 live stages), here with its deep-sub companion zero; measured at LPFlange.4 corner 5 S1"
+    },
+    "sub-anchor-zero": {
+      "hz": 21.1,
+      "r": 0.984,
+      "source": "low-end anchor, zero half: deep-sub zero under the 300 Hz pole, the pairing seen 6 times; measured at LPFlange.4 corner 5 S1"
+    }
+  }
+}

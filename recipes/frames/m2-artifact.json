@@ -1,0 +1,130 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 9038.114586852404,
+      "pole_r": 0.6459554369480867,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 7457.427763166064,
+      "zero_r": 0.954468908039937
+    },
+    {
+      "pole_hz": 6877.171588823546,
+      "pole_r": 0.9874617693505021,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 24.654917758516902,
+      "zero_r": 0.7566328231186541
+    },
+    {
+      "pole_hz": 1105.18354853635,
+      "pole_r": 0.9968334303747377,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 2339.7893095972763,
+      "zero_r": 0.9734227167073114
+    },
+    {
+      "pole_hz": 3342.886167395181,
+      "pole_r": 0.9910690025905463,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 3921.9278057446195,
+      "zero_r": 0.9922635274398213
+    },
+    {
+      "pole_hz": 4440.71995930393,
+      "pole_r": 0.9110048193802402,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 6005.733550573058,
+      "zero_r": 0.9959141644823387
+    },
+    {
+      "pole_hz": 522.755364484532,
+      "pole_r": 0.9964553790964139,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 920.6186030437902,
+      "zero_r": 0.8295768782736055
+    },
+    {
+      "pole_hz": 2316.0385928994,
+      "pole_r": 0.9976087059160806,
+      "scale_db": -0.2737464863255799,
+      "zero_hz": 21.533203125,
+      "zero_r": 0.8523458279443651
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    }
+  ],
+  "name": "m2-artifact",
+  "provenance": "s1-01-bahn-tense-a · pulled · refit after +6 dB pull at 1 kHz",
+  "schema": "trench-frame-v1",
+  "sr_hz": 44100.0,
+  "words": ""
+}

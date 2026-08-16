@@ -1,0 +1,38 @@
+{
+  "schema": "trench-klattese-v1",
+  "source": "Table A1, 'IPA and Computer-Readable Klattese Transcription Equivalents', appendix of Vitevitch & Luce, Phonotactics on the Web (Behavior Research Methods 2004, p. 487); conventions prepared at MIT by Dennis Klatt, Dave Shipman, Meg Withgott, Lori Lamel. Fetched from sll.ku.edu Klatt_IPA.pdf.",
+  "note": "Documented one-character phoneme names from the Klatt lineage. Candidate naming vocabulary for vocal responses and anchors; adoption into the alphabet is Tyson's call.",
+  "vowels": {
+    "i": { "ipa": "i", "hint": "beet" },
+    "I": { "ipa": "ɪ", "hint": "bit" },
+    "E": { "ipa": "ɛ", "hint": "bet" },
+    "e": { "ipa": "e", "hint": "bait" },
+    "@": { "ipa": "æ", "hint": "bat" },
+    "a": { "ipa": "ɑ", "hint": "father" },
+    "W": { "ipa": "ɑu", "hint": "bout" },
+    "Y": { "ipa": "aɪ", "hint": "bite" },
+    "^": { "ipa": "ʌ", "hint": "but" },
+    "c": { "ipa": "ɔ", "hint": "bought" },
+    "O": { "ipa": "ɔɪ", "hint": "boy" },
+    "o": { "ipa": "o", "hint": "boat" },
+    "U": { "ipa": "ʊ", "hint": "book" },
+    "u": { "ipa": "u", "hint": "boot" },
+    "R": { "ipa": "ɝ", "hint": "bird (stressed)" },
+    "x": { "ipa": "ə", "hint": "about (schwa)" },
+    "|": { "ipa": "ɨ", "hint": "unstressed barred i" },
+    "X": { "ipa": "ɚ", "hint": "butter (unstressed r-schwa)" }
+  },
+  "consonants": {
+    "stops": { "p": "p", "t": "t", "k": "k", "b": "b", "d": "d", "g": "g" },
+    "affricates": { "C": "tʃ", "J": "dʒ" },
+    "sibilant_fricatives": { "s": "s", "S": "ʃ", "z": "z", "Z": "ʒ" },
+    "nonsibilant_fricatives": { "f": "f", "T": "θ", "v": "v", "D": "ð", "h": "h" },
+    "nasals": { "n": "n", "m": "m", "G": "ŋ" },
+    "syllabic": { "N": "n̩", "M": "m̩", "L": "l̩" },
+    "glides": { "l": "l", "r": "ɹ", "w": "w", "y": "j" }
+  },
+  "r_colored": {
+    "ar": "aardvark", "cr": "horse", "or": "hoarse", "@r": "hairy/Mary",
+    "Er": "herring/merry", "Ir": "fear", "Ur": "tour", "Yr": "fire", "Wr": "hour"
+  }
+}

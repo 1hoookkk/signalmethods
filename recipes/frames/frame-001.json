@@ -1,0 +1,130 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 9320.857109375025,
+      "pole_r": 0.9752921424801871,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 346.74154910095376,
+      "zero_r": 0.9354388148709607
+    },
+    {
+      "pole_hz": 890.7217904017269,
+      "pole_r": 0.9792891621904093,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 1113.2221181282405,
+      "zero_r": 0.9458208214916753
+    },
+    {
+      "pole_hz": 1569.5775405292059,
+      "pole_r": 0.9772926957588467,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 2014.4494901673877,
+      "zero_r": 0.9601670564892275
+    },
+    {
+      "pole_hz": 2348.033378825453,
+      "pole_r": 0.9969450062054321,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 2971.2815971155155,
+      "zero_r": 0.9722835945255858
+    },
+    {
+      "pole_hz": 4606.882179817498,
+      "pole_r": 0.9478835774330029,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 7921.931672591212,
+      "zero_r": 0.7501220603800091
+    },
+    {
+      "pole_hz": 199.43001054257383,
+      "pole_r": 0.9911777434404976,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 6396.329727172856,
+      "zero_r": 0.9999981485290077
+    },
+    {
+      "pole_hz": 16000.0,
+      "pole_r": 0.5,
+      "scale_db": -4.291696606933468,
+      "zero_hz": 16000.0,
+      "zero_r": 0.5
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    }
+  ],
+  "name": "frame-001",
+  "provenance": "fit of ref/presets/P2k_013_talking_hedz.bin c0 · rms 0.00 dB",
+  "schema": "trench-frame-v1",
+  "sr_hz": 39062.5,
+  "words": ""
+}

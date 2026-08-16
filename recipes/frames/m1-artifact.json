@@ -1,0 +1,133 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 8784.780402199634,
+      "pole_r": 0.6419507071392296,
+      "scale_db": -0.3036769829028698,
+      "zero_hz": 7457.427763166064,
+      "zero_r": 0.9567389100324735
+    },
+    {
+      "pole_hz": 6877.171588823546,
+      "pole_r": 0.987170037093298,
+      "scale_db": -0.29527503480430894,
+      "zero_hz": 29.961823716573196,
+      "zero_r": 0.7641274158810932
+    },
+    {
+      "pole_hz": 1117.2182083359958,
+      "pole_r": 0.9961336801684704,
+      "scale_db": -0.29527503480430894,
+      "zero_hz": 2371.680836655674,
+      "zero_r": 0.966549998407027
+    },
+    {
+      "pole_hz": 3324.8326548626596,
+      "pole_r": 0.9911449471281195,
+      "scale_db": -0.29527503480430894,
+      "zero_hz": 3932.5612307530305,
+      "zero_r": 0.9931737294847689
+    },
+    {
+      "pole_hz": 4345.564487730055,
+      "pole_r": 0.9163691485690092,
+      "scale_db": -0.29527503480430894,
+      "zero_hz": 6005.733550573058,
+      "zero_r": 0.9959477834049363
+    },
+    {
+      "pole_hz": 517.1242505955261,
+      "pole_r": 0.9967479695882756,
+      "scale_db": -0.29527503480430894,
+      "zero_hz": 1246.7528497853468,
+      "zero_r": 0.9181639797176728
+    },
+    {
+      "pole_hz": 2312.905254143051,
+      "pole_r": 0.9972514810746969,
+      "scale_db": -0.29527503480430894,
+      "zero_hz": 90.67983025293755,
+      "zero_r": 0.8413192764766408
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": false,
+      "zone": null
+    },
+    {
+      "freedom": [
+        false,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": [
+        795.855223543117,
+        1559.876238144509
+      ]
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    }
+  ],
+  "name": "m1-artifact",
+  "provenance": "fit of s1-01-bahn-tense-a-vvtf-measured.txt under lane locks",
+  "schema": "trench-frame-v1",
+  "sr_hz": 44100.0,
+  "words": ""
+}
