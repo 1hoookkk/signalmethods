@@ -1,5 +1,5 @@
 [workspace]
-members = ["trench-core", "author", "editor"]
+members = ["trench-core", "author", "author-server"]
 resolver = "2"
 
 [profile.dev]

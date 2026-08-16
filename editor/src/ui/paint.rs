@@ -1,163 +1,163 @@
-use eframe::egui::{Align2, Color32, FontId, Painter, Pos2, Rect, Shape, Stroke};
-
+use eframe::egui::{Align2, Color32, FontId, Id, Painter, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 use crate::ui::theme;
 
-pub const FREQ_LO: f64 = 40.0;
-pub const FREQ_HI: f64 = 16_000.0;
+// ============================================================================
+// CUSTOM MOTIF / EDA PAINTER UTILITIES (ZERO DEFAULT WIDGETS)
+// ============================================================================
 
-pub fn log_x(hz: f64, rect: Rect) -> f32 {
-    let t = (hz.max(FREQ_LO) / FREQ_LO).log2() / (FREQ_HI / FREQ_LO).log2();
-    rect.left() + (t.clamp(0.0, 1.0) as f32) * rect.width()
+/// 3D Raised Bevel Panel (Motif Button / Chrome Header)
+pub fn raised(painter: &Painter, rect: Rect) -> Rect {
+    painter.rect_filled(rect, 0.0, theme::CHROME);
+    painter.line_segment([rect.left_top(), rect.right_top()], Stroke::new(1.5, theme::BEVEL_HI));
+    painter.line_segment([rect.left_top(), rect.left_bottom()], Stroke::new(1.5, theme::BEVEL_HI));
+    painter.line_segment([rect.right_top(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_LO));
+    painter.line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_LO));
+    rect.shrink(2.0)
 }
 
+/// 3D Sunken Bevel Panel (Deep Engineering Well / Inset Canvas)
+pub fn sunken(painter: &Painter, rect: Rect) -> Rect {
+    painter.rect_filled(rect, 0.0, theme::WELL_BG);
+    painter.line_segment([rect.left_top(), rect.right_top()], Stroke::new(1.5, theme::BEVEL_LO));
+    painter.line_segment([rect.left_top(), rect.left_bottom()], Stroke::new(1.5, theme::BEVEL_LO));
+    painter.line_segment([rect.right_top(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_HI));
+    painter.line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_HI));
+    rect.shrink(2.0)
+}
+
+/// Tactile Motif Button
+pub fn motif_button(
+    ui: &mut Ui,
+    painter: &Painter,
+    rect: Rect,
+    id: Id,
+    text: &str,
+    active: bool,
+) -> bool {
+    let resp = ui.interact(rect, id, Sense::click());
+    let pressed = resp.is_pointer_button_down_on() || active;
+
+    if pressed {
+        // Sunken pressed state
+        painter.rect_filled(rect, 0.0, theme::PANEL_BG);
+        painter.line_segment([rect.left_top(), rect.right_top()], Stroke::new(1.5, theme::BEVEL_LO));
+        painter.line_segment([rect.left_top(), rect.left_bottom()], Stroke::new(1.5, theme::BEVEL_LO));
+        painter.line_segment([rect.right_top(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_HI));
+        painter.line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_HI));
+    } else {
+        // Raised unpressed state
+        painter.rect_filled(rect, 0.0, theme::CHROME);
+        painter.line_segment([rect.left_top(), rect.right_top()], Stroke::new(1.5, theme::BEVEL_HI));
+        painter.line_segment([rect.left_top(), rect.left_bottom()], Stroke::new(1.5, theme::BEVEL_HI));
+        painter.line_segment([rect.right_top(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_LO));
+        painter.line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.5, theme::BEVEL_LO));
+    }
+
+    let text_pos = if pressed {
+        rect.center() + Vec2::new(1.0, 1.0)
+    } else {
+        rect.center()
+    };
+
+    painter.text(
+        text_pos,
+        Align2::CENTER_CENTER,
+        text,
+        FontId::monospace(9.5),
+        if active { theme::TITLEBAR } else { Color32::BLACK },
+    );
+
+    resp.clicked()
+}
+
+/// Logarithmic Frequency Axis Mapping: [40 Hz .. 16 kHz] -> Screen X
+pub fn log_x(hz: f64, rect: Rect) -> f32 {
+    let min_f = 40.0f64;
+    let max_f = 16_000.0f64;
+    let norm = ((hz.max(min_f).min(max_f) / min_f).ln() / (max_f / min_f).ln()) as f32;
+    rect.left() + norm * rect.width()
+}
+
+/// Screen X -> Logarithmic Frequency Hz
 pub fn hz_at_x(x: f32, rect: Rect) -> f64 {
     let t = ((x - rect.left()) / rect.width()).clamp(0.0, 1.0) as f64;
-    FREQ_LO * (FREQ_HI / FREQ_LO).powf(t)
+    40.0 * (16_000.0 / 40.0f64).powf(t)
 }
 
+/// Decibel Axis Mapping: [lo_db .. hi_db] -> Screen Y
 pub fn db_y(db: f64, rect: Rect, lo: f64, hi: f64) -> f32 {
-    let t = ((db - lo) / (hi - lo)).clamp(0.0, 1.0) as f32;
-    rect.bottom() - t * rect.height()
+    let norm = ((db - lo) / (hi - lo)).clamp(0.0, 1.0) as f32;
+    rect.bottom() - norm * rect.height()
 }
 
-pub fn thin_curve(painter: &Painter, points: &[Pos2], color: Color32, width: f32) {
-    if points.len() < 2 {
-        return;
-    }
-    painter.add(Shape::line(points.to_vec(), Stroke::new(width, color)));
-}
+/// High-Precision Engineering Graticule Grid
+pub fn draw_graticule(painter: &Painter, rect: Rect, lo_db: f64, hi_db: f64) {
+    // 1. Frequency Vertical Grid Lines
+    let freqs = [100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0, 10000.0];
+    for &f in &freqs {
+        let x = log_x(f, rect);
+        let is_major = (f == 1000.0) || (f == 100.0) || (f == 10000.0);
+        let col = if is_major { theme::GRATICULE_HI } else { theme::GRATICULE_DIM };
+        painter.line_segment([Pos2::new(x, rect.top()), Pos2::new(x, rect.bottom())], Stroke::new(1.0, col));
 
-pub fn x3_trace(
-    painter: &Painter,
-    well: Rect,
-    lo: f64,
-    hi: f64,
-    color: Color32,
-    sample: &dyn Fn(f64) -> f64,
-) {
-    let bins = (well.width().round() as usize).max(192);
-    let n = bins * 4;
-    let mut raw: Vec<(f32, f32, f32)> = Vec::with_capacity(bins);
-    for b in 0..bins {
-        let mut peak = f64::NAN;
-        for k in 0..4 {
-            let i = b * 4 + k;
-            let frac = i as f64 / (n - 1) as f64;
-            let f = FREQ_LO * (FREQ_HI / FREQ_LO).powf(frac);
-            let db = sample(f);
-            if db.is_nan() {
-                continue;
-            }
-            if peak.is_nan() || db.abs() > peak.abs() {
-                peak = db;
-            }
-        }
-        if peak.is_nan() {
-            continue;
-        }
-        let yt = ((hi - peak) / (hi - lo)).clamp(-0.25, 1.25);
-        let x_raw = well.left() + (b as f32 / (bins - 1) as f32) * well.width();
-        raw.push((
-            x_raw,
-            x_raw.floor() + 0.5,
-            well.top() + yt as f32 * well.height(),
-        ));
-    }
-    let count = raw.len();
-    if count < 2 {
-        return;
-    }
-    let mut pts: Vec<Pos2> = Vec::with_capacity(count);
-    for i in 0..count {
-        let before = raw[i.saturating_sub(1)].2;
-        let after = raw[(i + 1).min(count - 1)].2;
-        let (x_raw, x_lock, y_raw) = raw[i];
-        if (after - before).abs() < 0.15 {
-            pts.push(Pos2::new(x_lock, y_raw.floor() + 0.5));
+        // Frequency labels at bottom
+        let label = if f >= 1000.0 {
+            format!("{:.0}k", f / 1000.0)
         } else {
-            pts.push(Pos2::new(x_raw, y_raw));
-        }
-    }
-    painter.add(Shape::line(pts, Stroke::new(1.1, color)));
-}
-
-pub fn label(painter: &Painter, pos: Pos2, anchor: Align2, text: &str, size: f32, color: Color32) {
-    painter.text(pos, anchor, text, FontId::monospace(size), color);
-}
-
-fn edge(painter: &Painter, rect: Rect, tl: Color32, br: Color32) {
-    painter.line_segment([rect.left_top(), rect.right_top()], Stroke::new(1.0, tl));
-    painter.line_segment([rect.left_top(), rect.left_bottom()], Stroke::new(1.0, tl));
-    painter.line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.0, br));
-    painter.line_segment([rect.right_top(), rect.right_bottom()], Stroke::new(1.0, br));
-}
-
-pub fn sunken(painter: &Painter, rect: Rect) -> Rect {
-    edge(painter, rect, theme::CHROME_DEEP, theme::CHROME_LT);
-    edge(painter, rect.shrink(1.0), theme::CHROME_DK, theme::CHROME);
-    rect.shrink(2.0)
-}
-
-pub fn raised(painter: &Painter, rect: Rect) -> Rect {
-    edge(painter, rect, theme::CHROME_LT, theme::CHROME_DEEP);
-    edge(painter, rect.shrink(1.0), theme::CHROME, theme::CHROME_DK);
-    rect.shrink(2.0)
-}
-
-pub fn field(painter: &Painter, rect: Rect) -> Rect {
-    let inner = sunken(painter, rect);
-    painter.rect_filled(inner, 0.0, theme::FIELD);
-    inner
-}
-
-pub fn well(painter: &Painter, rect: Rect) -> Rect {
-    let inner = sunken(painter, rect);
-    painter.rect_filled(inner, 0.0, theme::WELL);
-    inner
-}
-
-pub const BANNER_H: f32 = 22.0;
-
-pub fn banner(painter: &Painter, rect: Rect, title: &str, tag: &str) -> Rect {
-    let inner = raised(painter, rect);
-    painter.rect_filled(inner, 0.0, theme::TITLEBAR);
-    label(
-        painter,
-        Pos2::new(inner.center().x, inner.center().y),
-        Align2::CENTER_CENTER,
-        title,
-        theme::TITLE,
-        theme::CHROME_LT,
-    );
-    label(
-        painter,
-        Pos2::new(inner.right() - 5.0, inner.center().y),
-        Align2::RIGHT_CENTER,
-        tag,
-        theme::SMALL,
-        theme::faded(theme::CHROME_LT, 170),
-    );
-    inner
-}
-
-pub fn group(painter: &Painter, rect: Rect, title: &str) -> Rect {
-    edge(painter, rect, theme::CHROME_DK, theme::CHROME_LT);
-    edge(painter, rect.shrink(1.0), theme::CHROME_LT, theme::CHROME_DK);
-    if !title.is_empty() {
-        let w = title.len() as f32 * 6.4 + 10.0;
-        let tr = Rect::from_min_size(
-            Pos2::new(rect.left() + 8.0, rect.top() - 6.0),
-            eframe::egui::vec2(w, 12.0),
-        );
-        painter.rect_filled(tr, 0.0, theme::CHROME);
-        label(
-            painter,
-            tr.center(),
-            Align2::CENTER_CENTER,
-            title,
-            theme::SMALL,
-            theme::INK_DIM,
+            format!("{:.0}", f)
+        };
+        painter.text(
+            Pos2::new(x, rect.bottom() - 3.0),
+            Align2::CENTER_BOTTOM,
+            label,
+            FontId::monospace(7.5),
+            theme::TEXT_DIM,
         );
     }
-    rect.shrink(2.0)
+
+    // 2. Decibel Horizontal Grid Lines
+    let mut db_step = (hi_db / 10.0).floor() * 10.0;
+    while db_step >= lo_db {
+        let y = db_y(db_step, rect, lo_db, hi_db);
+        let is_zero = db_step == 0.0;
+        let col = if is_zero { theme::GRATICULE_HI } else { theme::GRATICULE_DIM };
+        painter.line_segment([Pos2::new(rect.left(), y), Pos2::new(rect.right(), y)], Stroke::new(1.0, col));
+
+        // Decibel label at left
+        painter.text(
+            Pos2::new(rect.left() + 3.0, y - 2.0),
+            Align2::LEFT_BOTTOM,
+            format!("{:+.0}dB", db_step),
+            FontId::monospace(7.5),
+            theme::TEXT_DIM,
+        );
+        db_step -= 10.0;
+    }
+}
+
+/// Continuous Response Curve Trace
+pub fn draw_curve<F>(
+    painter: &Painter,
+    rect: Rect,
+    lo_db: f64,
+    hi_db: f64,
+    color: Color32,
+    stroke_width: f32,
+    eval: &F,
+) where
+    F: Fn(f64) -> f64,
+{
+    let num_pts = 160;
+    let mut pts = Vec::with_capacity(num_pts);
+    for i in 0..num_pts {
+        let t = i as f64 / (num_pts - 1) as f64;
+        let hz = 40.0 * (16_000.0 / 40.0f64).powf(t);
+        let db = eval(hz);
+        let x = rect.left() + (t as f32) * rect.width();
+        let y = db_y(db, rect, lo_db, hi_db);
+        pts.push(Pos2::new(x, y));
+    }
+    if pts.len() >= 2 {
+        painter.add(eframe::egui::Shape::line(pts, Stroke::new(stroke_width, color)));
+    }
 }

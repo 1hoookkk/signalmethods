@@ -10,10 +10,12 @@ pub struct Services {
 
 impl Services {
     pub fn new() -> Self {
+        let mut audio = audio::Audio::new();
+        audio.ensure_stream();
         Self {
             repository: repository::Repository::new(),
             jobs: jobs::Jobs::new(),
-            audio: audio::Audio::new(),
+            audio,
         }
     }
 }

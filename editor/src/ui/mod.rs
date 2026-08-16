@@ -1,9 +1,5 @@
 pub mod app;
-pub mod field_home;
+pub mod oled;
 pub mod paint;
-pub mod response;
-pub mod sections_case;
-pub mod inspector;
-pub mod navigator;
 pub mod theme;
-pub mod transport;
+pub mod workstation;

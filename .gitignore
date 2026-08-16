@@ -21,6 +21,19 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Source corpora and plots (multi-GB, kept on disk only)
+/plots/
+/plotdata/
+/recipes/holy_sources/
+/recipes/vocal/
+/recipes/hrtf/
+/recipes/modal/
+/recipes/measured_objects/
+/recipes/08_clean_instruments/
+
+# Stale build artifact
+/Trench Editor.exe
+
 # Local configuration and secrets
 .env
 .env.*

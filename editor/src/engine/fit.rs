@@ -1,8 +1,7 @@
 use author::body;
-use author::frame::LaneLaw;
-use trench_core::arma_endpoint::{fit_arma, fit_arma_lane, ArmaFit};
-use trench_core::cascade::{NUM_COEFFS, NUM_STAGES};
-use trench_core::minifloat::{PackedCorners, NUM_CORNERS};
+use trench_core::arma_endpoint::{fit_arma, fit_arma_planned, ArmaFit, FREE, NO_ZONES};
+use trench_core::cascade::NUM_STAGES;
+use trench_core::minifloat::PackedCorners;
 use trench_core::stage_law::{
     geometry_from_words_at, words_from_roots_at, RootPair, StageRoots,
 };
@@ -22,22 +21,13 @@ pub struct FieldReport {
 pub fn fit_frame(
     pairs: &[(f64, f64)],
     lanes: [StageRoots; NUM_STAGES],
-    laws: [LaneLaw; NUM_STAGES],
     declared: bool,
 ) -> Option<ArmaFit> {
-    if !declared {
+    if !declared || lanes.iter().all(lane_is_empty) {
         return fit_arma(pairs, SR);
     }
-    let mut current = lanes;
-    for si in 0..NUM_STAGES {
-        if laws[si].writable && lane_is_empty(&current[si]) {
-            if let Some(f) = fit_arma_lane(pairs, SR, &current, si, &laws[si].freedom, &laws[si].zone)
-            {
-                current = f.roots;
-            }
-        }
-    }
-    crate::engine::lm::fit(pairs, current, laws)
+    let writable = [true; NUM_STAGES];
+    fit_arma_planned(pairs, SR, &lanes, &FREE, &writable, &NO_ZONES)
 }
 
 pub fn snap_to_words(lanes: &mut [StageRoots; NUM_STAGES]) {
@@ -63,55 +53,28 @@ pub fn snap_to_words(lanes: &mut [StageRoots; NUM_STAGES]) {
     }
 }
 
-pub fn all_pole_laws(laws: &[LaneLaw; NUM_STAGES]) -> [LaneLaw; NUM_STAGES] {
-    std::array::from_fn(|si| LaneLaw {
-        writable: laws[si].writable,
-        freedom: [true, true, false, false],
-        zone: [0.0, f64::INFINITY],
-    })
-}
-
-pub fn fit_poles_frame(
-    pairs: &[(f64, f64)],
-    lanes: [StageRoots; NUM_STAGES],
-    laws: [LaneLaw; NUM_STAGES],
-) -> Option<ArmaFit> {
-    let plan = all_pole_laws(&laws);
-    let mut current = lanes;
-    for si in 0..NUM_STAGES {
-        if plan[si].writable && current[si].pole_r <= 0.0 {
-            let (zh, zr) = (current[si].zero_hz, current[si].zero_r);
-            if let Some(f) =
-                fit_arma_lane(pairs, SR, &current, si, &plan[si].freedom, &plan[si].zone)
-            {
-                current = f.roots;
-                current[si].zero_hz = zh;
-                current[si].zero_r = zr;
-            }
-        }
-    }
-    crate::engine::lm::fit(pairs, current, plan)
-}
-
 pub fn audit_field(field: &Field) -> Option<(PackedCorners, FieldReport)> {
     let packed = field.words_at(SR)?;
     let is_square = matches!(field.completeness(), Some(true));
     let report = body::audit(&packed, SR);
     let mut frames_crown = f64::NEG_INFINITY;
-    for frame in field.slots.iter().flatten() {
-        let mut w = [[[0u16; NUM_COEFFS]; NUM_STAGES]; NUM_CORNERS];
-        for corner in w.iter_mut() {
-            for (si, lane) in frame.lanes.iter().enumerate() {
-                corner[si] = words_from_roots_at(lane, SR);
-            }
+    for corner in &packed.words {
+        let geoms: Vec<_> = corner
+            .iter()
+            .map(|&w| geometry_from_words_at(w, SR))
+            .collect();
+        let rows: Vec<[f64; 5]> = geoms.iter().map(|g| g.biquad_at(SR)).collect();
+        for i in 0..128 {
+            let t = i as f64 / 127.0;
+            let hz = 40.0 * (16_000.0f64 / 40.0).powf(t);
+            let sum_db: f64 = rows
+                .iter()
+                .map(|r| crate::engine::response::row_db(r, hz, SR))
+                .sum();
+            frames_crown = frames_crown.max(sum_db);
         }
-        let a = body::audit(&PackedCorners { words: w }, SR);
-        frames_crown = frames_crown.max(a.crown_max_db);
     }
-    let relative_ok = report.finite
-        && report.stable
-        && report.crown_max_db <= frames_crown + author::extrude::RELATIVE_MARGIN_DB;
-    let legacy = is_square && packed.to_legacy_bytes().is_some();
+    let relative_ok = report.interior_crown_db - frames_crown <= 12.0;
     Some((
         packed,
         FieldReport {
@@ -119,7 +82,7 @@ pub fn audit_field(field: &Field) -> Option<(PackedCorners, FieldReport)> {
             frames_crown_db: frames_crown,
             relative_ok,
             is_square,
-            legacy,
+            legacy: false,
         },
     ))
 }

@@ -29,18 +29,19 @@ what is proven here, and what was removed.
 
 ## The pipeline
 
-`Trench Editor.exe` at the repository root is the workstation — double-click
-it. The surface is custom-painted and flows like the topology: the corner
-field (draggable PC pucks inside the data ellipsoid, refit on release) and the
-ride square (hold to hear at the pointer, wheel for Z, right-click to mark,
-middle-click to write the body) sit above the cascade itself — IN through
-S1..S7 to OUT as per-section curves at the live ride point, the signal-so-far
-row beneath it, and the whole response at the bottom with the corner-target
-ghost, a live spectrum of the audition audio, and the audit verdict. The
-roots view is the documented log-polar mapping laid flat — resonance in dB
-(R' = 20·log10(1/(1−R))) over log frequency, the encoder ceiling drawn as a
-line, the traveling null at the top edge — and it is an authoring surface:
-roots drag in those coordinates, cords show the pairing.
+The workstation is the browser app: `cargo run --release -p author-server`
+serves it at http://127.0.0.1:8787 (the server roots itself at the repo by
+finding `recipes/vocal/dvtd` above the cwd or exe; the library dock reads
+`recipes/`, bodies from `recipes/hero`). The surface keeps the topology's
+flow as docks: LIBRARY, the cascade S1..S7 as per-section curves, RESPONSE,
+ROOTS, CORNERS, the RIDE pad (audition through the parity-tested worklet —
+`workstation/parity.html` and `author-server/src/parity.rs` hold the vectors),
+and the audit VERDICT. The roots view is the documented log-polar mapping
+laid flat — resonance in dB (R' = 20·log10(1/(1−R))) over log frequency, the
+encoder ceiling drawn as a line, the traveling null at the top edge — and it
+is an authoring surface. The egui editor is retired: `Trench Editor.exe` at
+the repository root is a stale artifact and the `editor/` crate is out of the
+workspace; the browser workstation is canonical.
 
 The same pipeline runs headless as
 `cargo run --release -p author -- <basis-dir> <out.body>`.
@@ -114,11 +115,39 @@ Gray order seeded from their neighbour so lanes correspond → packed words →
   compression near the threshold — US10514883's runtime radius correction,
   found in the shipping binary — and morph coordinates slew through a
   one-pole filter (α ≈ 0.0109), the patent's click smoothing. Record
-  layout: 12-byte name + 32-byte header (freq/morph/xform offsets and
-  ranges, default distortion, ModeFlags, a .4-planar control bit) + 8
-  corners × 36 packed bytes; the corner unpacker is at 0x080382FC, cubes
-  resident in flash at 0x08008000 + 332n. Earlier mode-dispatch and
-  designer-record readings of the payload were superseded by this layout.
+  layout (fourth pass, decoded from the unpacker disassembly at 0x080382FC
+  and verified against the manual's filter descriptions): 12-byte name +
+  320-byte payload — no header. The payload is 232 contiguous 11-bit fields
+  (MSB-first within little-endian u32s): seven 44-byte stage blocks, each
+  4 params × 8 corners in param-major order [pole angle, pole radius, zero
+  angle, zero radius], then 8 per-corner cascade gains and 8 spare bits
+  (bit 0 of the last byte is a runtime mode flag). A stored field is the
+  top 11 bits (4-bit exponent + 7-bit mantissa) of the 15-bit runtime code;
+  the unpacker refills the lost low 4 mantissa bits with 0xF. Decode:
+  θ = ((M|0x800)<<E)·f32(π/2^27); R = 1 − denorm(M,E)·0x32800800f (field 0
+  → R exactly 1.0, field 2047 → R = 0); gain = denorm(M,E)·0x338007FFf
+  (1787 ≈ unity, 1535 = −12 dB). Interpolation is trilinear on the 15-bit
+  codes as signed Q15, decode after. Corner index: bit0 = Transform2,
+  bit1 = Morph, bit2 = Frequency — LPFlange.4's corners match its manual
+  entry exactly at the 39,062.5 Hz datum (octave notches 49–1554 Hz,
+  morph-max 11.8–18.5 kHz, freq-track +2 octaves). 54 of 109 ".4" cubes and
+  28 full cubes hold the null corner across the t=0 plane; unused planes
+  may carry leftover real data (Null Cube's odd corners are a mild filter).
+  AllPoleDst2 stores two exact unit-circle poles — the one deliberate
+  breach of stability-by-construction, tamed by the runtime clamp. All 289
+  records decode cleanly under this law: ref/morpheus/cubes_decoded.json
+  (`dev/decode_cubes_complete.py`). All 289 are imported as native 560-byte
+  bodies at ref/morpheus/bodies/ (`author --bin import_morpheus`; axes
+  Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly across active
+  sections; junk planes carried verbatim). The import nulls: re-encode
+  idempotent, worst stage-coefficient error 3.3e-4, scale within 0.001 dB;
+  roots at ~0 Hz with real radius are E-mu's DC-side shelf roots — real-axis
+  pairs, same lesson as the v2 recipes. 243 of 289 exceed the safety gates
+  (import_census.tsv) — more evidence on the open gates-versus-factory
+  verdict; Morpheus leaned on runtime clamping the gates don't model.
+  Earlier mode-dispatch, designer-record,
+  and 32-byte-header readings of the payload were superseded by this
+  layout.
   The transfer audio itself is verified here: biphase mark at 6 kbaud,
   _VCB1 at byte 749, 289 records of 332 bytes at 1090+332n, names in the
   first 12 bytes.
@@ -172,8 +201,15 @@ conjugate `{hz, r}`, real `{pair}`, or `"@name"` from `recipes/alphabet.json`;
 a zero may ride its pole at `interval_st`) plus moves per axis (M/Q/T:
 `pole_st`, `zero_st`, `pole_r_to`, `zero_r_to`) — the four factory moves.
 Corners are derived; a lane may instead carry verbatim `corners` (the
-lossless escape hatch). Unresolved `@names` fail loudly; the alphabet ships
-empty. All 51 factory presets round-trip bit-exact through the design form
+lossless escape hatch). Unresolved `@names` fail loudly. The alphabet
+carries 73 measured letters mined from the Morpheus cube corpus (bell
+ladders, the octave notch ladder with its lowpass pole ladder, the Be-Ye
+and Uhrrrah all-pole vowels, the ParaVowel A formant/control-zero scaffold,
+the Vocal Cube comb, and the corpus's three structural roots — the idle
+pole `[1909,2015,0,2047]` filling 1,124 stages across 160 cubes, the off
+zero, and the 18.2 kHz top-shelf pole); every anchor cites its source
+cube/corner inline, and the letters survive encode/decode at 0.21 cents /
+3.1e-5 worst error. All 51 factory presets round-trip bit-exact through the design form
 (`design_null_check.rs`). Note: several factory objects exceed the audit
 gates (TalkingHedz crown 43.5 dB, parity 37.2) — the gated writer refuses
 them; the gates versus factory practice is an open verdict.
