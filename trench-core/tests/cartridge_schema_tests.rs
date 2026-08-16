@@ -86,7 +86,6 @@ const KEYFRAMES_STUB: &str = r#"
         {"label":"M100_Q100","boost":1.0,"packedWords":[[57343,65535,57343,65535,57343],[57343,65535,57343,65535,57343],[57343,65535,57343,65535,57343],[57343,65535,57343,65535,57343],[57343,65535,57343,65535,57343],[57343,65535,57343,65535,57343]]}
       ]"#;
 
-/// Measurement-fit spatial profile accepted by the retained Rust loader.
 fn canonical_spatial_profile_block() -> &'static str {
     r#""spatial_profile": {
         "azimuth": 0.5235987755982988,
@@ -132,13 +131,11 @@ fn cartridge_with_typed_spatial_profile_parses() {
     assert_eq!(sp.distance, 1.0);
     assert_eq!(sp.elevation, 0.0);
 
-    // ITD / ILD: spot-check first and last coefficients.
     assert!((sp.itd_coeffs[0] - 3578.764_6_f32).abs() < 1e-2);
     assert!((sp.itd_coeffs[5] - -173.118_67_f32).abs() < 1e-2);
     assert!((sp.ild_coeffs[0] - 6.819_731_5_f32).abs() < 1e-5);
     assert!((sp.ild_coeffs[5] - 8.819_077e-5_f32).abs() < 1e-8);
 
-    // Band: l.low[0] and r.low[3] are mirrored across channels.
     assert!((sp.band_coeffs.l.low[0] - -72.211_726_f32).abs() < 1e-3);
     assert!((sp.band_coeffs.l.low[3] - -2.942_365_f32).abs() < 1e-5);
     assert!((sp.band_coeffs.r.low[3] - 2.942_365_f32).abs() < 1e-5);
@@ -147,8 +144,6 @@ fn cartridge_with_typed_spatial_profile_parses() {
 
 #[test]
 fn spatial_profile_missing_required_field_is_rejected() {
-    // Drop `elevation` from a valid block — serde must refuse the cartridge
-    // rather than silently substituting a default.
     let bad = r#""spatial_profile": {
         "azimuth": 0.0,
         "distance": 1.0,
@@ -165,7 +160,6 @@ fn spatial_profile_missing_required_field_is_rejected() {
 
 #[test]
 fn spatial_profile_wrong_array_length_is_rejected() {
-    // itd_coeffs is 5 elements instead of 6.
     let bad = r#""spatial_profile": {
         "azimuth": 0.0,
         "distance": 1.0,

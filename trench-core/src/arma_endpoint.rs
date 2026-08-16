@@ -1,12 +1,3 @@
-//! Source-agnostic ARMA endpoint authoring.
-//!
-//! Where `praat_endpoint` needs Praat's F1–F5 lane identity and can therefore
-//! only measure throats, this module fits any measured magnitude spectrum:
-//! six pole/zero sections are placed and refined jointly against the target,
-//! with no lane or vowel assumptions.  Poles grab the resonances, zeros grab
-//! the anti-resonances.  Roots are validated and packed by `stage_law`, so a
-//! root the words cannot hold is never proposed.
-
 use crate::cascade::{NUM_COEFFS, NUM_STAGES};
 use crate::minifloat::stage_words_to_biquad;
 use crate::praat_endpoint::{biquad_db, optimal_gain_and_rms, rms_with_embedded_gain, stage_db};
@@ -14,16 +5,33 @@ use crate::stage_law::{
     authoring_limits_at, validate_stage_roots_at, words_from_roots_at, RootValidity, StageRoots,
 };
 
-/// Fallback dominant-root radius when the residual is too featureless to
-/// measure a width; the paired root always starts loose.
 const NO_PINS: [bool; NUM_STAGES] = [false; NUM_STAGES];
+
+pub type Freedom = [[bool; 4]; NUM_STAGES];
+
+pub const FREE: Freedom = [[true; 4]; NUM_STAGES];
+
+pub type Zones = [[f64; 2]; NUM_STAGES];
+
+pub const NO_ZONES: Zones = [[0.0, f64::INFINITY]; NUM_STAGES];
+
+pub type Watch<'a> = &'a mut dyn FnMut(&[StageRoots; NUM_STAGES], f64);
+
+fn unwatched() -> impl FnMut(&[StageRoots; NUM_STAGES], f64) {
+    |_, _| {}
+}
+
+fn freedom_from_pins(pole: &[bool; NUM_STAGES], zero: &[bool; NUM_STAGES]) -> Freedom {
+    let mut f = FREE;
+    for section in 0..NUM_STAGES {
+        f[section][0] = !pole[section];
+        f[section][2] = !zero[section];
+    }
+    f
+}
 const SEED_DOMINANT_R: f64 = 0.90;
 const SEED_PAIRED_R: f64 = 0.50;
-/// A refined section that moves the fit by less than this is not material and
-/// stays identity, keeping the body's unused sections clean.
 const SECTION_MIN_RMS_IMPROVEMENT_DB: f64 = 0.05;
-/// Reseat sweeps: how many times every section may be pulled out and reseeded
-/// at the strongest remaining residual to escape a greedy local minimum.
 const RESEAT_SWEEPS: usize = 6;
 
 #[derive(Clone, Debug)]
@@ -35,18 +43,14 @@ pub struct ArmaFit {
     pub sections_used: usize,
 }
 
-/// Coordinate descent over all four root placements of the editable sections.
-/// Frequencies walk in octaves, radii walk multiplicatively in (1 - r) so the
-/// resolution matches how sharply a root near the circle shapes the response.
-/// Every trial is judged by `validate_stage_roots_at`, so the search space is
-/// exactly the encoder's.
 fn optimise_roots(
     roots: &mut [StageRoots; NUM_STAGES],
     editable_sections: &[usize],
     target: &[(f64, f64)],
     sample_rate_hz: f64,
-    pinned_pole_hz: &[bool; NUM_STAGES],
-    pinned_zero_hz: &[bool; NUM_STAGES],
+    freedom: &Freedom,
+    zones: &Zones,
+    watch: Watch,
 ) -> f64 {
     let limits = authoring_limits_at(sample_rate_hz);
     let freq_ceiling = limits.display_freq_max_hz.min(limits.authoring_freq_max_hz);
@@ -61,10 +65,7 @@ fn optimise_roots(
             passes += 1;
             for &section in editable_sections {
                 for parameter in 0..4 {
-                    if parameter == 0 && pinned_pole_hz[section] {
-                        continue;
-                    }
-                    if parameter == 2 && pinned_zero_hz[section] {
+                    if !freedom[section][parameter] {
                         continue;
                     }
                     for direction in [-1.0f64, 1.0] {
@@ -72,9 +73,14 @@ fn optimise_roots(
                         let mut trial = before;
                         match parameter {
                             0 => {
+                                let lo = limits.display_freq_min_hz.max(zones[section][0]);
+                                let hi = freq_ceiling.min(zones[section][1]);
+                                if hi < lo {
+                                    continue;
+                                }
                                 trial.pole_hz = (before.pole_hz
                                     * 2.0f64.powf(direction * frequency_step_octaves))
-                                .clamp(limits.display_freq_min_hz, freq_ceiling);
+                                .clamp(lo, hi);
                             }
                             1 => {
                                 let distance = (1.0 - before.pole_r).max(1e-6);
@@ -82,9 +88,14 @@ fn optimise_roots(
                                     .clamp(0.0, 1.0);
                             }
                             2 => {
+                                let lo = limits.display_freq_min_hz.max(zones[section][0]);
+                                let hi = freq_ceiling.min(zones[section][1]);
+                                if hi < lo {
+                                    continue;
+                                }
                                 trial.zero_hz = (before.zero_hz
                                     * 2.0f64.powf(direction * frequency_step_octaves))
-                                .clamp(limits.display_freq_min_hz, freq_ceiling);
+                                .clamp(lo, hi);
                             }
                             _ => {
                                 let distance = (1.0 - before.zero_r).max(1e-6);
@@ -100,6 +111,7 @@ fn optimise_roots(
                         if rms + 1e-12 < best_rms {
                             best_rms = rms;
                             changed = true;
+                            watch(roots, best_rms);
                         } else {
                             roots[section] = before;
                         }
@@ -111,7 +123,6 @@ fn optimise_roots(
     best_rms
 }
 
-/// The gain-corrected residual (target minus fit) at every target point.
 fn residual_curve(
     roots: &[StageRoots; NUM_STAGES],
     target: &[(f64, f64)],
@@ -131,9 +142,6 @@ fn residual_curve(
         .collect()
 }
 
-/// Seed one section at the strongest residual.  The dominant root's radius is
-/// estimated from the residual's half-height width around that point, so a
-/// sharp resonance starts sharp and descent only has to trim it.
 fn seed_from_residual(
     roots: &[StageRoots; NUM_STAGES],
     target: &[(f64, f64)],
@@ -149,7 +157,6 @@ fn seed_from_residual(
     seed_at_index(&residual, peak, sample_rate_hz)
 }
 
-/// Seed one section at a chosen residual point (radius from half-height width).
 fn seed_at_index(residual: &[(f64, f64)], peak: usize, sample_rate_hz: f64) -> StageRoots {
     let (peak_hz, peak_db) = residual[peak];
     let half = peak_db.abs() * 0.5;
@@ -186,23 +193,10 @@ fn seed_at_index(residual: &[(f64, f64)], peak: usize, sample_rate_hz: f64) -> S
     }
 }
 
-/// Fit six sections to a measured magnitude target: sections are seeded one at
-/// a time at the strongest residual (pole-dominant above the fit, zero-dominant
-/// below it), each addition followed by joint refinement of everything placed
-/// so far, then reseat sweeps let any section escape a greedy local minimum.
-/// Sections that do not materially improve the fit stay identity.
 pub fn fit_arma(target: &[(f64, f64)], sample_rate_hz: f64) -> Option<ArmaFit> {
     fit_arma_pinned(target, sample_rate_hz, &[])
 }
 
-/// `fit_arma` with pole frequencies locked to measured resonances.
-///
-/// Each entry of `pinned_hz` claims one section: its pole frequency is seeded
-/// there and never moves — descent may only shape that pole's radius, its
-/// zero, and scale. Remaining sections are fitted freely as in `fit_arma`.
-/// Serial-cascade honesty is preserved: every trial is still judged on the
-/// whole-cascade response, the caller just supplies the ground truth for
-/// where the resonances sit.
 pub fn fit_arma_pinned(
     target: &[(f64, f64)],
     sample_rate_hz: f64,
@@ -211,19 +205,27 @@ pub fn fit_arma_pinned(
     fit_arma_pinned_pairs(target, sample_rate_hz, pinned_hz, &[])
 }
 
-/// `fit_arma_pinned` with the zero frequency of a section frozen as well.
-///
-/// `pinned_zero_hz[s]`, when finite and positive, claims section `s`'s zero:
-/// it is seeded there and descent may not move it. A zero pin without a pole
-/// pin at the same index is allowed. Entries that are 0.0 or non-finite leave
-/// that section's zero free. This is the caller stating the whole geometry —
-/// where the resonance sits and where its notch sits — and leaving only the
-/// radii and gains to the fitter.
 pub fn fit_arma_pinned_pairs(
     target: &[(f64, f64)],
     sample_rate_hz: f64,
     pinned_hz: &[f64],
     pinned_zero_hz: &[f64],
+) -> Option<ArmaFit> {
+    fit_arma_pinned_pairs_watched(
+        target,
+        sample_rate_hz,
+        pinned_hz,
+        pinned_zero_hz,
+        &mut unwatched(),
+    )
+}
+
+pub fn fit_arma_pinned_pairs_watched(
+    target: &[(f64, f64)],
+    sample_rate_hz: f64,
+    pinned_hz: &[f64],
+    pinned_zero_hz: &[f64],
+    watch: Watch,
 ) -> Option<ArmaFit> {
     if target.len() < 32
         || target
@@ -257,8 +259,6 @@ pub fn fit_arma_pinned_pairs(
     let mut active: Vec<usize> = Vec::new();
     let mut best_rms = optimal_gain_and_rms(&roots, target, sample_rate_hz).1;
 
-    // Pinned sections first: seed each at its measured frequency (radius from
-    // the residual's width there), then joint-refine with the pole Hz frozen.
     let limits = authoring_limits_at(sample_rate_hz);
     let freq_ceiling = limits.display_freq_max_hz.min(limits.authoring_freq_max_hz);
     for (section, &hz) in pinned_hz.iter().enumerate() {
@@ -277,7 +277,6 @@ pub fn fit_arma_pinned_pairs(
         } else {
             hz
         };
-        // a pinned section exists to hold a resonance: pole-dominant always
         if seed.pole_r < seed.zero_r {
             std::mem::swap(&mut seed.pole_r, &mut seed.zero_r);
         }
@@ -296,8 +295,9 @@ pub fn fit_arma_pinned_pairs(
             &active,
             target,
             sample_rate_hz,
-            &pinned,
-            &pinned_zero,
+            &freedom_from_pins(&pinned, &pinned_zero),
+            &NO_ZONES,
+            watch,
         );
     }
 
@@ -313,8 +313,6 @@ pub fn fit_arma_pinned_pairs(
                 break;
             }
         }
-        // A seed can dig a hole descent cannot climb out of; the flipped
-        // orientation (zero-dominant vs pole-dominant) often can.
         let flipped = StageRoots {
             pole_r: seed.zero_r,
             zero_r: seed.pole_r,
@@ -338,8 +336,9 @@ pub fn fit_arma_pinned_pairs(
                 &active,
                 target,
                 sample_rate_hz,
-                &pinned,
-                &pinned_zero,
+                &freedom_from_pins(&pinned, &pinned_zero),
+                &NO_ZONES,
+                watch,
             );
             if before_rms - rms >= SECTION_MIN_RMS_IMPROVEMENT_DB {
                 best_rms = rms;
@@ -359,9 +358,6 @@ pub fn fit_arma_pinned_pairs(
         return None;
     }
 
-    // Reseat: a greedily placed section can be stranded once later sections
-    // reshape the residual.  Pull each one out, reseed it at the strongest
-    // remaining residual, refit jointly, and keep whichever cascade is better.
     for _ in 0..RESEAT_SWEEPS {
         let mut improved = false;
         for &section in active.clone().iter() {
@@ -389,8 +385,9 @@ pub fn fit_arma_pinned_pairs(
                 &active,
                 target,
                 sample_rate_hz,
-                &pinned,
-                &pinned_zero,
+                &freedom_from_pins(&pinned, &pinned_zero),
+                &NO_ZONES,
+                watch,
             );
             if rms + 1e-9 < before_rms {
                 best_rms = rms;
@@ -404,9 +401,6 @@ pub fn fit_arma_pinned_pairs(
         }
     }
 
-    // Measured targets keep their tilt, so the optimal gain can exceed what a
-    // single SCALE word holds (COMBINE_K).  Spread it evenly across the active
-    // sections; SCALE is pure broadband level and cannot change contrast.
     let (gain_db, _) = optimal_gain_and_rms(&roots, target, sample_rate_hz);
     let per_section = 10.0f64.powf(gain_db / 20.0 / active.len() as f64);
     for &section in &active {
@@ -450,18 +444,187 @@ pub fn fit_arma_pinned_pairs(
     })
 }
 
-/// Warm-start refinement: descend from `seed` instead of seeding from
-/// residuals.  Every active seed section keeps its lane slot — no seeding, no
-/// reseat sweeps, no lane reassignment — so correspondence with the other
-/// corners survives by construction.  `pinned_pole[s]` freezes that lane's
-/// pole frequency.  This is the SCULPT fast path: the seed is the corner's
-/// current geometry and the target is the bent curve, so descent starts one
-/// brush-stroke from the answer.
 pub fn fit_arma_refine(
     target: &[(f64, f64)],
     sample_rate_hz: f64,
     seed: &[StageRoots; NUM_STAGES],
     pinned_pole: &[bool; NUM_STAGES],
+) -> Option<ArmaFit> {
+    let mut freedom = FREE;
+    for section in 0..NUM_STAGES {
+        freedom[section][0] = !pinned_pole[section];
+    }
+    fit_arma_planned(target, sample_rate_hz, seed, &freedom, &[true; NUM_STAGES], &NO_ZONES)
+}
+
+pub fn fit_arma_lane(
+    target: &[(f64, f64)],
+    sample_rate_hz: f64,
+    seed: &[StageRoots; NUM_STAGES],
+    lane: usize,
+    freedom_row: &[bool; 4],
+    zone: &[f64; 2],
+) -> Option<ArmaFit> {
+    if lane >= NUM_STAGES
+        || target.len() < 32
+        || target
+            .iter()
+            .any(|(frequency, db)| !frequency.is_finite() || *frequency <= 0.0 || !db.is_finite())
+        || !sample_rate_hz.is_finite()
+        || sample_rate_hz <= 0.0
+    {
+        return None;
+    }
+    let limits = authoring_limits_at(sample_rate_hz);
+    let freq_ceiling = limits.display_freq_max_hz.min(limits.authoring_freq_max_hz);
+    let lo = limits.display_freq_min_hz.max(zone[0]);
+    let hi = freq_ceiling.min(zone[1]);
+    if hi < lo {
+        return None;
+    }
+    let mut cleared = *seed;
+    cleared[lane] = StageRoots::IDENTITY;
+    let residual = residual_curve(&cleared, target, sample_rate_hz);
+    let peak = residual
+        .iter()
+        .enumerate()
+        .filter(|(_, (frequency, _))| (lo..=hi).contains(frequency))
+        .max_by(|a, b| a.1 .1.abs().total_cmp(&b.1 .1.abs()))
+        .map(|(index, _)| index)?;
+    let mut fresh = seed_at_index(&residual, peak, sample_rate_hz);
+    fresh.pole_hz = fresh.pole_hz.clamp(lo, hi);
+    fresh.zero_hz = fresh.zero_hz.clamp(lo, hi);
+    let tight = {
+        let mut t = fresh;
+        if t.pole_r >= t.zero_r {
+            t.pole_r = t.pole_r.max(SEED_DOMINANT_R);
+        } else {
+            t.zero_r = t.zero_r.max(SEED_DOMINANT_R);
+        }
+        t
+    };
+    let flipped = StageRoots {
+        pole_r: fresh.zero_r,
+        zero_r: fresh.pole_r,
+        ..fresh
+    };
+
+    let banded: Vec<(f64, f64)>;
+    let fit_target: &[(f64, f64)] = if zone[1].is_finite() {
+        banded = target
+            .iter()
+            .copied()
+            .filter(|(frequency, _)| (lo..=hi).contains(frequency))
+            .collect();
+        if banded.len() >= 8 {
+            &banded
+        } else {
+            target
+        }
+    } else {
+        target
+    };
+
+    let mut freedom = FREE;
+    freedom[lane] = *freedom_row;
+    let mut zones = NO_ZONES;
+    zones[lane] = *zone;
+    let mut best: Option<([StageRoots; NUM_STAGES], f64)> = None;
+    for candidate in [fresh, tight, flipped] {
+        let mut candidate = candidate;
+        if validate_stage_roots_at(&candidate, sample_rate_hz) != RootValidity::Ok {
+            candidate.pole_r = candidate.pole_r.min(SEED_DOMINANT_R);
+            candidate.zero_r = candidate.zero_r.min(SEED_DOMINANT_R);
+            if validate_stage_roots_at(&candidate, sample_rate_hz) != RootValidity::Ok {
+                continue;
+            }
+        }
+        let mut trial = cleared;
+        trial[lane] = candidate;
+        let rms = optimise_roots(
+            &mut trial,
+            &[lane],
+            fit_target,
+            sample_rate_hz,
+            &freedom,
+            &zones,
+            &mut unwatched(),
+        );
+        if best.as_ref().is_none_or(|(_, b)| rms < *b) {
+            best = Some((trial, rms));
+        }
+    }
+    let (mut roots, _) = best?;
+
+    let (gain_db, _) = optimal_gain_and_rms(&roots, target, sample_rate_hz);
+    roots[lane].scale = 10.0f64.powf(gain_db / 20.0).min(limits.scale_max);
+    if validate_stage_roots_at(&roots[lane], sample_rate_hz) != RootValidity::Ok {
+        return None;
+    }
+    let target_rms_db = rms_with_embedded_gain(&roots, target, sample_rate_hz);
+    let mut words = [[0u16; NUM_COEFFS]; NUM_STAGES];
+    let mut sections_used = 0;
+    for section in 0..NUM_STAGES {
+        if validate_stage_roots_at(&roots[section], sample_rate_hz) != RootValidity::Ok {
+            return None;
+        }
+        if roots[section].pole_r > 0.0 || roots[section].zero_r > 0.0 {
+            sections_used += 1;
+        }
+        words[section] = words_from_roots_at(&roots[section], sample_rate_hz);
+    }
+    let intended_packed_rms_db = (target
+        .iter()
+        .map(|&(frequency, _)| {
+            let intended = roots
+                .iter()
+                .map(|stage| stage_db(stage, frequency, sample_rate_hz))
+                .sum::<f64>();
+            let packed = words
+                .iter()
+                .map(|stage| biquad_db(&stage_words_to_biquad(*stage), frequency, sample_rate_hz))
+                .sum::<f64>();
+            (intended - packed).powi(2)
+        })
+        .sum::<f64>()
+        / target.len() as f64)
+        .sqrt();
+    Some(ArmaFit {
+        roots,
+        words,
+        target_rms_db,
+        intended_packed_rms_db,
+        sections_used,
+    })
+}
+
+pub fn fit_arma_planned(
+    target: &[(f64, f64)],
+    sample_rate_hz: f64,
+    seed: &[StageRoots; NUM_STAGES],
+    freedom: &Freedom,
+    writable: &[bool; NUM_STAGES],
+    zones: &Zones,
+) -> Option<ArmaFit> {
+    fit_arma_planned_watched(
+        target,
+        sample_rate_hz,
+        seed,
+        freedom,
+        writable,
+        zones,
+        &mut unwatched(),
+    )
+}
+
+pub fn fit_arma_planned_watched(
+    target: &[(f64, f64)],
+    sample_rate_hz: f64,
+    seed: &[StageRoots; NUM_STAGES],
+    freedom: &Freedom,
+    writable: &[bool; NUM_STAGES],
+    zones: &Zones,
+    watch: Watch,
 ) -> Option<ArmaFit> {
     if target.len() < 32
         || target
@@ -475,7 +638,9 @@ pub fn fit_arma_refine(
     let mut roots = *seed;
     let mut active: Vec<usize> = Vec::new();
     for section in 0..NUM_STAGES {
-        // strip embedded gain: it is re-spread after the descent
+        if !writable[section] {
+            continue;
+        }
         roots[section].scale = 1.0;
         let is_identity = roots[section].pole_r <= 0.0 && roots[section].zero_r <= 0.0;
         if is_identity {
@@ -490,14 +655,7 @@ pub fn fit_arma_refine(
     if active.is_empty() {
         return None;
     }
-    optimise_roots(
-        &mut roots,
-        &active,
-        target,
-        sample_rate_hz,
-        pinned_pole,
-        &NO_PINS,
-    );
+    optimise_roots(&mut roots, &active, target, sample_rate_hz, freedom, zones, watch);
 
     let (gain_db, _) = optimal_gain_and_rms(&roots, target, sample_rate_hz);
     let per_section = 10.0f64.powf(gain_db / 20.0 / active.len() as f64);
@@ -570,8 +728,6 @@ mod tests {
             })
             .collect();
         let fit = fit_arma(&flat, 48_000.0);
-        // A constant offset is pure gain: either no material section survives
-        // (None) or whatever survives fits to well under the seed threshold.
         if let Some(fit) = fit {
             assert!(fit.target_rms_db < 0.1, "RMS was {}", fit.target_rms_db);
         }
@@ -606,7 +762,6 @@ mod tests {
         let fit = fit_arma(&target, sample_rate).unwrap();
         assert!(fit.target_rms_db < 0.5, "RMS was {}", fit.target_rms_db);
         assert!(fit.intended_packed_rms_db < 0.25);
-        // Every known resonance must be claimed by some fitted pole.
         for known_hz in [500.0, 1_500.0, 2_600.0] {
             let claimed = fit
                 .roots
@@ -651,8 +806,6 @@ mod tests {
             scale: 1.0,
         };
         let target = synthetic_target(&known, sample_rate);
-        // pin deliberately close-but-not-equal to the truth: the fit must hold
-        // the pinned Hz (ground truth wins), not drift to the error minimum
         let pins = [710.0, 2_080.0];
         let fit = fit_arma_pinned(&target, sample_rate, &pins).unwrap();
         for (section, pin) in pins.iter().enumerate() {
@@ -664,6 +817,115 @@ mod tests {
             assert!(fit.roots[section].pole_r > 0.5, "pinned pole went limp");
         }
         assert!(fit.target_rms_db < 1.5, "RMS was {}", fit.target_rms_db);
+    }
+
+    #[test]
+    fn sequential_lane_fits_claim_jobs_one_at_a_time() {
+        let sample_rate = 48_000.0;
+        let mut known = [StageRoots::IDENTITY; NUM_STAGES];
+        known[0] = StageRoots {
+            pole_hz: 700.0,
+            pole_r: 0.97,
+            zero_hz: 500.0,
+            zero_r: 0.7,
+            scale: 1.0,
+        };
+        known[1] = StageRoots {
+            pole_hz: 2_100.0,
+            pole_r: 0.96,
+            zero_hz: 2_600.0,
+            zero_r: 0.7,
+            scale: 1.0,
+        };
+        let target = synthetic_target(&known, sample_rate);
+        let empty = [StageRoots::IDENTITY; NUM_STAGES];
+        let open = [true; 4];
+        let wide = [0.0, f64::INFINITY];
+        let step1 = fit_arma_lane(&target, sample_rate, &empty, 0, &open, &wide).unwrap();
+        assert_eq!(step1.sections_used, 1);
+        let step2 = fit_arma_lane(&target, sample_rate, &step1.roots, 1, &open, &wide).unwrap();
+        assert_eq!(step2.sections_used, 2);
+        let (a, b) = (step2.roots[0], step1.roots[0]);
+        assert!(
+            a.pole_hz == b.pole_hz
+                && a.pole_r == b.pole_r
+                && a.zero_hz == b.zero_hz
+                && a.zero_r == b.zero_r,
+            "fitting lane 1 disturbed lane 0"
+        );
+        let mut writable = [false; NUM_STAGES];
+        writable[0] = true;
+        writable[1] = true;
+        let polished =
+            fit_arma_planned(&target, sample_rate, &step2.roots, &FREE, &writable, &NO_ZONES)
+                .unwrap();
+        for known_hz in [700.0, 2_100.0] {
+            let claimed = polished.roots[..2]
+                .iter()
+                .any(|s| s.pole_r > 0.9 && (s.pole_hz / known_hz).log2().abs() < 0.3);
+            assert!(claimed, "no lane claimed the {known_hz} Hz job after polish");
+        }
+        assert!(
+            polished.target_rms_db < 1.5,
+            "RMS was {}",
+            polished.target_rms_db
+        );
+    }
+
+    #[test]
+    fn a_corridor_forces_the_lane_to_its_fenced_job() {
+        let sample_rate = 48_000.0;
+        let mut known = [StageRoots::IDENTITY; NUM_STAGES];
+        known[0] = StageRoots {
+            pole_hz: 700.0,
+            pole_r: 0.97,
+            zero_hz: 500.0,
+            zero_r: 0.7,
+            scale: 1.0,
+        };
+        known[1] = StageRoots {
+            pole_hz: 2_100.0,
+            pole_r: 0.96,
+            zero_hz: 2_600.0,
+            zero_r: 0.7,
+            scale: 1.0,
+        };
+        let target = synthetic_target(&known, sample_rate);
+        let empty = [StageRoots::IDENTITY; NUM_STAGES];
+        let open = [true; 4];
+        let fence = [1_500.0, 3_000.0];
+        let wide = [0.0, f64::INFINITY];
+        let step1 = fit_arma_lane(&target, sample_rate, &empty, 0, &open, &fence).unwrap();
+        assert!(
+            (fence[0]..=fence[1]).contains(&step1.roots[0].pole_hz),
+            "the pole left its corridor: {}",
+            step1.roots[0].pole_hz
+        );
+        let step2 = fit_arma_lane(&target, sample_rate, &step1.roots, 1, &open, &wide).unwrap();
+        let redeal1 = fit_arma_lane(&target, sample_rate, &step2.roots, 0, &open, &fence).unwrap();
+        let redeal2 = fit_arma_lane(&target, sample_rate, &redeal1.roots, 1, &open, &wide).unwrap();
+        let mut writable = [false; NUM_STAGES];
+        writable[0] = true;
+        writable[1] = true;
+        let mut zones = NO_ZONES;
+        zones[0] = fence;
+        let polished =
+            fit_arma_planned(&target, sample_rate, &redeal2.roots, &FREE, &writable, &zones)
+                .unwrap();
+        let fenced = polished.roots[0].pole_hz;
+        assert!(
+            (fence[0]..=fence[1]).contains(&fenced),
+            "the fenced pole escaped after polish: {fenced}"
+        );
+        assert!(
+            (fenced / 2_100.0).log2().abs() < 0.4,
+            "the fenced lane missed the in-fence job: {fenced}"
+        );
+        assert!(
+            (polished.roots[1].pole_hz / 700.0).log2().abs() < 0.4,
+            "the open lane missed the out-of-fence job: {}",
+            polished.roots[1].pole_hz
+        );
     }
 
     #[test]

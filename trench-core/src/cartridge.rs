@@ -69,14 +69,7 @@ struct CartridgeJson {
 pub struct Cartridge {
     pub name: String,
     pub boosts: [f64; NUM_CORNERS],
-    /// Words compiled at `compiled_rate` — what the runtime interpolates.
     pub packed: PackedCorners,
-    /// The interchange words as authored. When `datum_rate` is positive the
-    /// words are Hz-anchored at that rate and `packed` is always re-derived
-    /// from them at the runtime rate — the factory law: the E-mu binary ships
-    /// one bank per host rate and those banks preserve Hz (rate_bank_law_audit
-    /// 2026-07-29, median 0.1 cent). `datum_rate == 0` marks a verbatim
-    /// carrier whose theta-space words play as stored at any rate.
     pub datum_packed: PackedCorners,
     pub datum_rate: f64,
     compiled_rate: f64,
@@ -103,12 +96,9 @@ impl Cartridge {
             spatial_profile,
         }
     }
-    /// Recompiles the datum words at `rate`. Always derived from the datum,
-    /// so repeated rate changes never accumulate drift. No allocation — safe
-    /// on the install path.
     pub fn compile_at(&mut self, rate: f64) {
         if self.datum_rate <= 0.0 {
-            return; // verbatim carrier: the stored words ARE the filter
+            return;
         }
         if !rate.is_finite() || rate <= 0.0 || rate == self.compiled_rate {
             return;
@@ -128,14 +118,9 @@ impl Cartridge {
     pub fn compiled_rate(&self) -> f64 {
         self.compiled_rate
     }
-    /// ROM/heritage interchange: Hz-anchored at the proven 44,100 datum, the
-    /// same law the E-mu factory rate banks obey (rate_bank_law_audit,
-    /// 2026-07-29).
     pub fn from_body_bytes(name: &str, bytes: &[u8], boost: f64) -> Result<Self, String> {
         Self::from_body_bytes_at(name, bytes, boost, crate::compiler::DEFAULT_AUTHORING_SR)
     }
-    /// A positive `datum_rate` declares the words Hz-anchored at that rate;
-    /// zero declares a verbatim carrier.
     pub fn from_body_bytes_at(
         name: &str,
         bytes: &[u8],

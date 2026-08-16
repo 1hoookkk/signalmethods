@@ -4,6 +4,7 @@ pub mod cartridge;
 pub mod cascade;
 pub mod compiler;
 pub mod minifloat;
+pub mod morph;
 pub mod praat_endpoint;
 pub mod response;
 pub mod stage_law;

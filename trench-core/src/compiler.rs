@@ -1,7 +1,4 @@
 use crate::minifloat::encode;
-/// Compatibility default for legacy non-`_at` authoring helpers.
-///
-/// Runtime and native authoring paths pass the actual rate explicitly.
 pub const DEFAULT_AUTHORING_SR: f64 = 44_100.0;
 pub const TAU: f64 = core::f64::consts::PI * 2.0;
 pub const MAX_RADIUS: f64 = 0.999999999999999;

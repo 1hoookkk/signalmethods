@@ -1,25 +1,8 @@
-//! Packed-domain interpolation integration tests.
-//!
-//! Tests verify:
-//!   1. lerp_u16 formula matches the C/Python oracle at known scalar values.
-//!   2. decode/encode round-trips are lossless on the minifloat grid.
-//!   3. At (morph=0.5, q=0.5), packed-domain and decoded-float bilinear
-//!      produce different coefficients (proves the two paths diverge).
-//!   4. At all four corner positions, packed recovers corner coefficients
-//!      to within minifloat quantisation error.
-//!
-//! Input data is a synthetic 4-corner body with distinct Q variation so
-//! the two interpolation paths diverge measurably at midpoint.
-
 mod tests {
     use trench_core::cascade::{NUM_COEFFS, NUM_STAGES};
     use trench_core::minifloat::{decode, encode, lerp_u16, LegacyCornerData, PackedCorners};
 
-    // ── synthetic cartridge with Q variation ──────────────────────────
-
     fn synthetic_corners() -> [LegacyCornerData; 4] {
-        // Distinct values at all four corners so packed ≠ decoded-float at midpoint.
-        // Values chosen to be well within minifloat range (0, 1).
         let m0q0: LegacyCornerData = [
             [0.5625, 0.125, 0.25, 0.0625, 0.25],
             [0.4375, 0.0625, 0.125, 0.03125, 0.1875],
@@ -60,8 +43,6 @@ mod tests {
         morph: f64,
         q: f64,
     ) -> LegacyCornerData {
-        // Q-first decoded-float path (current Cartridge::interpolate order).
-        // Replicating the exact formula from cartridge.rs for parity check.
         let mut result = [[0.0f64; NUM_COEFFS]; trench_core::minifloat::LEGACY_STAGES];
         for si in 0..trench_core::minifloat::LEGACY_STAGES {
             for ki in 0..NUM_COEFFS {
@@ -73,37 +54,24 @@ mod tests {
         result
     }
 
-    // ── scalar lerp_u16 oracle values (hand-computed) ─────────────────
-
     #[test]
     fn lerp_u16_known_scalar_values() {
-        // a=0x1000, b=0x3000, frac=0.5 → midpoint
-        // diff=8192, 8192*0.5=4096 (exact f32), delta_i16=4096, result=0x2000
         assert_eq!(lerp_u16(0x1000, 0x3000, 0.5), 0x2000);
 
-        // a=0, b=0, any frac → 0
         assert_eq!(lerp_u16(0x0000, 0x0000, 0.75), 0x0000);
 
-        // a=0x0000, b=0xFFFF, frac=1.0 → wrapping
-        // diff=65535, *1.0=65535, as i32=65535, as i16=-1, -1+0=0xFFFF
         assert_eq!(lerp_u16(0x0000, 0xFFFF, 1.0), 0xFFFF);
 
-        // a=0x8000, b=0x8000, any frac → 0x8000
         assert_eq!(lerp_u16(0x8000, 0x8000, 0.333), 0x8000);
 
-        // a=0x4000, b=0xC000, frac=0.25
-        // diff=32768, *0.25=8192.0, delta_i16=8192, result=0x4000+0x2000=0x6000
         assert_eq!(lerp_u16(0x4000, 0xC000, 0.25), 0x6000);
     }
-
-    // ── decode spot checks ─────────────────────────────────────────────
 
     #[test]
     fn decode_boundary_and_denormal() {
         assert_eq!(decode(0x0000), 0.0);
         assert_eq!(decode(0xFFFF), 1.0);
 
-        // Word 0x0001: u=2, e=0, m=2, x=2/4096, d=ldexp(x,-15)=2/4096/32768
         let expected = 2.0 / 4096.0 * (2.0f64).powi(-15);
         let got = decode(0x0001);
         assert!(
@@ -111,7 +79,6 @@ mod tests {
             "decode(0x0001)={got} want {expected}"
         );
 
-        // Word 0x0FFF: u=0x1000, e=1, m=0, x=(0x1000)/8192=4096/8192=0.5, d=ldexp(0.5,-14)
         let expected = 0.5 * (2.0f64).powi(-14);
         let got = decode(0x0FFF);
         assert!(
@@ -135,8 +102,6 @@ mod tests {
         }
     }
 
-    // ── midpoint divergence ────────────────────────────────────────────
-
     #[test]
     fn packed_differs_from_decoded_float_at_midpoint() {
         let corners = synthetic_corners();
@@ -145,8 +110,6 @@ mod tests {
         let p_interp = packed.interpolate(0.5, 0.5, 0.0);
         let f_interp = decoded_float_bilinear(&corners, 0.5, 0.5);
 
-        // At least one coefficient must differ by more than minifloat quantisation.
-        // If they were identical the packed path would be pointless.
         let max_diff = (0..trench_core::minifloat::LEGACY_STAGES)
             .flat_map(|si| (0..NUM_COEFFS).map(move |ki| (si, ki)))
             .map(|(si, ki)| (p_interp[si][ki] - f_interp[si][ki]).abs())
@@ -159,8 +122,6 @@ mod tests {
              quantisation nonlinearity should cause visible divergence. max_diff={max_diff}"
         );
     }
-
-    // ── test diagonal points match the oracle at known positions ───────
 
     #[test]
     fn packed_interp_diagonal_points() {
@@ -178,14 +139,12 @@ mod tests {
 
         for &(morph, q, label) in test_points {
             let result = packed.interpolate(morph, q, 0.0);
-            // Validate all returned coefficients are finite and non-negative
             for si in 0..NUM_STAGES {
                 for ki in 0..NUM_COEFFS {
                     assert!(
                         result[si][ki].is_finite(),
                         "{label} stage {si} coeff {ki} is non-finite"
                     );
-                    // c0, c1, c2, c3, c4 are encoded as positive minifloat values
                     assert!(
                         result[si][ki] >= 0.0,
                         "{label} stage {si} coeff {ki} is negative: {}",
@@ -193,7 +152,6 @@ mod tests {
                     );
                 }
             }
-            // Print stage 0 c0 for cross-check against Python oracle
             println!(
                 "{label} morph={morph:.5} q={q:.5}: stage0 [c0={:.6} c1={:.6} c2={:.6} c3={:.6} c4={:.6}]",
                 result[0][0], result[0][1], result[0][2], result[0][3], result[0][4]
@@ -201,18 +159,16 @@ mod tests {
         }
     }
 
-    // ── corner recovery ────────────────────────────────────────────────
-
     #[test]
     fn packed_recovers_corners_within_quantisation() {
         let corners = synthetic_corners();
         let packed = PackedCorners::from_legacy_corner_data(&corners);
 
         let corner_params: [(f32, f32, usize); 4] = [
-            (0.0, 0.0, 0), // M0_Q0
-            (1.0, 0.0, 1), // M100_Q0
-            (0.0, 1.0, 2), // M0_Q100
-            (1.0, 1.0, 3), // M100_Q100
+            (0.0, 0.0, 0),
+            (1.0, 0.0, 1),
+            (0.0, 1.0, 2),
+            (1.0, 1.0, 3),
         ];
 
         for (morph, q, ci) in corner_params {
@@ -221,7 +177,7 @@ mod tests {
                 for ki in 0..NUM_COEFFS {
                     let got = result[si][ki];
                     let want = corners[ci][si][ki];
-                    let tol = 1e-3; // minifloat grid spacing near 0.5 is ~2^-14 ≈ 6e-5
+                    let tol = 1e-3;
                     assert!(
                         (got - want).abs() < tol,
                         "corner {ci} stage {si} coeff {ki}: want {want:.6}, got {got:.6}, diff {:.2e}",
@@ -232,18 +188,13 @@ mod tests {
         }
     }
 
-    // ── order check: morph-first ≠ Q-first at asymmetric point ─────────
-
     #[test]
     fn morph_first_order_matters() {
         let corners = synthetic_corners();
         let packed = PackedCorners::from_legacy_corner_data(&corners);
 
-        // At (0.25, 0.75), morph-first and Q-first give different results
-        // when corners are asymmetric. We verify the packed path matches
-        // our stated morph-first formula, not the Q-first decoded-float path.
         let morph_first = packed.interpolate(0.25, 0.75, 0.0);
-        let q_first = packed.interpolate(0.75, 0.25, 0.0); // swapped — different point
+        let q_first = packed.interpolate(0.75, 0.25, 0.0);
 
         let any_diff = (0..NUM_STAGES)
             .flat_map(|si| (0..NUM_COEFFS).map(move |ki| (si, ki)))

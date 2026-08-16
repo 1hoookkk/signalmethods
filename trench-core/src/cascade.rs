@@ -3,12 +3,8 @@ pub const NUM_COEFFS: usize = 5;
 pub const PASSTHROUGH_COEFFS: [f64; NUM_COEFFS] = [1.0, 0.0, 0.0, 0.0, 0.0];
 pub const BLOCK_SIZE: usize = 32;
 
-/// State-clip floor: the tightest ceiling at GRIT=1.0.
 const CEILING_FLOOR: f64 = 0.05;
 const CEILING_WIDE: f64 = 2.0;
-/// Pole-radius distortion threshold floor — the most sensitive trigger level
-/// at GRIT=1.0.  At GRIT=0 the threshold is high enough that no normal
-/// signal crosses it.
 const DISTORT_THRESH_FLOOR: f64 = 0.02;
 const DISTORT_THRESH_WIDE: f64 = 1.5;
 
@@ -20,13 +16,9 @@ fn grit_state_ceiling(grit: f64) -> f64 {
 #[inline(always)]
 fn grit_distort_threshold(grit: f64) -> f64 {
     let g = grit.clamp(0.0, 1.0);
-    // Exponential taper: threshold drops quickly at low GRIT, slowly at high.
     (DISTORT_THRESH_WIDE - DISTORT_THRESH_FLOOR) * (-4.0 * g).exp() + DISTORT_THRESH_FLOOR
 }
 
-/// Rounded state limit (2026-08-06): the wall becomes a cushion. Same knee law
-/// as SLAM's rounded limit — identity below 0.72·ceiling, tanh-bound to
-/// ±ceiling above — so a driven state compresses instead of flat-topping.
 #[inline(always)]
 fn soft_clamp_ceiling(x: f64, ceiling: f64) -> f64 {
     const KNEE: f64 = 0.72;
@@ -45,8 +37,6 @@ struct BiquadState {
     deltas: [f64; NUM_COEFFS],
     w1: f64,
     w2: f64,
-    /// Previous real output — the Rossum distortion detector reads the n-1
-    /// sample to decide whether to modulate the pole radius.
     y_prev: f64,
 }
 
@@ -66,29 +56,6 @@ impl BiquadState {
             self.deltas[i] = (t - self.coeffs[i]) / ramp_samples;
         }
     }
-    /// Per-section nonlinear processor.
-    ///
-    /// 1. Apply coefficient ramp (per-sample deltas)
-    /// 2. Compute DF-II output: y = b0·x + w1
-    /// 3. Amplitude-dependent pole-radius modulation:
-    ///    if |y_prev| > vt:  R_new = R + R(1-R) · (|y_prev| − vt)
-    /// 4. Compute new DF-II states: w1', w2'
-    /// 5. Saturate states to ±ceiling (recursive nonlinearity)
-    /// 6. Store y_prev = y for next sample's distortion detector
-    ///
-    /// Steps 2, 4, 5 are Rossum, ICMC 1992 fig. 3: extended headroom on the
-    /// accumulator, saturate only the value entering the delays, output tapped
-    /// off the accumulator before the saturate. Those agree with the source.
-    ///
-    /// Step 3 does NOT come from any source and previously claimed a patent it
-    /// is not in. Rossum's pole movement is a *consequence* of step 5, not a
-    /// separate step: "one could either say that the signal had been saturated
-    /// ... or alternatively that the coefficient had been reduced in such a
-    /// manner as to give the same smaller product." Two further departures:
-    /// he describes a shift in the *pitch* of the resonance, while step 3 holds
-    /// cos θ fixed and moves only the radius; and his coefficient is *reduced*,
-    /// while step 3 raises R toward 1. Kept because it is what shipped and the
-    /// ears passed it — see bench/facts.py NONLINEARITY_MATCHES_SOURCE.
     #[inline(always)]
     fn process_sample(&mut self, x: f64, vt: f64, ceiling: f64) -> (f64, bool) {
         self.coeffs[0] += self.deltas[0];
@@ -100,7 +67,6 @@ impl BiquadState {
         let (mut a1, mut a2) = (self.coeffs[3], self.coeffs[4]);
         let (b0, b1, b2) = (self.coeffs[0], self.coeffs[1], self.coeffs[2]);
 
-        // Amplitude-dependent pole-radius modulation (Rossum patent)
         let vg = self.y_prev.abs();
         if vg > vt && a2 > 1.0e-9 {
             let r = a2.sqrt();
@@ -123,8 +89,6 @@ impl BiquadState {
             return (y, true);
         }
 
-        // State saturation (recursive nonlinearity): soft-kneed — the state
-        // compresses toward ±ceiling instead of flat-topping on it.
         let w1_new = b1 * x - a1 * y + self.w2;
         let w2_new = b2 * x - a2 * y;
         self.w1 = soft_clamp_ceiling(w1_new, ceiling);
@@ -151,14 +115,6 @@ pub struct Cascade {
     grit_delta: f32,
     activity: f64,
     instability_detected: bool,
-    /// DEV BYPASS. The state saturation and the pole-radius modulator are on at
-    /// every GRIT setting, including zero: `grit_state_ceiling(0)` is 2.0 and
-    /// `grit_distort_threshold(0)` is ~1.52, and a resonant cascade runs above
-    /// both. Measured 2026-08-13 on the resonant test body: disarming them takes
-    /// the peak from 2.39 to 8.36 at -12 dBFS in - 12 dB of pull from a stage
-    /// every control says is off. This flag makes the cascade a plain linear
-    /// IIR so the filter can be heard with nothing on top of it. Not a preset
-    /// parameter and not automatable: the dev panel's A/B.
     linear: bool,
 }
 
@@ -175,7 +131,6 @@ impl Cascade {
             linear: false,
         }
     }
-    /// DEV BYPASS: run the sections as plain linear biquads (see `linear`).
     pub fn set_linear(&mut self, linear: bool) {
         self.linear = linear;
     }
@@ -188,8 +143,6 @@ impl Cascade {
         self.boost = 1.0;
         self.boost_delta = 0.0;
     }
-    /// Sections past `interpolated` are returned to passthrough, so a shorter
-    /// corner can never leave a previous body's section multiplying the chain.
     pub fn snap_targets(&mut self, interpolated: &[[f64; NUM_COEFFS]]) {
         for (i, stage) in self.stages.iter_mut().enumerate() {
             stage.coeffs = interpolated.get(i).copied().unwrap_or(PASSTHROUGH_COEFFS);
@@ -209,12 +162,9 @@ impl Cascade {
         self.set_grit(grit);
     }
     pub fn set_pole_distortion(&mut self, _grit: f32, _ramp: usize) {
-        // State clipping replaces the separate pole-distortion mechanism.
-        // Both interstage drive and pole distortion now map to GRIT.
         self.set_grit(_grit);
     }
     pub fn set_chew_focus_for_morph(&mut self, _morph: f64, _ramp: usize) {
-        // State clipping applies uniformly to all six stages — no focus.
     }
     pub fn chew_activity(&self) -> f32 {
         self.activity.min(1.0) as f32
@@ -237,9 +187,6 @@ impl Cascade {
     pub fn tick(&mut self, x: f32) -> f32 {
         let mut v = x as f64;
         self.grit = (self.grit + self.grit_delta).clamp(0.0, 1.0);
-        // An infinite ceiling makes soft_clamp_ceiling the identity and an
-        // infinite threshold means the pole-radius modulator never fires, so
-        // `linear` costs one predictable branch per sample and nothing else.
         let (ceiling, vt) = if self.linear {
             (f64::INFINITY, f64::INFINITY)
         } else {
@@ -366,8 +313,6 @@ mod tests {
     }
     #[test]
     fn state_clipping_damps_resonance() {
-        // A resonant pole at r=0.9: a1=-1.6, a2=0.81.  At ceiling=0.1 the
-        // states should be visibly clamped vs the wide-open case.
         let coeffs = [1.0, 0.0, 0.0, -1.6, 0.81];
         let impulse = [1.0_f64, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
@@ -384,7 +329,6 @@ mod tests {
 
         let wide = run(CEILING_WIDE);
         let tight = run(0.1);
-        // The tight-clipped version should have less ringing energy
         let wide_energy: f64 = wide.iter().map(|s| s * s).sum();
         let tight_energy: f64 = tight.iter().map(|s| s * s).sum();
         assert!(tight_energy < wide_energy,
@@ -396,7 +340,6 @@ mod tests {
         let target = [[1.0, 0.0, 0.0, -1.6, 0.81]; NUM_STAGES];
         cascade.snap_targets(&target);
         cascade.set_grit(0.0);
-        // Run a few samples — grit=0 means wide ceiling, no clipping
         for _ in 0..32 {
             let y = cascade.tick(0.5);
             assert!(y.is_finite());
@@ -409,7 +352,6 @@ mod tests {
         let target = [[1.0, 0.0, 0.0, -1.6, 0.81]; NUM_STAGES];
         cascade.snap_targets(&target);
         cascade.set_grit(1.0);
-        // Should still be stable even at max grit
         for _ in 0..64 {
             let y = cascade.tick(0.5);
             assert!(y.is_finite());

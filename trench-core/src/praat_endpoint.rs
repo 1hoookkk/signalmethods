@@ -1,11 +1,3 @@
-//! Praat endpoint authoring.
-//!
-//! Praat owns the measurements: corrected FormantPath lanes and a
-//! pitch-corrected LTAS.  This module owns the deterministic conversion from
-//! those measurements to one legal six-section corner.  It does not create a
-//! second encoder or a second interpolation law; roots are validated and
-//! packed by `stage_law`.
-
 use crate::cascade::{NUM_COEFFS, NUM_STAGES};
 use crate::minifloat::stage_words_to_biquad;
 use crate::stage_law::{
@@ -36,7 +28,6 @@ pub struct EndpointFit {
     pub residual_improvement_db: f64,
 }
 
-/// The exact Praat frequency/bandwidth conversion used by endpoint sections.
 pub fn pole_from_frequency_bandwidth(
     frequency_hz: f64,
     bandwidth_hz: f64,
@@ -87,9 +78,6 @@ fn interpolate_curve(curve: &[(f64, f64)], frequency_hz: f64) -> Option<f64> {
     Some(y0 + t * (y1 - y0))
 }
 
-/// Resample a pitch-corrected LTAS to the repository plot grid and remove only
-/// the fixed broad background: reflected-edge Gaussian smoothing in log2
-/// frequency, exactly one octave FWHM.
 pub fn prepare_pitch_corrected_ltas(source: &[(f64, f64)]) -> Option<[(f64, f64); TARGET_POINTS]> {
     if source.len() < 2
         || source
@@ -358,8 +346,6 @@ pub fn fit_endpoint(
     let (gain_db, _) = optimal_gain_and_rms(&roots, target, sample_rate_hz);
     embed_global_gain(&mut roots, &active, gain_db, sample_rate_hz)?;
     let target_rms_db = rms_with_embedded_gain(&roots, target, sample_rate_hz);
-    // Author the packed rows directly for the runtime rate selected by the
-    // workstation. Loading consumes these words verbatim.
     let mut words = [[0u16; NUM_COEFFS]; NUM_STAGES];
     for section in 0..NUM_STAGES {
         if validate_stage_roots_at(&roots[section], sample_rate_hz) != RootValidity::Ok {

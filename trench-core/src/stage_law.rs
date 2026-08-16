@@ -13,6 +13,24 @@ pub struct StageGeometry {
     pub zero: RootPair,
     pub scale: f64,
 }
+impl StageGeometry {
+    pub const IDENTITY: StageGeometry = StageGeometry {
+        pole: RootPair::Degenerate,
+        zero: RootPair::Degenerate,
+        scale: 1.0,
+    };
+    pub fn biquad_at(&self, sample_rate_hz: f64) -> [f64; 5] {
+        let (zero_p, zero_q) = pair_coefficients_at(self.zero, sample_rate_hz);
+        let (pole_p, pole_q) = pair_coefficients_at(self.pole, sample_rate_hz);
+        [
+            self.scale,
+            self.scale * zero_p,
+            self.scale * zero_q,
+            pole_p,
+            pole_q,
+        ]
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct StageRoots {
     pub pole_hz: f64,
@@ -47,13 +65,9 @@ impl StageRoots {
         ]
     }
 }
-/// The authoring domain. Every field is derived — from the encoder's own
-/// behaviour or from this crate's constants — never declared by a UI.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AuthoringLimits {
     pub sample_rate_hz: f64,
-    /// ARMAdillo display domain: theta = PI/1024 .. PI, i.e. the ten octaves
-    /// below Nyquist.
     pub display_freq_min_hz: f64,
     pub display_freq_max_hz: f64,
     pub authoring_freq_max_hz: f64,
@@ -62,7 +76,6 @@ pub struct AuthoringLimits {
     pub scale_min: f64,
     pub scale_max: f64,
 }
-/// Why a set of authored roots was refused. Values are the FFI contract.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
 pub enum RootValidity {
@@ -75,25 +88,12 @@ pub enum RootValidity {
     ZeroRadius = 6,
     Scale = 7,
 }
-/// The radius a stored radius word actually decodes back to.
 pub fn encoded_radius(r: f64) -> f64 {
     (1.0 - decode(encode(1.0 - r * r))).max(0.0).sqrt()
 }
-/// A radius survives the encoder when it comes back strictly inside the unit
-/// circle. Below that the word collapses to zero and the root lands exactly
-/// on the circle — a different filter from the one that was authored.
-///
-/// This is NOT monotone in `r`. `encode` has a hole immediately below
-/// `1 - r^2 = 2^-15`: those values round to 4096, which overflows the denormal
-/// branch and falls through to an exponent path that bails to zero. Radii
-/// above the hole are representable again. Always test the actual value.
 pub fn radius_survives_encoding(r: f64) -> bool {
     encoded_radius(r) < 1.0
 }
-/// Largest pole radius below which *every* radius is representable — the
-/// lower edge of the encoder's hole. This is the bound to hold a pointer
-/// against; it is not the largest representable radius, because the encoder
-/// is not monotone. Bisected against the real encoder, never typed.
 pub fn max_contiguous_pole_radius() -> f64 {
     let (mut lo, mut hi) = (0.0f64, 1.0f64);
     loop {
@@ -108,7 +108,6 @@ pub fn max_contiguous_pole_radius() -> f64 {
         }
     }
 }
-/// A zero on the unit circle is a legitimate notch, so zeros reach exactly 1.
 pub fn max_encodable_zero_radius() -> f64 {
     1.0
 }
@@ -127,9 +126,6 @@ pub fn authoring_limits_at(sample_rate_hz: f64) -> AuthoringLimits {
         scale_max: COMBINE_K,
     }
 }
-/// The single authority on whether authored roots may be written. A root at
-/// the origin has no angle, so its frequency is not a placement and is not
-/// judged as one.
 pub fn validate_stage_roots(r: &StageRoots) -> RootValidity {
     validate_stage_roots_at(r, DEFAULT_AUTHORING_SR)
 }
@@ -144,13 +140,9 @@ pub fn validate_stage_roots_at(r: &StageRoots, sample_rate_hz: f64) -> RootValid
     if r.scale < lim.scale_min || r.scale > lim.scale_max {
         return RootValidity::Scale;
     }
-    // Test the actual value against the encoder, not against a scalar ceiling:
-    // the encoder has a hole and is not monotone.
     if r.pole_r < 0.0 || !radius_survives_encoding(r.pole_r) {
         return RootValidity::PoleRadius;
     }
-    // A zero may sit exactly on the unit circle; anything else that decodes to
-    // the circle has been altered, not authored.
     if r.zero_r < 0.0
         || r.zero_r > lim.zero_radius_max
         || (r.zero_r != lim.zero_radius_max && !radius_survives_encoding(r.zero_r))
@@ -193,12 +185,6 @@ pub fn words_from_roots_at(r: &StageRoots, sample_rate_hz: f64) -> [u16; 5] {
         encode(c4 / 4.0),
     ]
 }
-/// Re-expresses one stored word row at a new runtime rate. Geometry is the
-/// authority: the row's Hz/radius roots at `from_rate` are re-encoded through
-/// `words_from_roots_at` at `to_rate`. Rows that do not decode to conjugate
-/// (or origin) roots carry authored real-axis geometry, which has no Hz
-/// placement to preserve — those words pass through verbatim, as does an
-/// identical rate.
 pub fn recompile_stage_words(words: [u16; 5], from_rate: f64, to_rate: f64) -> [u16; 5] {
     if from_rate == to_rate {
         return words;
@@ -214,8 +200,11 @@ pub fn recompile_stage_words(words: [u16; 5], from_rate: f64, to_rate: f64) -> [
     }
 }
 pub fn words_from_geometry(g: &StageGeometry) -> [u16; 5] {
-    let (zero_p, zero_q) = pair_coefficients(g.zero);
-    let (pole_p, pole_q) = pair_coefficients(g.pole);
+    words_from_geometry_at(g, DEFAULT_AUTHORING_SR)
+}
+pub fn words_from_geometry_at(g: &StageGeometry, sample_rate_hz: f64) -> [u16; 5] {
+    let (zero_p, zero_q) = pair_coefficients_at(g.zero, sample_rate_hz);
+    let (pole_p, pole_q) = pair_coefficients_at(g.pole, sample_rate_hz);
     [
         encode((zero_p + 1.0 + zero_q) / 4.0),
         encode(1.0 - zero_q),
@@ -223,9 +212,6 @@ pub fn words_from_geometry(g: &StageGeometry) -> [u16; 5] {
         encode(1.0 - pole_q),
         encode(g.scale / 4.0),
     ]
-}
-fn pair_coefficients(pair: RootPair) -> (f64, f64) {
-    pair_coefficients_at(pair, DEFAULT_AUTHORING_SR)
 }
 fn pair_coefficients_at(pair: RootPair, sr: f64) -> (f64, f64) {
     match pair {
@@ -308,9 +294,6 @@ mod authoring_domain {
             !radius_survives_encoding(next),
             "the ceiling is not tight: {next} also survives"
         );
-        // The lower edge of the encoder's hole sits where `1 - r^2` first
-        // rounds to 4096 and overflows the denormal branch: exactly 2^-15.
-        // Pinned so any change to the encoder surfaces here.
         let analytic = (1.0f64 - (2.0f64).powi(-15)).sqrt();
         assert!(
             (r - analytic).abs() <= 4.0 * f64::EPSILON,
@@ -328,11 +311,6 @@ mod authoring_domain {
     }
     #[test]
     fn the_encoder_hole_above_the_contiguous_ceiling_is_refused_not_silently_moved() {
-        // `encode` is not monotone. Immediately above the contiguous ceiling
-        // there is a band whose `1 - r^2` rounds to 4096, overflows the
-        // denormal branch, and collapses to word 0 — putting the pole exactly
-        // on the unit circle. Authoring must refuse it, not accept an altered
-        // filter. Radii beyond the hole are representable again and allowed.
         let ceiling = max_contiguous_pole_radius();
         let in_hole = f64::from_bits(ceiling.to_bits() + 1);
         assert_eq!(
@@ -500,8 +478,6 @@ mod authoring_domain {
     }
     #[test]
     fn a_root_at_the_origin_is_not_judged_on_its_angle() {
-        // r = 0 puts the root at the origin; hz is meaningless there and the
-        // encoder ignores it, so validation must not invent a frequency rule.
         let at_origin = StageRoots {
             pole_hz: 0.0,
             pole_r: 0.0,
@@ -853,4 +829,68 @@ mod tests {
             mismatches.len()
         );
     }
+}
+
+pub const GRID_LOW_BYTE: u16 = 0xFC;
+
+pub fn snap_radius(r: f64) -> f64 {
+    if !(0.0..1.0).contains(&r) {
+        return r;
+    }
+    let mut best = r;
+    let mut err = f64::MAX;
+    for hi in 0..256u16 {
+        let w = (hi << 8) | GRID_LOW_BYTE;
+        let q = 1.0 - decode(w);
+        if q <= 0.0 || q > 1.0 {
+            continue;
+        }
+        let cand = q.sqrt();
+        if cand >= 1.0 {
+            continue;
+        }
+        let d = (cand - r).abs();
+        if d < err {
+            err = d;
+            best = cand;
+        }
+    }
+    best
+}
+
+pub fn snap_frequency(hz: f64, radius: f64, sample_rate_hz: f64) -> f64 {
+    snap_frequency_within(hz, radius, sample_rate_hz, 0.0, f64::INFINITY)
+}
+
+pub fn snap_frequency_within(
+    hz: f64,
+    radius: f64,
+    sample_rate_hz: f64,
+    lo: f64,
+    hi: f64,
+) -> f64 {
+    if radius <= 0.0 || radius >= 1.0 || hz <= 0.0 {
+        return hz;
+    }
+    let c3 = 1.0 - radius * radius;
+    let mut best = hz;
+    let mut err = f64::MAX;
+    for step in 0..256u16 {
+        let w = (step << 8) | GRID_LOW_BYTE;
+        let c2 = 4.0 * decode(w) + c3;
+        let cw = (2.0 - c2) / (2.0 * radius);
+        if !(-1.0..=1.0).contains(&cw) {
+            continue;
+        }
+        let cand = cw.acos() * sample_rate_hz / TAU;
+        if cand < lo || cand > hi {
+            continue;
+        }
+        let d = (cand / hz).log2().abs();
+        if d < err {
+            err = d;
+            best = cand;
+        }
+    }
+    best
 }

@@ -85,8 +85,6 @@ pub const LEGACY_STAGES: usize = 6;
 pub const LEGACY_CORNERS: usize = 4;
 pub const BODY_BYTES: usize = NUM_CORNERS * NUM_STAGES * NUM_COEFFS * 2;
 pub const LEGACY_BODY_BYTES: usize = LEGACY_CORNERS * LEGACY_STAGES * NUM_COEFFS * 2;
-/// Words that decode to biquad [1, 0, 0, 0, 0] with no rounding: the seventh
-/// section of a migrated six-section body multiplies the cascade by exactly 1.
 pub const IDENTITY_STAGE: PackedStage = [0xDFFF, 0xFFFF, 0xDFFF, 0xFFFF, 0xDFFF];
 pub type LegacyCornerData = [[f64; NUM_COEFFS]; LEGACY_STAGES];
 pub fn is_body_len(len: usize) -> bool {
@@ -117,10 +115,6 @@ impl PackedCorners {
         }
         Self { words }
     }
-    /// The compatibility path: six authored sections plus an identity seventh,
-    /// four authored corners duplicated onto the second plane of the third
-    /// axis. Every response is unchanged — the seventh section multiplies by
-    /// exactly 1 and the third axis is flat.
     pub fn from_legacy_corner_data(corners: &[LegacyCornerData; LEGACY_CORNERS]) -> Self {
         let mut words = [[IDENTITY_STAGE; NUM_STAGES]; NUM_CORNERS];
         for ci in 0..LEGACY_CORNERS {
@@ -132,8 +126,6 @@ impl PackedCorners {
         }
         Self { words }
     }
-    /// Same compatibility path as `from_legacy_corner_data`, for tools that
-    /// already hold packed words.
     pub fn from_legacy_words(src: &[[PackedStage; LEGACY_STAGES]; LEGACY_CORNERS]) -> Self {
         let mut words = [[IDENTITY_STAGE; NUM_STAGES]; NUM_CORNERS];
         for ci in 0..LEGACY_CORNERS {
@@ -144,7 +136,6 @@ impl PackedCorners {
         }
         Self { words }
     }
-    /// Reads the legacy 240-byte corner block from the head of `bytes`.
     pub fn from_rom_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
         if bytes.len() < LEGACY_BODY_BYTES {
             return Err("ROM corner block must be at least 240 bytes");
@@ -189,16 +180,11 @@ impl PackedCorners {
             _ => Err("body must be 240 bytes (4 corners × 6 stages) or 560 bytes (8 × 7)"),
         }
     }
-    /// Writes one word into a legacy corner and its twin on the far plane of
-    /// the third axis, so an in-place edit keeps the body legacy-representable.
     pub fn set_legacy_word(&mut self, ci: usize, si: usize, wi: usize, value: u16) {
         debug_assert!(ci < LEGACY_CORNERS && si < LEGACY_STAGES);
         self.words[ci][si][wi] = value;
         self.words[ci + LEGACY_CORNERS][si][wi] = value;
     }
-    /// True when nothing outside the legacy corner block carries information:
-    /// the seventh section is the identity in every corner and the second
-    /// plane of the third axis repeats the first.
     pub fn is_legacy_representable(&self) -> bool {
         for ci in 0..LEGACY_CORNERS {
             for si in LEGACY_STAGES..NUM_STAGES {
@@ -230,8 +216,6 @@ impl PackedCorners {
         }
         Some(bytes)
     }
-    /// The 240-byte interchange body. Panics rather than silently discarding
-    /// a seventh section or a third axis that carries information.
     pub fn to_rom_bytes(&self) -> [u8; LEGACY_BODY_BYTES] {
         self.to_legacy_bytes()
             .expect("body uses the seventh section or the third axis; write 560 native bytes")
@@ -258,19 +242,6 @@ impl PackedCorners {
         }
         result
     }
-    /// Trilinear in encoded word space. Corner index is `m | q<<1 | z<<2`, so
-    /// corners 0..3 keep their legacy (M,Q) meaning and 4..7 are the same four
-    /// on the far plane of the third axis. That matches how E-mu numbers frames
-    /// in the Morpheus manual: 1-based, morph varying fastest, frame 1 the
-    /// all-axes-zero corner, the third axis the "rear" plane.
-    ///
-    /// The axis order below is not a design choice and needs no source.
-    /// Multilinear interpolation is a tensor product, so morph-first and
-    /// Q-first are the same polynomial; over the whole factory corpus exact
-    /// arithmetic agrees to 1.5e-11 words and the only disagreement is the u16
-    /// rounding in `lerp_u16`, at most 2 LSB of 65536. US5170369 claim 6 is the
-    /// interpolation claim and states no order — it claims one interpolating
-    /// variable, not two. See bench/facts.py INTERP_AXIS_ORDER_LSB.
     pub fn interpolate_words(&self, morph: f32, q: f32, z: f32) -> [PackedStage; NUM_STAGES] {
         let mut result = [[0u16; NUM_COEFFS]; NUM_STAGES];
         for si in 0..NUM_STAGES {

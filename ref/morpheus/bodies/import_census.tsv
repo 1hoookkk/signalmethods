@@ -1,0 +1,290 @@
+index	name	sections	audit	failures
+0	Null Cube	7	FAIL	crown -0.14..46.87 dB outside -3..36; crown parity 47.01 dB exceeds 30
+1	LPFlange.4	7	FAIL	crown -5.97..46.87 dB outside -3..36; crown parity 52.85 dB exceeds 30
+2	LPFlngBk.4	7	FAIL	crown -11.66..11.42 dB outside -3..36
+3	Flange2.4	7	FAIL	crown 3.59..93.95 dB outside -3..36; crown parity 90.36 dB exceeds 30
+4	CubeFlanger	7	pass	
+5	Flange3.4	7	FAIL	crown -0.14..101.08 dB outside -3..36; crown parity 101.22 dB exceeds 30
+6	Flange4.4	7	FAIL	crown -5.75..27.93 dB outside -3..36; crown parity 33.67 dB exceeds 30
+7	Flange5	7	pass	
+8	Flange6.4	7	pass	
+9	Flange6R.4	7	FAIL	crown -0.14..58.62 dB outside -3..36; crown parity 58.75 dB exceeds 30
+10	Flange7.4	7	FAIL	crown -0.14..91.88 dB outside -3..36; crown parity 92.02 dB exceeds 30
+11	BriteFlng.4	7	FAIL	crown -9.92..68.42 dB outside -3..36; crown parity 78.34 dB exceeds 30
+12	Flng>Flng1	7	FAIL	crown -5.38..59.86 dB outside -3..36; crown parity 65.23 dB exceeds 30
+13	LP>Flng2	7	FAIL	crown 16.52..64.90 dB outside -3..36; crown parity 48.38 dB exceeds 30
+14	Flng>Flng3	7	FAIL	crown -17.60..71.02 dB outside -3..36; crown parity 88.62 dB exceeds 30
+15	Flng>Flng4	7	FAIL	crown 0.78..36.25 dB outside -3..36; crown parity 35.46 dB exceeds 30
+16	Flng>Flng5	7	FAIL	crown -7.87..36.13 dB outside -3..36; crown parity 43.99 dB exceeds 30
+17	Flng>Flng6	7	FAIL	crown -11.80..65.82 dB outside -3..36; crown parity 77.62 dB exceeds 30
+18	Flng>FlngT	7	FAIL	crown 6.60..48.13 dB outside -3..36; crown parity 41.53 dB exceeds 30
+19	Flng>FlngC	7	FAIL	crown 4.88..74.79 dB outside -3..36; crown parity 69.91 dB exceeds 30
+20	CO>FlngT	7	FAIL	crown 14.35..58.24 dB outside -3..36; crown parity 43.88 dB exceeds 30
+21	AEParLPVow	6	FAIL	crown 6.74..42.02 dB outside -3..36; crown parity 35.28 dB exceeds 30
+22	AEParaVowel	7	FAIL	crown 19.06..55.57 dB outside -3..36; crown parity 36.50 dB exceeds 30
+23	AOLpParaVow	6	FAIL	crown 8.55..44.43 dB outside -3..36; crown parity 35.88 dB exceeds 30
+24	AOParaVowel	6	FAIL	crown 10.53..39.96 dB outside -3..36
+25	AUParaVow.4	6	pass	
+26	UOParaVow.4	6	pass	
+27	SftEOVowl.4	7	FAIL	crown 2.80..61.00 dB outside -3..36; crown parity 58.20 dB exceeds 30
+28	SoftEOAE	7	FAIL	crown 19.30..69.52 dB outside -3..36; crown parity 50.22 dB exceeds 30
+29	Vocal Cube	7	FAIL	crown -9.33..60.39 dB outside -3..36; crown parity 69.72 dB exceeds 30
+30	C1-6Harms.4	7	FAIL	crown 3.21..104.84 dB outside -3..36; crown parity 101.63 dB exceeds 30
+31	Voce.4	7	FAIL	crown -3.13..18.27 dB outside -3..36
+32	ChoralComb.4	5	FAIL	crown 13.42..44.86 dB outside -3..36; crown parity 31.45 dB exceeds 30
+33	Bassutoi.4	7	FAIL	crown -0.14..240.80 dB outside -3..36; crown parity 240.94 dB exceeds 30
+34	Be-Ye.4	7	FAIL	crown -0.14..131.95 dB outside -3..36; crown parity 132.09 dB exceeds 30
+35	Ee-Yi.4	7	FAIL	crown -0.14..135.69 dB outside -3..36; crown parity 135.82 dB exceeds 30
+36	Ii-Yi.4	7	FAIL	crown -0.14..125.69 dB outside -3..36; crown parity 125.83 dB exceeds 30
+37	Uhrrrah.4	7	FAIL	crown -0.14..132.51 dB outside -3..36; crown parity 132.64 dB exceeds 30
+38	YeahYeah.4	7	FAIL	crown 18.26..68.34 dB outside -3..36; crown parity 50.09 dB exceeds 30
+39	Vow>Vow1	7	FAIL	crown 11.00..47.15 dB outside -3..36; crown parity 36.16 dB exceeds 30
+40	Vow>Vow2	7	FAIL	crown -0.14..148.03 dB outside -3..36; crown parity 148.17 dB exceeds 30
+41	YahYahs.4	7	FAIL	crown -0.14..137.31 dB outside -3..36; crown parity 137.45 dB exceeds 30
+42	YoYo.4	7	FAIL	crown 30.73..43.60 dB outside -3..36
+43	VowelSpace	7	FAIL	crown -11.20..378.40 dB outside -3..36; crown parity 389.61 dB exceeds 30
+44	BrickWaLP.4	7	FAIL	crown -0.23..571.96 dB outside -3..36; crown parity 572.20 dB exceeds 30
+45	BrickWaLP2	7	FAIL	crown 0.66..95.30 dB outside -3..36; crown parity 94.64 dB exceeds 30
+46	MdQ 2PoleLP	7	FAIL	crown 2.50..104.79 dB outside -3..36; crown parity 102.28 dB exceeds 30
+47	HiQ 2PoleLP	7	FAIL	crown 1.30..177.34 dB outside -3..36; crown parity 176.04 dB exceeds 30
+48	MdQ 4PoleLP	7	FAIL	crown 2.50..190.48 dB outside -3..36; crown parity 187.98 dB exceeds 30
+49	HiQ 4PoleLP	7	FAIL	crown -0.14..100.01 dB outside -3..36; crown parity 100.15 dB exceeds 30
+50	2 PoleLoQ.4	7	FAIL	crown -0.14..186.84 dB outside -3..36; crown parity 186.98 dB exceeds 30
+51	4 PoleLoQ.4	7	FAIL	crown -0.14..185.85 dB outside -3..36; crown parity 185.98 dB exceeds 30
+52	4 PoleMidQ.4	7	FAIL	crown 2.17..167.38 dB outside -3..36; crown parity 165.21 dB exceeds 30
+53	2pole>4pole	7	FAIL	crown -4.10..69.29 dB outside -3..36; crown parity 73.38 dB exceeds 30
+54	LowPassPlus	7	FAIL	crown -0.14..163.83 dB outside -3..36; crown parity 163.97 dB exceeds 30
+55	Low Past.4	1	FAIL	crown -11.66..33.05 dB outside -3..36; crown parity 44.71 dB exceeds 30
+56	APass.4	5	pass	
+57	HPSweep.4	7	FAIL	crown 15.66..85.28 dB outside -3..36; crown parity 69.62 dB exceeds 30
+58	HiSwept1.4	7	FAIL	crown 13.93..62.46 dB outside -3..36; crown parity 48.52 dB exceeds 30
+59	HghsSwpt2.4	7	pass	
+60	Hi Accent.4	7	pass	
+61	HiPassSwp.4	7	FAIL	crown -0.14..54.16 dB outside -3..36; crown parity 54.30 dB exceeds 30
+62	DeepCombs.4	7	FAIL	crown -2.27..62.58 dB outside -3..36; crown parity 64.84 dB exceeds 30
+63	One Peak	7	FAIL	crown 0.24..57.14 dB outside -3..36; crown parity 56.90 dB exceeds 30
+64	More Peaks	7	FAIL	crown -4.37..68.32 dB outside -3..36; crown parity 72.70 dB exceeds 30
+65	Rev Peaks	7	FAIL	crown -11.66..18.88 dB outside -3..36; crown parity 30.54 dB exceeds 30
+66	Notcher2.4	7	pass	
+67	Ntches2Oct.4	7	FAIL	crown 8.40..56.52 dB outside -3..36; crown parity 48.11 dB exceeds 30
+68	Odd>+	7	FAIL	crown -9.40..155.50 dB outside -3..36; crown parity 164.91 dB exceeds 30
+69	VarSlope.4	5	FAIL	crown -0.14..46.64 dB outside -3..36; crown parity 46.77 dB exceeds 30
+70	BassEQ 1.4	5	pass	
+71	B BOOST.4	5	pass	
+72	BssBOOST2.4	5	FAIL	crown 0.24..80.56 dB outside -3..36; crown parity 80.32 dB exceeds 30
+73	BassDrumEQ	7	pass	
+74	Snare LPEQ2	7	FAIL	crown 3.53..51.01 dB outside -3..36; crown parity 47.47 dB exceeds 30
+75	HiHatLPEQ	3	FAIL	crown 0.24..80.26 dB outside -3..36; crown parity 80.02 dB exceeds 30
+76	HP LP PZ	6	pass	
+77	PZ Notch	7	pass	
+78	Band-aid	7	FAIL	crown 1.29..184.17 dB outside -3..36; crown parity 182.88 dB exceeds 30
+79	4>2 LowQHiQ	4	FAIL	crown -0.14..57.52 dB outside -3..36; crown parity 57.65 dB exceeds 30
+80	Wah4Vib.4	7	FAIL	crown parity 33.27 dB exceeds 30
+81	Wa Wa.4	7	FAIL	crown parity 35.16 dB exceeds 30
+82	BrassRez.4	7	FAIL	crown 17.93..90.97 dB outside -3..36; crown parity 73.04 dB exceeds 30
+83	Clr>Oboe	7	FAIL	crown 0.24..41.96 dB outside -3..36; crown parity 41.71 dB exceeds 30
+84	0>Muter	7	FAIL	crown 10.02..61.71 dB outside -3..36; crown parity 51.69 dB exceeds 30
+85	PZ Syn Horn	7	FAIL	crown -1.10..48.32 dB outside -3..36; crown parity 49.42 dB exceeds 30
+86	HP Brass	7	FAIL	crown 3.32..70.29 dB outside -3..36; crown parity 66.96 dB exceeds 30
+87	BrassyBlast	7	FAIL	crown 33.44..140.64 dB outside -3..36; crown parity 107.20 dB exceeds 30
+88	Brass Swell	7	FAIL	crown -0.14..67.35 dB outside -3..36; crown parity 67.48 dB exceeds 30
+89	BrsSwell2.4	7	FAIL	crown -2.62..81.62 dB outside -3..36; crown parity 84.24 dB exceeds 30
+90	LoVelTrum	5	FAIL	crown -0.14..42.91 dB outside -3..36; crown parity 43.05 dB exceeds 30
+91	Chiffin.4	7	FAIL	crown -3.38..135.54 dB outside -3..36; crown parity 138.92 dB exceeds 30
+92	ShakuFilter	7	FAIL	crown 21.48..63.48 dB outside -3..36; crown parity 42.00 dB exceeds 30
+93	Cym	7	FAIL	crown 6.90..90.38 dB outside -3..36; crown parity 83.48 dB exceeds 30
+94	VelMarim	7	FAIL	crown -0.14..53.59 dB outside -3..36; crown parity 53.73 dB exceeds 30
+95	EZ Vibez.4	6	FAIL	crown 2.46..50.16 dB outside -3..36; crown parity 47.70 dB exceeds 30
+96	Piano 1	7	FAIL	crown -3.23..203.50 dB outside -3..36; crown parity 206.73 dB exceeds 30
+97	Piano 2.4	1	FAIL	crown -2.45..61.29 dB outside -3..36; crown parity 63.74 dB exceeds 30
+98	EZ Rhodez.4	7	FAIL	crown -0.14..55.43 dB outside -3..36; crown parity 55.57 dB exceeds 30
+99	MoogVocodr.4	7	FAIL	crown 10.10..40.11 dB outside -3..36; crown parity 30.01 dB exceeds 30
+100	MoogVocSwp	5	FAIL	crown -0.14..48.95 dB outside -3..36; crown parity 49.08 dB exceeds 30
+101	StrngThng.4	3	FAIL	crown -5.31..48.71 dB outside -3..36; crown parity 54.02 dB exceeds 30
+102	StrSweep.4	7	FAIL	crown 3.36..55.21 dB outside -3..36; crown parity 51.84 dB exceeds 30
+103	BassXpress	7	pass	
+104	Qbase.4	7	pass	
+105	AcGtrRs.4	7	pass	
+106	TubeSust.4	7	FAIL	crown -0.16..59.29 dB outside -3..36; crown parity 59.45 dB exceeds 30
+107	GtrSkwk	7	FAIL	crown 0.33..65.70 dB outside -3..36; crown parity 65.37 dB exceeds 30
+108	GuitXpress	7	pass	
+109	G MajTrans.4	7	FAIL	crown 8.49..38.34 dB outside -3..36
+110	Tam	7	FAIL	crown 7.26..71.33 dB outside -3..36; crown parity 64.07 dB exceeds 30
+111	HOTwell.4	7	FAIL	crown parity 31.75 dB exceeds 30
+112	Bell Wah A	7	FAIL	crown -0.55..114.61 dB outside -3..36; crown parity 115.17 dB exceeds 30
+113	Bell Wah B	7	FAIL	crown 16.21..48.63 dB outside -3..36; crown parity 32.43 dB exceeds 30
+114	0>Bell-	7	FAIL	crown -1.59..39.54 dB outside -3..36; crown parity 41.13 dB exceeds 30
+115	0>Bell+	7	FAIL	crown 9.19..54.96 dB outside -3..36; crown parity 45.77 dB exceeds 30
+116	Bel>Crs>Bel	7	FAIL	crown 8.03..49.42 dB outside -3..36; crown parity 41.39 dB exceeds 30
+117	Chrs>Flng1	7	FAIL	crown 0.87..43.40 dB outside -3..36; crown parity 42.53 dB exceeds 30
+118	Chrs>Flng2	7	pass	
+119	Ev/OdNtch.4	7	FAIL	crown 1.26..36.59 dB outside -3..36; crown parity 35.33 dB exceeds 30
+120	Odd/EvnNtch	7	pass	
+121	NotchPeaks.4	7	FAIL	crown parity 32.68 dB exceeds 30
+122	LoudBoost.4	7	FAIL	crown 12.73..80.60 dB outside -3..36; crown parity 67.87 dB exceeds 30
+123	Swingshift	7	FAIL	crown 20.54..37.59 dB outside -3..36
+124	500up.4	7	FAIL	crown 22.23..448.77 dB outside -3..36; crown parity 426.54 dB exceeds 30
+125	C1Harmonic	7	FAIL	crown -3.59..53.81 dB outside -3..36; crown parity 57.40 dB exceeds 30
+126	Odd>Even	7	FAIL	crown -2.68..102.27 dB outside -3..36; crown parity 104.95 dB exceeds 30
+127	0>Shp1	7	FAIL	crown -5.75..90.37 dB outside -3..36; crown parity 96.12 dB exceeds 30
+128	0>Shp2	7	FAIL	crown -1.04..75.44 dB outside -3..36; crown parity 76.49 dB exceeds 30
+129	0>Shp3	7	FAIL	crown 6.55..367.40 dB outside -3..36; crown parity 360.85 dB exceeds 30
+130	Shp>Shp1	7	FAIL	crown -25.90..40.76 dB outside -3..36; crown parity 66.66 dB exceeds 30
+131	Lpeq Vel	7	pass	
+132	PeakSweep.4	7	FAIL	crown 15.67..77.72 dB outside -3..36; crown parity 62.06 dB exceeds 30
+133	PowerSweeps	7	FAIL	crown 0.24..42.98 dB outside -3..36; crown parity 42.74 dB exceeds 30
+134	TSweep.4	7	FAIL	crown 21.32..47.64 dB outside -3..36
+135	SweepHiQ1.4	7	FAIL	crown -0.14..370.65 dB outside -3..36; crown parity 370.79 dB exceeds 30
+136	V>FcQuad.4	7	FAIL	crown -0.14..488.45 dB outside -3..36; crown parity 488.59 dB exceeds 30
+137	Nexus.4	7	FAIL	crown -0.14..210.07 dB outside -3..36; crown parity 210.21 dB exceeds 30
+138	Krators.4	7	pass	
+139	Harmonix.4	7	FAIL	crown -0.14..217.21 dB outside -3..36; crown parity 217.35 dB exceeds 30
+140	GreenWorld.4	7	pass	
+141	Comb/Swap.4	7	pass	
+142	Comb/HP.4	7	FAIL	crown 2.57..38.52 dB outside -3..36; crown parity 35.95 dB exceeds 30
+143	Swirly	7	FAIL	crown -0.14..46.71 dB outside -3..36; crown parity 46.84 dB exceeds 30
+144	Cavatate.4	7	FAIL	crown -9.68..104.94 dB outside -3..36; crown parity 114.61 dB exceeds 30
+145	GentleRez.4	7	FAIL	crown 14.61..67.15 dB outside -3..36; crown parity 52.54 dB exceeds 30
+146	Bendup/Swap	7	FAIL	crown 13.46..46.43 dB outside -3..36; crown parity 32.97 dB exceeds 30
+147	Bendup	7	FAIL	crown 0.24..97.54 dB outside -3..36; crown parity 97.30 dB exceeds 30
+148	Skweezit	7	FAIL	crown -3.09..288.35 dB outside -3..36; crown parity 291.44 dB exceeds 30
+149	Lo/High.4	7	pass	
+150	SubtleMove.4	2	FAIL	crown -0.14..41.55 dB outside -3..36; crown parity 41.69 dB exceeds 30
+151	BuzzyPad.4	3	FAIL	crown parity 34.00 dB exceeds 30
+152	Bw5kHz+6.4	2	FAIL	crown -0.14..51.46 dB outside -3..36; crown parity 51.60 dB exceeds 30
+153	Bw65Hz/2k.4	2	pass	
+154	Bb80Hzbw1.4	7	pass	
+155	HighsTwist.4	7	FAIL	crown 0.24..86.33 dB outside -3..36; crown parity 86.09 dB exceeds 30
+156	Cubix	7	FAIL	crown 20.78..38.54 dB outside -3..36
+157	HarmSweep.4	7	pass	
+158	EvenCuts.4	7	FAIL	crown -4.59..20.01 dB outside -3..36
+159	OddCuts.4	7	FAIL	crown -5.33..30.73 dB outside -3..36; crown parity 36.06 dB exceeds 30
+160	PWMTrans.4	7	FAIL	crown -0.14..290.49 dB outside -3..36; crown parity 290.63 dB exceeds 30
+161	HiEndQ.4	7	FAIL	crown -11.66..45.30 dB outside -3..36; crown parity 56.96 dB exceeds 30
+162	BroadRes.4	7	FAIL	crown -11.66..79.75 dB outside -3..36; crown parity 91.41 dB exceeds 30
+163	ResoHose.4	7	pass	
+164	HeeghCube	7	pass	
+165	NoizCube	7	FAIL	crown 3.46..107.86 dB outside -3..36; crown parity 104.40 dB exceeds 30
+166	VeloctyTilt	7	FAIL	crown -0.14..77.49 dB outside -3..36; crown parity 77.63 dB exceeds 30
+167	Syn Wow.4	7	pass	
+168	CombSweep.4	3	pass	
+169	Diffuser.4	7	FAIL	crown -0.14..102.69 dB outside -3..36; crown parity 102.83 dB exceeds 30
+170	MdlySweep.4	5	FAIL	crown parity 31.02 dB exceeds 30
+171	StrongShimr	7	FAIL	crown -36.80..17.54 dB outside -3..36; crown parity 54.34 dB exceeds 30
+172	Acc.Vel-1	7	FAIL	crown -19.79..16.64 dB outside -3..36; crown parity 36.43 dB exceeds 30
+173	Acc.Vel-2	7	FAIL	crown 3.92..64.29 dB outside -3..36; crown parity 60.36 dB exceeds 30
+174	Vel2-Wind	7	FAIL	crown 7.09..48.48 dB outside -3..36; crown parity 41.39 dB exceeds 30
+175	Harmo	7	FAIL	crown 14.39..94.59 dB outside -3..36; crown parity 80.20 dB exceeds 30
+176	Start>EndA	7	FAIL	crown -11.67..47.45 dB outside -3..36; crown parity 59.12 dB exceeds 30
+177	Start>EndB	7	FAIL	crown -8.04..44.54 dB outside -3..36; crown parity 52.59 dB exceeds 30
+178	MovingPick1	7	FAIL	crown -5.31..59.98 dB outside -3..36; crown parity 65.28 dB exceeds 30
+179	MovingPick2	7	FAIL	crown 15.72..46.34 dB outside -3..36; crown parity 30.62 dB exceeds 30
+180	Mph+Trns1	7	FAIL	crown 10.84..73.90 dB outside -3..36; crown parity 63.06 dB exceeds 30
+181	0>Odds	7	FAIL	crown -7.37..52.69 dB outside -3..36; crown parity 60.06 dB exceeds 30
+182	Comb Voices	7	FAIL	crown 5.17..89.71 dB outside -3..36; crown parity 84.54 dB exceeds 30
+183	Odd-Ev Hrm	7	FAIL	crown -6.84..94.60 dB outside -3..36; crown parity 101.44 dB exceeds 30
+184	OddHrm+Rez	7	FAIL	crown 3.04..103.95 dB outside -3..36; crown parity 100.91 dB exceeds 30
+185	EvnHrm+Rez	7	FAIL	crown 9.00..120.46 dB outside -3..36; crown parity 111.46 dB exceeds 30
+186	MellowPeaks	7	FAIL	crown 73.67..106.95 dB outside -3..36; crown parity 33.29 dB exceeds 30
+187	AHmBnd.4	5	FAIL	crown -6.21..93.36 dB outside -3..36; crown parity 99.57 dB exceeds 30
+188	Vintage	7	FAIL	crown 4.56..139.19 dB outside -3..36; crown parity 134.63 dB exceeds 30
+189	MildQPole	7	FAIL	crown 11.43..74.52 dB outside -3..36; crown parity 63.09 dB exceeds 30
+190	Bonk>CO	6	FAIL	crown 17.93..39.57 dB outside -3..36
+191	Speaker	7	FAIL	crown 2.83..36.68 dB outside -3..36; crown parity 33.85 dB exceeds 30
+192	Expander	7	FAIL	crown 5.01..59.37 dB outside -3..36; crown parity 54.37 dB exceeds 30
+193	Separator	7	FAIL	crown 6.29..258.79 dB outside -3..36; crown parity 252.50 dB exceeds 30
+194	MildPolSwap	3	FAIL	crown -0.14..69.05 dB outside -3..36; crown parity 69.19 dB exceeds 30
+195	PoleCross.4	7	FAIL	crown -0.14..391.04 dB outside -3..36; crown parity 391.18 dB exceeds 30
+196	ApDistB6.4	7	FAIL	crown -11.98..32.47 dB outside -3..36; crown parity 44.45 dB exceeds 30
+197	Dave'sRave	7	FAIL	crown 2.38..609.28 dB outside -3..36; crown parity 606.89 dB exceeds 30
+198	Poles 1-7	7	FAIL	crown 1.17..187.85 dB outside -3..36; crown parity 186.69 dB exceeds 30
+199	2 Poles	7	FAIL	crown -9.40..289.69 dB outside -3..36; crown parity 299.10 dB exceeds 30
+200	4 Poles A	7	FAIL	crown 2.04..355.95 dB outside -3..36; crown parity 353.91 dB exceeds 30
+201	4 Poles B	7	FAIL	crown -9.40..288.46 dB outside -3..36; crown parity 297.86 dB exceeds 30
+202	4 Poles C	7	FAIL	crown 1.17..424.47 dB outside -3..36; crown parity 423.30 dB exceeds 30
+203	6 Poles	7	FAIL	crown 2.50..441.80 dB outside -3..36; crown parity 439.29 dB exceeds 30
+204	MultiPole	7	FAIL	crown -2.44..112.44 dB outside -3..36; crown parity 114.88 dB exceeds 30
+205	Tracker	3	FAIL	crown 1.89..101.51 dB outside -3..36; crown parity 99.62 dB exceeds 30
+206	Tracker 2	7	FAIL	crown 0.07..65.72 dB outside -3..36; crown parity 65.65 dB exceeds 30
+207	Tracker 3	7	FAIL	crown -2.49..82.28 dB outside -3..36; crown parity 84.77 dB exceeds 30
+208	Tracker5ths	7	FAIL	crown -5.09..42.47 dB outside -3..36; crown parity 47.55 dB exceeds 30
+209	InFifths.4	7	pass	
+210	HarmTracker	4	FAIL	crown -11.46..19.97 dB outside -3..36; crown parity 31.43 dB exceeds 30
+211	1BndPrmtrcA	4	FAIL	crown -9.45..17.35 dB outside -3..36
+212	1BndPrmtrcB	4	FAIL	crown -9.45..20.05 dB outside -3..36
+213	1BndPrmtrcC	3	FAIL	crown -11.90..8.54 dB outside -3..36
+214	1BndPrmtrcD	7	FAIL	crown 0.90..62.66 dB outside -3..36; crown parity 61.76 dB exceeds 30
+215	MltiMetricA	7	FAIL	crown -5.41..89.00 dB outside -3..36; crown parity 94.42 dB exceeds 30
+216	MltiMetricB	7	FAIL	crown 0.62..99.63 dB outside -3..36; crown parity 99.01 dB exceeds 30
+217	MltiMetricC	6	pass	
+218	Omni Metric	7	FAIL	crown 10.26..104.50 dB outside -3..36; crown parity 94.25 dB exceeds 30
+219	HarmncPeaks	7	FAIL	crown 6.58..104.50 dB outside -3..36; crown parity 97.93 dB exceeds 30
+220	HrmncPeaks2	7	FAIL	crown 0.34..39.41 dB outside -3..36; crown parity 39.07 dB exceeds 30
+221	InHarMetric	7	FAIL	crown -12.74..32.08 dB outside -3..36; crown parity 44.81 dB exceeds 30
+222	HarmShifter	7	FAIL	crown -15.32..34.08 dB outside -3..36; crown parity 49.39 dB exceeds 30
+223	HarmShiftr2	7	pass	
+224	HarmShiftr3	7	pass	
+225	Phaser	7	pass	
+226	HrmncPhaser	7	FAIL	crown 0.24..40.54 dB outside -3..36; crown parity 40.29 dB exceeds 30
+227	HrmncPhsr2	7	FAIL	crown 0.24..63.49 dB outside -3..36; crown parity 63.25 dB exceeds 30
+228	Wide Bands	7	FAIL	crown 9.15..96.88 dB outside -3..36; crown parity 87.74 dB exceeds 30
+229	New Boost	7	FAIL	crown 41.39..67.58 dB outside -3..36
+230	VowelSpace2	7	pass	
+231	VowelSpace3	7	FAIL	crown -7.87..36.21 dB outside -3..36; crown parity 44.08 dB exceeds 30
+232	Oh Shaper	6	FAIL	crown 0.12..39.12 dB outside -3..36; crown parity 39.00 dB exceeds 30
+233	Ah Shaper	7	FAIL	crown 0.50..39.14 dB outside -3..36; crown parity 38.64 dB exceeds 30
+234	Oo Shaper	7	FAIL	crown 0.24..157.09 dB outside -3..36; crown parity 156.85 dB exceeds 30
+235	FrmntShaper	7	FAIL	crown 10.72..52.94 dB outside -3..36; crown parity 42.22 dB exceeds 30
+236	Piano LP.4	7	FAIL	crown -2.12..58.94 dB outside -3..36; crown parity 61.07 dB exceeds 30
+237	PianoSndBrd	7	FAIL	crown 2.50..381.02 dB outside -3..36; crown parity 378.52 dB exceeds 30
+238	Strike Cube	7	FAIL	crown 3.55..41.27 dB outside -3..36; crown parity 37.72 dB exceeds 30
+239	Clav Curves	7	FAIL	crown 1.33..49.78 dB outside -3..36; crown parity 48.45 dB exceeds 30
+240	Symphony	7	FAIL	crown 0.89..58.49 dB outside -3..36; crown parity 57.60 dB exceeds 30
+241	String Cube	6	FAIL	crown 2.17..54.87 dB outside -3..36; crown parity 52.70 dB exceeds 30
+242	Swell Cube	7	FAIL	crown -0.14..172.89 dB outside -3..36; crown parity 173.03 dB exceeds 30
+243	Quartet.4	7	FAIL	crown -4.15..50.32 dB outside -3..36; crown parity 54.47 dB exceeds 30
+244	Mellotron.4	7	pass	
+245	Cello	7	FAIL	crown 0.24..79.31 dB outside -3..36; crown parity 79.07 dB exceeds 30
+246	Key Squeak	7	FAIL	crown -0.14..272.99 dB outside -3..36; crown parity 273.12 dB exceeds 30
+247	Pluck.4	7	FAIL	crown 6.11..62.73 dB outside -3..36; crown parity 56.63 dB exceeds 30
+248	Pick It	7	FAIL	crown 3.86..70.72 dB outside -3..36; crown parity 66.85 dB exceeds 30
+249	El Pick It	7	FAIL	crown -0.50..427.44 dB outside -3..36; crown parity 427.94 dB exceeds 30
+250	ElGuit Cube	7	FAIL	crown parity 31.52 dB exceeds 30
+251	ElGuit Pick	7	FAIL	crown 5.45..57.09 dB outside -3..36; crown parity 51.64 dB exceeds 30
+252	Breather 1	7	FAIL	crown 0.20..60.58 dB outside -3..36; crown parity 60.37 dB exceeds 30
+253	Breather 2	7	FAIL	crown 3.19..55.06 dB outside -3..36; crown parity 51.87 dB exceeds 30
+254	WindNoise 1	7	pass	
+255	WindNoise 2	7	FAIL	crown -3.90..67.06 dB outside -3..36; crown parity 70.96 dB exceeds 30
+256	Blow Cube	7	FAIL	crown parity 34.08 dB exceeds 30
+257	Overblow	7	FAIL	crown 0.24..60.66 dB outside -3..36; crown parity 60.42 dB exceeds 30
+258	Wind Filter	7	pass	
+259	FlutBreth.4	7	FAIL	crown -0.14..222.14 dB outside -3..36; crown parity 222.28 dB exceeds 30
+260	VClarinet.4	7	FAIL	crown -11.66..45.32 dB outside -3..36; crown parity 56.99 dB exceeds 30
+261	New Mute.4	7	FAIL	crown -0.14..401.20 dB outside -3..36; crown parity 401.33 dB exceeds 30
+262	Trempeto.4	6	FAIL	crown -11.66..17.53 dB outside -3..36
+263	SfBrzando.4	7	FAIL	crown -0.14..92.92 dB outside -3..36; crown parity 93.05 dB exceeds 30
+264	UduFilter.4	7	FAIL	crown 3.25..169.70 dB outside -3..36; crown parity 166.44 dB exceeds 30
+265	Hip Kick	7	FAIL	crown parity 32.05 dB exceeds 30
+266	Cymbal Cube	7	pass	
+267	ChimeFlange	7	FAIL	crown -6.81..42.21 dB outside -3..36; crown parity 49.01 dB exceeds 30
+268	CableRing.4	7	FAIL	crown 0.24..41.72 dB outside -3..36; crown parity 41.47 dB exceeds 30
+269	TensionWire	5	FAIL	crown parity 33.46 dB exceeds 30
+270	Auto Clang	7	pass	
+271	Dragon Claw	7	FAIL	crown 1.91..70.96 dB outside -3..36; crown parity 69.05 dB exceeds 30
+272	Spectra	7	FAIL	crown 0.20..47.99 dB outside -3..36; crown parity 47.79 dB exceeds 30
+273	RippleSheet	7	FAIL	crown -0.05..52.08 dB outside -3..36; crown parity 52.13 dB exceeds 30
+274	Clear Water	7	pass	
+275	Invisible	5	FAIL	crown -11.67..44.76 dB outside -3..36; crown parity 56.43 dB exceeds 30
+276	Wine Glass	7	FAIL	crown -0.14..56.32 dB outside -3..36; crown parity 56.46 dB exceeds 30
+277	SnakeCros.4	7	FAIL	crown -0.14..220.20 dB outside -3..36; crown parity 220.33 dB exceeds 30
+278	Analog.4	6	FAIL	crown -6.29..49.78 dB outside -3..36; crown parity 56.07 dB exceeds 30
+279	Skrtch Cube	7	FAIL	crown 2.50..50.34 dB outside -3..36; crown parity 47.83 dB exceeds 30
+280	KitchenSink	7	FAIL	crown -19.85..26.16 dB outside -3..36; crown parity 46.01 dB exceeds 30
+281	Head Pan 1	7	FAIL	crown -25.99..26.03 dB outside -3..36; crown parity 52.03 dB exceeds 30
+282	Head Pan 2	7	pass	
+283	Arpeggio	4	FAIL	crown -7.12..13.47 dB outside -3..36
+284	HeavyFilt.4	7	pass	
+285	Noiz Cube 2	7	FAIL	crown 0.24..94.51 dB outside -3..36; crown parity 94.27 dB exceeds 30
+286	Feedback	7	FAIL	crown 2.36..92.03 dB outside -3..36; crown parity 89.67 dB exceeds 30
+287	AllPoleDist	7	FAIL	crown 0.93..111.53 dB outside -3..36; crown parity 110.60 dB exceeds 30
+288	AllPoleDst2	1	FAIL	unstable interpolated pole; crown 12.04..148.43 dB outside -3..36; crown parity 136.39 dB exceeds 30

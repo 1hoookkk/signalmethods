@@ -1,69 +1,20 @@
-//! Rossum's ARMAdillo display coordinates, Nyquist-anchored.
-//!
-//! ```text
-//! theta       = 2*pi*f / fs
-//! theta_prime = pi * (10 + log2(theta/pi)) / 10
-//! r_prime_db  = -20 * log10(1 - r)
-//! ```
-//!
-//! Verbatim from the source, ARMAdillo (WASPAA 1991) p.2:
-//!
-//! > "We have found a useful graphical analysis tool to be the plot of the poles
-//! > translating the radii from R to R' and the angles theta to theta' (excluding
-//! > all theta below pi/1024 = 20 Hz) such that: R' = 20log10 1/(1-R) and
-//! > theta' = pi(10+log2 theta/pi) / 10. Such a plot maps the poles onto a
-//! > nominally log/log semicircle, and even coefficient density indicates an
-//! > even perceptual mapping."
-//!
-//! The log2 argument is `theta/pi`, NOT the musical octave number Omega. That
-//! makes the map sample-rate free: theta_prime spans exactly the ten octaves
-//! below Nyquist, 0 at theta = pi/1024 (f = fs/2048) and pi at theta = pi
-//! (f = fs/2). Each doubling of f advances theta_prime by pi/10, so equal
-//! angular increments are equal musical octaves and equal radial increments are
-//! equal resonance in dB. Rossum's "= 20 Hz" is the value at his fs of 40 kHz.
-//!
-//! This module is DISPLAY MATHEMATICS ONLY. It holds no authoring policy: no
-//! frequency origin, no radius ceiling, no sample rate. Every function takes fs
-//! from the caller. Whether a value may be *written* is decided by
-//! `stage_law::validate_stage_roots_at`, next to the encoder that owns the
-//! answer.
-//!
-//! Ported from `plugin/native/ArmadilloCoords.h`, whose tests
-//! (`plugin/tools/ArmadilloTests.cpp`) are the oracle for the tests below.
-
 use std::f64::consts::{PI, TAU};
 
-/// How much of the R' axis the rim shows. A viewport extent chosen by the UI,
-/// NOT part of Rossum's law: the law defines R', this decides how much of it
-/// fits on screen. Values beyond the rim remain authorable by typing.
 pub const RIM_DB: f64 = 96.0;
 
-/// A failure of the map itself — never an authoring verdict, never a
-/// substituted value.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ArmaError {
     NotFinite,
-    /// log2 is undefined at and below theta = 0.
     NonPositiveAngle,
-    /// R' is unbounded at r >= 1. This is a null on the circle, not an
-    /// undrawable value: 17.5% of factory conjugate zeros sit at exactly
-    /// r = 1.0000 (bench/facts.py ZERO_UNIT_CIRCLE_PCT). A renderer that
-    /// treats it as an error deletes a sixth of the zeros from the board;
-    /// draw it on the rim instead.
     RadiusOnOrOutsideUnitCircle,
 }
 
-// --------------------------------------------------------------- frequency
-
-/// Lowest frequency the semicircle can show: theta = pi/1024.
 pub fn display_lo_hz(fs: f64) -> f64 {
     fs / 2048.0
 }
-/// Highest frequency the semicircle can show: theta = pi (Nyquist).
 pub fn display_hi_hz(fs: f64) -> f64 {
     fs * 0.5
 }
-/// Divide before multiplying so exact-power-of-two ratios stay exact.
 pub fn theta_from_hz(hz: f64, fs: f64) -> f64 {
     TAU * (hz / fs)
 }
@@ -71,12 +22,6 @@ pub fn hz_from_theta(theta: f64, fs: f64) -> f64 {
     fs * (theta / TAU)
 }
 
-/// Total for every theta > 0, and deliberately so: below the floor it returns a
-/// NEGATIVE angle rather than an error or a substituted value. Rossum
-/// *excludes* those poles from the plot; he does not move them onto it. Ask
-/// [`on_plot`] whether to draw. `tools/armadillo_plot.py` clamps with
-/// `max(hz, REF_HZ)` and so piles unplaceable poles onto the rim, where they
-/// look placed — do not reproduce that here.
 pub fn theta_prime_from_theta(theta: f64) -> Result<f64, ArmaError> {
     if !theta.is_finite() {
         return Err(ArmaError::NotFinite);
@@ -84,7 +29,6 @@ pub fn theta_prime_from_theta(theta: f64) -> Result<f64, ArmaError> {
     if theta <= 0.0 {
         return Err(ArmaError::NonPositiveAngle);
     }
-    // Grouped so log2 == 0 gives exactly pi and log2 == -10 gives exactly 0.
     Ok(PI * ((10.0 + (theta / PI).log2()) / 10.0))
 }
 
@@ -109,21 +53,14 @@ pub fn hz_from_prime(theta_prime: f64, fs: f64) -> Result<f64, ArmaError> {
     Ok((fs * 0.5) * (10.0 * (theta_prime / PI) - 10.0).exp2())
 }
 
-/// The one place the exclusion is decided. Rossum's parenthetical — "excluding
-/// all theta below pi/1024" — is a viewport boundary, not a domain failure, so
-/// it lives here and not inside the transform.
 pub fn on_plot(theta_prime: f64) -> bool {
     theta_prime >= 0.0 && theta_prime <= PI
 }
-
-// ------------------------------------------------------------------ radius
 
 pub fn r_prime_db_from_radius(r: f64) -> Result<f64, ArmaError> {
     if !r.is_finite() {
         return Err(ArmaError::NotFinite);
     }
-    // 1 - r is a cancelling subtraction; compute it once. Past roughly 140 dB
-    // its low bits are already gone — see the precision-ceiling test.
     let gap = 1.0 - r;
     if gap <= 0.0 {
         return Err(ArmaError::RadiusOnOrOutsideUnitCircle);
@@ -138,10 +75,6 @@ pub fn radius_from_r_prime_db(db: f64) -> Result<f64, ArmaError> {
     Ok(1.0 - 10.0f64.powf(-db / 20.0))
 }
 
-// ----------------------------------------------------------------- drawing
-
-/// Screen radius for a resonance, linear in dB so equal radial steps are equal
-/// dB. Rendering only — the caller bounds it for the pixel, never for the model.
 pub fn display_radius_from_r_prime_db(db: f64, rho_max: f64) -> f64 {
     rho_max * (db / RIM_DB)
 }
@@ -242,7 +175,7 @@ mod tests {
 
         let mut prev = -1.0f64;
         for i in 0..=400 {
-            let r = i as f64 / 401.0; // 0 .. just under 1
+            let r = i as f64 / 401.0;
             let d = r_prime_db_from_radius(r).unwrap();
             close(radius_from_r_prime_db(d).unwrap(), r, 1e-12, "R -> R' -> R");
             assert!(d > prev, "R' is strictly monotonic in R at r = {r}");
@@ -257,10 +190,6 @@ mod tests {
         }
     }
 
-    /// Where the radius representation itself runs out. Storing a resonance as
-    /// r rather than as (1 - r) means 1 - r is a cancelling subtraction: past
-    /// roughly 140 dB the low bits of the gap are already gone. Recorded rather
-    /// than hidden, because it bounds how far numeric entry can be trusted.
     #[test]
     fn the_radius_precision_ceiling_is_where_we_think_it_is() {
         let r = radius_from_r_prime_db(133.0).unwrap();
@@ -310,8 +239,6 @@ mod tests {
         }
     }
 
-    /// The C++ was forced to mirror `0.49 * fs` as a literal because the header
-    /// may not name a ceiling. Here we can ask the crate that owns it.
     #[test]
     fn the_authoring_ceiling_fits_inside_the_arc() {
         for fs in RATES {
@@ -371,9 +298,6 @@ mod tests {
         }
     }
 
-    /// The C++ also asserted "a rejected value leaves the output untouched".
-    /// A `Result` has no output to leave untouched, so that half of the oracle
-    /// is structurally satisfied rather than checked.
     #[test]
     fn bad_input_is_reported_never_substituted() {
         let nan = f64::NAN;
@@ -403,13 +327,10 @@ mod tests {
         assert_eq!(radius_from_r_prime_db(nan), Err(ArmaError::NotFinite));
     }
 
-    /// New, beyond the C++ oracle. The floor is a viewport boundary, so a pole
-    /// below it must transform to a NEGATIVE angle and be excluded — never
-    /// clamped onto the rim, where an unplaceable pole would look placed.
     #[test]
     fn the_floor_is_excluded_not_clamped() {
         let fs = 48_000.0;
-        let below = display_lo_hz(fs) * 0.5; // one octave under the floor
+        let below = display_lo_hz(fs) * 0.5;
         let tp = theta_prime_from_hz(below, fs).expect("below the floor still transforms");
         close(
             tp,
@@ -432,9 +353,6 @@ mod tests {
         );
     }
 
-    /// New, beyond the C++ oracle. A zero on the unit circle is a perfect null
-    /// and E-mu practice, not a broken input. It must report as its own thing
-    /// so a renderer can put it on the rim instead of dropping it.
     #[test]
     fn a_unit_circle_zero_reports_unbounded_not_undrawable() {
         assert_eq!(
@@ -450,13 +368,9 @@ mod tests {
             Err(ArmaError::NotFinite),
             "a null must be distinguishable from a broken number"
         );
-        // Just inside is finite and very loud.
         assert!(r_prime_db_from_radius(1.0 - 1e-9).unwrap() > 170.0);
     }
 
-    /// Guard: this module must carry no authoring policy and no fixed origin.
-    /// Scans only the code above the test module — the tests legitimately name
-    /// sample rates, the map may not.
     #[test]
     fn this_module_carries_no_authoring_policy() {
         let src = include_str!("armadillo.rs");
@@ -466,33 +380,29 @@ mod tests {
             .expect("the module has a body above its tests");
         assert!(code.len() > 1000, "the policy scan found the body");
 
-        // A frequency origin, a sample rate, a ceiling, or a clamp in this file
-        // would mean the display had started deciding what the encoder may hold.
-        // (20.0 on its own is legitimate — it is the decibel constant.)
         for token in [
             "log2(hz / 20",
             "log2(hz/20",
-            "(hz / 20.0).log2", // the 20 Hz-anchored law
+            "(hz / 20.0).log2",
             "44100",
             "44_100",
             "48000",
             "48_000",
             "96000",
-            "96_000", // a mirrored rate
+            "96_000",
             "0.99997",
             "0.49",
-            "0.499", // radius / frequency ceilings
+            "0.499",
             "FREQ_MAX",
             "DEFAULT_AUTHORING_SR",
             "authoring_limits",
             ".clamp(",
             ".min(",
-            ".max(", // the exclusion must not become a clamp
+            ".max(",
         ] {
             assert!(!code.contains(token), "policy token in the map: {token:?}");
         }
 
-        // Positively: the domain is derived from fs, ten octaves below Nyquist.
         assert!(
             code.contains("2048"),
             "the map derives its floor as fs/2048"

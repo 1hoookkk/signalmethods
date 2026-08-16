@@ -1,8 +1,3 @@
-//! The workstation rules, held against the fitter.
-//!
-//! Assign SOS lane ownership before fitting. Fit the complete serial cascade.
-//! Preserve correspondence. Responses multiply and dB responses add.
-
 use trench_core::arma_endpoint::{fit_arma, fit_arma_pinned};
 use trench_core::minifloat::stage_words_to_biquad;
 use trench_core::response::biquad_stage_complex;
@@ -14,7 +9,6 @@ fn db(c: (f64, f64)) -> f64 {
     20.0 * (c.0 * c.0 + c.1 * c.1).sqrt().max(1e-12).log10()
 }
 
-/// A log grid, as the brief requires before anything is compared.
 fn grid() -> Vec<f64> {
     let (lo, hi, n) = (40.0f64, 16_000.0f64, 512usize);
     (0..n)
@@ -22,7 +16,6 @@ fn grid() -> Vec<f64> {
         .collect()
 }
 
-/// The target: three resonances, summed in dB because sections multiply.
 fn target_from(sections: &[StageRoots]) -> Vec<(f64, f64)> {
     let biquads: Vec<[f64; 5]> = sections
         .iter()
@@ -66,8 +59,6 @@ fn known_sections() -> Vec<StageRoots> {
     ]
 }
 
-/// Correspondence is preserved: a pinned section's pole stays exactly where
-/// the operator put it, whatever the descent does to the rest.
 #[test]
 fn pinned_poles_do_not_move() {
     let target = target_from(&known_sections());
@@ -83,9 +74,6 @@ fn pinned_poles_do_not_move() {
     }
 }
 
-/// Ownership decides which section answers for which feature. Pin the same
-/// three resonances in a different order and each section takes the one it
-/// was given, not the nearest one.
 #[test]
 fn ownership_and_not_frequency_order_decides_the_lane() {
     let target = target_from(&known_sections());
@@ -101,8 +89,6 @@ fn ownership_and_not_frequency_order_decides_the_lane() {
     }
 }
 
-/// The fit is judged on the sum of the section curves, so a cascade built
-/// from a known set is recovered to a small whole-cascade residual.
 #[test]
 fn the_whole_cascade_is_fitted_not_each_section() {
     let target = target_from(&known_sections());
@@ -114,8 +100,6 @@ fn the_whole_cascade_is_fitted_not_each_section() {
     );
 }
 
-/// Unpinned, the fitter is free to seat sections wherever the residual is
-/// strongest. That freedom is exactly what pinning removes.
 #[test]
 fn without_pins_the_fitter_seats_sections_itself() {
     let target = target_from(&known_sections());
@@ -127,8 +111,6 @@ fn without_pins_the_fitter_seats_sections_itself() {
     );
 }
 
-/// A root the words cannot hold is never proposed: everything returned packs
-/// and reads back as the same filter.
 #[test]
 fn every_fitted_root_survives_the_encoder() {
     let target = target_from(&known_sections());
