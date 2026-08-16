@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRENCH WORKSTATION</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="frame">
+  <div id="titlebar">TRENCH WORKSTATION</div>
+  <div id="decks">
+    <div id="library" class="dock">
+      <div class="dock-title">LIBRARY</div>
+      <div id="library-list"></div>
+    </div>
+    <div id="work">
+      <div id="stages" class="dock"><div class="dock-title">CASCADE S1..S7</div></div>
+      <div id="spectrum" class="dock"><div class="dock-title">RESPONSE</div></div>
+      <div id="roots" class="dock"><div class="dock-title">ROOTS</div></div>
+    </div>
+    <div id="side">
+      <div id="corners" class="dock"><div class="dock-title">CORNERS</div><div id="corners-body"></div></div>
+      <div id="pad" class="dock"><div class="dock-title"></div></div>
+      <div id="verdict" class="dock"><div class="dock-title">STATUS</div><div id="verdict-text">—</div></div>
+    </div>
+  </div>
+  <div id="fitroom" class="dock" hidden><div class="dock-title"></div></div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

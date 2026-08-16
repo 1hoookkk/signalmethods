@@ -1,0 +1,9 @@
+[package]
+name = "author-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+trench-core = { path = "../trench-core" }
+author = { path = "../author" }
+serde_json = "1"

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>TRENCH</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body { overflow: hidden; }
+  #ride-frame {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--chrome);
+  }
+  #ride-pick {
+    margin: 6px;
+    padding: 6px;
+    font: inherit;
+    background: var(--well);
+    color: var(--trace-live);
+    border: 1px solid var(--grat-major);
+  }
+  #ride-pad {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: 0 6px;
+  }
+  #ride-verdict {
+    margin: 6px;
+    padding: 6px 8px;
+    background: var(--well);
+    color: var(--trace-live);
+    font-size: 11px;
+    min-height: 2.4em;
+  }
+</style>
+</head>
+<body>
+<div id="ride-frame">
+  <div id="titlebar">TRENCH</div>
+  <select id="ride-pick"><option>loading…</option></select>
+  <div id="ride-pad"></div>
+  <div id="ride-verdict">—</div>
+</div>
+<script type="module" src="js/ride.js"></script>
+</body>
+</html>
