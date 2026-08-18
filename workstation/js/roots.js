@@ -140,6 +140,38 @@ export function hitRoot(canvas, doc, px, py) {
   return best;
 }
 
+export function attachRoots(canvas, doc, cb) {
+  let drag = null;
+  const local = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    return [e.clientX - rect.left, e.clientY - rect.top];
+  };
+  canvas.addEventListener("pointerdown", (e) => {
+    const [px, py] = local(e);
+    const hit = hitRoot(canvas, doc, px, py);
+    if (!hit) return;
+    if (cb.isLocked(hit.lane)) {
+      cb.onLocked(hit.lane);
+      return;
+    }
+    drag = hit;
+    cb.onGrab(hit);
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const [px, py] = local(e);
+    dragTo(canvas, doc, drag, px, py, cb.ceiling());
+    cb.onMove(drag);
+  });
+  canvas.addEventListener("pointerup", () => {
+    if (!drag) return;
+    const held = drag;
+    drag = null;
+    cb.onRelease(held);
+  });
+}
+
 export function dragTo(canvas, doc, hit, px, py, ceiling) {
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;

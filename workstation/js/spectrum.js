@@ -2,6 +2,7 @@ import {
   css,
   scope,
   xOf as xAt,
+  hzOfX as xAtInverse,
   yMap,
   curveEval,
   trace as traceEval,
@@ -89,6 +90,42 @@ export function puckHit(lanes, roles, sum, w, h, px, py) {
     }
   }
   return best;
+}
+
+export function attachSpectrum(canvas, doc, cb) {
+  let drag = null;
+  canvas.style.touchAction = "none";
+  canvas.addEventListener("pointerdown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const py = e.clientY - rect.top;
+    const lane = puckHit(doc.lanes, doc.roles, cb.sum(), canvas.clientWidth, canvas.clientHeight, e.clientX - rect.left, py);
+    if (lane === null) return;
+    if (cb.isLocked(lane)) {
+      cb.onLocked(lane);
+      return;
+    }
+    drag = { lane, y0: py, rp0: 20 * Math.log10(1 / Math.max(1e-6, 1 - doc.lanes[lane].pole_r)) };
+    cb.onGrab(lane);
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const rect = canvas.getBoundingClientRect();
+    const h = canvas.clientHeight;
+    const py = e.clientY - rect.top;
+    const hz = xAtInverse(e.clientX - rect.left, canvas.clientWidth);
+    const rp = drag.rp0 + (dbOfY(py, h) - dbOfY(drag.y0, h));
+    const r = Math.min(cb.ceiling(), Math.max(0, 1 - Math.pow(10, -Math.max(0, rp) / 20)));
+    cb.onDrag(drag.lane, { pole_hz: hz, pole_r: r });
+  });
+  const end = () => {
+    if (!drag) return;
+    const held = drag;
+    drag = null;
+    cb.onRelease(held.lane);
+  };
+  canvas.addEventListener("pointerup", end);
+  canvas.addEventListener("pointercancel", end);
 }
 
 export function dbOfY(y, h) {

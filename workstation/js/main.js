@@ -16,12 +16,11 @@ import {
   toDrawGrid,
 } from "./doc.js";
 import { renderCorners, NAMES as CORNER_NAMES } from "./corners.js";
-import { drawSpectrum, puckHit, dbOfY } from "./spectrum.js";
-import { hzOfX } from "./render.js";
+import { drawSpectrum, attachSpectrum } from "./spectrum.js";
 import { mountStages, drawStages } from "./stages.js";
 import { createSectionPicker } from "./section.picker.js";
 import * as field from "./field.js";
-import { drawRoots, hitRoot, dragTo } from "./roots.js";
+import { drawRoots, attachRoots } from "./roots.js";
 import { createAudition } from "./audition.js";
 import { FORMANT_SLOTS } from "./fit.roles.js";
 import { setCorners, setRate, setReference, setSource } from "./audio.js";
@@ -342,58 +341,24 @@ function liveResidual(target, sum) {
   return count ? Math.sqrt(squared / count) : null;
 }
 
-let puckDrag = null;
-canvas.style.touchAction = "none";
-canvas.addEventListener("pointerdown", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const sum = doc.words ? sumCurve(doc.words) : null;
-  const i = puckHit(
-    doc.lanes,
-    doc.roles,
-    sum,
-    canvas.clientWidth,
-    canvas.clientHeight,
-    e.clientX - rect.left,
-    e.clientY - rect.top
-  );
-  if (i === null) return;
-  if (isLocked(i)) {
-    say(`S${i + 1} locked`);
-    return;
-  }
-  commit(`drag ${doc.roles[i]} S${i + 1}`);
-  doc.selected = i;
-  puckDrag = {
-    lane: i,
-    y0: e.clientY - rect.top,
-    rp0: 20 * Math.log10(1 / Math.max(1e-6, 1 - doc.lanes[i].pole_r)),
-  };
-  canvas.setPointerCapture(e.pointerId);
+attachSpectrum(canvas, doc, {
+  isLocked,
+  ceiling: () => ceiling,
+  sum: () => (doc.words ? sumCurve(doc.words) : null),
+  onLocked: (lane) => say(`S${lane + 1} locked`),
+  onGrab: (lane) => {
+    commit(`drag ${doc.roles[lane]} S${lane + 1}`);
+    doc.selected = lane;
+  },
+  onDrag: (lane, patch) => editLane(lane, patch),
+  onRelease: (lane) => {
+    storeCorner(doc.lanes, lanesToWords(doc.lanes, displaySr()));
+    pushAudio();
+    paint();
+    say(`S${lane + 1} ${doc.roles[lane] || ""}: ${doc.lanes[lane].pole_hz.toFixed(0)} Hz  r ${doc.lanes[lane].pole_r.toFixed(4)}`);
+    reconcile();
+  },
 });
-canvas.addEventListener("pointermove", (e) => {
-  if (!puckDrag) return;
-  const rect = canvas.getBoundingClientRect();
-  const h = canvas.clientHeight;
-  const py = e.clientY - rect.top;
-  const hz = hzOfX(e.clientX - rect.left, canvas.clientWidth);
-  const rp = puckDrag.rp0 + (dbOfY(py, h) - dbOfY(puckDrag.y0, h));
-  const r = Math.min(ceiling, Math.max(0, 1 - Math.pow(10, -Math.max(0, rp) / 20)));
-  editLane(puckDrag.lane, { pole_hz: hz, pole_r: r });
-});
-const endPuckDrag = () => {
-  if (!puckDrag) return;
-  const d = puckDrag;
-  puckDrag = null;
-  storeCorner(doc.lanes, lanesToWords(doc.lanes, displaySr()));
-  pushAudio();
-  paint();
-  say(
-    `S${d.lane + 1} ${doc.roles[d.lane] || ""}: ${doc.lanes[d.lane].pole_hz.toFixed(0)} Hz  r ${doc.lanes[d.lane].pole_r.toFixed(4)}`
-  );
-  reconcile();
-};
-canvas.addEventListener("pointerup", endPuckDrag);
-canvas.addEventListener("pointercancel", endPuckDrag);
 
 let paintQueued = false;
 let levelDragUntil = 0;
@@ -500,42 +465,28 @@ async function refreshResponse() {
   paint();
 }
 
-let drag = null;
-
-rootsCanvas.addEventListener("pointerdown", (e) => {
-  const rect = rootsCanvas.getBoundingClientRect();
-  const hit = hitRoot(rootsCanvas, doc, e.clientX - rect.left, e.clientY - rect.top);
-  if (!hit) return;
-  if (isLocked(hit.lane)) {
-    say(`S${hit.lane + 1} HELD — nothing may move it; click HELD to free it`);
-    return;
-  }
-  commit(`drag ${hit.kind} S${hit.lane + 1}`);
-  const slot = ensureCorner(doc.selectedCorner);
-  if (slot.citations) slot.citations[hit.lane] = null;
-  drag = hit;
-  rootsCanvas.setPointerCapture(e.pointerId);
-});
-
-rootsCanvas.addEventListener("pointermove", (e) => {
-  if (!drag) return;
-  const rect = rootsCanvas.getBoundingClientRect();
-  dragTo(rootsCanvas, doc, drag, e.clientX - rect.left, e.clientY - rect.top, ceiling);
-  storeCorner(doc.lanes);
-  paint();
-  pushAudio();
-  editVersion++;
-});
-
-rootsCanvas.addEventListener("pointerup", () => {
-  if (!drag) return;
-  const d = drag;
-  drag = null;
-  storeCorner(doc.lanes, lanesToWords(doc.lanes, displaySr()));
-  pushAudio();
-  paint();
-  say(`S${d.lane + 1} ${d.kind}: ${fmtLane(doc.lanes[d.lane], d.kind)}`);
-  reconcile();
+attachRoots(rootsCanvas, doc, {
+  isLocked,
+  ceiling: () => ceiling,
+  onLocked: (lane) => say(`S${lane + 1} HELD — nothing may move it; click HELD to free it`),
+  onGrab: (hit) => {
+    commit(`drag ${hit.kind} S${hit.lane + 1}`);
+    const slot = ensureCorner(doc.selectedCorner);
+    if (slot.citations) slot.citations[hit.lane] = null;
+  },
+  onMove: () => {
+    storeCorner(doc.lanes);
+    paint();
+    pushAudio();
+    editVersion++;
+  },
+  onRelease: (hit) => {
+    storeCorner(doc.lanes, lanesToWords(doc.lanes, displaySr()));
+    pushAudio();
+    paint();
+    say(`S${hit.lane + 1} ${hit.kind}: ${fmtLane(doc.lanes[hit.lane], hit.kind)}`);
+    reconcile();
+  },
 });
 
 function fmtLane(lane, kind) {
