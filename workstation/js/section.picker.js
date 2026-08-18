@@ -1,8 +1,6 @@
 import { curveInto } from "./curves.js";
 import { css, scope, curveEval, trace, yMap, SECTION_DB_LO, SECTION_DB_HI } from "./render.js";
 
-const PER_TYPE = 3;
-const MIN_COUNT = 2;
 
 function fhz(hz) {
   if (!(hz > 0)) return "0";
@@ -16,8 +14,9 @@ function rootText(tag, root) {
   return `${tag} ${fhz(root.hz)} Hz r ${root.r.toFixed(4)}`;
 }
 
-function detail(state, kind) {
-  return `${kind} ×${state.types[kind]} · ${rootText("P", state.pole)} · ${rootText("Z", state.zero)} · ${state.scale_db.toFixed(2)} dB · ${state.seat.id} / C${state.seat.corner} / S${state.seat.stage + 1}`;
+function detail(state) {
+  const stages = state.stages.map((s) => `S${s + 1}`).join("/");
+  return `×${state.count} across ${state.presets.length} filters at ${stages} — ${rootText("P", state.pole)} · ${rootText("Z", state.zero)} · ${state.scale_db.toFixed(2)} dB · ${state.presets.join(", ")}`;
 }
 
 export function createSectionPicker(host, hooks) {
@@ -28,8 +27,6 @@ export function createSectionPicker(host, hooks) {
 
   const cache = new Map();
   let states = [];
-  let typeOrder = [];
-  let stageCount = 0;
   let destination = 0;
   let anchor = null;
 
@@ -55,17 +52,12 @@ export function createSectionPicker(host, hooks) {
   }
 
   function groups() {
-    const stage = destination < stageCount ? destination : null;
-    const pool = stage === null ? states : states.filter((state) => state.stage === stage);
-    return typeOrder
-      .map((kind) => ({
-        kind,
-        items: pool
-          .filter((state) => (state.types[kind] || 0) >= MIN_COUNT)
-          .sort((a, b) => b.types[kind] - a.types[kind])
-          .slice(0, PER_TYPE),
-      }))
-      .filter((group) => group.items.length);
+    const here = states.filter((state) => state.stages.includes(destination));
+    const elsewhere = states.filter((state) => !state.stages.includes(destination));
+    return [
+      { kind: `SEEN AT S${destination + 1}`, items: here },
+      { kind: "ELSEWHERE IN THE CASCADE", items: elsewhere },
+    ].filter((group) => group.items.length);
   }
 
   function close() {
@@ -112,15 +104,16 @@ export function createSectionPicker(host, hooks) {
         tile.className = "sheet-tile";
         tile.tabIndex = 0;
         tile.setAttribute("role", "button");
-        tile.setAttribute("aria-label", detail(state, kind));
+        tile.setAttribute("aria-label", detail(state));
+        tile.title = detail(state);
 
         const count = document.createElement("span");
         count.className = "count";
-        count.textContent = `×${state.types[kind]}`;
+        count.textContent = `×${state.count}`;
         const canvas = document.createElement("canvas");
         tile.append(canvas, count);
 
-        const show = () => hooks.onDetail(detail(state, kind));
+        const show = () => hooks.onDetail(detail(state));
         const seat = () => {
           hooks.onState(state, destination);
           close();
@@ -157,8 +150,6 @@ export function createSectionPicker(host, hooks) {
   return {
     setVocabulary(vocabulary) {
       states = (vocabulary && vocabulary.states) || [];
-      typeOrder = (vocabulary && vocabulary.type_order) || [];
-      stageCount = (vocabulary && vocabulary.stage_count) || 0;
       cache.clear();
     },
     open(nextDestination, nextAnchor) {

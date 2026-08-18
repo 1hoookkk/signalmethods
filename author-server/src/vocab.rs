@@ -119,10 +119,11 @@ fn is_off(pair: RootPair) -> bool {
 }
 
 struct Cluster {
-    stage: usize,
     words: HashMap<[u16; 5], usize>,
     seats: Vec<(String, usize, usize, [u16; 5])>,
     objects: Vec<String>,
+    presets: Vec<String>,
+    stages: Vec<usize>,
     types: HashMap<String, usize>,
     sample_rate_hz: f64,
 }
@@ -134,7 +135,7 @@ pub fn build(root: &Path, stage_index: &Value) -> Value {
 
     let mut members: HashMap<String, Vec<Value>> = HashMap::new();
     let mut untyped = Vec::new();
-    let mut clusters: HashMap<((u8, i64, i64), (u8, i64, i64), usize), Cluster> = HashMap::new();
+    let mut clusters: HashMap<((u8, i64, i64), (u8, i64, i64)), Cluster> = HashMap::new();
     let mut stages_seen = 0usize;
 
     for source in sources {
@@ -193,13 +194,13 @@ pub fn build(root: &Path, stage_index: &Value) -> Value {
                 let key = (
                     pair_key(geometry.pole, sample_rate_hz),
                     pair_key(geometry.zero, sample_rate_hz),
-                    stage,
                 );
                 let cluster = clusters.entry(key).or_insert_with(|| Cluster {
-                    stage,
                     words: HashMap::new(),
                     seats: Vec::new(),
                     objects: Vec::new(),
+                    presets: Vec::new(),
+                    stages: Vec::new(),
                     types: HashMap::new(),
                     sample_rate_hz,
                 });
@@ -210,6 +211,12 @@ pub fn build(root: &Path, stage_index: &Value) -> Value {
                 }
                 if !cluster.objects.iter().any(|held| held == id) {
                     cluster.objects.push(id.to_string());
+                }
+                if !cluster.presets.iter().any(|held| held == name) {
+                    cluster.presets.push(name.to_string());
+                }
+                if !cluster.stages.contains(&stage) {
+                    cluster.stages.push(stage);
                 }
             }
         }
@@ -228,8 +235,13 @@ pub fn build(root: &Path, stage_index: &Value) -> Value {
                 .cloned()
                 .unwrap_or_default();
             let geometry = geometry_from_words_at(representative, cluster.sample_rate_hz);
+            let mut stages = cluster.stages.clone();
+            stages.sort_unstable();
+            let mut presets = cluster.presets.clone();
+            presets.sort();
             json!({
-                "stage": cluster.stage,
+                "stages": stages,
+                "presets": presets,
                 "count": cluster.seats.len(),
                 "objects": cluster.objects.len(),
                 "types": cluster.types,
@@ -242,10 +254,11 @@ pub fn build(root: &Path, stage_index: &Value) -> Value {
             })
         })
         .collect();
+    states.retain(|s| s["count"].as_u64().unwrap_or(0) >= 2 && s["presets"].as_array().map_or(0, |p| p.len()) >= 2);
     states.sort_by(|a, b| {
-        let stage = a["stage"].as_u64().cmp(&b["stage"].as_u64());
         let count = b["count"].as_u64().cmp(&a["count"].as_u64());
-        stage.then(count)
+        let presets = b["presets"].as_array().map_or(0, |p| p.len()).cmp(&a["presets"].as_array().map_or(0, |p| p.len()));
+        count.then(presets)
     });
 
     let templates: Vec<Value> = TYPE_ORDER
