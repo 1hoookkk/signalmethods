@@ -22,11 +22,11 @@ import { mountStages, drawStages } from "./stages.js";
 import { createSectionPicker } from "./section.picker.js";
 import * as field from "./field.js";
 import { drawRoots, hitRoot, dragTo } from "./roots.js";
-import { initPad } from "./pad.js";
+import { createAudition } from "./audition.js";
 import { FORMANT_SLOTS } from "./fit.roles.js";
-import { setCorners, setRide, setPlay, setBlend, setFreq, setGrit, setRate, setReference, setSource, outputRms, audioRate, audioState } from "./audio.js";
-import { lanesToWords, encode, interpolateWords, wordsToBiquads, sumDb, biquadFromWords, tfKey } from "./dsp.js";
-import { curveInto, sumCurve, stageCurves, displaySr, setDisplaySr } from "./curves.js";
+import { setCorners, setRate, setReference, setSource } from "./audio.js";
+import { lanesToWords, encode, wordsToBiquads, sumDb } from "./dsp.js";
+import { sumCurve, stageCurves, displaySr, setDisplaySr } from "./curves.js";
 import { openWire } from "./wire.js";
 
 const verdict = document.getElementById("verdict-text");
@@ -64,83 +64,25 @@ document.getElementById("roots").appendChild(rootsCanvas);
 
 let ceiling = 0.9999;
 let hoverCorner = null;
-let uniformWarned = false;
 const BOUND_INTERVAL_ST = 2;
-let padFreq = 110;
 
 function endpointName(i = doc.selectedCorner) {
   return i === 0 ? "LO" : "HI";
 }
 
-const pad = initPad(document.getElementById("pad"), {
-  onRide: (m, q, z) => {
-    setRide(m, q, z);
-    ridePreview(m, q, z);
-    if (doc.fieldUniform && !uniformWarned) {
-      uniformWarned = true;
-      say("playing one state — edit LO and HI to create motion");
-    }
-  },
-  onHold: hold,
-  onBlend: (b) => setBlend(b),
-  onFreq: (f) => { padFreq = f; setFreq(f); },
-  onGrit: (g) => setGrit(g),
-  onSource: (source) => setSource(source),
-  isSquare: () => squareField(),
-  getCube: () => ({
-    filled: doc.field.map((s) => !!s),
-    active: doc.selectedCorner,
-    names: doc.field.map((s) => (s ? s.name : "")),
-    hover: hoverCorner,
-  }),
-});
-
-let levelTimer = 0;
-let playing = false;
-
-function hold(down) {
-  if (down && !doc.fieldWords && !doc.words) {
-    return say("nothing seated — load a body or seat sections first");
-  }
-  if (down && !doc.fieldWords) pushAudio();
-  playing = down;
-  setPlay(down).catch((e) => say(`AUDIO: ${e.message}`));
-  clearInterval(levelTimer);
-  if (!down) return;
-  levelTimer = setInterval(() => {
-    const rms = outputRms();
-    if (rms === null) return;
-    const level = rms > 0 ? `${(20 * Math.log10(rms)).toFixed(1)} dBFS` : "silent";
-    say(`hold — out ${level} · ${audioState()} ${audioRate()} Hz`);
-  }, 250);
-}
-
-const ridePos = { m: 0, q: 0, z: 0 };
-let previewPending = false;
-let previewBuffer = null;
-
-function ridePreview(m, q, z) {
-  ridePos.m = m;
-  ridePos.q = q;
-  ridePos.z = z;
-  if (!doc.fieldWords && doc.words) pushAudio();
-  if (previewPending || !doc.fieldWords) return;
-  previewPending = true;
-  requestAnimationFrame(() => {
-    previewPending = false;
-    if (!doc.fieldWords) return;
-    const words = interpolateWords(doc.fieldWords, ridePos.m, ridePos.q, ridePos.z);
-    previewBuffer = curveInto(words, previewBuffer);
-    doc.preview = previewBuffer;
-    paintSpectrum();
-  });
-}
-
 const ensureCorner = field.ensureCorner;
 const bindCorner = field.selectCorner;
 const storeCorner = field.commitLanes;
-const squareField = field.isSquare;
 const outputWords = field.runtimeFieldWords;
+
+const audition = createAudition(document.getElementById("pad"), {
+  doc,
+  say: (text) => say(text),
+  pushAudio: () => pushAudio(),
+  paintSpectrum: () => paintSpectrum(),
+});
+const pad = { paint: audition.paint };
+const hold = audition.hold;
 
 field.setBindHook((slot) => {
   if (!recordingState.item) return;
@@ -221,7 +163,7 @@ function paintCorners() {
       doc.rms = null;
       doc.selectedCorner = 0;
       bindCorner(0);
-      uniformWarned = false;
+      audition.clearUniformWarning();
       say("new — LO and HI cleared");
       paintCorners();
       pad.paint();
@@ -1130,7 +1072,7 @@ window.addEventListener("keydown", (e) => {
     doc.rms = null;
     doc.selectedCorner = 0;
     bindCorner(0);
-    uniformWarned = false;
+    audition.clearUniformWarning();
     say("new");
     paintCorners();
     pad.paint();
