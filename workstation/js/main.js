@@ -828,15 +828,15 @@ async function pick(kind, item, right) {
     commit(`pose ${r.name}`);
     doc.targetName = r.name;
     const seated = r.lanes.filter((lane) => lane.pole_r > 0).slice(0, FORMANT_SLOTS.length);
-    doc.lanes = emptyLanes();
-    doc.roles = emptyRoles();
+    const lanes = emptyLanes();
+    const roles = emptyRoles();
     seated.forEach((lane, k) => {
-      doc.lanes[FORMANT_SLOTS[k]] = lane;
-      doc.roles[FORMANT_SLOTS[k]] = `F${k + 1}`;
+      lanes[FORMANT_SLOTS[k]] = lane;
+      roles[FORMANT_SLOTS[k]] = `F${k + 1}`;
     });
-    doc.laws = doc.lanes.map((lane) => (lane.pole_r > 0 ? pinLaw(lane) : freeLaw()));
-    storeCorner(doc.lanes);
-    say(`replaced cascade — ${r.name}, ${seated.length} formant poles placed and locked`);
+    const laws = lanes.map((lane) => (lane.pole_r > 0 ? pinLaw(lane) : freeLaw()));
+    const held = field.applyLanes(lanes, { roles, laws });
+    say(`${r.name} — ${seated.length} formant poles placed and locked${held.length ? ` · S${held.join(",S")} HELD, kept` : ""}`);
     await refreshResponse();
     await boundAndNormalize();
     return;
@@ -845,12 +845,8 @@ async function pick(kind, item, right) {
     const r = await api.frame(item.id);
     commit(`frame ${r.name}`);
     doc.targetName = r.name;
-    doc.lanes = r.lanes;
-    doc.laws = r.laws;
-    doc.words = lanesToWords(r.lanes, displaySr());
-    doc.roles = emptyRoles();
-    storeCorner(doc.lanes, doc.words);
-    say(`replaced cascade — frame ${r.name}, ${r.provenance}`);
+    const held = field.applyLanes(r.lanes, { roles: emptyRoles(), laws: r.laws });
+    say(`frame ${r.name}, ${r.provenance}${held.length ? ` · S${held.join(",S")} HELD, kept` : ""}`);
     pushAudio();
     paint();
     refreshResponse().catch(() => {});

@@ -103,6 +103,32 @@ export function isSquare() {
   return doc.field.slice(0, AUTHORED_CORNERS).every(Boolean) && doc.field.slice(AUTHORED_CORNERS).every((slot) => !slot);
 }
 
+export function applyLanes(nextLanes, next = {}) {
+  const slot = ensureCorner(doc.selectedCorner);
+  const nextWords = lanesToWords(nextLanes, displaySr());
+  const outWords = slot.words.slice();
+  const held = [];
+  for (let stage = 0; stage < STAGES; stage++) {
+    if (isLocked(stage)) {
+      held.push(stage + 1);
+      continue;
+    }
+    slot.lanes[stage] = nextLanes[stage];
+    outWords[stage] = nextWords[stage];
+    slot.citations[stage] = null;
+    geometries(slot)[stage] = null;
+    if (next.roles) doc.roles[stage] = next.roles[stage];
+    if (next.laws) doc.laws[stage] = next.laws[stage];
+  }
+  slot.words = outWords;
+  slot.roles = doc.roles;
+  slot.laws = doc.laws;
+  doc.lanes = slot.lanes;
+  doc.words = slot.words;
+  doc.fieldWords = runtimeFieldWords();
+  return held;
+}
+
 export function setSection(stage, cell) {
   const slot = ensureCorner(doc.selectedCorner);
   slot.words = slot.words.map((words, i) => (i === stage ? cell.words.slice() : words));
