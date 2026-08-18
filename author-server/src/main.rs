@@ -7,6 +7,7 @@ mod library;
 mod parity;
 mod store;
 mod target;
+mod vocab;
 mod ws;
 
 use std::net::{TcpListener, TcpStream};
@@ -19,7 +20,10 @@ fn main() {
         eprintln!("{e}");
         std::process::exit(1);
     }));
-    let addr = std::env::args().nth(1).unwrap_or_else(|| "127.0.0.1:8787".into());
+    let addr = std::env::args()
+        .nth(1)
+        .or_else(|| std::env::var("TRENCH_BIND").ok())
+        .unwrap_or_else(|| "127.0.0.1:8787".into());
     let listener = TcpListener::bind(&addr).unwrap_or_else(|e| {
         eprintln!("bind {addr}: {e}");
         std::process::exit(1);
@@ -42,6 +46,14 @@ fn handle(mut stream: TcpStream, store: &Store) {
     }
     match (req.method.as_str(), req.path.as_str()) {
         ("GET", "/api/library") => http::json(&mut stream, 200, &library::library(store)),
+        ("GET", "/api/alphabet") => match library::alphabet(store) {
+            Ok(v) => http::json(&mut stream, 200, &v),
+            Err(e) => http::error(&mut stream, 400, &e),
+        },
+        ("GET", "/api/census") => match library::census(store) {
+            Ok(v) => http::json(&mut stream, 200, &v),
+            Err(e) => http::error(&mut stream, 400, &e),
+        },
         ("GET", "/api/brief") => match brief::brief(store, &req.query) {
             Ok(v) => http::json(&mut stream, 200, &v),
             Err(e) => http::error(&mut stream, 400, &e),
@@ -52,14 +64,31 @@ fn handle(mut stream: TcpStream, store: &Store) {
         ("POST", "/api/fit") => api(&mut stream, &req.body, fit::fit),
         ("POST", "/api/fit_stream") => fit_stream(&mut stream, &req.body),
         ("POST", "/api/audit") => api(&mut stream, &req.body, field::audit),
+        ("POST", "/api/audit_words") => api(&mut stream, &req.body, target::audit_words),
         ("POST", "/api/corners") => api(&mut stream, &req.body, field::corners_words),
         ("POST", "/api/write_body") => api(&mut stream, &req.body, |v| field::write_body(store, v)),
+        ("POST", "/api/write_words") => api(&mut stream, &req.body, |v| target::write_words(store, v)),
         ("POST", "/api/write_frame") => api(&mut stream, &req.body, |v| field::write_frame(store, v)),
         ("POST", "/api/frame") => api(&mut stream, &req.body, |v| field::load_frame(store, v)),
         ("GET", "/api/parity_vectors") => match parity_endpoint(store, &req.query) {
             Ok(v) => http::json(&mut stream, 200, &v),
             Err(e) => http::error(&mut stream, 400, &e),
         },
+        ("GET", "/api/audio") => {
+            let Some(id) = http::query_param(&req.query, "id") else { return http::error(&mut stream, 400, "no id"); };
+            match store.resolve(id) {
+                Ok(path) if path.extension().is_some_and(|x| x.eq_ignore_ascii_case("wav")) => http::file(&mut stream, &path),
+                Ok(_) => http::error(&mut stream, 400, "not a wav"),
+                Err(e) => http::error(&mut stream, 400, &e),
+            }
+        }
+        ("GET", path) if path.starts_with("/ref/tables/") => {
+            let rel = path.trim_start_matches("/ref/tables/");
+            if rel.contains("..") || rel.contains(':') || rel.contains('/') {
+                return http::error(&mut stream, 400, "bad path");
+            }
+            http::file(&mut stream, &store.root.join("recipes").join("tables").join(rel));
+        }
         ("GET", path) => {
             let rel = if path == "/" { "index.html" } else { path.trim_start_matches('/') };
             if rel.contains("..") || rel.contains(':') {

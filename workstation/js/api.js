@@ -44,12 +44,14 @@ async function stream(path, body, onLine) {
 
 export const api = {
   library: () => get("/api/library"),
-  target: (source, id) => post("/api/target", { source, id }),
+  alphabet: () => get("/api/alphabet"),
+  census: () => get("/api/census"),
+  target: (source, id, options = {}) => post("/api/target", { source, id, ...options }),
   skeleton: (curve, lanes) => post("/api/skeleton", { curve, lanes }),
   response: (lanes) => post("/api/response", { lanes }),
-  fit: (curve, lanes, laws, cold) => post("/api/fit", { curve, lanes, laws, cold }),
-  fitStream: async (curve, lanes, laws, cold, onCandidate) => {
-    const request = { curve, lanes, laws, cold };
+  fit: (curve, lanes, laws, cold, positions) => post("/api/fit", { curve, lanes, laws, cold, positions }),
+  fitStream: async (curve, lanes, laws, cold, positions, onCandidate) => {
+    const request = { curve, lanes, laws, cold, positions };
     let result = null;
     let failure = null;
     const served = await stream("/api/fit_stream", request, (m) => {
@@ -64,7 +66,9 @@ export const api = {
   },
   corners: (corners) => post("/api/corners", { corners }),
   audit: (corners) => post("/api/audit", { corners }),
+  auditWords: (words) => post("/api/audit_words", { words }),
   writeBody: (corners, kind) => post("/api/write_body", { corners, kind }),
+  writeWords: (words, kind) => post("/api/write_words", { words, kind }),
   writeFrame: (lanes, laws, provenance) => post("/api/write_frame", { lanes, laws, provenance }),
   frame: (id) => post("/api/frame", { id }),
   brief: (id) => get(`/api/brief?id=${encodeURIComponent(id)}`),

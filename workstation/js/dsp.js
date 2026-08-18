@@ -1,3 +1,57 @@
+export function encode(value) {
+  if (value >= 1) return 0xffff;
+  if (value <= 0) return 0x0000;
+  const denormMant = Math.round(value * 134217728);
+  if (denormMant > 0 && denormMant <= 0xfff) return (denormMant - 1) & 0xffff;
+  const log2Val = Math.log2(value);
+  let expStored = Math.min(Math.floor(log2Val) + 1, 0);
+  if (expStored < -14) return 0x0000;
+  let biasedExp = expStored + 15;
+  let mantWithHidden = Math.round(value / Math.pow(2, expStored - 13));
+  if (mantWithHidden >= 0x2000) {
+    if (expStored < 0) {
+      expStored += 1;
+      biasedExp += 1;
+      mantWithHidden = Math.round(value / Math.pow(2, expStored - 13));
+      const mant = Math.min(mantWithHidden & 0xfff, 0xfff);
+      return (((biasedExp << 12) | mant) - 1) & 0xffff;
+    }
+    return 0xffff;
+  }
+  const mant = Math.max(0, Math.min(mantWithHidden - 0x1000, 0xfff));
+  return (((biasedExp << 12) | mant) - 1) & 0xffff;
+}
+
+export function lanesToWords(lanes, sr) {
+  const TAU = 2 * Math.PI;
+  return lanes.map((lane) => {
+    const wz = TAU * lane.zero_hz / sr;
+    const wp = TAU * lane.pole_hz / sr;
+    const rz = lane.zero_r;
+    const rp = lane.pole_r;
+    const c0 = 2 - 2 * rz * Math.cos(wz);
+    const c1 = 1 - rz * rz;
+    const c2 = 2 - 2 * rp * Math.cos(wp);
+    const c3 = 1 - rp * rp;
+    const c4 = lane.scale;
+    return [
+      encode((c0 - c1) / 4),
+      encode(c1),
+      encode((c2 - c3) / 4),
+      encode(c3),
+      encode(c4 / 4),
+    ];
+  });
+}
+
+export function biquadFromWords(words) {
+  return kernelToBiquad(stageWordsToKernel(words));
+}
+
+export function tfKey(biquad) {
+  return biquad.map((v) => (Object.is(v, -0) ? "0.000000" : v.toFixed(6))).join("|");
+}
+
 export function lerpU16(a, b, frac) {
   const diff = Math.fround(b - a);
   const prod = Math.fround(diff * Math.fround(frac));
@@ -83,3 +137,4 @@ export function rowDb(c, hz, sr) {
     )
   );
 }
+

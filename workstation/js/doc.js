@@ -13,6 +13,7 @@ export const doc = {
   rms: null,
   packing: null,
   selected: 1,
+  selectedCorner: 0,
   field: Array.from({ length: 8 }, () => null),
 };
 
@@ -47,8 +48,8 @@ export function freeLaw() {
   return { writable: true, freedom: [true, true, true, true], zone: null };
 }
 
-export function pinLaw(lane) {
-  return { writable: true, freedom: [false, true, !(lane.zero_r > 0), true], zone: null };
+export function pinLaw() {
+  return { writable: false, freedom: [false, false, false, false], zone: null };
 }
 
 export function cycleLaw(law) {
@@ -68,11 +69,39 @@ const past = [];
 const future = [];
 let lastLabel = "—";
 
+const SNAPSHOT_KEY = "trench.session";
+
+export function saveSnapshot() {
+  try {
+    localStorage.setItem(
+      SNAPSHOT_KEY,
+      JSON.stringify({
+        lanes: doc.lanes,
+        laws: doc.laws,
+        roles: doc.roles,
+        field: doc.field,
+        targetName: doc.targetName,
+        selectedCorner: doc.selectedCorner,
+      })
+    );
+  } catch (e) {}
+}
+
+export function loadSnapshot() {
+  try {
+    const raw = localStorage.getItem(SNAPSHOT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export function commit(label) {
   past.push(structuredClone(doc));
   if (past.length > 100) past.shift();
   future.length = 0;
   lastLabel = label;
+  setTimeout(saveSnapshot, 0);
 }
 
 export function undo() {
@@ -99,7 +128,7 @@ export const GRID = Array.from({ length: 1024 }, (_, i) =>
   40 * Math.pow(16000 / 40, i / 1023)
 );
 
-export const DRAW_POINTS = 256;
+export const DRAW_POINTS = 1024;
 
 export const DRAW_GRID = Float64Array.from({ length: DRAW_POINTS }, (_, i) =>
   40 * Math.pow(16000 / 40, i / (DRAW_POINTS - 1))

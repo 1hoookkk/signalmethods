@@ -18,7 +18,7 @@ function project(m, q, z, w, h) {
   return [w / 2 + x * w * 0.62, h / 2 + y * h * 0.62];
 }
 
-export function drawCube(canvas, pos, filled, active, names) {
+export function drawCube(canvas, pos, filled, active, names, hover) {
   const ctx = canvas.getContext("2d");
   const w = canvas.width;
   const h = canvas.height;
@@ -34,7 +34,7 @@ export function drawCube(canvas, pos, filled, active, names) {
     ctx.lineTo(bx, by);
     ctx.stroke();
   }
-  ctx.font = "9px monospace";
+  ctx.font = `10px ${css("--mono")}`;
   for (let i = 0; i < 8; i++) {
     const m = i & 1;
     const q = (i >> 1) & 1;
@@ -54,6 +54,13 @@ export function drawCube(canvas, pos, filled, active, names) {
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(x, y, 9, 0, 7);
+      ctx.stroke();
+    }
+    if (i === hover) {
+      ctx.strokeStyle = css("--trace-cumulative");
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, 11, 0, 7);
       ctx.stroke();
     }
     const name = names && names[i] ? names[i] : "";

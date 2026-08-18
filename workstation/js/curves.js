@@ -1,7 +1,7 @@
 import { DRAW_GRID } from "./doc.js";
 import { wordsToBiquads, rowDb } from "./dsp.js";
 
-let sr = 44100;
+let sr = 39062.5;
 let cache = new WeakMap();
 let recomputes = 0;
 

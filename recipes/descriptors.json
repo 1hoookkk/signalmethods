@@ -49,7 +49,7 @@
     { "name": "BassOMatic", "order": 12, "type": "REZ", "sentence": "Low boost for basslines. Q goes to distortion at the maximum level." },
     { "name": "LucifersQ", "order": 12, "type": "REZ", "sentence": "Violent mid Q filter! Take care with Q values 40-90." },
     { "name": "ToothComb", "order": 12, "type": "REZ", "sentence": "Highly resonant harmonic peaks shift in unison. Try mid Q." },
-    { "name": "EarBender", "order": 12, "type": null, "sentence": "Midway between wah & vowel. Strong mid-boost. Nasty at high Q settings.", "note": "type column lost in extraction" },
+    { "name": "EarBender", "order": 12, "type": "WAH", "sentence": "Midway between wah & vowel. Strong mid-boost. Nasty at high Q settings." },
     { "name": "FuzziFace", "order": 12, "type": "DST", "sentence": "Nasty clipped distortion. Q functions as mid-frequency tone control." },
     { "name": "BlissBatz", "order": 6, "type": "SFX", "sentence": "Bat phaser from the Emulator 4." },
     { "name": "KlangKling", "order": 12, "type": "SFX", "sentence": "Ringing Flange filter. Q \"tunes\" the ring frequency." }

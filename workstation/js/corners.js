@@ -1,37 +1,125 @@
+import { css, scope, trace, curveEval, xOf, yMap } from "./render.js";
+import { sumCurve } from "./curves.js";
+import { decode } from "./dsp.js";
+
 export const NAMES = ["M0 Q0 Z0", "M1 Q0 Z0", "M0 Q1 Z0", "M1 Q1 Z0", "M0 Q0 Z1", "M1 Q0 Z1", "M0 Q1 Z1", "M1 Q1 Z1"];
 
-export function renderCorners(el, field, active, hooks) {
+function levelDb(words) {
+  if (!words) return null;
+  return words.reduce((db, row) => db + 20 * Math.log10(Math.max(4 * decode(row[4]), 1e-12)), 0);
+}
+
+function miniplot(canvas, words, on, label, name, cloned, held) {
+  scope(canvas).frame((g, w, h) => {
+    const curve = words ? sumCurve(words) : null;
+    const low = curve ? Math.min(-24, ...curve) : -24;
+    const high = curve ? Math.max(24, ...curve) : 24;
+    const dbLo = Math.floor((low - 4) / 12) * 12;
+    const dbHi = Math.ceil((high + 4) / 12) * 12;
+    const { yOf } = yMap(dbLo, dbHi, h);
+    g.fillStyle = css("--well");
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = css("--grat");
+    g.lineWidth = 1;
+    for (const hz of [100, 1000, 10000]) {
+      const x = Math.floor(xOf(hz, w)) + 0.5;
+      g.beginPath();
+      g.moveTo(x, 0);
+      g.lineTo(x, h);
+      g.stroke();
+    }
+    const zero = Math.floor(yOf(0)) + 0.5;
+    g.strokeStyle = css("--grat-major");
+    g.beginPath();
+    g.moveTo(0, zero);
+    g.lineTo(w, zero);
+    g.stroke();
+    if (words) {
+      if (cloned) g.globalAlpha = 0.45;
+      trace(g, w, h, curveEval(curve), yOf, css("--trace-live"), 1.3);
+      g.globalAlpha = 1;
+    }
+    g.font = `10px ${css("--mono")}`;
+    g.fillStyle = words ? css("--axis-ink") : css("--ink-dim");
+    g.fillText(label, 4, 10);
+    const level = levelDb(words);
+    if (level !== null) {
+      const text = `${level >= 0 ? "+" : ""}${level.toFixed(2)} dB`;
+      g.fillText(text, w - g.measureText(text).width - 4, 10);
+    }
+    if (held) {
+      g.fillStyle = css("--active-corner");
+      g.fillText("HELD", w - 34, 10);
+    }
+    if (cloned) {
+      g.fillStyle = css("--ink-dim");
+      g.fillText("mirror", 4, h - 5);
+    } else if (name && !/^corner \d+$/.test(name)) {
+      g.fillStyle = css("--axis-ink");
+      g.fillText(name.slice(0, 18), 4, h - 5);
+    }
+    g.strokeStyle = on ? css("--active-corner") : css("--grat-major");
+    g.lineWidth = on ? 2 : 1;
+    g.strokeRect(0.5, 0.5, w - 1, h - 1);
+  });
+}
+
+export function renderCorners(el, field, active, hooks, live) {
   el.textContent = "";
-  const grid = document.createElement("div");
-  grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:3px;background:var(--well)";
-  for (let i = 0; i < 8; i++) {
-    const cell = document.createElement("div");
-    const filled = !!field[i];
-    cell.style.cssText = `padding:3px 6px;font-size:10px;cursor:pointer;border:1px solid var(--grat-major);color:${
-      filled ? "var(--trace-live)" : "var(--ink-dim)"
-    };background:${i === active ? "var(--titlebar)" : "transparent"}`;
-    cell.textContent = `${NAMES[i]}${filled ? " ●" : " —"}`;
-    cell.title = filled ? field[i].name : "empty — SET places the working lanes here";
-    cell.onclick = () => hooks.onSelect(i);
-    grid.appendChild(cell);
-  }
-  el.appendChild(grid);
   const bar = document.createElement("div");
-  bar.style.cssText = "display:flex;gap:4px;padding:3px";
-  for (const [label, fn, title] of [
-    ["SET", hooks.onSet, "place the working lanes into the selected corner"],
-    ["GET", hooks.onGet, "load the selected corner into the working lanes"],
-    ["KEEP", hooks.onKeep, "save working lanes as a kept frame"],
-    ["AUDIT", hooks.onAudit, "audit the full field"],
-    ["WRITE", hooks.onWrite, "audit-gated 560B body write"],
+  bar.className = "verb-bar";
+  for (const group of [
+    [["NEW", hooks.onClear]],
+    [["COPY", hooks.onFill]],
+    [["KEEP", hooks.onKeep]],
+    [
+      ["AUDIT", hooks.onAudit],
+      ["WRITE", hooks.onWrite],
+    ],
   ]) {
-    const b = document.createElement("button");
-    b.textContent = label;
-    b.title = title;
-    b.style.cssText =
-      "flex:1;background:var(--chrome);border:2px solid;border-color:var(--chrome-hi) var(--chrome-lo) var(--chrome-lo) var(--chrome-hi);font:inherit;font-size:10px;padding:2px 0;cursor:pointer";
-    b.onclick = fn;
-    bar.appendChild(b);
+    const cluster = document.createElement("div");
+    cluster.className = "verb-group";
+    cluster.style.flex = `${group.length}`;
+    for (const [label, fn] of group) {
+      const b = document.createElement("button");
+      b.className = label === "WRITE" ? "verb verb-terminal" : "verb";
+      b.textContent = label;
+      b.onclick = fn;
+      cluster.appendChild(b);
+    }
+    bar.appendChild(cluster);
   }
   el.appendChild(bar);
+  const cells = [];
+  const heads = document.createElement("div");
+  heads.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:6px 4px 2px;background:var(--well);font-size:11px;color:var(--axis-ink)";
+  heads.innerHTML = "<div>LO MORPH</div><div style='text-align:right'>HI MORPH</div>";
+  el.appendChild(heads);
+  const grid = document.createElement("div");
+  grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--well)";
+  for (const i of [0, 1]) {
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = "width:100%;aspect-ratio:1.35;cursor:pointer";
+    canvas.onclick = () => hooks.onSelect(i);
+    canvas.ondblclick = () => hooks.onHoldCorner && hooks.onHoldCorner(i);
+    canvas.draggable = true;
+    canvas.ondragstart = (e) => e.dataTransfer.setData("text/plain", String(i));
+    canvas.ondragover = (e) => e.preventDefault();
+    canvas.ondrop = (e) => {
+      e.preventDefault();
+      const from = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      if (Number.isInteger(from) && from !== i && hooks.onSwap) hooks.onSwap(from, i);
+    };
+    grid.appendChild(canvas);
+    cells.push([canvas, i]);
+  }
+  el.appendChild(grid);
+  requestAnimationFrame(() => {
+    for (const [canvas, i] of cells) {
+      const slot = field[i];
+      const cloned = !!(slot && slot.cloned);
+      const words = slot ? (cloned && live ? live : slot.words) : null;
+      miniplot(canvas, words, i === active, i === 0 ? "LO" : "HI", slot && slot.name, cloned, !!(slot && slot.held));
+    }
+  });
 }
