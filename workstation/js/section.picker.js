@@ -55,8 +55,8 @@ export function createSectionPicker(host, hooks) {
     const here = states.filter((state) => state.stages.includes(destination));
     const elsewhere = states.filter((state) => !state.stages.includes(destination));
     return [
-      { kind: `SEEN AT S${destination + 1}`, items: here },
-      { kind: "ELSEWHERE IN THE CASCADE", items: elsewhere },
+      { kind: `AT S${destination + 1} · ${here.length}`, items: here },
+      { kind: `ELSEWHERE · ${elsewhere.length}`, items: elsewhere },
     ].filter((group) => group.items.length);
   }
 
