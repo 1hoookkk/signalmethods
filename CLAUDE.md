@@ -1,7 +1,26 @@
 # Project instructions
 
-One document. What the object is, what the sources establish, what we decided,
-what is proven here, and what was removed.
+## Agent contract
+
+This repository is evidence-driven reverse engineering. Preserve established
+behaviour before improving structure.
+
+- Do not infer architecture, semantics, or rules that are not established here
+  or in the repository.
+- Do not generalise observed factory data into a rule unless that rule is
+  explicitly established.
+- Do not reintroduce anything in Removed, even under a different name.
+- Treat Canon and Rules as design constraints, not suggestions.
+- Treat Proven here as acceptance evidence; preserve the tests that establish it.
+- Treat Open items as unresolved. Do not silently solve them by assumption.
+- When prose and executable evidence appear to disagree, investigate and report
+  the discrepancy rather than choosing whichever interpretation seems cleaner.
+- Preserve strange factory behaviour unless there is evidence that it is an
+  implementation error.
+- Prefer the smallest change that satisfies the requested task.
+- Do not refactor unrelated code while implementing a requested change.
+- Before changing a representation or import/export path, identify the relevant
+  null/round-trip test and preserve it.
 
 ## The object
 
@@ -151,6 +170,75 @@ Gray order seeded from their neighbour so lanes correspond → packed words →
   The transfer audio itself is verified here: biphase mark at 6 kbaud,
   _VCB1 at byte 749, 289 records of 332 bytes at 1090+332n, names in the
   first 12 bytes.
+- **EmulatorX.dll** — the P2K/Proteus filter engine in software, re-disassembled
+  here from the installed binary (`Program Files/Creative Professional/
+  Emulator X/EmulatorX.dll`, PE base `0x180000000`), against the earlier reported
+  extraction at `../trench-x3-clean/ref/ghidra_extracts/`.
+  **The engine has exactly two ways to make a filter: compute it, or look it
+  up.** The class dispatch table at `0x1806d5f80` holds 32-byte records whose
+  MSVC RTTI names give E-mu's own hierarchy — 17 closed-form primitives
+  (`CPhantomLP2Pole` … `CPhantomVocal2`), 5 user-programmable morph targets
+  (`CPhantomMorph1`, `MorphLP`, `MorphLPX`, `Morph2`, `MorphDesigner`), and one
+  table reader, `CPhantomFilterP2k`, which serves all 33 character filters. The
+  17 and 5 match the ROM filter table and the manual's five PROG filters exactly.
+  Recorded in `recipes/phantom_classes.json`, served on `/api/library` as
+  `vocabulary.phantom_classes`; each stage-index member carries its `provenance`
+  and `class`. Nothing in the binary fits or factors a response.
+  **The 33 skins are stored, not compiled.** `CPhantomFilterP2k`
+  (`FUN_1802d3ce0`) computes `0x1806d7610 + (skin*4 + rate)*0xf0` and copies
+  five-word rows into the corner bank, no arithmetic on the words. `0xf0` is 240
+  bytes — one P2K body.
+  **The second index is the sample rate, not a variant.** `word[obj+0x0c]` is
+  the same rate-family index every other class uses to select `base[]`/`slope[]`,
+  and those tables hold four entries. So `../trench-x3-clean/ref/p2k_variants/`
+  is 50 filters × 4 rates, not 50 skins × 4 variants — but what a rate slot
+  holds differs by half of the table. **The 33 stored skins are one design
+  pre-warped**: decoded at one fixed rate, every live pole of each bank is an
+  exact scaling of bank 0's, and across all 31 skins with four comparable banks
+  the ratios are `0.91878 / 0.45939 / 0.22969` against `44100/48000`,
+  `44100/96000`, `44100/192000` — 31 of 31 on every bank, sd 1e-4 or better.
+  The only base rate making that a real family is **44,100 Hz — the P2K datum**;
+  bank 0 is the 44.1k bank, and the four slots exist so the runtime never warps
+  z-domain geometry per rate. 39,062.5 Hz is Morpheus's datum and does not
+  apply. The earlier X3 "xStream law" — banks are distinct designs per rate,
+  selection not remapping — is therefore false of the skins; it describes the
+  primitives, whose `base` and `slope` are not proportional across rates.
+  **The table holds the 33 skins only.** `P2k_000`..`P2k_032` decode to crown
+  spans of 73–376 dB; `033`..`049`, named for the 17 fixed classes, decode to
+  172–637 dB — not filters. The reader's own arithmetic says why: it indexes
+  `skin*4 + rate`, so 33 skins × 4 rates fills the bank and an extraction at
+  33–49 runs past its end. Nothing needs to be there, because the 17 primitives
+  are computed by their own `CPhantom*` classes and never table-read; their
+  compiled output is the X3 frame bank, which does decode cleanly.
+  **Radius is an affine function of frequency, in every compiler.** The writer
+  the four morph classes share (`FUN_1802c59b0`) maps a descriptor byte by
+  `v = slope[rate]*byte + base[rate]` (`base = [4896,4500,900,220]`,
+  `slope = [442,440,405,350]` at `0x1806d73a0`/`0x1806d73b0`) and then takes
+  `rad = (v >> 1) + 0x6400`. `CPhantomMorphLP` selects one of 16 twelve-byte
+  profiles at `0x1806d73c0`; five of the six columns are strictly monotone —
+  three falling, two rising — and the sixth wobbles by one lsb over four of its
+  fifteen steps, so the profiles are an authored ladder. No compiler carries
+  a per-section volume term — the shared writer emits the constant `0xdfff` as
+  the fifth word. All cascade resonance and level derive from pole and zero
+  polar coordinates alone; per-stage volume balancing is not used.
+  **Morph Designer compiles by formula; it does not fit.** `FUN_1802c6590`
+  reads six 6-byte records (type, freqA, gainA, freqB, gainB) and emits packed
+  words by closed-form integer arithmetic. Frequency is sample-rate-family
+  dependent, `freq = ((scale[family] * frequency_byte) >> 7) + base[family]`
+  with `base = [18,18,4,1]`, `scale = [220,220,200,177]`; radius is a linear
+  function of that frequency, `rad = ((freq * 0x7c) >> 8) + 0x76`. In Type 1 the
+  gain term is an **opposed radius split at one shared frequency** — pole
+  `clamp(rad + gain, 0, 255) << 8`, zero `clamp(rad - gain, 0, 255) << 8`, both
+  at `freq`. Level from geometry rather than a gain term, as shipping
+  arithmetic; it also explains the co-located coupling mode directly. Types 2
+  and 3 subtract gain from the zero radius only and fix the pole word, so the
+  symmetric split is Type 1's, not the grammar's. Only type IDs `1..3` compile;
+  four or more valid rows force six rows, padding with
+  `[0xdfff, 0xffff, 0xdfff, 0xffff, 0xe000]`. Both endpoints are written twice,
+  collapsing the Q axis. Because it is a formula and not a search, Morph
+  Designer is no evidence for an internal factoring tool. Its law is the same
+  one the morph writer uses: in word units `440*byte + 4608` against
+  `442*byte + 4896`. Two independently written compilers, one law.
 - **Not applicable.** EMU8000 programmer's guide; US5943427; US5952599; the
   NASA HRTF memorandum; Segers & Verhoeven 2005 (SLI perception study on the
   Kerkhoff synthesizer; its Table 1 carries published Dutch formant and
@@ -202,15 +290,20 @@ a zero may ride its pole at `interval_st`) plus moves per axis (M/Q/T:
 `pole_st`, `zero_st`, `pole_r_to`, `zero_r_to`) — the four factory moves.
 Corners are derived; a lane may instead carry verbatim `corners` (the
 lossless escape hatch). Unresolved `@names` fail loudly. The alphabet
-carries 73 measured letters mined from the Morpheus cube corpus (bell
+carries 78 anchors mined from the Morpheus cube corpus (bell
 ladders, the octave notch ladder with its lowpass pole ladder, the Be-Ye
 and Uhrrrah all-pole vowels, the ParaVowel A formant/control-zero scaffold,
 the Vocal Cube comb, and the corpus's three structural roots — the idle
 pole `[1909,2015,0,2047]` filling 1,124 stages across 160 cubes, the off
 zero, and the 18.2 kHz top-shelf pole); every anchor cites its source
 cube/corner inline, and the letters survive encode/decode at 0.21 cents /
-3.1e-5 worst error. All 51 factory presets round-trip bit-exact through the design form
-(`design_null_check.rs`). Note: several factory objects exceed the audit
+3.1e-5 worst error. Its `radii` and `carves_st` books are **empty**, so any
+design naming an `@name` radius or interval fails today; only anchors resolve.
+All 51 factory presets round-trip bit-exact through the design form
+(`design_null_check.rs`) — but `decompile` emits verbatim `corners` for every
+lane, so that null exercises the escape hatch, not the anchor-plus-moves
+grammar. What the grammar itself can express is unmeasured and is an open item.
+Note: several factory objects exceed the audit
 gates (TalkingHedz crown 43.5 dB, parity 37.2) — the gated writer refuses
 them; the gates versus factory practice is an open verdict.
 
@@ -224,6 +317,16 @@ Decisions, not findings.
 - Preserve correspondence. Pinning is what stops the optimiser from satisfying
   the sum by reseating a different section. Hold zeros as well as poles when a
   lane's job must not be re-dealt.
+- Census the corpus unsliced, and judge it against a null built from the corpus
+  rather than a synthetic one. Enumerate before summarising: keying on stage
+  index, lane order or filter type has destroyed the signal every time it has
+  been tried, and a synthetic log-uniform null gave a false negative that
+  reversed under a corpus control. Report movement signed — a median of absolute
+  values reads scatter as direction.
+- Fix one liveness threshold per corpus study and state it. A conjugate root
+  below it is the encoder writing "nothing here", not a root doing work;
+  `dev/p2k_diagnostics.py` sets `LIVE_R = 0.45`, under which the P2K pole→zero
+  interval median is 10.14 semitones.
 
 ## Proven here
 
@@ -255,6 +358,53 @@ Executable in `author/tests/canon.rs` unless noted.
   cascade gain is one shared figure at 105 of 132 corners and deliberately
   split at 27 (structured splits, e.g. exactly 12.0 dB). 22 of 33 presets
   cross lanes between M corners.
+- The 33 P2K skins were fitted to whole responses, not assembled from sections.
+  Measured over 132 corners and 792 non-identity sections, reproducible at both
+  candidate datums: `dev/p2k_diagnostics.py` and `dev/p2k_primitives.py`, run
+  against the `/api/library` payload. The sections cancel — Σ per-section dB
+  span ÷ summed-cascade span has a median of 3.24, where the hand-authored
+  Morph Designer XML control is 1.46; sections that cancel that hard are the
+  output of something fitting the sum. Cascade gain is one figure divided six
+  ways at 105 of 132 corners. Every preset carries a near-unit zero at S6 in all
+  four corners (132/132, and 0% at every other stage) — a traveling notch,
+  parked at 0.92·Nyquist in 48 of them; S6 is also the only stage whose zero is
+  live in every corner. Its radius is **0.999998**, not 1.0: no P2K root is
+  exactly on the circle (0 of 1530 conjugate roots), so the encoder's exact-1.0
+  null is a capability the corpus never uses. The figure matters because
+  `stages.js` clamps a dragged radius to 0.9999 and cannot reach it. Correspondence was never
+  preserved: 104 of 441 lane pairs cross during the M0→M100 morph, in 22 of 33
+  presets, and morph travel is unsystematic — signed median +0.38 st, rising in
+  half of 187 lanes, magnitude median 14.5 st. Q narrows but is not a radius
+  axis: over 377 pole pairs the bandwidth ratio median is 0.354 and 71% narrow,
+  yet pole frequency also moves a median 6.85 st and holds within 10 cents in
+  only 10%. Corners are not reused — level removed, at 1.5 dB RMS the 132
+  corners give 128 clusters with a largest of 2, nearest-neighbour distance
+  median 6.72 dB.
+- The filter type is the only surviving statement of intent, and it is the key
+  to the Q axis alone. The body stores no type, and the geometry cannot supply
+  one — sections are factorization artifacts. But the catalogued type predicts
+  which way Q moves the poles: measured over the 33 skins at 44,100 Hz, C0→C2
+  narrows the pole in SFX 100%, VOW 94% (median bandwidth ratio 0.153, a 6.5×
+  tightening), WAH 83%, REZ 76%, FLG 75%, LPF 73%, EQ+ 69% — while **EQ− widens
+  92%** (ratio 3.87) and **DST widens 100%** (3.94). The corpus sorts into
+  narrowing kinds and one widening pair. M does not work this way: over the same
+  lanes the medians are LPF −13.1 st, EQ+ +4.7, REZ +7.9, VOW +1.6, but the IQRs
+  are 41.6, 30.8, 39.7 and 14.7 — the spread swamps the direction, so morph
+  travel is authored per object, not per kind. Type is therefore an authoring
+  constraint on Q and an index for kinds; it is **not** an index for sections —
+  slicing the section census by type is what made 51 real recurrences read as
+  none.
+- A P2K section vocabulary exists, is thin, and is visible only unsliced. Keyed
+  stage-agnostically in 10-cent frequency and 85-cent bandwidth buckets, 792
+  sections collapse to 728 (8.1%); 51 distinct sections recur across presets,
+  covering 113 of 792, top count ×4 (pole 479 Hz r 0.976 with zero 13.4 kHz
+  r 0.884, shared by BassBox-303, BassTracer, BolandBass and LucifersQ). The
+  sharing is family resemblance, not a shipped alphabet — MeatyGizmo·Millennium
+  share 10. Slicing hid it three separate times: keying on stage index took
+  cross-preset pole clusters from 64 to 100 when dropped, ordered pose matching
+  found 5 shared poses where unordered found 10, and 51 recurrences spread
+  across 10 types × 6 stages read as none at all. Built and served by
+  `author-server/src/vocab.rs` as `vocabulary.states` on `/api/library`.
 - The null: all 33 architecture recipes recompile to their factory preset
   bytes bit-identically (`author/src/bin/null_test.rs`; bins recovered from
   git). The v1 conjugate-only schema had corrupted 21 of 33 — the factory's
@@ -300,8 +450,79 @@ synthetic radius-lift corners).
 
 ## Open
 
-A WAV → envelope decoder (DVTD transfer functions bypass it). The Palette
+The WAV → envelope decoder is built and live (`author/src/wav.rs`, 577 lines,
+untracked in git): Welch PSD with f0-aware smoothing, peak picking, AR(14)
+seeding, and a time-slice window, served as RECORDINGS and driven by the
+ANALYSIS dock. It does **not** route through `prepare_pitch_corrected_ltas`, so
+the spanning-rise warning above does not apply to it. Note that `ar_poles` is
+all-pole by construction — on material with real notches it will stack false
+poles to fake a shear, so it seeds, it does not fit. The Palette
 rating and respacing round — Martens 2002a Higher/Lower bisection into a knob
 lookup, and the eight-at-a-time audition flow specified in
 `trench-x3-clean/NEXT_SESSION_EDITOR.md`. Program-material audition (the
 editor plays pink noise today).
+
+**The P2K datum is settled at 44,100 Hz** by the rate-family proof in
+Documented, and is no longer open. What remains open is the code: the analysis
+rate for the P2K corpus still comes from `author::extrude::AUTHORING_SR`
+(39,062.5, legacy despite its name) at `author-server/src/store.rs:204`, so every
+displayed and keyed P2K frequency is low by 44100/39062.5 = 1.129. Changing it
+moves the recorded verification peaks in frequency — dB values are
+rate-invariant, the frequencies are not — and it re-keys the bandwidth buckets
+in `vocab.rs`, so the census must be re-run after. The constant itself is load
+bearing in `extrude.rs`; introduce a separate P2K rate rather than editing it.
+
+There is no 4× variant corpus. That reading of the bank pointer was wrong; see
+Documented. One cheap falsification still stands: does any P2K section satisfy
+Morph Designer's `rad = ((freq * 0x7c) >> 8) + 0x76`, or the morph writer's
+`rad = (v >> 1) + 0x6400`, in packed-word space? It should not — P2K and X3
+already share 0 of 792 sections — and any subset that does was machine-generated
+by that law rather than authored.
+
+**X3 is a frame bank, not a section bank.** 17 filters at
+`../trench-x3-clean/ref/x3_menu/runtime_blocks/`, 68 files = 17 × 4 rates named
+`<filter>_<rate>.raw`, byte-identical to the `X3F_*.json` banks. Each file is
+one complete compiled filter, because each is the output of a `CPhantom*`
+closed-form compiler that writes a whole corner bank in one call. The unit is
+the frame; its sections are what falls out of factoring the compiled result and
+were never authored on their own. So the earlier reading — that X3's 124 → 79
+distinct sections (36%, 4.5× P2K's) made it the source for a *section*
+vocabulary — was wrong in kind: the collapse is high precisely because one
+formula family with shared `base`/`slope` tables generates all 17. That is the
+formula repeating, not a designer reusing a letter. Vendor it as frames.
+Verified: `[4 corners][active_stages][5 words]`, corner order stated in the
+`X3F_*.json` banks, raw blocks holding the same numbers, and 4 Pole Lowpass
+being the 2 Pole Lowpass section twice. It **decodes under the ordinary
+minifloat law** — feed `geometry_from_words_at` the bank values directly, with
+no byte swap — and renders textbook curves: 2 Pole Lowpass reads −9.5/−43.4/
+−84.4 dB at 100/1k/12k at M0_Q0 and flat at M100_Q0; 4 Pole Lowpass is exactly
+double in dB, confirming order 04 = the order-02 section twice. Real-axis pairs
+appear at the closed and wide-open corners, which is the shelf/rolloff letter
+doing its job, so a decode check must not require a conjugate pole everywhere.
+Read only the 44.1 k bank: frequency is rate-invariant — 2 Pole Highpass holds
+54.7 Hz across all four banks and drifts 0.8 cents at 192 k — but bandwidth-Hz
+is rate-invariant only for resonant roots and degenerate for heavily damped
+ones, so no key merges the banks (10 of 60 collapse; raw radius, 0 of 60).
+
+**Two debts behind the cancellation figure.** The 1.46 hand-authored control is
+computed over derived four-corner bodies, but Morph Designer authors two
+endpoints and writes each twice — the control may be measuring that duplication.
+And the semitone-snap claim was never tested against a 7-bit lattice null; XML
+frequency is a 0–127 integer, so the snapping may be forced by the encoding.
+
+**An internal E-mu design tool is inference, not measurement.** The cancellation
+ratio, the crossed lanes and the abandoned correspondence all point to a tool
+that showed response curves rather than sections. Nothing found is proof, and
+the shipped software no longer offers any support for it: every one of the 50
+filters is now accounted for — 17 computed by closed-form primitives, 33 read
+from a table — and the five morph classes are hand-authoring grammars whose
+manual (Emulator X reference, p.149; Adv Apps Guide pp.43–45) describes setting
+frequency and Q per section at two morph positions, with no target curve and no
+fit. So Morph Designer is not a cut-down descendant of a fitter; it is its own
+thing. Proof of the design tool needs internal spec files or a factoring
+algorithm in an E-mu OS or tooling binary. No Proteus 2000 /
+Mo'Phatt hardware OS image is on this machine. Dead ends already checked:
+`~/Downloads/extracted_firmware/` is Vulcan, already mined above;
+`~/Downloads/e-mu_eos_technical_documents.pdf` extracts cleanly but is a
+hardware service manual whose zero hits for filter/pole/coefficient are real,
+not an extraction artefact — do not re-grep it.
