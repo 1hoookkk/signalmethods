@@ -206,6 +206,31 @@ export async function seatState(state, stage) {
   return { citation: cell.citation, verbatim };
 }
 
+export async function seatCell(source, sourceStage, sourceCorner, destination) {
+  if (isLocked(destination)) throw new Error(`S${destination + 1} HELD — click HELD to free it`);
+  const data = await api.target("stage", source.id, { stage: sourceStage });
+  const cell = data.cells.find((entry) => entry.corner === sourceCorner);
+  if (!cell) throw new Error(`no cell for ${source.id} C${sourceCorner}`);
+  commit(`cell S${destination + 1}`);
+  setSection(destination, cell);
+  return { citation: cell.citation, corners: 1 };
+}
+
+export async function seatTrack(source, sourceStage, destination) {
+  if (isLocked(destination)) throw new Error(`S${destination + 1} HELD — click HELD to free it`);
+  const data = await api.target("stage", source.id, { stage: sourceStage });
+  commit(`track S${destination + 1}`);
+  for (const cell of data.cells) {
+    const slot = ensureCorner(cell.corner);
+    slot.words = slot.words.map((words, i) => (i === destination ? cell.words.slice() : words));
+    slot.lanes[destination] = structuredClone(cell.lane);
+    slot.citations[destination] = cell.citation;
+    geometries(slot)[destination] = cell.geometry || null;
+  }
+  selectCorner(doc.selectedCorner, false);
+  return { citation: data.cells[0].citation, corners: data.cells.length };
+}
+
 export async function importFactory(entry, stages, corners) {
   const data = await Promise.all(
     Array.from({ length: stages }, (_, stage) => api.target("stage", entry.id, { stage }))

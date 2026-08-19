@@ -700,16 +700,19 @@ function afterFieldChange() {
 }
 
 const sectionPicker = createSectionPicker(document.getElementById("work"), {
-  onState: (state, destination) => {
-    field
-      .seatState(state, destination)
-      .then(({ citation, verbatim }) => {
+  corner: () => doc.selectedCorner,
+  onDetail: (text) => say(text),
+  onSeat: (grain, source, stage, corner, destination) => {
+    const seat = grain === "track"
+      ? field.seatTrack(source, stage, destination)
+      : field.seatCell(source, stage, corner, destination);
+    seat
+      .then(({ citation, corners }) => {
         afterFieldChange();
-        say(`${endpointName()} S${destination + 1} ← ×${state.count}${verbatim ? "" : " · WORDS MISMATCH"} · ${citation}`);
+        say(`S${destination + 1} ← ${grain} · ${corners} corner${corners === 1 ? "" : "s"} verbatim · ${citation}`);
       })
       .catch((e) => say(`ERROR: ${e.message}`));
   },
-  onDetail: (text) => say(text),
 });
 
 async function loadTypeTemplate(entry, importAll) {
@@ -726,9 +729,9 @@ async function loadTypeTemplate(entry, importAll) {
   say(`${entry.type} → ${endpointName()} · ${stages} sections, S${stages + 1} idle${kept}`);
 }
 
-function initTransplant(sources, vocabulary) {
+function initTransplant(sources) {
   stageSources = sources || [];
-  sectionPicker.setVocabulary(vocabulary);
+  sectionPicker.setSources(stageSources);
 }
 
 function openStageSourcePicker(destination, anchorRect) {
@@ -831,7 +834,7 @@ async function start() {
     pick(kind, item, right).catch((e) => say(`ERROR: ${e.message}`));
   });
   ceiling = lib.pole_ceiling_r || ceiling;
-  initTransplant(lib.stage_sources, lib.vocabulary);
+  initTransplant(lib.stage_sources);
   mouths = lib.mouths || [];
   say(`library loaded — root ${lib.root}`);
   if (loadSnapshot()) say("Ready — Ctrl+L restores last session");
