@@ -142,6 +142,36 @@ fn a_body_recompiled_by_root_geometry_is_rate_portable() {
 }
 
 #[test]
+fn extrusion_gain_is_one_figure_per_corner_never_shaped_per_stage() {
+    use trench_core::stage_law::{geometry_from_words_at, RootPair};
+    let path = std::path::Path::new("../recipes/architectures/P2k_013_TalkingHedz.json");
+    let cube = author::extrude::cube_from_square(path).unwrap();
+    let sr = author::extrude::AUTHORING_SR;
+    for ci in 0..4 {
+        let mut applied_db = Vec::new();
+        for si in 0..NUM_STAGES {
+            let base = geometry_from_words_at(cube.packed.words[ci][si], sr);
+            let top = geometry_from_words_at(cube.packed.words[ci + 4][si], sr);
+            let inactive = matches!(base.pole, RootPair::Degenerate)
+                && matches!(base.zero, RootPair::Degenerate);
+            if inactive || base.scale <= 0.0 || top.scale <= 0.0 {
+                continue;
+            }
+            applied_db.push(20.0 * (top.scale / base.scale).log10());
+        }
+        assert!(applied_db.len() >= 2, "corner {ci} has too few active stages");
+        let lo = applied_db.iter().cloned().fold(f64::INFINITY, f64::min);
+        let hi = applied_db.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        assert!(
+            hi - lo < 0.05,
+            "corner {ci} shaped gain per stage: spread {:.3} dB across {:?}",
+            hi - lo,
+            applied_db
+        );
+    }
+}
+
+#[test]
 fn a_measured_vowel_basis_becomes_a_cube_end_to_end() {
     let dir = std::path::Path::new("../recipes/vocal/dvtd/subject-1");
     let files = envelope::scan(dir);

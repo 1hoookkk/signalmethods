@@ -1,0 +1,71 @@
+{
+  "schema": "trench-phantom-classes-v1",
+  "source": "EmulatorX.dll (Emulator X3, 2008-09-14). Filter-class dispatch table at 0x1806d5f80, 32-byte records; class names are the MSVC RTTI names reached through each record's descriptor pointer. Within a record the descriptor belongs to the compile function of the following record; that one-record shift is verified at both ends of the table, by CPhantomFilterP2k resolving to FUN_1802d3ce0 (the bank reader named in ghidra_extracts/runtime_hacks.md) and CPhantomLP2Pole to FUN_1802c4b80.",
+  "mapping_basis": "Filter names are matched to classes by order and type, which is unambiguous for the pole-count and EQ classes. BlissBatz to CPhantomBatman is positional: it is the remaining entry in the PhazeShift1/PhazeShift2/BlissBatz/FlangerLite run, which the dispatch table holds in the same order as Phaser1/Phaser2/Batman/Flanger1.",
+  "datum_hz": 44100.0,
+  "rate_families_hz": [44100.0, 48000.0, 96000.0, 192000.0],
+  "rate_slots": "Each filter occupies four consecutive table slots, one per rate. For the 33 stored skins the four are one design pre-warped: every live pole of bank n is an exact scaling of bank 0 by 44100/rate, 31 of 31 skins on every bank, sd 1e-4. For the 17 closed-form primitives they are distinct designs per rate, because base[] and slope[] are not proportional across rates; 0 of 7 testable primitives fall in the scaling family. The X3 xStream law describes the primitives, not the skins.",
+  "groups": {
+    "rom_table": {
+      "provenance": "Stored. A table read with no arithmetic on the words.",
+      "class": "CPhantomFilterP2k",
+      "compile": "0x1802d3ce0",
+      "table": "0x1806d7610",
+      "row": "table + (skin * 4 + rate) * 0xf0, first row at +0x1e",
+      "count": 33,
+      "filters": [
+        "AceOfBass", "MegaSweepz", "EarlyRizer", "Millennium", "MeatyGizmo",
+        "KlubKlassik", "BassBox-303", "FuzziFace", "DeadRinger", "TB-OrNot-TB",
+        "Ooh-To-Eee", "BolandBass", "MultiQVox", "TalkingHedz", "ZoomPeaks",
+        "DJAlkaline", "BassTracer", "RogueHertz", "RazorBlades", "RadioCraze",
+        "Eeh-To-Aah", "UbuOrator", "DeepBouche", "FreakShifta", "CruzPusher",
+        "AngelzHairz", "DreamWeava", "AcidRavage", "BassOMatic", "LucifersQ",
+        "ToothComb", "EarBender", "KlangKling"
+      ]
+    },
+    "closed_form": {
+      "provenance": "Computed. Closed-form integer arithmetic over a descriptor plus per-rate base and slope tables.",
+      "count": 17,
+      "classes": [
+        { "filter": "Smooth", "class": "CPhantomLP2Pole", "compile": "0x1802c4b80" },
+        { "filter": "Classic", "class": "CPhantomLP4Pole", "compile": "0x1802c4c40" },
+        { "filter": "Steeper", "class": "CPhantomLP6Pole", "compile": "0x1802c4d20" },
+        { "filter": "Shallow", "class": "CPhantomHP2Pole", "compile": "0x1802c4e00" },
+        { "filter": "Deeper", "class": "CPhantomHP4Pole", "compile": "0x1802c4ec0" },
+        { "filter": "Swept1oct", "class": "CPhantomSweptEq1", "compile": "0x1802c4fa0" },
+        { "filter": "Swept2~1oct", "class": "CPhantomSweptEq2", "compile": "0x1802c5060" },
+        { "filter": "Swept3~1oct", "class": "CPhantomSweptEq3", "compile": "0x1802c5120" },
+        { "filter": "Band-pass1", "class": "CPhantomBP2Pole", "compile": "0x1802c51e0" },
+        { "filter": "Band-pass2", "class": "CPhantomBP4Pole", "compile": "0x1802c52a0" },
+        { "filter": "ContraBand", "class": "CPhantomContraryBandpass", "compile": "0x1802c5380" },
+        { "filter": "PhazeShift1", "class": "CPhantomPhaser1", "compile": "0x1802c5440" },
+        { "filter": "PhazeShift2", "class": "CPhantomPhaser2", "compile": "0x1802c5530" },
+        { "filter": "BlissBatz", "class": "CPhantomBatman", "compile": "0x1802c5620" },
+        { "filter": "FlangerLite", "class": "CPhantomFlanger1", "compile": "0x1802c5710" },
+        { "filter": "Aah-Ay-Eeh", "class": "CPhantomVocal1", "compile": "0x1802c57f0" },
+        { "filter": "Ooh-To-Aah", "class": "CPhantomVocal2", "compile": "0x1802c58d0" }
+      ]
+    },
+    "morph": {
+      "provenance": "Computed from user-set endpoints. Emulator X only; absent from the Proteus 2000 ROM filter table.",
+      "count": 5,
+      "classes": [
+        { "class": "CPhantomMorph1", "compile": "0x1802c5d60" },
+        { "class": "CPhantomMorphLP", "compile": "0x1802c5e40", "profiles": "0x1806d73c0, 16 records of 12 bytes, little-endian" },
+        { "class": "CPhantomMorphLPX", "compile": "0x1802c5f10" },
+        { "class": "CPhantomMorph2", "compile": "0x1802c6020" },
+        { "class": "CPhantomMorphDesigner", "compile": "0x1802c6590" }
+      ]
+    }
+  },
+  "law": {
+    "shared_writer": "0x1802c59b0",
+    "base": [4896, 4500, 900, 220],
+    "base_table": "0x1806d73a0",
+    "slope": [442, 440, 405, 350],
+    "slope_table": "0x1806d73b0",
+    "frequency": "v = slope[rate] * descriptor_byte + base[rate]",
+    "radius": "rad = (v >> 1) + 0x6400",
+    "note": "Radius is an affine function of frequency. Morph Designer's rad = ((freq * 0x7c) >> 8) + 0x76 is the same law with different constants: in word units 440*byte + 4608 against 442*byte + 4896. Neither compiler carries a per-section volume term; the shared writer emits the constant 0xdfff as the fifth word."
+  }
+}
