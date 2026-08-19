@@ -22,8 +22,17 @@ HZ = np.array(dl.log_grid_hz(40, 16000, 1024))
 db = lambda x: 20 * math.log10(max(x, 1e-12))
 
 
-def conj(p):
-    return type(p).__name__ == "Conjugate" and p.hz > 0 and p.r > 0
+# One liveness predicate for every diagnostic in this file. A conjugate root
+# below this radius is not a root doing work - it is the encoder's way of
+# writing "no zero here" (e.g. CruzPusher/FuzziFace carry 9644 Hz at r=0.0156
+# in every zero slot). Measuring a pole-zero interval against such a root
+# reports the distance to something that is not there, which inflated the
+# interval median from 10.14 to 12.34 semitones in an earlier run of this file.
+LIVE_R = 0.45
+
+
+def conj(p, thr=LIVE_R):
+    return type(p).__name__ == "Conjugate" and p.hz > 0 and p.r > thr
 
 
 def bwhz(r, sr):
