@@ -41,6 +41,7 @@ pub struct ArmaFit {
     pub target_rms_db: f64,
     pub intended_packed_rms_db: f64,
     pub sections_used: usize,
+    pub grown: [Option<usize>; NUM_STAGES],
 }
 
 fn optimise_roots(
@@ -441,6 +442,7 @@ pub fn fit_arma_pinned_pairs_watched(
         target_rms_db,
         intended_packed_rms_db,
         sections_used: active.len(),
+        grown: [None; NUM_STAGES],
     })
 }
 
@@ -595,6 +597,7 @@ pub fn fit_arma_lane(
         target_rms_db,
         intended_packed_rms_db,
         sections_used,
+        grown: [None; NUM_STAGES],
     })
 }
 
@@ -612,7 +615,9 @@ pub fn fit_arma_planned(
         seed,
         freedom,
         writable,
+        &[true; NUM_STAGES],
         zones,
+        &[],
         &mut unwatched(),
     )
 }
@@ -623,7 +628,9 @@ pub fn fit_arma_planned_watched(
     seed: &[StageRoots; NUM_STAGES],
     freedom: &Freedom,
     writable: &[bool; NUM_STAGES],
+    grow: &[bool; NUM_STAGES],
     zones: &Zones,
+    candidates: &[Vec<StageRoots>],
     watch: Watch,
 ) -> Option<ArmaFit> {
     if target.len() < 32
@@ -637,6 +644,7 @@ pub fn fit_arma_planned_watched(
     }
     let mut roots = *seed;
     let mut active: Vec<usize> = Vec::new();
+    let mut open: Vec<usize> = Vec::new();
     for section in 0..NUM_STAGES {
         if !writable[section] {
             continue;
@@ -645,6 +653,9 @@ pub fn fit_arma_planned_watched(
         let is_identity = roots[section].pole_r <= 0.0 && roots[section].zero_r <= 0.0;
         if is_identity {
             roots[section] = StageRoots::IDENTITY;
+            if grow[section] {
+                open.push(section);
+            }
             continue;
         }
         if validate_stage_roots_at(&roots[section], sample_rate_hz) != RootValidity::Ok {
@@ -652,10 +663,51 @@ pub fn fit_arma_planned_watched(
         }
         active.push(section);
     }
+    let mut best_rms = if active.is_empty() {
+        optimal_gain_and_rms(&roots, target, sample_rate_hz).1
+    } else {
+        optimise_roots(&mut roots, &active, target, sample_rate_hz, freedom, zones, watch)
+    };
+    let mut grown = [None; NUM_STAGES];
+    for section in open {
+        let before = roots;
+        let before_rms = best_rms;
+        let mut seeds = vec![seed_from_residual(&roots, target, sample_rate_hz)];
+        if let Some(list) = candidates.get(section) {
+            seeds.extend(list.iter().copied());
+        }
+        let mut winner: Option<(usize, [StageRoots; NUM_STAGES], f64)> = None;
+        for (index, mut seed) in seeds.into_iter().enumerate() {
+            seed.scale = 1.0;
+            if validate_stage_roots_at(&seed, sample_rate_hz) != RootValidity::Ok {
+                seed.pole_r = seed.pole_r.min(SEED_DOMINANT_R);
+                seed.zero_r = seed.zero_r.min(SEED_DOMINANT_R);
+                if validate_stage_roots_at(&seed, sample_rate_hz) != RootValidity::Ok {
+                    continue;
+                }
+            }
+            let mut trial = before;
+            trial[section] = seed;
+            active.push(section);
+            let rms =
+                optimise_roots(&mut trial, &active, target, sample_rate_hz, freedom, zones, watch);
+            active.pop();
+            if winner.as_ref().map_or(true, |(_, _, best)| rms < *best) {
+                winner = Some((index, trial, rms));
+            }
+        }
+        if let Some((index, trial, rms)) = winner {
+            if before_rms - rms >= SECTION_MIN_RMS_IMPROVEMENT_DB {
+                roots = trial;
+                active.push(section);
+                best_rms = rms;
+                grown[section] = Some(index);
+            }
+        }
+    }
     if active.is_empty() {
         return None;
     }
-    optimise_roots(&mut roots, &active, target, sample_rate_hz, freedom, zones, watch);
 
     let (gain_db, _) = optimal_gain_and_rms(&roots, target, sample_rate_hz);
     let per_section = 10.0f64.powf(gain_db / 20.0 / active.len() as f64);
@@ -695,6 +747,7 @@ pub fn fit_arma_planned_watched(
         target_rms_db,
         intended_packed_rms_db,
         sections_used: active.len(),
+        grown,
     })
 }
 

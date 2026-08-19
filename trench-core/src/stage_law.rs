@@ -1,5 +1,6 @@
 use crate::minifloat::{decode, encode, COMBINE_K};
 pub const DEFAULT_AUTHORING_SR: f64 = crate::compiler::DEFAULT_AUTHORING_SR;
+pub const P2K_DATUM_SR: f64 = 44_100.0;
 const TAU: f64 = core::f64::consts::PI * 2.0;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RootPair {

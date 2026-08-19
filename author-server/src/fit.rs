@@ -6,9 +6,56 @@ use trench_core::stage_law::{
 
 use crate::json::{curve_from_value, lanes_from_value, lanes_to_value};
 
-pub const SR: f64 = DEFAULT_AUTHORING_SR;
+pub const SR: f64 = trench_core::stage_law::P2K_DATUM_SR;
 
 const CANDIDATE_INTERVAL_MS: u128 = 120;
+const DATUM_SR: f64 = 39_062.5;
+const MAX_SEATS: usize = 8;
+const NON_SHAPES: [&str; 3] = ["idle", "parked pair", "real pair"];
+
+static VOCABULARY: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+
+pub fn set_vocabulary(v: Value) {
+    let _ = VOCABULARY.set(v);
+}
+
+fn seat_at(seat: &Value, sr: f64) -> Option<StageRoots> {
+    let f = |k: &str| seat.get(k).and_then(|x| x.as_f64()).unwrap_or(0.0);
+    let at_rate = |r: f64| if r > 0.0 && r < 1.0 { r.powf(DATUM_SR / sr) } else { r };
+    let ceiling = trench_core::stage_law::max_contiguous_pole_radius();
+    let roots = StageRoots {
+        pole_hz: f("pole_hz"),
+        pole_r: at_rate(f("pole_r")).min(ceiling),
+        zero_hz: f("zero_hz"),
+        zero_r: at_rate(f("zero_r")).min(1.0),
+        scale: 1.0,
+    };
+    (roots.pole_r > 0.0 || roots.zero_r > 0.0).then_some(roots)
+}
+
+fn seats_for(position: usize, sr: f64) -> Vec<(String, StageRoots)> {
+    let Some(shapes) = VOCABULARY
+        .get()
+        .and_then(|v| v.get("positions"))
+        .and_then(|p| p.get(format!("S{}", position + 1)))
+        .and_then(|p| p.get("shapes"))
+        .and_then(|s| s.as_array())
+    else {
+        return Vec::new();
+    };
+    shapes
+        .iter()
+        .filter_map(|s| {
+            let name = s.get("name").and_then(|n| n.as_str())?;
+            if NON_SHAPES.contains(&name) {
+                return None;
+            }
+            let seat = seat_at(s.get("seat")?, sr)?;
+            Some((name.to_string(), seat))
+        })
+        .take(MAX_SEATS)
+        .collect()
+}
 
 pub fn lane_is_empty(l: &StageRoots) -> bool {
     l.pole_r <= 0.0 && l.zero_r <= 0.0
@@ -86,12 +133,13 @@ pub fn stage_words(lanes: &[StageRoots; NUM_STAGES], sr: f64) -> Vec<[u16; 5]> {
     lanes.iter().map(|lane| words_from_roots_at(lane, sr)).collect()
 }
 
-pub fn laws_from_value(v: Option<&Value>) -> Result<([[bool; 4]; NUM_STAGES], [bool; NUM_STAGES], [[f64; 2]; NUM_STAGES]), String> {
+pub fn laws_from_value(v: Option<&Value>) -> Result<([[bool; 4]; NUM_STAGES], [bool; NUM_STAGES], [bool; NUM_STAGES], [[f64; 2]; NUM_STAGES]), String> {
     let mut freedom = trench_core::arma_endpoint::FREE;
     let mut writable = [true; NUM_STAGES];
+    let mut grow = [false; NUM_STAGES];
     let mut zones = trench_core::arma_endpoint::NO_ZONES;
     let Some(v) = v else {
-        return Ok((freedom, writable, zones));
+        return Ok((freedom, writable, grow, zones));
     };
     let arr = v.as_array().ok_or("laws is not an array")?;
     if arr.len() != NUM_STAGES {
@@ -100,6 +148,9 @@ pub fn laws_from_value(v: Option<&Value>) -> Result<([[bool; 4]; NUM_STAGES], [b
     for (i, law) in arr.iter().enumerate() {
         if let Some(w) = law.get("writable").and_then(|x| x.as_bool()) {
             writable[i] = w;
+        }
+        if let Some(g) = law.get("grow").and_then(|x| x.as_bool()) {
+            grow[i] = g;
         }
         if let Some(f) = law.get("freedom").and_then(|x| x.as_array()) {
             for (j, b) in f.iter().take(4).enumerate() {
@@ -115,7 +166,7 @@ pub fn laws_from_value(v: Option<&Value>) -> Result<([[bool; 4]; NUM_STAGES], [b
             }
         }
     }
-    Ok((freedom, writable, zones))
+    Ok((freedom, writable, grow, zones))
 }
 
 pub fn fit(req: &Value) -> Result<Value, String> {
@@ -132,6 +183,18 @@ pub fn fit_watched(req: &Value, emit: &mut dyn FnMut(Value)) -> Result<Value, St
         return Err(format!("curve must have {} points", grid.len()));
     }
     let pairs: Vec<(f64, f64)> = grid.iter().copied().zip(curve.iter().copied()).collect();
+    let mut positions: [usize; NUM_STAGES] = std::array::from_fn(|i| i);
+    if let Some(p) = req.get("positions").and_then(|x| x.as_array()) {
+        for (i, v) in p.iter().take(NUM_STAGES).enumerate() {
+            if let Some(n) = v.as_u64() {
+                if (n as usize) < NUM_STAGES {
+                    positions[i] = n as usize;
+                }
+            }
+        }
+    }
+    let mut seats: [Vec<(String, StageRoots)>; NUM_STAGES] = Default::default();
+    let mut opened: Vec<usize> = Vec::new();
     let mut last = std::time::Instant::now();
     let mut watch = |roots: &[StageRoots; NUM_STAGES], rms: f64| {
         if last.elapsed().as_millis() < CANDIDATE_INTERVAL_MS {
@@ -144,7 +207,7 @@ pub fn fit_watched(req: &Value, emit: &mut dyn FnMut(Value)) -> Result<Value, St
     let result = if cold || lanes.iter().all(lane_is_empty) {
         trench_core::arma_endpoint::fit_arma_pinned_pairs_watched(&pairs, sr, &[], &[], &mut watch)
     } else {
-        let (freedom, writable, zones) = laws_from_value(req.get("laws"))?;
+        let (freedom, writable, grow, zones) = laws_from_value(req.get("laws"))?;
         let prefix = freedom.iter().take_while(|f| !f[0]).count();
         let pins_only = writable.iter().all(|&w| w)
             && zones.iter().all(|z| z[0] <= 0.0 && z[1].is_infinite())
@@ -167,19 +230,45 @@ pub fn fit_watched(req: &Value, emit: &mut dyn FnMut(Value)) -> Result<Value, St
                 &mut watch,
             )
         } else {
+            for section in 0..NUM_STAGES {
+                if grow[section] && lane_is_empty(&lanes[section]) {
+                    seats[section] = seats_for(positions[section], sr);
+                }
+            }
+            let candidates: Vec<Vec<StageRoots>> = seats
+                .iter()
+                .map(|s| s.iter().map(|(_, roots)| *roots).collect())
+                .collect();
+            opened = (0..NUM_STAGES)
+                .filter(|&s| grow[s] && writable[s] && lane_is_empty(&lanes[s]))
+                .map(|s| positions[s])
+                .collect();
             trench_core::arma_endpoint::fit_arma_planned_watched(
-                &pairs, sr, &lanes, &freedom, &writable, &zones, &mut watch,
+                &pairs, sr, &lanes, &freedom, &writable, &grow, &zones, &candidates, &mut watch,
             )
         }
     };
     let fit = result.ok_or("optimizer did not converge")?;
     let words = stage_words(&fit.roots, sr);
+    let grown: Vec<Value> = (0..NUM_STAGES)
+        .filter_map(|section| {
+            let index = fit.grown[section]?;
+            let name = index
+                .checked_sub(1)
+                .and_then(|i| seats[section].get(i))
+                .map(|(name, _)| Value::String(name.clone()))
+                .unwrap_or(Value::Null);
+            Some(json!({ "section_position": positions[section], "shape_name": name }))
+        })
+        .collect();
     Ok(json!({
         "lanes": lanes_to_value(&fit.roots),
         "words": words,
         "target_rms_db": fit.target_rms_db,
         "intended_packed_rms_db": fit.intended_packed_rms_db,
         "sections_used": fit.sections_used,
+        "grown": grown,
+        "opened": opened,
     }))
 }
 

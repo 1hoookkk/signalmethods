@@ -161,8 +161,10 @@ impl Store {
         let (kind, file) = id.strip_prefix("factory/").and_then(|s| s.split_once('/')).ok_or_else(|| format!("bad factory id: {id}"))?;
         if file.contains('/') || file.contains('\\') || file.contains("..") { return Err(format!("bad factory id: {id}")); }
         let (path, corners, stages, sr) = match kind {
-            "morpheus" if file.ends_with(".body") => (self.root.join("ref/morpheus/bodies").join(file), 8, 7, crate::fit::SR),
-            "p2k" if file.ends_with(".bin") => (self.root.join("ref/presets").join(file), 4, 6, author::extrude::AUTHORING_SR),
+            "morpheus" if file.ends_with(".body") => (self.root.join("ref/morpheus/bodies").join(file), 8, 7, trench_core::stage_law::DEFAULT_AUTHORING_SR),
+            "p2k" if file.ends_with(".bin") => (self.root.join("ref/presets").join(file), 4, 6, trench_core::stage_law::P2K_DATUM_SR),
+            "x3" if file.ends_with(".bin") => (self.root.join("ref/x3").join(file), 4, 6, trench_core::stage_law::P2K_DATUM_SR),
+            "md" if file.ends_with(".bin") => (self.root.join("ref/md_templates").join(file), 4, 6, trench_core::stage_law::P2K_DATUM_SR),
             _ => return Err(format!("bad factory id: {id}")),
         };
         if !path.is_file() { return Err(format!("no such factory body: {id}")); }
@@ -200,8 +202,10 @@ impl Store {
 fn factory_stage_index(root: &Path) -> serde_json::Value {
     let mut sources = Vec::new();
     for (kind, dir, ext, corners, stages, sr) in [
-        ("morpheus", root.join("ref/morpheus/bodies"), "body", 8usize, 7usize, crate::fit::SR),
-        ("p2k", root.join("ref/presets"), "bin", 4usize, 6usize, author::extrude::AUTHORING_SR),
+        ("morpheus", root.join("ref/morpheus/bodies"), "body", 8usize, 7usize, trench_core::stage_law::DEFAULT_AUTHORING_SR),
+        ("p2k", root.join("ref/presets"), "bin", 4usize, 6usize, trench_core::stage_law::P2K_DATUM_SR),
+        ("x3", root.join("ref/x3"), "bin", 4usize, 6usize, trench_core::stage_law::P2K_DATUM_SR),
+        ("md", root.join("ref/md_templates"), "bin", 4usize, 6usize, trench_core::stage_law::P2K_DATUM_SR),
     ] {
         let mut paths: Vec<PathBuf> = std::fs::read_dir(dir).map(|rd| rd.flatten().map(|e| e.path()).filter(|p| p.extension().is_some_and(|x| x == ext)).collect()).unwrap_or_default();
         paths.sort();

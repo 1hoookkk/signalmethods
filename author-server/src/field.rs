@@ -159,7 +159,7 @@ pub fn write_frame(store: &Store, req: &Value) -> Result<Value, String> {
         .and_then(|p| p.as_str())
         .unwrap_or("")
         .to_string();
-    let (freedom, writable, zones) = crate::fit::laws_from_value(req.get("laws"))?;
+    let (freedom, writable, _grow, zones) = crate::fit::laws_from_value(req.get("laws"))?;
     let mut laws = [author::frame::LaneLaw::OPEN; NUM_STAGES];
     for i in 0..NUM_STAGES {
         laws[i] = author::frame::LaneLaw {
