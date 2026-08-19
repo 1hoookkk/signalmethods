@@ -439,11 +439,12 @@ input[type="range"]::-moz-range-thumb {
   background: var(--well);
   color: var(--well-ink);
   font-size: 11px;
-  line-height: 18px;
+  line-height: 15px;
   min-height: 18px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-height: 64px;
+  padding-bottom: 3px;
+  white-space: normal;
+  overflow-y: auto;
 }
 
 #picker {
@@ -527,4 +528,11 @@ input[type="range"]::-moz-range-thumb {
     bottom: 0;
     z-index: 2;
   }
+}
+
+.lib-note {
+  float: right;
+  opacity: 0.55;
+  font-size: 9px;
+  letter-spacing: 0.2px;
 }

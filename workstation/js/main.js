@@ -12,19 +12,19 @@ import {
   freeLaw,
   fieldCorners,
   loadSnapshot,
-  DRAW_GRID,
   toDrawGrid,
 } from "./doc.js";
-import { renderCorners, NAMES as CORNER_NAMES } from "./corners.js";
+import { renderCorners, CELL_LABELS } from "./corners.js";
 import { drawSpectrum, attachSpectrum } from "./spectrum.js";
 import { mountStages, drawStages } from "./stages.js";
 import { createSectionPicker } from "./section.picker.js";
 import * as field from "./field.js";
 import { drawRoots, attachRoots } from "./roots.js";
 import { createAudition } from "./audition.js";
+import { createFit } from "./fit.js";
 import { FORMANT_SLOTS } from "./fit.roles.js";
 import { setCorners, setRate, setReference, setSource } from "./audio.js";
-import { lanesToWords, encode, wordsToBiquads, sumDb } from "./dsp.js";
+import { lanesToWords, encode } from "./dsp.js";
 import { sumCurve, stageCurves, displaySr, setDisplaySr } from "./curves.js";
 import { openWire } from "./wire.js";
 
@@ -42,7 +42,11 @@ overlayStatus.className = "overlay-status";
 const overlayName = document.createElement("span");
 const clearOverlayButton = document.createElement("button");
 clearOverlayButton.textContent = "CLEAR";
-overlayStatus.append(overlayName, clearOverlayButton);
+const fitButton = document.createElement("button");
+fitButton.textContent = "FIT";
+const acceptButton = document.createElement("button");
+acceptButton.textContent = "ACCEPT";
+overlayStatus.append(overlayName, fitButton, acceptButton, clearOverlayButton);
 spectrumDock.appendChild(overlayStatus);
 const recordingState = { item: null, average: null, current: null, timer: 0 };
 
@@ -66,7 +70,7 @@ let hoverCorner = null;
 const BOUND_INTERVAL_ST = 2;
 
 function endpointName(i = doc.selectedCorner) {
-  return i === 0 ? "LO" : "HI";
+  return CELL_LABELS[i] || `C${i}`;
 }
 
 const ensureCorner = field.ensureCorner;
@@ -82,6 +86,18 @@ const audition = createAudition(document.getElementById("pad"), {
 });
 const pad = { paint: audition.paint };
 const hold = audition.hold;
+
+const fitter = createFit({
+  say: (text) => say(text),
+  paint: () => paint(),
+  paintSpectrum: () => paintSpectrum(),
+  storeCorner: (lanes, words) => storeCorner(lanes, words),
+  pushAudio: () => pushAudio(),
+  clearCitation: (i) => {
+    const slot = ensureCorner(doc.selectedCorner);
+    if (slot.citations) slot.citations[i] = null;
+  },
+});
 
 field.setBindHook((slot) => {
   if (!recordingState.item) return;
@@ -150,7 +166,7 @@ function paintCorners() {
     },
     onFill: () => {
       if (!doc.field[doc.selectedCorner]) return say("nothing posed yet — edit LO or HI first");
-      const to = doc.selectedCorner === 0 ? 1 : 0;
+      const to = doc.selectedCorner ^ 1;
       commit(`copy endpoint ${doc.selectedCorner} to ${to}`);
       field.copyCorner(doc.selectedCorner, to);
       afterFieldChange();
@@ -277,7 +293,7 @@ async function boundAndNormalize() {
 
 function paintSpectrum() {
   const stale = doc.words ? sumCurve(doc.words) : null;
-  const swap = fitting && doc.candidate;
+  const swap = fitter.isFitting() && doc.candidate;
   const view = {
     name: doc.targetName,
     target: doc.target,
@@ -399,6 +415,8 @@ const stageCallbacks = {
 function paintFrame() {
   overlayStatus.style.display = doc.target ? "flex" : "none";
   overlayName.textContent = doc.target ? `OVERLAY · ${doc.targetName || "UNTITLED"}` : "";
+  fitButton.disabled = fitter.isFitting() || !!doc.proposal;
+  acceptButton.style.display = doc.proposal ? "" : "none";
   paintSpectrum();
   drawRoots(rootsCanvas, doc, ceiling);
   if (!mountedStages) mountedStages = mountStages(stagesBody, doc, stageCallbacks);
@@ -485,6 +503,8 @@ function clearWorkingOverlay() {
 }
 
 clearOverlayButton.onclick = clearWorkingOverlay;
+fitButton.onclick = () => fitter.run().catch((e) => say(`ERROR: ${e.message}`));
+acceptButton.onclick = () => fitter.accept();
 
 function landRecordingTarget() {
   if (!recordingState.current || !doc.target) return say("choose STATIONARY or a TIME SLICE first");
@@ -598,93 +618,6 @@ async function placeSkeleton() {
   await boundAndNormalize();
 }
 
-let candidatePending = false;
-let candidateCount = 0;
-let fitting = false;
-let fitToken = 0;
-
-function showCandidate(candidate) {
-  if (!fitting) return;
-  candidateCount++;
-  if (candidatePending) return;
-  candidatePending = true;
-  requestAnimationFrame(() => {
-    candidatePending = false;
-    const curve = sumDb(wordsToBiquads(candidate.words), DRAW_GRID, displaySr());
-    const target = toDrawGrid(doc.target);
-    let offset = 0;
-    for (let i = 0; i < curve.length; i++) offset += target[i] - curve[i];
-    offset /= curve.length;
-    for (let i = 0; i < curve.length; i++) curve[i] += offset;
-    doc.candidate = curve;
-    say(`fitting… ${candidate.rms.toFixed(2)} dB rms (candidate ${candidateCount})`);
-    paintSpectrum();
-  });
-}
-
-function solverOrder() {
-  const order = [];
-  for (let i = 0; i < 7; i++) if (isLocked(i) && doc.lanes[i].pole_r > 0) order.push(i);
-  for (let i = 0; i < 7; i++) if (!order.includes(i)) order.push(i);
-  return order;
-}
-
-async function runFit() {
-  if (!doc.target) return say("no target loaded");
-  say("solving… (Escape abandons)");
-  candidateCount = 0;
-  fitting = true;
-  const token = ++fitToken;
-  const order = solverOrder();
-  const laws = doc.laws;
-  try {
-    const r = await api.fitStream(
-      doc.target,
-      order.map((i) => doc.lanes[i]),
-      order.map((i) => laws[i]),
-      false,
-      order,
-      showCandidate
-    );
-    if (token !== fitToken) return;
-    doc.candidate = null;
-    commit("fit");
-    const lanes = emptyLanes();
-    const words = new Array(7);
-    order.forEach((lane, slot) => {
-      lanes[lane] = r.lanes[slot];
-      words[lane] = r.words[slot];
-    });
-    const strayed = [];
-    for (let i = 0; i < 7; i++) {
-      if (!isLocked(i) || doc.lanes[i].pole_r <= 0) continue;
-      const was = doc.lanes[i].pole_hz;
-      const now = lanes[i].pole_r > 0 ? lanes[i].pole_hz : 0;
-      if (Math.abs(now - was) > was * 0.01) strayed.push(`S${i + 1}`);
-    }
-    for (let i = 0; i < 7; i++) {
-      if (!doc.roles[i] || isLocked(i)) continue;
-      const was = doc.lanes[i].pole_hz;
-      const now = lanes[i].pole_r > 0 ? lanes[i].pole_hz : 0;
-      if (!now || !was || Math.abs(now - was) > was * 0.02) doc.roles[i] = null;
-    }
-    storeCorner(lanes, words);
-    doc.rms = r.target_rms_db;
-    doc.rmsStale = false;
-    doc.packing = r.intended_packed_rms_db;
-    pushAudio();
-    say(
-      `${r.target_rms_db.toFixed(2)} dB rms over ${r.sections_used} sections, packing ${r.intended_packed_rms_db.toFixed(3)} dB${
-        strayed.length ? ` — the solver moved locked ${strayed.join(", ")}` : ""
-      }`
-    );
-    paint();
-  } finally {
-    if (token === fitToken) fitting = false;
-    doc.candidate = null;
-  }
-}
-
 const briefPane = document.createElement("div");
 briefPane.style.cssText =
   "max-height:30%;overflow-y:auto;background:var(--well);color:var(--well-ink);font-size:11px;padding:4px 8px;white-space:pre-wrap;display:none;border-top:1px solid var(--grat-major)";
@@ -713,6 +646,17 @@ const sectionPicker = createSectionPicker(document.getElementById("work"), {
       })
       .catch((e) => say(`ERROR: ${e.message}`));
   },
+  onSeatState: (state, destination) => {
+    field
+      .seatState(state, destination)
+      .then(({ citation, verbatim }) => {
+        afterFieldChange();
+        say(
+          `S${destination + 1} ← recurring section, used ${state.count}x across ${state.presets.join(", ")}${verbatim ? " · verbatim" : " · re-encoded"} · ${citation}`
+        );
+      })
+      .catch((e) => say(`ERROR: ${e.message}`));
+  },
 });
 
 async function loadTypeTemplate(entry, importAll) {
@@ -721,7 +665,7 @@ async function loadTypeTemplate(entry, importAll) {
   if (importAll) {
     const { stages, corners } = await field.importFactory(entry, stageCount, source ? source.corners : 4);
     afterFieldChange();
-    return say(`${entry.type} imported — ${corners} corners × ${stages} sections, S${stages + 1} idle`);
+    return say(`${entry.name || entry.type} — ${corners} corners`);
   }
   const { stages, held } = await field.seatTemplate(entry, stageCount);
   afterFieldChange();
@@ -729,9 +673,10 @@ async function loadTypeTemplate(entry, importAll) {
   say(`${entry.type} → ${endpointName()} · ${stages} sections, S${stages + 1} idle${kept}`);
 }
 
-function initTransplant(sources) {
+function initTransplant(sources, vocabulary) {
   stageSources = sources || [];
   sectionPicker.setSources(stageSources);
+  sectionPicker.setStates((vocabulary && vocabulary.states) || []);
 }
 
 function openStageSourcePicker(destination, anchorRect) {
@@ -811,7 +756,7 @@ async function pick(kind, item, right) {
     return;
   }
   if (kind === "templates") {
-    await loadTypeTemplate(item, right);
+    await loadTypeTemplate(item, true);
     return;
   }
   if (kind === "architectures") {
@@ -834,7 +779,7 @@ async function start() {
     pick(kind, item, right).catch((e) => say(`ERROR: ${e.message}`));
   });
   ceiling = lib.pole_ceiling_r || ceiling;
-  initTransplant(lib.stage_sources);
+  initTransplant(lib.stage_sources, lib.vocabulary);
   mouths = lib.mouths || [];
   say(`library loaded — root ${lib.root}`);
   if (loadSnapshot()) say("Ready — Ctrl+L restores last session");
@@ -852,7 +797,10 @@ async function start() {
     if (item) {
       await setTarget(item);
       if (q.has("skeleton")) await placeSkeleton();
-      if (q.has("fit")) await runFit();
+      if (q.has("fit")) {
+        await fitter.run();
+        fitter.accept();
+      }
       if (q.has("corners")) {
         for (let i = 0; i < 8; i++) {
           doc.field[i] = { name: `${doc.targetName} c${i}`, lanes: structuredClone(doc.lanes) };
@@ -870,12 +818,10 @@ async function start() {
 }
 
 window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && fitting) {
-    fitting = false;
-    fitToken++;
-    doc.candidate = null;
-    say("fit abandoned");
-    paint();
+  if (e.key === "Escape" && (fitter.abandon() || fitter.discard())) return;
+  if (e.key === "Enter" && doc.proposal) {
+    e.preventDefault();
+    fitter.accept();
     return;
   }
   if (e.ctrlKey && e.key === "l") {
@@ -913,7 +859,7 @@ window.addEventListener("keydown", (e) => {
   }
   if (e.code === "Space" && !e.ctrlKey && document.activeElement.tagName !== "INPUT") {
     e.preventDefault();
-    const next = !playing;
+    const next = !audition.isPlaying();
     hold(next);
     if (!next) say("stopped");
     return;

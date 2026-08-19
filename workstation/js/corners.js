@@ -2,6 +2,8 @@ import { css, scope, trace, curveEval, xOf, yMap } from "./render.js";
 import { sumCurve } from "./curves.js";
 import { decode } from "./dsp.js";
 
+export const CELL_LABELS = ["LO Q0", "HI Q0", "LO Q100", "HI Q100"];
+
 export const NAMES = ["M0 Q0 Z0", "M1 Q0 Z0", "M0 Q1 Z0", "M1 Q1 Z0", "M0 Q0 Z1", "M1 Q0 Z1", "M0 Q1 Z1", "M1 Q1 Z1"];
 
 function levelDb(words) {
@@ -97,7 +99,7 @@ export function renderCorners(el, field, active, hooks, live) {
   el.appendChild(heads);
   const grid = document.createElement("div");
   grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--well)";
-  for (const i of [0, 1]) {
+  for (const i of [0, 1, 2, 3]) {
     const canvas = document.createElement("canvas");
     canvas.style.cssText = "width:100%;aspect-ratio:1.35;cursor:pointer";
     canvas.onclick = () => hooks.onSelect(i);
@@ -119,7 +121,7 @@ export function renderCorners(el, field, active, hooks, live) {
       const slot = field[i];
       const cloned = !!(slot && slot.cloned);
       const words = slot ? (cloned && live ? live : slot.words) : null;
-      miniplot(canvas, words, i === active, i === 0 ? "LO" : "HI", slot && slot.name, cloned, !!(slot && slot.held));
+      miniplot(canvas, words, i === active, CELL_LABELS[i], slot && slot.name, cloned, !!(slot && slot.held));
     }
   });
 }

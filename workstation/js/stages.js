@@ -1,5 +1,5 @@
 import { lawState } from "./doc.js";
-import { stageCurves } from "./curves.js";
+import { stageCurves, displaySr } from "./curves.js";
 import { hzOfX, curveEval, trace, yMap, SECTION_DB_LO, SECTION_DB_HI } from "./render.js";
 
 const HZ_LO = 40;
@@ -32,6 +32,31 @@ function pxOf(hz, w) {
 
 function pyOfR(r, h) {
   return h - (rPrime(r) / RP_MAX) * h;
+}
+
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+function noteOf(hz) {
+  if (!(hz > 0)) return "";
+  const m = 69 + 12 * Math.log2(hz / 440);
+  const n = Math.round(m);
+  const cents = Math.round((m - n) * 100);
+  return `${NOTE_NAMES[((n % 12) + 12) % 12]}${Math.floor(n / 12) - 1}${cents >= 0 ? "+" : ""}${cents}c`;
+}
+
+function widthSt(hz, r, sr) {
+  if (!(hz > 0) || !(r > 0) || r >= 1) return null;
+  const bw = (-Math.log(r) * sr) / Math.PI;
+  const lo = hz - bw / 2;
+  if (lo <= 0) return Infinity;
+  return 12 * Math.log2((hz + bw / 2) / lo);
+}
+
+function widthText(hz, r, sr) {
+  const w = widthSt(hz, r, sr);
+  if (w === null) return "";
+  if (!isFinite(w)) return "w broad";
+  return `w ${w.toFixed(w < 10 ? 1 : 0)}st`;
 }
 
 function fmtHz(hz) {
@@ -129,7 +154,7 @@ export function mountStages(el, doc, cb) {
     label.style.cssText = "flex:1;overflow:hidden;text-overflow:ellipsis";
     label.textContent = `S${i + 1}`;
     const lock = document.createElement("span");
-    lock.style.cssText = "cursor:pointer;font-size:10px;padding:0 4px;border:1px solid transparent";
+    lock.style.cssText = "cursor:pointer;font-size:10px;padding:1px 5px;border:1px solid transparent;border-radius:2px;letter-spacing:0.3px";
     lock.onclick = (e) => {
       e.stopPropagation();
       cb.onLockClick && cb.onLockClick(i);
@@ -235,29 +260,28 @@ export function drawStages(mounted, doc) {
     const locked = lawState(doc.laws[i]) !== "FREE";
     const empty = laneEmpty(lane);
     c.header.style.borderColor = i === doc.selected ? css("--chrome-hi") : "transparent";
-    c.lock.textContent = locked ? "HELD" : "free";
-    c.lock.style.borderColor = locked ? css("--active-corner") : css("--grat-major");
-    c.lock.style.color = locked ? css("--active-corner") : css("--axis-ink");
+    const held = !doc.laws[i].writable;
+    c.lock.textContent = held ? "HELD" : locked ? "PIN" : empty ? "OPEN" : "FIT";
+    c.lock.title = held
+      ? "held — FIT cannot touch this lane"
+      : locked
+        ? "pinned — FIT may adjust it within its law"
+        : empty
+          ? "open — FIT may seat a section here"
+          : "FIT will refine this lane in place";
+    c.lock.style.borderColor = held ? css("--active-corner") : empty ? css("--grat-major") : css("--axis-ink");
+    c.lock.style.color = held ? css("--active-corner") : empty ? css("--axis-ink") : css("--well-ink");
     drawPanel(c.iso, stages ? [[stages[i], c.ink, 1.3]] : [], empty ? null : lane, c.ink);
     const slot = doc.field && doc.field[doc.selectedCorner];
     const geom = slot && slot.geometry && slot.geometry[i];
     if (empty && geom && geom.real_pair) {
-      c.info.textContent = `${realPairText("P", geom.pole)}  ${realPairText("Z", geom.zero)}  REAL PAIR — not editable here${slot.citations && slot.citations[i] ? `  SRC ${slot.citations[i]}` : ""}`;
+      c.info.textContent = "";
       continue;
     }
     if (empty) {
       c.info.textContent = "";
       continue;
     }
-    const parts = [];
-    if (lane.pole_r > 0) parts.push(`P ${fmtHz(lane.pole_hz)} r ${lane.pole_r.toFixed(4)}`);
-    if (lane.zero_r > 0) parts.push(`Z ${fmtHz(lane.zero_hz)} r ${lane.zero_r.toFixed(4)}`);
-    const scaleDb = 20 * Math.log10(Math.max(lane.scale, 1e-12));
-    let productDb = 0;
-    for (let k = 0; k <= i; k++) productDb += 20 * Math.log10(Math.max(doc.lanes[k].scale, 1e-12));
-    parts.push(`S ${scaleDb >= 0 ? "+" : ""}${scaleDb.toFixed(2)} dB  Σ ${productDb >= 0 ? "+" : ""}${productDb.toFixed(2)} dB`);
-    const citation = doc.field && doc.field[doc.selectedCorner] && doc.field[doc.selectedCorner].citations && doc.field[doc.selectedCorner].citations[i];
-    if (citation) parts.push(`SRC ${citation}`);
-    c.info.textContent = parts.join("  ");
+    c.info.textContent = "";
   }
 }

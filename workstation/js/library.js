@@ -15,15 +15,16 @@ export function renderLibrary(el, lib, onPick, seedMenu) {
     head.textContent = "TEMPLATES";
     el.appendChild(head);
     for (const entry of templates) {
-      if (!entry.template) continue;
+      const generic = entry.generic || [];
+      if (!generic.length) continue;
       const row = document.createElement("div");
       row.className = "lib-item";
       row.textContent = entry.type;
-      row.title = `${entry.members.length} filters · ${entry.template.sentence}\nclick: seat into active corner · right-click: import all four corners`;
+      row.title = generic.map((x) => `${x.name}/${x.order}`).join("  ");
       const pick = (right) => {
         el.querySelectorAll(".lib-item.active").forEach((n) => n.classList.remove("active"));
         row.classList.add("active");
-        onPick("templates", { ...entry.template, type: entry.type }, right);
+        onPick("templates", { ...generic[0], type: entry.type }, right);
       };
       row.onclick = () => pick(false);
       row.oncontextmenu = (e) => {

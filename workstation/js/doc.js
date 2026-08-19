@@ -10,6 +10,7 @@ export const doc = {
   fieldWords: null,
   preview: null,
   candidate: null,
+  proposal: null,
   rms: null,
   packing: null,
   selected: 1,

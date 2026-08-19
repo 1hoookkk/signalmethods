@@ -4,7 +4,7 @@ export function initPad(el, hooks) {
   const title = el.querySelector(".dock-title");
   if (title) title.textContent = "PLAY · MORPH";
   const canvas = document.createElement("canvas");
-  canvas.style.cssText = "flex:1 1 auto;min-height:120px;width:100%;display:block;touch-action:none;cursor:ew-resize";
+  canvas.style.cssText = "flex:1 1 auto;min-height:150px;width:100%;display:block;touch-action:none;cursor:crosshair";
   const readout = document.createElement("div");
   readout.style.cssText = "padding:5px 8px;background:var(--chrome);color:var(--ink);font-size:11px;display:flex;justify-content:space-between";
   const bar = document.createElement("div");
@@ -14,61 +14,75 @@ export function initPad(el, hooks) {
   const pos = { m: 0, q: 0, z: 0, grit: 0 };
   let playing = false;
 
+
+  const PAD = 22;
+
   function paint() {
     scope(canvas).frame((g, w, h) => {
       g.fillStyle = css("--well");
       g.fillRect(0, 0, w, h);
-      const y = h / 2;
-      const x0 = 24;
-      const x1 = w - 24;
+      const x0 = PAD, x1 = w - PAD, y0 = PAD, y1 = h - PAD;
+      g.strokeStyle = css("--grat-minor");
+      g.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const x = x0 + ((x1 - x0) * i) / 4;
+        const y = y0 + ((y1 - y0) * i) / 4;
+        g.beginPath(); g.moveTo(x, y0); g.lineTo(x, y1); g.stroke();
+        g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke();
+      }
       g.strokeStyle = css("--grat-major");
       g.lineWidth = 2;
-      g.beginPath();
-      g.moveTo(x0, y);
-      g.lineTo(x1, y);
-      g.stroke();
-      for (let i = 0; i <= 10; i++) {
-        const x = x0 + (x1 - x0) * i / 10;
-        g.strokeStyle = css("--grat-minor");
-        g.beginPath();
-        g.moveTo(x, y - 8);
-        g.lineTo(x, y + 8);
-        g.stroke();
-      }
+      g.strokeRect(x0, y0, x1 - x0, y1 - y0);
       const x = x0 + (x1 - x0) * pos.m;
+      const y = y1 - (y1 - y0) * pos.q;
+      g.strokeStyle = css("--grat-major");
+      g.lineWidth = 1;
+      g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke();
+      g.beginPath(); g.moveTo(x, y0); g.lineTo(x, y1); g.stroke();
       g.fillStyle = css("--active-corner");
       g.beginPath();
       g.arc(x, y, playing ? 11 : 9, 0, Math.PI * 2);
       g.fill();
-      g.font = `11px ${css("--mono")}`;
+      g.font = `10px ${css("--mono")}`;
       g.fillStyle = css("--axis-ink");
-      g.fillText("LO MORPH", x0, y - 20);
-      const hi = "HI MORPH";
-      g.fillText(hi, x1 - g.measureText(hi).width, y - 20);
+      g.fillText("M", x1 - 8, y1 + 14);
+      g.fillText("Q", x0 - 14, y0 + 8);
     });
-    readout.innerHTML = `<span>LO ${Math.round((1 - pos.m) * 100)}%</span><span>M ${pos.m.toFixed(3)}</span><span>HI ${Math.round(pos.m * 100)}%</span>`;
+    readout.innerHTML = `<span>M ${pos.m.toFixed(2)}</span><span>Q ${pos.q.toFixed(2)}</span>`;
   }
 
   function setFromEvent(e) {
     const rect = canvas.getBoundingClientRect();
-    pos.m = Math.min(1, Math.max(0, (e.clientX - rect.left - 24) / Math.max(1, rect.width - 48)));
-    hooks.onRide(pos.m, 0, 0);
+    const w = rect.width, h = rect.height;
+    pos.m = Math.min(1, Math.max(0, (e.clientX - rect.left - PAD) / Math.max(1, w - 2 * PAD)));
+    pos.q = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top - PAD) / Math.max(1, h - 2 * PAD)));
+    hooks.onRide(pos.m, pos.q, 0);
     paint();
   }
 
+  let dragging = false;
   canvas.addEventListener("pointerdown", (e) => {
-    playing = true;
+    dragging = true;
     canvas.setPointerCapture(e.pointerId);
     setFromEvent(e);
-    hooks.onHold(true);
+    if (!playing) {
+      playing = true;
+      hooks.onHold(true);
+    }
+    paint();
   });
-  canvas.addEventListener("pointermove", (e) => { if (playing) setFromEvent(e); });
-  canvas.addEventListener("pointerup", () => { playing = false; hooks.onHold(false); paint(); });
-  canvas.addEventListener("pointercancel", () => { playing = false; hooks.onHold(false); paint(); });
+  canvas.addEventListener("pointermove", (e) => { if (dragging) setFromEvent(e); });
+  canvas.addEventListener("pointerup", () => { dragging = false; paint(); });
+  canvas.addEventListener("pointercancel", () => { dragging = false; paint(); });
+  canvas.addEventListener("dblclick", () => {
+    playing = false;
+    hooks.onHold(false);
+    paint();
+  });
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
-    pos.m = Math.min(1, Math.max(0, pos.m - Math.sign(e.deltaY) * 0.025));
-    hooks.onRide(pos.m, 0, 0);
+    pos.q = Math.min(1, Math.max(0, pos.q - Math.sign(e.deltaY) * 0.05));
+    hooks.onRide(pos.m, pos.q, 0);
     paint();
   });
   bar.querySelector("#pad-blend").oninput = (e) => hooks.onBlend(Number(e.target.value));

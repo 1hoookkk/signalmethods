@@ -144,7 +144,7 @@ export function swapSections(from, to) {
   for (const slot of doc.field) {
     if (!slot) continue;
     [slot.lanes[from], slot.lanes[to]] = [slot.lanes[to], slot.lanes[from]];
-    [slot.words[from], slot.words[to]] = [slot.words[to], slot.words[from]];
+    slot.words = slot.words.map((w, i) => (i === from ? slot.words[to] : i === to ? slot.words[from] : w));
     if (slot.roles) [slot.roles[from], slot.roles[to]] = [slot.roles[to], slot.roles[from]];
     if (slot.laws) [slot.laws[from], slot.laws[to]] = [slot.laws[to], slot.laws[from]];
     if (slot.citations) [slot.citations[from], slot.citations[to]] = [slot.citations[to], slot.citations[from]];

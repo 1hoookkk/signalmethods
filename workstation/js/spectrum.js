@@ -10,8 +10,8 @@ import {
   formantTracks,
 } from "./render.js";
 
-const DB_LO = -60;
-const DB_HI = 84;
+const DB_LO = -48;
+const DB_HI = 42;
 const CROWN = 36;
 
 export function xOf(hz, w) {

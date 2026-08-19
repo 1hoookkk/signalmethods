@@ -1,15 +1,9 @@
-import { scope } from "./render.js";
+import { scope, HZ_LO, HZ_HI, xOf, hzOfX } from "./render.js";
 
 const STAGE_VARS = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"];
-const RP_MAX = 60;
-const HZ_LO = 40;
-const HZ_HI = 18500;
-const LOG_RATIO = Math.log(HZ_HI / HZ_LO);
-
-function xOf(hz, w) {
-  const t = Math.log(Math.max(HZ_LO, Math.min(HZ_HI, hz)) / HZ_LO) / LOG_RATIO;
-  return Math.min(w - 3, Math.max(3, t * w));
-}
+const RP_MAX = 84;
+const LIVE_R = 0.45;
+const OCTAVES = 10;
 
 function offAxis(hz) {
   return hz > HZ_HI || hz < HZ_LO;
@@ -43,10 +37,6 @@ function yOfR(r, h) {
   return Math.min(h - 3, Math.max(3, h - (rPrime(r) / RP_MAX) * h));
 }
 
-function hzOfX(x, w) {
-  return HZ_LO * Math.pow(HZ_HI / HZ_LO, Math.min(1, Math.max(0, x / w)));
-}
-
 export function drawRoots(canvas, doc, ceiling) {
   scope(canvas).frame((ctx, w, h) => paintRoots(ctx, w, h, doc, ceiling));
 }
@@ -55,7 +45,7 @@ function paintRoots(ctx, w, h, doc, ceiling) {
   ctx.fillStyle = css("--well");
   ctx.fillRect(0, 0, w, h);
   ctx.lineWidth = 1;
-  for (const hz of [100, 1000, 10000, 18000]) {
+  for (const hz of [100, 1000, 10000]) {
     ctx.strokeStyle = css("--grat-minor");
     ctx.beginPath();
     ctx.moveTo(xOf(hz, w), 0);
@@ -78,12 +68,69 @@ function paintRoots(ctx, w, h, doc, ceiling) {
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.font = `10px ${css("--mono")}`;
+  if (doc.proposal) {
+    ctx.setLineDash([2, 3]);
+    for (let i = 0; i < 7; i++) {
+      const to = doc.proposal.lanes[i];
+      if (!to || !doc.laws[i].writable) continue;
+      const from = doc.lanes[i];
+      ctx.strokeStyle = css(STAGE_VARS[i]);
+      ctx.globalAlpha = 0.55;
+      for (const kind of ["pole", "zero"]) {
+        const tr = to[`${kind}_r`];
+        if (!(tr > 0)) continue;
+        const tx = xOf(to[`${kind}_hz`], w);
+        const ty = yOfR(tr, h);
+        const fr = from[`${kind}_r`];
+        if (fr > 0) {
+          ctx.beginPath();
+          ctx.moveTo(xOf(from[`${kind}_hz`], w), yOfR(fr, h));
+          ctx.lineTo(tx, ty);
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(tx, ty, 7, 0, 7);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.setLineDash([]);
+  }
+  const slot = doc.field && doc.field[doc.selectedCorner];
+  const geom = slot && slot.geometry;
+  if (geom) {
+    for (let i = 0; i < 7; i++) {
+      const g = geom[i];
+      if (!g || !g.real_pair) continue;
+      const color = css(STAGE_VARS[i]);
+      for (const [role, pair] of [["pole", g.pole], ["zero", g.zero]]) {
+        if (!pair || pair.kind !== "real") continue;
+        for (const r of pair.pair) {
+          if (!(r > 0)) continue;
+          const y = yOfR(Math.min(r, 0.999999), h);
+          ctx.strokeStyle = color;
+          ctx.globalAlpha = 0.9;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          if (role === "pole") {
+            ctx.moveTo(2, y - 5);
+            ctx.lineTo(2, y + 5);
+          } else {
+            ctx.arc(5, y, 4, 0, 7);
+          }
+          ctx.stroke();
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+  }
   for (let i = 0; i < 7; i++) {
     const lane = doc.lanes[i];
     const color = css(STAGE_VARS[i]);
     const hasPole = lane.pole_r > 0;
     const hasZero = lane.zero_r > 0;
-    const inert = (r) => rPrime(r) < 2;
+    const inert = (r) => r < LIVE_R;
     if (hasPole && hasZero && !inert(lane.pole_r) && !inert(lane.zero_r)) {
       ctx.strokeStyle = color;
       ctx.globalAlpha = 0.35;
@@ -93,8 +140,8 @@ function paintRoots(ctx, w, h, doc, ceiling) {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    if (hasPole) {
-      ctx.globalAlpha = inert(lane.pole_r) ? 0.3 : 1;
+    if (hasPole && !inert(lane.pole_r)) {
+      ctx.globalAlpha = 1;
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(xOf(lane.pole_hz, w), yOfR(lane.pole_r, h), 5, 0, 7);
@@ -103,8 +150,8 @@ function paintRoots(ctx, w, h, doc, ceiling) {
       if (offAxis(lane.pole_hz)) edgeTick(ctx, xOf(lane.pole_hz, w), yOfR(lane.pole_r, h), color);
       ctx.globalAlpha = 1;
     }
-    if (hasZero) {
-      ctx.globalAlpha = inert(lane.zero_r) ? 0.3 : 1;
+    if (hasZero && !inert(lane.zero_r)) {
+      ctx.globalAlpha = 1;
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
       ctx.beginPath();

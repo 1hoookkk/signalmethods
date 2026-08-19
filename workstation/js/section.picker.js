@@ -12,8 +12,9 @@ export function createSectionPicker(host, hooks) {
 
   const cache = new Map();
   let sources = [];
+  let states = [];
   let grain = "track";
-  let family = "all";
+  let family = "recurring";
   let query = "";
   let shown = PAGE;
   let destination = 0;
@@ -42,6 +43,21 @@ export function createSectionPicker(host, hooks) {
         trace(g, w, h, curveEval(v), yOf, css(CORNER_INKS[c % CORNER_INKS.length]), 1.2);
       });
       g.globalAlpha = 1;
+    });
+  }
+
+  function drawState(canvas, state) {
+    const v = stateCurve(state);
+    scope(canvas).frame((g, w, h) => {
+      const { yOf } = yMap(SECTION_DB_LO, SECTION_DB_HI, h);
+      g.fillStyle = css("--well");
+      g.fillRect(0, 0, w, h);
+      g.strokeStyle = css("--grat-major");
+      g.beginPath();
+      g.moveTo(0, Math.floor(yOf(0)) + 0.5);
+      g.lineTo(w, Math.floor(yOf(0)) + 0.5);
+      g.stroke();
+      trace(g, w, h, curveEval(v), yOf, css("--s3"), 1.3);
     });
   }
 
@@ -80,6 +96,52 @@ export function createSectionPicker(host, hooks) {
     return b;
   }
 
+  function stateCurve(state) {
+    const key = `state/${state.words.join(",")}`;
+    if (!cache.has(key)) cache.set(key, curveInto([state.words]));
+    return cache.get(key);
+  }
+
+  function renderStates(body) {
+    const q = query.trim().toLowerCase();
+    const list = states.filter((st) => !q || st.presets.some((n) => n.toLowerCase().includes(q)));
+    if (!list.length) {
+      const empty = document.createElement("div");
+      empty.className = "sheet-type";
+      empty.textContent = "no recurring section matches";
+      body.appendChild(empty);
+      return;
+    }
+    const label = document.createElement("div");
+    label.className = "sheet-type";
+    label.textContent = `${list.length} SECTIONS RECURRING ACROSS PRESETS · RANKED BY USE`;
+    body.appendChild(label);
+    const strip = document.createElement("div");
+    strip.className = "sheet-strip";
+    for (const state of list.slice(0, shown)) {
+      const tile = document.createElement("div");
+      tile.className = "sheet-tile";
+      tile.tabIndex = 0;
+      tile.setAttribute("role", "button");
+      const cite = `x${state.count} · ${state.presets.join(", ")} · P ${Math.round(state.pole.hz)} Hz r ${state.pole.r.toFixed(4)}`;
+      tile.title = cite;
+      tile.setAttribute("aria-label", cite);
+      const tag = document.createElement("span");
+      tag.className = "count";
+      tag.textContent = `x${state.count}`;
+      const canvas = document.createElement("canvas");
+      tile.append(canvas, tag);
+      const seat = () => { hooks.onSeatState(state, destination); close(); };
+      tile.onclick = seat;
+      tile.onmouseenter = () => hooks.onDetail(cite);
+      tile.onfocus = () => hooks.onDetail(cite);
+      tile.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); seat(); } };
+      strip.appendChild(tile);
+      requestAnimationFrame(() => drawState(canvas, state));
+    }
+    body.appendChild(strip);
+  }
+
   function render(keepFocus) {
     panel.textContent = "";
 
@@ -99,7 +161,8 @@ export function createSectionPicker(host, hooks) {
       chip("CELL", grain === "cell", () => { grain = "cell"; render(); }),
       chip("ALL", family === "all", () => { family = "all"; shown = PAGE; render(); }),
       chip("P2K", family === "p2k", () => { family = "p2k"; shown = PAGE; render(); }),
-      chip("CUBES", family === "morpheus", () => { family = "morpheus"; shown = PAGE; render(); })
+      chip("CUBES", family === "morpheus", () => { family = "morpheus"; shown = PAGE; render(); }),
+      chip("RECURRING", family === "recurring", () => { family = "recurring"; shown = PAGE; render(); })
     );
 
     const search = document.createElement("input");
@@ -111,6 +174,13 @@ export function createSectionPicker(host, hooks) {
 
     const body = document.createElement("div");
     body.className = "section-sheet";
+    if (family === "recurring") {
+      renderStates(body);
+      panel.append(head, bar, search, body);
+      place();
+      if (keepFocus) panel.querySelector(".pick-search")?.focus();
+      return;
+    }
     const list = matches();
     for (const source of list.slice(0, shown)) {
       const label = document.createElement("div");
@@ -184,6 +254,9 @@ export function createSectionPicker(host, hooks) {
     setSources(next) {
       sources = (next || []).filter((s) => s.tracks && s.tracks.length);
       cache.clear();
+    },
+    setStates(next) {
+      states = (next || []).filter((s) => s && s.words && s.presets);
     },
     open(nextDestination, nextAnchor) {
       destination = nextDestination;

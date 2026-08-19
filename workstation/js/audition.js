@@ -13,6 +13,7 @@ export function createAudition(el, deps) {
   let previewBuffer = null;
   let levelTimer = 0;
   let uniformWarned = false;
+  let playing = false;
 
   function preview(m, q, z) {
     ridePos.m = m;
@@ -34,6 +35,11 @@ export function createAudition(el, deps) {
   function hold(down) {
     if (down && !doc.fieldWords && !doc.words) {
       return say("nothing seated — load a body or seat sections first");
+    }
+    playing = down;
+    if (!down) {
+      doc.preview = null;
+      paintSpectrum();
     }
     if (down && !doc.fieldWords) pushAudio();
     setPlay(down).catch((e) => say(`AUDIO: ${e.message}`));
@@ -64,6 +70,7 @@ export function createAudition(el, deps) {
 
   return {
     hold,
+    isPlaying: () => playing,
     preview,
     ridePos,
     paint: pad.paint,
