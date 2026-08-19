@@ -137,51 +137,24 @@ function paintCorners() {
     },
     onSwap: (a, b) => {
       commit(`swap C${a} C${b}`);
-      const t = doc.field[a];
-      doc.field[a] = doc.field[b];
-      doc.field[b] = t;
-      bindCorner(doc.selectedCorner, false);
+      field.swapCorners(a, b);
+      afterFieldChange();
       say(`C${a} ↔ C${b}`);
-      pushAudio();
-      paintCorners();
-      pad.paint();
-      paint();
     },
     onClear: () => {
       commit("new");
-      doc.lanes = emptyLanes();
-      doc.roles = emptyRoles();
-      doc.laws = doc.lanes.map(() => freeLaw());
-      doc.field = Array.from({ length: 8 }, () => null);
-      doc.words = null;
-      doc.fieldWords = null;
-      doc.target = null;
-      doc.targetName = null;
-      doc.peaks = null;
-      doc.preview = null;
-      doc.rms = null;
-      doc.selectedCorner = 0;
-      bindCorner(0);
+      field.reset();
       audition.clearUniformWarning();
-      say("new — LO and HI cleared");
-      paintCorners();
-      pad.paint();
-      paint();
+      afterFieldChange();
+      say("new — all corners cleared");
     },
     onFill: () => {
-      const src = doc.field[doc.selectedCorner];
-      if (!src) return say("nothing posed yet — edit LO or HI first");
-      if (!src.words && src.lanes) src.words = lanesToWords(src.lanes, displaySr());
+      if (!doc.field[doc.selectedCorner]) return say("nothing posed yet — edit LO or HI first");
       const to = doc.selectedCorner === 0 ? 1 : 0;
       commit(`copy endpoint ${doc.selectedCorner} to ${to}`);
-      doc.field[to] = structuredClone(src);
-      doc.field[to].name = to === 0 ? "LO MORPH" : "HI MORPH";
-      doc.field[to].cloned = true;
-      say(`${doc.selectedCorner === 0 ? "LO" : "HI"} copied to ${to === 0 ? "LO" : "HI"} — edit the destination`);
-      pushAudio();
-      paintCorners();
-      pad.paint();
-      paint();
+      field.copyCorner(doc.selectedCorner, to);
+      afterFieldChange();
+      say(`${endpointName()} copied to ${endpointName(to)} — edit the destination`);
     },
     onKeep: () => {
       api
@@ -403,45 +376,21 @@ const stageCallbacks = {
   },
   onClear: (i) => {
     commit(`clear C${doc.selectedCorner} S${i + 1}`);
-    doc.lanes[i] = emptyLanes()[0];
-    const slot = ensureCorner(doc.selectedCorner);
-    if (slot.citations) slot.citations[i] = null;
-    storeCorner(doc.lanes);
-    pushAudio();
-    paintCorners();
-    paint();
+    field.clearSection(i);
+    afterFieldChange();
     say(`${endpointName()} S${i + 1} cleared to identity`);
   },
   onFlip: (i) => {
     if (isLocked(i)) return say(`S${i + 1} HELD`);
     commit(`flip C${doc.selectedCorner} S${i + 1}`);
-    const lane = doc.lanes[i];
-    [lane.pole_hz, lane.zero_hz] = [lane.zero_hz, lane.pole_hz];
-    [lane.pole_r, lane.zero_r] = [lane.zero_r, lane.pole_r];
-    const slot = ensureCorner(doc.selectedCorner);
-    const words = slot.words[i].slice();
-    slot.words[i] = [words[2], words[3], words[0], words[1], words[4]];
-    if (slot.citations && slot.citations[i]) slot.citations[i] = `${slot.citations[i]} · P↔Z`;
-    storeCorner(doc.lanes, slot.words);
-    pushAudio();
-    paintCorners();
-    paint();
+    field.flipSection(i);
+    afterFieldChange();
     say(`${endpointName()} S${i + 1} pole ↔ zero; scale preserved`);
   },
   onSwap: (from, to) => {
     commit(`swap S${from + 1} S${to + 1}`);
-    for (const slot of doc.field) {
-      if (!slot) continue;
-      [slot.lanes[from], slot.lanes[to]] = [slot.lanes[to], slot.lanes[from]];
-      [slot.words[from], slot.words[to]] = [slot.words[to], slot.words[from]];
-      if (slot.roles) [slot.roles[from], slot.roles[to]] = [slot.roles[to], slot.roles[from]];
-      if (slot.laws) [slot.laws[from], slot.laws[to]] = [slot.laws[to], slot.laws[from]];
-      if (slot.citations) [slot.citations[from], slot.citations[to]] = [slot.citations[to], slot.citations[from]];
-    }
-    bindCorner(doc.selectedCorner, false);
-    pushAudio();
-    paintCorners();
-    paint();
+    field.swapSections(from, to);
+    afterFieldChange();
     say(`S${from + 1} ↔ S${to + 1} across all corners; travel preserved`);
   },
   onSeat: (i, rect) => openStageSourcePicker(i, rect),

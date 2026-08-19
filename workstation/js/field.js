@@ -85,10 +85,6 @@ function slotWords(slot) {
   return null;
 }
 
-export function authoredFieldWords() {
-  return Array.from({ length: AUTHORED_CORNERS }, (_, i) => slotWords(doc.field[i]));
-}
-
 export function runtimeFieldWords() {
   const all = doc.field.map(slotWords);
   if (all.every(Boolean)) return all;
@@ -97,10 +93,6 @@ export function runtimeFieldWords() {
   if (!seed) return null;
   const filled = authored.map((words) => words || seed);
   return Array.from({ length: RUNTIME_CORNERS }, (_, i) => filled[i % AUTHORED_CORNERS]);
-}
-
-export function isSquare() {
-  return doc.field.slice(0, AUTHORED_CORNERS).every(Boolean) && doc.field.slice(AUTHORED_CORNERS).every((slot) => !slot);
 }
 
 export function applyLanes(nextLanes, next = {}) {
@@ -158,6 +150,39 @@ export function swapSections(from, to) {
     if (slot.citations) [slot.citations[from], slot.citations[to]] = [slot.citations[to], slot.citations[from]];
   }
   return selectCorner(doc.selectedCorner, false);
+}
+
+export function flipSection(stage) {
+  const slot = ensureCorner(doc.selectedCorner);
+  const lane = slot.lanes[stage];
+  [lane.pole_hz, lane.zero_hz] = [lane.zero_hz, lane.pole_hz];
+  [lane.pole_r, lane.zero_r] = [lane.zero_r, lane.pole_r];
+  const w = slot.words[stage];
+  slot.words = slot.words.map((words, i) => (i === stage ? [w[2], w[3], w[0], w[1], w[4]] : words));
+  if (slot.citations[stage]) slot.citations[stage] = `${slot.citations[stage]} · P↔Z`;
+  return commitLanes(slot.lanes, slot.words);
+}
+
+export function swapCorners(a, b) {
+  const held = doc.field[a];
+  doc.field[a] = doc.field[b];
+  doc.field[b] = held;
+  return selectCorner(doc.selectedCorner, false);
+}
+
+export function reset() {
+  doc.field = Array.from({ length: RUNTIME_CORNERS }, () => null);
+  doc.lanes = emptyLanes();
+  doc.roles = emptyRoles();
+  doc.laws = doc.lanes.map(() => freeLaw());
+  doc.words = null;
+  doc.fieldWords = null;
+  doc.target = null;
+  doc.targetName = null;
+  doc.peaks = null;
+  doc.preview = null;
+  doc.rms = null;
+  return selectCorner(0);
 }
 
 export function copyCorner(from, to) {
