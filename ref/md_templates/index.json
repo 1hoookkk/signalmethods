@@ -1,0 +1,759 @@
+{
+ "schema": "trench-md-templates-v1",
+ "source": "Emulator X Family/Templates/Filter, compiled by the FUN_1802c6590 arithmetic in ghidra_extracts/morphdesigner_types.md at sample-rate family 0 (44,100 Hz).",
+ "datum_hz": 44100.0,
+ "corner_order": [
+  "M0_Q0",
+  "M100_Q0",
+  "M0_Q100",
+  "M100_Q100"
+ ],
+ "note": "Morph Designer collapses Q: corners 0 and 2 are endpoint A, 1 and 3 are endpoint B.",
+ "templates": [
+  {
+   "stem": "All Off Designer",
+   "name": "All Off Designer",
+   "sections": 0,
+   "types": []
+  },
+  {
+   "stem": "Bass Boost LP 1",
+   "name": "Bass Boost LP 1",
+   "sections": 4,
+   "types": [
+    2,
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "stem": "Bass Boost LP 2",
+   "name": "Bass Boost LP 2",
+   "sections": 3,
+   "types": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Bass Massive",
+   "name": "Bass MAssive",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Bass Shaper",
+   "name": "Bass Shaper",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Brite EQ",
+   "name": "Brite EQ",
+   "sections": 3,
+   "types": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Broad Range",
+   "name": "Broad Range",
+   "sections": 4,
+   "types": [
+    3,
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Buzzy",
+   "name": "Buzzy",
+   "sections": 2,
+   "types": [
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Complex BP 1",
+   "name": "Complex BP 1",
+   "sections": 6,
+   "types": [
+    3,
+    1,
+    1,
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "stem": "Complex BP 2",
+   "name": "Complex BP 2",
+   "sections": 4,
+   "types": [
+    3,
+    3,
+    3,
+    2
+   ]
+  },
+  {
+   "stem": "ContrarySweeps",
+   "name": "ContrarySweeps",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    3
+   ]
+  },
+  {
+   "stem": "Crackberry",
+   "name": "Crackberry",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    3,
+    2
+   ]
+  },
+  {
+   "stem": "Crazy Rez",
+   "name": "AC Crazy Rez",
+   "sections": 3,
+   "types": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Crispy",
+   "name": "Crispy",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Double Peak Lo Pass",
+   "name": "Double Peak Lo Pass",
+   "sections": 2,
+   "types": [
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "EQ Crossing",
+   "name": "EQ Crossing",
+   "sections": 4,
+   "types": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "EQ Notch Shifter",
+   "name": "EQ Notch Shifter",
+   "sections": 3,
+   "types": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "EQ Shifter",
+   "name": "EQ Shifter",
+   "sections": 3,
+   "types": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Exciter 1",
+   "name": "AC EX 1",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Exciter 2",
+   "name": "AC EX 2",
+   "sections": 4,
+   "types": [
+    1,
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Harmonic LP 1",
+   "name": "Harmonic LP 1",
+   "sections": 4,
+   "types": [
+    2,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Harmonic LP 2",
+   "name": "Harmonic LP 2",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "stem": "Harmonic LP 3",
+   "name": "Harmonic LP 3",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "stem": "Harmonic LP 4",
+   "name": "Harmonic LP 4",
+   "sections": 5,
+   "types": [
+    1,
+    1,
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Harmonic LP 5",
+   "name": "Harmonic LP 5",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2
+   ]
+  },
+  {
+   "stem": "Harmonic Tweak",
+   "name": "HarmonicTweak",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "HiClassLoPass",
+   "name": "HiClassLoPass",
+   "sections": 4,
+   "types": [
+    1,
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Kinda Comby",
+   "name": "KindaComby",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Lo Pass Slicer",
+   "name": "Lo Pass Slicer",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Lotsa Notches",
+   "name": "Lotsa Notches",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Low Freq Hi Rez LP 1",
+   "name": "Low Freq Hi Rez LP 1",
+   "sections": 1,
+   "types": [
+    2
+   ]
+  },
+  {
+   "stem": "Low Freq Hi Rez LP 2",
+   "name": "Low Freq Hi Rez LP 2",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Low Pass Pleasure",
+   "name": "Low Pass Pleasure",
+   "sections": 2,
+   "types": [
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Low to High Pass",
+   "name": "Low to High Pass",
+   "sections": 2,
+   "types": [
+    3,
+    2
+   ]
+  },
+  {
+   "stem": "Mid Scooper",
+   "name": "MidScooper",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Modern Lo Pass",
+   "name": "ModernLoPass",
+   "sections": 6,
+   "types": [
+    1,
+    2,
+    3,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Morpheus Like 1",
+   "name": "AC Morpeus Like",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Morpheus Like 2",
+   "name": "AC Morph",
+   "sections": 2,
+   "types": [
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Multi Band Cut + Boost",
+   "name": "Multi Band Cut + Boost",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Multi Peak Hi Pass",
+   "name": "Multi Peak Hi Pass",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Notch Sweeper",
+   "name": "NotchSweeper",
+   "sections": 6,
+   "types": [
+    3,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "On the Edge",
+   "name": "On the Edge",
+   "sections": 4,
+   "types": [
+    2,
+    3,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "One to Two Peaks",
+   "name": "One to Two Peaks",
+   "sections": 2,
+   "types": [
+    1,
+    2
+   ]
+  },
+  {
+   "stem": "Oyoyoyoyoy",
+   "name": "Oyoyoyoyoy",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Peak Shifter 1",
+   "name": "Peak Shifter 2",
+   "sections": 3,
+   "types": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Peak Shifter 2",
+   "name": "Peak Shifter",
+   "sections": 4,
+   "types": [
+    1,
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Phasey One",
+   "name": "AC Phasey One",
+   "sections": 6,
+   "types": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Rezzy LP 1",
+   "name": "Rezzy LP 1",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Rezzy LP 2",
+   "name": "Rezzy LP 2",
+   "sections": 2,
+   "types": [
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Rezzy LP 3",
+   "name": "Rezzy LP 3",
+   "sections": 6,
+   "types": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Rolling Frequency 1",
+   "name": "Rolling Frequency",
+   "sections": 5,
+   "types": [
+    2,
+    2,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Rolling Frequency 2",
+   "name": "Rolling Frequency 2",
+   "sections": 6,
+   "types": [
+    2,
+    2,
+    1,
+    1,
+    1,
+    3
+   ]
+  },
+  {
+   "stem": "Six Pole Exteme Q",
+   "name": "6 Pole Exteme Q",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Sizzle Sync",
+   "name": "SizzleSync",
+   "sections": 4,
+   "types": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Slightly Phased",
+   "name": "Slightly Phased",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Steep 8 Pole",
+   "name": "Steep 8 Pole",
+   "sections": 4,
+   "types": [
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Steep Hi Pass",
+   "name": "Steep High Pass",
+   "sections": 3,
+   "types": [
+    3,
+    3,
+    2
+   ]
+  },
+  {
+   "stem": "Super Bass Ringer",
+   "name": "Super Bass Ringer",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Super Hi Pass",
+   "name": "Super1kHiPass",
+   "sections": 6,
+   "types": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  {
+   "stem": "Super Lo Pass",
+   "name": "SuperLoPass",
+   "sections": 5,
+   "types": [
+    2,
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "stem": "Super Steep Q",
+   "name": "Super Steep Q",
+   "sections": 2,
+   "types": [
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Three Point Morph",
+   "name": "Three Point Morph",
+   "sections": 3,
+   "types": [
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Twin Peaks",
+   "name": "TwinPeaks",
+   "sections": 2,
+   "types": [
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Voxxy LP 1",
+   "name": "Voxxy LP 1",
+   "sections": 3,
+   "types": [
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "stem": "Voxxy LP 2",
+   "name": "Voxxy LP 2",
+   "sections": 5,
+   "types": [
+    2,
+    1,
+    1,
+    2,
+    1
+   ]
+  },
+  {
+   "stem": "Wah Wah 1",
+   "name": "Wah Wah",
+   "sections": 2,
+   "types": [
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Wah Wah 2",
+   "name": "Wah Wah 2",
+   "sections": 2,
+   "types": [
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Wah Wah 3",
+   "name": "Wah Wah 3",
+   "sections": 3,
+   "types": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "stem": "Wow",
+   "name": "AC Wow",
+   "sections": 2,
+   "types": [
+    2,
+    3
+   ]
+  }
+ ]
+}

@@ -1,0 +1,139 @@
+{
+ "schema": "trench-x3-generic-v1",
+ "source": "EmulatorX.dll runtime blocks at 44,100 Hz, via trench-x3-clean/ref/x3_menu/runtime_blocks. Compiled output of the CPhantom closed-form classes; their input tables verify byte-identical to the DLL at the addresses in X3_MENU_MANIFEST.json.",
+ "datum_hz": 44100.0,
+ "corner_order": [
+  "M0_Q0",
+  "M100_Q0",
+  "M0_Q100",
+  "M100_Q100"
+ ],
+ "identity_row": [
+  57343,
+  65535,
+  57343,
+  65535,
+  57344
+ ],
+ "filters": [
+  {
+   "stem": "2_pole_lowpass",
+   "name": "Smooth",
+   "order": 2,
+   "type": "LPF",
+   "stages": 1
+  },
+  {
+   "stem": "4_pole_lowpass",
+   "name": "Classic",
+   "order": 4,
+   "type": "LPF",
+   "stages": 2
+  },
+  {
+   "stem": "6_pole_lowpass",
+   "name": "Steeper",
+   "order": 6,
+   "type": "LPF",
+   "stages": 3
+  },
+  {
+   "stem": "2_pole_highpass",
+   "name": "Shallow",
+   "order": 2,
+   "type": "HPF",
+   "stages": 1
+  },
+  {
+   "stem": "4_pole_highpass",
+   "name": "Deeper",
+   "order": 4,
+   "type": "HPF",
+   "stages": 2
+  },
+  {
+   "stem": "2_pole_bandpass",
+   "name": "Band-pass1",
+   "order": 2,
+   "type": "BPF",
+   "stages": 1
+  },
+  {
+   "stem": "4_pole_bandpass",
+   "name": "Band-pass2",
+   "order": 4,
+   "type": "BPF",
+   "stages": 2
+  },
+  {
+   "stem": "contrary_bandpass",
+   "name": "ContraBand",
+   "order": 6,
+   "type": "BPF",
+   "stages": 1
+  },
+  {
+   "stem": "swept_eq_1_octave",
+   "name": "Swept1oct",
+   "order": 6,
+   "type": "EQ+",
+   "stages": 1
+  },
+  {
+   "stem": "swept_eq_2_1_octave",
+   "name": "Swept2~1oct",
+   "order": 6,
+   "type": "EQ+",
+   "stages": 1
+  },
+  {
+   "stem": "swept_eq_3_1_octave",
+   "name": "Swept3~1oct",
+   "order": 6,
+   "type": "EQ+",
+   "stages": 1
+  },
+  {
+   "stem": "phaser_1",
+   "name": "PhazeShift1",
+   "order": 6,
+   "type": "PHA",
+   "stages": 2
+  },
+  {
+   "stem": "phaser_2",
+   "name": "PhazeShift2",
+   "order": 6,
+   "type": "PHA",
+   "stages": 2
+  },
+  {
+   "stem": "bat_phaser",
+   "name": "BlissBatz",
+   "order": 6,
+   "type": "PHA",
+   "stages": 2
+  },
+  {
+   "stem": "flanger_lite",
+   "name": "FlangerLite",
+   "order": 6,
+   "type": "FLG",
+   "stages": 3
+  },
+  {
+   "stem": "vocal_ah_ay_ee",
+   "name": "Aah-Ay-Eeh",
+   "order": 6,
+   "type": "VOW",
+   "stages": 3
+  },
+  {
+   "stem": "vocal_oo_ah",
+   "name": "Ooh-To-Aah",
+   "order": 6,
+   "type": "VOW",
+   "stages": 3
+  }
+ ]
+}
