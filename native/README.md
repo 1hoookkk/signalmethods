@@ -1,9 +1,9 @@
-# Trench native core boundary
+# TRENCH native boundary and first Qt shell
 
-This directory is the first native shipping slice. It is intentionally Qt-free:
-the packed body, root geometry, interpolation, response, and analysis quantities
-must be usable by the future Qt workstation, command-line verification, audio
-runtime, and a narrow Python research binding without acquiring UI semantics.
+The `trench-core` library is the first native shipping slice. It remains
+Qt-free: the packed body, root geometry, interpolation, response, and analysis
+quantities are shared by the Qt workstation, command-line verification, audio
+boundary, and narrow Python research binding without acquiring UI semantics.
 
 The existing Rust/browser implementation remains the behavioral oracle until
 native parity is demonstrated. Nothing here changes or removes it.
@@ -21,6 +21,37 @@ native parity is demonstrated. Nothing here changes or removes it.
 - Complete serial-cascade response.
 - Marginal section contribution on an explicit frequency grid:
   `cascade_db(all) - cascade_db(all minus section)`.
+- A minimal resizable `QMainWindow` whose central `QPainter` surface displays
+  the canonical 512-point P2K grid evaluated by `trench-core` from a real
+  packed body.
+- A JUCE audio-only boundary and a pybind11 research-only boundary. Neither is
+  connected to the UI or runtime DSP yet.
+
+## Pinned toolchain and dependencies
+
+The release preset is intentionally exact and reproducible. On 2026-08-20 it
+pins the current stable upstream releases used by this slice:
+
+| Component | Version | Source route |
+|---|---:|---|
+| C++ | C++20 | MSVC through the Visual Studio developer shell |
+| CMake | 4.4.2 | official archive, SHA-256 checked by the bootstrap |
+| Ninja | 1.13.2 | tool registry from the pinned vcpkg checkout |
+| Qt Widgets and Qt Test | 6.11.2 | vcpkg overlay over the pinned Qt port |
+| JUCE audio modules | 9.0.1 | official source archive, hash checked by CMake |
+| Eigen | 5.0.1 | pinned vcpkg baseline |
+| Ceres | 2.2.0#6 | pinned vcpkg baseline |
+| PocketFFT | 2024-11-30 | pinned vcpkg baseline |
+| pybind11 | 3.1.0 | pinned vcpkg baseline |
+| GoogleTest | 1.18.0 | pinned vcpkg baseline |
+| Python research host | 3.13 | selected explicitly from the system launcher |
+
+The vcpkg baseline is commit
+`45f9f39362a4c52e2b1fbe57b7e649db7f3d96d4`. The bootstrap script verifies
+that exact checkout before use. Qt 6.11.2 and JUCE 9.0.1 are fixed at their
+source archives and checksums because the same baseline does not yet supply
+those required releases. Dependency work is capped at two concurrent jobs to
+avoid exhausting a workstation during a source build.
 
 Section scale is part of the transfer function. Section gains multiply in the
 cascade and therefore add in dB. The contribution API evaluates the packed
@@ -52,56 +83,40 @@ Measured results:
 - The complete Talking Hedz cascade matches the existing Rust oracle at three
   morph positions and fourteen frequencies.
 
-## Contribution census
+## Corpus boundaries
 
-The corpus command uses 768 logarithmic samples from 20 Hz to `0.49 * datum`.
-Its 2026-08-20 result is:
+The aggregate counts above verify mechanical decode/rebuild coverage only.
+They are not an authoring census. P2K, Morpheus, Morph Designer XML, and the
+authored recipe sets are separate lineages and must not be pooled to infer
+stage activity, contribution, placement rules, or fit priors. The current
+P2K response grid is 512 logarithmic samples from 20 Hz to `0.499 * datum`.
 
-| Maximum absolute leave-one-out delta | Cells | Share |
-|---|---:|---:|
-| `<= 0.4 dB` | 6,453 | 27.2% |
-| `0.4 .. 1 dB` | 1,146 | 4.8% |
-| `1 .. 3 dB` | 701 | 3.0% |
-| `3 .. 6 dB` | 498 | 2.1% |
-| `> 6 dB` | 14,946 | 62.9% |
-
-The former interval label does not reproduce its old 65/35 split on the full
-corpus. Of 12,018 cells that have a conjugate pole and zero with measurable
-frequencies, 9,786 are within 24 semitones (81.4%) and 2,232 are farther apart
-(18.6%). The remaining 11,726 cells cannot receive that interval label. Only 80
-local-labelled cells and one cross-labelled cell contribute at most 0.4 dB on
-this grid. The interval census is therefore descriptive geometry, not a proxy
-for salience, token position, visibility, or FIT growth.
-
-The `0.4 dB` value is a query threshold supplied for this measurement, not a
-new invariant. A future UI may use the contribution curve at its current column
-or a declared summary of that curve, but must display which quantity it uses.
-
-Run the census after configuring and building:
+Configure, build, and test the release shell:
 
 ```powershell
 native/configure.ps1
-cmake --build --preset windows-msvc-debug
-ctest --preset windows-msvc-debug
-out/build/windows-msvc-debug/native/trench-core/trench_corpus_contribution.exe <repo-root>
+native/build.ps1
+native/test.ps1
+native/run.ps1
 ```
+
+The executable is
+`out/build/windows-msvc-release/native/app/trench_native.exe`. The default
+view loads `ref/presets/P2k_013_talking_hedz.bin`; use `-Body <path>` and
+`-SampleRate <hz>` to select another body and authoring datum. The research
+module is not imported or shipped by the application. The legacy aggregate
+contribution tool remains a mechanical diagnostic from the accepted core
+slice; its pooled output is not valid authoring evidence.
 
 ## Fitter boundary
 
-ARX is analysis evidence, not a command to fit a 14th-order cascade. The first
-fitter slice should:
-
-1. expose the measured spectrum and ARX/formant candidates without committing
-   sections;
-2. let the operator place and assign pole pairs to persistent section indices;
-3. begin all-pole or nearly all-pole;
-4. add zeros deliberately for global spectral shape/slope or an identified
-   antiresonance;
-5. offer a `follow` constraint when a zero must retain its relative position
-   between neighboring pole/formant tracks across a transition;
-6. compare the complete cascade to the target continuously; and
-7. use marginal contribution, holds, and explicit operator intent as FIT growth
-   evidence without sorting, renumbering, or silently assigning a lane.
+ARX is analysis evidence, not a command to fit a 14th-order cascade. Poles,
+zeros, and scale are independent realization variables and each may be held or
+free. P2K has no zero-placement rule, per-slot role, band, or frequency order.
+A future fitter must compare the complete factored cascade, use a measured seed
+before discrete polishing, solve gain only after geometry, and round-trip the
+written bytes before absolute-dB acceptance. The current shell implements none
+of that fitter or write path.
 
 Corpus PCA belongs outside packed-domain authority: it may produce a prototype
 and deviation coordinates for exploration, but it does not infer section

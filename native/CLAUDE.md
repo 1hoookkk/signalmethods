@@ -44,6 +44,11 @@ is proved. Do not add new shipping behavior there.
 - Section index is correspondence. Never sort, renumber, or pair by frequency,
   strength, or discovery order.
 - Keep legacy 4-corner × 6-section bodies as a separate container path.
+- P2K is exactly that 240-byte, 4-corner × 6-stage container at a 44,100 Hz
+  datum. It has no Z interpolation leg.
+- The 8-corner × 7-section native extension is not a Morpheus container and is
+  not evidence of device parity. Morpheus uses a distinct packed bitstream and
+  must not share a container path with P2K.
 - Interpolate packed words in M, then Q, then Z. Decode after interpolation.
 - Compare the complete serial cascade. Section gains multiply.
 - Preserve exact bytes wherever the current implementation preserves them.
@@ -61,6 +66,8 @@ is proved. Do not add new shipping behavior there.
   initialization methods. They are not mathematical restrictions, runtime
   laws, permanent solver limitations, or section-type rules.
 - Do not encode the current preferred authoring workflow into the body model.
+- For P2K, do not add a zero-placement prior, per-slot role, band, or frequency
+  ordering. Do not pool other lineages to infer P2K authoring rules.
 - PCA may provide a corpus prototype and deviation coordinates. It does not
   assign sections or override packed correspondence.
 - FIT changes the same authored state used by direct manipulation. No second

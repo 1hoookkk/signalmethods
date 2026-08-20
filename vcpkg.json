@@ -1,8 +1,34 @@
 {
   "name": "trench-native",
   "version-string": "0.1.0",
-  "builtin-baseline": "120deac3062162151622ca4860575a33844ba10b",
+  "builtin-baseline": "45f9f39362a4c52e2b1fbe57b7e649db7f3d96d4",
   "dependencies": [
-    "gtest"
+    "ceres",
+    "eigen3",
+    "gtest",
+    "pocketfft",
+    "pybind11",
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": [
+        "doubleconversion",
+        "freetype",
+        "gui",
+        "harfbuzz",
+        "network",
+        "pcre2",
+        "png",
+        "testlib",
+        "thread",
+        "widgets"
+      ]
+    }
+  ],
+  "overrides": [
+    {
+      "name": "qtbase",
+      "version": "6.11.2"
+    }
   ]
 }

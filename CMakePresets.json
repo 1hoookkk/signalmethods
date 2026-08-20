@@ -13,7 +13,26 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "Python3_EXECUTABLE": "$env{TRENCH_PYTHON313}",
+        "PYBIND11_FINDPYTHON": "ON",
+        "VCPKG_OVERLAY_PORTS": "$env{TRENCH_VCPKG_OVERLAYS}"
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "displayName": "Windows MSVC Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "Python3_EXECUTABLE": "$env{TRENCH_PYTHON313}",
+        "PYBIND11_FINDPYTHON": "ON",
+        "VCPKG_OVERLAY_PORTS": "$env{TRENCH_VCPKG_OVERLAYS}",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/native/vcpkg-triplets",
+        "VCPKG_HOST_TRIPLET": "x64-windows-release",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-release"
       }
     }
   ],
@@ -21,12 +40,23 @@
     {
       "name": "windows-msvc-debug",
       "configurePreset": "windows-msvc-debug"
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc-release"
     }
   ],
   "testPresets": [
     {
       "name": "windows-msvc-debug",
       "configurePreset": "windows-msvc-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc-release",
       "output": {
         "outputOnFailure": true
       }
