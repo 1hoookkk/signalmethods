@@ -1,0 +1,130 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 3516.2642459574095,
+      "pole_r": 0.941681754292387,
+      "scale_db": -12.611959044274402,
+      "zero_hz": 15339.95689369471,
+      "zero_r": 0.559235317755415
+    },
+    {
+      "pole_hz": 10259.182712959158,
+      "pole_r": 0.9540450861291554,
+      "scale_db": -12.611959044274402,
+      "zero_hz": 13415.752195508532,
+      "zero_r": 0.7181978177833389
+    },
+    {
+      "pole_hz": 13646.656931370117,
+      "pole_r": 0.9857439482907298,
+      "scale_db": -12.611959044274402,
+      "zero_hz": 12014.25861376766,
+      "zero_r": 0.8705768505619564
+    },
+    {
+      "pole_hz": 15730.754609398748,
+      "pole_r": 0.9962100690356172,
+      "scale_db": -12.611959044274402,
+      "zero_hz": 15690.199076327772,
+      "zero_r": 0.9458208214916752
+    },
+    {
+      "pole_hz": 16268.61289527204,
+      "pole_r": 0.8478992307277734,
+      "scale_db": -12.611959044274402,
+      "zero_hz": 17960.825044314846,
+      "zero_r": 0.9999981485290076
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    }
+  ],
+  "name": "frame-006",
+  "provenance": "Ace of Bass",
+  "schema": "trench-frame-v1",
+  "sr_hz": 39062.5,
+  "words": ""
+}

@@ -1,0 +1,405 @@
+/* TRENCH design system.
+   Chassis is hairline, flat and cool. Measurement is dark. No fills that imitate
+   physical buttons, no radii, no shadows, no gradients, no browser-default widget
+   anywhere. Colour is reserved for section identity, selection and alarm. */
+:root {
+  --chassis: rgb(201, 206, 211);
+  --chassis-hi: rgb(223, 228, 232);
+  --chassis-lo: rgb(179, 185, 191);
+  --rule: rgb(141, 148, 155);
+  --rule-soft: rgb(170, 176, 182);
+
+  --well: rgb(13, 14, 16);
+  --well-rule: rgb(30, 32, 35);
+  --well-grid: rgb(53, 57, 62);
+  --well-ink: rgb(174, 181, 188);
+  --well-dim: rgb(112, 118, 124);
+
+  --ink: rgb(20, 23, 26);
+  --ink-dim: rgb(103, 110, 117);
+
+  --accent: rgb(255, 140, 0);
+  --live: rgb(96, 214, 170);
+  --target: rgb(168, 176, 180);
+  --preview: rgb(80, 200, 255);
+  --candidate: rgb(255, 60, 200);
+  --error: rgb(255, 64, 64);
+  --ceiling: rgb(255, 120, 40);
+
+  --s1: rgb(255, 70, 70);
+  --s2: rgb(255, 150, 40);
+  --s3: rgb(255, 220, 50);
+  --s4: rgb(100, 230, 80);
+  --s5: rgb(0, 210, 210);
+  --s6: rgb(90, 150, 255);
+  --s7: rgb(190, 120, 255);
+
+  --f1: rgb(80, 220, 255);
+  --f2: rgb(255, 176, 32);
+  --f3: rgb(120, 230, 120);
+  --f4: rgb(255, 100, 180);
+  --f5: rgb(170, 150, 255);
+
+  --ui: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", sans-serif;
+  --num: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", sans-serif;
+
+  --bar: 24px;
+  --foot: 22px;
+  --head: 15px;
+  --row: 17px;
+  --grip: 4px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  overflow: hidden;
+  background: var(--chassis);
+  color: var(--ink);
+  font: 11px/1.25 var(--ui);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  cursor: default;
+}
+
+/* ── shell ─────────────────────────────────────────────────────────────── */
+
+#shell {
+  height: 100%;
+  display: grid;
+  grid-template-rows: var(--bar) minmax(0, 1fr) var(--foot);
+}
+
+#toolbar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding-left: 7px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--chassis-hi);
+}
+
+#toolbar .brand {
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+
+#toolbar .gap { flex: 1; }
+
+.tool-group {
+  display: flex;
+  align-items: stretch;
+  padding: 0 7px;
+  border-left: 1px solid var(--rule-soft);
+}
+
+#docks {
+  display: grid;
+  grid-template-columns: var(--browser-w, 200px) var(--grip) minmax(0, 1fr) var(--grip) var(--inspector-w, 224px);
+  min-height: 0;
+}
+
+#docks.no-browser { grid-template-columns: 0 0 minmax(0, 1fr) var(--grip) var(--inspector-w, 224px); }
+#docks.no-inspector { grid-template-columns: var(--browser-w, 200px) var(--grip) minmax(0, 1fr) 0 0; }
+#docks.no-browser.no-inspector { grid-template-columns: 0 0 minmax(0, 1fr) 0 0; }
+
+.dock {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#browser-dock { border-right: 1px solid var(--rule); }
+#inspector-dock { border-left: 1px solid var(--rule); }
+#docks.no-browser #browser-dock,
+#docks.no-inspector #inspector-dock { display: none; }
+
+#work { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+.grip { cursor: col-resize; background: var(--chassis); }
+.grip:hover { background: var(--accent); }
+.grip.row { cursor: row-resize; height: var(--grip); flex: 0 0 var(--grip); }
+#docks.no-browser .grip.browser, #docks.no-inspector .grip.inspector { display: none; }
+
+/* ── panels ────────────────────────────────────────────────────────────── */
+
+.panel { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.panel + .panel { border-top: 1px solid var(--rule); }
+.panel.grow { flex: 1 1 auto; }
+
+.panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: 0 0 var(--head);
+  height: var(--head);
+  padding: 0 6px;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink-dim);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.panel > header .value { color: var(--ink); font-weight: 400; letter-spacing: 0; }
+.panel > .body { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: hidden; display: flex; }
+.panel > .body.scroll { overflow-y: auto; display: block; }
+
+/* Domain surfaces. Canvas owns measurement and nothing else. */
+canvas.surface { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; display: block; background: var(--well); touch-action: none; }
+canvas.pointer { cursor: crosshair; }
+
+/* ── controls ──────────────────────────────────────────────────────────── */
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  min-height: var(--row);
+  padding: 0 7px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: inherit;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover { background: var(--chassis); }
+.btn.on { border-bottom-color: var(--accent); font-weight: 600; }
+.btn[disabled] { color: var(--ink-dim); cursor: default; }
+.btn[disabled]:hover { background: none; }
+.btn.alarm.on { border-bottom-color: var(--error); }
+
+/* Boxed variant for verb grids, still flat — a rule, never a bevel. */
+.key {
+  appearance: none;
+  height: var(--row);
+  padding: 0 4px;
+  border: 1px solid var(--rule-soft);
+  background: var(--chassis);
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.key:hover { background: var(--chassis-hi); border-color: var(--rule); }
+.key.on { border-color: var(--accent); color: var(--ink); font-weight: 600; }
+.key.empty { color: var(--ink-dim); }
+.key[disabled] { color: var(--ink-dim); cursor: default; }
+.keys { display: grid; gap: 1px; padding: 3px 4px; }
+.keys.c1 { grid-template-columns: 1fr; }
+.keys.c2 { grid-template-columns: repeat(2, 1fr); }
+.keys.c4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Corner keys carry their own residual, so the strip is a readout as well as a
+   selector and no second corner view is needed. */
+.key.corner { display: flex; flex-direction: column; align-items: flex-start; height: 28px; line-height: 1.15; padding: 1px 4px; }
+.key.corner b { font-weight: 600; }
+.key.corner i { font-style: normal; font-size: 9px; color: var(--ink-dim); }
+.key.corner.on i { color: var(--ink); }
+
+/* Section keys carry identity colour, hold and bypass. */
+.key.section { position: relative; text-align: center; }
+.key.section.held { border-bottom-width: 2px; border-bottom-color: var(--accent); }
+.key.section.bypassed { text-decoration: line-through; }
+.key.section.unused { opacity: 0.42; }
+
+/* ── numeric editor ────────────────────────────────────────────────────── */
+
+.num {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 6px;
+  height: var(--row);
+  padding: 0 6px;
+}
+
+.num > label { color: var(--ink-dim); font-size: 9px; letter-spacing: 0.08em; }
+
+.num > .field {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 3px;
+  height: 15px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--rule-soft);
+  font-family: var(--num);
+  cursor: ew-resize;
+}
+
+.num > .field:hover { border-bottom-color: var(--accent); }
+.num > .field.flat { cursor: default; }
+.num > .field.flat:hover { border-bottom-color: var(--rule-soft); }
+.num > .field > .v { color: var(--ink); }
+.num > .field > .u { color: var(--ink-dim); font-size: 9px; }
+.num > .field > input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: right;
+}
+
+/* ── slider ────────────────────────────────────────────────────────────── */
+
+.slider { position: relative; flex: 1; min-width: 40px; height: var(--row); cursor: ew-resize; }
+.slider .track { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--rule); }
+.slider .fill { position: absolute; left: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--ink-dim); }
+.slider .knob { position: absolute; top: 50%; width: 3px; height: 12px; margin: -6px 0 0 -1px; background: var(--ink); }
+.slider:hover .knob { background: var(--accent); }
+
+/* ── lists ─────────────────────────────────────────────────────────────── */
+
+.list { background: var(--well); color: var(--well-ink); font-size: 11px; }
+
+.list .group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: var(--row);
+  padding: 0 5px;
+  color: var(--well-dim);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.list .group:hover { color: var(--well-ink); }
+.list .group .caret { width: 6px; color: var(--well-dim); }
+.list .group .n { margin-left: auto; }
+
+.list .item {
+  height: var(--row);
+  padding: 0 6px 0 17px;
+  line-height: var(--row);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list .item:hover { background: var(--well-rule); }
+.list .item.on { background: var(--well-grid); color: var(--chassis-hi); }
+
+/* ── search / text ─────────────────────────────────────────────────────── */
+
+.search {
+  appearance: none;
+  width: 100%;
+  height: var(--row);
+  padding: 0 6px;
+  border: 0;
+  border-bottom: 1px solid var(--rule-soft);
+  outline: none;
+  background: var(--chassis-hi);
+  color: var(--ink);
+  font: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.search::placeholder { color: var(--ink-dim); }
+.search:focus { border-bottom-color: var(--accent); }
+
+/* ── footer ────────────────────────────────────────────────────────────── */
+
+#foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 7px;
+  border-top: 1px solid var(--rule);
+  background: var(--chassis-hi);
+  white-space: nowrap;
+}
+
+#foot .chain { display: flex; align-items: center; gap: 1px; }
+#foot .chain .arrow { color: var(--ink-dim); font-size: 9px; padding: 0 1px; }
+#foot .chain .end { color: var(--ink-dim); font-size: 9px; letter-spacing: 0.1em; padding: 0 4px; }
+#foot .chain .key.section { width: 26px; padding: 0; }
+#foot .pos { color: var(--ink-dim); }
+#foot .pos b { color: var(--ink); font-weight: 400; }
+#foot #status { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--ink-dim); }
+
+/* ── popover ───────────────────────────────────────────────────────────── */
+
+.pop {
+  position: fixed;
+  z-index: 60;
+  border: 1px solid var(--rule);
+  background: var(--chassis-hi);
+}
+
+.pop[hidden] { display: none; }
+.pop > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--head);
+  padding: 0 6px;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+#palette { left: 50%; top: 11%; width: 470px; transform: translateX(-50%); }
+#palette .list { max-height: 44vh; overflow-y: auto; }
+#palette .item { display: flex; justify-content: space-between; gap: 10px; padding-left: 6px; }
+#palette .item .tag { color: var(--well-dim); font-size: 9px; letter-spacing: 0.06em; }
+
+/* ── scrollbars ────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rule); border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+.list::-webkit-scrollbar-thumb { background: var(--well-grid); background-clip: padding-box; }
+
+/* ── section transplant sheet ──────────────────────────────────────────── */
+
+.section-picker { position: fixed; z-index: 55; display: grid; grid-template-rows: auto minmax(0, 1fr); width: 512px; min-height: 116px; border: 1px solid var(--rule); background: var(--chassis); }
+.section-picker[hidden] { display: none; }
+.section-picker-head { display: grid; grid-template-columns: 1fr auto; align-items: center; min-height: var(--head); padding: 0 3px 0 6px; background: var(--chassis-hi); border-bottom: 1px solid var(--rule-soft); font-size: 9px; letter-spacing: 0.1em; }
+.section-picker-head button { appearance: none; height: var(--head); padding: 0 6px; border: 0; background: none; color: var(--ink); font: inherit; cursor: pointer; }
+.pick-bar { display: flex; gap: 1px; padding: 3px 4px; }
+.pick-chip { appearance: none; height: var(--row); padding: 0 7px; border: 1px solid var(--rule-soft); background: var(--chassis); color: var(--ink-dim); font: inherit; font-size: 9px; letter-spacing: 0.06em; cursor: pointer; }
+.pick-chip:hover { background: var(--chassis-hi); }
+.pick-chip.on { border-color: var(--accent); color: var(--ink); font-weight: 600; }
+.pick-search { appearance: none; width: calc(100% - 8px); margin: 0 4px 3px; height: var(--row); padding: 0 5px; border: 0; border-bottom: 1px solid var(--rule-soft); outline: none; background: var(--chassis-hi); color: var(--ink); font: inherit; font-size: 10px; text-transform: uppercase; }
+.pick-search:focus { border-bottom-color: var(--accent); }
+.pick-more { display: block; width: 100%; margin-top: 3px; height: var(--row); border: 1px solid var(--well-grid); background: none; color: var(--well-dim); font: inherit; font-size: 9px; cursor: pointer; }
+.section-sheet { overflow-y: auto; padding: 0 3px 3px; background: var(--well); }
+.sheet-type { position: sticky; top: 0; z-index: 1; padding: 4px 1px 2px; background: var(--well); color: var(--well-dim); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+.sheet-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 2px; }
+.sheet-tile { position: relative; height: 44px; border: 1px solid var(--well-grid); cursor: pointer; }
+.sheet-tile canvas { display: block; width: 100%; height: 100%; }
+.sheet-tile .count { position: absolute; top: 1px; left: 2px; color: var(--chassis-hi); font-size: 8px; pointer-events: none; }
+.sheet-tile:hover, .sheet-tile:focus { border-color: var(--accent); outline: none; }
+.section-empty { padding: 20px; color: var(--well-dim); text-align: center; }

@@ -2,6 +2,12 @@
 /target/
 **/target/
 
+# Node
+node_modules/
+/workstation/dist/
+/workstation/test-results/
+/workstation/playwright-report/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -33,6 +39,7 @@ Thumbs.db
 
 # Stale build artifact
 /Trench Editor.exe
+/Bend Experiment.bat
 
 # Local configuration and secrets
 .env

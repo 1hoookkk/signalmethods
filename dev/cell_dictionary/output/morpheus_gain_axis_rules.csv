@@ -1,0 +1,868 @@
+object,axis,majority,consistent,n_pairs
+Null Cube,M,held,False,4
+Null Cube,Q,held,False,4
+Null Cube,Z,held,False,4
+LPFlange.4,M,held,False,4
+LPFlange.4,Q,moved,True,4
+LPFlange.4,Z,moved,False,4
+LPFlngBk.4,M,moved,False,4
+LPFlngBk.4,Q,moved,False,4
+LPFlngBk.4,Z,moved,False,4
+Flange2.4,M,held,False,4
+Flange2.4,Q,held,False,4
+Flange2.4,Z,held,False,4
+CubeFlanger,M,moved,False,4
+CubeFlanger,Q,held,False,4
+CubeFlanger,Z,moved,True,4
+Flange3.4,M,held,False,4
+Flange3.4,Q,held,False,4
+Flange3.4,Z,held,False,4
+Flange4.4,M,moved,False,4
+Flange4.4,Q,moved,False,4
+Flange4.4,Z,moved,False,4
+Flange5,M,moved,False,4
+Flange5,Q,moved,False,4
+Flange5,Z,moved,True,4
+Flange6.4,M,held,False,4
+Flange6.4,Q,held,False,4
+Flange6.4,Z,held,False,4
+Flange6R.4,M,held,False,4
+Flange6R.4,Q,held,False,4
+Flange6R.4,Z,held,False,4
+Flange7.4,M,held,False,4
+Flange7.4,Q,held,False,4
+Flange7.4,Z,held,False,4
+BriteFlng.4,M,moved,False,4
+BriteFlng.4,Q,moved,True,4
+BriteFlng.4,Z,moved,True,4
+Flng>Flng1,M,moved,True,4
+Flng>Flng1,Q,moved,True,4
+Flng>Flng1,Z,moved,True,4
+LP>Flng2,M,held,False,4
+LP>Flng2,Q,held,False,4
+LP>Flng2,Z,held,False,4
+Flng>Flng3,M,held,False,4
+Flng>Flng3,Q,held,False,4
+Flng>Flng3,Z,held,False,4
+Flng>Flng4,M,moved,True,4
+Flng>Flng4,Q,moved,True,4
+Flng>Flng4,Z,moved,True,4
+Flng>Flng5,M,moved,True,4
+Flng>Flng5,Q,moved,True,4
+Flng>Flng5,Z,moved,True,4
+Flng>Flng6,M,moved,True,4
+Flng>Flng6,Q,moved,True,4
+Flng>Flng6,Z,moved,True,4
+Flng>FlngT,M,moved,True,4
+Flng>FlngT,Q,moved,True,4
+Flng>FlngT,Z,moved,True,4
+Flng>FlngC,M,moved,True,4
+Flng>FlngC,Q,moved,False,4
+Flng>FlngC,Z,moved,True,4
+CO>FlngT,M,held,False,4
+CO>FlngT,Q,held,False,4
+CO>FlngT,Z,held,False,4
+AEParLPVow,M,held,False,4
+AEParLPVow,Q,held,False,4
+AEParLPVow,Z,held,False,4
+AEParaVowel,M,moved,True,4
+AEParaVowel,Q,held,False,4
+AEParaVowel,Z,moved,True,4
+AOLpParaVow,M,moved,False,4
+AOLpParaVow,Q,moved,True,4
+AOLpParaVow,Z,moved,False,4
+AOParaVowel,M,moved,False,4
+AOParaVowel,Q,moved,False,4
+AOParaVowel,Z,moved,False,4
+AUParaVow.4,M,held,False,4
+AUParaVow.4,Q,held,False,4
+AUParaVow.4,Z,held,False,4
+UOParaVow.4,M,moved,True,4
+UOParaVow.4,Q,moved,True,4
+UOParaVow.4,Z,moved,True,4
+SftEOVowl.4,M,moved,True,4
+SftEOVowl.4,Q,held,False,4
+SftEOVowl.4,Z,moved,True,4
+SoftEOAE,M,held,False,4
+SoftEOAE,Q,held,False,4
+SoftEOAE,Z,held,False,4
+Vocal Cube,M,moved,True,4
+Vocal Cube,Q,moved,False,4
+Vocal Cube,Z,moved,True,4
+C1-6Harms.4,M,moved,False,4
+C1-6Harms.4,Q,moved,False,4
+C1-6Harms.4,Z,moved,False,4
+Voce.4,M,held,False,4
+Voce.4,Q,moved,True,4
+Voce.4,Z,moved,True,4
+ChoralComb.4,M,held,False,4
+ChoralComb.4,Q,held,False,4
+ChoralComb.4,Z,held,False,4
+Bassutoi.4,M,moved,False,4
+Bassutoi.4,Q,moved,True,4
+Bassutoi.4,Z,moved,False,4
+Be-Ye.4,M,held,False,4
+Be-Ye.4,Q,moved,True,4
+Be-Ye.4,Z,moved,True,4
+Ee-Yi.4,M,held,False,4
+Ee-Yi.4,Q,held,False,4
+Ee-Yi.4,Z,held,False,4
+Ii-Yi.4,M,held,False,4
+Ii-Yi.4,Q,held,False,4
+Ii-Yi.4,Z,moved,True,4
+Uhrrrah.4,M,held,False,4
+Uhrrrah.4,Q,held,False,4
+Uhrrrah.4,Z,moved,True,4
+YeahYeah.4,M,moved,True,4
+YeahYeah.4,Q,moved,True,4
+YeahYeah.4,Z,moved,True,4
+Vow>Vow1,M,moved,True,4
+Vow>Vow1,Q,moved,False,4
+Vow>Vow1,Z,moved,True,4
+Vow>Vow2,M,held,False,4
+Vow>Vow2,Q,held,False,4
+Vow>Vow2,Z,moved,True,4
+YahYahs.4,M,held,False,4
+YahYahs.4,Q,moved,True,4
+YahYahs.4,Z,moved,True,4
+YoYo.4,M,held,False,4
+YoYo.4,Q,held,False,4
+YoYo.4,Z,held,False,4
+VowelSpace,M,moved,True,4
+VowelSpace,Q,moved,True,4
+VowelSpace,Z,moved,True,4
+BrickWaLP.4,M,moved,False,4
+BrickWaLP.4,Q,moved,True,4
+BrickWaLP.4,Z,moved,True,4
+BrickWaLP2,M,moved,False,4
+BrickWaLP2,Q,moved,False,4
+BrickWaLP2,Z,moved,True,4
+MdQ 2PoleLP,M,held,False,4
+MdQ 2PoleLP,Q,held,False,4
+MdQ 2PoleLP,Z,moved,True,4
+HiQ 2PoleLP,M,moved,False,4
+HiQ 2PoleLP,Q,moved,False,4
+HiQ 2PoleLP,Z,moved,True,4
+MdQ 4PoleLP,M,held,False,4
+MdQ 4PoleLP,Q,held,False,4
+MdQ 4PoleLP,Z,moved,True,4
+HiQ 4PoleLP,M,held,False,4
+HiQ 4PoleLP,Q,moved,False,4
+HiQ 4PoleLP,Z,moved,False,4
+2 PoleLoQ.4,M,moved,False,4
+2 PoleLoQ.4,Q,moved,False,4
+2 PoleLoQ.4,Z,held,False,4
+4 PoleLoQ.4,M,moved,False,4
+4 PoleLoQ.4,Q,moved,False,4
+4 PoleLoQ.4,Z,held,False,4
+4 PoleMidQ.4,M,held,False,4
+4 PoleMidQ.4,Q,held,False,4
+4 PoleMidQ.4,Z,held,False,4
+2pole>4pole,M,moved,True,4
+2pole>4pole,Q,moved,False,4
+2pole>4pole,Z,moved,True,4
+LowPassPlus,M,held,False,4
+LowPassPlus,Q,moved,True,4
+LowPassPlus,Z,moved,False,4
+Low Past.4,M,held,False,4
+Low Past.4,Q,moved,True,4
+Low Past.4,Z,moved,False,4
+APass.4,M,held,False,4
+APass.4,Q,moved,True,4
+APass.4,Z,moved,False,4
+HPSweep.4,M,held,False,4
+HPSweep.4,Q,held,False,4
+HPSweep.4,Z,held,False,4
+HiSwept1.4,M,held,False,4
+HiSwept1.4,Q,held,False,4
+HiSwept1.4,Z,held,False,4
+HghsSwpt2.4,M,held,False,4
+HghsSwpt2.4,Q,held,False,4
+HghsSwpt2.4,Z,held,False,4
+Hi Accent.4,M,held,False,4
+Hi Accent.4,Q,held,False,4
+Hi Accent.4,Z,held,False,4
+HiPassSwp.4,M,held,False,4
+HiPassSwp.4,Q,moved,True,4
+HiPassSwp.4,Z,moved,True,4
+DeepCombs.4,M,moved,True,4
+DeepCombs.4,Q,moved,True,4
+DeepCombs.4,Z,moved,True,4
+One Peak,M,moved,True,4
+One Peak,Q,moved,True,4
+One Peak,Z,moved,True,4
+More Peaks,M,moved,True,4
+More Peaks,Q,moved,True,4
+More Peaks,Z,moved,True,4
+Rev Peaks,M,moved,False,4
+Rev Peaks,Q,moved,False,4
+Rev Peaks,Z,held,False,4
+Notcher2.4,M,held,False,4
+Notcher2.4,Q,moved,True,4
+Notcher2.4,Z,moved,False,4
+Ntches2Oct.4,M,moved,True,4
+Ntches2Oct.4,Q,moved,True,4
+Ntches2Oct.4,Z,moved,True,4
+Odd>+,M,moved,True,4
+Odd>+,Q,held,False,4
+Odd>+,Z,moved,False,4
+VarSlope.4,M,held,False,4
+VarSlope.4,Q,held,False,4
+VarSlope.4,Z,held,False,4
+BassEQ 1.4,M,held,False,4
+BassEQ 1.4,Q,held,False,4
+BassEQ 1.4,Z,held,False,4
+B BOOST.4,M,moved,True,4
+B BOOST.4,Q,moved,True,4
+B BOOST.4,Z,moved,False,4
+BssBOOST2.4,M,held,False,4
+BssBOOST2.4,Q,held,False,4
+BssBOOST2.4,Z,held,False,4
+BassDrumEQ,M,held,False,4
+BassDrumEQ,Q,held,False,4
+BassDrumEQ,Z,held,False,4
+Snare LPEQ2,M,held,False,4
+Snare LPEQ2,Q,held,False,4
+Snare LPEQ2,Z,held,False,4
+HiHatLPEQ,M,held,False,4
+HiHatLPEQ,Q,held,False,4
+HiHatLPEQ,Z,held,False,4
+HP LP PZ,M,held,False,4
+HP LP PZ,Q,held,False,4
+HP LP PZ,Z,held,False,4
+PZ Notch,M,moved,True,4
+PZ Notch,Q,moved,True,4
+PZ Notch,Z,moved,True,4
+Band-aid,M,moved,False,4
+Band-aid,Q,moved,False,4
+Band-aid,Z,moved,True,4
+4>2 LowQHiQ,M,held,False,4
+4>2 LowQHiQ,Q,held,False,4
+4>2 LowQHiQ,Z,held,False,4
+Wah4Vib.4,M,moved,False,4
+Wah4Vib.4,Q,moved,False,4
+Wah4Vib.4,Z,moved,False,4
+Wa Wa.4,M,held,False,4
+Wa Wa.4,Q,held,False,4
+Wa Wa.4,Z,held,False,4
+BrassRez.4,M,moved,False,4
+BrassRez.4,Q,moved,True,4
+BrassRez.4,Z,moved,True,4
+Clr>Oboe,M,held,False,4
+Clr>Oboe,Q,held,False,4
+Clr>Oboe,Z,held,False,4
+0>Muter,M,moved,True,4
+0>Muter,Q,moved,False,4
+0>Muter,Z,moved,True,4
+PZ Syn Horn,M,moved,False,4
+PZ Syn Horn,Q,held,False,4
+PZ Syn Horn,Z,moved,False,4
+HP Brass,M,moved,False,4
+HP Brass,Q,moved,False,4
+HP Brass,Z,moved,False,4
+BrassyBlast,M,moved,False,4
+BrassyBlast,Q,moved,False,4
+BrassyBlast,Z,moved,True,4
+Brass Swell,M,held,False,4
+Brass Swell,Q,held,False,4
+Brass Swell,Z,held,False,4
+BrsSwell2.4,M,moved,False,4
+BrsSwell2.4,Q,moved,False,4
+BrsSwell2.4,Z,moved,True,4
+LoVelTrum,M,held,False,4
+LoVelTrum,Q,held,False,4
+LoVelTrum,Z,held,False,4
+Chiffin.4,M,moved,False,4
+Chiffin.4,Q,moved,False,4
+Chiffin.4,Z,moved,True,4
+ShakuFilter,M,held,False,4
+ShakuFilter,Q,held,False,4
+ShakuFilter,Z,moved,True,4
+Cym,M,held,False,4
+Cym,Q,held,False,4
+Cym,Z,held,False,4
+VelMarim,M,held,False,4
+VelMarim,Q,held,False,4
+VelMarim,Z,held,False,4
+EZ Vibez.4,M,held,False,4
+EZ Vibez.4,Q,held,False,4
+EZ Vibez.4,Z,held,False,4
+Piano 1,M,moved,False,4
+Piano 1,Q,held,False,4
+Piano 1,Z,moved,False,4
+Piano 2.4,M,held,False,4
+Piano 2.4,Q,moved,True,4
+Piano 2.4,Z,moved,False,4
+EZ Rhodez.4,M,held,False,4
+EZ Rhodez.4,Q,held,False,4
+EZ Rhodez.4,Z,moved,True,4
+MoogVocodr.4,M,held,False,4
+MoogVocodr.4,Q,held,False,4
+MoogVocodr.4,Z,held,False,4
+MoogVocSwp,M,held,False,4
+MoogVocSwp,Q,held,False,4
+MoogVocSwp,Z,held,False,4
+StrngThng.4,M,held,False,4
+StrngThng.4,Q,moved,True,4
+StrngThng.4,Z,moved,False,4
+StrSweep.4,M,moved,True,4
+StrSweep.4,Q,moved,True,4
+StrSweep.4,Z,moved,True,4
+BassXpress,M,held,False,4
+BassXpress,Q,moved,True,4
+BassXpress,Z,moved,False,4
+Qbase.4,M,held,False,4
+Qbase.4,Q,held,False,4
+Qbase.4,Z,held,False,4
+AcGtrRs.4,M,held,False,4
+AcGtrRs.4,Q,held,False,4
+AcGtrRs.4,Z,held,False,4
+TubeSust.4,M,moved,False,4
+TubeSust.4,Q,moved,False,4
+TubeSust.4,Z,moved,True,4
+GtrSkwk,M,moved,True,4
+GtrSkwk,Q,moved,True,4
+GtrSkwk,Z,moved,True,4
+GuitXpress,M,held,False,4
+GuitXpress,Q,held,False,4
+GuitXpress,Z,held,False,4
+G MajTrans.4,M,moved,False,4
+G MajTrans.4,Q,moved,False,4
+G MajTrans.4,Z,moved,True,4
+Tam,M,moved,False,4
+Tam,Q,moved,False,4
+Tam,Z,moved,False,4
+HOTwell.4,M,moved,False,4
+HOTwell.4,Q,moved,True,4
+HOTwell.4,Z,moved,True,4
+Bell Wah A,M,moved,False,4
+Bell Wah A,Q,moved,True,4
+Bell Wah A,Z,moved,True,4
+Bell Wah B,M,moved,False,4
+Bell Wah B,Q,moved,False,4
+Bell Wah B,Z,moved,False,4
+0>Bell-,M,moved,False,4
+0>Bell-,Q,held,False,4
+0>Bell-,Z,moved,True,4
+0>Bell+,M,moved,True,4
+0>Bell+,Q,moved,False,4
+0>Bell+,Z,moved,True,4
+Bel>Crs>Bel,M,moved,True,4
+Bel>Crs>Bel,Q,moved,True,4
+Bel>Crs>Bel,Z,moved,True,4
+Chrs>Flng1,M,moved,True,4
+Chrs>Flng1,Q,moved,True,4
+Chrs>Flng1,Z,moved,True,4
+Chrs>Flng2,M,held,False,4
+Chrs>Flng2,Q,held,False,4
+Chrs>Flng2,Z,held,False,4
+Ev/OdNtch.4,M,held,False,4
+Ev/OdNtch.4,Q,held,False,4
+Ev/OdNtch.4,Z,held,False,4
+Odd/EvnNtch,M,moved,True,4
+Odd/EvnNtch,Q,moved,True,4
+Odd/EvnNtch,Z,moved,True,4
+NotchPeaks.4,M,held,False,4
+NotchPeaks.4,Q,held,False,4
+NotchPeaks.4,Z,held,False,4
+LoudBoost.4,M,moved,True,4
+LoudBoost.4,Q,moved,True,4
+LoudBoost.4,Z,moved,True,4
+Swingshift,M,held,False,4
+Swingshift,Q,held,False,4
+Swingshift,Z,held,False,4
+500up.4,M,moved,True,4
+500up.4,Q,moved,True,4
+500up.4,Z,moved,True,4
+C1Harmonic,M,moved,True,4
+C1Harmonic,Q,moved,False,4
+C1Harmonic,Z,moved,True,4
+Odd>Even,M,moved,True,4
+Odd>Even,Q,moved,True,4
+Odd>Even,Z,moved,True,4
+0>Shp1,M,moved,False,4
+0>Shp1,Q,moved,True,4
+0>Shp1,Z,moved,True,4
+0>Shp2,M,moved,True,4
+0>Shp2,Q,moved,True,4
+0>Shp2,Z,moved,False,4
+0>Shp3,M,held,False,4
+0>Shp3,Q,held,False,4
+0>Shp3,Z,held,False,4
+Shp>Shp1,M,moved,True,4
+Shp>Shp1,Q,moved,True,4
+Shp>Shp1,Z,moved,True,4
+Lpeq Vel,M,held,False,4
+Lpeq Vel,Q,held,False,4
+Lpeq Vel,Z,held,False,4
+PeakSweep.4,M,moved,False,4
+PeakSweep.4,Q,moved,False,4
+PeakSweep.4,Z,moved,True,4
+PowerSweeps,M,moved,True,4
+PowerSweeps,Q,moved,True,4
+PowerSweeps,Z,moved,True,4
+TSweep.4,M,held,False,4
+TSweep.4,Q,held,False,4
+TSweep.4,Z,held,False,4
+SweepHiQ1.4,M,held,False,4
+SweepHiQ1.4,Q,moved,False,4
+SweepHiQ1.4,Z,moved,False,4
+V>FcQuad.4,M,moved,False,4
+V>FcQuad.4,Q,moved,False,4
+V>FcQuad.4,Z,moved,False,4
+Nexus.4,M,held,False,4
+Nexus.4,Q,held,False,4
+Nexus.4,Z,held,False,4
+Krators.4,M,held,False,4
+Krators.4,Q,moved,True,4
+Krators.4,Z,moved,True,4
+Harmonix.4,M,held,False,4
+Harmonix.4,Q,held,False,4
+Harmonix.4,Z,moved,True,4
+GreenWorld.4,M,moved,False,4
+GreenWorld.4,Q,moved,True,4
+GreenWorld.4,Z,moved,False,4
+Comb/Swap.4,M,moved,True,4
+Comb/Swap.4,Q,moved,False,4
+Comb/Swap.4,Z,moved,False,4
+Comb/HP.4,M,moved,True,4
+Comb/HP.4,Q,moved,True,4
+Comb/HP.4,Z,moved,True,4
+Swirly,M,held,False,4
+Swirly,Q,moved,True,4
+Swirly,Z,moved,True,4
+Cavatate.4,M,moved,True,4
+Cavatate.4,Q,moved,False,4
+Cavatate.4,Z,moved,False,4
+GentleRez.4,M,moved,False,4
+GentleRez.4,Q,moved,False,4
+GentleRez.4,Z,moved,True,4
+Bendup/Swap,M,moved,False,4
+Bendup/Swap,Q,moved,False,4
+Bendup/Swap,Z,moved,True,4
+Bendup,M,moved,False,4
+Bendup,Q,moved,True,4
+Bendup,Z,moved,False,4
+Skweezit,M,moved,False,4
+Skweezit,Q,moved,False,4
+Skweezit,Z,moved,True,4
+Lo/High.4,M,moved,False,4
+Lo/High.4,Q,moved,False,4
+Lo/High.4,Z,moved,False,4
+SubtleMove.4,M,held,False,4
+SubtleMove.4,Q,held,False,4
+SubtleMove.4,Z,held,False,4
+BuzzyPad.4,M,held,False,4
+BuzzyPad.4,Q,held,False,4
+BuzzyPad.4,Z,held,False,4
+Bw5kHz+6.4,M,held,False,4
+Bw5kHz+6.4,Q,held,False,4
+Bw5kHz+6.4,Z,held,False,4
+Bw65Hz/2k.4,M,moved,False,4
+Bw65Hz/2k.4,Q,moved,True,4
+Bw65Hz/2k.4,Z,moved,False,4
+Bb80Hzbw1.4,M,held,False,4
+Bb80Hzbw1.4,Q,held,False,4
+Bb80Hzbw1.4,Z,held,False,4
+HighsTwist.4,M,held,False,4
+HighsTwist.4,Q,held,False,4
+HighsTwist.4,Z,held,False,4
+Cubix,M,held,False,4
+Cubix,Q,held,False,4
+Cubix,Z,held,False,4
+HarmSweep.4,M,moved,True,4
+HarmSweep.4,Q,moved,True,4
+HarmSweep.4,Z,moved,False,4
+EvenCuts.4,M,moved,True,4
+EvenCuts.4,Q,moved,True,4
+EvenCuts.4,Z,moved,True,4
+OddCuts.4,M,moved,True,4
+OddCuts.4,Q,moved,True,4
+OddCuts.4,Z,moved,False,4
+PWMTrans.4,M,moved,False,4
+PWMTrans.4,Q,moved,False,4
+PWMTrans.4,Z,moved,False,4
+HiEndQ.4,M,moved,False,4
+HiEndQ.4,Q,moved,False,4
+HiEndQ.4,Z,moved,False,4
+BroadRes.4,M,moved,True,4
+BroadRes.4,Q,moved,True,4
+BroadRes.4,Z,moved,False,4
+ResoHose.4,M,held,False,4
+ResoHose.4,Q,held,False,4
+ResoHose.4,Z,held,False,4
+HeeghCube,M,held,False,4
+HeeghCube,Q,held,False,4
+HeeghCube,Z,held,False,4
+NoizCube,M,moved,True,4
+NoizCube,Q,moved,False,4
+NoizCube,Z,moved,True,4
+VeloctyTilt,M,held,False,4
+VeloctyTilt,Q,held,False,4
+VeloctyTilt,Z,moved,True,4
+Syn Wow.4,M,moved,True,4
+Syn Wow.4,Q,moved,True,4
+Syn Wow.4,Z,moved,True,4
+CombSweep.4,M,held,False,4
+CombSweep.4,Q,held,False,4
+CombSweep.4,Z,held,False,4
+Diffuser.4,M,held,False,4
+Diffuser.4,Q,held,False,4
+Diffuser.4,Z,held,False,4
+MdlySweep.4,M,moved,False,4
+MdlySweep.4,Q,moved,False,4
+MdlySweep.4,Z,moved,True,4
+StrongShimr,M,moved,True,4
+StrongShimr,Q,moved,True,4
+StrongShimr,Z,moved,True,4
+Acc.Vel-1,M,moved,False,4
+Acc.Vel-1,Q,moved,True,4
+Acc.Vel-1,Z,moved,False,4
+Acc.Vel-2,M,moved,False,4
+Acc.Vel-2,Q,moved,False,4
+Acc.Vel-2,Z,moved,True,4
+Vel2-Wind,M,moved,False,4
+Vel2-Wind,Q,moved,True,4
+Vel2-Wind,Z,moved,False,4
+Harmo,M,moved,False,4
+Harmo,Q,moved,True,4
+Harmo,Z,moved,False,4
+Start>EndA,M,moved,True,4
+Start>EndA,Q,moved,False,4
+Start>EndA,Z,moved,True,4
+Start>EndB,M,moved,False,4
+Start>EndB,Q,moved,True,4
+Start>EndB,Z,moved,True,4
+MovingPick1,M,moved,True,4
+MovingPick1,Q,moved,False,4
+MovingPick1,Z,moved,False,4
+MovingPick2,M,moved,True,4
+MovingPick2,Q,moved,False,4
+MovingPick2,Z,moved,True,4
+Mph+Trns1,M,moved,True,4
+Mph+Trns1,Q,moved,False,4
+Mph+Trns1,Z,moved,True,4
+0>Odds,M,moved,True,4
+0>Odds,Q,moved,True,4
+0>Odds,Z,moved,True,4
+Comb Voices,M,moved,True,4
+Comb Voices,Q,moved,True,4
+Comb Voices,Z,moved,True,4
+Odd-Ev Hrm,M,moved,True,4
+Odd-Ev Hrm,Q,moved,True,4
+Odd-Ev Hrm,Z,moved,True,4
+OddHrm+Rez,M,moved,True,4
+OddHrm+Rez,Q,moved,True,4
+OddHrm+Rez,Z,moved,True,4
+EvnHrm+Rez,M,held,False,4
+EvnHrm+Rez,Q,held,False,4
+EvnHrm+Rez,Z,held,False,4
+MellowPeaks,M,held,False,4
+MellowPeaks,Q,held,False,4
+MellowPeaks,Z,held,False,4
+AHmBnd.4,M,moved,False,4
+AHmBnd.4,Q,moved,True,4
+AHmBnd.4,Z,moved,False,4
+Vintage,M,moved,True,4
+Vintage,Q,held,False,4
+Vintage,Z,moved,True,4
+MildQPole,M,moved,False,4
+MildQPole,Q,moved,True,4
+MildQPole,Z,moved,False,4
+Bonk>CO,M,moved,True,4
+Bonk>CO,Q,held,False,4
+Bonk>CO,Z,moved,True,4
+Speaker,M,moved,False,4
+Speaker,Q,moved,True,4
+Speaker,Z,moved,True,4
+Expander,M,moved,False,4
+Expander,Q,moved,True,4
+Expander,Z,moved,True,4
+Separator,M,held,False,4
+Separator,Q,held,False,4
+Separator,Z,held,False,4
+MildPolSwap,M,held,False,4
+MildPolSwap,Q,held,False,4
+MildPolSwap,Z,held,False,4
+PoleCross.4,M,held,False,4
+PoleCross.4,Q,held,False,4
+PoleCross.4,Z,held,False,4
+ApDistB6.4,M,held,False,4
+ApDistB6.4,Q,moved,False,4
+ApDistB6.4,Z,moved,False,4
+Dave'sRave,M,held,False,4
+Dave'sRave,Q,held,False,4
+Dave'sRave,Z,held,False,4
+Poles 1-7,M,held,False,4
+Poles 1-7,Q,held,False,4
+Poles 1-7,Z,moved,True,4
+2 Poles,M,moved,False,4
+2 Poles,Q,moved,False,4
+2 Poles,Z,moved,False,4
+4 Poles A,M,held,False,4
+4 Poles A,Q,held,False,4
+4 Poles A,Z,held,False,4
+4 Poles B,M,moved,False,4
+4 Poles B,Q,moved,False,4
+4 Poles B,Z,moved,False,4
+4 Poles C,M,moved,False,4
+4 Poles C,Q,moved,False,4
+4 Poles C,Z,moved,False,4
+6 Poles,M,moved,False,4
+6 Poles,Q,moved,False,4
+6 Poles,Z,moved,False,4
+MultiPole,M,held,False,4
+MultiPole,Q,moved,True,4
+MultiPole,Z,moved,False,4
+Tracker,M,held,False,4
+Tracker,Q,held,False,4
+Tracker,Z,held,False,4
+Tracker 2,M,held,False,4
+Tracker 2,Q,held,False,4
+Tracker 2,Z,held,False,4
+Tracker 3,M,moved,True,4
+Tracker 3,Q,held,False,4
+Tracker 3,Z,moved,True,4
+Tracker5ths,M,moved,True,4
+Tracker5ths,Q,moved,True,4
+Tracker5ths,Z,moved,False,4
+InFifths.4,M,held,False,4
+InFifths.4,Q,held,False,4
+InFifths.4,Z,held,False,4
+HarmTracker,M,held,False,4
+HarmTracker,Q,held,False,4
+HarmTracker,Z,held,False,4
+1BndPrmtrcA,M,moved,False,4
+1BndPrmtrcA,Q,moved,True,4
+1BndPrmtrcA,Z,moved,False,4
+1BndPrmtrcB,M,moved,True,4
+1BndPrmtrcB,Q,moved,True,4
+1BndPrmtrcB,Z,moved,False,4
+1BndPrmtrcC,M,moved,True,4
+1BndPrmtrcC,Q,moved,True,4
+1BndPrmtrcC,Z,moved,True,4
+1BndPrmtrcD,M,held,False,4
+1BndPrmtrcD,Q,held,False,4
+1BndPrmtrcD,Z,held,False,4
+MltiMetricA,M,moved,False,4
+MltiMetricA,Q,moved,True,4
+MltiMetricA,Z,moved,False,4
+MltiMetricB,M,held,False,4
+MltiMetricB,Q,moved,True,4
+MltiMetricB,Z,moved,False,4
+MltiMetricC,M,held,False,4
+MltiMetricC,Q,held,False,4
+MltiMetricC,Z,held,False,4
+Omni Metric,M,held,False,4
+Omni Metric,Q,held,False,4
+Omni Metric,Z,held,False,4
+HarmncPeaks,M,held,False,4
+HarmncPeaks,Q,held,False,4
+HarmncPeaks,Z,held,False,4
+HrmncPeaks2,M,held,False,4
+HrmncPeaks2,Q,held,False,4
+HrmncPeaks2,Z,held,False,4
+InHarMetric,M,moved,False,4
+InHarMetric,Q,moved,False,4
+InHarMetric,Z,moved,False,4
+HarmShifter,M,moved,True,4
+HarmShifter,Q,moved,False,4
+HarmShifter,Z,moved,True,4
+HarmShiftr2,M,held,False,4
+HarmShiftr2,Q,held,False,4
+HarmShiftr2,Z,held,False,4
+HarmShiftr3,M,held,False,4
+HarmShiftr3,Q,held,False,4
+HarmShiftr3,Z,held,False,4
+Phaser,M,held,False,4
+Phaser,Q,held,False,4
+Phaser,Z,held,False,4
+HrmncPhaser,M,held,False,4
+HrmncPhaser,Q,held,False,4
+HrmncPhaser,Z,held,False,4
+HrmncPhsr2,M,held,False,4
+HrmncPhsr2,Q,held,False,4
+HrmncPhsr2,Z,held,False,4
+Wide Bands,M,held,False,4
+Wide Bands,Q,held,False,4
+Wide Bands,Z,held,False,4
+New Boost,M,held,False,4
+New Boost,Q,held,False,4
+New Boost,Z,held,False,4
+VowelSpace2,M,held,False,4
+VowelSpace2,Q,held,False,4
+VowelSpace2,Z,held,False,4
+VowelSpace3,M,moved,False,4
+VowelSpace3,Q,moved,True,4
+VowelSpace3,Z,moved,False,4
+Oh Shaper,M,held,False,4
+Oh Shaper,Q,held,False,4
+Oh Shaper,Z,held,False,4
+Ah Shaper,M,held,False,4
+Ah Shaper,Q,held,False,4
+Ah Shaper,Z,held,False,4
+Oo Shaper,M,held,False,4
+Oo Shaper,Q,held,False,4
+Oo Shaper,Z,held,False,4
+FrmntShaper,M,moved,True,4
+FrmntShaper,Q,moved,False,4
+FrmntShaper,Z,moved,True,4
+Piano LP.4,M,moved,False,4
+Piano LP.4,Q,moved,False,4
+Piano LP.4,Z,moved,True,4
+PianoSndBrd,M,moved,True,4
+PianoSndBrd,Q,moved,True,4
+PianoSndBrd,Z,moved,True,4
+Strike Cube,M,held,False,4
+Strike Cube,Q,held,False,4
+Strike Cube,Z,held,False,4
+Clav Curves,M,moved,False,4
+Clav Curves,Q,moved,False,4
+Clav Curves,Z,moved,True,4
+Symphony,M,moved,False,4
+Symphony,Q,moved,True,4
+Symphony,Z,moved,True,4
+String Cube,M,moved,False,4
+String Cube,Q,moved,True,4
+String Cube,Z,moved,False,4
+Swell Cube,M,held,False,4
+Swell Cube,Q,held,False,4
+Swell Cube,Z,moved,True,4
+Quartet.4,M,moved,False,4
+Quartet.4,Q,moved,False,4
+Quartet.4,Z,moved,False,4
+Mellotron.4,M,held,False,4
+Mellotron.4,Q,held,False,4
+Mellotron.4,Z,held,False,4
+Cello,M,held,False,4
+Cello,Q,held,False,4
+Cello,Z,held,False,4
+Key Squeak,M,held,False,4
+Key Squeak,Q,held,False,4
+Key Squeak,Z,held,False,4
+Pluck.4,M,held,False,4
+Pluck.4,Q,held,False,4
+Pluck.4,Z,held,False,4
+Pick It,M,held,False,4
+Pick It,Q,held,False,4
+Pick It,Z,held,False,4
+El Pick It,M,moved,True,4
+El Pick It,Q,moved,False,4
+El Pick It,Z,moved,True,4
+ElGuit Cube,M,moved,False,4
+ElGuit Cube,Q,moved,True,4
+ElGuit Cube,Z,moved,False,4
+ElGuit Pick,M,moved,False,4
+ElGuit Pick,Q,moved,True,4
+ElGuit Pick,Z,moved,False,4
+Breather 1,M,moved,True,4
+Breather 1,Q,held,False,4
+Breather 1,Z,moved,True,4
+Breather 2,M,moved,False,4
+Breather 2,Q,moved,True,4
+Breather 2,Z,moved,False,4
+WindNoise 1,M,moved,False,4
+WindNoise 1,Q,moved,True,4
+WindNoise 1,Z,moved,False,4
+WindNoise 2,M,moved,False,4
+WindNoise 2,Q,moved,False,4
+WindNoise 2,Z,moved,True,4
+Blow Cube,M,held,False,4
+Blow Cube,Q,held,False,4
+Blow Cube,Z,held,False,4
+Overblow,M,moved,True,4
+Overblow,Q,held,False,4
+Overblow,Z,moved,True,4
+Wind Filter,M,held,False,4
+Wind Filter,Q,held,False,4
+Wind Filter,Z,held,False,4
+FlutBreth.4,M,moved,False,4
+FlutBreth.4,Q,moved,False,4
+FlutBreth.4,Z,moved,True,4
+VClarinet.4,M,moved,True,4
+VClarinet.4,Q,moved,True,4
+VClarinet.4,Z,moved,False,4
+New Mute.4,M,held,False,4
+New Mute.4,Q,held,False,4
+New Mute.4,Z,held,False,4
+Trempeto.4,M,moved,True,4
+Trempeto.4,Q,held,False,4
+Trempeto.4,Z,moved,False,4
+SfBrzando.4,M,held,False,4
+SfBrzando.4,Q,held,False,4
+SfBrzando.4,Z,held,False,4
+UduFilter.4,M,held,False,4
+UduFilter.4,Q,held,False,4
+UduFilter.4,Z,held,False,4
+Hip Kick,M,held,False,4
+Hip Kick,Q,held,False,4
+Hip Kick,Z,held,False,4
+Cymbal Cube,M,held,False,4
+Cymbal Cube,Q,held,False,4
+Cymbal Cube,Z,held,False,4
+ChimeFlange,M,moved,False,4
+ChimeFlange,Q,moved,False,4
+ChimeFlange,Z,moved,True,4
+CableRing.4,M,held,False,4
+CableRing.4,Q,held,False,4
+CableRing.4,Z,held,False,4
+TensionWire,M,held,False,4
+TensionWire,Q,held,False,4
+TensionWire,Z,held,False,4
+Auto Clang,M,moved,False,4
+Auto Clang,Q,moved,False,4
+Auto Clang,Z,moved,False,4
+Dragon Claw,M,held,False,4
+Dragon Claw,Q,held,False,4
+Dragon Claw,Z,held,False,4
+Spectra,M,held,False,4
+Spectra,Q,held,False,4
+Spectra,Z,held,False,4
+RippleSheet,M,held,False,4
+RippleSheet,Q,held,False,4
+RippleSheet,Z,held,False,4
+Clear Water,M,held,False,4
+Clear Water,Q,held,False,4
+Clear Water,Z,held,False,4
+Invisible,M,moved,False,4
+Invisible,Q,moved,False,4
+Invisible,Z,moved,False,4
+Wine Glass,M,held,False,4
+Wine Glass,Q,held,False,4
+Wine Glass,Z,held,False,4
+SnakeCros.4,M,held,False,4
+SnakeCros.4,Q,held,False,4
+SnakeCros.4,Z,held,False,4
+Analog.4,M,moved,True,4
+Analog.4,Q,moved,False,4
+Analog.4,Z,moved,True,4
+Skrtch Cube,M,held,False,4
+Skrtch Cube,Q,held,False,4
+Skrtch Cube,Z,held,False,4
+KitchenSink,M,moved,False,4
+KitchenSink,Q,moved,True,4
+KitchenSink,Z,moved,True,4
+Head Pan 1,M,moved,False,4
+Head Pan 1,Q,moved,False,4
+Head Pan 1,Z,moved,True,4
+Head Pan 2,M,held,False,4
+Head Pan 2,Q,held,False,4
+Head Pan 2,Z,held,False,4
+Arpeggio,M,held,False,4
+Arpeggio,Q,held,False,4
+Arpeggio,Z,moved,True,4
+HeavyFilt.4,M,held,False,4
+HeavyFilt.4,Q,held,False,4
+HeavyFilt.4,Z,held,False,4
+Noiz Cube 2,M,held,False,4
+Noiz Cube 2,Q,held,False,4
+Noiz Cube 2,Z,held,False,4
+Feedback,M,moved,False,4
+Feedback,Q,moved,False,4
+Feedback,Z,moved,False,4
+AllPoleDist,M,held,False,4
+AllPoleDist,Q,held,False,4
+AllPoleDist,Z,held,False,4
+AllPoleDst2,M,held,True,4
+AllPoleDst2,Q,held,True,4
+AllPoleDst2,Z,held,True,4

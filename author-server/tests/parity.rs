@@ -1,11 +1,6 @@
 use trench_core::minifloat::PackedCorners;
 
-#[path = "../src/fit.rs"]
-mod fit;
-#[path = "../src/json.rs"]
-mod json;
-#[path = "../src/parity.rs"]
-mod parity;
+use author_server::{fit, parity};
 
 fn check(bytes: &[u8], label: &str) {
     let packed = PackedCorners::from_body_bytes(bytes).expect(label);

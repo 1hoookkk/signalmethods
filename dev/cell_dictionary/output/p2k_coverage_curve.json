@@ -1,0 +1,121 @@
+[
+ {
+  "k_signatures": 1,
+  "signature": "M:moved/moved | Q:moved/moved",
+  "count": 111,
+  "cumulative": 111,
+  "cumulative_fraction_of_active": 0.5606060606060606
+ },
+ {
+  "k_signatures": 2,
+  "signature": "M:moved/moved | Q:moved/held",
+  "count": 43,
+  "cumulative": 154,
+  "cumulative_fraction_of_active": 0.7777777777777778
+ },
+ {
+  "k_signatures": 3,
+  "signature": "M:moved/held | Q:moved/held",
+  "count": 15,
+  "cumulative": 169,
+  "cumulative_fraction_of_active": 0.8535353535353535
+ },
+ {
+  "k_signatures": 4,
+  "signature": "M:moved/moved | Q:moved/topology_change",
+  "count": 5,
+  "cumulative": 174,
+  "cumulative_fraction_of_active": 0.8787878787878788
+ },
+ {
+  "k_signatures": 5,
+  "signature": "M:topology_change/moved | Q:topology_change/moved",
+  "count": 4,
+  "cumulative": 178,
+  "cumulative_fraction_of_active": 0.898989898989899
+ },
+ {
+  "k_signatures": 6,
+  "signature": "M:moved/topology_change | Q:moved/moved",
+  "count": 4,
+  "cumulative": 182,
+  "cumulative_fraction_of_active": 0.9191919191919192
+ },
+ {
+  "k_signatures": 7,
+  "signature": "M:moved/moved | Q:held/moved",
+  "count": 3,
+  "cumulative": 185,
+  "cumulative_fraction_of_active": 0.9343434343434344
+ },
+ {
+  "k_signatures": 8,
+  "signature": "M:moved/held | Q:held/held",
+  "count": 2,
+  "cumulative": 187,
+  "cumulative_fraction_of_active": 0.9444444444444444
+ },
+ {
+  "k_signatures": 9,
+  "signature": "M:topology_change/moved | Q:moved/moved",
+  "count": 2,
+  "cumulative": 189,
+  "cumulative_fraction_of_active": 0.9545454545454546
+ },
+ {
+  "k_signatures": 10,
+  "signature": "M:moved/topology_change | Q:moved/topology_change",
+  "count": 2,
+  "cumulative": 191,
+  "cumulative_fraction_of_active": 0.9646464646464646
+ },
+ {
+  "k_signatures": 11,
+  "signature": "M:topology_change/moved | Q:topology_change/topology_change",
+  "count": 1,
+  "cumulative": 192,
+  "cumulative_fraction_of_active": 0.9696969696969697
+ },
+ {
+  "k_signatures": 12,
+  "signature": "M:topology_change/moved | Q:topology_change/held",
+  "count": 1,
+  "cumulative": 193,
+  "cumulative_fraction_of_active": 0.9747474747474747
+ },
+ {
+  "k_signatures": 13,
+  "signature": "M:moved/moved | Q:topology_change/held",
+  "count": 1,
+  "cumulative": 194,
+  "cumulative_fraction_of_active": 0.9797979797979798
+ },
+ {
+  "k_signatures": 14,
+  "signature": "M:moved/held | Q:moved/moved",
+  "count": 1,
+  "cumulative": 195,
+  "cumulative_fraction_of_active": 0.9848484848484849
+ },
+ {
+  "k_signatures": 15,
+  "signature": "M:moved/moved | Q:topology_change/topology_change",
+  "count": 1,
+  "cumulative": 196,
+  "cumulative_fraction_of_active": 0.98989898989899
+ },
+ {
+  "k_signatures": 16,
+  "signature": "M:topology_change/moved | Q:moved/held",
+  "count": 1,
+  "cumulative": 197,
+  "cumulative_fraction_of_active": 0.9949494949494949
+ },
+ {
+  "k_signatures": 17,
+  "signature": "M:moved/moved | Q:held/held",
+  "count": 1,
+  "cumulative": 198,
+  "cumulative_fraction_of_active": 1.0
+ }
+]

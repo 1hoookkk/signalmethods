@@ -1,0 +1,36 @@
+{
+  "schema": "trench-cleanroom-hrtf-pinna-v1",
+  "description": "Binaural elevation notches and ear canal resonances derived from MIT KEMAR & SONICOM open datasets",
+  "elevation_grid_deg": [
+    -30,
+    -15,
+    0,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90
+  ],
+  "features": {
+    "pinna_elevation_notch_1": {
+      "description": "First pinna notch frequency tracks elevation theta",
+      "formula_hz": "6200.0 + 45.0 * elevation_deg",
+      "r_zero": 0.988
+    },
+    "pinna_elevation_notch_2": {
+      "description": "Second pinna notch frequency",
+      "formula_hz": "11500.0 + 35.0 * elevation_deg",
+      "r_zero": 0.975
+    },
+    "ear_canal_resonance": {
+      "frequency_hz": 3400.0,
+      "r_pole": 0.935,
+      "boost_db": 12.0
+    },
+    "torso_reflection_shelf": {
+      "frequency_hz": 450.0,
+      "r_pole": 0.88
+    }
+  }
+}

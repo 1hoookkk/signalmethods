@@ -1,15 +1,8 @@
-#[path = "../src/brief.rs"]
-mod brief;
-#[path = "../src/http.rs"]
-mod http;
-#[path = "../src/store.rs"]
-mod store;
+use author_server::{brief, store};
 
 #[test]
 fn every_architecture_resolves_to_a_nonempty_brief() {
-    let s = store::Store {
-        root: std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(".."),
-    };
+    let s = store::Store::bare(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(".."));
     let unwritten = [10, 20, 21, 23, 24, 25, 26, 30, 32];
     for (i, item) in s.architectures().iter().enumerate() {
         let result = brief::brief(&s, &format!("id={}", item.id));

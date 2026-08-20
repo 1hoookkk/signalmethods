@@ -1,0 +1,1392 @@
+[
+ {
+  "id": 0,
+  "name": "Null Cube",
+  "description": "The Null Cube has a completely flat frequency response under all parameter settings. You can use it as a \u201cBypass\u201d setting. The filter left and right gains are still effective. Frequency: No Effect Morph: No Effect Transform: No Effect Distortion: No Effect Flangers"
+ },
+ {
+  "id": 1,
+  "name": "LPFlange.4",
+  "description": "Frequency: Starts with high end roll-off and deep, narrow notches around 60, 120, 230, 460 and 920 Hz and transforms into less deep, wider notches around 12, 14, 16, 18 and 19 kHz with no roll-off. Morph: Controls brightness as well as sweeping notches upwards. Transform: Results in a highpass effect, transitioning into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion adds interesting resonances near the notches."
+ },
+ {
+  "id": 2,
+  "name": "LPFlangBk.4",
+  "description": "A series of deep notches spaced at octave intervals morphing to less severe, more closely clustered high frequency notches. An additional lowpass filter is at low Frequency CV, opening as the maximum Freq CV is reached. Frequency: Modulate this to create multi- flanging effects. Morph: Controls brightness as well as sweeping notches upwards. Transform: Results in a highpass effect, transitioning into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Dist"
+ },
+ {
+  "id": 3,
+  "name": "Flange2.4",
+  "description": "This flanger has a series of 6 notches placed at octaves, not linearly. With all CVs at minimum, the notches are around 56, 112, 225, 450, 900, and 1800 Hz. Frequency: Moves all of the notches up in frequency to above 10 kHz, with decreasing depth. This means that the deepest flanging effect is obtained in the first 1/3 to 1/2 of the Frequency CV range. Note that deep notches can cut out the fundamental of a sound which might decrease the volume of the note. Morph: Moves the notches upward sligh"
+ },
+ {
+  "id": 4,
+  "name": "CubeFlanger",
+  "description": "A flanging filter featuring deep notches tuned in octaves and a steep roll-off of high frequencies when all axes have no offset. High Transform CVs can produce some rather metallic-sounding overtones. Apart from flanging effects, this filter can be used in much the same way as a standard resonant synth filter. Frequency: Tunes the filter notches. Morph: Controls lowpass filter cutoff point. Transform: Increases resonance and introduces some peaks. Distortion: Increases resonance, sometimes drama"
+ },
+ {
+  "id": 5,
+  "name": "Flange3.4",
+  "description": "The notches start at about 40Hz, and the higher ones are spaced at a ratio of 1.61 between notch frequencies. This spacing means that notches will not fall on top of all of the harmonics of a sound at once. Instead, they should hit harmonics one at a time as they are swept in frequency. Traditional flangers have notches spaced linearly, not log spaced. Frequency: Moves all of the notches up above 10 kHz, with the relative frequency spacing decreasing. The deepest flange effect will happen in the"
+ },
+ {
+  "id": 6,
+  "name": "Flange4.4",
+  "description": "A highly resonant flanger/filter type. Sweeping the Frequency CV produces dramatic effects. The Morph CV can be used to tune the flanger; higher voltages produce more open sounds. Frequency: Increase to raise the cutoff frequency and vary the gain of the various peaks and notches. Morph: Tunes the filter. Transform: Transitions into a null filter at maximum, with varying effects in between. Distortion: In the default filter, Transform Controls Distortion. Distortion dramatically increases the pr"
+ },
+ {
+  "id": 7,
+  "name": "Flange5",
+  "description": "A complex flange possessing some vocal- sounding characteristics. Sweeping along the Morph or Frequency axes produce flanger- like effects. Frequency: Tunes the notches. Morph: Spreads the notches. Transform: Increase this to move the filter toward a more flat curve. Distortion: Provides harsh feedback-like effects."
+ },
+ {
+  "id": 8,
+  "name": "Flange6.4",
+  "description": "Introduces both peaks and notches which start widely spaced and become more tightly distributed as Morph CV reaches maximum. The center frequencies for the various filter bands move towards higher ranges as the Morph or Frequency CVs are swept upward; the effect is not unlike a sweeping of multiple resonant band-pass filters. Frequency: Moves all of the notches and peaks up in frequency. Morph: Pulls the notches and peaks together. Transform: Results in a highpass effect, transitioning into a nu"
+ },
+ {
+  "id": 9,
+  "name": "Flange6R.4",
+  "description": "This is a variation of cube C008, Flange 6.4. It is a bit more resonantsounding, due in part to higher \u2018Q\u2019 settings. Sweeping the Morph CV can produce the syllable \u2018yi\u2019. Frequency: Sweeps filter frequency bands up and together when modulated in a positive direction. Morph: Sweeps filter frequency together and somewhat upward when modulated in a positive direction. Transform: Results in a highpass effect, transitioning into a null filter at maximum. Distortion: In the default filter, Transform Co"
+ },
+ {
+  "id": 10,
+  "name": "Flange7.4",
+  "description": "A series of harmonically related notches is moved from the lower-midrange to the upper-midrange as the Morph CV is swept. The Frequency CV produces a broader flanging effect, bringing the notches to high frequency and then taking them away, producing a flat frequency response at maximum. Frequency: Use this to sweep the notches or take them away. Morph: Use this to tune the notches. Transform: Results in a highpass effect, transitioning into a null filter at maximum. Distortion: In the default f"
+ },
+ {
+  "id": 11,
+  "name": "BriteFlnge.4",
+  "description": "A series of notches, tuned in octaves, are swept upward and finally converge at 19 kHz as this filter is pushed up using the Frequency CV. A small bump at about 15kHz is introduced to maintain brightness when the Frequency CV is at maximum. Frequency: Increasing this value sweeps the filter notches upward and together. Morph: Increasing this raises the lowpass filter cutoff point. Transform: Results in a highpass effect, transitioning into a null filter at maximum. Distortion: In the default fil"
+ },
+ {
+  "id": 12,
+  "name": "Flng>Flng1",
+  "description": "Frequency: Sweeps between two different flangers. Morph: Track a note\u2019s fundamental frequency to maintain or modify the spectrum. Transform: Provides volume and brightness control; the gain can be a bit high at higher CV values; use the Left and Right Gain parameters in the filter to control this if necessary. Distortion: Accentuates a primary resonance, often dramatically, allowing feedback and frequency dragging effects at higher settings. Comments: Frequency tracking enhances the depth of the"
+ },
+ {
+  "id": 13,
+  "name": "LP>Flng2",
+  "description": "Morphs from a relatively benign lowpass frequency response into a flanger. Frequency: Track note frequency to maintain spectrum or accentuate the lowpass and flange. Morph: Reveals flat to flange filter frequency response. Transform: Adds volume and changes the flange. Distortion: Dramatically accentuates a primary resonance, quickly producing some major grunge. Keep it low for a clean sound. Comments: Nice for introducing a subtle flange to a pure sound. Create natural effects increasing flange"
+ },
+ {
+  "id": 14,
+  "name": "Flng>Flng3",
+  "description": "Another cube that morphs between two different flangers. Frequency: Sweeps the frequency for tracking or enhancing the flange. Morph: Sweeps between the two different flangers. Transform: Increases the depth of the flange. Distortion: Dramatically accentuates several resonances, producing a very rich result. Comments: A gentler sweep than C012. Nice for introducing a subtle flange to a pure sound. Create natural effects increasing flange depth, volume and brightness. Distort it for lots of harmo"
+ },
+ {
+  "id": 15,
+  "name": "Flng>Flng4",
+  "description": "Yet another cube that morphs between two different flangers. Frequency: Sweeps the frequency for tracking or enhancing the flange. Morph: Sweeps between the two different flangers. Transform: When Morph or Frequency CV is high, reduces depth of flange effect. When both Frequency and Morph are low, sweeps the frequency upward before reducing the depth. Distortion: Dramatically accentuates several resonances, at high settings merging into grunge."
+ },
+ {
+  "id": 16,
+  "name": "Flng>Flng5",
+  "description": "And yet another cube that morphs between flangers. At low Morph and Frequency CV, the filter is simply lowpass. Frequency: Sweeps the frequency for tracking or enhancing the flange. Morph: Sweeps between the two different flangers. Transform: Increases depth of flange, more bell-like. Also, decreases the notch and resonant frequencies with increasing CV. Distortion: Accentuates several resonances, increasing the bell-like sounds until they overload. Comments: Morphing sweeps gently, but Transfor"
+ },
+ {
+  "id": 17,
+  "name": "Flng>Flng6",
+  "description": "And another cube that morphs between flangers. Frequency: Sweeps the frequency for tracking or enhancing the flange. Morph: Sweeps between the two different flangers. Transform: Provides more brightness and flange. Distortion: Subtly accentuates several resonances. Comments: A mellow, well-behaved flanger."
+ },
+ {
+  "id": 18,
+  "name": "Flng>FlngT",
+  "description": "A gentle-touch flanger morph. Frequency: Sweeps the frequency for tracking or enhancing the flange. Morph: Sweeps between flangers. Transform: Provides more brightness and flange, particularly at higher Frequency CVs. Distortion: Dramatically accentuates a primary resonance. Produces some nice feedback-like effects. Comments: Low Transform gives a soft chorus on morphing. Higher Transform gives exaggerated depth."
+ },
+ {
+  "id": 19,
+  "name": "Flng>FlngC",
+  "description": "A rather different morphed flanger. Frequency: Sweeps the notches and peaks, and controls brightness. Morph: Sweeps from open to closed response when Transform CV is low and Frequency is low or mid-range. Transform: Adds extra flange and has interesting effects on the other CVs. Distortion: Accentuates several resonances, in a generally pleasant and useful manner."
+ },
+ {
+  "id": 20,
+  "name": "CO>FlngT",
+  "description": "And another unusual morphed flanger. Frequency: Raises frequency of peaks and notches. Morph: Modestly adjusts the peaks and notches at low Transform CV, dramatically adjusts them at high Transform CV. Transform: Increases brightness and depth of flange. Distortion: Dramatically accentuates several resonances, at high settings merging into grunge. Dipthong Filters Implemented with parametric equalizer subsections, the resonances do not have the traditional overall low pass effect that a true voc"
+ },
+ {
+  "id": 21,
+  "name": "AEParLPVow",
+  "description": "This paravowel has a low pass filter to provide additional roll off, when desired. Otherwise, it behave as the other paravowels. Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Try maximum Transform for additional brightness. Transform: Controls volume and depth of effect. Distortion: Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 22,
+  "name": "AEParaVowel",
+  "description": "Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Transform: Controls the amplitude of all of the resonances, with -5V providing the lowest resonance amplitude, and +5V providing the highest. Distortion: Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 23,
+  "name": "AOLpParaVow",
+  "description": "This paravowel has a low pass filter to provide additional roll off, when desired. Otherwise, it behaves as the other paravowels. Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Try maximum Transform. Transform: Controls the amplitude of all of the resonances. Distortion: Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 24,
+  "name": "AOParaVowel",
+  "description": "Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Try maximum Transform. Transform: Controls the amplitude of all of the resonances. Distortion: Harmonics will excite the resonances further, frequentlydistorting them"
+ },
+ {
+  "id": 25,
+  "name": "AUParaVow.4",
+  "description": "Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Transform: Spans a 90\u00b0 twist on the Frequency and Morph parameters. Distortion: In the default filter, Transform Controls Distortion. Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 26,
+  "name": "UOParaVow.4",
+  "description": "Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Transform: Spans a 90\u00b0 twist on the Frequency and Morph parameters. Distortion: In the default filter, Transform Controls Distortion. Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 27,
+  "name": "SftEOVowl.4",
+  "description": "Frequency: Shifts all of the resonances up in frequency. Morph: Controls movement between vowels. Transform: Spans a 90\u00b0 twist on the Frequency and Morph parameters. Distortion: In the default filter, Transform Controls Distortion. Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 28,
+  "name": "SoftEOAE",
+  "description": "This cube morphs among three vowels. Low Frequency and low Morph CVs, or high Frequency and high Morph CVs both produce an \u2018E.\u2019 Low Frequency and high Morph produces an \u2018O,\u2019 while high Frequency and low Morph produces an \u2018A.\u2019 Frequency: Controls movement between vowels. Morph: Controls movement between vowels. Transform: Brightens the sound. Distortion: Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 29,
+  "name": "Vocal Cube",
+  "description": "Produces a variety of vocal sounds. Frequency: Controls movement between vowels. Morph: Brightness control. Transform: Controls movement between vowels. Distortion: Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 30,
+  "name": "C1-6Harms.4",
+  "description": "Frequency: Controls the frequency of the notch and peaks. Morph: Sweeps between a notch at 230 Hz to a series of closely spaced peaks from 80Hz to 530 Hz Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion accentuates the resonances and results in some very nice effects."
+ },
+ {
+  "id": 31,
+  "name": "Voce.4",
+  "description": "Frequency: Controls of brightness. Morph: Controls movement between \u2018oo\u2019 and \u2018ee\u2019. Transform: Spans a 90\u00b0 twist on the Frequency and Morph parameters. Distortion: In the default filter, Transform Controls Distortion. Harmonics will excite the resonances further, frequently distorting them."
+ },
+ {
+  "id": 32,
+  "name": "ChoralComb.4",
+  "description": "Frequency: Shifts the frequency upward with about a 2 octave range. Morph: Sweeps between different frequency notches tuned for vocal formants. Transform: Results in a highpass effect, transitioning into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion here results in quite a bit of gain, so frequently the Left/Right gain should be adjusted when used."
+ },
+ {
+  "id": 33,
+  "name": "Bassutoi.4",
+  "description": "Frequency: Increases the frequency of the resonant peaks, and controls brightness. Morph: Controls movement between \u2018yu\u2019 and \u2018ee\u2019. Transform: Spans a 90\u00b0 twist on the Frequency and Morph parameters. Distortion: In the default filter, Transform Controls Distortion. Harmonics will excite the resonances further, frequently distorting them. 38 |"
+ },
+ {
+  "id": 34,
+  "name": "Be Ye.4",
+  "description": "Designed to say \u2018Be Ye\u2019. Frequency: Sweeps the filter over about an octave. Morph: Sweeps the vocal formants. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion accentuates the resonances and results in some very nice effects."
+ },
+ {
+  "id": 35,
+  "name": "Ee-Yi.4",
+  "description": "Frequency: Sweeps the filter over about two octaves. Morph: Controls movement between vowels \u2018e\u2019 and \u2018i\u2019. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion accentuates the resonances and results in some very nice effects."
+ },
+ {
+  "id": 36,
+  "name": "Ii-Yi.4",
+  "description": "Frequency: Sweeps the filter over about two octaves. Morph: Controls movement between vowels. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion accentuates the resonances and results in some very nice effects."
+ },
+ {
+  "id": 37,
+  "name": "Uhrrrah.4",
+  "description": "Frequency: Sweeps the filter over about two octaves. Morph: Roars like a lion. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion accentuates the resonances and results in some very nice effects."
+ },
+ {
+  "id": 38,
+  "name": "YeahYeah.4",
+  "description": "Frequency: Sweeps the lowest peak upward, and brightens the sound. Morph: Moves between \u2018ee\u2019 and \u2018ya\u2019 sounds. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Distortion accentuates the resonances and results in some very nice effects."
+ },
+ {
+  "id": 39,
+  "name": "Vow>Vow1",
+  "description": "Frequency: Shifts the frequency of the lower peaks, keeping the upper ones constant. Morph: Sweeps between \u2018ah\u2019 and \u2018oh\u2019. Transform: Increases volume and depth of vowel effect. Distortion: Dramatically increases the grabbing of resonances, giving feedback-like sounds."
+ },
+ {
+  "id": 40,
+  "name": "Vow>Vow2",
+  "description": "Frequency: Shifts lower frequency notches, while resonances stay fixed. Morph: Sweeps between \u2018ee\u2019 and \u2018oh\u2019. Transform: Provides volume and brightness control. Distortion: Dramatically increases the grabbing of resonances, giving feedback-like sounds. Comments: Morphing sweeps between vowels giving a slight \u2018E\u2019 effect."
+ },
+ {
+  "id": 41,
+  "name": "YahYahs.4",
+  "description": "Frequency: Sweeps frequencies over two octaves higher for tracking and brightness control. Morph: Sweeps between \u2018eeya\u2019 and \u2018aa\u2019. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Dramatically increases the grabbing of resonances, giving radical wild sounds. | 39"
+ },
+ {
+  "id": 42,
+  "name": "YoYo.4",
+  "description": "Frequency: Sweeps frequencies over two octaves higher for tracking and brightness control. Morph: Sweeps between \u2018ee\u2019 and \u2018oh\u2019 sounds. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Dramatically increases the resonant peaks."
+ },
+ {
+  "id": 43,
+  "name": "VowelSpace",
+  "description": "Dr. William Martens inspired this filter cube, which allows any vowel to be approximated with only two parameters. Frequency: Sweeps the second formant from 500Hz up to 2500Hz. Morph: Sweeps the first formant of the vowel from 300Hz up to 850Hz. Transform: Changes the vowel \u201cstress.\u201d Low stress means that all of the vowel frequencies collapse to a relaxed \u201cschwa\u201d sound. Maximum Transform produces the maximum excursion (stress) for all of the vowel frequencies. Distortion: Dramatically increases "
+ },
+ {
+  "id": 44,
+  "name": "BrickWaLP.4",
+  "description": "This filter features an extreme rolloff at the cutoff point, which moves from 100 Hz to 3 kHz. Use this filter to produce low-resonance filter sweeps, or to selectively filter out high frequencies in the source sound. Frequency: Controls filter cutoff frequency. Morph: Controls filter depth and provides gentler roll-off beginning \u2248 3 kHz. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Provides distortion, at the extreme emp"
+ },
+ {
+  "id": 45,
+  "name": "BrickWaLP2",
+  "description": "This filter has a sharp rolloff at the cutoff point, which moves from 60 Hz to 2.5 kHz, with a variable resonance. Frequency: Controls filter cutoff frequency. Morph: Controls filter resonance (Q). Transform: Also controls filter cutoff frequency. Distortion: At low resonances, produces a distorted waveform; at high resonances can pick off and grab harmonics and overtones."
+ },
+ {
+  "id": 46,
+  "name": "MdQ 2PoleLP",
+  "description": "A single complex pole of this filter is swept from low to high by the Frequency CV. This filter produces nice, not-too-resonant sweep effects. Frequency: Controls filter cutoff frequency. Morph: Also controls filter cutoff frequency. Transform: Controls resonance (Q). Distortion: Will subtly add distortion of overtones at moderate levels, and pick out the overtones with more distortion at extreme levels. 40 |"
+ },
+ {
+  "id": 47,
+  "name": "HiQ 2PoleLP",
+  "description": "A more resonant version of filter"
+ },
+ {
+  "id": 48,
+  "name": "MdQ 4PoleLP",
+  "description": "Similar to filters"
+ },
+ {
+  "id": 49,
+  "name": "HiQ 4PoleLP",
+  "description": "Again,as with filter"
+ },
+ {
+  "id": 50,
+  "name": "2 PoleLoQ.4",
+  "description": "This is a 2-pole lowpass filter which can be swept from 70Hz to 19.5kHz. Modulating the Morph CV upward will increase filter resonance. A good choice for emulating certain kinds of analog filter effects. Frequency: Controls filter cutoff frequency. Morph: Controls resonance (Q). Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Provides distortion, at the extreme emphasizing the fundamental and overtones of the input."
+ },
+ {
+  "id": 51,
+  "name": "4PoleLoQ.4",
+  "description": "A resonant low-pass filter emulation. Sweeping the Frequency CV creates the familiar filter sweep effect. Frequency: Controls filter cutoff frequency. Morph: Controls resonance (Q). Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Will subtly add distortion of overtones at low levels, and pick out the overtones at moderate levels, and grab and drag overtones almost like oscillations at extreme levels. Beware, if you extremely"
+ },
+ {
+  "id": 52,
+  "name": "4PoleMidQ.4",
+  "description": "A 4-filter version of the classic 4-pole resonant filter found in most analog synthesizers. Frequency: Controls filter cutoff frequency. Morph: Controls resonance (Q). Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Will subtly add distortion of overtones at low levels, and pick out the overtones at moderate levels, and strongly grab and drag overtones almost like oscillations at extreme levels. | 41"
+ },
+ {
+  "id": 53,
+  "name": "2pole>4pole",
+  "description": "This All Pole filter is modeled on traditional low pass filter. It has a soft resonance boost, and controllable cutoff slope. Frequency: Opens up the filter making it brighter. Morph: Adds a small amount of resonance (Q) to the filter. Transform: Changes from a 2-pole filter (-12dB/oct.) to a 4-pole filter (-24dB/oct.). Distortion: Will subtly add distortion of overtones at moderate levels, and pick out the overtones with more distortion at extreme levels."
+ },
+ {
+  "id": 54,
+  "name": "LowPassPlus",
+  "description": "Frequency: Controls filter cutoff frequency. Morph: Sweeps from octave peaks starting at 250 Hz to inharmonic, higher frequency peaks. Transform: Brightens the response. Distortion: Creates an interesting, aharmonic mild grunge at low levels, transitioning to peak grabbing at high levels."
+ },
+ {
+  "id": 55,
+  "name": "Low Past.4",
+  "description": "Poles with fairly high \u2018Q\u2019 settings are grouped into the lower- to uppermidrange. Sweeping the Morph or Frequency CVs can produce some rather vocal-sounding effects. Frequency: Use to tune the filter. Morph: Use to sweep the frequencies of the pole. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Adds distortion creating overtones at low levels, which then cause the high frequency peak to resonate. At extreme levels, it gets"
+ },
+ {
+  "id": 56,
+  "name": "APass.4",
+  "description": "A lowpass filter with gentle rolloff above 500 Hz that can be morphed to flat. A good choice when more subtle filtering is desired. Frequency: Controls filter cutoff frequency. Morph: Gentle lowpass to flat response. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. Creates only very subtle distortions, which depend on the incoming waveshape."
+ },
+ {
+  "id": 57,
+  "name": "HPSweep.4",
+  "description": "A highly resonant high-pass filter which generally rolls off frequencies steeply below \u2248 2.5kHz. Lowest Frequency CV and highest Morph CV provides a relatively flat response (with a gentle cut to the lower frequencies), so the most subtle filtering is achieved with Morph high and Frequency low. Frequency: Positive values move the filter higher in frequency. Morph: Positive values move the filter toward a flatter curve. Transform: Transitions into a null filter at maximum. Distortion: In the defa"
+ },
+ {
+  "id": 58,
+  "name": "HiSwept1.4",
+  "description": "A highly resonant filter with \u2018Q\u2019 increasing as the Morph or Frequency parameters are swept upward. At minimum Frequency CV, Morph has no effect, but as Frequency CV is increased, increasing Morph provides more resonance and brightness. Frequency: Controls filter cutoff frequency. Morph: No effect at minimum Frequency CV; adds resonance and brightness at higher Frequency CVs. Transform: Spans a 90\u00b0 twist on the Frequency and Morph parameters. Distortion: In the default filter, Transform Controls"
+ },
+ {
+  "id": 59,
+  "name": "HghsSwpt2.4",
+  "description": "A more open-sounding version of filter"
+ },
+ {
+  "id": 60,
+  "name": "HighAccent.4",
+  "description": "The center frequencies remain constant throughout all permutations of this filter along the Morph and Frequency CVs; what changes are the \u2018Q\u2019 settings for the various poles and zeros. This allows you to accentuate various resonances (generally in the upper frequency ranges) of the source sound by manipulating the Morph and Frequency CVs. Morph: Controls \u2018Q\u2019 of the various poles. Frequency: Higher values produce brighter, thinner sounds. Transform: Transitions into a null filter at maximum. Disto"
+ },
+ {
+  "id": 61,
+  "name": "HiPassSweep.4",
+  "description": "A high-pass filter with the cutoff point moving from about 180 Hz to upwards of 2.5 kHz (with a sizable gain in resonance) as Frequency CV is increased. Frequency: Higher settings increase cutoff frequency and \u2018Q\u2019. Morph: Controls filter depth/slope. A higher CV gives lower slope and less filtering. Transform: Transitions into a null filter at maximum. Distortion: In the default filter, Transform Controls Distortion. At low morph levels, the distortion is quite powerful. When the morph is higher"
+ },
+ {
+  "id": 62,
+  "name": "DeepCombs.4",
+  "description": "This filter can provide a tremendous variety of comb-filtering and filter sweep effects. Higher frequencies are sharply attenuated with low Frequency and Transform CVs, so be sure at least one of these is either set in the mid-tohigh range, or that modulation is used to offset them. Modulating Morph from a slow LFO produces a nice sweep; the Frequency control is more subtle. Frequency: Positive CVs move frequency notches towards higher values. Morph: Positive CVs move notches towards lower frequ"
+ },
+ {
+  "id": 63,
+  "name": "One Peak",
+  "description": "Morphs from a simple lowpass to a complex filter with multiple resonances. The strongest, most characteristic sounds come from turning both Morph and Transform to their maximum. When you do this, the Frequency control and CV input have the most striking effect. Try it with a harmonically rich source, such as an atonal FM tone. Frequency: Controls the lowpass cutoff and peak frequencies. Morph: Sweeps from a gentle lowpass rolloff through a slight peak at around 220Hz and roll-off after 650Hz to "
+ },
+ {
+  "id": 64,
+  "name": "More Peaks",
+  "description": "All three knobs in this filter are quite active. Try creating a rhythmic pattern by inputting CVs from three different envelopes clocked with different rhythms. Frequency: Shifts the frequency of the filter. Morph: Moves from a gentle cut-off lowpass response to a series of peaks around 220, 440, 880, 330, 1000 and 2000Hz. Most effective with Transform at max. Transform: Intensifies peaks and controls volume."
+ },
+ {
+  "id": 65,
+  "name": "Rev Peaks",
+  "description": "Frequency: Shifts the frequency of the filter. Morph: Moves from gentle low pass to a series of peaks around 220, 440, 660, 880, 1100 and 1320. Best with Transform at max. Transform: Produces higher gain peaks at same frequencies as the Morph axis for volume control and more dramatic effect."
+ },
+ {
+  "id": 66,
+  "name": "Notcher 2.4",
+  "description": "Notches! Frequency: Sweeping from -5V to +5V transitions from widely spaced notches to tightly spaced notches to a flat response. Sweeping over a narrow range with a moderately fast LFO produces some nice phasing and rotating speaker effects. Morph: Shifts the frequencies of the notches. Transform: In the default filter, Transform Controls Distortion. With no distortion added, this filter does a pleasant job of notching. When Morph and Distortion are turned to max, dropping the Frequency value t"
+ },
+ {
+  "id": 67,
+  "name": "Ntches2Oct.4",
+  "description": "This filter is composed of a series of notches, tuned in octaves. Maximum shift is two octaves along either the Frequency or Morph axis, for a combined total of four octaves if both axes are modulated. Frequency & Morph: Shifts the frequency of the notches. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 68,
+  "name": "Odd>+",
+  "description": "Odd, highly resonant harmonics whose shape is modified by Transform. A very aggressive preset, even though Distortion is not turned on. For clean sweeps, keep the Transform value very low. Frequency: Shifts the harmonics\u2019 frequencies Morph: Adjusts the position of the harmonics. Transform: Provides volume and brightness and distortion control. Can get quite extreme."
+ },
+ {
+  "id": 69,
+  "name": "VarSlope.4",
+  "description": "A low-pass filter in which the rolloff above the cutoff point (400Hz) becomes steeper as the value for Morph is increased. A good choice when more subtle filtering is desired. Distortion is switched on in the preset, but it only adds a tasty bit of coloration, nothing aggressive. Try using a digital oscillator waveform with some noticeable detuning, as the buzz of the detuning adds to the filter color. Frequency: Controls the cutoff frequency. Morph: Changes the slope of the rolloff. Transform: "
+ },
+ {
+  "id": 70,
+  "name": "BassEQ 1.4",
+  "description": "Frequency: Controls frequency of bands. Opens filter completely at max. Morph: Produces a deep notch around 196Hz, morphing to a slight bump around 132Hz and a dip around 2600Hz. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 71,
+  "name": "B BOOST.4",
+  "description": "Frequency: Provides gentle rise at 320Hz and 5kHz. Morph: Boosts frequencies around 60Hz, sweeping to open response. Transform: In the default filter, Transform Controls Distortion. Turn up to about +3V for tasty distortion as Frequency and Morph are varied."
+ },
+ {
+  "id": 72,
+  "name": "BssBOOST2.4",
+  "description": "Frequency: Introduces a dip around 320Hz and a peak around 2059Hz. With axes offset, a bump at 60Hz and 1200Hz is introduced. Morph: Boosts frequencies around 60Hz, sweeping to open response. Transform: In the default filter, Transform Controls Distortion. At modest levels, produces nice warm distortion."
+ },
+ {
+  "id": 73,
+  "name": "BassDrumEQ",
+  "description": "This is an EQ filter designed for bass drum- type sounds, based on a low pass EQ filter. The Transform tailors the filter to different types of bass drum sounds. Frequency: Turn the Frequency to maxTunes to produce a narrow peak in the filter response, then tune the peak as desired using Morph. Morph: Tunes the peak created by the Frequency cointrol and adds low end boost. Transform: Adds high end at the expense of low end."
+ },
+ {
+  "id": 74,
+  "name": "Snare LPEQ2",
+  "description": "This is an EQ filter designed for snare-type sounds, based on a low pass EQ filter. There is a strong boost in the 320Hz to 640Hz range and some boost on the low end to give it some punch. Transform tailors the filter for different types of snare sounds. Frequency: Controls brightness. Morph: This moves the mid range bump down a bit. Transform: This will smooth the boost (widens the \u2018Q\u2019)."
+ },
+ {
+  "id": 75,
+  "name": "HiHatLPEQ",
+  "description": "This is an EQ filter designed for hi hat-type sounds, based on a low pass EQ filter. There is a strong boost in the 5kHz to 18kHz range and some cut on the low end. Transform tailors the filter for different types of high-hat sounds. Frequency: Shifts the frequencies of the bands. Morph: Shifts the spacing of the bands. Transform: More band shifting. Complex Filters Many of these filters have never existed for musical applications before!"
+ },
+ {
+  "id": 76,
+  "name": "HP LP PZ",
+  "description": "This Pole/ Zero filter models both low pass and high pass filters. Frequency: Controls the cutoff frequency. Morph: Controls the cutoff slope Transform: Controls the transition from high pass to low pass."
+ },
+ {
+  "id": 77,
+  "name": "PZ Notch",
+  "description": "This Pole/ Zero filter is a notch that ranges from 80Hz to 10kHz. Frequency: Sets the notches\u2019 center frequency. Morph: Interacts with the Transform control to modify the notches\u2019 shapes. Transform: Interacts with the Morph control to modify the notches\u2019 shapes."
+ },
+ {
+  "id": 78,
+  "name": "Band-aid",
+  "description": "This Pole/ Zero filter is a band pass that cuts both the high and low end of the audio. Frequency: Controls amount of low cut. Morph: Controls bandwidth. Transform: Controls amount of high cut."
+ },
+ {
+  "id": 79,
+  "name": "4>2 LowQHiQ",
+  "description": "This All Pole filter is modeled on traditional low pass filter types. It can emulate most familiar 2-4 pole analog filter sounds. Frequency: Controls cutoff frequency. Morph: Changes from a 4-pole filter (-24dB/ oct.) to a 2-pole filter (-12dB/oct.) Transform: This adds resonance (\u2018Q\u2019) to the filter."
+ },
+ {
+  "id": 80,
+  "name": "Wah4Vib.4",
+  "description": "Frequency: Controls low pass cutoff frequency. Morph: Controls resonant peak. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 81,
+  "name": "Wa Wa.4",
+  "description": "Multiple resonant peaks flatten, then invert to become notches as the value of Morph is increased. Increasing the value of Transform can have the effect of sweeping the peaks lower in frequency, inverting the peaks, or both, depending on the settings for Morph and Frequency. Frequency: Controls the frequency of the peaks or notches. Morph: Transitions from peaks to notches. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 82,
+  "name": "BrassRez.4",
+  "description": "Trumpet mute effect. Frequency: Modulates between a similarly shaped second set of resonances. Morph: Increasing Morph results in a less muted, more open response. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 83,
+  "name": "Clr>Oboe",
+  "description": "Morph between the resonant frequencies characteristic of clarinets and oboes. Frequency: Shifts the frequencies of the resonances. Morph: Morphs between clarinet and oboe resonances Transform: Modifies the height of the resonant peaks."
+ },
+ {
+  "id": 84,
+  "name": "0>Muter",
+  "description": "This filter lets you morph between various types and amounts of resonance typical of instrument mutes. Frequency: Shifts the frequencies of the resonances. Morph: Controls the amount of muting. Transform: Modifies the character of the muting. 46 |"
+ },
+ {
+  "id": 85,
+  "name": "PZ Syn Horn",
+  "description": "This filter models the harmonic content of a synthesized horn sound, thus will lend a synth horn sound to other audio. Frequency: Controls the frequency of the resonances Morph: Controls brightness. Transform: This makes a modest change in brightness (fine tuning)."
+ },
+ {
+  "id": 86,
+  "name": "HP Brass",
+  "description": "Generally, each vertex of this cube provides either a steep rolloff of low frequencies or a sharp boost of high frequencies. Note that with Transform set to max, the polarity of the sweep along the Morph axis is reversed. This filter can be a good choice when you need a sharp accentuation of high-frequency material. Frequency: Controls the highpass cutoff frequency Morph: Sweeps the highpass filter, with direction dependent on setting of Transform. Transform: Sweeps the highpass filter, with dir"
+ },
+ {
+  "id": 87,
+  "name": "BrassyBlast",
+  "description": "This filter provides several responses similar to that of a lowpass filter, but with the addition of a gentle bump in the midrange to upper- midrange. Useful for brass-type filter sweep effects. Frequency: Controls the cutoff frequency. Morph: Adds a resonant bump at about 200Hz, which flattens out as the value is moved upward. Transform: Interacts with Frequency and Morph to subtly modify the frequency response."
+ },
+ {
+  "id": 88,
+  "name": "Brass Swell",
+  "description": "Similar to a lowpass filter, but multiple resonant peaks give this one a bit of avocal, phase- shifter-like quality. Frequency: Controls the cutoff frequency. Morph: Modifies the cutoff slope. Transform: Higher values add midrange \u201cbeef\u201d and resonance."
+ },
+ {
+  "id": 89,
+  "name": "BrsSwell2.4",
+  "description": "Another lowpass filter with low resonance designed for brass-type filtersweeps. This time with the ability to add some warm distortion. Frequency: Moves the cutoff frequency higher, and adds a gentle bump in the upper- midrange. Morph: Adds a bit of resonance at the cutoff point, which becomes flatter as Morph is increased. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 90,
+  "name": "LoVelTrum",
+  "description": "A series of tightly spaced peaks is swept upward by each of the filter transforms, with the brightest sounds obtained at maximum settings for Morph, Frequency, and Transform. In addition, Transform increases the resonance. Morph & Frequency: Sweeps the peaks. Transform: Controls the height of the peaks."
+ },
+ {
+  "id": 91,
+  "name": "Chiffin.4",
+  "description": "Use with noise as an input to create a chiff sounds. Frequency: Controls the frequency of the notches. Morph: Sweeps between low frequency notches. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 92,
+  "name": "ShakuFilter",
+  "description": "Frequency: Controls the frequency of the resonances. Morph: Sweeps between peaks around 400Hz, 1600Hz, 2700Hz and 3150Hz with roll-off after 10kHz to a mostly flat response with a slight bump at 1900Hz. Transform: Controls tone and depth."
+ },
+ {
+  "id": 93,
+  "name": "Cym",
+  "description": "Designed to make interesting cymbal sounds. Both Morph and Frequency manipulate frequency sweeps. Frequency: Controls the frequency of the resonances. Morph: Controls the frequency of the resonances. Transform: Controls peak heights."
+ },
+ {
+  "id": 94,
+  "name": "VelMarim",
+  "description": "Designed to make dynamic marimba-like sounds using percussive mallet-like timbres. But good for all sorts of other things as well. Frequency: Controls the spacing of small, closely-spaced peaks. Morph: Controls a wide resonant peak. Transform: Controls peak spacing and low frequency content."
+ },
+ {
+  "id": 95,
+  "name": "EZ Vibez.4",
+  "description": "This is a 2-pole low-pass filter, sweeping from a gentle roll-off at 65Hz to reveal a wide open response. Frequency: Sweeps from lowpass to open response. Morph: Controls cutoff frequency Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 96,
+  "name": "Piano 01",
+  "description": "In the original Morpheus, this cube was designed to make possible a set of Piano presets that sound like they were recorded with the sustain pedal down. However, it provides some amazing morphing peaks that can be used for wildly dynamic effects with any harmonically rich input. Frequency: Peaks move around! Morph: Interacts with Transform to control height and location of peaks. Transform: Interacts with Morph to control height and location of peaks."
+ },
+ {
+  "id": 97,
+  "name": "Piano 2.4",
+  "description": "This cube functions much like a lowpass filter with a low \u2018Q\u2019 setting. Although this filter is designed to work well for adding expressiveness to piano-type sounds, it can also be useful in many instances when a filter with a gentle slope is required. A little distortion also adds some rich character. Frequency: Controls cutoff frequency. Morph: Controls cutoff frequency. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 98,
+  "name": "EZ Rhodez4",
+  "description": "A lowpass filter, with cutoff frequency ranging from about 200Hz to about 5kHz. Add a little distortion for character. Frequency: Controls cutoff frequency. Morph: Controls cutoff frequency. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 99,
+  "name": "MoogVocodr.4",
+  "description": "Designed to simulate the classic vocoder filter response. Add distortion for some extreme effects. Frequency: Sweeps all peaks Morph: Sweeps high peaks. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 100,
+  "name": "MoogVocSwp",
+  "description": "Similar to \u201cMoogVocodr.4\u201d, but brighter. Can create a variety of interesting responses by modulating the values of each axis. Frequency: Sweeps lower peaks. Morph: Sweeps upper peaks Transform: Interacts with Morph to affect height and frequencies of peaks."
+ },
+ {
+  "id": 101,
+  "name": "StrngThing4",
+  "description": "A series of widely spaced notches produces this filter, which can sound somewhat like a phase shifter when Morphed \u2014 especially if the value for Frequency is set fairly high. With Morph and Frequency set high, the curve is essentially flat, with a gentle bump approaching 20 kHz, so this filter might be a good choice for adding a subtle sparkle to some sounds. Frequency: Controls notch frequency and depth of notches. Morph: Controls high-frequency response Transform: In the default filter, Transf"
+ },
+ {
+  "id": 102,
+  "name": "StrSweep.4",
+  "description": "Set Frequency towards max and gently modulate the Morph parameter in its upper ranges for an effect that will accentuate bowing-type sounds in string-like patches. Frequency: Positive modulation increases brightness. Morph: Creates a high frequency resonant peak. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 103,
+  "name": "BassXpress",
+  "description": "This cube provides increased bass, and a sharp notch. Frequency: Controls the frequency of the notch. Morph: Controls the depth of the notch. Transform: Controls the lowpass filter cutoff slope."
+ },
+ {
+  "id": 104,
+  "name": "Qbase.4",
+  "description": "Frequency: Sweeps frequency of peaks. Morph: Transitions from a bright nasal response to an accentuated low-frequency boost. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 105,
+  "name": "AcGtrRs.4",
+  "description": "This filter is designed to emulate some of the resonant characteristics of an acoustic guitar body. With Morph and Frequency set to minimum, the body is extremely resonant, as if a large acoustic guitar were close-miked near the sound hole. Vary the value of Morph to vary the \u2018mic position.\u2019 Frequency controls brightness and \u2018pick position\u2019. Frequency: Controls low and high frequency responses. Morph: Controls filter formant notch depth and position. Transform: In the default filter, Transform C"
+ },
+ {
+  "id": 107,
+  "name": "GtrSkwk",
+  "description": "Originally designed to create the sound of a guitar \u201cstring squeak,\u201d this cube offers interesting effects with high frequency inputs. Frequency: Controls cutoff frequency. Morph: Controls cutoff slope and interacts with the Transform to control the character of the \u201csqueak.\u201d Transform: Controls the transition from no squeak to maximum squeak."
+ },
+ {
+  "id": 108,
+  "name": "GuitXpress",
+  "description": "Increasing the Morph value places a notch in the frequency spectrum, the tuning of which can be controlled via the Frequency and Transform parameters. In addition, increasing the value for Frequency and/or Transform raises the cutoff point of the lowpass filter. This filter can be used to add a measure of expressiveness, particularly to acoustic instrument simulations. Frequency: Tunes the notch and controls filter cutoff point. Morph: Increases the depth of the filter notch. Transform: Boosts h"
+ },
+ {
+  "id": 109,
+  "name": "G MajTrans.4",
+  "description": "This filter features a series of peaks tuned to the intervals found in a major triad. Modulating Morph over its range moves the \u2018chord\u2019 from first to second inversion; the Frequency parameter can be used to tune the chord over a range of several octaves. The effect is perhaps easiest to hear applied to a noise source. Frequency: Shifts the frequency of the chord. Morph: Moves the \u2018chord\u2019 of resonant peaks from 1st to 2nd inversion. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 110,
+  "name": "Tam",
+  "description": "Designed to make interesting, dynamic tambourine-like sounds. Frequency: Controls brightness. Morph: Sweeps resonant peaks. Transform: Controls brightness. C 111 HOTwell.4 This cube works well with bell-like sounds, but also offers interesting multi-peak resonances with interaction between Frequency and Morph values. Frequency: Transitions between a roughly lowpass response to a resonant bandpass to more widely spaced gentle peaks. Morph: Sweeps the frequency range and modifies the position of t"
+ },
+ {
+  "id": 112,
+  "name": "Bell Wah A",
+  "description": "Morphing can pull bell-like sounds out of richly harmonic audio. Transform adds more dissonance. Frequency: Controls the frequency of resonant peaks. Morph: Controls the intensity of the resonant effect. Transform: Controls the relationship of the resonant frequencies to add dissonance."
+ },
+ {
+  "id": 113,
+  "name": "Bell Wah B",
+  "description": "Bell Wah B functions similarly to Bell Wah A above but uses different dissonant partials. Frequency: Controls the frequency of resonant peaks. Morph: Controls the intensity of the resonant effect. Transform: Controls the relationship of the resonant frequencies to add dissonance."
+ },
+ {
+  "id": 114,
+  "name": "0>Bell-",
+  "description": "Another cube that produces bell-like effects. Morphing sweeps resonances downwards away from harmonic values. Frequency: Controls the frequency of resonant peaks. Morph: Controls the intensity of the resonant effect. Transform: Increases the bell-like effect, makes brighter, louder."
+ },
+ {
+  "id": 115,
+  "name": "0>Bell+",
+  "description": "Similar to 0>Bell- above, but Morphing sweeps peaks to a different dissonant relationship. Frequency: Controls the frequency of resonant peaks. Morph: Controls the intensity of the resonant effect. Transform: Increases the bell-like effect, makes brighter, louder."
+ },
+ {
+  "id": 116,
+  "name": "Bel>Crs>Bel",
+  "description": "Another variation of bell-like timbres. Low values of Transform reveal a hint of bell-like quality. Higher Transform values create a more bell-like and dissonant sound. Frequency: Controls the overall frequency of the resonant peaks. Morph: Controls the relationship of the various peaks\u2019 frequencies. Transform: Increases bell-like effect. Makes the sound brighter and louder."
+ },
+ {
+  "id": 117,
+  "name": "Chrs>Flng1",
+  "description": "Morphs between chorus and flanging effects. Frequency: Controls the frequency of peaks and/or notches Morph: Sweeps flat->chorus->flange effects. Transform: Sweeping from min to max boosts highs and attenuates lows. 50 |"
+ },
+ {
+  "id": 118,
+  "name": "Chrs>Flng2",
+  "description": "A variation of Chrs>Flng1 above, but with peaks and notches at different frequencies. Frequency: Controls the frequency of peaks and/or notches Morph: Sweeps flat->chorus->flange effects. Transform: Sweeping from min to max boosts highs and attenuates lows."
+ },
+ {
+  "id": 119,
+  "name": "Ev/OdNtch.4",
+  "description": "Produces notches tuned to the harmonic series. When adjusted to match the frequency of a harmonic input, Morph can transition between placing the notches on the even or odd harmonics. Frequency: Controls the frequency of the notches. Morph: Sweeps from notches around 200, 400, 800Hz, etc with gentle overall lowpass filtering to notches around 300, 600, 1200, 2400Hz, etc. effecting a warm to bright transition. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 120,
+  "name": "Odd/EvnNtch",
+  "description": "Similar to Ev/OdNtch.4 above, but in this case the notches are placed at octave intervals and Transform can control the depth of the notches. Frequency: Controls the overall frequency of the notches . Morph: Shifts the notches between adjacent series of octaves. Transform: Controls the depth of the notches."
+ },
+ {
+  "id": 121,
+  "name": "NotchPeaks.4",
+  "description": "This cube is useful for open formant shaping without too much filtering. It has moderately sharp resonance peaks which tend to overdrive when the Distortion/Transform amount exceeds +2.5V. Moderate amount of distortion adds a nice hollow ringing. Frequency: Controls overall fequency of notches. Morph: Sweeps from nasal to bright; vowel shifts from \u2018oh\u2019 to \u2018ee\u2019. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 122,
+  "name": "LoudBoost.4",
+  "description": "This cube is generally a loudness booster. With full level Eurorack signals, this filter can overdrive quickly and cut drastically, so it\u2019s recommended to insert an attenuator to find the right level before the signal begins clipping. When applying Distortion, settings above the +2.5V level introduce clipping harmonics. Decreasing the filter patch\u2019s gain settings can minimize this effect, but the attenuator is an easier solution. Frequency: Thickens the spectral plot. Morph: Morphs from thin and"
+ },
+ {
+  "id": 123,
+  "name": "Swingshift",
+  "description": "Good for making cat meow sounds! This cube has the characteristics of a lowpass, with enhanced resonance peaks that add formant overtones. This cube is particularly useful if you need something different from a regular lowpass filter sweep. Modulating the Transform control enhances the resonant peak going from dark at -5.0V to a brighter tone at +5.0V setting. Frequency: Modulates from low-frequency cut-off to a series of peaks around 349Hz, 494Hz, 698Hz, 988Hz etc. Morph: Adjusts the cutoff fre"
+ },
+ {
+  "id": 124,
+  "name": "500up.4",
+  "description": "Poles and zeros alternate, spaced at 500Hz intervals. Increasing Morph boosts the peaks slightly, and greatly deepens the notches, producing an effect similar to band-pass filtering. This effect is further accentuated by increasing the Frequency value, as well as tuning the entire filter higher. This cube will also add a significant amount of gain to incoming signals. Either adjusting the internal gain settings or attenuating a Eurorack oscillator signal is highly recommended. Frequency: Control"
+ },
+ {
+  "id": 126,
+  "name": "Odd>Even",
+  "description": "This cube is useful for musical shifting of harmonics. Odd harmonics are replaced by even harmonics and can give an impression of raising one octave. This cube will increase the signal gain with Transform values greater than -2.5V that will quickly lead to overdriving signals especially when the Frequency is tuned to the fundamental of an incoming signal. Adjust the Transform to control the distortion, or attenuate the incoming signal from Eurorack oscillators. Frequency: Shifts the overall freq"
+ },
+ {
+  "id": 127,
+  "name": "0>Shp1",
+  "description": "Imposes a vowel like shape on a pure sound with a fairly drastic cut of higher harmonics through Morph modulation. This can be useful for transitioning between different sounds. Frequency: Controls center frequency of filter. Morph: Modulates from flat to resonant filter peaks. Transform: Controls resonance characteristics."
+ },
+ {
+  "id": 128,
+  "name": "0>Shp2",
+  "description": "Vowel like transform similar to 0>Shp1, but with steeper high frequency cuts. The resonant peaks of this cube do not affect signal gain as much and are less prone to overdrive and distortion. Frequency: Controls center frequency of filter. Morph: Changes from flat to resonant peaks. Transform: Controls brightness and volume."
+ },
+ {
+  "id": 129,
+  "name": "0>Shp3",
+  "description": "Like the previous 0>Shp cubes, this cube also provides a system that transitions from a lowpass to a complex resonant filter. Transform increases the resonance peaks which can lead to distortion when an oscillator source is in the frequency range of the cutoff frequency. Modulating the Morph parameter with a sequencer can create interesting vocoder like effects. Frequency: Controls center frequency of filter. Morph: Transitions from simple lowpass to resonant peaks. Transform: Controls brightnes"
+ },
+ {
+  "id": 130,
+  "name": "Shp>Shp1",
+  "description": "This cube is useful when you want a steep lowpass filter with the ability to transition into a formant filter. Modulating the Transform parameter with an envelope can create vowel shaping tones which are sonically more dynamic than static formants. Frequency: Controls the center frequency of the filter system. Morph: Controls the structure of the resonant peaks. At the -5.0V setting, the series of peaks are set every half octave from 66Hz. Increasing the control spreads the peaks to every octave"
+ },
+ {
+  "id": 131,
+  "name": "Lpeq Vel",
+  "description": "This filtcube is quite a chameleon. It can transform from low pass to a sharp notch to a high pass to a sharp resonant peak high pass filter, depending on the combination of Morph and Transform settings. It\u2019s quite useful for taking a complex oscillator with rich harmonic overtones or noise sources that you want to transform with high pass sweeps. The resonant peak can be quite loud, so it\u2019s recommended that you attenuate the input signals. Frequency: Controls the center frequency of the cube. M"
+ },
+ {
+  "id": 132,
+  "name": "PeakSweep.4",
+  "description": "This is another complex multimode cube. A number of lowpass, highpass and bandpass type effects can be produced. It works particularly well to produce a variety of mute effects. Frequency: Increase for thinner, brighter and more resonant Morph: In combination with Frequency, effects range from lowpass with low \u2018Q\u2019 to highpass with high \u2018Q\u2019. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 133,
+  "name": "PowerSweeps",
+  "description": "Alternating resonant peaks and notches, spaced at approximately half-octave intervals can be used to produce a number of flanging and vocal effects. The direction of Morph depends on the Frequency setting. Frequency: Controls overall frequency; determines polarity of Morph. Morph: Modulating Morph sweeps the peaks/ notches up and/or down. Transform: Affects the spacing and extent of the peaks and notches."
+ },
+ {
+  "id": 134,
+  "name": "TSweep.4",
+  "description": "Increasing the Morph parameter creates a grouping of inharmonically related peaks, giving this filter something of a metallic quality, which can can also produce voice-like sounds. Morph and Frequency offset the cutoff point of the lowpass filter. The resonant peaks moderately increase the gain, making this cube useful with the full level outputs of Eurorack oscillators. Distortion setting above +2.5V will overdrive signals. Frequency: Controls overall frequency. Morph: Controls the position and"
+ },
+ {
+  "id": 135,
+  "name": "SweepHiQ1.4",
+  "description": "This cube is two overlapping resonant filter systems. One system of two peaks is tuned with the Frequency parameter. The group of all six peaks (including the first system) is modulated with the Morph parameter. Attenuating the input and increasing the Distortion parameter renders intense feedback- like ringing. Switching off the Distortion mode can extend the range of the filter peaks. Frequency: Tunes and transforms resonant peaks around 120Hz and 340Hz to narrowly spaced peaks at 1500Hz to 15"
+ },
+ {
+  "id": 136,
+  "name": "V>FcQuad.4",
+  "description": "This cube is a highly resonant lowpass filter with an extremely steep slope. It\u2019s designed for modulation of filter cut-off where 1V/Oct CV from a keyboard or sequencer value is tracked by the Full Range CV input and an envelope modulates the Morph parameter. This creates a keyboard/sequencer tracked lowpass gate. Frequency: Tracks 1V/Oct for use with a sequencer or keyboard. Morph: Adjusts the cutoff frequency. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 137,
+  "name": "Nexus.4",
+  "description": "By default, Transform is assigned to Distortion amount. Setting Xform Controls Dist\u2019n to Off allows you to use the Transform control to extend the passband range, which is useful for more gentle filtering. Frequency: Controls the cutoff frequency of the filter. Frequency also gradually increases the amount of resonance at the cutoff frequency. Morph: Moves from a very steep lowpass to higher frequency, gentler slope response. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 138,
+  "name": "Krators.4",
+  "description": "The series of resonant peaks forms the shape of craters in the frequency response curve. The peak shape signals into \u201cthroaty\u201d or hollow tones. The frequency control is fairly limited in range, which makes it useful for gentle dynamic changes in brightness. Morph control over resonant peaks can range from gentle to exreme, so it\u2019s recommended to attenuate incoming signals. Frequency: Controls brightness. Morph: Provides resonant peaks at low- frequencies, morphing from lower to higher frequency."
+ },
+ {
+  "id": 139,
+  "name": "Harmonix.4",
+  "description": "Use a quantized 1V/Oct sequence to modulate the Frequency at the Full Level input to create melodic overtones of a Sawtooth or a Square Wave drone passing through this cube. Morph changes the response in a musically pleasing manner that sweeps from low to high frequency emphasis. Frequency: Controls the overall frequencies of the peaks and notches. Calibrated for 1V/ Oct tracking at the Full Level input. Morph: Morphs between complex responses sweeping mid frequency resonances while leaving the "
+ },
+ {
+  "id": 140,
+  "name": "GreenWorld.4",
+  "description": "This cube was originally designed for shaping piano-like tones. The Morph parameter will track a 1V/Oct pitch voltage while the Frequency will follow an envelope signal that shapes the dynamics. Frequency: Modulate to create dynamics. Morph: Controls frequency, with 1V/Oct tracking at the Full Level input. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 141,
+  "name": "Comb/Swap.4",
+  "description": "This cube creates a useful series of harmonic resonant peaks that track 1V/Oct tuning. Chain or mult a Keyboard or Sequencer CV into the Full Level input and the source oscillator. Distortion is assigned by default on the Transform control. Disable distortion and use the Transform parameter to modulate the strength of the comb filtering effect. Frequency: Controls brightness and tracks 1V/Oct at the Full Level input. Morph: Controls a series of notches moving from around 160Hz to 10kHz. Transfor"
+ },
+ {
+  "id": 142,
+  "name": "Comb/HP.4",
+  "description": "The combination of a comb filter and a high pass filter provides interesting harmonic highpass sweeps. The Frequency parameter is the primary cutoff control, but when used in conjunction with a sequencer or keyboard, 1V/Oct signals should be patched into the Morph CV input. Envelope signals should modulate the Frequency input. Frequency: Sweeps between a series of low frequency notches to a highpass response. Morph: 1V/Oct Tracking and brightness control. Transform: In the default filter, Transf"
+ },
+ {
+  "id": 143,
+  "name": "Swirly",
+  "description": "This cube consists of a series of notch filters that can follow 1V/Octave sequencer or keyboard CVs. This is useful if you wish the harmonic character to move with the pitch of an oscillator. Routing an LFO to the Morph CV input renders the \u201cSwirly\u201d effect in the patch title as the notch filter separation is modulated. Frequency: Controls Center Frequency and tracks 1V/Octave at the Full Level input. Morph: Modulates the structure of the notches. Transform: Alters the timbre of the effect and ad"
+ },
+ {
+  "id": 144,
+  "name": "Cavatate.4",
+  "description": "Emphasizes frequencies from around 160Hz to 2kHz with a fairly heavy broadband gain boost. Morph alters the response to a highpass filter. Applying heavy distortion results in some interesting clipping artifacts. Frequency: Narrow center frequency control. Morph: Transitions from a wide bandpass to a modified high pass response. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 145,
+  "name": "GentleRez.4",
+  "description": "A series of unevenly spaced resonant peaks converge to a single peak as Morph is increased. Frequency provides a somewhat muted sound (with several gentle bumps in the mid-frequency range), moving toward a flat response. Sweeping this cube produces some very smooth wa-wa effects. Using this filter with the brass-like waves can produce sounds suggestive of French Horns. Frequency: Alters the center frequency of filter peaks. Morph: Controls the frequency of the primary resonant peak as well as ad"
+ },
+ {
+  "id": 146,
+  "name": "Bendup/Swap",
+  "description": "This complex filter features several series of tuned resonant peaks and notches which can seem to bend up or down in pitch depending on the settings for the various Morph, Frequency, and Transform parameters. The overall character is a low pass filter, however peak tunings stay relatively fixed while the Transform parameter opens and closes the upper range of the frequency spectrum. Frequency: Controls the frequencies of the peaks within a limited range. Morph: Low values make upward filter swee"
+ },
+ {
+  "id": 147,
+  "name": "Bendup",
+  "description": "This is similar to cube C146, except that the bend is always in an upward direction (if the Morph axis is swept in a positive direction). 1V/Octave patched to the Full Level input can be used to tune the filter over a nearly 2-octave range. Transform is used to set the cutoff point of the lowpass filter; higher values raise the cutoff point. Frequency: Tunes the filter. Morph: Sweeps harmonic peaks. Transform: Increase for a brighter effect. | 55"
+ },
+ {
+  "id": 148,
+  "name": "Skweezit",
+  "description": "This filter features a complex series of peaks and notches. Varying the Morph parameter varies the \u2018Q\u2019 settings for most of the peaks and notches, while sweeping the frequency and Q of the first pole. This is an interesting substitute for a typical four-pole low pass; the low frequency range tunings are round, but the higher frequency range is more aggressive than a typical resonant low pass. Frequency: Controls the cutoff frequency Morph: Morphs from a gentle lowpass to one high peak at the cut"
+ },
+ {
+  "id": 149,
+  "name": "Lo/High.4",
+  "description": "A scattering of poles and zeros with fairly high resonances produce this very resonant filter. Sweeping the Frequency axis produces quite pronounced wa-wa effects in which multiple resonances are clearly audible. Morph and Frequency can be used to tune the filter, although with Frequency set to max, the filter is essentially flat. Inputting 1V/Oct sequence or keyboard CVs into the Full Level input provides useful musical results. Frequency: Positive values raise pole/zero frequencies and decreas"
+ },
+ {
+  "id": 150,
+  "name": "SubtleMove.4",
+  "description": "Morphing this filter to reverse the polarity of a series of more-or-less evenly spaced peaks and notches produces an effect more subdued than some other types of filter sweeps. Modulating the Morph parameter can be useful when developing responsive plucked-string instrument sounds. A subtle LFO sweep of the Morph parameter renders some interesting harmonic shifting resonance patterns, especially when a generous amount of distortion is applied. Frequency: Controls the frequencies of the peaks/not"
+ },
+ {
+  "id": 151,
+  "name": "BuzzyPad.4",
+  "description": "This filter has the general characteristics of a lowpass filter with slight resonance. It produces a bump around 65Hz and a rolloff above 250Hz at low Morph values. Increasing the Morph value pushes the bump up to about 2kHz, and the cutoff of the lowpass filter up to 20kHz. The effect of sweeping the Morph axis is similar to that of a classic 2-pole lowpass filter with medium resonance. Frequency: Controls the cutoff frequency. Morph: Controls the cutoff frequency. Transform: In the default fil"
+ },
+ {
+  "id": 152,
+  "name": "Bw5kHz+6.4",
+  "description": "This is a gentle lowpass filter with a resonant peak independently controlled by Morph. The sonic result of modulating Morph is quite dramatic. Frequency: Controls the cutoff frequency. Morph: Controls the frequency of the resonant peak. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 153,
+  "name": "Bw65Hz/2k.4",
+  "description": "This filtcubeer is similar to"
+ },
+ {
+  "id": 154,
+  "name": "Bb80Hzbw1.4",
+  "description": "This is a gentle lowpass filter with a subtle lower midrange bump. Morph increases the gain of this bump and modulates its center frequency. Frequency: Controls the frequency of the filter. Morph: Controls the width and frequency of the midrange bump. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 155,
+  "name": "HighsTwist.4",
+  "description": "The frequencies of the poles and zeros in this cube remain constant as Morph or Frequency are modulated, but the \u2018Q\u2019 values are modulated in a variety of ways. The filter is closest to flat (with some emphasis in the high frequency range and a small bump at about 200Hz) when Morph and Frequency are both set to -5V. Modulating either or both of these parameters upward emphasizes more of the highs, with increased values for Frequency, rolling off the lows as well. High distortion settings with thi"
+ },
+ {
+  "id": 156,
+  "name": "Cubix",
+  "description": "Morphing this cube produces a non-resonant lowpass filter sweep, while pushing the Frequency parameter in a positive direction moves the filter towards a more flat response, with a bit of subtle emphasis in the higher frequencies. Frequency: Use to control 1V/Oct response or to set overall filter frequency. Morph: Produces lowpass filter effects. Transform: Controls very subtle response changes."
+ },
+ {
+  "id": 157,
+  "name": "HarmSweep.4",
+  "description": "This cube is similar to the"
+ },
+ {
+  "id": 158,
+  "name": "EvenCuts.4",
+  "description": "This cube produces a series of peaks and notches in the frequency spectrum (based on the even harmonic series), which turn into small bumps when morphed. At lower center frequency values, the low frequency gain can be quite drastic. Disable Distortion to restore the Transform control which allows for extended tuning of the harmonic series. Frequency: Controls the frequency of the notches/peaks. Morph: Controls the depth of the notches/ height of the peaks. Transform: In the default filter, Trans"
+ },
+ {
+  "id": 159,
+  "name": "OddCuts.4",
+  "description": "Like"
+ },
+ {
+  "id": 160,
+  "name": "PWMtrans.4",
+  "description": "This cube produces a series of harmonically related notches, which become peaks as the Morph value is increased \u2014 the effect can be similar to pulse width modulation when fed with a simple sawtooth or square wave. Frequency: Controls the frequencies of the peaks/notches. Morph: Controls depth of the peaks/notches. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 161,
+  "name": "HiEndQ.4",
+  "description": "This filter behaves much like a resonant low- pass filter that becomes more resonant as the cutoff frequency is raised. Frequency: Controls the cutoff frequency and high-end resonance. Morph: Controls the cutoff frequency. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 162,
+  "name": "BroadRes.4",
+  "description": "Sweep this cube for for resonant effects. Can be used for a \u201cwaterdrop\u201d effect on percussion. The behavior of the Frequency control renders better results with an inverted modulation source that decreases the value from a high initial Frequency setting. Frequency: Sweeps from flat (at max value) to a wide series of peaks and notches. Morph: Turns peaks into notches. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 163,
+  "name": "ResoHose.4",
+  "description": "This cube introduces a series of peaks spaced at octave intervals, in the range of 95Hz to 1.5kHz, and a single notch at 47Hz. This can be useful in simulating resonant ringing overtones. Increasing the Morph raises the peaks and lowers the notch. Frequency: Controls the frequency of the resonant peaks and notch and transforms their shapes. Morph: Controls the height of the peaks and depth of the notch. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 164,
+  "name": "HeeghCube",
+  "description": "This cube produces an extremely subtle series of peaks above 4kHz. Morph increases the gain and bandwidth of the peaks, slightly, and Frequency can be used to subtly offset the response of the peaks. Increasing the value of Transform increases the gain of the peaks without affecting bandwidth. Because this is such a subtle filter and affects very high frequencies, it can be useful for creating shifts to drum and percussion transients, especially with a random voltage source modulating the Freque"
+ },
+ {
+  "id": 165,
+  "name": "NoizCube",
+  "description": "This filter introduces some subtle peaks into the high frequency range, along with a single peak which can be swept. The effect is very subtle, except with complex oscillator sources or noise. Routing a 1V/Octave control voltage into the Full Level input allows for interesting key tracking results that add a little emphasis to otherwise static waveforms. Use the Transform control to tune the filter to taste. Frequency: Sets lower boundary range of the swept resonant peak. Morph: Sweeps a single "
+ },
+ {
+  "id": 166,
+  "name": "VeloctyTilt",
+  "description": "For most of the frequency range, this is a simple non-resonant lowpass filter. As the Frequency value increases, the filter becomes more resonant based on the values of the Morph and Transform Controls. While this cube is originally designed to work with MIDI velocity messages to create accent dynamics, if you have a sequencer that sends accent dynamics voltages (like an Audio Damage ADM06 Sequencer), the accent signals can modulate the Frequency CV to simulate velocity scaled filtering and dyna"
+ },
+ {
+  "id": 167,
+  "name": "SynthWow4,",
+  "description": "but in addition to sweeping the bandwidth of a single peak along the Morph and Frequency axes, the peak itself is swept. The range of the frequency sweep is one octave along either axis, although much greater ranges of change are achieved when both the Morph and Frequency values are combined. Effects range from gentle, analog-style filter sweeps (with the Frequency parameter set low), to more \u2018digital\u2019 sounding effects in which high-pitched, whistling harmonics are produced. Frequency: Controls "
+ },
+ {
+  "id": 168,
+  "name": "CombSweep.4",
+  "description": "This is a comb filter effect. Morph alters the spacing of the three upper and three lower resonant peak groups. Increasing the Distortion imparts interesting feedback-type effects. The comb filtering can have nice musical emphasis on harmonics. Modulating the Full Level input with a 1V/Oct control voltage that also controls oscillator pitch renders interesting overtones. Frequency: Controls the frequency of the resonant peaks. Morph: Adjusts the spacing of the resonant peaks. Transform: In the d"
+ },
+ {
+  "id": 169,
+  "name": "Diffuser.4",
+  "description": "Morphing this filter upward sweeps a resonant peak up in frequency and increases low frequency response. The Frequency parameter can be used to tune the peak. Distortion will overdrive full level signals when the Transform setting is above +2.5V and Morph is around 0V (resonant bandpass range); either attenuate the input signal or decrease the internal gain and distortion settings to compensate. Frequency: Very subtle and limited modulation of frequency response when the filter response is in lo"
+ },
+ {
+  "id": 170,
+  "name": "MdlySweep4",
+  "description": "This is basically a lowpass filter with two slight resonance peaks. The secondary peak doesn\u2019t become noticeable until the Frequency value is greater than -2V. Morphing this filter alters the response of the resonant peaks and shifts their frequency. Frequency: Controls cutoff frequency and resonant peak separation. Morph: Shifts frequency response range. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 171,
+  "name": "StrongShimr",
+  "description": "This cube produces several deep notches in the frequency spectrum, which can be tuned or swept according to the settings and modulations of the Morph, Frequency, and Transform parameters. It has certain multi- mode filter characteristics but with an extra resonant peak that can be manipulated using Transform. Routing slow LFOs or smoothed random voltages to all three parameters to filter a basic oscillator waveform renders interesting animated drones. Frequency: Raising this value raises the fre"
+ },
+ {
+  "id": 172,
+  "name": "Acc.Vel-1",
+  "description": "Modulate frequency to create velocity response effects. Set Morph to establish starting point. NOTE: This cube will distort very easily with full-level signals. Patch the input through an attenuator, VCA, or mixer to be able to set an appropriate level without distortion. Frequency: Controls the cutoff frequency and slope. Morph: As value is increased, increases high-frequency response and decreases low- frequency response Transform: Controls volume and high- frequency response."
+ },
+ {
+  "id": 173,
+  "name": "Acc.Vel-2",
+  "description": "This is a variation of \u201cAcc.Vel-1\u201d above, except somewhat brighter on bottom and mellower on top. NOTE: This cube will distort very easily with full-level signals. Patch the input through an attenuator, VCA, or mixer to be able to set an appropriate level without distortion. Frequency: With Morph at \u201c0,\u201d controls the cutoff frequency and slope. Morph: As value is increased, increases high-frequency response and decreases low- frequency response Transform: Controls volume and low- frequency respo"
+ },
+ {
+  "id": 174,
+  "name": "Vel2-Wind",
+  "description": "Another velocity response cube. Good for wind instrument-type patches, as more Morph gives a \u201chollower\u201d soft sound. Modulate frequency to create the velocity response effect. Set Morph to establish the starting point. Frequency: With Morph at \u201c0,\u201d controls the cutoff frequency and resonant peaks. Morph: As value is increased, increases high-frequency peaks and decreases low- frequency response Transform: Controls volume and high- frequency response."
+ },
+ {
+  "id": 175,
+  "name": "Harmo",
+  "description": "In this cube, resonant peaks are spaced in a manner that renders interesting harmonics. Routing a quantized 1V/Oct signal to the Full Level input to control the main tuning scales the output resonance in a musical manner. Routing envelopes to the Morph and Transform CVs can create interesting tuned percussion tones. Frequency: Controls the overall frequency. Morph: Changes from comb-filter with lowpass response to smooth lowpass. Transform: Controls the intensity of resonant peaks along with hig"
+ },
+ {
+  "id": 176,
+  "name": "Start>EndA",
+  "description": "This filter is similar to"
+ },
+ {
+  "id": 177,
+  "name": "Start>EndB",
+  "description": "This cube is similar to"
+ },
+ {
+  "id": 178,
+  "name": "MovingPick1",
+  "description": "This filter is designed to simulate teh frequency response of acoustic and electric guitars when plucking closer or further from the bridge of the guitar. Use a pulse wave as a source and route a transient curve from function generator (like a Control Forge) or envelope generator to modulate the Morph CV. Frequency: Controls the overall frequency Morph: Controls the \u201cpick position.\u201d Transform: Controls volume and high end."
+ },
+ {
+  "id": 179,
+  "name": "MovingPick2",
+  "description": "This is variation on"
+ },
+ {
+  "id": 180,
+  "name": "Mph+Trns1",
+  "description": "This cube is primarily a formant filter that can simulate vocal vowel shapes. The algorithm has a fairly fixed response range and the Frequency control only applies subtle changes, but adjusting the Morph and Transform parameters will fine tune the formant response. The resonant peaks do apply quite a bit of gain to incoming signals. Either attenuate the incoming signals or adjust the internal gain settings to find the right balance to prevent overdrive effects. Frequency: Modulates the formant "
+ },
+ {
+  "id": 181,
+  "name": "0>Odds",
+  "description": "Morphs from near flat to peaks at odd harmonics. Transform morphs from lowpass to flatter with peaks. Frequency: Controls peaks. Morph: Controls frequencies of peaks. Transform: Controls brightness and volume."
+ },
+ {
+  "id": 182,
+  "name": "Comb Voices",
+  "description": "Center frequencies of the poles and zeros in this filter can move in opposite directions as the filter is modulated along any of its axes, producing an amazing variety of possible curves. Sweeping the Morph axis produces some lovely phase-shifter/flanger- type effects, especially with the value for Transform set fairly high. Frequency: Controls the overall frequencies of the notches. Morph: Controls the spacing of the notches. Use this to animate the comb-filtering effect. Transform: Controls hi"
+ },
+ {
+  "id": 183,
+  "name": "Odd-Ev Hrm",
+  "description": "A series of peaks and notches based on the odd and even harmonic series. Sweeping the Morph axis produces some lovely comb filtering effects, which can be either subtle or dramatic depending on other settings (especially that of Transform). Frequency: Controls the overall frequencies of the peaks and notches. Morph: Use this to sweep the peaks/notches. Transform: Controls resonance of individual peaks."
+ },
+ {
+  "id": 184,
+  "name": "OddHrm+rez",
+  "description": "This cube, based on the odd harmonic series, provides a number of comb-filtering effects. Use Morph to control filter \u2018Q\u2019, and Frequency and Transform to tune the filter. Frequency: Controls the overall frequencies of peaks. Morph: Increasing this parameter pushes the filter towards a flat curve. Transform: Controls resonance of individual peaks. Higher values add a high-frequency bump."
+ },
+ {
+  "id": 185,
+  "name": "EvnHrm+rez",
+  "description": "This cube is nearly identical to the OddHrm+rez filter above, but it\u2019s based on the even harmonic series. The overall effect is quite similar, though somewhat less \u2018hollow\u2019 sound at certain settings. Frequency: Controls the overall frequencies of peaks. Morph: Increasing this parameter pushes the filter towards a flat curve. Transform: Controls resonance of individual peaks. Higher values add a high-frequency bump."
+ },
+ {
+  "id": 186,
+  "name": "MellowPeaks",
+  "description": "This cube provides two or three mildly resonant peaks which can be swept through the frequency spectrum in a number of ways, depending on the settings of the various parameters. With lower settings of Frequency, the filter takes on a distinctly vocal quality on most source material. Frequency: Positive values move the poles upward in frequency. Morph: Positive values generally move the poles upward in frequency. Transform: Transitions between a lowpass filter response and a flatter response with"
+ },
+ {
+  "id": 187,
+  "name": "AHmBnd.4",
+  "description": "Morph will sweep a cluster of highly resonant peaks, producing a pitch-bend like effect. The effect is generally most pronounced with Frequency set to a fairly low value. Frequency: Controls the overall frequencies of the peaks. Morph: Sweeping produces \u2018pitch-bend\u2019 effect. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 188,
+  "name": "Vintage",
+  "description": "Provides basic lowpass filtering, plus a series of notches which can be swept via morphing. The most dramatic resonant sweeps are produced with Frequency set to minimum and Transform set to maximum, producing the classic analog filter sweep sound. Frequency: Controls the presence of the notches. Morph: Controls the cutoff frequency of the lowpass filtering. Transform: Controls the cutoff frequency of the lowpass filtering."
+ },
+ {
+  "id": 189,
+  "name": "MildQPole",
+  "description": "Frequency: Controls the cutoff frequency of the lowpass filtering. Morph: Provides subtle control of the cutoff frequency. Transform: Controls the filter slope and amount of resonance. 62 |"
+ },
+ {
+  "id": 190,
+  "name": "Bonk>CO",
+  "description": "A series of highly resonant peaks alternating with notches are spaced at intervals of about an octave. The Morph parameter is used to control \u2018Q\u2019 \u2014 modulating the Morph upward causes the curve to flatten out. Frequency can be used to shift the peaks/notches; higher values move the peaks/notches into higher frequency ranges. Transform also tunes the filter, but higher values cause the notches to move down in frequency, slightly. The overall effect of the filter can be very vocal, depending on the"
+ },
+ {
+  "id": 191,
+  "name": "Speaker",
+  "description": "Groups of unevenly spaced bumps and dips in the frequency spectrum are used to simulate a number of speaker cabinet responses. Use Morph, Frequency, and Transform to vary the tuning and depth of the bumps and dips to simulate different speaker cabinet types. All Axes: Vary center frequency and amount of boost/cut for the various filter bands."
+ },
+ {
+  "id": 192,
+  "name": "Expander",
+  "description": "Frequency and Transform provide a range of fairly broad-band boosts and cuts at various frequencies, with higher values generally providing thinner, brighter sounds. These can be used to add a measure of expressiveness to melodic source material \u2014 route \u2018pitch CV to Frequency, for example, and whatever CV is providing \u201cvelocity\u201d control Transform. Increasing the value for Morph has the effect of flattening the curve, providing you with a filter depth control. Frequency: Morphs between various co"
+ },
+ {
+  "id": 193,
+  "name": "Separator",
+  "description": "This cube features three inharmonically related resonant peaks, which can be swept via the Morph parameter, producing a metallic set of overtones. Applied to noise, this can sound like whistling wind; applied to pitched sounds, it can produce anything from a hollow, metallic resonances to accentuated high-frequency attack transients. Frequency: Controls the overall frequencies of the peaks. Morph: Adjusts the spacing of the peaks. Transform: Controls high frequency response."
+ },
+ {
+  "id": 194,
+  "name": "MildPolSwap",
+  "description": "Basically, a variable cut-off low pass filter. Frequency: Controls cutoff frequency and slope. Morph: Subtly adjusts cutoff frequency. Transform: Increases cutoff frequency and steepens slope. Distortions Jump Back! Transform is used to control the distortion filters."
+ },
+ {
+  "id": 195,
+  "name": "PoleCross.4",
+  "description": "Crossing peaks produces certain \u201chot\u201d or \u201csweet\u201d spots where frequencies correlate. Adjust distortion with Transform. Frequency: Controls the overall frequencies of the peaks. Morph: Crosses filter peaks to create hot (distortion) or sweet spots. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 196,
+  "name": "ApDistB6.4",
+  "description": "Mad clipping. Reducing the Gain parameter in the filter will not only reduce the volume level, it will also reduce the amount of distortion effect. Frequency: Controls the clipped frequencies. Morph: Also controls the clipped frequencies. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 197,
+  "name": "Dave\u2019sRave",
+  "description": "A whole bunch of closely spaced peaks and notches. Frequency: Controls the overall frequencies of the peaks and notches. Morph: Controls the locations of the peaks and notches. Transform: Controls the heights and depths of the peaks and notches. Vari-Pole Filters This group of lowpass filters all have a variable slope. Variable slope filters are very rare in synthesizers (except, of course, in the Rossum Evolution Variable Character Ladder Filter module), but the effect of the variable slope occ"
+ },
+ {
+  "id": 198,
+  "name": "Poles 1-7",
+  "description": "Frequency: Controls cutoff frequency; range is from approx 20Hz-20kHz. Morph: Low values produce 1 pole filter; high values produce 7 pole version. Transform: Higher values increase resonance."
+ },
+ {
+  "id": 199,
+  "name": "2 Poles",
+  "description": "A two pole lowpass filter with independent control of each pole\u2019s resonance. Frequency: Controls cutoff frequency; range is from approx 20Hz-20kHz. Morph: Higher values increase resonance for a single pole. Transform: Higher values increase resonance for both poles."
+ },
+ {
+  "id": 200,
+  "name": "4 Poles A",
+  "description": "A useful filter for bass sounds. Set Morph and Frequency to +5V and Transform to -5V for flat response. Frequency: Controls cutoff frequency; range is from approx 20Hz - 320Hz. Morph: Controls cutoff frequency; range is from approx 320Hz-20kHz. Transform: Higher values increase resonance."
+ },
+ {
+  "id": 201,
+  "name": "4 Poles B",
+  "description": "Another 4 pole lowpass filter. Frequency: Controls cutoff frequency; range is from approx 20Hz-20kHz. Morph: Higher values flatten response. Transform: Controls slope. Higher values provide mild resonance. 64 |"
+ },
+ {
+  "id": 202,
+  "name": "4 Poles C",
+  "description": "And another 4 pole lowpass filter with variable slope. Frequency: Controls cutoff frequency; range is from approx 20Hz-20kHz. Morph: Controls filter slope. Transform: Higher values increase resonance."
+ },
+ {
+  "id": 203,
+  "name": "6 Poles",
+  "description": "A 6 pole lowpass filter with variable slope. Frequency: Controls cutoff frequency; range is from approx 20Hz-20kHz. Morph: Higher values produce a flatter curve. Transform: Higher values increase filter slope and resonance."
+ },
+ {
+  "id": 204,
+  "name": "Multipole",
+  "description": "Frequency: Controls cutoff frequency in higher ranges. Morph: Controls cutoff frequency in lower ranges. Transform: Higher values increase slope and resonance and re-order some poles. At nax, peaks tuned to octaves can be swept along the Morph axis. Tracking Filters These filters range from lowpass to resonant peaking filters. The Frequency parameter allows the filter to \u201ctrack\u201d specific harmonics as you play up and down the keyboard (if you\u2019re using a keyboard) or following a sequencer\u2019s CV pat"
+ },
+ {
+  "id": 205,
+  "name": "Tracker",
+  "description": "Simple lowpass filter. Frequency: Controls cutoff frequency; range is from approx 20Hz-20kHz. Morph: Higher values increase resonance. Transform: Higher values increase multi- band resonance."
+ },
+ {
+  "id": 206,
+  "name": "Tracker 2",
+  "description": "A highly resonant lowpass filter. Transform controls the amount of resonance. Frequency: Controls the frequency of the resonant peak. Morph: Controls the frequency of the resonant peak. Transform: Higher values increase the gain of the peak."
+ },
+ {
+  "id": 207,
+  "name": "Tracker 3",
+  "description": "Basically a lowpass filter with peaks tuned to a suspended chord that can be swept along the Morph axis. Frequency: Controls lowpass slope. Morph: Tunes the frequency of the \u201cchord.\u201d For most accurate tracking, set CV attenuverter to max. Transform: Higher values produce a flatter response."
+ },
+ {
+  "id": 208,
+  "name": "Tracker5ths",
+  "description": "Like Tracker 3 above, but with the peaks tuned to 5ths. Frequency: Controls the overall frequencies of the peaks. Morph: Increases filter peak gains. Transform: Transitions from lowpass to flat. | 65"
+ },
+ {
+  "id": 209,
+  "name": "InFifths.4",
+  "description": "Similar to C 208 Tracker5ths, but with Transform set to add some tasty distortion. Frequency: Controls the overall frequencies of the peaks. Morph: Starts with the fundamental, and the 5th and their multiples from 65Hz through 16.64kHz attenuated by 18dB. Results in the fundamental, 5th and their multiples from 65Hz through 16.64kHz boosted by 18dB. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 210,
+  "name": "HarmTracker",
+  "description": "Lots of harmonically related peaks in this one. Frequency: Controls the overall frequencies of the peaks. Morph: Increases the gain of the peaks. Transform: Shifts balance from lower peaks to upper. Parametric Tracking Filters These filters are set up with various combinations of peaks and notches. The Frequency parameter controls functions such as bandwidth, amount and cutoff frequency."
+ },
+ {
+  "id": 211,
+  "name": "1BndPrmtrcA",
+  "description": "Frequency: Controls frequency; range is from approx 20Hz-20kHz. Morph: Higher values increase bandwidth. Transform: Values below 0 produce decrease lows; above produces a peak. Set Transform to 0 for closest to flat response."
+ },
+ {
+  "id": 212,
+  "name": "1BndPrmtrcB",
+  "description": "Similar to"
+ },
+ {
+  "id": 213,
+  "name": "1BndPrmtrcC",
+  "description": "Identical to"
+ },
+ {
+  "id": 214,
+  "name": "1BndPrmtrcD",
+  "description": "Very similar to"
+ },
+ {
+  "id": 215,
+  "name": "MultiMetricA",
+  "description": "A series of adjustable peaks and notches tuned to octaves. Frequency: Controls the overall frequencies of the peaks and notches; range is from approx 40Hz-20kHz. Morph: Values below 0 produce notches, above produce peaks. Transform: Higher values increase bandwidth."
+ },
+ {
+  "id": 216,
+  "name": "MultiMetricB",
+  "description": "A series of adjustable peaks and notches tuned to even harmonics. Frequency: Controls the overall frequencies of the peaks and notches; range is from approx 80Hz-18kHz. Morph: Values below 0 produce notches, above produce peaks. Transform: Higher values increase bandwidth."
+ },
+ {
+  "id": 217,
+  "name": "MultiMetricC",
+  "description": "A series of adjustable peaks and notches tuned to odd harmonics. Frequency: Controls the overall frequencies of the peaks and notches; range is from approx 80Hz-18kHz. Morph: Values below 0 produce notches, above produce peaks. Transform: Higher values increase bandwidth."
+ },
+ {
+  "id": 218,
+  "name": "Omni Metric",
+  "description": "Use frequency to control whether filter produces peaks or notches (higher values produce peaks), and use Morph to tune them (higher values move them lower in frequency). Increasing Transform flattens response. Frequency: Transitions from notches to peaks. Morph: Controls the overall frequencies of the peaks or notches Transform: Controls overall peak/notch height/depth. Harmonic Shifters These filters are are designed to alter the normal harmonic relationships of instruments by radically shiftin"
+ },
+ {
+  "id": 219,
+  "name": "HrmncPeaks",
+  "description": "Harmonics can be tuned using Frequency; Morph simply controls which harmonics produce peaks. Note that if Transform and Frequency are both set to -5V, little sound will be heard. Frequency: Controls the overall frequencies of the harmonics. Morph: At -5V, even harmonics produce peaks. At =5V, odd harmonics produce peaks. Transform: Controls lowpass filtering; higher values raise cutoff frequency."
+ },
+ {
+  "id": 220,
+  "name": "HrmncPeaks2",
+  "description": "Similar to C119, but with harmonics at different frequencies Frequency: Controls the overall frequencies of the harmonics. Morph: At -5V, even harmonics produce peaks. At =5V, odd harmonics produce peaks. Transform: Controls lowpass filtering; higher values raise cutoff frequency."
+ },
+ {
+  "id": 221,
+  "name": "InHarMetric",
+  "description": "The peaks and notches in this filter are spaced evenly, though not necessarily harmonically, through approximately a four- octave range. Frequency: Controls the overall frequencies of the harmonics. Morph: Controls the shape and width of the peaks or notches. Transform: Controls polarity; low values produce peaks, high values produce notches. | 67"
+ },
+ {
+  "id": 222,
+  "name": "HarmShifter",
+  "description": "A combination of peaks and notches. Frequency: Controls the overall frequencies of the peaks and notches. Morph: Shifts emphasis from lower harmonics to the higher harmonics. Transform: Controls the shape and width of the peaks and notches."
+ },
+ {
+  "id": 223,
+  "name": "HarmShiftr2",
+  "description": "Frequency: Controls the overall frequencies of the harmonics. Morph: Shifts emphasis from lower harmonics to higher. Transform: At -5V, harmonics produce peaks. At +5V, harmonics produce notches. 0V produces a flat response."
+ },
+ {
+  "id": 224,
+  "name": "HarmShiftr3",
+  "description": "Harmonically related filter bands can be moved around by adjusting Frequency. Higher values for Transform increase overall filter effect. Frequency: Controls the overall frequencies of the harmonics. Higher values slightly reduce lows. Morph: Controls the frequencies of the harmonics. Transform: Increases depth of peaks and notches."
+ },
+ {
+  "id": 225,
+  "name": "Phaser",
+  "description": "Frequency: Controls polarity of the peaks and notches; below 0V yields notches, above, peaks. Morph: Spreads all the harmonics from a single frequency to multiple frequencies. Transform: Controls filter bandwidth; higher values are wider bands."
+ },
+ {
+  "id": 226,
+  "name": "HrmncPhaser",
+  "description": "Morph and Frequency interact to provide a wide variety of phasing effects. Frequency: Controls the overall frequencies of the harmonics. Morph: Controls the spread of the harmonics. Transform: Notches if set below 0V, peaks if above."
+ },
+ {
+  "id": 227,
+  "name": "HrmncPhsr2",
+  "description": "Peaks and notches cross one another to produce a variety of dramatic phase shifter- like sweeps. Frequency: Higher values increase depth of peaks and notches (at -5V, filter is flat). Morph: Increasing values move peaks lower, notches higher. Transform: Adjusts individual peaks and notches and overall bandwidth."
+ },
+ {
+  "id": 228,
+  "name": "Wide Bands",
+  "description": "With Transform set low, Morphing produces a series of widely spaced notches over several octaves. Higher Transform values result in widely spaced peaks. Frequency: Controls the overall frequencies of the harmonics. Morph: Increases depth of notches and peaks. Transform: Transitions between notches and peaks."
+ },
+ {
+  "id": 229,
+  "name": "New Boost",
+  "description": "An attempt to make a more versatile version of the popular"
+ },
+ {
+  "id": 230,
+  "name": "Vowel Space2",
+  "description": "Imparts a different vowel color to the source at each corner of the cube. No simple shifting of formant frequencies is accomplished by any of the three filter controls. When Frequency and Transform are at -5V, Morph moves from \u2018oo\u2019 to \u2018oh\u2019, while when at +5V, Morph moves from \u2018ee\u2019 to \u2018ae.\u2019 Try all the combinations. Frequency: Shifts from \u2018oo\u2019 \u2018er\u2019, \u2018ah\u2019, and \u2018oh\u2019 to \u2018uh\u2019, \u2018ee\u2019, \u2018ae\u2019, and \u2018eh\u2019, respectively. Morph: Sweeps from \u2018oo\u2019, \u2018er\u2019, \u2018ee\u2019, and \u2018uh\u2019 to \u2018oh\u2019, \u2018ah\u2019, \u2018ae\u2019, and \u2018eh\u2019, respectively"
+ },
+ {
+  "id": 231,
+  "name": "Vowel Space3",
+  "description": "Imparts one of four vowel colors to the source when Transform is at its maximum. Morph moves from \u2018oo\u2019 to \u2018ee\u2019 when Frequency is at its maximum, and moves from \u2018ah\u2019 to \u2018ae\u2019 when Frequency is at its minimum. As the level of Transform is reduced, all the vowel colors regress towards the neutral \u201cschwa\u201d sound. Controlling Transform with a CV gives a natural vocal expression corresponding to increasing \u201cstress.\u201d Frequency: Shifts from \u2018oo\u2019 and \u2018ah\u2019, to \u2018ee\u2019, and \u2018ae\u2019 respectively. Morph: Sweeps from"
+ },
+ {
+  "id": 232,
+  "name": "Oh Shaper",
+  "description": "Based on the formants for the vowel \u2018O\u2019. Sweep Frequency for some interesting vocalizations. Frequency: Controls the overall frequencies of the harmonics. Sweep for vocalizations. Morph: Higher values increase bandwidth of peaks and notches. Transform: Low values produce notches, high values produce peaks."
+ },
+ {
+  "id": 233,
+  "name": "Ah Shaper",
+  "description": "Like C032, but based on the formants for the vowel \u2018ah\u2019. Sweep Frequency for some interesting vocalizations. Frequency: Controls the overall frequencies of the harmonics. Sweep for vocalizations. Morph: Higher values increase bandwidth of peaks and notches. Transform: Low values produce notches, high values produce small peaks."
+ },
+ {
+  "id": 234,
+  "name": "Oo Shaper",
+  "description": "Based on the formants for the vowel \u2018Oo.\u2019 Sweep Frequency for some interesting vocalizations. Frequency: Controls the overall frequencies of the harmonics. Sweep for vocalizations. Morph: Higher values increase bandwidth of peaks and notches. Transform: Low values produce notches, high values produce small peaks. Instrument Formant Filters These filters are to simulate the resonant characteristics of various types of instruments. The Frequency parameter sometimes allows the filter to track speci"
+ },
+ {
+  "id": 235,
+  "name": "FrmntShaper",
+  "description": "Filter bands are based on formants. Frequency: Controls gain and frequency of peaks and notches. Morph: Controls bandwidth of peaks and notches. Transform: Controls high frequency response."
+ },
+ {
+  "id": 236,
+  "name": "Piano LP.4",
+  "description": "Designed to work a little better than a simple low pass for enhancing piano-like velocity response. Frequency: Controls the overall frequencies of the peaks. Tracks a 1V/Oct CV at the Full Level input. Morph: Controls the height and width of the subtle peaks at resonant frequencies. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 237,
+  "name": "PianoSndBrd",
+  "description": "Originally designed for use with a Grand Piano multisample, the filters in this cube create a variety of resonances designed to imitate the resonances of both the piano soundboard, the surrounding wood, and various mic placements. Provides fat, bass-heavy resonances, somewhat like miking a piano from the bottom. Frequency: Adjusts the overall frequencies of the resonances. Morph and Transform: Control the frequencies and gain on various resonances. Max. Morph, Min. Transform: Pronounced midrange"
+ },
+ {
+  "id": 238,
+  "name": "Strike Cube",
+  "description": "Designed for use with an Envelope or Control Forge patched to Morph to give struck or plucked tones, but there are complex interactions between all three parameters. Frequency: Controls overall lowpass cutoff frequency Morph: Controls resonant bumps hear the cutoff frequency and, at max, some increase in bass response. Transform: Controls cutoff frequency, adding a high resonant peak at max."
+ },
+ {
+  "id": 239,
+  "name": "Clav Curves",
+  "description": "A series of resonances designed to produce a clavinet-type sound. Frequency: Controls the overall frequencies and heights/depths of the peaks and notches. Tracks a 1V/Oct CV at the Full Level input. Morph: Controls the frequencies and gains of the individual peaks and notches. Transform: Higher values produce brighter sounds."
+ },
+ {
+  "id": 240,
+  "name": "Symphony",
+  "description": "A flanging cube which also gives the option of simple CV control of brightness and volume. Frequency: Controls the cutoff frequency for lowpass filtering or the frequency region for flanging peaks and notches. Morph: At -5V, sets cube to straight lowpass filtering. At +5V, sets cube for maximum flanging. Transform: Controls overall volume control along with control of high frequencies. 70 |"
+ },
+ {
+  "id": 241,
+  "name": "String Cube",
+  "description": "Controls high frequency response through CV to Transform, but with the added possibility of emphasising the 2nd harmonic (first overtone) with Morph parameter, \u00e0 la strings. Frequency: Maintains harmonic filter tracking with pitch CV patched to Full Level input. Increasing the value opens up the filter to a flat response with a bump at a high frequency range. Morph: Controls timbre change; picks out first overtone. -5V value gives a low pass filter with a bump at ~500Hz, increasing the value mov"
+ },
+ {
+  "id": 242,
+  "name": "Swell Cube",
+  "description": "An good cube for making swell-like pads controlled by CV. Ideal for string or or choirs- like sounds. Morph controls a balanced increase in brightness and volume and Transform offers a choice of timbres (vaguely aah to ooh). Frequency: Maintains harmonic filter tracking with pitch CV patched to Full Level input. -5V value gives a nice low pass with a bump at around 2kHz; Morph: Controls swell effect. A mixture of brightness and volume. Transform: Controls timbre choice. (aah <> oohish on choir-l"
+ },
+ {
+  "id": 243,
+  "name": "Quartet.4",
+  "description": "A variable slope lowpass filter, frequency allows control of resonance steepness around 2kHz. Frequency: Controls filter slope and resonance. Morph: Widens bump around 1.6kHz while reducing steepness of lowpass slope. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 244,
+  "name": "Mellotron.4",
+  "description": "Originally designed for use with strings, voices, flutes, and synth pads, this filter attenuates certain lows and low mids while boosting upper midrange frequencies to give that unnatural, tweaked Mellotron sound. Frequency: Controls resonance frequency and steepness at higher frequency ranges after 2kHz. Morph: Controls frequencies of peaks and notches. +5V results in flat response. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 245,
+  "name": "Cello",
+  "description": "Designed for bowed string-type sounds. Try using CV to drive Morph and/or Transform axes. Frequency: Maintains harmonic filter tracking with pitch CV patched to Full Level input. Frequency value of +5V opens up the filter to an almost flat response with a dip at around 10kHz. Morph: Lower values result in peaks around 100Hz, increasing the value moves the peaks closer to 8kHz. Transform: Increase for additional brightness."
+ },
+ {
+  "id": 246,
+  "name": "Key Squeak",
+  "description": "A gentle, warm-toned low pass. Frequency: At low values, contains a fairly mild low pass slope with slight peaks around 400, 1200, 4000, 5200, 8800Hz opening to a flat response with slight peaks at 360, 1280, 4400, 5120 and 8620Hz. Morph: Controls the cut-off frequency, making it possible to dial down the filter to almost nothing; Transform: Higher values reduce filtering effect. | 71"
+ },
+ {
+  "id": 247,
+  "name": "Pluck.4",
+  "description": "Designed for plucked string-type sounds. Frequency: Low Pass with steep slope and two bumps at around 120Hz and600Hz which opens to a flat response at higher values. Morph: Controls the resonance frequency; Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 248,
+  "name": "Pick It",
+  "description": "Designed for acoustic guitar-like sounds. Assign a CV to Morph to control pick placement. Assign a CV to Transform for dynamics, and a pitch CV patched to Full Level Frequency input to maintain harmonic filter tracking. Frequency: Maintains harmonic filter tracking with pitch CV patched to Full Level input. Lower Frequency values with higher Morph values result in a metallic bell-like effect. Morph: Controls resonance. Transform: Controls lowpass slope. Higher values open the filter and provide "
+ },
+ {
+  "id": 249,
+  "name": "El Pick It",
+  "description": "Like C248, but designed for electric guitar- type sounds. Assign a CV to Morph to control pick placement. Assign a CV to Transform for dynamics, and a pitch CV patched to Full Level Frequency input to maintain harmonic filter tracking. Frequency: Maintains harmonic filter tracking with pitch CV patched to Full Level input. Higher values open up the filter from a lowpass to a more of a flat response. Morph: Controls resonance. Transform: Controls lowpass slope. Higher values open the filter and p"
+ },
+ {
+  "id": 250,
+  "name": "ElGuit Cube",
+  "description": "Designed like the Breath Control cubes to give a complete cutoff of sound in the base position. Transform gives a bright response for loud playing. Ideal for constructing brass envelopes with Control Forge. Frequency: Moves between no sound to a flat response. Increasing the value opens up the filter from a very gentle low pass with a very low cutoff frequency to an almost flat response. Morph: Adjusts cutoff frequency. Transform: Controls filter slope. Provides a mild resonant bump at high sett"
+ },
+ {
+  "id": 251,
+  "name": "ElGuit Pick",
+  "description": "Designed for electric guitar-type sounds (although will work with anything), this cube mimics the effect of pick position on timbre. Frequency is used to maintain harmonic filter tracking with pitch CV patched to Full Level input. Minimum Morph, Min Transform: Represents the pick position very close to the bridge with the bridge position pickup used. Timbre is sharp and trebly, with very little body in the tone. Maximum Morph, Min. Transform: Represents the pick position far up the neck (over th"
+ },
+ {
+  "id": 252,
+  "name": "Breather 1",
+  "description": "An easy to adjust cube suitable for using breath control (or equivalent CV source) for the simulation of wind and brass instruments. Full effort blow gives more brightness and volume, soft playing gives mellower, quieter sound with optional timbre change with CV. Frequency: Controls slight increase in upper register brightness and maintains some harmonic filter tracking. Frequency at -5V results in lowpass response with a large peak at around 20Hz. Morph: Controls brightness and volume represent"
+ },
+ {
+  "id": 253,
+  "name": "Breather 2",
+  "description": "Like"
+ },
+ {
+  "id": 254,
+  "name": "WindNoise 1",
+  "description": "Allows simple tuning and tracking of white noise suitable for mixing/layering with wind instrument-type sounds or just creating interesting noise-based effects. Frequency: Controls the overall frequencies of the resonant peaks. Morph: Controls brightness and volume. Transform: Controls the spacing of the resonant peaks."
+ },
+ {
+  "id": 255,
+  "name": "WindNoise 2",
+  "description": "Like"
+ },
+ {
+  "id": 256,
+  "name": "Blow Cube",
+  "description": "Another cube designed for breath-style contro. Transform controls the volume and brightness and Morph controls the timbral character at all \u201cbreath\u201d levels. Frequency: Controls the overall frequencies of the resonant peaks. Morph: Controls timbre change. Low values produce peaks and notches. Higher values result in smooth lowpass filtering. Transform: Controls brightness and volume."
+ },
+ {
+  "id": 257,
+  "name": "Overblow",
+  "description": "Designed to simulate overblown woodwind- type effects. Morph and Transform at maximum results in a flat response. Frequency and Transform at minimum results in no signal passed. Frequency: Controls the overall frequencies of the resonant peaks. Morph: Controls timbre change. Low values produce peaks and notches. Higher values result in smooth lowpass filtering. Transform: Controls brightness and volume. At minimum,"
+ },
+ {
+  "id": 258,
+  "name": "Wind Filter",
+  "description": "Frequency: Moves the cutoff frequency in high frequency range. Morph: At -5V, has a lowpass response with modest notches at \u2248 3,5,6,9 and 12kHz and a peak at 1kHz. At =5V, has a flatter response with notches at \u2248 200, 300, 550, 800 and 870Hz and peak at 1kHz. Transform: Controls filter slope and high- frequency peak. | 73"
+ },
+ {
+  "id": 259,
+  "name": "FlutBreth.4",
+  "description": "Use with noise to create the sound of breath passing over the mouthpiece of a flute. Good for creating flute-like sounds. Crank in some distortion for overblown effects. Frequency: Controls the overall frequencies of the resonant peaks. Morph: Peaks at around 100Hz and 1200Hz with a notch at around 700Hz transform into flat response at higher values. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 260,
+  "name": "VClarinet.4",
+  "description": "Designed to turn any sound into a clarinet, or at least simulate its breath response. Frequency: Maintains harmonic filter tracking with pitch CV patched to Full Level input. Morph: Patch \u201cbreath\u201d (i.e., expression) CV to Morph to control heights and widths of resonances. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 261,
+  "name": "New Mute.4",
+  "description": "Another option for simulating the harmonic effects of brass mutes. Frequency: Controls the overall frequencies of the resonant peaks and notches. Low values result in a highpass rsponse with peaks at around 300Hz, 1kHz and 5kHz. Morph: Higher values flatten filter response. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 262,
+  "name": "Trempeto.4",
+  "description": "With sawtooth input, useful for trumpet-like sounds. With other inputs, it\u2019s a lowpass with modest bumps at the cutoff frequency. Frequency: High values move the cutoff frequency to a flat response with a bump in the higher frequency range. Morph: With Frequency at -5V, Morph at -5V, results in a lowpass with bump at around 50Hz and cutoff before 1000Hz. At +5V, filter is flat. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 263,
+  "name": "SfBrzando.4",
+  "description": "Manipulate Frequency and Morph to produce sudden volume change effects. Frequency: Frequency at -5V results in peaks from 20Hz until around 100Hz and again from 500Hz to 1kHz. Frequency at +5V results in a flat response. Morph: Starts with a 12dB overall boost except for a dip at \u2248 140Hz. At higher values, dip is reduced and boost increased after dip until flattening at 5kHz. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 264,
+  "name": "UduFilter.4",
+  "description": "Originally designed to enhance the velocity response of percussion sounds (especially the Udu). Can be used to create expressive volume effects for any percussive patch. Frequency: Contains a single peak at 240Hz with mild roll-off of higher frequencies at low Morph offsets, becoming flatter with higher Frequency values. Morph: Adjusts the frequency of the single peak. Transform: In the default filter, Transform Controls Distortion."
+ },
+ {
+  "id": 265,
+  "name": "Hip Kick",
+  "description": "A variable slope lowpass filter good for adding dynamics to bass drum-type sounds. Frequency: Controls cutoff frequency. Morph: Adjusts the slope of the lowpass response. Transform: Controls a slight bump at the cutoff frequency. 74 |"
+ },
+ {
+  "id": 266,
+  "name": "Cymbal Cube",
+  "description": "Useful for simulating the response of a cymbal-type sound to changes in drumstick location. Frequency: Controls the overall frequencies and spacing of the resonant peaks. Morph: Modifies the peaks and notches to simulate the position of a drumstick on a cymbal. Transform: Controls the height and depth of the peaks and notches to adjust the timbre of the cymbal."
+ },
+ {
+  "id": 267,
+  "name": "ChimeFlange",
+  "description": "A cube for producing various bell and Gamelan-type sounds with dense, inharmonic inputs. Frequency & Morph: Provide two different sets of peaks and notches which both raise in frequency as values are increased. Transform: Controls peak and notch height and depth. Maximum value results in a flat response. Miscellaneous Filters A potpourri of unique filters that don\u2019t fit in any other category."
+ },
+ {
+  "id": 268,
+  "name": "CableRing.4",
+  "description": "Originally designed to be used with a sampled grand piano, the Morph parameter results in a resonant sweep that ultimately goes high enough above the piano\u2019s main frequency range that the body of the piano tone comes back through; the cube simply adds a glass-like shimmer to the overall sound; a very resonant, ringing filter. Try putting Morph at maximum (resulting in a flat response) and assigning negative CV to it. Frequency: Controls peak and notch height and depth. Morph: Sweeps the resonant"
+ },
+ {
+  "id": 269,
+  "name": "TensionWire",
+  "description": "Frequency: Controls peak and notch height, depth and position. Increasing the value widens the peaking range. Morph: Moves peaks and accentuates lower frequencies as its value increases. Transform: Modifies peak and notch shapes and flattens response as value increases."
+ },
+ {
+  "id": 270,
+  "name": "Auto Clang",
+  "description": "Morphing this one puts a couple of very pronounced (and harmonically unrelated) peaks and a notch (or vice-versa, depending on setting for Transform) into the mix. Good for adding extra overtones to bell patches, but works with a variety of sounds. Frequency: Controls the overall frequencies of the resonant peaks. Morph: Controls resonant effect. Increasing morph value changes flat response to peaking. Transform: Controls polarity of the peaks and notches. | 75"
+ },
+ {
+  "id": 271,
+  "name": "Dragon Claw",
+  "description": "Useful for making adjustable horn mutes. Also works well with electric bass-type sounds. Frequency: Tracks one set of unevenly- spaced notches from medium to medium high frequencies. Frequency at -5V results in a high pass with a bump around 100Hz and everything after 1kHz; Morph: Controls another, lower set of unevenly-spaced notches to higher frequency notches. Transform: Reduces overall effect of filter as amount is increased. +5V results in a flat response."
+ },
+ {
+  "id": 272,
+  "name": "Spectra",
+  "description": "This filter can produce some fairly metallic sounds when Morph is set high and can result in distortion. Use a CV to control Morph for clangorous effects. Some interesting digital chiffs can be produced as well. Frequency: Controls the overall frequencies of the resonant peaks. Increasing the value changes from low pass to a flat response peaking at high frequencies. Morph: Relatively wide notches become narrow peaks as amount is increased. Transform: Higher values increase bandwidth."
+ },
+ {
+  "id": 273,
+  "name": "RippleSheet",
+  "description": "A subtle cube that allows control of a sound\u2019s overall spectrum. Frequency: Transitions from lowpass to near flat. Morph: Accentuates higher frequencies as values increase. Transform: Attenuates lows and mids. Provides \u201cvelocity\u201d response with transient CVs."
+ },
+ {
+  "id": 274,
+  "name": "Clear Water",
+  "description": "A flat response cube with a little bit of increase in high frequency brightness. Provides a high frequency sheen to any sound. Frequency: Shifts the balance of accentuated frequencies Morph: Modulates high frequency boosts. Transform: Flattens response at high values."
+ },
+ {
+  "id": 275,
+  "name": "Invisible",
+  "description": "A flat response cube with subtle mid-range peaks. Frequency: Controls the overall frequencies of the resonant peaks. Morph: As Morph increases, boosts around 70Hz and 269Hz and cuts at 167Hz, 560Hz, and 810Hz reverse polarity; peaks become notches, and vice versa. Transform: Flattens the response at high values."
+ },
+ {
+  "id": 276,
+  "name": "Wine Glass",
+  "description": "Modulate Morph to get a finger rubbing a wineglass effect with a relatively pure input. Frequency: Modifies height and depth of peaks and notches. Morph: Moves positions and gains of peaks and notches. Transform: Flattens the overall response, leaving only a high-frequency peak."
+ },
+ {
+  "id": 277,
+  "name": "SnakeCros.4",
+  "description": "Very gentle lowpass affecting only frequencies above 1kHz. Morph adds subtle peaks and notches to slope. Frequency: Controls the cutoff frequency. Morph: Affects cutoff frequency and at higher values, adds subtle peaks andnotches. Transform: In the default filter, Transform Controls Distortion. 76 |"
+ },
+ {
+  "id": 278,
+  "name": "Analog.4",
+  "description": "Similar to"
+ },
+ {
+  "id": 279,
+  "name": "Skrtch Cube",
+  "description": "Like"
+ },
+ {
+  "id": 280,
+  "name": "KitchenSink",
+  "description": "All sorts of stuff going on. Modulate everything. Everything interacts. Frequency: Boosts, cuts, and adds peaks. Morph: Boosts, cuts, adds, and shifts the frequencies of peaks. Transform: Controls polarity and gains of peaks and notches. 12. Specifications FILTER CUBES 289 FILTERS 1000 FILTER SEQUENCES 200 SEQUENCE STEPS 20,000 Dynamically Allocated INPUTS AUDIO L/R 2x 3.5mm mono socket 100k\u03a9 Input Impedance FULL LEVEL FREQUENCY CV 1x 3.5mm mono socket 100k\u03a9 Input Impedance ATTENUVERTED FREQUENC"
+ }
+]

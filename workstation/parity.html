@@ -8,7 +8,7 @@
 <body>
 <pre id="out">running…</pre>
 <script type="module">
-import { interpolateWords, interpolateBiquad, rowDb } from "./js/dsp.js";
+import { interpolateWords, interpolateBiquad, rowDb } from "/src/dsp.ts";
 const out = document.getElementById("out");
 const grid = Array.from({ length: 128 }, (_, i) => 40 * Math.pow(16000 / 40, i / 127));
 try {

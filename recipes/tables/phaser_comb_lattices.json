@@ -1,0 +1,5 @@
+{
+  "schema": "trench-cleanroom-comb-lattices-v1",
+  "description": "PLACEHOLDER — previous entries were incorrect. Real comb/phaser structures from the corpus: phasers are cascaded near-all-pass pairs (pole and zero at near-unity radius, close frequencies, creating phase shift without magnitude change). Combs use scattered pole-zero placements with unit-circle traveling nulls, not regular octave spacing. Correct entries must be derived from measured phaser circuit responses or the corpus geometry, not invented.",
+  "configurations": {}
+}

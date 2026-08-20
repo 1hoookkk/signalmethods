@@ -1,14 +1,7 @@
 use serde_json::json;
 use trench_core::stage_law::StageRoots;
 
-#[path = "../src/field.rs"]
-mod field;
-#[path = "../src/fit.rs"]
-mod fit;
-#[path = "../src/json.rs"]
-mod json;
-#[path = "../src/store.rs"]
-mod store;
+use author_server::{field, fit, json, store};
 
 fn corners_json(pole_r: f64) -> serde_json::Value {
     let mut lane = StageRoots::IDENTITY;
@@ -26,7 +19,7 @@ fn corners_json(pole_r: f64) -> serde_json::Value {
 fn temp_store(tag: &str) -> store::Store {
     let root = std::env::temp_dir().join(format!("trench-gate-{tag}-{}", std::process::id()));
     std::fs::create_dir_all(root.join("recipes").join("hero")).unwrap();
-    store::Store { root }
+    store::Store::bare(root)
 }
 
 #[test]

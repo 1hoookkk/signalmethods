@@ -117,6 +117,21 @@ pub fn target(store: &Store, req: &Value) -> Result<Value, String> {
     }
 }
 
+// A real-axis pair has no (frequency, radius) address, but the *other* root of the same
+// cell usually does. Discarding both loses an expressible pole for no reason and leaves
+// an audible resonance with nothing to grab: `vocal_ah_ay_ee` S1 is a conjugate pole with
+// a real zero, and flattening the cell deleted the pole too. Keep what can be expressed;
+// `geometry.real_pair` still tells the caller the cell is not fully described here.
+fn lane_from_geometry(g: &trench_core::stage_law::StageGeometry) -> StageRoots {
+    let part = |p: RootPair| match p {
+        RootPair::Conjugate { hz, r } => (hz, r),
+        RootPair::Degenerate | RootPair::RealPair { .. } => (0.0, 0.0),
+    };
+    let (pole_hz, pole_r) = part(g.pole);
+    let (zero_hz, zero_r) = part(g.zero);
+    StageRoots { pole_hz, pole_r, zero_hz, zero_r, scale: g.scale }
+}
+
 fn pair_value(pair: RootPair) -> Value {
     match pair {
         RootPair::Degenerate => json!({ "kind": "off" }),
@@ -134,11 +149,7 @@ fn stage_target(store: &Store, req: &Value, id: &str) -> Result<Value, String> {
     for ci in 0..corners {
         let words = packed.words[ci][stage];
         let g = trench_core::stage_law::geometry_from_words_at(words, source_sr);
-        let root = |p: RootPair| match p { RootPair::Conjugate { hz, r } => Some((hz, r)), RootPair::Degenerate => Some((0.0, 0.0)), RootPair::RealPair { .. } => None };
-        let lane = match (root(g.pole), root(g.zero)) {
-            (Some((pole_hz, pole_r)), Some((zero_hz, zero_r))) => StageRoots { pole_hz, pole_r, zero_hz, zero_r, scale: g.scale },
-            _ => StageRoots::IDENTITY,
-        };
+        let lane = lane_from_geometry(&g);
         cells.push(json!({ "corner": ci, "words": words, "lane": {
             "pole_hz": lane.pole_hz, "pole_r": lane.pole_r,
             "zero_hz": lane.zero_hz, "zero_r": lane.zero_r,
@@ -163,14 +174,9 @@ fn body_target(path: &std::path::Path, id: &str) -> Result<Value, String> {
         let mut lanes = [StageRoots::IDENTITY; NUM_STAGES];
         for (si, &w) in corner.iter().enumerate() {
             let g = trench_core::stage_law::geometry_from_words_at(w, crate::fit::SR);
-            let c = |p: RootPair| match p {
-                RootPair::Conjugate { hz, r } => Some((hz, r)),
-                RootPair::Degenerate => Some((0.0, 0.0)),
-                RootPair::RealPair { .. } => None,
-            };
-            match (c(g.pole), c(g.zero)) {
-                (Some((ph, pr)), Some((zh, zr))) => lanes[si] = StageRoots { pole_hz: ph, pole_r: pr, zero_hz: zh, zero_r: zr, scale: g.scale },
-                _ => skipped += 1,
+            lanes[si] = lane_from_geometry(&g);
+            if matches!(g.pole, RootPair::RealPair { .. }) || matches!(g.zero, RootPair::RealPair { .. }) {
+                skipped += 1;
             }
         }
         corners.push(lanes_to_value(&lanes));

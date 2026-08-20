@@ -1,0 +1,114 @@
+{
+  "schema": "trench-cleanroom-instrument-body-v1",
+  "description": "Acoustic instrument body resonances, cavity modes, and bridge transfer functions",
+  "instruments": {
+    "cello_wooden_chamber": {
+      "name": "Cello Chamber Body",
+      "modes_hz": [
+        {
+          "name": "A0 Helmholtz Cavity",
+          "fp": 120,
+          "rp": 0.985,
+          "fz": 150,
+          "rz": 0.98
+        },
+        {
+          "name": "T1 Top Plate Wood",
+          "fp": 180,
+          "rp": 0.992,
+          "fz": 210,
+          "rz": 0.985
+        },
+        {
+          "name": "B1 Back Plate Mode",
+          "fp": 240,
+          "rp": 0.99,
+          "fz": 285,
+          "rz": 0.982
+        },
+        {
+          "name": "C3 Chamber Air Mode",
+          "fp": 350,
+          "rp": 0.988,
+          "fz": 410,
+          "rz": 0.98
+        },
+        {
+          "name": "Bridge Hill Peak",
+          "fp": 2200,
+          "rp": 0.92,
+          "fz": 2800,
+          "rz": 0.9
+        },
+        {
+          "name": "Wood Sheen Air",
+          "fp": 4500,
+          "rp": 0.88,
+          "fz": 6000,
+          "rz": 0.85
+        },
+        {
+          "name": "High Air Cap",
+          "fp": 16000,
+          "rp": 0.85,
+          "fz": 0,
+          "rz": 0.0
+        }
+      ]
+    },
+    "acoustic_guitar_dreadnought": {
+      "name": "Dreadnought Guitar Body",
+      "modes_hz": [
+        {
+          "name": "A0 Soundhole Air",
+          "fp": 102,
+          "rp": 0.99,
+          "fz": 140,
+          "rz": 0.985
+        },
+        {
+          "name": "T1 Top Plate Flex",
+          "fp": 195,
+          "rp": 0.994,
+          "fz": 220,
+          "rz": 0.99
+        },
+        {
+          "name": "B1 Back Plate Flex",
+          "fp": 228,
+          "rp": 0.992,
+          "fz": 260,
+          "rz": 0.985
+        },
+        {
+          "name": "Soundboard Cross",
+          "fp": 380,
+          "rp": 0.98,
+          "fz": 450,
+          "rz": 0.97
+        },
+        {
+          "name": "Pick Presence Peak",
+          "fp": 3200,
+          "rp": 0.91,
+          "fz": 4200,
+          "rz": 0.89
+        },
+        {
+          "name": "Body Air Shelf",
+          "fp": 8500,
+          "rp": 0.85,
+          "fz": 11000,
+          "rz": 0.8
+        },
+        {
+          "name": "High Air Cap",
+          "fp": 16000,
+          "rp": 0.85,
+          "fz": 0,
+          "rz": 0.0
+        }
+      ]
+    }
+  }
+}

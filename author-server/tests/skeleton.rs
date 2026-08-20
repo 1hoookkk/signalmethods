@@ -1,10 +1,7 @@
 use serde_json::json;
 use trench_core::stage_law::StageRoots;
 
-#[path = "../src/fit.rs"]
-mod fit;
-#[path = "../src/json.rs"]
-mod json;
+use author_server::{fit, json};
 
 #[test]
 fn placing_the_skeleton_seats_measured_poles_and_nothing_else() {

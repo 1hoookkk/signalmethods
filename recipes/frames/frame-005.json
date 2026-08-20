@@ -1,0 +1,130 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 15645.157807253578,
+      "pole_r": 0.9832699340382548,
+      "scale_db": -0.9515112692757512,
+      "zero_hz": 2237.529640028539,
+      "zero_r": 0.9662502400347374
+    },
+    {
+      "pole_hz": 857.861954624468,
+      "pole_r": 0.879505004382792,
+      "scale_db": -0.9515112692757512,
+      "zero_hz": 10503.976948014702,
+      "zero_r": 0.9186084871882988
+    },
+    {
+      "pole_hz": 1859.9651835507864,
+      "pole_r": 0.9014386017552029,
+      "scale_db": -0.9515112692757512,
+      "zero_hz": 15520.147531113656,
+      "zero_r": 0.9722835945255858
+    },
+    {
+      "pole_hz": 12668.030009443097,
+      "pole_r": 0.9014386017552029,
+      "scale_db": -0.9515112692757512,
+      "zero_hz": 17513.836455663637,
+      "zero_r": 0.9782914382655068
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 12640.83720805799,
+      "pole_r": 0.559235317755415,
+      "scale_db": -0.9515112692757512,
+      "zero_hz": 9179.6486554304,
+      "zero_r": 0.9999981485290076
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    }
+  ],
+  "name": "frame-005",
+  "provenance": "FreakShifta",
+  "schema": "trench-frame-v1",
+  "sr_hz": 39062.5,
+  "words": ""
+}

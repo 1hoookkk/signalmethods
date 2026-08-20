@@ -1,0 +1,1816 @@
+{
+  "schema": "trench-primitive-bank-v1",
+  "note": "Recurring primitives (3+ occurrences) from the combined P2K + Morpheus corpus. M0 + M100 morph endpoints. Clustered at 3 semitones + 5% radius.",
+  "total": 205,
+  "primitives": [
+    {
+      "type": "transparent",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 199
+    },
+    {
+      "type": "idle",
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 164
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 56.0,
+      "pole_r": 0.9989,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 43
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 16166.6,
+      "pole_r": 0.9954,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 33
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 173.8,
+      "pole_r": 0.9985,
+      "zero_hz": 115.1,
+      "zero_r": 0.9993,
+      "count": 21,
+      "pole_bw_hz": 21.8,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16119.5,
+      "pole_r": 0.9928,
+      "zero_hz": 16232.6,
+      "zero_r": 0.992,
+      "count": 19
+    },
+    {
+      "type": "transparent",
+      "pole_hz": 7450.6,
+      "pole_r": 0.1585,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 19
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16270.8,
+      "pole_r": 0.9145,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 18
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 352.5,
+      "pole_r": 0.9992,
+      "zero_hz": 304.4,
+      "zero_r": 0.9986,
+      "count": 18,
+      "pole_bw_hz": 10.8,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 1807.2,
+      "pole_r": 0.9954,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 18,
+      "pole_bw_hz": 65.2
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 64.3,
+      "pole_r": 0.9938,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 17
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 228.4,
+      "pole_r": 0.9993,
+      "zero_hz": 184.2,
+      "zero_r": 0.9994,
+      "count": 17,
+      "pole_bw_hz": 9.5,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 21.6,
+      "pole_r": 0.9997,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 17
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 296.0,
+      "pole_r": 0.9984,
+      "zero_hz": 231.5,
+      "zero_r": 0.9988,
+      "count": 17,
+      "pole_bw_hz": 22.9,
+      "null": true
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 16164.9,
+      "zero_r": 0.9958,
+      "count": 16,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 306.4,
+      "pole_r": 0.9991,
+      "zero_hz": 255.9,
+      "zero_r": 0.9983,
+      "count": 12,
+      "pole_bw_hz": 12.9,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 114.2,
+      "pole_r": 0.998,
+      "zero_hz": 56.3,
+      "zero_r": 0.9995,
+      "count": 12,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 181.4,
+      "pole_r": 0.9992,
+      "zero_hz": 149.9,
+      "zero_r": 0.9987,
+      "count": 11,
+      "pole_bw_hz": 10.9,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 7219.4,
+      "pole_r": 0.9892,
+      "zero_hz": 5760.5,
+      "zero_r": 0.9894,
+      "count": 11
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 429.3,
+      "pole_r": 0.9986,
+      "zero_hz": 351.8,
+      "zero_r": 0.9969,
+      "count": 11,
+      "pole_bw_hz": 20.4,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5649.9,
+      "pole_r": 0.9932,
+      "zero_hz": 3672.8,
+      "zero_r": 0.994,
+      "count": 11,
+      "pole_bw_hz": 95.1
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 113.3,
+      "pole_r": 0.9981,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 11
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 8245.1,
+      "pole_r": 0.9844,
+      "zero_hz": 7033.7,
+      "zero_r": 0.9873,
+      "count": 10
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 182.8,
+      "pole_r": 0.9973,
+      "zero_hz": 129.2,
+      "zero_r": 0.9979,
+      "count": 10,
+      "pole_bw_hz": 38.3,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4938.1,
+      "pole_r": 0.9961,
+      "zero_hz": 3575.5,
+      "zero_r": 0.9923,
+      "count": 10,
+      "pole_bw_hz": 54.6
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 9254.2,
+      "pole_r": 0.9901,
+      "zero_hz": 7394.3,
+      "zero_r": 0.9925,
+      "count": 10
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 45.0,
+      "pole_r": 0.9985,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 10
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 2055.5,
+      "pole_r": 0.9969,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 10,
+      "pole_bw_hz": 44.2
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 115.1,
+      "pole_r": 0.9984,
+      "zero_hz": 87.4,
+      "zero_r": 0.999,
+      "count": 9,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1796.8,
+      "pole_r": 0.9579,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 9,
+      "pole_bw_hz": 603.7
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5932.5,
+      "pole_r": 0.991,
+      "zero_hz": 4902.2,
+      "zero_r": 0.9928,
+      "count": 8,
+      "pole_bw_hz": 126.7
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 127.2,
+      "pole_r": 0.997,
+      "zero_hz": 65.7,
+      "zero_r": 0.9994,
+      "count": 8,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 3629.2,
+      "pole_r": 0.9942,
+      "zero_hz": 2913.2,
+      "zero_r": 0.9916,
+      "count": 8,
+      "pole_bw_hz": 81.3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 7600.2,
+      "zero_r": 0.1585,
+      "count": 8
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 3576.4,
+      "pole_r": 0.9982,
+      "zero_hz": 1798.8,
+      "zero_r": 0.9954,
+      "count": 8,
+      "pole_bw_hz": 25.2,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 549.7,
+      "pole_r": 0.9911,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 8,
+      "pole_bw_hz": 125.6
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 612.2,
+      "pole_r": 0.9994,
+      "zero_hz": 439.4,
+      "zero_r": 0.9965,
+      "count": 8,
+      "pole_bw_hz": 8.5,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16219.5,
+      "pole_r": 0.9138,
+      "zero_hz": 16523.4,
+      "zero_r": 0.9896,
+      "count": 7
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 9958.7,
+      "pole_r": 0.9896,
+      "zero_hz": 8314.7,
+      "zero_r": 0.9493,
+      "count": 7
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4154.8,
+      "pole_r": 0.9888,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7,
+      "pole_bw_hz": 158.5
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1049.5,
+      "pole_r": 0.9875,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7,
+      "pole_bw_hz": 177.2
+    },
+    {
+      "type": "shape",
+      "pole_hz": 2679.4,
+      "pole_r": 0.2144,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 223.3,
+      "pole_r": 0.9938,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7,
+      "pole_bw_hz": 87.4
+    },
+    {
+      "type": "DC shelf",
+      "pole_hz": 0.3,
+      "pole_r": 0.995,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 1425.9,
+      "pole_r": 0.9946,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7,
+      "pole_bw_hz": 75.7
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 257.3,
+      "pole_r": 0.9969,
+      "zero_hz": 217.9,
+      "zero_r": 0.9993,
+      "count": 7,
+      "pole_bw_hz": 43.4,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 111.7,
+      "pole_r": 0.993,
+      "zero_hz": 46.4,
+      "zero_r": 0.9981,
+      "count": 7,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 53.1,
+      "pole_r": 0.9983,
+      "zero_hz": 54.1,
+      "zero_r": 0.9997,
+      "count": 7,
+      "null": true
+    },
+    {
+      "type": "peak",
+      "pole_hz": 18.7,
+      "pole_r": 0.986,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7
+    },
+    {
+      "type": "peak",
+      "pole_hz": 54.4,
+      "pole_r": 0.9726,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 7
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 10019.9,
+      "pole_r": 0.9889,
+      "zero_hz": 8394.3,
+      "zero_r": 0.9905,
+      "count": 6
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 2865.4,
+      "pole_r": 0.9933,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6,
+      "pole_bw_hz": 95.1
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5742.1,
+      "pole_r": 0.9958,
+      "zero_hz": 4230.7,
+      "zero_r": 0.9601,
+      "count": 6,
+      "pole_bw_hz": 58.6
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 710.7,
+      "pole_r": 0.9981,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6,
+      "pole_bw_hz": 26.8
+    },
+    {
+      "type": "peak",
+      "pole_hz": 16090.7,
+      "pole_r": 0.8541,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 1224.3,
+      "pole_r": 0.9925,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6,
+      "pole_bw_hz": 105.5
+    },
+    {
+      "type": "peak",
+      "pole_hz": 66.5,
+      "pole_r": 0.9471,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 2454.3,
+      "pole_r": 0.9935,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6,
+      "pole_bw_hz": 91.2
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 367.7,
+      "pole_r": 0.9993,
+      "zero_hz": 533.1,
+      "zero_r": 0.9956,
+      "count": 6,
+      "pole_bw_hz": 9.7,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 253.5,
+      "pole_r": 0.9999,
+      "zero_hz": 189.7,
+      "zero_r": 0.9985,
+      "count": 6,
+      "pole_bw_hz": 0.8,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 268.8,
+      "pole_r": 0.9939,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 6,
+      "pole_bw_hz": 85.5
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1808.6,
+      "pole_r": 0.9992,
+      "zero_hz": 3611.6,
+      "zero_r": 0.9919,
+      "count": 6,
+      "pole_bw_hz": 11.7
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 889.5,
+      "pole_r": 0.9983,
+      "zero_hz": 724.1,
+      "zero_r": 0.9955,
+      "count": 6,
+      "pole_bw_hz": 23.4,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 91.0,
+      "pole_r": 0.9983,
+      "zero_hz": 56.3,
+      "zero_r": 0.999,
+      "count": 6,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16159.2,
+      "pole_r": 0.9867,
+      "zero_hz": 15988.3,
+      "zero_r": 0.9624,
+      "count": 5
+    },
+    {
+      "type": "formant + null",
+      "pole_hz": 4169.7,
+      "pole_r": 0.9834,
+      "zero_hz": 16873.2,
+      "zero_r": 0.9977,
+      "count": 5,
+      "pole_bw_hz": 235.2,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 10331.0,
+      "pole_r": 0.9868,
+      "zero_hz": 9366.1,
+      "zero_r": 0.9884,
+      "count": 5
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 612.2,
+      "pole_r": 0.9948,
+      "zero_hz": 538.3,
+      "zero_r": 0.9952,
+      "count": 5,
+      "pole_bw_hz": 72.6,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 11146.1,
+      "pole_r": 0.9902,
+      "zero_hz": 9605.3,
+      "zero_r": 0.9903,
+      "count": 5
+    },
+    {
+      "type": "shape",
+      "pole_hz": 3254.9,
+      "pole_r": 0.2561,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 5
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16416.7,
+      "pole_r": 0.9609,
+      "zero_hz": 16256.3,
+      "zero_r": 0.9918,
+      "count": 5
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "zero_hz": 16148.1,
+      "zero_r": 0.9961,
+      "count": 5,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2091.0,
+      "pole_r": 0.997,
+      "zero_hz": 1420.3,
+      "zero_r": 0.9948,
+      "count": 5,
+      "pole_bw_hz": 42.1
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 354.2,
+      "zero_r": 0.9986,
+      "count": 5,
+      "null": true
+    },
+    {
+      "type": "DC shelf",
+      "pole_hz": 0.0,
+      "pole_r": 0.9537,
+      "zero_hz": 0.0,
+      "zero_r": 0.9623,
+      "count": 5
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 728.7,
+      "pole_r": 0.9974,
+      "zero_hz": 457.7,
+      "zero_r": 0.9983,
+      "count": 5,
+      "pole_bw_hz": 36.6,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 4762.1,
+      "pole_r": 0.9942,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 5,
+      "pole_bw_hz": 81.8
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 3573.9,
+      "pole_r": 0.9909,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 5,
+      "pole_bw_hz": 127.9
+    },
+    {
+      "type": "formant",
+      "pole_hz": 537.9,
+      "pole_r": 0.9992,
+      "zero_hz": 745.6,
+      "zero_r": 0.9917,
+      "count": 5,
+      "pole_bw_hz": 11.5
+    },
+    {
+      "type": "formant",
+      "pole_hz": 885.0,
+      "pole_r": 0.9993,
+      "zero_hz": 1771.8,
+      "zero_r": 0.994,
+      "count": 5,
+      "pole_bw_hz": 10.2
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 1805.5,
+      "zero_r": 0.9968,
+      "count": 5,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 156.6,
+      "pole_r": 0.9999,
+      "zero_hz": 106.3,
+      "zero_r": 0.9988,
+      "count": 5,
+      "pole_bw_hz": 1.5,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2127.9,
+      "pole_r": 0.9537,
+      "zero_hz": 1082.5,
+      "zero_r": 0.9907,
+      "count": 5,
+      "pole_bw_hz": 665.9
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 5073.0,
+      "pole_r": 0.9958,
+      "zero_hz": 4114.1,
+      "zero_r": 0.9956,
+      "count": 5,
+      "pole_bw_hz": 58.9,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 3560.4,
+      "pole_r": 0.9969,
+      "zero_hz": 2594.0,
+      "zero_r": 0.9972,
+      "count": 5,
+      "pole_bw_hz": 43.9,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 361.8,
+      "pole_r": 0.9972,
+      "zero_hz": 264.7,
+      "zero_r": 0.9985,
+      "count": 5,
+      "pole_bw_hz": 38.7,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 7607.3,
+      "pole_r": 0.9952,
+      "zero_hz": 5019.0,
+      "zero_r": 0.9973,
+      "count": 5,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5039.4,
+      "pole_r": 0.9613,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 5,
+      "pole_bw_hz": 553.7
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 13978.3,
+      "pole_r": 0.97,
+      "zero_hz": 14053.0,
+      "zero_r": 0.9714,
+      "count": 4
+    },
+    {
+      "type": "formant",
+      "pole_hz": 860.0,
+      "pole_r": 0.9911,
+      "zero_hz": 2480.3,
+      "zero_r": 0.96,
+      "count": 4,
+      "pole_bw_hz": 125.8
+    },
+    {
+      "type": "formant",
+      "pole_hz": 478.6,
+      "pole_r": 0.979,
+      "zero_hz": 13366.6,
+      "zero_r": 0.8965,
+      "count": 4,
+      "pole_bw_hz": 298.3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2944.3,
+      "pole_r": 0.9907,
+      "zero_hz": 2974.2,
+      "zero_r": 0.9596,
+      "count": 4,
+      "pole_bw_hz": 131.1
+    },
+    {
+      "type": "formant",
+      "pole_hz": 3687.0,
+      "pole_r": 0.9973,
+      "zero_hz": 3455.0,
+      "zero_r": 0.9913,
+      "count": 4,
+      "pole_bw_hz": 38.4
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4370.0,
+      "pole_r": 0.9955,
+      "zero_hz": 4109.4,
+      "zero_r": 0.9931,
+      "count": 4,
+      "pole_bw_hz": 62.8
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 8475.5,
+      "pole_r": 0.9966,
+      "zero_hz": 6049.2,
+      "zero_r": 0.999,
+      "count": 4,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5957.0,
+      "pole_r": 0.9863,
+      "zero_hz": 5843.0,
+      "zero_r": 0.9909,
+      "count": 4,
+      "pole_bw_hz": 193.1
+    },
+    {
+      "type": "peak",
+      "pole_hz": 133.5,
+      "pole_r": 0.9121,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "peak",
+      "pole_hz": 75.0,
+      "pole_r": 0.9555,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2892.2,
+      "pole_r": 0.9848,
+      "zero_hz": 3445.6,
+      "zero_r": 0.7455,
+      "count": 4,
+      "pole_bw_hz": 215.5
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 3001.9,
+      "pole_r": 0.9958,
+      "zero_hz": 2393.7,
+      "zero_r": 0.9969,
+      "count": 4,
+      "pole_bw_hz": 58.6,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 154.9,
+      "pole_r": 0.9992,
+      "zero_hz": 153.8,
+      "zero_r": 0.9945,
+      "count": 4,
+      "pole_bw_hz": 11.4
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 899.4,
+      "pole_r": 0.9919,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4,
+      "pole_bw_hz": 114.2
+    },
+    {
+      "type": "formant",
+      "pole_hz": 765.3,
+      "pole_r": 0.9988,
+      "zero_hz": 1184.2,
+      "zero_r": 0.9948,
+      "count": 4,
+      "pole_bw_hz": 16.6
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 471.9,
+      "pole_r": 0.9995,
+      "zero_hz": 232.2,
+      "zero_r": 0.9998,
+      "count": 4,
+      "pole_bw_hz": 7.1,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 114.3,
+      "pole_r": 0.9987,
+      "zero_hz": 81.9,
+      "zero_r": 0.9982,
+      "count": 4,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 440.2,
+      "pole_r": 0.9955,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4,
+      "pole_bw_hz": 63.9
+    },
+    {
+      "type": "formant",
+      "pole_hz": 688.2,
+      "pole_r": 0.9992,
+      "zero_hz": 882.5,
+      "zero_r": 0.9904,
+      "count": 4,
+      "pole_bw_hz": 10.5
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 91.7,
+      "pole_r": 0.9975,
+      "zero_hz": 133.7,
+      "zero_r": 0.9976,
+      "count": 4,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 217.7,
+      "pole_r": 0.9953,
+      "zero_hz": 151.2,
+      "zero_r": 0.9994,
+      "count": 4,
+      "pole_bw_hz": 65.5,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 259.1,
+      "pole_r": 0.9981,
+      "zero_hz": 162.3,
+      "zero_r": 0.9977,
+      "count": 4,
+      "pole_bw_hz": 27.1,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 10436.3,
+      "pole_r": 0.9776,
+      "zero_hz": 10183.3,
+      "zero_r": 0.9689,
+      "count": 4
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 344.1,
+      "pole_r": 0.9996,
+      "zero_hz": 113.1,
+      "zero_r": 0.9996,
+      "count": 4,
+      "pole_bw_hz": 5.8,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 7034.4,
+      "pole_r": 0.9984,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 4121.0,
+      "pole_r": 0.9948,
+      "zero_hz": 3597.6,
+      "zero_r": 0.9955,
+      "count": 4,
+      "pole_bw_hz": 72.5,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16283.2,
+      "pole_r": 0.9944,
+      "zero_hz": 13680.6,
+      "zero_r": 0.9942,
+      "count": 4
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 712.5,
+      "pole_r": 0.9975,
+      "zero_hz": 625.9,
+      "zero_r": 0.996,
+      "count": 4,
+      "pole_bw_hz": 34.6,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 31.3,
+      "pole_r": 0.9953,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1279.2,
+      "pole_r": 0.9924,
+      "zero_hz": 708.3,
+      "zero_r": 0.9948,
+      "count": 4,
+      "pole_bw_hz": 107.4
+    },
+    {
+      "type": "shape",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 10183.3,
+      "zero_r": 0.9897,
+      "count": 4
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 156.5,
+      "pole_r": 0.9974,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4,
+      "pole_bw_hz": 36.9
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 78.2,
+      "pole_r": 0.9999,
+      "zero_hz": 55.5,
+      "zero_r": 0.9993,
+      "count": 4,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 134.7,
+      "pole_r": 0.9954,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "peak",
+      "pole_hz": 147.2,
+      "pole_r": 1.0,
+      "zero_hz": 63.7,
+      "zero_r": 0.9929,
+      "count": 4
+    },
+    {
+      "type": "shape",
+      "pole_hz": 17295.6,
+      "pole_r": 0.5412,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 172.1,
+      "zero_r": 0.9996,
+      "count": 4,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 15.5,
+      "pole_r": 0.9982,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 4
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 90.9,
+      "pole_r": 0.991,
+      "zero_hz": 78.5,
+      "zero_r": 0.9969,
+      "count": 4,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 6958.1,
+      "pole_r": 0.9003,
+      "zero_hz": 50.7,
+      "zero_r": 0.6137,
+      "count": 4
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4390.4,
+      "pole_r": 0.9388,
+      "zero_hz": 6012.2,
+      "zero_r": 0.986,
+      "count": 4,
+      "pole_bw_hz": 886.8
+    },
+    {
+      "type": "peak",
+      "pole_hz": 8242.2,
+      "pole_r": 0.8806,
+      "zero_hz": 10605.7,
+      "zero_r": 0.9763,
+      "count": 4
+    },
+    {
+      "type": "shape",
+      "pole_hz": 12893.0,
+      "pole_r": 0.7846,
+      "zero_hz": 13401.3,
+      "zero_r": 0.9878,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 14125.9,
+      "pole_r": 0.9713,
+      "zero_hz": 16397.5,
+      "zero_r": 0.9387,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 16433.7,
+      "pole_r": 0.9016,
+      "zero_hz": 10935.2,
+      "zero_r": 1.0,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "peak",
+      "pole_hz": 79.4,
+      "pole_r": 0.9664,
+      "zero_hz": 2315.6,
+      "zero_r": 0.9237,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 15631.3,
+      "pole_r": 0.9597,
+      "zero_hz": 17432.7,
+      "zero_r": 0.9237,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 12104.4,
+      "pole_r": 0.9646,
+      "zero_hz": 11390.4,
+      "zero_r": 0.9866,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 3622.0,
+      "pole_r": 0.9946,
+      "zero_hz": 783.3,
+      "zero_r": 0.9555,
+      "count": 3,
+      "pole_bw_hz": 76.3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4371.9,
+      "pole_r": 0.9887,
+      "zero_hz": 3101.0,
+      "zero_r": 0.9574,
+      "count": 3,
+      "pole_bw_hz": 159.8
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2154.0,
+      "pole_r": 0.9852,
+      "zero_hz": 3774.0,
+      "zero_r": 0.961,
+      "count": 3,
+      "pole_bw_hz": 209.8
+    },
+    {
+      "type": "formant",
+      "pole_hz": 3605.7,
+      "pole_r": 0.9897,
+      "zero_hz": 5720.0,
+      "zero_r": 0.9133,
+      "count": 3,
+      "pole_bw_hz": 144.9
+    },
+    {
+      "type": "formant",
+      "pole_hz": 882.4,
+      "pole_r": 0.9925,
+      "zero_hz": 1057.9,
+      "zero_r": 0.9604,
+      "count": 3,
+      "pole_bw_hz": 105.6
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1553.4,
+      "pole_r": 0.9919,
+      "zero_hz": 2073.4,
+      "zero_r": 0.9712,
+      "count": 3,
+      "pole_bw_hz": 113.9
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 11601.8,
+      "pole_r": 0.9633,
+      "zero_hz": 9868.5,
+      "zero_r": 0.9902,
+      "count": 3
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 230.0,
+      "pole_r": 0.9992,
+      "zero_hz": 16752.4,
+      "zero_r": 0.9974,
+      "count": 3,
+      "pole_bw_hz": 11.3,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 529.2,
+      "pole_r": 0.9921,
+      "zero_hz": 269.5,
+      "zero_r": 0.9999,
+      "count": 3,
+      "pole_bw_hz": 111.5,
+      "null": true
+    },
+    {
+      "type": "formant + null",
+      "pole_hz": 260.7,
+      "pole_r": 0.9884,
+      "zero_hz": 137.0,
+      "zero_r": 0.9998,
+      "count": 3,
+      "pole_bw_hz": 164.4,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 185.8,
+      "pole_r": 0.9647,
+      "zero_hz": 127.7,
+      "zero_r": 0.9822,
+      "count": 3,
+      "pole_bw_hz": 504.8
+    },
+    {
+      "type": "peak",
+      "pole_hz": 112.1,
+      "pole_r": 0.9498,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 7285.0,
+      "pole_r": 0.9935,
+      "zero_hz": 6046.3,
+      "zero_r": 0.9476,
+      "count": 3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 11416.1,
+      "zero_r": 0.9916,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4284.7,
+      "pole_r": 0.9804,
+      "zero_hz": 2972.4,
+      "zero_r": 0.8937,
+      "count": 3,
+      "pole_bw_hz": 277.3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 1232.8,
+      "zero_r": 0.9511,
+      "count": 3
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 304.7,
+      "pole_r": 0.9919,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3,
+      "pole_bw_hz": 114.1
+    },
+    {
+      "type": "shape",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 10244.8,
+      "zero_r": 0.9394,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 10065.1,
+      "pole_r": 0.9671,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2904.9,
+      "pole_r": 0.9958,
+      "zero_hz": 2024.0,
+      "zero_r": 0.9914,
+      "count": 3,
+      "pole_bw_hz": 59.2
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5843.6,
+      "pole_r": 0.9592,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3,
+      "pole_bw_hz": 585.2
+    },
+    {
+      "type": "shape",
+      "pole_hz": 14570.9,
+      "pole_r": 0.5711,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 178.7,
+      "pole_r": 0.9997,
+      "zero_hz": 356.1,
+      "zero_r": 0.9929,
+      "count": 3,
+      "pole_bw_hz": 4.9
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4357.4,
+      "pole_r": 0.9473,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3,
+      "pole_bw_hz": 759.6
+    },
+    {
+      "type": "shape",
+      "pole_hz": 7600.2,
+      "pole_r": 0.1585,
+      "zero_hz": 1360.8,
+      "zero_r": 0.3491,
+      "count": 3
+    },
+    {
+      "type": "null",
+      "pole_hz": 68.3,
+      "pole_r": 0.9547,
+      "zero_hz": 87.6,
+      "zero_r": 0.996,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 271.3,
+      "pole_r": 0.9984,
+      "zero_hz": 260.4,
+      "zero_r": 0.9971,
+      "count": 3,
+      "pole_bw_hz": 23.0,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 11416.3,
+      "pole_r": 0.9669,
+      "zero_hz": 10177.6,
+      "zero_r": 0.9681,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 5539.2,
+      "pole_r": 0.9876,
+      "zero_hz": 4424.4,
+      "zero_r": 0.9908,
+      "count": 3,
+      "pole_bw_hz": 175.1
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1469.3,
+      "pole_r": 0.9954,
+      "zero_hz": 1779.0,
+      "zero_r": 0.9916,
+      "count": 3,
+      "pole_bw_hz": 65.2
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1787.5,
+      "pole_r": 0.9966,
+      "zero_hz": 2071.9,
+      "zero_r": 0.9431,
+      "count": 3,
+      "pole_bw_hz": 47.1
+    },
+    {
+      "type": "formant",
+      "pole_hz": 2820.4,
+      "pole_r": 0.9926,
+      "zero_hz": 3580.8,
+      "zero_r": 0.9422,
+      "count": 3,
+      "pole_bw_hz": 104.4
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 344.1,
+      "pole_r": 0.9988,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3,
+      "pole_bw_hz": 17.0
+    },
+    {
+      "type": "peak",
+      "pole_hz": 3006.3,
+      "pole_r": 0.8412,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 8265.3,
+      "pole_r": 0.9969,
+      "zero_hz": 6620.8,
+      "zero_r": 0.9449,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1235.6,
+      "pole_r": 0.9976,
+      "zero_hz": 1472.1,
+      "zero_r": 0.953,
+      "count": 3,
+      "pole_bw_hz": 33.2
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1037.3,
+      "pole_r": 0.9838,
+      "zero_hz": 522.9,
+      "zero_r": 0.9935,
+      "count": 3,
+      "pole_bw_hz": 229.4
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 8893.7,
+      "pole_r": 0.9819,
+      "zero_hz": 8208.5,
+      "zero_r": 0.9661,
+      "count": 3
+    },
+    {
+      "type": "peak",
+      "pole_hz": 192.4,
+      "pole_r": 0.8585,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "peak",
+      "pole_hz": 148.2,
+      "pole_r": 0.895,
+      "zero_hz": 88.8,
+      "zero_r": 0.9452,
+      "count": 3
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 2409.2,
+      "pole_r": 0.9954,
+      "zero_hz": 907.8,
+      "zero_r": 0.996,
+      "count": 3,
+      "pole_bw_hz": 64.7,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 4396.5,
+      "pole_r": 0.9853,
+      "zero_hz": 5516.6,
+      "zero_r": 0.9912,
+      "count": 3,
+      "pole_bw_hz": 207.6
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 224.8,
+      "pole_r": 0.9999,
+      "zero_hz": 449.7,
+      "zero_r": 0.999,
+      "count": 3,
+      "pole_bw_hz": 0.7,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 449.7,
+      "pole_r": 0.9999,
+      "zero_hz": 902.2,
+      "zero_r": 0.9949,
+      "count": 3,
+      "pole_bw_hz": 1.5
+    },
+    {
+      "type": "formant",
+      "pole_hz": 3496.3,
+      "pole_r": 0.9992,
+      "zero_hz": 6958.4,
+      "zero_r": 0.9843,
+      "count": 3,
+      "pole_bw_hz": 11.4
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 1413.0,
+      "pole_r": 0.9984,
+      "zero_hz": 1051.4,
+      "zero_r": 0.9962,
+      "count": 3,
+      "pole_bw_hz": 22.3,
+      "null": true
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 6587.1,
+      "pole_r": 0.9852,
+      "zero_hz": 6992.3,
+      "zero_r": 0.9801,
+      "count": 3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 454.6,
+      "pole_r": 0.9949,
+      "zero_hz": 184.7,
+      "zero_r": 0.9908,
+      "count": 3,
+      "pole_bw_hz": 72.3
+    },
+    {
+      "type": "formant",
+      "pole_hz": 230.1,
+      "pole_r": 0.9962,
+      "zero_hz": 114.5,
+      "zero_r": 0.992,
+      "count": 3,
+      "pole_bw_hz": 53.2
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 93.2,
+      "pole_r": 0.9919,
+      "zero_hz": 66.8,
+      "zero_r": 0.9999,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 1838.2,
+      "pole_r": 0.9895,
+      "zero_hz": 2735.9,
+      "zero_r": 0.9891,
+      "count": 3,
+      "pole_bw_hz": 148.3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 12474.7,
+      "pole_r": 0.7043,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 13557.4,
+      "pole_r": 0.7846,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 4295.2,
+      "zero_r": 0.9921,
+      "count": 3
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 79.9,
+      "pole_r": 0.9989,
+      "zero_hz": 75.8,
+      "zero_r": 0.9996,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "resonator",
+      "pole_hz": 9.1,
+      "pole_r": 0.9969,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "shape",
+      "pole_hz": 12298.8,
+      "pole_r": 0.2144,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 11596.8,
+      "pole_r": 0.9946,
+      "zero_hz": 8534.7,
+      "zero_r": 0.9901,
+      "count": 3
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 4064.6,
+      "pole_r": 0.9981,
+      "zero_hz": 2966.8,
+      "zero_r": 0.9984,
+      "count": 3,
+      "pole_bw_hz": 26.3,
+      "null": true
+    },
+    {
+      "type": "formant",
+      "pole_hz": 3653.8,
+      "pole_r": 0.9934,
+      "zero_hz": 5494.3,
+      "zero_r": 0.9907,
+      "count": 3,
+      "pole_bw_hz": 93.0
+    },
+    {
+      "type": "high resonance",
+      "pole_hz": 11055.9,
+      "pole_r": 0.9885,
+      "zero_hz": 0.0,
+      "zero_r": 0.0,
+      "count": 3
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "zero_hz": 66.5,
+      "zero_r": 0.9977,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 59.9,
+      "pole_r": 0.9948,
+      "zero_hz": 30.5,
+      "zero_r": 0.9998,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "shape",
+      "pole_hz": 2752.7,
+      "pole_r": 0.7938,
+      "zero_hz": 1545.4,
+      "zero_r": 0.9931,
+      "count": 3
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 257.9,
+      "zero_r": 0.9995,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "resonator + null",
+      "pole_hz": 235.4,
+      "pole_r": 0.9995,
+      "zero_hz": 91.3,
+      "zero_r": 0.9998,
+      "count": 3,
+      "pole_bw_hz": 7.6,
+      "null": true
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 7634.4,
+      "zero_r": 0.9977,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 699.5,
+      "zero_r": 0.9985,
+      "count": 3,
+      "null": true
+    },
+    {
+      "type": "transparent + null",
+      "pole_hz": 8310.4,
+      "pole_r": 0.1585,
+      "zero_hz": 620.6,
+      "zero_r": 0.9996,
+      "count": 3,
+      "null": true
+    }
+  ]
+}

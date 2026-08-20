@@ -1,0 +1,40 @@
+{
+ "datum_table": {
+  "p2k": {
+   "datum_hz": 39062.5,
+   "status": "VERIFIED"
+  },
+  "cube_family_240B": {
+   "datum_hz": 39062.5,
+   "status": "ASSUMED"
+  },
+  "cube_family_560B": {
+   "datum_hz": 44100.0,
+   "status": "ASSUMED"
+  },
+  "morpheus_raw_stream": {
+   "datum_hz": 39062.5,
+   "status": "VERIFIED"
+  }
+ },
+ "counts": {
+  "all_families": {
+   "distinct_sections": 6547,
+   "recurring_sections": 2048,
+   "distinct_combinations": 1549,
+   "recurring_combinations": 212
+  },
+  "morpheus_only": {
+   "distinct_sections": 5504,
+   "recurring_sections": 1803,
+   "distinct_combinations": 1345,
+   "recurring_combinations": 193
+  },
+  "p2k_cube_only": {
+   "distinct_sections": 1049,
+   "recurring_sections": 249,
+   "distinct_combinations": 204,
+   "recurring_combinations": 19
+  }
+ }
+}

@@ -1,5 +1,5 @@
 use crate::minifloat::encode;
-pub const DEFAULT_AUTHORING_SR: f64 = 44_100.0;
+pub const DEFAULT_AUTHORING_SR: f64 = 39_062.5;
 pub const TAU: f64 = core::f64::consts::PI * 2.0;
 pub const MAX_RADIUS: f64 = 0.999999999999999;
 pub const POLE_R_MIN: f64 = 0.5;

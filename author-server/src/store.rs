@@ -42,6 +42,14 @@ impl Store {
         })
     }
 
+    pub fn bare(root: PathBuf) -> Self {
+        Self {
+            root,
+            stage_index: serde_json::Value::Null,
+            vocabulary: serde_json::Value::Null,
+        }
+    }
+
     pub fn recipes(&self) -> PathBuf {
         self.root.join("recipes")
     }
@@ -214,11 +222,13 @@ fn factory_stage_index(root: &Path) -> serde_json::Value {
             let Ok(packed) = trench_core::minifloat::PackedCorners::from_body_bytes(&bytes) else { continue };
             let Some(file) = path.file_name().and_then(|n| n.to_str()) else { continue };
             let stem = path.file_stem().and_then(|n| n.to_str()).unwrap_or(file);
-            let fallback = stem.split_once('_').map(|x| x.1).unwrap_or(stem);
-            let name = if kind == "p2k" {
-                p2k_architecture_name(root, file).unwrap_or_else(|| fallback.to_string())
-            } else {
-                fallback.to_string()
+            let name = match kind {
+                "p2k" => {
+                    let fallback = stem.split_once('_').map(|x| x.1).unwrap_or(stem);
+                    p2k_architecture_name(root, file).unwrap_or_else(|| fallback.to_string())
+                }
+                "morpheus" => stem.split_once('_').map(|x| x.1).unwrap_or(stem).to_string(),
+                _ => stem.to_string(),
             };
             let tracks = (0..stages)
                 .map(|stage| (0..corners).map(|corner| packed.words[corner][stage]).collect::<Vec<_>>())

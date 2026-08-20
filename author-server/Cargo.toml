@@ -3,6 +3,14 @@ name = "author-server"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "author_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "author-server"
+path = "src/main.rs"
+
 [dependencies]
 trench-core = { path = "../trench-core" }
 author = { path = "../author" }

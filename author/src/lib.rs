@@ -8,3 +8,4 @@ pub mod formants;
 pub mod frame;
 pub mod pca;
 pub mod recipes;
+pub mod wav;

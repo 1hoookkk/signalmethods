@@ -1,18 +1,7 @@
-mod brief;
-mod field;
-mod fit;
-mod http;
-mod json;
-mod library;
-mod parity;
-mod store;
-mod target;
-mod vocab;
-mod ws;
-
 use std::net::{TcpListener, TcpStream};
 use std::sync::Arc;
 
+use author_server::{brief, field, fit, http, json, library, parity, store, target};
 use store::Store;
 
 fn main() {
@@ -41,9 +30,6 @@ fn handle(mut stream: TcpStream, store: &Store) {
         Ok(r) => r,
         Err(e) => return http::error(&mut stream, 400, &e),
     };
-    if req.path == "/ws" {
-        return words_socket(&mut stream, &req);
-    }
     match (req.method.as_str(), req.path.as_str()) {
         ("GET", "/api/library") => http::json(&mut stream, 200, &library::library(store)),
         ("GET", "/api/alphabet") => match library::alphabet(store) {
@@ -94,38 +80,12 @@ fn handle(mut stream: TcpStream, store: &Store) {
             if rel.contains("..") || rel.contains(':') {
                 return http::error(&mut stream, 400, "bad path");
             }
-            http::file(&mut stream, &store.root.join("workstation").join(rel));
+            let workstation = store.root.join("workstation");
+            let built = workstation.join("dist").join(rel);
+            let path = if built.is_file() { built } else { workstation.join(rel) };
+            http::file(&mut stream, &path);
         }
         _ => http::error(&mut stream, 404, "no such endpoint"),
-    }
-}
-
-fn words_socket(stream: &mut TcpStream, req: &http::Request) {
-    let Some(key) = http::header(&req.headers, "sec-websocket-key") else {
-        return http::error(stream, 400, "not a websocket handshake");
-    };
-    if !ws::accept(stream, key) {
-        return;
-    }
-    let mut frames = ws::Frames::new(stream, req.buffered.clone());
-    while let Some((opcode, payload)) = frames.read() {
-        match opcode {
-            0x8 => break,
-            0x9 => {
-                if !frames.write(0xA, &payload) {
-                    break;
-                }
-            }
-            0x2 => {
-                let Some(reply) = field::words_frame(&payload, fit::SR) else {
-                    break;
-                };
-                if !frames.write(0x2, &reply) {
-                    break;
-                }
-            }
-            _ => {}
-        }
     }
 }
 

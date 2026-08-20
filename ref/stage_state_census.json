@@ -1,0 +1,3402 @@
+{
+ "contract": "stage-state-census-v2: recurring second-order-section states across the E-mu corpus, derived by the Klatt/PCA method \u2014 each SOS is represented by its formant coordinates (center frequency Hz and bandwidth Hz, both physical at the row's own corpus datum sample rate; bandwidth law bw = -ln(r)*sr/pi), stratified into pole_only / pole_zero / zero_only, standardized, reduced by PCA, and clustered by k-means in score space. Full frequency-response curves were never compared. Raw encoded angles were never compared across datums.",
+ "generated_by": "dev/census_stage_states.py",
+ "corpora": {
+  "morpheus": {
+   "filters": 289,
+   "datum_sr_hz": 39062.5,
+   "source": "ref/morpheus/cubes_decoded.json",
+   "stages_per_corner": 7,
+   "corners": 8,
+   "per_stage_gain": false
+  },
+  "p2k": {
+   "filters": 33,
+   "datum_sr_hz": 39062.5,
+   "source": "ref/presets/*.bin",
+   "stages_per_corner": 6,
+   "corners": 4,
+   "per_stage_gain": true
+  },
+  "native": {
+   "filters": 16,
+   "datum_sr_hz": 44100.0,
+   "source": "ref/cubes/*.body + recipes/hero/*.body",
+   "stages_per_corner": 7,
+   "corners": 8,
+   "per_stage_gain": true
+  },
+  "emulator_x_xml": {
+   "filters": 71,
+   "source": "Emulator X Templates/Filter/*.xml",
+   "note": "typed Morph Designer cards serialized as 0..127 codes, now decoded to physical Hz/dB via xml_display_laws; still excluded from root-geometry strata because cards compile to roots only through the typed-card compiler"
+  }
+ },
+ "sentinels": {
+  "definition": "a root is OFF below r 0.45 (the corpus idle convention, e.g. the r=0.125 idle pole is acoustically flat); a stage is inert when both roots are off, and parked when pole and zero cancel exactly (same hz within 0.01 octave, r within 0.01) \u2014 correspondence scaffolding kept so lanes can travel apart in other corners. Both are excluded from strata.",
+  "inert_stage_rows_by_corpus": {
+   "morpheus": 4936,
+   "native": 4
+  },
+  "parked_cancelling_pairs_by_corpus": {
+   "morpheus": 331,
+   "p2k": 1,
+   "native": 1
+  },
+  "morpheus_idle_pole_raw_1909_2015_0_2047": 1124,
+  "unit_circle_zero_stages_by_corpus": {
+   "native": 48
+  }
+ },
+ "cascade_order_histogram": {
+  "morpheus": {
+   "0": 430,
+   "1": 101,
+   "2": 130,
+   "3": 78,
+   "4": 74,
+   "5": 128,
+   "6": 211,
+   "7": 1160
+  },
+  "p2k": {
+   "5": 1,
+   "6": 131
+  },
+  "native": {
+   "6": 5,
+   "7": 67
+  }
+ },
+ "lower_order_note": "cascade order per corner = active (non-inert, non-parked) sections; real-pair stages count as active and are listed in real_pair_letters",
+ "strata": {
+  "pole_only": {
+   "count": 2801,
+   "pca": {
+    "variance_ratio": [
+     0.7217,
+     0.2783
+    ],
+    "loadings": [
+     [
+      -0.707,
+      -0.707
+     ],
+     [
+      0.707,
+      -0.707
+     ]
+    ]
+   },
+   "clusters": [
+    {
+     "occurrences": 243,
+     "distinct_filters": 91,
+     "by_corpus": {
+      "morpheus": 228,
+      "p2k": 15
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 1481.5,
+     "pole_bw_hz": 100.4,
+     "pole_r_at_39062_5": 0.99196,
+     "pole_r_at_44100": 0.99288,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -35.01,
+     "stage_position_histogram": {
+      "S1": 19,
+      "S2": 29,
+      "S3": 22,
+      "S4": 14,
+      "S5": 19,
+      "S6": 12,
+      "S7": 128
+     },
+     "exemplar_filters": [
+      "0>Muter",
+      "0>Shp1",
+      "0>Shp2",
+      "0>Shp3",
+      "1BndPrmtrcD",
+      "500up.4",
+      "6 Poles",
+      "AEParaVowel",
+      "AHmBnd.4",
+      "Acc.Vel-2"
+     ]
+    },
+    {
+     "occurrences": 213,
+     "distinct_filters": 84,
+     "by_corpus": {
+      "morpheus": 212,
+      "native": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 12322.1,
+     "pole_bw_hz": 4912.9,
+     "pole_r_at_39062_5": 0.6736,
+     "pole_r_at_44100": 0.7047,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.89,
+     "stage_position_histogram": {
+      "S1": 31,
+      "S2": 39,
+      "S3": 29,
+      "S4": 25,
+      "S5": 9,
+      "S6": 18,
+      "S7": 62
+     },
+     "exemplar_filters": [
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "2 PoleLoQ.4",
+      "2 Poles",
+      "2pole>4pole",
+      "4 PoleLoQ.4",
+      "4 Poles A",
+      "4 Poles B",
+      "4 Poles C",
+      "4>2 LowQHiQ"
+     ]
+    },
+    {
+     "occurrences": 171,
+     "distinct_filters": 82,
+     "by_corpus": {
+      "morpheus": 166,
+      "p2k": 5
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 291.7,
+     "pole_bw_hz": 33.2,
+     "pole_r_at_39062_5": 0.99733,
+     "pole_r_at_44100": 0.99764,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -38.69,
+     "stage_position_histogram": {
+      "S1": 22,
+      "S2": 8,
+      "S3": 9,
+      "S4": 12,
+      "S5": 12,
+      "S6": 15,
+      "S7": 93
+     },
+     "exemplar_filters": [
+      "0>Shp3",
+      "500up.4",
+      "6 Poles",
+      "AEParaVowel",
+      "AHmBnd.4",
+      "Acc.Vel-2",
+      "Auto Clang",
+      "BassEQ 1.4",
+      "Bassutoi.4",
+      "Bb80Hzbw1.4"
+     ]
+    },
+    {
+     "occurrences": 209,
+     "distinct_filters": 80,
+     "by_corpus": {
+      "morpheus": 207,
+      "p2k": 2
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 122.2,
+     "pole_bw_hz": 409.6,
+     "pole_r_at_39062_5": 0.96759,
+     "pole_r_at_44100": 0.97124,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -23.98,
+     "stage_position_histogram": {
+      "S1": 33,
+      "S2": 16,
+      "S3": 9,
+      "S4": 8,
+      "S5": 17,
+      "S6": 21,
+      "S7": 105
+     },
+     "exemplar_filters": [
+      "0>Odds",
+      "0>Shp2",
+      "0>Shp3",
+      "4 Poles C",
+      "500up.4",
+      "6 Poles",
+      "AllPoleDist",
+      "BassEQ 1.4",
+      "Bassutoi.4",
+      "Bb80Hzbw1.4"
+     ]
+    },
+    {
+     "occurrences": 232,
+     "distinct_filters": 79,
+     "by_corpus": {
+      "morpheus": 230,
+      "p2k": 2
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 12775.7,
+     "pole_bw_hz": 1011.9,
+     "pole_r_at_39062_5": 0.92184,
+     "pole_r_at_44100": 0.93045,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -13.01,
+     "stage_position_histogram": {
+      "S1": 16,
+      "S2": 31,
+      "S3": 19,
+      "S4": 23,
+      "S5": 40,
+      "S6": 43,
+      "S7": 60
+     },
+     "exemplar_filters": [
+      "0>Odds",
+      "0>Shp3",
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "4 Poles C",
+      "500up.4",
+      "AEParLPVow",
+      "AHmBnd.4"
+     ]
+    },
+    {
+     "occurrences": 242,
+     "distinct_filters": 77,
+     "by_corpus": {
+      "morpheus": 230,
+      "p2k": 12
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 4646.3,
+     "pole_bw_hz": 294.4,
+     "pole_r_at_39062_5": 0.9766,
+     "pole_r_at_44100": 0.97924,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -17.36,
+     "stage_position_histogram": {
+      "S1": 10,
+      "S2": 15,
+      "S3": 34,
+      "S4": 30,
+      "S5": 30,
+      "S6": 30,
+      "S7": 93
+     },
+     "exemplar_filters": [
+      "0>Shp3",
+      "2pole>4pole",
+      "4 Poles B",
+      "500up.4",
+      "AEParLPVow",
+      "AOLpParaVow",
+      "AOParaVowel",
+      "AUParaVow.4",
+      "Analog.4",
+      "ApDistB6.4"
+     ]
+    },
+    {
+     "occurrences": 192,
+     "distinct_filters": 77,
+     "by_corpus": {
+      "morpheus": 191,
+      "native": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 3306.5,
+     "pole_bw_hz": 2578.5,
+     "pole_r_at_39062_5": 0.81271,
+     "pole_r_at_44100": 0.8322,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.6,
+     "stage_position_histogram": {
+      "S1": 21,
+      "S2": 23,
+      "S3": 22,
+      "S4": 21,
+      "S5": 19,
+      "S6": 16,
+      "S7": 70
+     },
+     "exemplar_filters": [
+      "0>Muter",
+      "0>Shp2",
+      "4>2 LowQHiQ",
+      "500up.4",
+      "6 Poles",
+      "AllPoleDist",
+      "BassEQ 1.4",
+      "Be-Ye.4",
+      "BrassRez.4",
+      "BrassyBlast"
+     ]
+    },
+    {
+     "occurrences": 197,
+     "distinct_filters": 75,
+     "by_corpus": {
+      "morpheus": 196,
+      "p2k": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 1418.3,
+     "pole_bw_hz": 588.7,
+     "pole_r_at_39062_5": 0.95376,
+     "pole_r_at_44100": 0.95893,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -20.35,
+     "stage_position_histogram": {
+      "S1": 22,
+      "S2": 22,
+      "S3": 10,
+      "S4": 13,
+      "S5": 19,
+      "S6": 25,
+      "S7": 86
+     },
+     "exemplar_filters": [
+      "0>Bell-",
+      "1BndPrmtrcC",
+      "500up.4",
+      "6 Poles",
+      "AcGtrRs.4",
+      "Acc.Vel-1",
+      "Auto Clang",
+      "BassXpress",
+      "Bassutoi.4",
+      "Be-Ye.4"
+     ]
+    },
+    {
+     "occurrences": 172,
+     "distinct_filters": 75,
+     "by_corpus": {
+      "morpheus": 164,
+      "native": 8
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 75.0,
+     "pole_bw_hz": 2.3,
+     "pole_r_at_39062_5": 0.99981,
+     "pole_r_at_44100": 0.99983,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.87,
+     "stage_position_histogram": {
+      "S1": 11,
+      "S2": 3,
+      "S3": 1,
+      "S4": 1,
+      "S6": 3,
+      "S7": 153
+     },
+     "exemplar_filters": [
+      "0>Shp1",
+      "0>Shp3",
+      "4 PoleLoQ.4",
+      "4 Poles A",
+      "4 Poles C",
+      "500up.4",
+      "Acc.Vel-2",
+      "AllPoleDist",
+      "AllPoleDst2",
+      "B BOOST.4"
+     ]
+    },
+    {
+     "occurrences": 149,
+     "distinct_filters": 57,
+     "by_corpus": {
+      "morpheus": 140,
+      "p2k": 9
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 1792.3,
+     "pole_bw_hz": 7.8,
+     "pole_r_at_39062_5": 0.99938,
+     "pole_r_at_44100": 0.99945,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -26.63,
+     "stage_position_histogram": {
+      "S1": 5,
+      "S2": 2,
+      "S3": 2,
+      "S4": 2,
+      "S5": 1,
+      "S6": 1,
+      "S7": 136
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Shp1",
+      "1BndPrmtrcC",
+      "AEParaVowel",
+      "Bell Wah A",
+      "Bell Wah B",
+      "Breather 1",
+      "BrsSwell2.4",
+      "BuzzyPad.4"
+     ]
+    },
+    {
+     "occurrences": 178,
+     "distinct_filters": 55,
+     "by_corpus": {
+      "morpheus": 177,
+      "p2k": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 14333.2,
+     "pole_bw_hz": 52.1,
+     "pole_r_at_39062_5": 0.99582,
+     "pole_r_at_44100": 0.9963,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -12.8,
+     "stage_position_histogram": {
+      "S2": 16,
+      "S3": 14,
+      "S4": 2,
+      "S5": 16,
+      "S6": 12,
+      "S7": 118
+     },
+     "exemplar_filters": [
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AHmBnd.4",
+      "Ah Shaper",
+      "Bell Wah A",
+      "Bendup",
+      "Bendup/Swap",
+      "BroadRes.4",
+      "CO>FlngT",
+      "ChimeFlange"
+     ]
+    },
+    {
+     "occurrences": 212,
+     "distinct_filters": 90,
+     "by_corpus": {
+      "morpheus": 212
+     },
+     "corpora_spanned": 1,
+     "pole_hz": 21.4,
+     "pole_bw_hz": 35.9,
+     "pole_r_at_39062_5": 0.99711,
+     "pole_r_at_44100": 0.99744,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S1": 26,
+      "S2": 17,
+      "S3": 6,
+      "S4": 2,
+      "S5": 7,
+      "S6": 7,
+      "S7": 147
+     },
+     "exemplar_filters": [
+      "0>Bell-",
+      "0>Muter",
+      "1BndPrmtrcC",
+      "1BndPrmtrcD",
+      "2 PoleLoQ.4",
+      "4 PoleLoQ.4",
+      "4 PoleMidQ.4",
+      "4 Poles A",
+      "500up.4",
+      "6 Poles"
+     ]
+    },
+    {
+     "occurrences": 121,
+     "distinct_filters": 52,
+     "by_corpus": {
+      "morpheus": 121
+     },
+     "corpora_spanned": 1,
+     "pole_hz": 54.8,
+     "pole_bw_hz": 0.2,
+     "pole_r_at_39062_5": 0.99998,
+     "pole_r_at_44100": 0.99999,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S1": 5,
+      "S2": 3,
+      "S4": 2,
+      "S6": 5,
+      "S7": 106
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Shp1",
+      "1BndPrmtrcC",
+      "2 Poles",
+      "4 Poles B",
+      "Ah Shaper",
+      "AllPoleDst2",
+      "ApDistB6.4",
+      "Bell Wah A"
+     ]
+    },
+    {
+     "occurrences": 129,
+     "distinct_filters": 47,
+     "by_corpus": {
+      "morpheus": 129
+     },
+     "corpora_spanned": 1,
+     "pole_hz": 425.0,
+     "pole_bw_hz": 3155.0,
+     "pole_r_at_39062_5": 0.77589,
+     "pole_r_at_44100": 0.79871,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S1": 32,
+      "S2": 8,
+      "S3": 11,
+      "S4": 9,
+      "S5": 8,
+      "S6": 16,
+      "S7": 45
+     },
+     "exemplar_filters": [
+      "0>Odds",
+      "0>Shp2",
+      "0>Shp3",
+      "4 Poles B",
+      "500up.4",
+      "6 Poles",
+      "AEParaVowel",
+      "Auto Clang",
+      "Bb80Hzbw1.4",
+      "Bell Wah A"
+     ]
+    },
+    {
+     "occurrences": 101,
+     "distinct_filters": 39,
+     "by_corpus": {
+      "morpheus": 101
+     },
+     "corpora_spanned": 1,
+     "pole_hz": 7.7,
+     "pole_bw_hz": 217.5,
+     "pole_r_at_39062_5": 0.98266,
+     "pole_r_at_44100": 0.98463,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S1": 11,
+      "S2": 4,
+      "S3": 4,
+      "S4": 6,
+      "S5": 8,
+      "S6": 17,
+      "S7": 51
+     },
+     "exemplar_filters": [
+      "0>Odds",
+      "1BndPrmtrcB",
+      "1BndPrmtrcC",
+      "1BndPrmtrcD",
+      "2 Poles",
+      "4 Poles A",
+      "4 Poles B",
+      "4 Poles C",
+      "6 Poles",
+      "Analog.4"
+     ]
+    },
+    {
+     "occurrences": 40,
+     "distinct_filters": 20,
+     "by_corpus": {
+      "morpheus": 40
+     },
+     "corpora_spanned": 1,
+     "pole_hz": 0.7,
+     "pole_bw_hz": 4632.5,
+     "pole_r_at_39062_5": 0.68896,
+     "pole_r_at_44100": 0.71892,
+     "zero_hz": null,
+     "zero_bw_hz": null,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S2": 2,
+      "S3": 1,
+      "S4": 2,
+      "S7": 35
+     },
+     "exemplar_filters": [
+      "1BndPrmtrcB",
+      "1BndPrmtrcC",
+      "2pole>4pole",
+      "4>2 LowQHiQ",
+      "Acc.Vel-1",
+      "Blow Cube",
+      "Breather 2",
+      "BuzzyPad.4",
+      "CableRing.4",
+      "ElGuit Cube"
+     ]
+    }
+   ]
+  },
+  "pole_zero": {
+   "count": 8235,
+   "pca": {
+    "variance_ratio": [
+     0.5698,
+     0.2075,
+     0.15,
+     0.0727
+    ],
+    "loadings": [
+     [
+      0.56,
+      0.445,
+      0.539,
+      0.444
+     ],
+     [
+      0.395,
+      -0.551,
+      0.493,
+      -0.545
+     ],
+     [
+      -0.042,
+      -0.701,
+      0.036,
+      0.711
+     ],
+     [
+      0.727,
+      -0.084,
+      -0.682,
+      -0.005
+     ]
+    ]
+   },
+   "clusters": [
+    {
+     "occurrences": 1067,
+     "distinct_filters": 165,
+     "by_corpus": {
+      "morpheus": 832,
+      "p2k": 173,
+      "native": 62
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 6931.5,
+     "pole_bw_hz": 621.0,
+     "pole_r_at_39062_5": 0.95128,
+     "pole_r_at_44100": 0.95672,
+     "zero_hz": 6973.9,
+     "zero_bw_hz": 2067.0,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -4.12,
+     "stage_position_histogram": {
+      "S1": 110,
+      "S2": 154,
+      "S3": 208,
+      "S4": 209,
+      "S5": 239,
+      "S6": 139,
+      "S7": 8
+     },
+     "exemplar_filters": [
+      "0>Bell-",
+      "0>Muter",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcB",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "4>2 LowQHiQ",
+      "AEParLPVow",
+      "AEParaVowel"
+     ]
+    },
+    {
+     "occurrences": 844,
+     "distinct_filters": 145,
+     "by_corpus": {
+      "morpheus": 730,
+      "p2k": 86,
+      "native": 28
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 8140.9,
+     "pole_bw_hz": 77.1,
+     "pole_r_at_39062_5": 0.99382,
+     "pole_r_at_44100": 0.99452,
+     "zero_hz": 7167.2,
+     "zero_bw_hz": 163.2,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -5.84,
+     "stage_position_histogram": {
+      "S1": 20,
+      "S2": 158,
+      "S3": 186,
+      "S4": 176,
+      "S5": 182,
+      "S6": 122
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Muter",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "AEParaVowel",
+      "AHmBnd.4",
+      "Acc.Vel-2",
+      "Ah Shaper"
+     ]
+    },
+    {
+     "occurrences": 403,
+     "distinct_filters": 139,
+     "by_corpus": {
+      "morpheus": 364,
+      "p2k": 19,
+      "native": 20
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 3051.7,
+     "pole_bw_hz": 1596.6,
+     "pole_r_at_39062_5": 0.8795,
+     "pole_r_at_44100": 0.89249,
+     "zero_hz": 2551.8,
+     "zero_bw_hz": 52.7,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -2.28,
+     "stage_position_histogram": {
+      "S1": 85,
+      "S2": 68,
+      "S3": 65,
+      "S4": 68,
+      "S5": 55,
+      "S6": 60,
+      "S7": 2
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Muter",
+      "0>Odds",
+      "1BndPrmtrcD",
+      "AHmBnd.4",
+      "AOLpParaVow",
+      "APass.4",
+      "AcGtrRs.4",
+      "Acc.Vel-2",
+      "Ah Shaper"
+     ]
+    },
+    {
+     "occurrences": 950,
+     "distinct_filters": 133,
+     "by_corpus": {
+      "morpheus": 605,
+      "p2k": 158,
+      "native": 187
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 1675.0,
+     "pole_bw_hz": 54.9,
+     "pole_r_at_39062_5": 0.9956,
+     "pole_r_at_44100": 0.9961,
+     "zero_hz": 1856.2,
+     "zero_bw_hz": 804.2,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -3.93,
+     "stage_position_histogram": {
+      "S1": 56,
+      "S2": 207,
+      "S3": 234,
+      "S4": 203,
+      "S5": 146,
+      "S6": 96,
+      "S7": 8
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "4>2 LowQHiQ",
+      "AEParLPVow",
+      "AEParaVowel",
+      "AHmBnd.4",
+      "AOLpParaVow",
+      "AOParaVowel",
+      "AUParaVow.4"
+     ]
+    },
+    {
+     "occurrences": 506,
+     "distinct_filters": 133,
+     "by_corpus": {
+      "morpheus": 477,
+      "p2k": 13,
+      "native": 16
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 228.8,
+     "pole_bw_hz": 103.5,
+     "pole_r_at_39062_5": 0.99171,
+     "pole_r_at_44100": 0.99265,
+     "zero_hz": 209.1,
+     "zero_bw_hz": 123.9,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -4.38,
+     "stage_position_histogram": {
+      "S1": 55,
+      "S2": 108,
+      "S3": 83,
+      "S4": 87,
+      "S5": 86,
+      "S6": 87
+     },
+     "exemplar_filters": [
+      "0>Bell-",
+      "0>Odds",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AEParaVowel",
+      "AOLpParaVow",
+      "AOParaVowel",
+      "AcGtrRs.4"
+     ]
+    },
+    {
+     "occurrences": 811,
+     "distinct_filters": 131,
+     "by_corpus": {
+      "morpheus": 780,
+      "p2k": 1,
+      "native": 30
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 359.5,
+     "pole_bw_hz": 5.0,
+     "pole_r_at_39062_5": 0.9996,
+     "pole_r_at_44100": 0.99965,
+     "zero_hz": 346.9,
+     "zero_bw_hz": 19.9,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -1.83,
+     "stage_position_histogram": {
+      "S1": 20,
+      "S2": 191,
+      "S3": 205,
+      "S4": 181,
+      "S5": 115,
+      "S6": 99
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Muter",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AUParaVow.4",
+      "Acc.Vel-2",
+      "Ah Shaper"
+     ]
+    },
+    {
+     "occurrences": 518,
+     "distinct_filters": 128,
+     "by_corpus": {
+      "morpheus": 467,
+      "p2k": 40,
+      "native": 11
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 11807.3,
+     "pole_bw_hz": 1557.9,
+     "pole_r_at_39062_5": 0.88224,
+     "pole_r_at_44100": 0.89495,
+     "zero_hz": 10974.4,
+     "zero_bw_hz": 186.6,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -4.46,
+     "stage_position_histogram": {
+      "S1": 80,
+      "S2": 109,
+      "S3": 112,
+      "S4": 87,
+      "S5": 78,
+      "S6": 52
+     },
+     "exemplar_filters": [
+      "0>Muter",
+      "0>Odds",
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "2pole>4pole",
+      "AHmBnd.4",
+      "APass.4",
+      "Acc.Vel-1",
+      "Acc.Vel-2",
+      "Ah Shaper"
+     ]
+    },
+    {
+     "occurrences": 350,
+     "distinct_filters": 121,
+     "by_corpus": {
+      "morpheus": 340,
+      "p2k": 2,
+      "native": 8
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 1279.7,
+     "pole_bw_hz": 1061.8,
+     "pole_r_at_39062_5": 0.91815,
+     "pole_r_at_44100": 0.92715,
+     "zero_hz": 325.1,
+     "zero_bw_hz": 7.1,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.75,
+     "stage_position_histogram": {
+      "S1": 132,
+      "S2": 34,
+      "S3": 41,
+      "S4": 47,
+      "S5": 55,
+      "S6": 41
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Muter",
+      "0>Odds",
+      "0>Shp1",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AHmBnd.4",
+      "APass.4",
+      "AcGtrRs.4"
+     ]
+    },
+    {
+     "occurrences": 670,
+     "distinct_filters": 120,
+     "by_corpus": {
+      "morpheus": 634,
+      "p2k": 16,
+      "native": 20
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 2499.6,
+     "pole_bw_hz": 19.5,
+     "pole_r_at_39062_5": 0.99843,
+     "pole_r_at_44100": 0.99861,
+     "zero_hz": 1978.5,
+     "zero_bw_hz": 27.2,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -5.45,
+     "stage_position_histogram": {
+      "S1": 12,
+      "S2": 117,
+      "S3": 119,
+      "S4": 149,
+      "S5": 157,
+      "S6": 116
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "AEParaVowel",
+      "AUParaVow.4",
+      "Acc.Vel-2",
+      "BassDrumEQ",
+      "Bel>Crs>Bel"
+     ]
+    },
+    {
+     "occurrences": 394,
+     "distinct_filters": 104,
+     "by_corpus": {
+      "morpheus": 336,
+      "p2k": 31,
+      "native": 27
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 623.7,
+     "pole_bw_hz": 1502.2,
+     "pole_r_at_39062_5": 0.8862,
+     "pole_r_at_44100": 0.89851,
+     "zero_hz": 510.7,
+     "zero_bw_hz": 856.7,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -6.73,
+     "stage_position_histogram": {
+      "S1": 84,
+      "S2": 65,
+      "S3": 67,
+      "S4": 58,
+      "S5": 72,
+      "S6": 44,
+      "S7": 4
+     },
+     "exemplar_filters": [
+      "0>Bell-",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AEParLPVow",
+      "AOLpParaVow",
+      "AOParaVowel",
+      "APass.4",
+      "AUParaVow.4",
+      "AcGtrRs.4"
+     ]
+    },
+    {
+     "occurrences": 169,
+     "distinct_filters": 79,
+     "by_corpus": {
+      "morpheus": 148,
+      "p2k": 19,
+      "native": 2
+     },
+     "corpora_spanned": 3,
+     "pole_hz": 41.1,
+     "pole_bw_hz": 504.4,
+     "pole_r_at_39062_5": 0.96024,
+     "pole_r_at_44100": 0.9647,
+     "zero_hz": 5683.9,
+     "zero_bw_hz": 479.6,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -8.78,
+     "stage_position_histogram": {
+      "S1": 91,
+      "S2": 20,
+      "S3": 14,
+      "S4": 8,
+      "S5": 11,
+      "S6": 24,
+      "S7": 1
+     },
+     "exemplar_filters": [
+      "0>Muter",
+      "0>Odds",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AEParLPVow",
+      "AHmBnd.4"
+     ]
+    },
+    {
+     "occurrences": 443,
+     "distinct_filters": 126,
+     "by_corpus": {
+      "morpheus": 435,
+      "native": 8
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 115.1,
+     "pole_bw_hz": 113.9,
+     "pole_r_at_39062_5": 0.99088,
+     "pole_r_at_44100": 0.99192,
+     "zero_hz": 129.4,
+     "zero_bw_hz": 2.7,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.87,
+     "stage_position_histogram": {
+      "S1": 58,
+      "S2": 62,
+      "S3": 48,
+      "S4": 63,
+      "S5": 98,
+      "S6": 114
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Muter",
+      "0>Odds",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "AcGtrRs.4",
+      "Acc.Vel-1",
+      "Ah Shaper",
+      "AllPoleDist"
+     ]
+    },
+    {
+     "occurrences": 642,
+     "distinct_filters": 107,
+     "by_corpus": {
+      "morpheus": 634,
+      "native": 8
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 137.1,
+     "pole_bw_hz": 1.2,
+     "pole_r_at_39062_5": 0.99991,
+     "pole_r_at_44100": 0.99992,
+     "zero_hz": 93.0,
+     "zero_bw_hz": 2.0,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.87,
+     "stage_position_histogram": {
+      "S1": 8,
+      "S2": 88,
+      "S3": 86,
+      "S4": 98,
+      "S5": 171,
+      "S6": 191
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Shp1",
+      "0>Shp2",
+      "1BndPrmtrcD",
+      "Acc.Vel-2",
+      "Ah Shaper",
+      "ApDistB6.4",
+      "Bel>Crs>Bel",
+      "Bell Wah A"
+     ]
+    },
+    {
+     "occurrences": 163,
+     "distinct_filters": 50,
+     "by_corpus": {
+      "morpheus": 162,
+      "p2k": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 2318.3,
+     "pole_bw_hz": 529.5,
+     "pole_r_at_39062_5": 0.95831,
+     "pole_r_at_44100": 0.96298,
+     "zero_hz": 1.0,
+     "zero_bw_hz": 897.1,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -8.1,
+     "stage_position_histogram": {
+      "S1": 42,
+      "S2": 11,
+      "S3": 16,
+      "S4": 17,
+      "S5": 19,
+      "S6": 58
+     },
+     "exemplar_filters": [
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "Acc.Vel-2",
+      "AllPoleDist",
+      "BassDrumEQ",
+      "Bonk>CO",
+      "Brass Swell",
+      "BroadRes.4",
+      "Bw65Hz/2k.4",
+      "Comb/HP.4"
+     ]
+    },
+    {
+     "occurrences": 172,
+     "distinct_filters": 38,
+     "by_corpus": {
+      "p2k": 124,
+      "native": 48
+     },
+     "corpora_spanned": 2,
+     "pole_hz": 1796.0,
+     "pole_bw_hz": 201.4,
+     "pole_r_at_39062_5": 0.98394,
+     "pole_r_at_44100": 0.98576,
+     "zero_hz": 9992.8,
+     "zero_bw_hz": 0.1,
+     "unit_circle_zero_share": 0.279,
+     "mean_stage_gain_db": -6.91,
+     "stage_position_histogram": {
+      "S4": 8,
+      "S6": 132,
+      "S7": 32
+     },
+     "exemplar_filters": [
+      "P2k_000_ace_of_bass",
+      "P2k_001_megasweepz",
+      "P2k_002_early_rizer",
+      "P2k_003_millennium",
+      "P2k_004_meaty_gizmo",
+      "P2k_005_klub_klassik",
+      "P2k_006_bassbox_303",
+      "P2k_007_fuzzi_face",
+      "P2k_008_dead_ringer",
+      "P2k_009_tb_or_not_tb"
+     ]
+    },
+    {
+     "occurrences": 133,
+     "distinct_filters": 31,
+     "by_corpus": {
+      "morpheus": 133
+     },
+     "corpora_spanned": 1,
+     "pole_hz": 4.2,
+     "pole_bw_hz": 366.8,
+     "pole_r_at_39062_5": 0.97093,
+     "pole_r_at_44100": 0.97421,
+     "zero_hz": 1.0,
+     "zero_bw_hz": 347.0,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S1": 6,
+      "S2": 19,
+      "S3": 14,
+      "S4": 26,
+      "S5": 23,
+      "S6": 45
+     },
+     "exemplar_filters": [
+      "1BndPrmtrcA",
+      "2pole>4pole",
+      "Acc.Vel-2",
+      "Auto Clang",
+      "BrassRez.4",
+      "C1Harmonic",
+      "EZ Rhodez.4",
+      "EZ Vibez.4",
+      "ElGuit Cube",
+      "GtrSkwk"
+     ]
+    }
+   ]
+  },
+  "zero_only": {
+   "count": 1108,
+   "pca": {
+    "variance_ratio": [
+     0.6646,
+     0.3354
+    ],
+    "loadings": [
+     [
+      -0.707,
+      -0.707
+     ],
+     [
+      -0.707,
+      0.707
+     ]
+    ]
+   },
+   "clusters": [
+    {
+     "occurrences": 221,
+     "distinct_filters": 97,
+     "by_corpus": {
+      "morpheus": 218,
+      "p2k": 2,
+      "native": 1
+     },
+     "corpora_spanned": 3,
+     "pole_hz": null,
+     "pole_bw_hz": null,
+     "pole_r_at_39062_5": null,
+     "pole_r_at_44100": null,
+     "zero_hz": 9108.6,
+     "zero_bw_hz": 493.3,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -1.86,
+     "stage_position_histogram": {
+      "S1": 135,
+      "S2": 30,
+      "S3": 12,
+      "S4": 17,
+      "S5": 13,
+      "S6": 14
+     },
+     "exemplar_filters": [
+      "0>Bell-",
+      "0>Muter",
+      "0>Odds",
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AEParaVowel",
+      "AOLpParaVow",
+      "AOParaVowel"
+     ]
+    },
+    {
+     "occurrences": 243,
+     "distinct_filters": 89,
+     "by_corpus": {
+      "morpheus": 239,
+      "p2k": 1,
+      "native": 3
+     },
+     "corpora_spanned": 3,
+     "pole_hz": null,
+     "pole_bw_hz": null,
+     "pole_r_at_39062_5": null,
+     "pole_r_at_44100": null,
+     "zero_hz": 6087.4,
+     "zero_bw_hz": 3426.0,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -0.95,
+     "stage_position_histogram": {
+      "S1": 123,
+      "S2": 29,
+      "S3": 19,
+      "S4": 40,
+      "S5": 24,
+      "S6": 8
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "0>Shp1",
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "AEParLPVow",
+      "AEParaVowel",
+      "AOLpParaVow",
+      "AUParaVow.4",
+      "AcGtrRs.4"
+     ]
+    },
+    {
+     "occurrences": 239,
+     "distinct_filters": 91,
+     "by_corpus": {
+      "morpheus": 236,
+      "p2k": 3
+     },
+     "corpora_spanned": 2,
+     "pole_hz": null,
+     "pole_bw_hz": null,
+     "pole_r_at_39062_5": null,
+     "pole_r_at_44100": null,
+     "zero_hz": 9857.4,
+     "zero_bw_hz": 38.3,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -11.65,
+     "stage_position_histogram": {
+      "S1": 178,
+      "S2": 22,
+      "S3": 15,
+      "S4": 2,
+      "S5": 4,
+      "S6": 18
+     },
+     "exemplar_filters": [
+      "0>Odds",
+      "0>Shp1",
+      "1BndPrmtrcC",
+      "1BndPrmtrcD",
+      "AEParaVowel",
+      "AHmBnd.4",
+      "Ah Shaper",
+      "Arpeggio",
+      "Auto Clang",
+      "Bel>Crs>Bel"
+     ]
+    },
+    {
+     "occurrences": 196,
+     "distinct_filters": 89,
+     "by_corpus": {
+      "morpheus": 195,
+      "p2k": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": null,
+     "pole_bw_hz": null,
+     "pole_r_at_39062_5": null,
+     "pole_r_at_44100": null,
+     "zero_hz": 467.8,
+     "zero_bw_hz": 214.5,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -4.86,
+     "stage_position_histogram": {
+      "S1": 136,
+      "S2": 8,
+      "S3": 6,
+      "S4": 13,
+      "S5": 9,
+      "S6": 24
+     },
+     "exemplar_filters": [
+      "0>Bell+",
+      "0>Bell-",
+      "1BndPrmtrcC",
+      "1BndPrmtrcD",
+      "2pole>4pole",
+      "AEParLPVow",
+      "AOLpParaVow",
+      "AOParaVowel",
+      "AUParaVow.4",
+      "Acc.Vel-1"
+     ]
+    },
+    {
+     "occurrences": 161,
+     "distinct_filters": 76,
+     "by_corpus": {
+      "morpheus": 160,
+      "p2k": 1
+     },
+     "corpora_spanned": 2,
+     "pole_hz": null,
+     "pole_bw_hz": null,
+     "pole_r_at_39062_5": null,
+     "pole_r_at_44100": null,
+     "zero_hz": 168.4,
+     "zero_bw_hz": 2.6,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": -1.75,
+     "stage_position_histogram": {
+      "S1": 133,
+      "S2": 5,
+      "S3": 5,
+      "S5": 11,
+      "S6": 7
+     },
+     "exemplar_filters": [
+      "0>Muter",
+      "0>Odds",
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "1BndPrmtrcC",
+      "Ah Shaper",
+      "ApDistB6.4",
+      "Arpeggio",
+      "Auto Clang",
+      "BassXpress"
+     ]
+    },
+    {
+     "occurrences": 48,
+     "distinct_filters": 24,
+     "by_corpus": {
+      "morpheus": 48
+     },
+     "corpora_spanned": 1,
+     "pole_hz": null,
+     "pole_bw_hz": null,
+     "pole_r_at_39062_5": null,
+     "pole_r_at_44100": null,
+     "zero_hz": 0.7,
+     "zero_bw_hz": 784.0,
+     "unit_circle_zero_share": 0.0,
+     "mean_stage_gain_db": null,
+     "stage_position_histogram": {
+      "S1": 21,
+      "S2": 1,
+      "S4": 9,
+      "S5": 8,
+      "S6": 9
+     },
+     "exemplar_filters": [
+      "1BndPrmtrcA",
+      "1BndPrmtrcB",
+      "1BndPrmtrcC",
+      "4>2 LowQHiQ",
+      "Arpeggio",
+      "Bel>Crs>Bel",
+      "BuzzyPad.4",
+      "C1Harmonic",
+      "CO>FlngT",
+      "Chrs>Flng1"
+     ]
+    }
+   ]
+  }
+ },
+ "verbatim_letters": {
+  "morpheus_raw_codes": [
+   {
+    "raw": [
+     2030,
+     1039,
+     0,
+     2047
+    ],
+    "cube_count": 25,
+    "pole": {
+     "hz": 18229.49,
+     "r": 0.995606
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "2pole>4pole",
+     "Ah Shaper",
+     "Bendup/Swap",
+     "BroadRes.4",
+     "CO>FlngT",
+     "ChimeFlange",
+     "DeepCombs.4",
+     "ElGuit Cube"
+    ]
+   },
+   {
+    "raw": [
+     1909,
+     2015,
+     2030,
+     1039
+    ],
+    "cube_count": 20,
+    "pole": {
+     "hz": 9381.77,
+     "r": 0.125031
+    },
+    "zero": {
+     "hz": 18229.49,
+     "r": 0.995606
+    },
+    "exemplar_cubes": [
+     "1BndPrmtrcD",
+     "Ah Shaper",
+     "BroadRes.4",
+     "ChimeFlange",
+     "Cymbal Cube",
+     "Flange6R.4",
+     "HiEndQ.4",
+     "HrmncPeaks2"
+    ]
+   },
+   {
+    "raw": [
+     980,
+     863,
+     0,
+     2047
+    ],
+    "cube_count": 10,
+    "pole": {
+     "hz": 63.46,
+     "r": 0.998291
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "0>Bell-",
+     "Acc.Vel-1",
+     "Bel>Crs>Bel",
+     "Bell Wah A",
+     "Bell Wah B",
+     "BriteFlng.4",
+     "Chrs>Flng1",
+     "HOTwell.4"
+    ]
+   },
+   {
+    "raw": [
+     1625,
+     1691,
+     0,
+     2047
+    ],
+    "cube_count": 9,
+    "pole": {
+     "hz": 2078.41,
+     "r": 0.84768
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "500up.4",
+     "BrickWaLP2",
+     "El Pick It",
+     "Flng>Flng1",
+     "Flng>Flng5",
+     "HiQ 2PoleLP",
+     "MdQ 2PoleLP",
+     "MdQ 4PoleLP"
+    ]
+   },
+   {
+    "raw": [
+     1623,
+     1501,
+     0,
+     2047
+    ],
+    "cube_count": 9,
+    "pole": {
+     "hz": 2059.34,
+     "r": 0.945803
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "0>Bell-",
+     "Acc.Vel-1",
+     "Bel>Crs>Bel",
+     "Bell Wah A",
+     "Bell Wah B",
+     "Chrs>Flng1",
+     "HOTwell.4",
+     "String Cube"
+    ]
+   },
+   {
+    "raw": [
+     983,
+     415,
+     0,
+     2047
+    ],
+    "cube_count": 8,
+    "pole": {
+     "hz": 64.35,
+     "r": 0.999847
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "BrassRez.4",
+     "Breather 1",
+     "C1Harmonic",
+     "ElGuit Pick",
+     "Expander",
+     "Flng>Flng3",
+     "Ntches2Oct.4",
+     "Strike Cube"
+    ]
+   },
+   {
+    "raw": [
+     1037,
+     1484,
+     0,
+     2047
+    ],
+    "cube_count": 8,
+    "pole": {
+     "hz": 84.6,
+     "r": 0.949954
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "0>Shp3",
+     "500up.4",
+     "El Pick It",
+     "Flng>Flng3",
+     "Flng>FlngT",
+     "TubeSust.4",
+     "VelMarim",
+     "WindNoise 2"
+    ]
+   },
+   {
+    "raw": [
+     781,
+     1280,
+     0,
+     2047
+    ],
+    "cube_count": 8,
+    "pole": {
+     "hz": 21.15,
+     "r": 0.984257
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "2 Poles",
+     "4 Poles A",
+     "4 Poles B",
+     "4 Poles C",
+     "6 Poles",
+     "Dave'sRave",
+     "Hi Accent.4",
+     "Poles 1-7"
+    ]
+   },
+   {
+    "raw": [
+     2030,
+     1039,
+     1450,
+     2047
+    ],
+    "cube_count": 8,
+    "pole": {
+     "hz": 18229.49,
+     "r": 0.995606
+    },
+    "zero": {
+     "hz": 815.09,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "EZ Vibez.4",
+     "Invisible",
+     "LoVelTrum",
+     "MdlySweep.4",
+     "MoogVocSwp",
+     "String Cube",
+     "Tracker",
+     "VarSlope.4"
+    ]
+   },
+   {
+    "raw": [
+     0,
+     1023,
+     0,
+     2047
+    ],
+    "cube_count": 8,
+    "pole": {
+     "hz": 0.3,
+     "r": 0.996094
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "1BndPrmtrcD",
+     "BassDrumEQ",
+     "Breather 2",
+     "HarmShiftr2",
+     "HarmTracker",
+     "MltiMetricA",
+     "MltiMetricB",
+     "WindNoise 1"
+    ]
+   },
+   {
+    "raw": [
+     987,
+     1063,
+     0,
+     2047
+    ],
+    "cube_count": 7,
+    "pole": {
+     "hz": 65.55,
+     "r": 0.994874
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "4 PoleMidQ.4",
+     "BrickWaLP2",
+     "El Pick It",
+     "Flng>Flng1",
+     "HiQ 2PoleLP",
+     "MdQ 2PoleLP",
+     "MdQ 4PoleLP"
+    ]
+   },
+   {
+    "raw": [
+     1289,
+     711,
+     1243,
+     671
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 328.87,
+     "r": 0.999237
+    },
+    "zero": {
+     "hz": 262.19,
+     "r": 0.99939
+    },
+    "exemplar_cubes": [
+     "BrassRez.4",
+     "Breather 1",
+     "C1Harmonic",
+     "ElGuit Pick",
+     "Expander",
+     "Ntches2Oct.4"
+    ]
+   },
+   {
+    "raw": [
+     1186,
+     623,
+     1114,
+     543
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 194.24,
+     "r": 0.999542
+    },
+    "zero": {
+     "hz": 130.5,
+     "r": 0.999695
+    },
+    "exemplar_cubes": [
+     "BrassRez.4",
+     "Breather 1",
+     "C1Harmonic",
+     "ElGuit Pick",
+     "Expander",
+     "Ntches2Oct.4"
+    ]
+   },
+   {
+    "raw": [
+     1929,
+     1345,
+     1880,
+     1304
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 10523.8,
+     "r": 0.97632
+    },
+    "zero": {
+     "hz": 8275.51,
+     "r": 0.981326
+    },
+    "exemplar_cubes": [
+     "BrassRez.4",
+     "Breather 1",
+     "C1Harmonic",
+     "ElGuit Pick",
+     "Expander",
+     "Ntches2Oct.4"
+    ]
+   },
+   {
+    "raw": [
+     1829,
+     1257,
+     1756,
+     1184
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 6330.01,
+     "r": 0.985718
+    },
+    "zero": {
+     "hz": 4214.05,
+     "r": 0.990175
+    },
+    "exemplar_cubes": [
+     "BrassRez.4",
+     "Breather 1",
+     "C1Harmonic",
+     "ElGuit Pick",
+     "Expander",
+     "Ntches2Oct.4"
+    ]
+   },
+   {
+    "raw": [
+     1628,
+     1055,
+     0,
+     2047
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 2107.02,
+     "r": 0.995118
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "BrassRez.4",
+     "Breather 1",
+     "C1Harmonic",
+     "ElGuit Pick",
+     "Expander",
+     "Ntches2Oct.4"
+    ]
+   },
+   {
+    "raw": [
+     1012,
+     63,
+     0,
+     2047
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 73.0,
+     "r": 0.999985
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "0>Bell+",
+     "0>Bell-",
+     "Bell Wah A",
+     "Bell Wah B",
+     "HOTwell.4",
+     "Start>EndA"
+    ]
+   },
+   {
+    "raw": [
+     1646,
+     647,
+     0,
+     2047
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 2278.69,
+     "r": 0.999481
+    },
+    "zero": {
+     "hz": 0.3,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "0>Bell+",
+     "0>Bell-",
+     "Bell Wah A",
+     "Bell Wah B",
+     "HOTwell.4",
+     "Start>EndA"
+    ]
+   },
+   {
+    "raw": [
+     1186,
+     183,
+     1114,
+     119
+    ],
+    "cube_count": 6,
+    "pole": {
+     "hz": 194.24,
+     "r": 0.999956
+    },
+    "zero": {
+     "hz": 130.5,
+     "r": 0.999971
+    },
+    "exemplar_cubes": [
+     "0>Shp1",
+     "Breather 1",
+     "InFifths.4",
+     "MovingPick1",
+     "Mph+Trns1",
+     "Odd>Even"
+    ]
+   },
+   {
+    "raw": [
+     2030,
+     1583,
+     1450,
+     2047
+    ],
+    "cube_count": 5,
+    "pole": {
+     "hz": 18229.49,
+     "r": 0.914072
+    },
+    "zero": {
+     "hz": 815.09,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "AEParLPVow",
+     "AOLpParaVow",
+     "AOParaVowel",
+     "AUParaVow.4",
+     "CO>FlngT"
+    ]
+   },
+   {
+    "raw": [
+     1789,
+     1337,
+     1450,
+     2047
+    ],
+    "cube_count": 5,
+    "pole": {
+     "hz": 4843.47,
+     "r": 0.977297
+    },
+    "zero": {
+     "hz": 815.09,
+     "r": 0.0
+    },
+    "exemplar_cubes": [
+     "AEParLPVow",
+     "AOLpParaVow",
+     "AOParaVowel",
+     "AUParaVow.4",
+     "CO>FlngT"
+    ]
+   },
+   {
+    "raw": [
+     1450,
+     2047,
+     2030,
+     1039
+    ],
+    "cube_count": 5,
+    "pole": {
+     "hz": 815.09,
+     "r": 0.0
+    },
+    "zero": {
+     "hz": 18229.49,
+     "r": 0.995606
+    },
+    "exemplar_cubes": [
+     "AEParaVowel",
+     "CO>FlngT",
+     "HarmTracker",
+     "MdlySweep.4",
+     "VarSlope.4"
+    ]
+   },
+   {
+    "raw": [
+     1909,
+     2015,
+     2037,
+     1459
+    ],
+    "cube_count": 5,
+    "pole": {
+     "hz": 9381.77,
+     "r": 0.125031
+    },
+    "zero": {
+     "hz": 18763.54,
+     "r": 0.956059
+    },
+    "exemplar_cubes": [
+     "Expander",
+     "MltiMetricC",
+     "MovingPick1",
+     "MultiPole",
+     "Ntches2Oct.4"
+    ]
+   },
+   {
+    "raw": [
+     1883,
+     887,
+     1828,
+     823
+    ],
+    "cube_count": 5,
+    "pole": {
+     "hz": 8389.95,
+     "r": 0.998108
+    },
+    "zero": {
+     "hz": 6291.87,
+     "r": 0.998596
+    },
+    "exemplar_cubes": [
+     "0>Shp1",
+     "Breather 1",
+     "Clr>Oboe",
+     "Mph+Trns1",
+     "Odd>Even"
+    ]
+   }
+  ],
+  "p2k_word_states": [
+   {
+    "words": [
+     59900,
+     58876,
+     3054,
+     29436,
+     47308
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 9642.208241980432,
+     "r": 0.8102055945676689
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 58.91600248361685,
+     "r": 0.9988403749218263
+    },
+    "gain_db": -14.25,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     61693,
+     52732,
+     61565,
+     52220,
+     47308
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 10565.677717539653,
+     "r": 0.9396053833217366
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 10329.143486098104,
+     "r": 0.9437535570090253
+    },
+    "gain_db": -14.25,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     63613,
+     44028,
+     62077,
+     60156,
+     47308
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 13401.257769695618,
+     "r": 0.9862391667804503
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 12892.962329561718,
+     "r": 0.7604657161692103
+    },
+    "gain_db": -14.25,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     63997,
+     49148,
+     63613,
+     49148,
+     47308
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 14391.16119025432,
+     "r": 0.9682576558868996
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 13615.493854067645,
+     "r": 0.9682576558868996
+    },
+    "gain_db": -14.25,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     64381,
+     54268,
+     64125,
+     49148,
+     47308
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 16286.922654927619,
+     "r": 0.9186084871882988
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 14669.710415025007,
+     "r": 0.9682576558868996
+    },
+    "gain_db": -14.25,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     62205,
+     496,
+     64253,
+     55292,
+     47308
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 10935.174785078512,
+     "r": 0.9999981485290077
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 16276.692961857367,
+     "r": 0.9014386017552027
+    },
+    "gain_db": -14.25,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     57084,
+     57852,
+     54268,
+     49148,
+     53850
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 6915.204879693054,
+     "r": 0.8478992307277734
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 5134.0272775829835,
+     "r": 0.9682576558868996
+    },
+    "gain_db": -4.83,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     40700,
+     50428,
+     59132,
+     51196,
+     53850
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 1543.7088930271366,
+     "r": 0.9581307459669518
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 8216.522301210838,
+     "r": 0.9519956808553217
+    },
+    "gain_db": -4.83,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     46332,
+     52220,
+     33788,
+     44284,
+     53850
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 2584.856148924675,
+     "r": 0.9437535570090253
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 871.0004144816245,
+     "r": 0.9857439482907298
+    },
+    "gain_db": -4.83,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     53244,
+     51708,
+     49916,
+     49660,
+     53850
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 4606.882179817498,
+     "r": 0.9478835774330029
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 3486.6742339022517,
+     "r": 0.9642267764209763
+    },
+    "gain_db": -4.83,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     29948,
+     51964,
+     45564,
+     45820,
+     53850
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 546.8366479276096,
+     "r": 0.9458208214916753
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 2364.0178213094887,
+     "r": 0.9812815667195597
+    },
+    "gain_db": -4.83,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     62333,
+     496,
+     26620,
+     47356,
+     53850
+    ],
+    "preset_count": 2,
+    "zero": {
+     "type": "conj",
+     "hz": 11133.581628922833,
+     "r": 0.9999981485290077
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 456.0640188092438,
+     "r": 0.9752921424801871
+    },
+    "gain_db": -4.83,
+    "exemplar_presets": [
+     "P2k_003_millennium",
+     "P2k_004_meaty_gizmo"
+    ]
+   },
+   {
+    "words": [
+     64765,
+     54524,
+     25084,
+     65533,
+     48630
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 18217.173483046394,
+     "r": 0.9143462433533454
+    },
+    "pole": {
+     "type": "real",
+     "a": 0.9956072525930727,
+     "b": 0.00024521780487651856
+    },
+    "gain_db": -12.61,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     61821,
+     62973,
+     49916,
+     52476,
+     48630
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 15339.95689369471,
+     "r": 0.559235317755415
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 3516.2642459574095,
+     "r": 0.941681754292387
+    },
+    "gain_db": -12.61,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     62077,
+     61180,
+     61565,
+     50940,
+     48630
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 13415.752195508532,
+     "r": 0.7181978177833389
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 10259.182712959158,
+     "r": 0.9540450861291554
+    },
+    "gain_db": -12.61,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     62205,
+     57084,
+     63741,
+     44284,
+     48630
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 12014.258613767659,
+     "r": 0.8705768505619564
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 13646.656931370117,
+     "r": 0.9857439482907298
+    },
+    "gain_db": -12.61,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     64381,
+     51964,
+     64765,
+     36604,
+     48630
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 15690.199076327772,
+     "r": 0.9458208214916753
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 15730.754609398748,
+     "r": 0.9962100690356173
+    },
+    "gain_db": -12.61,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     65405,
+     496,
+     63869,
+     57852,
+     48630
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 17960.825044314846,
+     "r": 0.9999981485290077
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 16268.61289527204,
+     "r": 0.8478992307277734
+    },
+    "gain_db": -12.61,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     45052,
+     46844,
+     64125,
+     57340,
+     55108
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 2230.3698650187857,
+     "r": 0.9772926957588467
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 16747.802500343176,
+     "r": 0.8660782601672755
+    },
+    "gain_db": -2.77,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     46332,
+     54268,
+     37628,
+     57852,
+     55108
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 2591.7476072743075,
+     "r": 0.9186084871882988
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 798.0351837848375,
+     "r": 0.8478992307277734
+    },
+    "gain_db": -2.77,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     53244,
+     60412,
+     52220,
+     57596,
+     55108
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 4870.884232837837,
+     "r": 0.7501220603800091
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 4428.996217971113,
+     "r": 0.8570636531021194
+    },
+    "gain_db": -2.77,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     59900,
+     51964,
+     58364,
+     57596,
+     55108
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 8874.185795415198,
+     "r": 0.9458208214916753
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 7981.114933421781,
+     "r": 0.8570636531021194
+    },
+    "gain_db": -2.77,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     64253,
+     49404,
+     60412,
+     57852,
+     55108
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 14994.45892166739,
+     "r": 0.9662502400347374
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 9876.840557339234,
+     "r": 0.8478992307277734
+    },
+    "gain_db": -2.77,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   },
+   {
+    "words": [
+     60924,
+     496,
+     45308,
+     57852,
+     55108
+    ],
+    "preset_count": 1,
+    "zero": {
+     "type": "conj",
+     "hz": 9374.53930408409,
+     "r": 0.9999981485290077
+    },
+    "pole": {
+     "type": "conj",
+     "hz": 2247.2591301067146,
+     "r": 0.8478992307277734
+    },
+    "gain_db": -2.77,
+    "exemplar_presets": [
+     "P2k_000_ace_of_bass"
+    ]
+   }
+  ]
+ },
+ "real_pair_letters": [
+  {
+   "part": "zero",
+   "roots": [
+    0.98,
+    0.43
+   ],
+   "occurrences": 8,
+   "filter_count": 7,
+   "exemplars": [
+    "P2k_006_bassbox_303",
+    "P2k_011_boland_bass",
+    "P2k_014_zoom_peaks",
+    "P2k_016_bass_tracer",
+    "P2k_017_rogue_hertz",
+    "P2k_028_bass_o_matic"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.75,
+    0.1
+   ],
+   "occurrences": 8,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_015_dj_alkaline",
+    "P2k_025_angelz_hairz"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    0.37,
+    0.0
+   ],
+   "occurrences": 8,
+   "filter_count": 1,
+   "exemplars": [
+    "chime-matrix"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.8,
+    0.0
+   ],
+   "occurrences": 4,
+   "filter_count": 3,
+   "exemplars": [
+    "P2k_005_klub_klassik",
+    "P2k_027_acid_ravage",
+    "P2k_030_tooth_comb"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    1.0,
+    0.0
+   ],
+   "occurrences": 3,
+   "filter_count": 3,
+   "exemplars": [
+    "P2k_000_ace_of_bass",
+    "P2k_008_dead_ringer",
+    "P2k_017_rogue_hertz"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.98,
+    0.02
+   ],
+   "occurrences": 3,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_011_boland_bass",
+    "P2k_028_bass_o_matic"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    -0.88,
+    -0.99
+   ],
+   "occurrences": 2,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_001_megasweepz",
+    "P2k_031_ear_bender"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.98,
+    0.0
+   ],
+   "occurrences": 2,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_006_bassbox_303",
+    "P2k_009_tb_or_not_tb"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    0.65,
+    0.02
+   ],
+   "occurrences": 2,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_009_tb_or_not_tb",
+    "P2k_028_bass_o_matic"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    0.75,
+    0.02
+   ],
+   "occurrences": 2,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_011_boland_bass",
+    "P2k_029_lucifer_s_q"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.37,
+    0.25
+   ],
+   "occurrences": 2,
+   "filter_count": 1,
+   "exemplars": [
+    "P2k_017_rogue_hertz"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.59,
+    0.0
+   ],
+   "occurrences": 2,
+   "filter_count": 1,
+   "exemplars": [
+    "P2k_018_razor_blades"
+   ]
+  },
+  {
+   "part": "zero",
+   "roots": [
+    0.8,
+    0.02
+   ],
+   "occurrences": 2,
+   "filter_count": 2,
+   "exemplars": [
+    "P2k_027_acid_ravage",
+    "P2k_030_tooth_comb"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    -0.45,
+    -0.77
+   ],
+   "occurrences": 1,
+   "filter_count": 1,
+   "exemplars": [
+    "P2k_003_millennium"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    0.75,
+    0.0
+   ],
+   "occurrences": 1,
+   "filter_count": 1,
+   "exemplars": [
+    "P2k_006_bassbox_303"
+   ]
+  },
+  {
+   "part": "pole",
+   "roots": [
+    0.89,
+    0.0
+   ],
+   "occurrences": 1,
+   "filter_count": 1,
+   "exemplars": [
+    "P2k_009_tb_or_not_tb"
+   ]
+  }
+ ],
+ "xml_display_laws": {
+  "frequency": "hz = 83 * 2^(code/18) \u2014 1/18 octave per code, code 0 = 83 Hz, code 124 = 9824 Hz; derived from Morph Designer display anchors (83, 202, 1188, 6186, 9824 Hz) all landing on integer codes, with the 202->1188 EQ pair present verbatim as codes {23,69} in a shipped template",
+  "gain": "dB = 0.375 * (code - 64) \u2014 48 dB over 128 steps, -24.0 .. +23.625",
+  "q": "percent = code / 1.27",
+  "types": {
+   "0": "off",
+   "1": "eq",
+   "2": "lowpass",
+   "3": "highpass"
+  }
+ },
+ "xml_card_states": [
+  {
+   "type": "off",
+   "freq_hz_low": 1138.4,
+   "freq_hz_high": 2190.8,
+   "gain_db_low": 16.88,
+   "gain_db_high": 14.25,
+   "freq_code_low": 68,
+   "freq_code_high": 85,
+   "gain_code_low": 109,
+   "gain_code_high": 102,
+   "template_count": 8,
+   "exemplars": [
+    "Bass Shaper",
+    "Crispy",
+    "Lo Pass Slicer",
+    "Low to High Pass",
+    "One to Two Peaks",
+    "Steep Hi Pass"
+   ]
+  },
+  {
+   "type": "off",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 3756.2,
+   "gain_db_low": 23.62,
+   "gain_db_high": -24.0,
+   "freq_code_low": 0,
+   "freq_code_high": 99,
+   "gain_code_low": 127,
+   "gain_code_high": 0,
+   "template_count": 3,
+   "exemplars": [
+    "Bass Boost LP 2",
+    "Low Freq Hi Rez LP 1",
+    "Low Freq Hi Rez LP 2"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": 23.62,
+   "gain_db_high": 23.62,
+   "freq_code_low": 0,
+   "freq_code_high": 127,
+   "gain_code_low": 127,
+   "gain_code_high": 127,
+   "template_count": 3,
+   "exemplars": [
+    "Complex BP 1",
+    "Crackberry",
+    "Harmonic LP 5"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": 23.62,
+   "gain_db_high": 23.62,
+   "freq_code_low": 0,
+   "freq_code_high": 127,
+   "gain_code_low": 127,
+   "gain_code_high": 127,
+   "template_count": 3,
+   "exemplars": [
+    "EQ Crossing",
+    "Modern Lo Pass",
+    "Super Steep Q"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": -24.0,
+   "gain_db_high": -0.38,
+   "freq_code_low": 0,
+   "freq_code_high": 127,
+   "gain_code_low": 0,
+   "gain_code_high": 63,
+   "template_count": 3,
+   "exemplars": [
+    "Harmonic LP 2",
+    "Harmonic LP 3",
+    "Super Lo Pass"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": -24.0,
+   "gain_db_high": -24.0,
+   "freq_code_low": 0,
+   "freq_code_high": 127,
+   "gain_code_low": 0,
+   "gain_code_high": 0,
+   "template_count": 3,
+   "exemplars": [
+    "Lo Pass Slicer",
+    "Rezzy LP 3",
+    "Steep 8 Pole"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 147.9,
+   "freq_hz_high": 295.8,
+   "gain_db_low": -24.0,
+   "gain_db_high": -24.0,
+   "freq_code_low": 15,
+   "freq_code_high": 33,
+   "gain_code_low": 0,
+   "gain_code_high": 0,
+   "template_count": 2,
+   "exemplars": [
+    "Complex BP 1",
+    "Harmonic LP 5"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 295.8,
+   "freq_hz_high": 591.6,
+   "gain_db_low": 23.62,
+   "gain_db_high": 23.62,
+   "freq_code_low": 33,
+   "freq_code_high": 51,
+   "gain_code_low": 127,
+   "gain_code_high": 127,
+   "template_count": 2,
+   "exemplars": [
+    "Complex BP 1",
+    "Harmonic LP 5"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 591.6,
+   "freq_hz_high": 1229.6,
+   "gain_db_low": -24.0,
+   "gain_db_high": -24.0,
+   "freq_code_low": 51,
+   "freq_code_high": 70,
+   "gain_code_low": 0,
+   "gain_code_high": 0,
+   "template_count": 2,
+   "exemplars": [
+    "Complex BP 1",
+    "Harmonic LP 5"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 1229.6,
+   "freq_hz_high": 2555.7,
+   "gain_db_low": 23.62,
+   "gain_db_high": 23.62,
+   "freq_code_low": 70,
+   "freq_code_high": 89,
+   "gain_code_low": 127,
+   "gain_code_high": 127,
+   "template_count": 2,
+   "exemplars": [
+    "Complex BP 1",
+    "Harmonic LP 5"
+   ]
+  },
+  {
+   "type": "highpass",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 6692.7,
+   "gain_db_low": -24.0,
+   "gain_db_high": 23.62,
+   "freq_code_low": 0,
+   "freq_code_high": 114,
+   "gain_code_low": 0,
+   "gain_code_high": 127,
+   "template_count": 2,
+   "exemplars": [
+    "Complex BP 2",
+    "Low to High Pass"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": 0.0,
+   "gain_db_high": 23.62,
+   "freq_code_low": 0,
+   "freq_code_high": 127,
+   "gain_code_low": 64,
+   "gain_code_high": 127,
+   "template_count": 2,
+   "exemplars": [
+    "Complex BP 2",
+    "Rezzy LP 2"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 345.0,
+   "freq_hz_high": 3477.7,
+   "gain_db_low": 12.0,
+   "gain_db_high": 5.62,
+   "freq_code_low": 37,
+   "freq_code_high": 97,
+   "gain_code_low": 96,
+   "gain_code_high": 79,
+   "template_count": 2,
+   "exemplars": [
+    "Double Peak Lo Pass",
+    "Three Point Morph"
+   ]
+  },
+  {
+   "type": "off",
+   "freq_hz_low": 1549.2,
+   "freq_hz_high": 3098.3,
+   "gain_db_low": 16.12,
+   "gain_db_high": 19.12,
+   "freq_code_low": 76,
+   "freq_code_high": 94,
+   "gain_code_low": 107,
+   "gain_code_high": 115,
+   "template_count": 2,
+   "exemplars": [
+    "Double Peak Lo Pass",
+    "Three Point Morph"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 2190.8,
+   "freq_hz_high": 690.1,
+   "gain_db_low": 23.62,
+   "gain_db_high": -3.38,
+   "freq_code_low": 85,
+   "freq_code_high": 55,
+   "gain_code_low": 127,
+   "gain_code_high": 55,
+   "template_count": 2,
+   "exemplars": [
+    "Exciter 1",
+    "Oyoyoyoyoy"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 5111.3,
+   "freq_hz_high": 4216.1,
+   "gain_db_low": 18.38,
+   "gain_db_high": -22.12,
+   "freq_code_low": 107,
+   "freq_code_high": 102,
+   "gain_code_low": 113,
+   "gain_code_high": 5,
+   "template_count": 2,
+   "exemplars": [
+    "Exciter 1",
+    "Oyoyoyoyoy"
+   ]
+  },
+  {
+   "type": "eq",
+   "freq_hz_low": 126.8,
+   "freq_hz_high": 4216.1,
+   "gain_db_low": -24.0,
+   "gain_db_high": -24.0,
+   "freq_code_low": 11,
+   "freq_code_high": 102,
+   "gain_code_low": 0,
+   "gain_code_high": 0,
+   "template_count": 2,
+   "exemplars": [
+    "Lotsa Notches",
+    "Slightly Phased"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 83.0,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": 23.62,
+   "gain_db_high": -24.0,
+   "freq_code_low": 0,
+   "freq_code_high": 127,
+   "gain_code_low": 127,
+   "gain_code_high": 0,
+   "template_count": 2,
+   "exemplars": [
+    "Low Freq Hi Rez LP 1",
+    "Low Freq Hi Rez LP 2"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 3098.3,
+   "freq_hz_high": 11041.1,
+   "gain_db_low": -24.0,
+   "gain_db_high": -24.0,
+   "freq_code_low": 94,
+   "freq_code_high": 127,
+   "gain_code_low": 0,
+   "gain_code_high": 0,
+   "template_count": 2,
+   "exemplars": [
+    "Low to High Pass",
+    "Steep 8 Pole"
+   ]
+  },
+  {
+   "type": "off",
+   "freq_hz_low": 402.5,
+   "freq_hz_high": 1951.8,
+   "gain_db_low": 1.88,
+   "gain_db_high": 9.0,
+   "freq_code_low": 41,
+   "freq_code_high": 82,
+   "gain_code_low": 69,
+   "gain_code_high": 88,
+   "template_count": 2,
+   "exemplars": [
+    "Low to High Pass",
+    "One to Two Peaks"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 284.6,
+   "freq_hz_high": 4553.7,
+   "gain_db_low": 23.62,
+   "gain_db_high": -9.38,
+   "freq_code_low": 32,
+   "freq_code_high": 104,
+   "gain_code_low": 127,
+   "gain_code_high": 39,
+   "template_count": 2,
+   "exemplars": [
+    "Morpheus Like 2",
+    "Wow"
+   ]
+  },
+  {
+   "type": "highpass",
+   "freq_hz_low": 1951.8,
+   "freq_hz_high": 402.5,
+   "gain_db_low": 13.88,
+   "gain_db_high": 2.25,
+   "freq_code_low": 82,
+   "freq_code_high": 41,
+   "gain_code_low": 101,
+   "gain_code_high": 70,
+   "template_count": 2,
+   "exemplars": [
+    "Morpheus Like 2",
+    "Wow"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 172.5,
+   "freq_hz_high": 5111.3,
+   "gain_db_low": 2.62,
+   "gain_db_high": -0.38,
+   "freq_code_low": 19,
+   "freq_code_high": 107,
+   "gain_code_low": 71,
+   "gain_code_high": 63,
+   "template_count": 2,
+   "exemplars": [
+    "Rolling Frequency 1",
+    "Rolling Frequency 2"
+   ]
+  },
+  {
+   "type": "lowpass",
+   "freq_hz_low": 2868.6,
+   "freq_hz_high": 5737.3,
+   "gain_db_low": 12.0,
+   "gain_db_high": 5.62,
+   "freq_code_low": 92,
+   "freq_code_high": 110,
+   "gain_code_low": 96,
+   "gain_code_high": 79,
+   "template_count": 2,
+   "exemplars": [
+    "Rolling Frequency 1",
+    "Rolling Frequency 2"
+   ]
+  }
+ ]
+}

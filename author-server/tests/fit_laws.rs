@@ -1,10 +1,7 @@
 use serde_json::json;
 use trench_core::stage_law::StageRoots;
 
-#[path = "../src/fit.rs"]
-mod fit;
-#[path = "../src/json.rs"]
-mod json;
+use author_server::{fit, json};
 
 fn mouth_curve() -> Vec<f64> {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");

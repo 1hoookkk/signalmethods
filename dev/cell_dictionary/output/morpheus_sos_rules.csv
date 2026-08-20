@@ -1,0 +1,2024 @@
+object,stage_index,fully_identity,M_pole,M_pole_consistent,M_zero,M_zero_consistent,Q_pole,Q_pole_consistent,Q_zero,Q_zero_consistent,Z_pole,Z_pole_consistent,Z_zero,Z_zero_consistent
+Null Cube,0,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Null Cube,1,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Null Cube,2,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Null Cube,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Null Cube,4,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Null Cube,5,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Null Cube,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+LPFlange.4,0,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+LPFlange.4,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+LPFlange.4,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+LPFlange.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+LPFlange.4,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+LPFlange.4,5,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+LPFlange.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+LPFlngBk.4,0,False,moved,False,held,True,moved,False,held,True,moved,True,moved,True
+LPFlngBk.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LPFlngBk.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LPFlngBk.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LPFlngBk.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LPFlngBk.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LPFlngBk.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Flange2.4,0,False,moved,True,moved,False,held,False,moved,True,held,False,moved,False
+Flange2.4,1,False,moved,True,moved,False,held,False,held,False,held,False,held,False
+Flange2.4,2,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Flange2.4,3,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Flange2.4,4,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Flange2.4,5,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Flange2.4,6,False,held,True,moved,True,held,True,held,False,held,True,held,False
+CubeFlanger,0,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+CubeFlanger,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+CubeFlanger,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+CubeFlanger,3,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+CubeFlanger,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+CubeFlanger,5,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+CubeFlanger,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Flange3.4,0,False,moved,False,held,False,moved,False,moved,False,moved,True,moved,True
+Flange3.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange3.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange3.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange3.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange3.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange3.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Flange4.4,0,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Flange4.4,1,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Flange4.4,2,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Flange4.4,3,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Flange4.4,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Flange4.4,5,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Flange4.4,6,False,held,True,held,False,held,True,moved,False,held,True,moved,False
+Flange5,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange5,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange5,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange5,3,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Flange5,4,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Flange5,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange5,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Flange6.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange6.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange6.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange6.4,3,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Flange6.4,4,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Flange6.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Flange6.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Flange6R.4,0,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Flange6R.4,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange6R.4,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange6R.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange6R.4,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange6R.4,5,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange6R.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Flange7.4,0,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Flange7.4,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange7.4,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange7.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange7.4,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange7.4,5,False,held,False,moved,False,held,False,held,False,moved,True,moved,True
+Flange7.4,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+BriteFlng.4,0,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+BriteFlng.4,1,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+BriteFlng.4,2,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+BriteFlng.4,3,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+BriteFlng.4,4,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+BriteFlng.4,5,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+BriteFlng.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Flng>Flng1,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Flng>Flng1,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Flng>Flng1,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Flng>Flng1,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Flng>Flng1,4,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Flng>Flng1,5,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,False
+Flng>Flng1,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+LP>Flng2,0,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+LP>Flng2,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+LP>Flng2,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+LP>Flng2,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+LP>Flng2,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+LP>Flng2,5,False,moved,True,moved,True,moved,False,moved,True,held,False,moved,False
+LP>Flng2,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Flng>Flng3,0,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,True
+Flng>Flng3,1,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Flng>Flng3,2,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Flng>Flng3,3,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Flng>Flng3,4,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Flng>Flng3,5,False,moved,True,moved,True,held,False,held,False,moved,True,moved,True
+Flng>Flng3,6,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+Flng>Flng4,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,True
+Flng>Flng4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Flng>Flng5,0,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Flng>Flng5,1,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Flng>Flng5,2,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,False
+Flng>Flng5,3,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Flng>Flng5,4,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Flng>Flng5,5,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Flng>Flng5,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Flng>Flng6,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng6,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng6,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng6,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng6,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng6,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>Flng6,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Flng>FlngT,0,False,moved,False,moved,True,moved,True,moved,False,moved,False,moved,True
+Flng>FlngT,1,False,moved,False,moved,True,moved,True,moved,True,moved,False,moved,True
+Flng>FlngT,2,False,moved,True,moved,True,moved,False,moved,True,moved,False,moved,True
+Flng>FlngT,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Flng>FlngT,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Flng>FlngT,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Flng>FlngT,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Flng>FlngC,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>FlngC,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>FlngC,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>FlngC,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>FlngC,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>FlngC,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Flng>FlngC,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+CO>FlngT,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+CO>FlngT,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+CO>FlngT,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+CO>FlngT,3,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+CO>FlngT,4,False,held,True,topology_change,False,held,True,topology_change,False,held,True,topology_change,False
+CO>FlngT,5,False,held,False,held,True,moved,False,held,True,held,False,held,True
+CO>FlngT,6,False,held,True,held,False,held,True,moved,False,held,True,held,False
+AEParLPVow,0,False,moved,True,moved,False,moved,True,held,False,moved,True,moved,True
+AEParLPVow,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+AEParLPVow,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+AEParLPVow,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+AEParLPVow,4,False,topology_change,True,moved,True,held,False,moved,True,held,False,held,True
+AEParLPVow,5,False,held,True,moved,True,held,True,held,True,held,True,held,True
+AEParLPVow,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+AEParaVowel,0,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+AEParaVowel,1,False,held,True,held,True,moved,True,held,True,moved,False,held,True
+AEParaVowel,2,False,held,False,held,True,moved,True,moved,True,moved,True,held,True
+AEParaVowel,3,False,held,False,held,True,moved,True,moved,True,moved,True,held,True
+AEParaVowel,4,False,moved,True,held,True,moved,True,moved,True,moved,True,held,True
+AEParaVowel,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+AEParaVowel,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+AOLpParaVow,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,True
+AOLpParaVow,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+AOLpParaVow,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+AOLpParaVow,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+AOLpParaVow,4,False,topology_change,True,moved,True,held,False,moved,True,held,False,held,True
+AOLpParaVow,5,False,held,True,moved,True,held,True,held,True,held,True,held,True
+AOLpParaVow,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+AOParaVowel,0,False,moved,True,held,False,moved,True,held,False,moved,True,held,False
+AOParaVowel,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+AOParaVowel,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+AOParaVowel,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+AOParaVowel,4,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+AOParaVowel,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+AOParaVowel,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+AUParaVow.4,0,False,moved,True,held,False,moved,True,held,False,moved,True,held,False
+AUParaVow.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+AUParaVow.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+AUParaVow.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+AUParaVow.4,4,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+AUParaVow.4,5,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+AUParaVow.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+UOParaVow.4,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+UOParaVow.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+UOParaVow.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+UOParaVow.4,3,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+UOParaVow.4,4,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+UOParaVow.4,5,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+UOParaVow.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+SftEOVowl.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+SftEOVowl.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+SftEOVowl.4,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+SftEOVowl.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+SftEOVowl.4,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+SftEOVowl.4,5,False,held,False,moved,True,held,False,moved,True,held,False,held,True
+SftEOVowl.4,6,False,held,True,held,False,held,True,held,False,held,True,held,False
+SoftEOAE,0,False,held,True,held,False,held,True,held,False,held,True,held,False
+SoftEOAE,1,False,held,True,held,True,moved,True,held,True,held,True,held,True
+SoftEOAE,2,False,held,False,held,True,moved,True,held,True,moved,True,held,True
+SoftEOAE,3,False,moved,True,held,False,moved,True,held,True,moved,False,moved,True
+SoftEOAE,4,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,False
+SoftEOAE,5,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+SoftEOAE,6,False,held,True,moved,True,held,True,held,True,held,True,moved,True
+Vocal Cube,0,False,moved,False,moved,False,held,True,moved,False,moved,True,moved,True
+Vocal Cube,1,False,moved,False,moved,False,held,False,held,True,moved,True,moved,True
+Vocal Cube,2,False,moved,False,moved,False,held,False,held,True,moved,True,moved,True
+Vocal Cube,3,False,moved,False,moved,False,moved,False,held,True,moved,True,moved,True
+Vocal Cube,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Vocal Cube,5,False,moved,False,moved,False,moved,False,held,True,moved,True,moved,True
+Vocal Cube,6,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+C1-6Harms.4,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+C1-6Harms.4,1,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+C1-6Harms.4,2,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+C1-6Harms.4,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+C1-6Harms.4,4,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+C1-6Harms.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+C1-6Harms.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Voce.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Voce.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Voce.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Voce.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Voce.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Voce.4,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Voce.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+ChoralComb.4,0,False,moved,True,held,False,moved,True,held,False,moved,True,held,False
+ChoralComb.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ChoralComb.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ChoralComb.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ChoralComb.4,4,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+ChoralComb.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+ChoralComb.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Bassutoi.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Bassutoi.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Bassutoi.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Bassutoi.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Bassutoi.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Bassutoi.4,5,False,held,True,held,False,held,True,moved,False,moved,True,moved,True
+Bassutoi.4,6,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+Be-Ye.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Be-Ye.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Be-Ye.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Be-Ye.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Be-Ye.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Be-Ye.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Be-Ye.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Ee-Yi.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ee-Yi.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ee-Yi.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ee-Yi.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ee-Yi.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ee-Yi.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Ee-Yi.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Ii-Yi.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ii-Yi.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ii-Yi.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Ii-Yi.4,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Ii-Yi.4,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Ii-Yi.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Ii-Yi.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Uhrrrah.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Uhrrrah.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Uhrrrah.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Uhrrrah.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Uhrrrah.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Uhrrrah.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Uhrrrah.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+YeahYeah.4,0,False,moved,False,moved,False,moved,True,held,False,moved,True,moved,True
+YeahYeah.4,1,False,moved,True,moved,False,moved,True,moved,True,moved,True,moved,False
+YeahYeah.4,2,False,moved,True,moved,False,moved,True,moved,True,moved,True,moved,False
+YeahYeah.4,3,False,moved,True,held,False,moved,False,moved,True,moved,True,held,False
+YeahYeah.4,4,False,moved,True,moved,True,moved,True,moved,False,held,False,held,False
+YeahYeah.4,5,False,moved,True,moved,True,moved,True,held,False,held,False,held,False
+YeahYeah.4,6,False,held,True,moved,True,held,True,held,False,held,True,held,False
+Vow>Vow1,0,False,held,False,held,True,moved,True,held,True,moved,True,held,True
+Vow>Vow1,1,False,held,False,held,False,held,False,moved,True,held,False,moved,True
+Vow>Vow1,2,False,held,False,held,False,moved,True,held,False,held,False,held,False
+Vow>Vow1,3,False,moved,True,held,False,held,True,moved,True,held,True,held,False
+Vow>Vow1,4,False,moved,True,moved,True,held,True,held,True,held,True,held,True
+Vow>Vow1,5,False,moved,True,moved,True,held,True,held,True,held,True,held,True
+Vow>Vow1,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+Vow>Vow2,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Vow>Vow2,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Vow>Vow2,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Vow>Vow2,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Vow>Vow2,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Vow>Vow2,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Vow>Vow2,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+YahYahs.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+YahYahs.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+YahYahs.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+YahYahs.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+YahYahs.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+YahYahs.4,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+YahYahs.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+YoYo.4,0,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+YoYo.4,1,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+YoYo.4,2,False,held,False,held,False,held,False,held,False,moved,False,moved,True
+YoYo.4,3,False,held,False,held,True,held,False,held,True,moved,False,held,True
+YoYo.4,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+YoYo.4,5,False,held,False,held,True,held,False,held,True,held,False,held,True
+YoYo.4,6,False,held,True,held,False,held,True,held,False,held,True,held,False
+VowelSpace,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VowelSpace,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VowelSpace,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VowelSpace,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VowelSpace,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VowelSpace,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VowelSpace,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+BrickWaLP.4,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BrickWaLP.4,1,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BrickWaLP.4,2,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BrickWaLP.4,3,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BrickWaLP.4,4,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BrickWaLP.4,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BrickWaLP.4,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+BrickWaLP2,0,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+BrickWaLP2,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+BrickWaLP2,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+BrickWaLP2,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+BrickWaLP2,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+BrickWaLP2,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+BrickWaLP2,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 2PoleLP,0,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+MdQ 2PoleLP,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 2PoleLP,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 2PoleLP,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 2PoleLP,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 2PoleLP,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 2PoleLP,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+HiQ 2PoleLP,0,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+HiQ 2PoleLP,1,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+HiQ 2PoleLP,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+HiQ 2PoleLP,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+HiQ 2PoleLP,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+HiQ 2PoleLP,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+HiQ 2PoleLP,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 4PoleLP,0,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+MdQ 4PoleLP,1,False,held,True,moved,True,held,True,held,False,held,True,held,False
+MdQ 4PoleLP,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 4PoleLP,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 4PoleLP,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 4PoleLP,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+MdQ 4PoleLP,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+HiQ 4PoleLP,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+HiQ 4PoleLP,1,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+HiQ 4PoleLP,2,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+HiQ 4PoleLP,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+HiQ 4PoleLP,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+HiQ 4PoleLP,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+HiQ 4PoleLP,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+2 PoleLoQ.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+2 PoleLoQ.4,1,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+2 PoleLoQ.4,2,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+2 PoleLoQ.4,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+2 PoleLoQ.4,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+2 PoleLoQ.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+2 PoleLoQ.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+4 PoleLoQ.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+4 PoleLoQ.4,1,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+4 PoleLoQ.4,2,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+4 PoleLoQ.4,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+4 PoleLoQ.4,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+4 PoleLoQ.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+4 PoleLoQ.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+4 PoleMidQ.4,0,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+4 PoleMidQ.4,1,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 PoleMidQ.4,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 PoleMidQ.4,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 PoleMidQ.4,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 PoleMidQ.4,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 PoleMidQ.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+2pole>4pole,0,False,moved,True,moved,True,moved,True,held,False,moved,True,moved,True
+2pole>4pole,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+2pole>4pole,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+2pole>4pole,3,False,moved,False,moved,True,topology_change,False,moved,True,moved,False,held,True
+2pole>4pole,4,False,moved,True,topology_change,True,moved,True,held,False,moved,True,held,True
+2pole>4pole,5,False,moved,False,moved,True,moved,True,held,False,moved,False,held,True
+2pole>4pole,6,False,held,True,moved,False,held,True,moved,True,held,True,held,True
+LowPassPlus,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+LowPassPlus,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+LowPassPlus,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+LowPassPlus,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+LowPassPlus,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+LowPassPlus,5,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+LowPassPlus,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Low Past.4,0,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+Low Past.4,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+Low Past.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+Low Past.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+Low Past.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+Low Past.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+Low Past.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+APass.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+APass.4,1,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+APass.4,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+APass.4,3,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+APass.4,4,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+APass.4,5,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+APass.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+HPSweep.4,0,False,moved,False,moved,False,held,False,moved,False,moved,False,moved,False
+HPSweep.4,1,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+HPSweep.4,2,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+HPSweep.4,3,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+HPSweep.4,4,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+HPSweep.4,5,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+HPSweep.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+HiSwept1.4,0,False,moved,False,moved,True,moved,False,moved,True,moved,False,moved,True
+HiSwept1.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+HiSwept1.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+HiSwept1.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+HiSwept1.4,4,False,topology_change,False,moved,False,topology_change,False,moved,False,topology_change,False,moved,False
+HiSwept1.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HiSwept1.4,6,False,held,True,topology_change,False,held,True,topology_change,False,held,True,topology_change,False
+HghsSwpt2.4,0,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+HghsSwpt2.4,1,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HghsSwpt2.4,2,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HghsSwpt2.4,3,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HghsSwpt2.4,4,False,held,False,held,True,moved,False,moved,False,moved,True,moved,True
+HghsSwpt2.4,5,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+HghsSwpt2.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Hi Accent.4,0,False,moved,False,held,True,moved,False,held,True,moved,True,moved,True
+Hi Accent.4,1,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Hi Accent.4,2,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Hi Accent.4,3,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Hi Accent.4,4,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Hi Accent.4,5,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Hi Accent.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+HiPassSwp.4,0,False,held,True,moved,False,moved,False,moved,False,moved,True,moved,True
+HiPassSwp.4,1,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HiPassSwp.4,2,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HiPassSwp.4,3,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HiPassSwp.4,4,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+HiPassSwp.4,5,False,held,True,held,True,held,True,moved,False,moved,True,moved,True
+HiPassSwp.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+DeepCombs.4,0,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,True
+DeepCombs.4,1,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+DeepCombs.4,2,False,moved,False,moved,False,moved,True,held,False,moved,True,moved,False
+DeepCombs.4,3,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+DeepCombs.4,4,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+DeepCombs.4,5,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+DeepCombs.4,6,False,held,True,moved,False,held,True,held,False,held,True,held,False
+One Peak,0,False,moved,False,moved,False,moved,False,moved,True,moved,False,moved,True
+One Peak,1,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+One Peak,2,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+One Peak,3,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+One Peak,4,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+One Peak,5,False,moved,False,moved,False,moved,True,held,False,moved,True,held,False
+One Peak,6,False,held,True,moved,False,held,True,held,False,held,True,held,False
+More Peaks,0,False,moved,False,moved,True,moved,True,moved,True,moved,False,moved,True
+More Peaks,1,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,True
+More Peaks,2,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,True
+More Peaks,3,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,True
+More Peaks,4,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,True
+More Peaks,5,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,True
+More Peaks,6,False,held,True,moved,False,held,True,moved,True,held,True,held,True
+Rev Peaks,0,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Rev Peaks,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Rev Peaks,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Rev Peaks,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Rev Peaks,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Rev Peaks,5,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Rev Peaks,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Notcher2.4,0,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+Notcher2.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Notcher2.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Notcher2.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Notcher2.4,4,False,moved,False,held,False,held,False,held,False,moved,True,moved,False
+Notcher2.4,5,False,moved,False,topology_change,False,held,False,held,False,moved,True,topology_change,False
+Notcher2.4,6,False,held,True,held,False,held,True,held,False,held,True,topology_change,False
+Ntches2Oct.4,0,False,moved,True,moved,False,moved,True,held,True,held,True,moved,True
+Ntches2Oct.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Ntches2Oct.4,2,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Ntches2Oct.4,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Ntches2Oct.4,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Ntches2Oct.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Ntches2Oct.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+Odd>+,0,False,held,True,moved,False,held,True,held,True,moved,True,moved,True
+Odd>+,1,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Odd>+,2,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Odd>+,3,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Odd>+,4,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Odd>+,5,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Odd>+,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+VarSlope.4,0,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+VarSlope.4,1,False,held,True,held,False,held,True,held,False,held,True,moved,True
+VarSlope.4,2,False,held,False,held,True,held,False,held,True,moved,True,held,True
+VarSlope.4,3,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+VarSlope.4,4,False,held,True,held,False,held,True,held,False,held,True,moved,True
+VarSlope.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+VarSlope.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+BassEQ 1.4,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+BassEQ 1.4,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+BassEQ 1.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+BassEQ 1.4,3,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+BassEQ 1.4,4,False,moved,False,held,True,held,False,held,True,moved,False,held,True
+BassEQ 1.4,5,False,moved,True,moved,False,moved,True,held,False,moved,True,moved,False
+BassEQ 1.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+B BOOST.4,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+B BOOST.4,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+B BOOST.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+B BOOST.4,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+B BOOST.4,4,False,moved,False,moved,False,moved,False,held,False,moved,False,moved,False
+B BOOST.4,5,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+B BOOST.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+BssBOOST2.4,0,False,held,True,held,False,held,True,moved,False,held,True,moved,False
+BssBOOST2.4,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+BssBOOST2.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+BssBOOST2.4,3,False,moved,False,held,True,moved,False,held,True,held,True,held,True
+BssBOOST2.4,4,False,moved,False,held,True,moved,False,moved,True,held,True,held,True
+BssBOOST2.4,5,False,held,True,moved,False,moved,True,moved,True,held,True,held,True
+BssBOOST2.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+BassDrumEQ,0,False,held,False,moved,True,held,False,moved,False,moved,False,moved,True
+BassDrumEQ,1,False,moved,False,held,False,moved,False,held,False,moved,False,moved,False
+BassDrumEQ,2,False,held,True,held,False,held,True,moved,False,held,True,moved,False
+BassDrumEQ,3,False,held,False,held,True,moved,False,held,True,moved,True,held,True
+BassDrumEQ,4,False,moved,False,held,True,moved,True,moved,False,moved,True,moved,False
+BassDrumEQ,5,False,held,False,moved,False,held,False,moved,True,held,False,moved,False
+BassDrumEQ,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Snare LPEQ2,0,False,held,False,moved,False,held,False,moved,True,held,False,moved,False
+Snare LPEQ2,1,False,moved,False,moved,True,moved,False,moved,True,held,False,held,False
+Snare LPEQ2,2,False,moved,False,moved,False,moved,False,moved,False,held,True,held,False
+Snare LPEQ2,3,False,moved,True,moved,False,moved,False,moved,False,moved,False,held,False
+Snare LPEQ2,4,False,held,False,moved,True,moved,True,moved,False,held,True,moved,False
+Snare LPEQ2,5,False,moved,False,moved,True,moved,False,moved,True,moved,True,held,True
+Snare LPEQ2,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+HiHatLPEQ,0,False,moved,False,held,False,held,False,held,False,moved,False,held,False
+HiHatLPEQ,1,False,held,False,held,False,held,False,held,False,held,False,held,False
+HiHatLPEQ,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+HiHatLPEQ,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+HiHatLPEQ,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+HiHatLPEQ,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+HiHatLPEQ,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+HP LP PZ,0,False,moved,True,held,True,held,True,held,True,held,True,held,True
+HP LP PZ,1,False,moved,False,moved,True,moved,True,held,False,held,False,moved,False
+HP LP PZ,2,False,held,False,moved,False,held,False,moved,True,moved,False,moved,True
+HP LP PZ,3,False,held,False,held,False,held,False,held,False,moved,False,moved,False
+HP LP PZ,4,False,held,True,held,False,held,True,held,False,held,True,moved,False
+HP LP PZ,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+HP LP PZ,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+PZ Notch,0,False,moved,True,moved,False,held,False,moved,False,held,False,moved,False
+PZ Notch,1,False,moved,True,moved,True,held,False,moved,False,moved,True,moved,True
+PZ Notch,2,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,False
+PZ Notch,3,False,moved,True,held,True,moved,False,held,True,moved,False,held,True
+PZ Notch,4,False,moved,True,moved,True,moved,True,moved,False,moved,True,moved,False
+PZ Notch,5,False,moved,True,held,True,moved,True,moved,True,moved,True,moved,True
+PZ Notch,6,False,held,True,held,True,held,True,moved,False,held,True,moved,True
+Band-aid,0,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+Band-aid,1,False,held,True,held,False,held,True,moved,True,held,True,held,False
+Band-aid,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+Band-aid,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+Band-aid,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+Band-aid,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+Band-aid,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+4>2 LowQHiQ,0,False,topology_change,False,held,False,held,False,moved,False,topology_change,False,moved,True
+4>2 LowQHiQ,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+4>2 LowQHiQ,2,False,held,True,topology_change,False,held,True,topology_change,False,moved,True,moved,False
+4>2 LowQHiQ,3,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+4>2 LowQHiQ,4,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+4>2 LowQHiQ,5,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+4>2 LowQHiQ,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Wah4Vib.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Wah4Vib.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Wah4Vib.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Wah4Vib.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Wah4Vib.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Wah4Vib.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Wah4Vib.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Wa Wa.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Wa Wa.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Wa Wa.4,2,False,held,False,moved,False,held,False,held,False,moved,True,moved,True
+Wa Wa.4,3,False,held,False,moved,False,held,False,moved,False,moved,True,moved,True
+Wa Wa.4,4,False,held,False,moved,False,held,False,moved,False,moved,True,moved,True
+Wa Wa.4,5,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+Wa Wa.4,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+BrassRez.4,0,False,moved,True,moved,True,moved,True,moved,False,held,False,moved,True
+BrassRez.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+BrassRez.4,2,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+BrassRez.4,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+BrassRez.4,4,False,moved,True,moved,True,held,True,held,True,held,True,held,True
+BrassRez.4,5,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+BrassRez.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+Clr>Oboe,0,False,moved,True,held,False,moved,True,moved,False,moved,True,moved,True
+Clr>Oboe,1,False,moved,True,moved,True,moved,False,held,False,held,False,moved,True
+Clr>Oboe,2,False,moved,True,moved,True,held,True,held,False,held,True,held,False
+Clr>Oboe,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+Clr>Oboe,4,False,moved,True,moved,True,held,True,held,True,held,True,held,True
+Clr>Oboe,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+Clr>Oboe,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+0>Muter,0,False,moved,True,held,False,held,True,moved,True,held,True,moved,True
+0>Muter,1,False,moved,True,moved,True,held,True,moved,False,held,True,held,True
+0>Muter,2,False,moved,True,moved,True,held,True,moved,False,held,True,held,True
+0>Muter,3,False,moved,True,moved,True,held,False,moved,True,held,True,held,True
+0>Muter,4,False,moved,True,moved,True,held,False,moved,True,held,True,held,True
+0>Muter,5,False,moved,True,moved,True,held,True,moved,False,held,True,held,True
+0>Muter,6,False,held,True,moved,True,held,True,moved,False,held,True,held,True
+PZ Syn Horn,0,False,moved,True,moved,False,moved,True,moved,False,held,False,moved,False
+PZ Syn Horn,1,False,moved,True,moved,False,moved,False,held,False,moved,False,held,False
+PZ Syn Horn,2,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+PZ Syn Horn,3,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+PZ Syn Horn,4,False,moved,False,moved,True,held,False,held,False,moved,False,moved,False
+PZ Syn Horn,5,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+PZ Syn Horn,6,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+HP Brass,0,False,held,False,moved,True,moved,True,held,False,held,False,held,False
+HP Brass,1,False,held,True,held,False,moved,True,moved,True,held,True,held,False
+HP Brass,2,False,held,True,held,False,moved,True,moved,True,held,True,moved,False
+HP Brass,3,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+HP Brass,4,False,held,False,held,False,moved,True,moved,True,moved,False,held,False
+HP Brass,5,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+HP Brass,6,False,held,True,held,True,held,True,moved,True,held,True,held,True
+BrassyBlast,0,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+BrassyBlast,1,False,held,True,moved,True,held,True,held,False,held,True,held,False
+BrassyBlast,2,False,held,True,moved,True,held,True,held,False,held,True,held,False
+BrassyBlast,3,False,held,True,moved,True,held,True,held,False,held,True,held,False
+BrassyBlast,4,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+BrassyBlast,5,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+BrassyBlast,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Brass Swell,0,False,held,True,moved,False,moved,False,held,False,moved,True,moved,True
+Brass Swell,1,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+Brass Swell,2,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+Brass Swell,3,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+Brass Swell,4,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+Brass Swell,5,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+Brass Swell,6,False,held,True,held,True,held,True,moved,False,held,True,moved,True
+BrsSwell2.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+BrsSwell2.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+BrsSwell2.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+BrsSwell2.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+BrsSwell2.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+BrsSwell2.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+BrsSwell2.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+LoVelTrum,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LoVelTrum,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LoVelTrum,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LoVelTrum,3,False,held,False,moved,False,moved,False,moved,False,moved,True,moved,True
+LoVelTrum,4,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+LoVelTrum,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+LoVelTrum,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Chiffin.4,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+Chiffin.4,1,False,held,True,held,False,held,True,held,False,held,True,held,True
+Chiffin.4,2,False,held,True,held,False,held,True,held,False,held,True,held,False
+Chiffin.4,3,False,held,True,moved,False,held,True,moved,True,held,True,moved,False
+Chiffin.4,4,False,held,True,moved,False,held,True,moved,True,held,True,moved,False
+Chiffin.4,5,False,held,True,moved,False,held,True,moved,True,held,True,moved,False
+Chiffin.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+ShakuFilter,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ShakuFilter,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ShakuFilter,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ShakuFilter,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ShakuFilter,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ShakuFilter,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+ShakuFilter,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Cym,0,False,moved,True,moved,True,held,False,moved,True,held,False,moved,True
+Cym,1,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+Cym,2,False,moved,True,moved,True,held,False,held,True,moved,True,moved,True
+Cym,3,False,moved,True,moved,True,held,False,held,True,moved,True,moved,True
+Cym,4,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+Cym,5,False,moved,True,moved,True,held,False,held,True,moved,True,moved,True
+Cym,6,False,held,True,moved,True,held,True,held,True,held,True,moved,True
+VelMarim,0,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+VelMarim,1,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VelMarim,2,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VelMarim,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VelMarim,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VelMarim,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VelMarim,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+EZ Vibez.4,0,False,moved,True,moved,True,moved,True,moved,False,moved,False,moved,False
+EZ Vibez.4,1,False,moved,True,moved,True,moved,False,moved,True,moved,False,held,False
+EZ Vibez.4,2,False,moved,True,moved,True,held,False,moved,False,held,False,moved,False
+EZ Vibez.4,3,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+EZ Vibez.4,4,False,held,False,moved,True,held,False,held,False,held,False,held,False
+EZ Vibez.4,5,False,held,True,held,False,held,True,held,False,held,True,held,False
+EZ Vibez.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Piano 1,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Piano 1,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Piano 1,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Piano 1,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Piano 1,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Piano 1,5,False,held,True,held,False,held,True,moved,False,moved,True,moved,True
+Piano 1,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+Piano 2.4,0,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Piano 2.4,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+Piano 2.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+Piano 2.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+Piano 2.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+Piano 2.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+Piano 2.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+EZ Rhodez.4,0,False,held,False,moved,False,held,False,moved,False,moved,False,moved,True
+EZ Rhodez.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EZ Rhodez.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EZ Rhodez.4,3,False,moved,False,moved,False,held,True,moved,False,moved,True,moved,True
+EZ Rhodez.4,4,False,moved,False,moved,False,moved,False,held,True,moved,True,moved,True
+EZ Rhodez.4,5,False,moved,False,moved,False,held,True,held,True,moved,True,moved,True
+EZ Rhodez.4,6,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+MoogVocodr.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MoogVocodr.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MoogVocodr.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MoogVocodr.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MoogVocodr.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MoogVocodr.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MoogVocodr.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+MoogVocSwp,0,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+MoogVocSwp,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+MoogVocSwp,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+MoogVocSwp,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+MoogVocSwp,4,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+MoogVocSwp,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+MoogVocSwp,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+StrngThng.4,0,False,held,False,moved,False,held,False,moved,False,moved,False,moved,True
+StrngThng.4,1,False,held,False,topology_change,False,held,False,held,False,moved,False,topology_change,False
+StrngThng.4,2,False,held,True,held,False,held,True,held,False,held,True,moved,False
+StrngThng.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+StrngThng.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+StrngThng.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+StrngThng.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+StrSweep.4,0,False,moved,True,moved,True,held,True,held,True,held,True,moved,True
+StrSweep.4,1,False,moved,True,moved,True,moved,True,moved,True,held,True,held,False
+StrSweep.4,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+StrSweep.4,3,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+StrSweep.4,4,False,moved,False,held,False,moved,True,held,False,moved,False,held,False
+StrSweep.4,5,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+StrSweep.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+BassXpress,0,False,moved,False,held,True,moved,False,held,True,moved,True,moved,True
+BassXpress,1,False,held,False,moved,False,moved,False,moved,False,moved,True,moved,True
+BassXpress,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+BassXpress,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+BassXpress,4,False,moved,False,held,False,moved,False,moved,False,moved,True,moved,True
+BassXpress,5,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+BassXpress,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Qbase.4,0,False,moved,False,held,False,moved,False,held,False,moved,True,moved,True
+Qbase.4,1,False,moved,False,held,False,moved,False,held,False,moved,True,moved,True
+Qbase.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Qbase.4,3,False,held,False,moved,False,held,False,moved,False,moved,True,moved,True
+Qbase.4,4,False,held,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Qbase.4,5,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Qbase.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+AcGtrRs.4,0,False,moved,False,held,True,moved,False,moved,False,moved,True,moved,True
+AcGtrRs.4,1,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+AcGtrRs.4,2,False,held,False,moved,False,moved,False,moved,False,moved,True,moved,True
+AcGtrRs.4,3,False,held,False,moved,False,moved,False,moved,False,moved,True,moved,True
+AcGtrRs.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+AcGtrRs.4,5,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+AcGtrRs.4,6,False,held,True,held,True,held,True,moved,False,held,True,moved,True
+TubeSust.4,0,False,moved,True,moved,True,held,False,moved,False,moved,False,moved,True
+TubeSust.4,1,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+TubeSust.4,2,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+TubeSust.4,3,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+TubeSust.4,4,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+TubeSust.4,5,False,moved,True,moved,True,held,False,held,False,moved,False,moved,False
+TubeSust.4,6,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+GtrSkwk,0,False,moved,True,moved,False,held,True,held,False,held,True,moved,True
+GtrSkwk,1,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+GtrSkwk,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+GtrSkwk,3,False,moved,False,moved,True,held,True,moved,False,moved,False,held,False
+GtrSkwk,4,False,moved,True,held,True,moved,True,held,True,moved,False,held,True
+GtrSkwk,5,False,topology_change,False,moved,False,held,False,moved,True,topology_change,False,moved,False
+GtrSkwk,6,False,held,True,topology_change,False,held,True,held,False,held,True,held,False
+GuitXpress,0,False,moved,False,held,True,held,False,held,True,moved,False,held,True
+GuitXpress,1,False,moved,True,moved,False,moved,True,held,False,moved,True,moved,False
+GuitXpress,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+GuitXpress,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+GuitXpress,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+GuitXpress,5,False,moved,False,moved,True,held,False,moved,True,moved,False,moved,True
+GuitXpress,6,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+G MajTrans.4,0,False,moved,True,moved,True,moved,False,moved,True,moved,False,moved,True
+G MajTrans.4,1,False,moved,False,moved,True,moved,True,moved,True,moved,False,held,True
+G MajTrans.4,2,False,moved,True,moved,False,moved,True,moved,True,moved,False,held,True
+G MajTrans.4,3,False,moved,False,moved,True,moved,True,moved,True,moved,False,held,True
+G MajTrans.4,4,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,True
+G MajTrans.4,5,False,moved,False,held,False,moved,True,moved,True,moved,False,held,True
+G MajTrans.4,6,False,held,True,moved,False,held,True,moved,True,held,True,held,True
+Tam,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tam,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tam,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tam,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tam,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tam,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tam,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+HOTwell.4,0,False,moved,True,moved,False,moved,True,moved,False,moved,False,moved,True
+HOTwell.4,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+HOTwell.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+HOTwell.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+HOTwell.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+HOTwell.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+HOTwell.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Bell Wah A,0,False,moved,False,moved,True,moved,False,moved,True,moved,False,moved,True
+Bell Wah A,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+Bell Wah A,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+Bell Wah A,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+Bell Wah A,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+Bell Wah A,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+Bell Wah A,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Bell Wah B,0,False,moved,True,moved,False,moved,True,moved,False,held,False,moved,True
+Bell Wah B,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Bell Wah B,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Bell Wah B,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Bell Wah B,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Bell Wah B,5,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Bell Wah B,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+0>Bell-,0,False,moved,True,held,False,moved,True,moved,False,held,False,held,False
+0>Bell-,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+0>Bell-,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+0>Bell-,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+0>Bell-,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+0>Bell-,5,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+0>Bell-,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+0>Bell+,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,True
+0>Bell+,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+0>Bell+,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+0>Bell+,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+0>Bell+,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+0>Bell+,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+0>Bell+,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+Bel>Crs>Bel,0,False,moved,True,held,False,moved,True,moved,False,moved,False,held,False
+Bel>Crs>Bel,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Bel>Crs>Bel,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+Bel>Crs>Bel,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Bel>Crs>Bel,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Bel>Crs>Bel,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Bel>Crs>Bel,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Chrs>Flng1,0,False,moved,True,held,False,moved,True,moved,False,moved,False,held,False
+Chrs>Flng1,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Chrs>Flng1,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Chrs>Flng1,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Chrs>Flng1,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Chrs>Flng1,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Chrs>Flng1,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Chrs>Flng2,0,False,moved,False,held,False,moved,False,held,False,moved,True,moved,True
+Chrs>Flng2,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Chrs>Flng2,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Chrs>Flng2,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Chrs>Flng2,4,False,moved,False,held,False,held,False,held,False,moved,True,moved,False
+Chrs>Flng2,5,False,moved,False,topology_change,False,moved,False,held,False,moved,True,topology_change,False
+Chrs>Flng2,6,False,held,True,held,False,held,True,held,False,held,True,moved,False
+Ev/OdNtch.4,0,False,moved,True,moved,True,moved,True,held,False,held,True,held,True
+Ev/OdNtch.4,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+Ev/OdNtch.4,2,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+Ev/OdNtch.4,3,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+Ev/OdNtch.4,4,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+Ev/OdNtch.4,5,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+Ev/OdNtch.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Odd/EvnNtch,0,False,moved,True,held,False,moved,True,held,False,moved,True,held,False
+Odd/EvnNtch,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Odd/EvnNtch,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Odd/EvnNtch,3,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+Odd/EvnNtch,4,False,moved,False,moved,True,topology_change,False,moved,True,moved,False,moved,True
+Odd/EvnNtch,5,False,topology_change,False,topology_change,False,topology_change,False,topology_change,False,topology_change,False,topology_change,False
+Odd/EvnNtch,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+NotchPeaks.4,0,False,held,False,held,True,moved,False,held,True,moved,True,moved,True
+NotchPeaks.4,1,False,moved,False,held,False,moved,False,moved,False,moved,True,moved,True
+NotchPeaks.4,2,False,held,True,moved,False,moved,False,moved,False,moved,True,moved,True
+NotchPeaks.4,3,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+NotchPeaks.4,4,False,held,True,held,True,moved,False,moved,False,moved,True,moved,True
+NotchPeaks.4,5,False,held,True,held,False,moved,False,moved,False,moved,True,moved,True
+NotchPeaks.4,6,False,held,True,held,True,held,True,moved,False,held,True,moved,True
+LoudBoost.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+LoudBoost.4,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+LoudBoost.4,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+LoudBoost.4,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+LoudBoost.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+LoudBoost.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+LoudBoost.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+Swingshift,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Swingshift,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Swingshift,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Swingshift,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Swingshift,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Swingshift,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Swingshift,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,1,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,2,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,3,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,4,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+500up.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+C1Harmonic,0,False,moved,True,moved,False,moved,True,held,False,moved,False,moved,True
+C1Harmonic,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+C1Harmonic,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+C1Harmonic,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+C1Harmonic,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+C1Harmonic,5,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+C1Harmonic,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Odd>Even,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Odd>Even,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Odd>Even,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Odd>Even,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Odd>Even,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Odd>Even,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Odd>Even,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+0>Shp1,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+0>Shp1,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+0>Shp1,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+0>Shp1,3,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+0>Shp1,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+0>Shp1,5,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+0>Shp1,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+0>Shp2,0,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+0>Shp2,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+0>Shp2,2,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+0>Shp2,3,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+0>Shp2,4,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,False
+0>Shp2,5,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,False
+0>Shp2,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+0>Shp3,0,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+0>Shp3,1,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+0>Shp3,2,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+0>Shp3,3,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+0>Shp3,4,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+0>Shp3,5,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+0>Shp3,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Shp>Shp1,0,False,moved,True,moved,False,moved,False,moved,False,moved,True,moved,False
+Shp>Shp1,1,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+Shp>Shp1,2,False,moved,True,topology_change,False,moved,True,moved,False,moved,True,topology_change,False
+Shp>Shp1,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Shp>Shp1,4,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Shp>Shp1,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Shp>Shp1,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Lpeq Vel,0,False,topology_change,False,moved,True,moved,False,moved,True,topology_change,False,moved,True
+Lpeq Vel,1,False,moved,False,moved,True,moved,False,moved,True,moved,False,moved,True
+Lpeq Vel,2,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Lpeq Vel,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Lpeq Vel,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lpeq Vel,5,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Lpeq Vel,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+PeakSweep.4,0,False,moved,False,moved,True,moved,True,moved,True,held,False,moved,True
+PeakSweep.4,1,False,moved,False,moved,False,moved,True,moved,True,held,False,held,False
+PeakSweep.4,2,False,moved,False,moved,False,moved,True,moved,True,held,False,held,False
+PeakSweep.4,3,False,moved,False,moved,False,moved,True,moved,True,held,False,held,False
+PeakSweep.4,4,False,moved,True,moved,False,moved,True,moved,True,moved,False,held,False
+PeakSweep.4,5,False,moved,False,moved,False,moved,True,moved,True,held,False,held,False
+PeakSweep.4,6,False,held,True,moved,False,held,True,moved,True,held,True,held,False
+PowerSweeps,0,False,moved,True,held,False,moved,True,held,False,moved,True,held,False
+PowerSweeps,1,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+PowerSweeps,2,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+PowerSweeps,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+PowerSweeps,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+PowerSweeps,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+PowerSweeps,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+TSweep.4,0,False,held,False,moved,False,moved,False,moved,False,held,False,moved,False
+TSweep.4,1,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+TSweep.4,2,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+TSweep.4,3,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+TSweep.4,4,False,moved,True,held,False,moved,True,moved,False,moved,True,held,False
+TSweep.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+TSweep.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+SweepHiQ1.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+SweepHiQ1.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+SweepHiQ1.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+SweepHiQ1.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+SweepHiQ1.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+SweepHiQ1.4,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+SweepHiQ1.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+V>FcQuad.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+V>FcQuad.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+V>FcQuad.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+V>FcQuad.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+V>FcQuad.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+V>FcQuad.4,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+V>FcQuad.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Nexus.4,0,False,held,True,held,False,held,True,moved,False,moved,True,moved,True
+Nexus.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Nexus.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Nexus.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Nexus.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Nexus.4,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Nexus.4,6,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+Krators.4,0,False,moved,False,held,True,moved,False,held,True,moved,True,moved,True
+Krators.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Krators.4,2,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Krators.4,3,False,moved,False,moved,False,held,True,moved,False,moved,True,moved,True
+Krators.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Krators.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Krators.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Harmonix.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Harmonix.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Harmonix.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Harmonix.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Harmonix.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Harmonix.4,5,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Harmonix.4,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+GreenWorld.4,0,False,moved,False,held,True,moved,False,held,True,moved,True,moved,True
+GreenWorld.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+GreenWorld.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+GreenWorld.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+GreenWorld.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+GreenWorld.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+GreenWorld.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Comb/Swap.4,0,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Comb/Swap.4,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Comb/Swap.4,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Comb/Swap.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Comb/Swap.4,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Comb/Swap.4,5,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Comb/Swap.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Comb/HP.4,0,False,moved,True,moved,False,moved,True,moved,False,held,True,moved,True
+Comb/HP.4,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+Comb/HP.4,2,False,moved,True,moved,True,moved,True,moved,True,held,True,held,False
+Comb/HP.4,3,False,moved,True,moved,True,moved,True,moved,True,held,True,held,False
+Comb/HP.4,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,False
+Comb/HP.4,5,False,moved,True,moved,True,moved,True,moved,True,held,True,held,False
+Comb/HP.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Swirly,0,False,moved,False,held,False,moved,False,moved,False,moved,True,moved,True
+Swirly,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Swirly,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Swirly,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Swirly,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Swirly,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Swirly,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Cavatate.4,0,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Cavatate.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Cavatate.4,2,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Cavatate.4,3,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Cavatate.4,4,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Cavatate.4,5,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Cavatate.4,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+GentleRez.4,0,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+GentleRez.4,1,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+GentleRez.4,2,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+GentleRez.4,3,False,moved,True,moved,True,moved,True,moved,False,held,True,held,True
+GentleRez.4,4,False,moved,True,moved,True,moved,True,moved,False,held,True,held,True
+GentleRez.4,5,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+GentleRez.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Bendup/Swap,0,False,moved,True,moved,False,moved,True,moved,True,held,True,moved,True
+Bendup/Swap,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+Bendup/Swap,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+Bendup/Swap,3,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Bendup/Swap,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Bendup/Swap,5,False,moved,True,moved,True,held,False,moved,True,held,True,held,True
+Bendup/Swap,6,False,held,True,moved,True,held,True,held,False,held,True,held,True
+Bendup,0,False,held,True,moved,False,held,True,moved,True,held,True,moved,True
+Bendup,1,False,held,True,moved,False,held,True,moved,True,held,True,held,True
+Bendup,2,False,held,True,moved,False,held,True,moved,True,held,True,held,True
+Bendup,3,False,held,True,moved,False,held,False,moved,True,held,False,moved,False
+Bendup,4,False,moved,False,moved,False,moved,True,moved,True,moved,False,held,False
+Bendup,5,False,held,False,held,False,moved,True,moved,True,moved,False,moved,False
+Bendup,6,False,held,True,held,True,held,True,moved,True,held,True,held,False
+Skweezit,0,False,moved,False,moved,False,held,False,moved,False,moved,True,moved,True
+Skweezit,1,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Skweezit,2,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+Skweezit,3,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+Skweezit,4,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+Skweezit,5,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+Skweezit,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Lo/High.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lo/High.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lo/High.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lo/High.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lo/High.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lo/High.4,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Lo/High.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+SubtleMove.4,0,False,moved,False,held,False,moved,False,held,False,moved,True,moved,True
+SubtleMove.4,1,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+SubtleMove.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+SubtleMove.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+SubtleMove.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+SubtleMove.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+SubtleMove.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+BuzzyPad.4,0,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+BuzzyPad.4,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+BuzzyPad.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+BuzzyPad.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+BuzzyPad.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+BuzzyPad.4,5,False,moved,False,held,True,moved,False,held,True,moved,True,held,True
+BuzzyPad.4,6,False,held,True,held,True,held,True,moved,False,held,True,moved,True
+Bw5kHz+6.4,0,False,moved,False,held,False,moved,False,moved,False,moved,True,moved,True
+Bw5kHz+6.4,1,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Bw5kHz+6.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw5kHz+6.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw5kHz+6.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw5kHz+6.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw5kHz+6.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Bw65Hz/2k.4,0,False,moved,False,moved,False,moved,False,held,True,moved,True,moved,True
+Bw65Hz/2k.4,1,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+Bw65Hz/2k.4,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw65Hz/2k.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw65Hz/2k.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw65Hz/2k.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+Bw65Hz/2k.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Bb80Hzbw1.4,0,False,held,False,held,True,held,False,held,True,moved,True,moved,True
+Bb80Hzbw1.4,1,False,held,True,held,False,moved,False,moved,False,moved,True,moved,True
+Bb80Hzbw1.4,2,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+Bb80Hzbw1.4,3,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+Bb80Hzbw1.4,4,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+Bb80Hzbw1.4,5,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+Bb80Hzbw1.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+HighsTwist.4,0,False,moved,True,moved,True,moved,True,held,False,moved,True,held,True
+HighsTwist.4,1,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HighsTwist.4,2,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HighsTwist.4,3,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HighsTwist.4,4,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HighsTwist.4,5,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HighsTwist.4,6,False,held,True,moved,True,held,True,held,True,held,True,moved,True
+Cubix,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cubix,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cubix,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cubix,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cubix,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cubix,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cubix,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+HarmSweep.4,0,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+HarmSweep.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+HarmSweep.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+HarmSweep.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+HarmSweep.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+HarmSweep.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+HarmSweep.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+EvenCuts.4,0,False,moved,False,moved,False,moved,False,held,False,moved,True,moved,True
+EvenCuts.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EvenCuts.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EvenCuts.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EvenCuts.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EvenCuts.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+EvenCuts.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+OddCuts.4,0,False,moved,True,held,True,moved,True,held,True,moved,True,held,True
+OddCuts.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+OddCuts.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+OddCuts.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+OddCuts.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+OddCuts.4,5,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False
+OddCuts.4,6,False,held,True,topology_change,False,held,True,topology_change,False,held,True,topology_change,False
+PWMTrans.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PWMTrans.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PWMTrans.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PWMTrans.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PWMTrans.4,4,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+PWMTrans.4,5,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+PWMTrans.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+HiEndQ.4,0,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+HiEndQ.4,1,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+HiEndQ.4,2,False,moved,False,moved,False,held,False,held,True,moved,True,moved,True
+HiEndQ.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+HiEndQ.4,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+HiEndQ.4,5,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+HiEndQ.4,6,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+BroadRes.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+BroadRes.4,1,False,moved,False,moved,False,moved,False,held,False,moved,False,moved,False
+BroadRes.4,2,False,moved,False,moved,False,moved,False,held,False,moved,False,moved,False
+BroadRes.4,3,False,moved,False,moved,False,moved,False,held,False,moved,False,moved,False
+BroadRes.4,4,False,moved,False,moved,False,moved,False,held,False,moved,False,moved,False
+BroadRes.4,5,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+BroadRes.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+ResoHose.4,0,False,moved,True,moved,True,moved,True,held,True,moved,True,held,True
+ResoHose.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+ResoHose.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+ResoHose.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+ResoHose.4,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+ResoHose.4,5,False,moved,True,moved,True,moved,True,moved,True,held,False,held,True
+ResoHose.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+HeeghCube,0,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+HeeghCube,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+HeeghCube,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+HeeghCube,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+HeeghCube,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,True
+HeeghCube,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+HeeghCube,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+NoizCube,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+NoizCube,1,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+NoizCube,2,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+NoizCube,3,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+NoizCube,4,False,held,True,held,False,held,True,moved,True,held,True,held,False
+NoizCube,5,False,held,True,held,False,held,True,moved,True,held,True,held,False
+NoizCube,6,False,held,True,held,False,held,True,moved,False,held,True,held,False
+VeloctyTilt,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VeloctyTilt,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VeloctyTilt,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+VeloctyTilt,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VeloctyTilt,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VeloctyTilt,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+VeloctyTilt,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Syn Wow.4,0,False,moved,True,held,False,moved,True,held,False,moved,True,held,False
+Syn Wow.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Syn Wow.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Syn Wow.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Syn Wow.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Syn Wow.4,5,False,topology_change,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,True
+Syn Wow.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+CombSweep.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+CombSweep.4,1,False,moved,False,held,False,moved,False,held,False,moved,True,moved,False
+CombSweep.4,2,False,held,True,held,False,held,True,held,False,held,True,moved,False
+CombSweep.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+CombSweep.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+CombSweep.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+CombSweep.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Diffuser.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Diffuser.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Diffuser.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Diffuser.4,3,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Diffuser.4,4,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Diffuser.4,5,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Diffuser.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+MdlySweep.4,0,False,moved,True,moved,True,moved,True,moved,False,held,True,moved,True
+MdlySweep.4,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+MdlySweep.4,2,False,held,False,moved,True,held,False,moved,True,held,False,moved,False
+MdlySweep.4,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+MdlySweep.4,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+MdlySweep.4,5,False,moved,False,held,True,moved,False,held,True,moved,True,held,True
+MdlySweep.4,6,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+StrongShimr,0,False,topology_change,True,moved,True,held,False,held,False,held,False,moved,True
+StrongShimr,1,False,topology_change,True,topology_change,True,held,False,held,True,held,False,held,False
+StrongShimr,2,False,moved,False,topology_change,True,held,False,held,False,held,False,held,False
+StrongShimr,3,False,moved,True,moved,False,held,False,held,False,held,False,moved,False
+StrongShimr,4,False,moved,True,moved,True,held,False,held,False,held,False,moved,False
+StrongShimr,5,False,moved,False,moved,True,held,False,held,False,moved,False,moved,False
+StrongShimr,6,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+Acc.Vel-1,0,False,topology_change,True,moved,True,held,False,moved,True,held,False,moved,False
+Acc.Vel-1,1,False,topology_change,True,topology_change,True,held,False,held,False,held,False,held,True
+Acc.Vel-1,2,False,moved,False,topology_change,True,held,False,held,False,held,False,held,False
+Acc.Vel-1,3,False,moved,True,moved,False,moved,False,moved,False,moved,False,moved,False
+Acc.Vel-1,4,False,moved,True,moved,True,held,False,moved,False,held,False,moved,False
+Acc.Vel-1,5,False,moved,False,moved,True,moved,False,moved,False,moved,False,moved,False
+Acc.Vel-1,6,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+Acc.Vel-2,0,False,moved,True,moved,True,held,False,held,False,moved,True,moved,True
+Acc.Vel-2,1,False,moved,True,moved,True,moved,False,held,False,moved,True,moved,True
+Acc.Vel-2,2,False,moved,True,moved,False,moved,False,held,False,moved,True,moved,False
+Acc.Vel-2,3,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Acc.Vel-2,4,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Acc.Vel-2,5,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Acc.Vel-2,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Vel2-Wind,0,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Vel2-Wind,1,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Vel2-Wind,2,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Vel2-Wind,3,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Vel2-Wind,4,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Vel2-Wind,5,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Vel2-Wind,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+Harmo,0,False,moved,False,moved,True,held,False,moved,True,held,False,moved,True
+Harmo,1,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Harmo,2,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Harmo,3,False,moved,True,moved,True,moved,False,held,False,held,False,held,False
+Harmo,4,False,moved,True,moved,True,moved,True,held,False,held,False,held,False
+Harmo,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+Harmo,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Start>EndA,0,False,moved,False,moved,True,moved,False,moved,True,moved,False,moved,False
+Start>EndA,1,False,moved,True,moved,True,moved,False,held,True,moved,False,moved,False
+Start>EndA,2,False,moved,True,moved,True,held,False,held,True,moved,False,moved,False
+Start>EndA,3,False,moved,True,moved,True,moved,False,held,False,moved,False,moved,False
+Start>EndA,4,False,moved,True,moved,True,held,False,moved,False,moved,False,moved,False
+Start>EndA,5,False,moved,True,moved,True,moved,False,held,False,moved,False,moved,False
+Start>EndA,6,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+Start>EndB,0,False,topology_change,False,moved,True,held,False,moved,False,topology_change,False,moved,True
+Start>EndB,1,False,topology_change,False,moved,True,topology_change,False,held,False,held,True,held,True
+Start>EndB,2,False,topology_change,False,topology_change,False,topology_change,False,topology_change,False,held,True,held,True
+Start>EndB,3,False,moved,True,topology_change,False,moved,True,topology_change,False,held,True,held,True
+Start>EndB,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Start>EndB,5,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Start>EndB,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+MovingPick1,0,False,moved,False,moved,True,moved,False,moved,True,held,False,moved,True
+MovingPick1,1,False,topology_change,False,moved,True,topology_change,False,moved,True,held,False,held,True
+MovingPick1,2,False,topology_change,False,topology_change,False,topology_change,False,topology_change,False,held,False,held,True
+MovingPick1,3,False,moved,True,topology_change,False,moved,True,topology_change,False,moved,False,held,False
+MovingPick1,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+MovingPick1,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+MovingPick1,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+MovingPick2,0,False,moved,False,moved,True,moved,True,moved,True,moved,False,moved,False
+MovingPick2,1,False,moved,False,moved,False,moved,True,moved,True,moved,False,moved,False
+MovingPick2,2,False,moved,True,moved,False,moved,True,moved,True,moved,True,moved,False
+MovingPick2,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MovingPick2,4,False,moved,False,moved,True,moved,True,moved,True,moved,False,moved,True
+MovingPick2,5,False,held,False,moved,False,moved,True,moved,True,held,False,moved,False
+MovingPick2,6,False,held,True,held,False,held,True,moved,True,held,True,held,False
+Mph+Trns1,0,False,held,False,held,False,moved,True,moved,True,held,True,moved,True
+Mph+Trns1,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+Mph+Trns1,2,False,held,False,moved,True,moved,True,moved,True,held,True,held,True
+Mph+Trns1,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+Mph+Trns1,4,False,held,False,moved,True,moved,True,moved,True,held,True,held,True
+Mph+Trns1,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+Mph+Trns1,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+0>Odds,0,False,moved,True,moved,False,moved,True,moved,True,moved,True,moved,True
+0>Odds,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+0>Odds,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+0>Odds,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+0>Odds,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+0>Odds,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+0>Odds,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Comb Voices,0,False,moved,True,moved,True,moved,True,moved,False,moved,True,moved,True
+Comb Voices,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Comb Voices,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+Comb Voices,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+Comb Voices,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Comb Voices,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+Comb Voices,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+Odd-Ev Hrm,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Odd-Ev Hrm,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Odd-Ev Hrm,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+Odd-Ev Hrm,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+Odd-Ev Hrm,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+Odd-Ev Hrm,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+Odd-Ev Hrm,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+OddHrm+Rez,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+OddHrm+Rez,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+OddHrm+Rez,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+OddHrm+Rez,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+OddHrm+Rez,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+OddHrm+Rez,5,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,False
+OddHrm+Rez,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+EvnHrm+Rez,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+EvnHrm+Rez,1,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+EvnHrm+Rez,2,False,held,True,moved,False,held,True,moved,True,held,True,held,False
+EvnHrm+Rez,3,False,held,True,moved,False,held,True,moved,True,held,True,held,False
+EvnHrm+Rez,4,False,held,True,held,False,held,True,moved,False,held,True,held,False
+EvnHrm+Rez,5,False,held,True,moved,False,held,True,moved,False,held,True,held,False
+EvnHrm+Rez,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+MellowPeaks,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MellowPeaks,1,False,moved,True,moved,False,moved,True,held,False,moved,True,moved,False
+MellowPeaks,2,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+MellowPeaks,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+MellowPeaks,4,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+MellowPeaks,5,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+MellowPeaks,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+AHmBnd.4,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+AHmBnd.4,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+AHmBnd.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+AHmBnd.4,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+AHmBnd.4,4,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+AHmBnd.4,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+AHmBnd.4,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Vintage,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Vintage,1,False,held,True,held,False,held,True,held,False,held,True,held,False
+Vintage,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+Vintage,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+Vintage,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+Vintage,5,False,held,True,held,True,held,True,held,True,held,True,held,True
+Vintage,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+MildQPole,0,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,False
+MildQPole,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+MildQPole,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+MildQPole,3,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+MildQPole,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+MildQPole,5,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+MildQPole,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Bonk>CO,0,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Bonk>CO,1,False,moved,False,held,True,moved,True,held,True,moved,True,held,True
+Bonk>CO,2,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Bonk>CO,3,False,moved,True,held,False,moved,True,moved,True,moved,True,moved,True
+Bonk>CO,4,False,moved,True,moved,False,moved,False,moved,True,moved,True,moved,True
+Bonk>CO,5,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Bonk>CO,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Speaker,0,False,held,False,moved,True,moved,False,moved,True,held,False,moved,True
+Speaker,1,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+Speaker,2,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+Speaker,3,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+Speaker,4,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+Speaker,5,False,held,False,held,False,moved,False,moved,False,held,False,held,False
+Speaker,6,False,held,True,held,False,held,True,moved,False,held,True,held,False
+Expander,0,False,moved,True,moved,False,moved,True,moved,True,held,True,moved,True
+Expander,1,False,moved,False,moved,True,moved,False,moved,True,held,False,held,True
+Expander,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Expander,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Expander,4,False,moved,True,moved,True,held,True,moved,True,held,True,moved,False
+Expander,5,False,moved,True,moved,True,held,True,held,True,held,True,held,True
+Expander,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+Separator,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Separator,1,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Separator,2,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Separator,3,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Separator,4,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Separator,5,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Separator,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+MildPolSwap,0,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+MildPolSwap,1,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+MildPolSwap,2,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+MildPolSwap,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+MildPolSwap,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+MildPolSwap,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+MildPolSwap,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+PoleCross.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PoleCross.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PoleCross.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PoleCross.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PoleCross.4,4,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PoleCross.4,5,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+PoleCross.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+ApDistB6.4,0,False,moved,True,held,True,held,True,held,True,held,True,held,True
+ApDistB6.4,1,False,moved,True,moved,True,held,True,moved,False,held,True,moved,True
+ApDistB6.4,2,False,moved,True,moved,True,held,True,moved,False,held,True,moved,True
+ApDistB6.4,3,False,moved,True,moved,True,held,True,moved,False,held,True,moved,True
+ApDistB6.4,4,False,moved,True,moved,True,held,True,moved,False,held,True,moved,True
+ApDistB6.4,5,False,moved,True,moved,True,held,True,moved,False,held,True,moved,True
+ApDistB6.4,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Dave'sRave,0,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Dave'sRave,1,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Dave'sRave,2,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Dave'sRave,3,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Dave'sRave,4,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Dave'sRave,5,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Dave'sRave,6,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+Poles 1-7,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+Poles 1-7,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+Poles 1-7,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+Poles 1-7,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+Poles 1-7,4,False,held,True,held,True,held,True,held,True,held,True,held,True
+Poles 1-7,5,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Poles 1-7,6,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+2 Poles,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+2 Poles,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+2 Poles,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+2 Poles,3,False,held,True,held,False,held,True,held,False,held,True,moved,True
+2 Poles,4,False,held,True,held,False,held,True,held,False,held,True,held,True
+2 Poles,5,False,held,True,held,False,held,True,held,False,held,True,held,True
+2 Poles,6,False,held,True,held,False,held,True,held,False,held,True,held,True
+4 Poles A,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 Poles A,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 Poles A,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 Poles A,3,False,held,True,held,False,held,True,moved,False,held,True,held,False
+4 Poles A,4,False,held,True,held,False,held,True,moved,False,held,True,held,False
+4 Poles A,5,False,held,True,held,False,held,True,moved,False,held,True,held,False
+4 Poles A,6,False,held,True,held,False,held,True,moved,False,held,True,held,False
+4 Poles B,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 Poles B,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 Poles B,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+4 Poles B,3,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+4 Poles B,4,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+4 Poles B,5,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+4 Poles B,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+4 Poles C,0,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 Poles C,1,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 Poles C,2,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 Poles C,3,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 Poles C,4,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 Poles C,5,False,held,True,held,False,held,True,held,False,held,True,held,False
+4 Poles C,6,False,held,True,held,False,held,True,held,False,held,True,held,False
+6 Poles,0,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+6 Poles,1,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+6 Poles,2,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+6 Poles,3,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+6 Poles,4,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+6 Poles,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+6 Poles,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+MultiPole,0,False,held,False,moved,True,held,False,moved,True,moved,True,moved,True
+MultiPole,1,False,held,False,held,False,held,False,held,False,moved,False,moved,False
+MultiPole,2,False,held,False,held,False,held,False,held,False,moved,True,held,False
+MultiPole,3,False,held,False,held,False,held,False,held,False,moved,True,moved,False
+MultiPole,4,False,held,False,held,False,held,False,held,False,moved,True,moved,False
+MultiPole,5,False,moved,False,held,False,moved,True,held,False,moved,True,moved,False
+MultiPole,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Tracker,0,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tracker,1,False,held,False,moved,True,held,False,moved,True,held,False,held,False
+Tracker,2,False,held,True,held,False,held,True,held,False,held,True,held,False
+Tracker,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+Tracker,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+Tracker,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+Tracker,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Tracker 2,0,False,held,False,moved,True,moved,True,moved,False,moved,True,held,False
+Tracker 2,1,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+Tracker 2,2,False,held,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Tracker 2,3,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+Tracker 2,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Tracker 2,5,False,moved,False,held,True,moved,True,moved,True,moved,False,held,True
+Tracker 2,6,False,held,True,held,True,held,True,moved,True,held,True,held,True
+Tracker 3,0,False,topology_change,False,held,False,topology_change,False,held,False,held,True,moved,True
+Tracker 3,1,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Tracker 3,2,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Tracker 3,3,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Tracker 3,4,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Tracker 3,5,False,moved,True,moved,True,held,False,held,True,held,True,held,True
+Tracker 3,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+Tracker5ths,0,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Tracker5ths,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tracker5ths,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tracker5ths,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tracker5ths,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tracker5ths,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Tracker5ths,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+InFifths.4,0,False,moved,True,held,True,moved,True,held,True,moved,False,held,True
+InFifths.4,1,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+InFifths.4,2,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+InFifths.4,3,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+InFifths.4,4,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+InFifths.4,5,False,moved,True,moved,True,moved,True,held,True,moved,False,held,True
+InFifths.4,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+HarmTracker,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+HarmTracker,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+HarmTracker,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+HarmTracker,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+HarmTracker,4,False,moved,False,held,True,moved,False,held,True,moved,False,held,True
+HarmTracker,5,False,moved,True,moved,False,held,False,moved,False,held,True,moved,False
+HarmTracker,6,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+1BndPrmtrcA,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcA,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcA,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcA,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcA,4,False,topology_change,False,held,True,moved,False,held,True,moved,False,held,True
+1BndPrmtrcA,5,False,held,False,moved,False,topology_change,False,moved,False,topology_change,False,moved,False
+1BndPrmtrcA,6,False,held,True,held,True,held,True,topology_change,False,held,True,held,False
+1BndPrmtrcB,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcB,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcB,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcB,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcB,4,False,topology_change,False,held,True,topology_change,False,held,True,topology_change,False,held,True
+1BndPrmtrcB,5,False,held,False,moved,False,topology_change,True,topology_change,False,topology_change,True,topology_change,False
+1BndPrmtrcB,6,False,held,True,topology_change,False,held,True,topology_change,False,held,True,topology_change,True
+1BndPrmtrcC,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcC,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcC,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcC,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcC,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+1BndPrmtrcC,5,False,moved,True,held,True,moved,True,held,True,moved,True,held,True
+1BndPrmtrcC,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+1BndPrmtrcD,0,False,topology_change,False,moved,False,topology_change,False,moved,False,moved,False,held,False
+1BndPrmtrcD,1,False,moved,False,moved,False,moved,False,topology_change,False,moved,False,moved,False
+1BndPrmtrcD,2,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+1BndPrmtrcD,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+1BndPrmtrcD,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+1BndPrmtrcD,5,False,moved,False,moved,True,moved,False,moved,True,held,False,moved,True
+1BndPrmtrcD,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+MltiMetricA,0,False,moved,True,moved,False,moved,True,held,False,moved,True,held,False
+MltiMetricA,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricA,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricA,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricA,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricA,5,False,held,False,moved,True,moved,False,moved,True,moved,False,moved,True
+MltiMetricA,6,False,held,True,held,False,held,True,held,False,held,True,moved,False
+MltiMetricB,0,False,moved,False,moved,True,moved,False,moved,True,moved,False,held,True
+MltiMetricB,1,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+MltiMetricB,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricB,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricB,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+MltiMetricB,5,False,held,False,moved,True,held,False,moved,True,moved,False,moved,True
+MltiMetricB,6,False,held,True,held,False,held,True,held,False,held,True,held,False
+MltiMetricC,0,False,moved,False,held,True,moved,False,held,True,moved,False,held,True
+MltiMetricC,1,False,moved,False,held,False,moved,True,topology_change,False,moved,True,moved,False
+MltiMetricC,2,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+MltiMetricC,3,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+MltiMetricC,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+MltiMetricC,5,False,held,True,moved,False,held,True,moved,True,held,True,moved,True
+MltiMetricC,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Omni Metric,0,False,moved,True,moved,False,moved,True,held,True,held,True,moved,True
+Omni Metric,1,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Omni Metric,2,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+Omni Metric,3,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Omni Metric,4,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+Omni Metric,5,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+Omni Metric,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+HarmncPeaks,0,False,topology_change,False,moved,True,topology_change,False,held,True,held,True,moved,True
+HarmncPeaks,1,False,moved,False,moved,True,topology_change,False,held,True,held,True,held,True
+HarmncPeaks,2,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+HarmncPeaks,3,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+HarmncPeaks,4,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+HarmncPeaks,5,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+HarmncPeaks,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+HrmncPeaks2,0,False,topology_change,False,held,True,held,False,held,True,held,True,held,True
+HrmncPeaks2,1,False,moved,True,topology_change,False,moved,True,held,False,moved,True,held,True
+HrmncPeaks2,2,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+HrmncPeaks2,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HrmncPeaks2,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HrmncPeaks2,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HrmncPeaks2,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+InHarMetric,0,False,moved,False,held,True,moved,False,held,True,moved,False,held,True
+InHarMetric,1,False,moved,True,moved,False,moved,True,topology_change,False,moved,True,moved,False
+InHarMetric,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+InHarMetric,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+InHarMetric,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+InHarMetric,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+InHarMetric,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+HarmShifter,0,False,moved,True,held,True,held,True,held,True,moved,True,held,True
+HarmShifter,1,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+HarmShifter,2,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+HarmShifter,3,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+HarmShifter,4,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+HarmShifter,5,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HarmShifter,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+HarmShiftr2,0,False,moved,True,held,True,moved,True,held,True,moved,False,held,True
+HarmShiftr2,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HarmShiftr2,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HarmShiftr2,3,False,topology_change,False,moved,True,moved,False,moved,True,held,True,held,True
+HarmShiftr2,4,False,moved,True,topology_change,False,moved,True,moved,False,moved,False,held,True
+HarmShiftr2,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+HarmShiftr2,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+HarmShiftr3,0,False,moved,True,held,True,moved,True,held,True,moved,False,held,True
+HarmShiftr3,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+HarmShiftr3,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+HarmShiftr3,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+HarmShiftr3,4,False,moved,True,moved,False,moved,True,moved,True,moved,False,moved,False
+HarmShiftr3,5,False,moved,True,moved,True,moved,False,moved,True,moved,False,moved,False
+HarmShiftr3,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+Phaser,0,False,moved,True,held,True,moved,True,held,True,moved,True,held,True
+Phaser,1,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Phaser,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Phaser,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Phaser,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Phaser,5,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+Phaser,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+HrmncPhaser,0,False,topology_change,False,held,True,topology_change,False,held,True,moved,False,held,True
+HrmncPhaser,1,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,True
+HrmncPhaser,2,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,True
+HrmncPhaser,3,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,True
+HrmncPhaser,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,False
+HrmncPhaser,5,False,moved,False,moved,False,moved,False,moved,True,moved,False,moved,False
+HrmncPhaser,6,False,held,True,moved,False,held,True,moved,True,held,True,moved,False
+HrmncPhsr2,0,False,moved,False,held,True,moved,False,held,True,moved,False,held,True
+HrmncPhsr2,1,False,moved,False,moved,True,moved,False,moved,True,held,False,moved,False
+HrmncPhsr2,2,False,moved,True,moved,True,held,False,moved,True,moved,False,held,False
+HrmncPhsr2,3,False,moved,True,moved,True,held,False,moved,True,moved,False,moved,False
+HrmncPhsr2,4,False,moved,True,moved,True,held,False,moved,True,held,False,moved,False
+HrmncPhsr2,5,False,moved,True,moved,True,moved,False,held,False,held,False,held,False
+HrmncPhsr2,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Wide Bands,0,False,moved,False,moved,True,moved,False,moved,False,moved,False,moved,True
+Wide Bands,1,False,held,False,moved,False,held,False,moved,False,moved,True,moved,False
+Wide Bands,2,False,moved,False,held,False,held,False,held,False,moved,True,held,False
+Wide Bands,3,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+Wide Bands,4,False,held,True,held,False,held,True,held,False,held,True,held,False
+Wide Bands,5,False,moved,False,moved,False,held,False,held,False,moved,False,moved,True
+Wide Bands,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+New Boost,0,False,moved,True,held,False,moved,True,moved,False,moved,True,held,True
+New Boost,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+New Boost,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+New Boost,3,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+New Boost,4,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+New Boost,5,False,moved,True,moved,True,moved,False,moved,True,held,False,held,False
+New Boost,6,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+VowelSpace2,0,False,moved,False,moved,False,moved,False,held,True,moved,False,moved,False
+VowelSpace2,1,False,moved,True,moved,False,moved,False,moved,False,moved,False,moved,False
+VowelSpace2,2,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,False
+VowelSpace2,3,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,False
+VowelSpace2,4,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,False
+VowelSpace2,5,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,False
+VowelSpace2,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+VowelSpace3,0,False,moved,True,held,True,moved,True,held,True,held,False,held,True
+VowelSpace3,1,False,moved,False,moved,True,moved,False,moved,True,moved,False,held,False
+VowelSpace3,2,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VowelSpace3,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+VowelSpace3,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+VowelSpace3,5,False,held,False,moved,True,moved,False,moved,True,held,False,moved,True
+VowelSpace3,6,False,held,True,held,False,held,True,moved,False,held,True,held,False
+Oh Shaper,0,False,moved,True,held,True,moved,False,held,True,moved,False,held,True
+Oh Shaper,1,False,moved,True,moved,True,moved,True,moved,False,moved,False,moved,False
+Oh Shaper,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Oh Shaper,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,False
+Oh Shaper,4,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+Oh Shaper,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Oh Shaper,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Ah Shaper,0,False,moved,True,held,True,moved,True,held,True,held,False,held,True
+Ah Shaper,1,False,moved,False,moved,True,moved,False,moved,True,moved,False,held,False
+Ah Shaper,2,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+Ah Shaper,3,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Ah Shaper,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Ah Shaper,5,False,held,False,moved,True,held,False,moved,True,held,False,moved,True
+Ah Shaper,6,False,held,True,held,False,held,True,held,False,held,True,held,False
+Oo Shaper,0,False,moved,True,held,True,moved,True,held,True,held,False,moved,True
+Oo Shaper,1,False,moved,True,moved,False,moved,True,moved,True,held,True,held,True
+Oo Shaper,2,False,moved,True,moved,True,moved,True,moved,True,held,True,held,False
+Oo Shaper,3,False,moved,True,moved,False,moved,True,moved,True,held,True,held,True
+Oo Shaper,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Oo Shaper,5,False,moved,True,moved,False,moved,True,moved,True,held,True,held,True
+Oo Shaper,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+FrmntShaper,0,False,moved,False,held,False,held,False,held,False,moved,False,held,False
+FrmntShaper,1,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+FrmntShaper,2,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+FrmntShaper,3,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+FrmntShaper,4,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+FrmntShaper,5,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+FrmntShaper,6,False,held,True,moved,False,held,True,held,False,held,True,moved,False
+Piano LP.4,0,False,held,False,moved,False,moved,True,moved,False,moved,False,moved,True
+Piano LP.4,1,False,held,False,held,False,moved,True,moved,True,moved,False,moved,False
+Piano LP.4,2,False,moved,False,held,False,moved,True,moved,False,moved,True,moved,False
+Piano LP.4,3,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Piano LP.4,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,False
+Piano LP.4,5,False,held,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Piano LP.4,6,False,held,True,held,False,held,True,moved,True,held,True,moved,True
+PianoSndBrd,0,False,held,True,held,False,held,True,moved,False,held,True,held,False
+PianoSndBrd,1,False,held,True,held,False,held,True,moved,False,held,True,held,False
+PianoSndBrd,2,False,held,True,held,False,held,True,moved,False,held,True,held,False
+PianoSndBrd,3,False,held,True,held,False,held,True,moved,False,held,True,held,False
+PianoSndBrd,4,False,held,True,held,False,held,True,moved,False,held,True,held,False
+PianoSndBrd,5,False,held,True,moved,False,held,True,moved,True,held,True,moved,True
+PianoSndBrd,6,False,held,True,moved,False,held,True,moved,True,held,True,moved,True
+Strike Cube,0,False,moved,True,held,False,moved,True,moved,True,moved,True,moved,True
+Strike Cube,1,False,moved,True,moved,False,moved,True,moved,True,moved,False,moved,True
+Strike Cube,2,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Strike Cube,3,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,False
+Strike Cube,4,False,moved,True,moved,False,moved,True,moved,True,moved,False,moved,False
+Strike Cube,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+Strike Cube,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Clav Curves,0,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Clav Curves,1,False,moved,False,moved,True,moved,True,moved,False,held,True,held,True
+Clav Curves,2,False,moved,False,moved,False,moved,True,moved,True,held,True,held,True
+Clav Curves,3,False,moved,False,moved,False,moved,True,moved,True,held,True,held,True
+Clav Curves,4,False,moved,False,moved,False,moved,True,moved,True,held,True,held,True
+Clav Curves,5,False,moved,False,moved,False,moved,True,moved,True,held,True,held,True
+Clav Curves,6,False,held,True,moved,False,held,True,moved,True,held,True,held,True
+Symphony,0,False,moved,True,moved,False,moved,True,moved,True,held,False,moved,True
+Symphony,1,False,moved,False,moved,True,moved,True,moved,False,moved,False,moved,False
+Symphony,2,False,moved,True,moved,False,moved,True,moved,False,moved,False,moved,False
+Symphony,3,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Symphony,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Symphony,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+Symphony,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+String Cube,0,False,topology_change,False,held,False,topology_change,False,moved,True,held,True,held,True
+String Cube,1,False,held,True,topology_change,False,held,True,topology_change,False,held,True,held,True
+String Cube,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+String Cube,3,False,moved,True,held,True,moved,True,held,True,moved,True,held,True
+String Cube,4,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+String Cube,5,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+String Cube,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Swell Cube,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+Swell Cube,1,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+Swell Cube,2,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Swell Cube,3,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Swell Cube,4,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Swell Cube,5,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Swell Cube,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,True
+Quartet.4,0,False,moved,False,held,False,moved,False,moved,False,moved,False,held,False
+Quartet.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+Quartet.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+Quartet.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+Quartet.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+Quartet.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+Quartet.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Mellotron.4,0,False,moved,True,moved,False,moved,True,moved,True,held,False,moved,True
+Mellotron.4,1,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Mellotron.4,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+Mellotron.4,3,False,topology_change,False,moved,True,topology_change,False,moved,True,held,False,held,False
+Mellotron.4,4,False,moved,True,moved,False,moved,True,moved,False,moved,False,held,False
+Mellotron.4,5,False,moved,True,moved,True,moved,False,moved,True,moved,False,held,False
+Mellotron.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Cello,0,False,moved,False,moved,True,moved,False,held,False,moved,True,held,True
+Cello,1,False,moved,True,moved,False,moved,False,moved,False,moved,True,held,True
+Cello,2,False,moved,True,moved,True,moved,False,moved,False,moved,True,held,True
+Cello,3,False,moved,True,moved,True,moved,False,moved,False,moved,True,held,True
+Cello,4,False,moved,True,moved,True,moved,False,moved,False,moved,True,held,True
+Cello,5,False,moved,True,moved,True,moved,False,moved,False,moved,True,held,True
+Cello,6,False,held,True,moved,True,held,True,moved,False,held,True,held,True
+Key Squeak,0,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Key Squeak,1,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+Key Squeak,2,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Key Squeak,3,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Key Squeak,4,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Key Squeak,5,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+Key Squeak,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+Pluck.4,0,False,moved,True,moved,True,moved,True,held,False,held,True,moved,True
+Pluck.4,1,False,moved,True,moved,True,moved,True,held,False,held,True,held,True
+Pluck.4,2,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Pluck.4,3,False,moved,True,moved,True,held,False,held,True,held,True,held,True
+Pluck.4,4,False,moved,True,moved,True,held,True,moved,False,held,True,held,True
+Pluck.4,5,False,moved,True,moved,True,moved,True,held,True,held,True,held,True
+Pluck.4,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+Pick It,0,False,moved,True,moved,True,moved,True,held,False,held,False,moved,True
+Pick It,1,False,moved,True,moved,True,moved,True,held,False,held,False,held,False
+Pick It,2,False,moved,True,moved,True,moved,True,held,False,held,False,held,False
+Pick It,3,False,moved,True,moved,True,moved,True,held,False,held,False,held,False
+Pick It,4,False,moved,True,moved,True,moved,True,held,False,held,False,held,False
+Pick It,5,False,moved,False,moved,True,moved,False,held,False,held,False,held,False
+Pick It,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+El Pick It,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+El Pick It,1,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+El Pick It,2,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+El Pick It,3,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+El Pick It,4,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+El Pick It,5,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+El Pick It,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+ElGuit Cube,0,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,True
+ElGuit Cube,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+ElGuit Cube,2,False,moved,True,moved,True,moved,True,moved,True,held,False,held,False
+ElGuit Cube,3,False,moved,True,moved,True,moved,False,moved,True,moved,False,held,False
+ElGuit Cube,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+ElGuit Cube,5,False,moved,True,moved,True,moved,True,moved,True,moved,False,held,False
+ElGuit Cube,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+ElGuit Pick,0,False,moved,False,held,False,held,False,moved,True,moved,False,held,True
+ElGuit Pick,1,False,moved,True,moved,True,moved,True,moved,False,moved,True,moved,True
+ElGuit Pick,2,False,moved,True,moved,True,held,False,moved,True,moved,True,moved,True
+ElGuit Pick,3,False,moved,True,moved,True,moved,True,moved,False,moved,False,moved,True
+ElGuit Pick,4,False,moved,True,moved,True,held,True,held,True,held,True,held,True
+ElGuit Pick,5,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+ElGuit Pick,6,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+Breather 1,0,False,moved,True,moved,True,moved,True,moved,False,moved,True,moved,False
+Breather 1,1,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,True
+Breather 1,2,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Breather 1,3,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+Breather 1,4,False,moved,True,moved,False,moved,True,moved,True,moved,True,moved,True
+Breather 1,5,False,held,False,moved,True,moved,True,moved,True,moved,True,moved,True
+Breather 1,6,False,held,True,held,False,held,True,moved,True,held,True,moved,True
+Breather 2,0,False,moved,True,moved,True,held,False,moved,True,moved,True,moved,True
+Breather 2,1,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+Breather 2,2,False,moved,True,moved,True,held,False,held,False,moved,True,moved,True
+Breather 2,3,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+Breather 2,4,False,moved,True,moved,True,held,False,held,False,moved,True,moved,True
+Breather 2,5,False,moved,True,moved,True,held,True,held,True,moved,True,moved,True
+Breather 2,6,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+WindNoise 1,0,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,False
+WindNoise 1,1,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+WindNoise 1,2,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+WindNoise 1,3,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+WindNoise 1,4,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+WindNoise 1,5,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+WindNoise 1,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+WindNoise 2,0,False,moved,False,moved,False,held,False,moved,False,held,False,moved,True
+WindNoise 2,1,False,moved,False,moved,False,moved,True,held,False,held,False,held,False
+WindNoise 2,2,False,moved,False,moved,False,moved,True,moved,True,moved,False,moved,False
+WindNoise 2,3,False,moved,False,moved,False,moved,True,moved,True,moved,False,moved,False
+WindNoise 2,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,False
+WindNoise 2,5,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+WindNoise 2,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+Blow Cube,0,False,moved,True,held,True,moved,False,held,True,moved,True,held,True
+Blow Cube,1,False,moved,True,moved,True,moved,False,held,False,moved,True,moved,True
+Blow Cube,2,False,moved,True,moved,True,moved,False,held,False,moved,True,moved,True
+Blow Cube,3,False,moved,True,moved,True,moved,False,held,False,moved,True,moved,True
+Blow Cube,4,False,moved,True,moved,True,moved,False,held,False,moved,True,moved,True
+Blow Cube,5,False,moved,True,moved,True,moved,False,moved,False,moved,True,moved,True
+Blow Cube,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Overblow,0,False,moved,True,moved,True,moved,False,moved,True,held,False,moved,False
+Overblow,1,False,moved,True,moved,True,moved,False,moved,False,held,False,moved,False
+Overblow,2,False,moved,True,moved,True,moved,False,moved,False,held,False,moved,False
+Overblow,3,False,moved,True,moved,True,moved,False,moved,False,held,False,moved,False
+Overblow,4,False,moved,True,moved,True,moved,False,moved,False,held,False,moved,False
+Overblow,5,False,moved,True,moved,True,moved,True,moved,False,held,False,moved,False
+Overblow,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+Wind Filter,0,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Wind Filter,1,False,held,True,held,True,held,True,held,True,moved,True,held,True
+Wind Filter,2,False,held,True,held,True,moved,False,held,True,moved,True,moved,True
+Wind Filter,3,False,moved,False,held,True,moved,False,held,True,moved,True,moved,True
+Wind Filter,4,False,moved,False,moved,False,held,True,held,True,moved,True,moved,True
+Wind Filter,5,False,moved,False,moved,False,moved,False,moved,False,moved,True,moved,True
+Wind Filter,6,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+FlutBreth.4,0,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+FlutBreth.4,1,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+FlutBreth.4,2,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+FlutBreth.4,3,False,held,True,moved,False,held,True,moved,False,moved,True,moved,True
+FlutBreth.4,4,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+FlutBreth.4,5,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+FlutBreth.4,6,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+VClarinet.4,0,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VClarinet.4,1,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VClarinet.4,2,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VClarinet.4,3,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VClarinet.4,4,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VClarinet.4,5,False,moved,False,moved,False,moved,False,moved,False,moved,False,moved,False
+VClarinet.4,6,False,held,True,moved,False,held,True,moved,False,held,True,moved,False
+New Mute.4,0,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+New Mute.4,1,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+New Mute.4,2,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+New Mute.4,3,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+New Mute.4,4,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+New Mute.4,5,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+New Mute.4,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+Trempeto.4,0,False,moved,False,held,True,held,False,held,True,moved,True,moved,True
+Trempeto.4,1,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+Trempeto.4,2,False,moved,False,moved,False,held,True,held,False,moved,True,moved,True
+Trempeto.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Trempeto.4,4,False,held,True,moved,False,held,True,held,True,moved,True,moved,True
+Trempeto.4,5,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+Trempeto.4,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+SfBrzando.4,0,False,held,True,held,True,held,True,held,True,moved,True,moved,True
+SfBrzando.4,1,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SfBrzando.4,2,False,held,True,moved,False,held,True,held,True,moved,True,moved,True
+SfBrzando.4,3,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SfBrzando.4,4,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SfBrzando.4,5,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SfBrzando.4,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+UduFilter.4,0,False,held,True,moved,False,held,True,moved,True,held,True,held,False
+UduFilter.4,1,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+UduFilter.4,2,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+UduFilter.4,3,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+UduFilter.4,4,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+UduFilter.4,5,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+UduFilter.4,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,False
+Hip Kick,0,False,moved,True,held,True,moved,True,held,True,moved,True,held,True
+Hip Kick,1,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Hip Kick,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Hip Kick,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Hip Kick,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Hip Kick,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Hip Kick,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Cymbal Cube,0,False,moved,True,held,True,moved,True,held,True,held,True,held,True
+Cymbal Cube,1,False,moved,True,moved,False,moved,True,moved,False,moved,True,moved,False
+Cymbal Cube,2,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Cymbal Cube,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cymbal Cube,4,False,moved,True,moved,True,moved,True,moved,True,held,True,held,True
+Cymbal Cube,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Cymbal Cube,6,False,held,True,moved,True,held,True,moved,True,held,True,held,True
+ChimeFlange,0,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+ChimeFlange,1,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+ChimeFlange,2,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+ChimeFlange,3,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+ChimeFlange,4,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+ChimeFlange,5,False,held,False,held,False,moved,False,moved,False,moved,True,moved,True
+ChimeFlange,6,False,held,True,held,False,held,True,moved,False,held,True,moved,True
+CableRing.4,0,False,moved,True,held,True,moved,True,held,True,held,True,held,True
+CableRing.4,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+CableRing.4,2,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+CableRing.4,3,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,True
+CableRing.4,4,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+CableRing.4,5,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+CableRing.4,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+TensionWire,0,False,held,True,held,True,held,True,held,True,held,True,held,True
+TensionWire,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+TensionWire,2,False,moved,True,held,True,moved,True,held,True,moved,False,held,True
+TensionWire,3,False,moved,True,moved,False,held,False,held,False,moved,False,held,False
+TensionWire,4,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,False
+TensionWire,5,False,held,True,moved,True,held,True,held,False,held,True,moved,False
+TensionWire,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Auto Clang,0,False,moved,True,held,True,moved,False,held,True,moved,True,held,True
+Auto Clang,1,False,moved,True,moved,True,moved,True,moved,False,moved,True,moved,False
+Auto Clang,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Auto Clang,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Auto Clang,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Auto Clang,5,False,moved,True,moved,True,held,False,moved,True,moved,True,moved,True
+Auto Clang,6,False,held,True,moved,True,held,True,moved,False,held,True,moved,True
+Dragon Claw,0,False,moved,False,moved,True,moved,False,held,True,topology_change,False,held,False
+Dragon Claw,1,False,moved,True,topology_change,False,moved,True,moved,False,moved,True,moved,False
+Dragon Claw,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Dragon Claw,3,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Dragon Claw,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Dragon Claw,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+Dragon Claw,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,True
+Spectra,0,False,moved,False,held,False,moved,False,held,False,held,False,held,True
+Spectra,1,False,moved,False,moved,False,moved,False,moved,False,held,False,moved,False
+Spectra,2,False,moved,True,moved,False,held,False,moved,False,held,True,held,False
+Spectra,3,False,moved,False,moved,True,moved,True,moved,True,moved,True,moved,False
+Spectra,4,False,moved,False,moved,False,moved,True,moved,True,moved,True,held,True
+Spectra,5,False,moved,False,moved,False,moved,False,moved,True,moved,False,held,True
+Spectra,6,False,held,True,moved,False,held,True,moved,False,held,True,held,True
+RippleSheet,0,False,moved,True,held,True,moved,True,held,True,moved,True,held,True
+RippleSheet,1,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+RippleSheet,2,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,True
+RippleSheet,3,False,moved,True,moved,False,moved,True,moved,True,moved,True,moved,True
+RippleSheet,4,False,moved,False,moved,False,moved,True,moved,True,moved,False,moved,True
+RippleSheet,5,False,moved,False,moved,False,moved,True,moved,True,moved,True,moved,False
+RippleSheet,6,False,held,True,moved,False,held,True,moved,True,held,True,moved,True
+Clear Water,0,False,moved,True,held,True,moved,False,held,True,moved,False,held,True
+Clear Water,1,False,moved,True,moved,True,moved,False,moved,False,held,False,held,False
+Clear Water,2,False,moved,True,moved,True,held,False,moved,False,moved,False,moved,False
+Clear Water,3,False,moved,True,moved,True,held,False,held,False,held,False,held,False
+Clear Water,4,False,moved,True,moved,True,moved,False,moved,False,held,False,moved,False
+Clear Water,5,False,moved,True,moved,True,moved,False,moved,False,moved,False,moved,False
+Clear Water,6,False,held,True,moved,True,held,True,moved,False,held,True,held,False
+Invisible,0,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+Invisible,1,False,held,True,held,True,moved,True,moved,True,moved,False,moved,False
+Invisible,2,False,held,True,held,True,moved,True,moved,True,held,True,held,False
+Invisible,3,False,held,True,held,True,moved,True,moved,True,held,True,moved,True
+Invisible,4,False,held,True,held,True,held,True,moved,True,held,True,moved,False
+Invisible,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+Invisible,6,False,held,True,held,True,held,True,held,True,held,True,held,True
+Wine Glass,0,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Wine Glass,1,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Wine Glass,2,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Wine Glass,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Wine Glass,4,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Wine Glass,5,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Wine Glass,6,False,held,True,moved,False,held,True,held,False,held,True,moved,True
+SnakeCros.4,0,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SnakeCros.4,1,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+SnakeCros.4,2,False,held,True,moved,False,held,True,held,False,moved,True,moved,True
+SnakeCros.4,3,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SnakeCros.4,4,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SnakeCros.4,5,False,held,True,held,False,held,True,held,False,moved,True,moved,True
+SnakeCros.4,6,False,held,True,held,False,held,True,held,False,held,True,moved,True
+Analog.4,0,False,moved,False,moved,True,held,True,moved,True,held,False,moved,True
+Analog.4,1,False,moved,False,moved,False,held,True,held,True,held,False,held,False
+Analog.4,2,False,moved,False,moved,False,held,False,held,False,moved,False,moved,False
+Analog.4,3,False,moved,False,moved,False,held,False,held,False,moved,True,moved,True
+Analog.4,4,False,moved,False,held,True,held,False,held,True,moved,True,held,True
+Analog.4,5,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Analog.4,6,False,held,True,moved,False,held,True,held,True,held,True,moved,True
+Skrtch Cube,0,False,moved,True,held,False,moved,True,moved,True,moved,False,held,True
+Skrtch Cube,1,False,moved,True,moved,True,moved,True,moved,True,moved,False,moved,True
+Skrtch Cube,2,False,moved,True,moved,True,moved,True,moved,True,held,False,moved,True
+Skrtch Cube,3,False,moved,False,moved,True,moved,True,moved,True,moved,True,held,False
+Skrtch Cube,4,False,moved,True,moved,False,moved,True,moved,True,moved,False,held,False
+Skrtch Cube,5,False,moved,True,moved,True,moved,True,moved,True,moved,True,held,False
+Skrtch Cube,6,False,held,True,moved,True,held,True,moved,True,held,True,held,False
+KitchenSink,0,False,held,True,held,False,moved,True,moved,False,held,True,held,True
+KitchenSink,1,False,held,True,held,True,moved,True,held,True,held,True,held,True
+KitchenSink,2,False,held,True,held,True,moved,True,held,True,held,True,held,True
+KitchenSink,3,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+KitchenSink,4,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+KitchenSink,5,False,held,True,held,True,held,True,topology_change,True,topology_change,True,held,True
+KitchenSink,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Head Pan 1,0,False,held,True,held,False,moved,True,held,False,held,True,held,True
+Head Pan 1,1,False,held,True,held,True,moved,True,held,True,held,True,held,True
+Head Pan 1,2,False,held,True,held,True,moved,True,held,True,held,True,held,True
+Head Pan 1,3,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+Head Pan 1,4,False,held,True,held,True,moved,True,moved,True,held,True,held,True
+Head Pan 1,5,False,held,True,held,True,held,True,topology_change,True,topology_change,True,held,True
+Head Pan 1,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+Head Pan 2,0,False,moved,True,held,True,moved,True,held,True,moved,False,held,True
+Head Pan 2,1,False,moved,True,moved,True,moved,True,held,True,moved,True,held,True
+Head Pan 2,2,False,moved,True,moved,True,moved,True,held,True,moved,True,held,True
+Head Pan 2,3,False,moved,True,moved,True,moved,True,held,True,moved,True,held,True
+Head Pan 2,4,False,moved,True,moved,True,moved,True,held,True,moved,True,held,True
+Head Pan 2,5,False,moved,True,moved,True,moved,True,held,True,held,False,held,True
+Head Pan 2,6,False,held,True,moved,True,held,True,held,True,held,True,held,True
+Arpeggio,0,False,moved,False,held,False,held,False,held,False,moved,True,moved,True
+Arpeggio,1,False,held,False,held,False,held,False,held,False,moved,False,moved,True
+Arpeggio,2,False,held,False,held,False,held,False,held,False,moved,True,moved,True
+Arpeggio,3,False,held,False,held,True,held,False,held,True,moved,True,moved,True
+Arpeggio,4,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+Arpeggio,5,True,held,True,held,True,held,True,held,True,moved,True,moved,True
+Arpeggio,6,False,held,True,held,True,held,True,held,True,held,True,moved,True
+HeavyFilt.4,0,False,moved,True,moved,True,moved,True,held,True,moved,True,moved,True
+HeavyFilt.4,1,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+HeavyFilt.4,2,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HeavyFilt.4,3,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+HeavyFilt.4,4,False,moved,True,moved,True,moved,True,moved,True,moved,True,moved,True
+HeavyFilt.4,5,False,moved,True,moved,True,moved,False,moved,True,moved,True,moved,True
+HeavyFilt.4,6,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+Noiz Cube 2,0,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+Noiz Cube 2,1,False,held,True,held,True,held,True,held,True,held,True,held,True
+Noiz Cube 2,2,False,held,True,held,True,held,True,held,True,held,True,held,True
+Noiz Cube 2,3,False,held,True,held,True,held,True,held,True,held,True,held,True
+Noiz Cube 2,4,False,moved,True,held,True,moved,True,held,True,held,True,held,True
+Noiz Cube 2,5,False,moved,True,moved,True,moved,True,held,False,held,True,held,True
+Noiz Cube 2,6,False,held,True,moved,True,held,True,held,False,held,True,held,True
+Feedback,0,False,moved,True,moved,True,moved,True,held,True,held,True,moved,True
+Feedback,1,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+Feedback,2,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+Feedback,3,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+Feedback,4,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+Feedback,5,False,moved,True,moved,True,moved,True,moved,True,held,True,moved,False
+Feedback,6,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+AllPoleDist,0,False,moved,True,moved,True,moved,True,moved,False,held,False,moved,True
+AllPoleDist,1,False,moved,True,moved,True,held,False,held,False,held,False,moved,True
+AllPoleDist,2,False,moved,True,moved,True,held,False,held,False,held,False,moved,True
+AllPoleDist,3,False,moved,True,moved,True,held,False,held,False,held,False,moved,True
+AllPoleDist,4,False,moved,True,moved,True,held,False,held,False,held,False,moved,True
+AllPoleDist,5,False,moved,True,moved,True,moved,False,held,False,held,False,moved,True
+AllPoleDist,6,False,held,True,moved,True,held,True,held,False,held,True,moved,True
+AllPoleDst2,0,False,held,True,moved,True,held,True,moved,True,held,True,moved,False
+AllPoleDst2,1,True,held,True,held,True,held,True,held,True,held,True,held,True
+AllPoleDst2,2,True,held,True,held,True,held,True,held,True,held,True,held,True
+AllPoleDst2,3,True,held,True,held,True,held,True,held,True,held,True,held,True
+AllPoleDst2,4,True,held,True,held,True,held,True,held,True,held,True,held,True
+AllPoleDst2,5,True,held,True,held,True,held,True,held,True,held,True,held,True
+AllPoleDst2,6,True,held,True,held,True,held,True,held,True,held,True,held,True

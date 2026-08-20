@@ -1,0 +1,5186 @@
+{
+ "contract": "stage-vocabulary-v1: the shapes E-mu actually seated at each cascade position, derived from the same corpora as the stage-state census by geometry alone (root presence, radius, the pole/zero interval in semitones and the width ratio). Every measured figure is physical at the row's own corpus datum; seats and ranges are stated at 39,062.5 Hz. Shapes are the picker vocabulary; alphabet letters and census clusters are presets of a shape at the positions the factory used them.",
+ "generated_by": "dev/derive_stage_vocabulary.py",
+ "sources": [
+  "ref/morpheus/cubes_decoded.json",
+  "ref/presets/*.bin",
+  "ref/cubes/*.body",
+  "recipes/hero/*.body",
+  "ref/stage_state_census.json",
+  "recipes/alphabet.json"
+ ],
+ "cuts": {
+  "root_off_r": 0.45,
+  "unit_zero_r": 0.99999,
+  "near_interval_st": 6.0,
+  "width_ratio_octaves": 1.0,
+  "sharp_bw_hz": 150.0,
+  "menu_floor": {
+   "occurrences": 8,
+   "distinct_filters": 3
+  }
+ },
+ "shapes": {
+  "idle": {
+   "structure": "both roots off (r below 0.45): the exact identity row the corpus parks in unused slots, seated as the idle pole at 9382 Hz r 0.125 with the off zero",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "parked pair": {
+   "structure": "conjugate pole and conjugate zero on the same frequency within 0.01 octave and the same radius within 0.01 \u2014 they cancel; correspondence scaffolding that lets the lane travel apart at other corners",
+   "free": [
+    "freq"
+   ],
+   "freedom": [
+    "pole_hz"
+   ],
+   "slaving": {
+    "zero_hz": "rides the pole",
+    "interval_st_median": 0.0,
+    "zero_r_follows_pole": true
+   }
+  },
+  "real pair": {
+   "structure": "one part is a real-axis root pair rather than a conjugate pair \u2014 the shelf and rolloff letters the conjugate schema cannot express; carried verbatim",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "peak": {
+   "structure": "conjugate pole alone, zero off; bandwidth at or under 150 Hz \u2014 a resonance",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r"
+   ],
+   "slaving": null
+  },
+  "lift": {
+   "structure": "conjugate pole alone, zero off; bandwidth over 150 Hz \u2014 a broad band lift or lowpass corner",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r"
+   ],
+   "slaving": null
+  },
+  "notch": {
+   "structure": "conjugate zero alone, pole off; bandwidth at or under 150 Hz \u2014 a narrow null",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "zero_hz",
+    "zero_r"
+   ],
+   "slaving": null
+  },
+  "dip": {
+   "structure": "conjugate zero alone, pole off; bandwidth over 150 Hz \u2014 a broad scoop",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "zero_hz",
+    "zero_r"
+   ],
+   "slaving": null
+  },
+  "guarded peak": {
+   "structure": "conjugate pole with a zero on the unit circle \u2014 the traveling null riding beside the resonance; the zero radius is exactly 1.0 and stays there",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r"
+   ],
+   "slaving": {
+    "zero_hz": "rides the pole at the measured interval",
+    "zero_r_fixed": 1.0
+   }
+  },
+  "bell": {
+   "structure": "conjugate pole with a conjugate zero within 6 semitones, the zero at least twice as wide \u2014 level comes from the tight pole inside the wide zero",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r",
+    "zero_r"
+   ],
+   "slaving": {
+    "zero_hz": "rides the pole at the measured interval"
+   }
+  },
+  "carved band": {
+   "structure": "conjugate pole with a conjugate zero within 6 semitones, the zero at least twice as narrow \u2014 a sharp null cut into a broad band",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r",
+    "zero_r"
+   ],
+   "slaving": {
+    "zero_hz": "rides the pole at the measured interval"
+   }
+  },
+  "close pair": {
+   "structure": "conjugate pole and zero within 6 semitones at comparable width \u2014 nearly cancelling, a shallow tilt",
+   "free": [
+    "freq",
+    "resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r",
+    "zero_r"
+   ],
+   "slaving": {
+    "zero_hz": "rides the pole at the measured interval"
+   }
+  },
+  "low shelf": {
+   "structure": "conjugate pole with its conjugate zero more than 6 semitones above it \u2014 lows held up against a high null",
+   "free": [
+    "freq",
+    "resonance",
+    "zero freq",
+    "zero resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r",
+    "zero_hz",
+    "zero_r"
+   ],
+   "slaving": null
+  },
+  "high shelf": {
+   "structure": "conjugate pole with its conjugate zero more than 6 semitones below it \u2014 highs held up against a low null",
+   "free": [
+    "freq",
+    "resonance",
+    "zero freq",
+    "zero resonance",
+    "gain"
+   ],
+   "freedom": [
+    "pole_hz",
+    "pole_r",
+    "zero_hz",
+    "zero_r"
+   ],
+   "slaving": null
+  }
+ },
+ "positions": {
+  "S1": {
+   "stage_instances": 2520,
+   "shapes": [
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "gain_db": {
+       "min": -0.81,
+       "median": -0.17,
+       "max": -0.02
+      }
+     },
+     "evidence": {
+      "occurrences": 631,
+      "distinct_filters": 148,
+      "by_corpus": {
+       "morpheus": 628,
+       "native": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "1BndPrmtrcD",
+       "2 PoleLoQ.4",
+       "2 Poles"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "notch",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 1312.04,
+      "zero_r": 0.998592
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 1487.1,
+       "max": 18534.7
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 33.4,
+       "max": 147.3
+      },
+      "gain_db": {
+       "min": -4.86,
+       "median": -4.86,
+       "max": -4.86
+      }
+     },
+     "evidence": {
+      "occurrences": 398,
+      "distinct_filters": 134,
+      "by_corpus": {
+       "morpheus": 397,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Odds",
+       "0>Shp1",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AHmBnd.4"
+      ],
+      "clusters": [
+       "zero_only-2",
+       "zero_only-4"
+      ],
+      "letters": [
+       "nyquist-trap-zero",
+       "octave-notch-1",
+       "octave-notch-2",
+       "octave-notch-3",
+       "octave-notch-4",
+       "octave-notch-5",
+       "octave-notch-6"
+      ]
+     }
+    },
+    {
+     "name": "high shelf",
+     "seat": {
+      "pole_hz": 3891.26,
+      "pole_r": 0.927383,
+      "zero_hz": 273.11,
+      "zero_r": 0.98998
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 79.2,
+       "median": 4690.9,
+       "max": 18839.8
+      },
+      "pole_bw_hz": {
+       "min": 4.2,
+       "median": 998.1,
+       "max": 9418.0
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 383.7,
+       "max": 12736.3
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 222.0,
+       "max": 8618.6
+      },
+      "gain_db": {
+       "min": -13.44,
+       "median": -5.01,
+       "max": 3.0
+      }
+     },
+     "evidence": {
+      "occurrences": 341,
+      "distinct_filters": 121,
+      "by_corpus": {
+       "morpheus": 250,
+       "p2k": 59,
+       "native": 32
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "2pole>4pole",
+       "APass.4",
+       "AUParaVow.4",
+       "AcGtrRs.4",
+       "Acc.Vel-1"
+      ],
+      "clusters": [
+       "pole_zero-7",
+       "pole_zero-12",
+       "pole_zero-13",
+       "pole_zero-15"
+      ],
+      "letters": [
+       "sub-anchor-pole",
+       "sub-anchor-zero"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -34.9,
+      "interval_st_p25": -59.19,
+      "interval_st_p75": -21.25
+     }
+    },
+    {
+     "name": "dip",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 3075.86,
+      "zero_r": 0.917919
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 6597.0,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 153.5,
+       "median": 998.1,
+       "max": 9418.0
+      },
+      "gain_db": {
+       "min": -5.03,
+       "median": -0.43,
+       "max": -0.38
+      }
+     },
+     "evidence": {
+      "occurrences": 328,
+      "distinct_filters": 130,
+      "by_corpus": {
+       "morpheus": 324,
+       "p2k": 1,
+       "native": 3
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Odds",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AOLpParaVow"
+      ],
+      "clusters": [
+       "zero_only-0",
+       "zero_only-1",
+       "zero_only-3",
+       "zero_only-5"
+      ],
+      "letters": []
+     }
+    },
+    {
+     "name": "low shelf",
+     "seat": {
+      "pole_hz": 216.07,
+      "pole_r": 0.95451,
+      "zero_hz": 2417.56,
+      "zero_r": 0.987297
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 214.5,
+       "max": 9572.5
+      },
+      "pole_bw_hz": {
+       "min": 1.1,
+       "median": 939.0,
+       "max": 9418.0
+      },
+      "zero_hz": {
+       "min": 23.5,
+       "median": 2535.6,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 153.5,
+       "max": 8618.6
+      },
+      "gain_db": {
+       "min": -28.0,
+       "median": -13.89,
+       "max": 0.0
+      }
+     },
+     "evidence": {
+      "occurrences": 320,
+      "distinct_filters": 116,
+      "by_corpus": {
+       "morpheus": 292,
+       "p2k": 14,
+       "native": 14
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Muter",
+       "0>Odds",
+       "0>Shp1",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "4>2 LowQHiQ",
+       "AEParLPVow"
+      ],
+      "clusters": [
+       "pole_zero-10"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 36.56,
+      "interval_st_p25": 16.71,
+      "interval_st_p75": 57.04
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 1260.44,
+      "pole_r": 0.907332,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 1573.0,
+       "max": 18611.0
+      },
+      "pole_bw_hz": {
+       "min": 159.6,
+       "median": 1351.9,
+       "max": 9418.0
+      },
+      "gain_db": {
+       "min": -23.88,
+       "median": -12.8,
+       "max": -9.52
+      }
+     },
+     "evidence": {
+      "occurrences": 180,
+      "distinct_filters": 72,
+      "by_corpus": {
+       "morpheus": 176,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "500up.4",
+       "6 Poles"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "carved band",
+     "seat": {
+      "pole_hz": 1762.79,
+      "pole_r": 0.856386,
+      "zero_hz": 1677.25,
+      "zero_r": 0.996129
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 1168.0,
+       "max": 18611.0
+      },
+      "pole_bw_hz": {
+       "min": 22.8,
+       "median": 2611.5,
+       "max": 9418.0
+      },
+      "zero_hz": {
+       "min": 24.3,
+       "median": 1258.2,
+       "max": 18916.1
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 59.4,
+       "max": 3084.9
+      },
+      "gain_db": {
+       "min": -9.47,
+       "median": -0.87,
+       "max": -0.31
+      }
+     },
+     "evidence": {
+      "occurrences": 121,
+      "distinct_filters": 56,
+      "by_corpus": {
+       "morpheus": 103,
+       "p2k": 2,
+       "native": 16
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Muter",
+       "0>Odds",
+       "0>Shp2",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AHmBnd.4",
+       "Breather 1"
+      ],
+      "clusters": [
+       "pole_zero-2",
+       "pole_zero-6",
+       "pole_zero-11"
+      ],
+      "letters": [
+       "paravowel-a-pole-1",
+       "paravowel-a-zero-1",
+       "vocal-comb-pole-1",
+       "vocal-comb-zero-1"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -0.85,
+      "interval_st_p25": -4.51,
+      "interval_st_p75": 1.43
+     }
+    },
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 146.18,
+      "pole_r": 0.998057,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.9,
+       "median": 100.7,
+       "max": 4035.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 48.7,
+       "max": 141.2
+      },
+      "gain_db": {
+       "min": -39.9,
+       "median": -31.52,
+       "max": -20.35
+      }
+     },
+     "evidence": {
+      "occurrences": 84,
+      "distinct_filters": 41,
+      "by_corpus": {
+       "morpheus": 78,
+       "p2k": 6
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "500up.4",
+       "AEParaVowel",
+       "AllPoleDst2",
+       "Band-aid"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-8",
+       "pole_only-9",
+       "pole_only-11",
+       "pole_only-12"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "uhrrrah-vowel-1"
+      ]
+     }
+    },
+    {
+     "name": "close pair",
+     "seat": {
+      "pole_hz": 4165.82,
+      "pole_r": 0.984235,
+      "zero_hz": 3970.2,
+      "zero_r": 0.98228
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 80.4,
+       "median": 8466.2,
+       "max": 18839.8
+      },
+      "pole_bw_hz": {
+       "min": 2.1,
+       "median": 285.5,
+       "max": 7864.6
+      },
+      "zero_hz": {
+       "min": 108.4,
+       "median": 7855.9,
+       "max": 18305.8
+      },
+      "zero_bw_hz": {
+       "min": 4.0,
+       "median": 336.9,
+       "max": 7240.4
+      },
+      "gain_db": {
+       "min": -7.0,
+       "median": -1.75,
+       "max": 3.78
+      }
+     },
+     "evidence": {
+      "occurrences": 41,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 32,
+       "p2k": 9
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "Bonk>CO",
+       "BriteFlng.4",
+       "Clr>Oboe",
+       "Comb Voices",
+       "Flng>Flng1",
+       "Flng>Flng3",
+       "Flng>Flng6"
+      ],
+      "clusters": [
+       "pole_zero-4",
+       "pole_zero-8",
+       "pole_zero-9"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -1.22,
+      "interval_st_p25": -1.49,
+      "interval_st_p75": -0.57
+     }
+    },
+    {
+     "name": "bell",
+     "seat": {
+      "pole_hz": 2285.37,
+      "pole_r": 0.988686,
+      "zero_hz": 2321.54,
+      "zero_r": 0.929538
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 24.1,
+       "median": 5665.8,
+       "max": 18687.2
+      },
+      "pole_bw_hz": {
+       "min": 1.0,
+       "median": 209.7,
+       "max": 3739.0
+      },
+      "zero_hz": {
+       "min": 21.0,
+       "median": 6444.4,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 10.6,
+       "median": 1536.0,
+       "max": 9418.0
+      },
+      "gain_db": {
+       "min": -8.08,
+       "median": -4.5,
+       "max": 0.0
+      }
+     },
+     "evidence": {
+      "occurrences": 37,
+      "distinct_filters": 22,
+      "by_corpus": {
+       "morpheus": 24,
+       "p2k": 11,
+       "native": 2
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "Acc.Vel-1",
+       "Bonk>CO",
+       "C1-6Harms.4",
+       "Clav Curves",
+       "EZ Rhodez.4",
+       "Flng>Flng1",
+       "Flng>Flng4",
+       "Flng>Flng6"
+      ],
+      "clusters": [
+       "pole_zero-0",
+       "pole_zero-1",
+       "pole_zero-3",
+       "pole_zero-5"
+      ],
+      "letters": [
+       "bell-high-zero-1"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -0.62,
+      "interval_st_p25": -1.39,
+      "interval_st_p75": 1.26
+     }
+    },
+    {
+     "name": "real pair",
+     "seat": {
+      "pole_hz": 9508.63,
+      "pole_r": 0.988934,
+      "zero_hz": 3696.56,
+      "zero_r": 0.848559
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 1202.9,
+       "median": 11537.4,
+       "max": 14961.4
+      },
+      "pole_bw_hz": {
+       "min": 12.1,
+       "median": 122.6,
+       "max": 998.3
+      },
+      "zero_hz": {
+       "min": 357.2,
+       "median": 7619.5,
+       "max": 18217.2
+      },
+      "zero_bw_hz": {
+       "min": 362.3,
+       "median": 3404.7,
+       "max": 7777.2
+      },
+      "gain_db": {
+       "min": -12.61,
+       "median": -3.89,
+       "max": 0.15
+      }
+     },
+     "evidence": {
+      "occurrences": 31,
+      "distinct_filters": 15,
+      "by_corpus": {
+       "p2k": 29,
+       "native": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "P2k_000_ace_of_bass",
+       "P2k_001_megasweepz",
+       "P2k_003_millennium",
+       "P2k_005_klub_klassik",
+       "P2k_006_bassbox_303",
+       "P2k_009_tb_or_not_tb",
+       "P2k_011_boland_bass",
+       "P2k_015_dj_alkaline"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S2": {
+   "stage_instances": 2520,
+   "shapes": [
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {},
+     "evidence": {
+      "occurrences": 676,
+      "distinct_filters": 142,
+      "by_corpus": {
+       "morpheus": 676
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low shelf",
+     "seat": {
+      "pole_hz": 275.54,
+      "pole_r": 0.99671,
+      "zero_hz": 1139.56,
+      "zero_r": 0.989588
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 343.2,
+       "max": 8542.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 42.6,
+       "max": 6646.0
+      },
+      "zero_hz": {
+       "min": 16.9,
+       "median": 1397.1,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.3,
+       "median": 153.5,
+       "max": 8095.3
+      },
+      "gain_db": {
+       "min": -23.65,
+       "median": -5.3,
+       "max": 0.15
+      }
+     },
+     "evidence": {
+      "occurrences": 413,
+      "distinct_filters": 112,
+      "by_corpus": {
+       "morpheus": 343,
+       "p2k": 65,
+       "native": 5
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "Ah Shaper",
+       "Analog.4"
+      ],
+      "clusters": [
+       "pole_zero-10"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 14.81,
+      "interval_st_p25": 11.62,
+      "interval_st_p75": 26.38
+     }
+    },
+    {
+     "name": "high shelf",
+     "seat": {
+      "pole_hz": 2826.26,
+      "pole_r": 0.987406,
+      "zero_hz": 883.33,
+      "zero_r": 0.990035
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 3050.6,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.5,
+       "median": 141.2,
+       "max": 9111.0
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 1029.7,
+       "max": 13804.4
+      },
+      "zero_bw_hz": {
+       "min": 0.4,
+       "median": 135.0,
+       "max": 9418.0
+      },
+      "gain_db": {
+       "min": -13.07,
+       "median": -2.11,
+       "max": 0.0
+      }
+     },
+     "evidence": {
+      "occurrences": 313,
+      "distinct_filters": 96,
+      "by_corpus": {
+       "morpheus": 276,
+       "p2k": 11,
+       "native": 26
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp1",
+       "1BndPrmtrcD",
+       "AHmBnd.4",
+       "APass.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "AllPoleDist"
+      ],
+      "clusters": [
+       "pole_zero-7",
+       "pole_zero-12",
+       "pole_zero-13",
+       "pole_zero-15"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -12.0,
+      "interval_st_p25": -16.74,
+      "interval_st_p75": -8.22
+     }
+    },
+    {
+     "name": "close pair",
+     "seat": {
+      "pole_hz": 1804.67,
+      "pole_r": 0.994177,
+      "zero_hz": 1587.56,
+      "zero_r": 0.99464
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 2412.2,
+       "max": 18763.5
+      },
+      "pole_bw_hz": {
+       "min": 0.7,
+       "median": 70.0,
+       "max": 8425.8
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 2355.0,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.5,
+       "median": 70.0,
+       "max": 7819.0
+      },
+      "gain_db": {
+       "min": -14.25,
+       "median": -0.87,
+       "max": -0.87
+      }
+     },
+     "evidence": {
+      "occurrences": 281,
+      "distinct_filters": 86,
+      "by_corpus": {
+       "morpheus": 266,
+       "p2k": 7,
+       "native": 8
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "AllPoleDist"
+      ],
+      "clusters": [
+       "pole_zero-4",
+       "pole_zero-8",
+       "pole_zero-9"
+      ],
+      "letters": [
+       "vocal-comb-pole-2",
+       "vocal-comb-zero-2"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -2.88,
+      "interval_st_p25": -3.43,
+      "interval_st_p75": -1.39
+     }
+    },
+    {
+     "name": "bell",
+     "seat": {
+      "pole_hz": 1648.15,
+      "pole_r": 0.997356,
+      "zero_hz": 1575.64,
+      "zero_r": 0.972089
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 991.5,
+       "max": 18763.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 44.1,
+       "max": 2656.5
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 1113.2,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 1.3,
+       "median": 533.3,
+       "max": 8618.6
+      },
+      "gain_db": {
+       "min": -16.37,
+       "median": -4.73,
+       "max": 4.0
+      }
+     },
+     "evidence": {
+      "occurrences": 260,
+      "distinct_filters": 92,
+      "by_corpus": {
+       "morpheus": 203,
+       "p2k": 24,
+       "native": 33
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "1BndPrmtrcD",
+       "AEParLPVow",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "Acc.Vel-2"
+      ],
+      "clusters": [
+       "pole_zero-0",
+       "pole_zero-1",
+       "pole_zero-3",
+       "pole_zero-5"
+      ],
+      "letters": [
+       "bell-high-pole-1",
+       "bell-high-zero-2",
+       "paravowel-a-pole-2",
+       "paravowel-a-zero-2"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -1.54,
+      "interval_st_p25": -3.35,
+      "interval_st_p75": 2.88
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 2605.84,
+      "pole_r": 0.905328,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4175.9,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 154.2,
+       "median": 1474.3,
+       "max": 9010.3
+      },
+      "gain_db": {
+       "min": -20.35,
+       "median": -13.44,
+       "max": -9.52
+      }
+     },
+     "evidence": {
+      "occurrences": 170,
+      "distinct_filters": 69,
+      "by_corpus": {
+       "morpheus": 165,
+       "p2k": 5
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "1BndPrmtrcD",
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "500up.4",
+       "6 Poles",
+       "Acc.Vel-1",
+       "Acc.Vel-2"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14",
+       "pole_only-15"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "carved band",
+     "seat": {
+      "pole_hz": 2162.0,
+      "pole_r": 0.958691,
+      "zero_hz": 2041.85,
+      "zero_r": 0.996911
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 3611.4,
+       "max": 19221.3
+      },
+      "pole_bw_hz": {
+       "min": 5.7,
+       "median": 747.1,
+       "max": 9418.0
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 3546.5,
+       "max": 18916.1
+      },
+      "zero_bw_hz": {
+       "min": 0.3,
+       "median": 54.8,
+       "max": 3937.5
+      },
+      "gain_db": {
+       "min": -9.88,
+       "median": -4.99,
+       "max": -1.01
+      }
+     },
+     "evidence": {
+      "occurrences": 148,
+      "distinct_filters": 65,
+      "by_corpus": {
+       "morpheus": 141,
+       "p2k": 7
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp2",
+       "AHmBnd.4",
+       "AcGtrRs.4",
+       "Ah Shaper",
+       "ApDistB6.4",
+       "Auto Clang",
+       "Bel>Crs>Bel"
+      ],
+      "clusters": [
+       "pole_zero-2",
+       "pole_zero-6",
+       "pole_zero-11"
+      ],
+      "letters": [
+       "bound-shelf-pole",
+       "bound-shelf-zero"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -1.37,
+      "interval_st_p25": -2.25,
+      "interval_st_p75": 0.15
+     }
+    },
+    {
+     "name": "parked pair",
+     "seat": {
+      "pole_hz": 4312.79,
+      "pole_r": 0.99421,
+      "zero_hz": 4313.88,
+      "zero_r": 0.994378
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 18229.5,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 6729.2
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 18229.5,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 6729.2
+      },
+      "gain_db": {
+       "min": -8.08,
+       "median": -8.08,
+       "max": -8.08
+      }
+     },
+     "evidence": {
+      "occurrences": 89,
+      "distinct_filters": 39,
+      "by_corpus": {
+       "morpheus": 88,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "Bel>Crs>Bel",
+       "BroadRes.4",
+       "ChimeFlange",
+       "Chrs>Flng1",
+       "CombSweep.4"
+      ],
+      "clusters": [],
+      "letters": [
+       "bell-low-pole-1",
+       "bell-low-zero-2"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 0.0,
+      "interval_st_p25": 0.0,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 617.08,
+      "pole_r": 0.996606,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 14.1,
+       "median": 548.2,
+       "max": 18229.5
+      },
+      "pole_bw_hz": {
+       "min": 0.2,
+       "median": 54.8,
+       "max": 147.3
+      },
+      "gain_db": {
+       "min": -39.9,
+       "median": -31.52,
+       "max": -12.8
+      }
+     },
+     "evidence": {
+      "occurrences": 68,
+      "distinct_filters": 37,
+      "by_corpus": {
+       "morpheus": 61,
+       "p2k": 7
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles C",
+       "500up.4",
+       "Band-aid",
+       "Bassutoi.4"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-8",
+       "pole_only-9",
+       "pole_only-10",
+       "pole_only-11",
+       "pole_only-12"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "octave-lowpass-pole-1",
+       "uhrrrah-vowel-1"
+      ]
+     }
+    },
+    {
+     "name": "dip",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 4564.14,
+      "zero_r": 0.906384
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 5719.7,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 153.5,
+       "median": 1117.1,
+       "max": 8618.6
+      },
+      "gain_db": {
+       "min": -2.04,
+       "median": -0.19,
+       "max": -0.19
+      }
+     },
+     "evidence": {
+      "occurrences": 66,
+      "distinct_filters": 30,
+      "by_corpus": {
+       "morpheus": 64,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcD",
+       "4>2 LowQHiQ",
+       "AEParaVowel",
+       "Acc.Vel-1",
+       "Auto Clang",
+       "BassDrumEQ",
+       "Bonk>CO"
+      ],
+      "clusters": [
+       "zero_only-0",
+       "zero_only-1",
+       "zero_only-3",
+       "zero_only-5"
+      ],
+      "letters": []
+     }
+    },
+    {
+     "name": "notch",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 3896.91,
+      "zero_r": 0.997268
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 130.5,
+       "median": 6749.6,
+       "max": 18229.5
+      },
+      "zero_bw_hz": {
+       "min": 0.4,
+       "median": 48.7,
+       "max": 122.8
+      }
+     },
+     "evidence": {
+      "occurrences": 29,
+      "distinct_filters": 18,
+      "by_corpus": {
+       "morpheus": 29
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcD",
+       "AEParaVowel",
+       "Arpeggio",
+       "Auto Clang",
+       "Clav Curves",
+       "Comb/Swap.4",
+       "HiPassSwp.4"
+      ],
+      "clusters": [
+       "zero_only-2",
+       "zero_only-4"
+      ],
+      "letters": [
+       "octave-notch-1",
+       "octave-notch-2",
+       "octave-notch-3",
+       "octave-notch-4",
+       "octave-notch-5",
+       "octave-notch-6"
+      ]
+     }
+    }
+   ]
+  },
+  "S3": {
+   "stage_instances": 2520,
+   "shapes": [
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {},
+     "evidence": {
+      "occurrences": 707,
+      "distinct_filters": 137,
+      "by_corpus": {
+       "morpheus": 707
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high shelf",
+     "seat": {
+      "pole_hz": 1976.63,
+      "pole_r": 0.992795,
+      "zero_hz": 609.78,
+      "zero_r": 0.992229
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 2211.9,
+       "max": 18763.5
+      },
+      "pole_bw_hz": {
+       "min": 0.5,
+       "median": 91.8,
+       "max": 8618.6
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 849.5,
+       "max": 12660.0
+      },
+      "zero_bw_hz": {
+       "min": 0.4,
+       "median": 104.4,
+       "max": 8425.8
+      },
+      "gain_db": {
+       "min": -11.06,
+       "median": -5.01,
+       "max": -0.31
+      }
+     },
+     "evidence": {
+      "occurrences": 362,
+      "distinct_filters": 96,
+      "by_corpus": {
+       "morpheus": 330,
+       "p2k": 8,
+       "native": 24
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParaVowel",
+       "AHmBnd.4",
+       "APass.4",
+       "AcGtrRs.4",
+       "Acc.Vel-1"
+      ],
+      "clusters": [
+       "pole_zero-7",
+       "pole_zero-12",
+       "pole_zero-13",
+       "pole_zero-15"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -10.19,
+      "interval_st_p25": -14.56,
+      "interval_st_p75": -7.04
+     }
+    },
+    {
+     "name": "low shelf",
+     "seat": {
+      "pole_hz": 701.83,
+      "pole_r": 0.993783,
+      "zero_hz": 1969.45,
+      "zero_r": 0.984409
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 881.8,
+       "max": 9076.6
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 73.2,
+       "max": 8425.8
+      },
+      "zero_hz": {
+       "min": 48.6,
+       "median": 2459.3,
+       "max": 19068.7
+      },
+      "zero_bw_hz": {
+       "min": 0.5,
+       "median": 310.4,
+       "max": 8612.5
+      },
+      "gain_db": {
+       "min": -24.11,
+       "median": -5.72,
+       "max": -0.95
+      }
+     },
+     "evidence": {
+      "occurrences": 350,
+      "distinct_filters": 96,
+      "by_corpus": {
+       "morpheus": 297,
+       "p2k": 52,
+       "native": 1
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "ApDistB6.4",
+       "Arpeggio"
+      ],
+      "clusters": [
+       "pole_zero-10"
+      ],
+      "letters": [
+       "paravowel-a-pole-3",
+       "paravowel-a-zero-3"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 12.98,
+      "interval_st_p25": 9.01,
+      "interval_st_p75": 19.55
+     }
+    },
+    {
+     "name": "close pair",
+     "seat": {
+      "pole_hz": 2188.2,
+      "pole_r": 0.991428,
+      "zero_hz": 1988.56,
+      "zero_r": 0.991571
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4824.4,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.4,
+       "median": 135.0,
+       "max": 8425.8
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 3966.1,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.4,
+       "median": 122.8,
+       "max": 9111.0
+      },
+      "gain_db": {
+       "min": -8.26,
+       "median": -2.66,
+       "max": 2.56
+      }
+     },
+     "evidence": {
+      "occurrences": 346,
+      "distinct_filters": 99,
+      "by_corpus": {
+       "morpheus": 313,
+       "p2k": 23,
+       "native": 10
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2"
+      ],
+      "clusters": [
+       "pole_zero-4",
+       "pole_zero-8",
+       "pole_zero-9"
+      ],
+      "letters": [
+       "vocal-comb-pole-3",
+       "vocal-comb-zero-3"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -2.07,
+      "interval_st_p25": -3.86,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "bell",
+     "seat": {
+      "pole_hz": 1525.39,
+      "pole_r": 0.997509,
+      "zero_hz": 1499.51,
+      "zero_r": 0.97553
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 1744.6,
+       "max": 18305.8
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 48.0,
+       "max": 2054.7
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 1698.9,
+       "max": 19068.7
+      },
+      "zero_bw_hz": {
+       "min": 1.1,
+       "median": 558.7,
+       "max": 8235.9
+      },
+      "gain_db": {
+       "min": -14.42,
+       "median": -4.12,
+       "max": 4.0
+      }
+     },
+     "evidence": {
+      "occurrences": 283,
+      "distinct_filters": 95,
+      "by_corpus": {
+       "morpheus": 214,
+       "p2k": 34,
+       "native": 35
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "AllPoleDist",
+       "Analog.4",
+       "ApDistB6.4"
+      ],
+      "clusters": [
+       "pole_zero-0",
+       "pole_zero-1",
+       "pole_zero-3",
+       "pole_zero-5"
+      ],
+      "letters": [
+       "bell-high-pole-2",
+       "bell-high-zero-3",
+       "bell-low-zero-3"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -0.58,
+      "interval_st_p25": -4.0,
+      "interval_st_p75": 3.24
+     }
+    },
+    {
+     "name": "carved band",
+     "seat": {
+      "pole_hz": 2278.54,
+      "pole_r": 0.97261,
+      "zero_hz": 2220.56,
+      "zero_r": 0.99733
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4956.7,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 1.5,
+       "median": 533.3,
+       "max": 7371.4
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 5185.6,
+       "max": 18916.1
+      },
+      "zero_bw_hz": {
+       "min": 0.3,
+       "median": 45.6,
+       "max": 2656.5
+      },
+      "gain_db": {
+       "min": -16.37,
+       "median": -5.63,
+       "max": -0.02
+      }
+     },
+     "evidence": {
+      "occurrences": 161,
+      "distinct_filters": 69,
+      "by_corpus": {
+       "morpheus": 151,
+       "p2k": 9,
+       "native": 1
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp2",
+       "AHmBnd.4",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "ApDistB6.4",
+       "Auto Clang",
+       "Bel>Crs>Bel"
+      ],
+      "clusters": [
+       "pole_zero-2",
+       "pole_zero-6",
+       "pole_zero-11"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -1.64,
+      "interval_st_p25": -2.69,
+      "interval_st_p75": 2.13
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 2584.74,
+      "pole_r": 0.912329,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4729.0,
+       "max": 18076.9
+      },
+      "pole_bw_hz": {
+       "min": 153.5,
+       "median": 1170.4,
+       "max": 9010.3
+      },
+      "gain_db": {
+       "min": -32.4,
+       "median": -21.56,
+       "max": -21.56
+      }
+     },
+     "evidence": {
+      "occurrences": 143,
+      "distinct_filters": 58,
+      "by_corpus": {
+       "morpheus": 141,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2pole>4pole",
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "500up.4",
+       "6 Poles",
+       "AllPoleDist",
+       "Analog.4"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14",
+       "pole_only-15"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "parked pair",
+     "seat": {
+      "pole_hz": 6990.28,
+      "pole_r": 0.995126,
+      "zero_hz": 6988.42,
+      "zero_r": 0.995456
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 18229.5,
+       "max": 18305.8
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 3241.5
+      },
+      "zero_hz": {
+       "min": 21.1,
+       "median": 18229.5,
+       "max": 18305.8
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 3241.5
+      }
+     },
+     "evidence": {
+      "occurrences": 60,
+      "distinct_filters": 27,
+      "by_corpus": {
+       "morpheus": 60
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "AcGtrRs.4",
+       "Ah Shaper",
+       "BroadRes.4",
+       "ChimeFlange",
+       "DeepCombs.4",
+       "EZ Vibez.4",
+       "Flange6R.4",
+       "Flng>Flng3"
+      ],
+      "clusters": [],
+      "letters": [
+       "bell-low-pole-2"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 0.0,
+      "interval_st_p25": 0.0,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 1141.49,
+      "pole_r": 0.995625,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 1206.1,
+       "max": 18229.5
+      },
+      "pole_bw_hz": {
+       "min": 4.9,
+       "median": 57.8,
+       "max": 147.3
+      },
+      "gain_db": {
+       "min": -51.94,
+       "median": -42.73,
+       "max": -23.88
+      }
+     },
+     "evidence": {
+      "occurrences": 50,
+      "distinct_filters": 26,
+      "by_corpus": {
+       "morpheus": 44,
+       "p2k": 6
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "500up.4",
+       "6 Poles",
+       "Auto Clang",
+       "Bassutoi.4",
+       "Bell Wah A",
+       "Bendup",
+       "BrickWaLP.4"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-8",
+       "pole_only-9",
+       "pole_only-10",
+       "pole_only-11"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "octave-lowpass-pole-2",
+       "top-shelf-pole",
+       "uhrrrah-vowel-1"
+      ]
+     }
+    },
+    {
+     "name": "dip",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 5858.79,
+      "zero_r": 0.885547
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 519.6,
+       "median": 7092.9,
+       "max": 17237.7
+      },
+      "zero_bw_hz": {
+       "min": 172.7,
+       "median": 3084.9,
+       "max": 9418.0
+      },
+      "gain_db": {
+       "min": -0.38,
+       "median": -0.38,
+       "max": -0.38
+      }
+     },
+     "evidence": {
+      "occurrences": 35,
+      "distinct_filters": 21,
+      "by_corpus": {
+       "morpheus": 34,
+       "native": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "1BndPrmtrcD",
+       "Acc.Vel-1",
+       "Bb80Hzbw1.4",
+       "C1-6Harms.4",
+       "C1Harmonic",
+       "Comb/HP.4",
+       "Flng>Flng1",
+       "HghsSwpt2.4"
+      ],
+      "clusters": [
+       "zero_only-0",
+       "zero_only-1",
+       "zero_only-3"
+      ],
+      "letters": []
+     }
+    },
+    {
+     "name": "notch",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 2969.66,
+      "zero_r": 0.99847
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 261.0,
+       "median": 4118.7,
+       "max": 18229.5
+      },
+      "zero_bw_hz": {
+       "min": 0.9,
+       "median": 36.5,
+       "max": 73.4
+      },
+      "gain_db": {
+       "min": -15.62,
+       "median": -15.62,
+       "max": -15.62
+      }
+     },
+     "evidence": {
+      "occurrences": 22,
+      "distinct_filters": 13,
+      "by_corpus": {
+       "morpheus": 21,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcD",
+       "Auto Clang",
+       "Clr>Oboe",
+       "MdlySweep.4",
+       "NotchPeaks.4",
+       "Oh Shaper",
+       "P2k_019_radio_craze"
+      ],
+      "clusters": [
+       "zero_only-2",
+       "zero_only-4"
+      ],
+      "letters": [
+       "octave-notch-1",
+       "octave-notch-2",
+       "octave-notch-3",
+       "octave-notch-4",
+       "octave-notch-5",
+       "octave-notch-6"
+      ]
+     }
+    }
+   ]
+  },
+  "S4": {
+   "stage_instances": 2520,
+   "shapes": [
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {},
+     "evidence": {
+      "occurrences": 707,
+      "distinct_filters": 139,
+      "by_corpus": {
+       "morpheus": 707
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "bell",
+     "seat": {
+      "pole_hz": 2173.72,
+      "pole_r": 0.996832,
+      "zero_hz": 2201.7,
+      "zero_r": 0.968825
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 66.1,
+       "median": 2783.5,
+       "max": 19297.6
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 67.0,
+       "max": 2330.0
+      },
+      "zero_hz": {
+       "min": 65.0,
+       "median": 3189.4,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.9,
+       "median": 611.7,
+       "max": 9418.0
+      },
+      "gain_db": {
+       "min": -16.37,
+       "median": -5.01,
+       "max": 4.0
+      }
+     },
+     "evidence": {
+      "occurrences": 405,
+      "distinct_filters": 109,
+      "by_corpus": {
+       "morpheus": 302,
+       "p2k": 63,
+       "native": 40
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "AOParaVowel"
+      ],
+      "clusters": [
+       "pole_zero-0",
+       "pole_zero-1",
+       "pole_zero-3",
+       "pole_zero-5"
+      ],
+      "letters": [
+       "bell-high-pole-3",
+       "bell-high-zero-4",
+       "bell-low-pole-3",
+       "paravowel-a-pole-4",
+       "paravowel-a-zero-4"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 1.02,
+      "interval_st_p25": -3.84,
+      "interval_st_p75": 3.99
+     }
+    },
+    {
+     "name": "high shelf",
+     "seat": {
+      "pole_hz": 1520.23,
+      "pole_r": 0.990457,
+      "zero_hz": 412.15,
+      "zero_r": 0.995647
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 1487.1,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.3,
+       "median": 97.5,
+       "max": 8618.6
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 541.1,
+       "max": 13270.4
+      },
+      "zero_bw_hz": {
+       "min": 0.2,
+       "median": 51.7,
+       "max": 9010.3
+      },
+      "gain_db": {
+       "min": -9.47,
+       "median": -4.29,
+       "max": -1.01
+      }
+     },
+     "evidence": {
+      "occurrences": 388,
+      "distinct_filters": 106,
+      "by_corpus": {
+       "morpheus": 370,
+       "p2k": 18
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParaVowel",
+       "AHmBnd.4",
+       "APass.4",
+       "AcGtrRs.4",
+       "Acc.Vel-1"
+      ],
+      "clusters": [
+       "pole_zero-7",
+       "pole_zero-12",
+       "pole_zero-13",
+       "pole_zero-15"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -12.08,
+      "interval_st_p25": -17.73,
+      "interval_st_p75": -8.18
+     }
+    },
+    {
+     "name": "close pair",
+     "seat": {
+      "pole_hz": 1818.59,
+      "pole_r": 0.995424,
+      "zero_hz": 1547.12,
+      "zero_r": 0.995693
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4118.7,
+       "max": 18839.8
+      },
+      "pole_bw_hz": {
+       "min": 0.3,
+       "median": 67.0,
+       "max": 8235.9
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 3527.4,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.2,
+       "median": 54.8,
+       "max": 7240.4
+      },
+      "gain_db": {
+       "min": -14.25,
+       "median": -2.96,
+       "max": 2.44
+      }
+     },
+     "evidence": {
+      "occurrences": 307,
+      "distinct_filters": 95,
+      "by_corpus": {
+       "morpheus": 281,
+       "p2k": 18,
+       "native": 8
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "AEParaVowel",
+       "Acc.Vel-2",
+       "AllPoleDist"
+      ],
+      "clusters": [
+       "pole_zero-4",
+       "pole_zero-8",
+       "pole_zero-9"
+      ],
+      "letters": [
+       "vocal-comb-pole-4",
+       "vocal-comb-zero-4"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -3.05,
+      "interval_st_p25": -4.88,
+      "interval_st_p75": -1.48
+     }
+    },
+    {
+     "name": "low shelf",
+     "seat": {
+      "pole_hz": 708.69,
+      "pole_r": 0.991305,
+      "zero_hz": 2011.83,
+      "zero_r": 0.987002
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 991.5,
+       "max": 13041.5
+      },
+      "pole_bw_hz": {
+       "min": 0.4,
+       "median": 147.3,
+       "max": 7638.0
+      },
+      "zero_hz": {
+       "min": 35.3,
+       "median": 2145.2,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.8,
+       "median": 159.6,
+       "max": 7880.9
+      },
+      "gain_db": {
+       "min": -23.65,
+       "median": -6.94,
+       "max": -0.02
+      }
+     },
+     "evidence": {
+      "occurrences": 221,
+      "distinct_filters": 70,
+      "by_corpus": {
+       "morpheus": 194,
+       "p2k": 19,
+       "native": 8
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp2",
+       "2pole>4pole",
+       "AUParaVow.4",
+       "AcGtrRs.4",
+       "Acc.Vel-2",
+       "BassXpress",
+       "Bendup/Swap"
+      ],
+      "clusters": [
+       "pole_zero-10"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 10.95,
+      "interval_st_p25": 7.09,
+      "interval_st_p75": 18.45
+     }
+    },
+    {
+     "name": "carved band",
+     "seat": {
+      "pole_hz": 1295.35,
+      "pole_r": 0.968491,
+      "zero_hz": 1164.76,
+      "zero_r": 0.996882
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4553.1,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 1.1,
+       "median": 828.2,
+       "max": 9418.0
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 3870.7,
+       "max": 18916.1
+      },
+      "zero_bw_hz": {
+       "min": 0.2,
+       "median": 76.5,
+       "max": 2330.0
+      },
+      "gain_db": {
+       "min": -6.02,
+       "median": -0.31,
+       "max": -0.31
+      }
+     },
+     "evidence": {
+      "occurrences": 160,
+      "distinct_filters": 62,
+      "by_corpus": {
+       "morpheus": 145,
+       "p2k": 7,
+       "native": 8
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Shp2",
+       "AHmBnd.4",
+       "Acc.Vel-2",
+       "ApDistB6.4",
+       "Auto Clang",
+       "Bel>Crs>Bel",
+       "BriteFlng.4",
+       "CableRing.4"
+      ],
+      "clusters": [
+       "pole_zero-2",
+       "pole_zero-6",
+       "pole_zero-11"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -2.13,
+      "interval_st_p25": -3.08,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 2503.96,
+      "pole_r": 0.923245,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 3508.3,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 172.7,
+       "median": 998.1,
+       "max": 9010.3
+      },
+      "gain_db": {
+       "min": -24.09,
+       "median": -23.88,
+       "max": -9.52
+      }
+     },
+     "evidence": {
+      "occurrences": 138,
+      "distinct_filters": 56,
+      "by_corpus": {
+       "morpheus": 135,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 Poles",
+       "2pole>4pole",
+       "4 Poles A",
+       "4 Poles B",
+       "4 Poles C",
+       "500up.4",
+       "6 Poles"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14",
+       "pole_only-15"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "dip",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 1602.57,
+      "zero_r": 0.843369
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 8237.4,
+       "max": 18687.2
+      },
+      "zero_bw_hz": {
+       "min": 234.4,
+       "median": 2762.2,
+       "max": 9732.8
+      }
+     },
+     "evidence": {
+      "occurrences": 74,
+      "distinct_filters": 26,
+      "by_corpus": {
+       "morpheus": 74
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Odds",
+       "Acc.Vel-1",
+       "AllPoleDist",
+       "Arpeggio",
+       "Auto Clang",
+       "Bb80Hzbw1.4",
+       "Bel>Crs>Bel",
+       "BssBOOST2.4"
+      ],
+      "clusters": [
+       "zero_only-0",
+       "zero_only-1",
+       "zero_only-3",
+       "zero_only-5"
+      ],
+      "letters": []
+     }
+    },
+    {
+     "name": "parked pair",
+     "seat": {
+      "pole_hz": 4099.77,
+      "pole_r": 0.995562,
+      "zero_hz": 4100.33,
+      "zero_r": 0.99574
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 18229.5,
+       "max": 18763.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 8425.8
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 18229.5,
+       "max": 18763.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 8425.8
+      }
+     },
+     "evidence": {
+      "occurrences": 68,
+      "distinct_filters": 29,
+      "by_corpus": {
+       "morpheus": 68
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "BassXpress",
+       "Bel>Crs>Bel",
+       "BroadRes.4",
+       "C1Harmonic",
+       "ChimeFlange",
+       "Chrs>Flng1",
+       "DeepCombs.4",
+       "EZ Vibez.4"
+      ],
+      "clusters": [],
+      "letters": [
+       "bell-low-zero-4"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 0.0,
+      "interval_st_p25": 0.0,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 515.76,
+      "pole_r": 0.996752,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 14.1,
+       "median": 729.3,
+       "max": 9000.3
+      },
+      "pole_bw_hz": {
+       "min": 0.5,
+       "median": 60.9,
+       "max": 147.3
+      },
+      "gain_db": {
+       "min": -39.9,
+       "median": -36.71,
+       "max": -20.35
+      }
+     },
+     "evidence": {
+      "occurrences": 34,
+      "distinct_filters": 22,
+      "by_corpus": {
+       "morpheus": 29,
+       "p2k": 5
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 Poles",
+       "4 Poles A",
+       "4 Poles B",
+       "500up.4",
+       "6 Poles",
+       "Bassutoi.4",
+       "Bendup"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-8",
+       "pole_only-9",
+       "pole_only-10",
+       "pole_only-11",
+       "pole_only-12"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "octave-lowpass-pole-3",
+       "uhrrrah-vowel-1"
+      ]
+     }
+    }
+   ]
+  },
+  "S5": {
+   "stage_instances": 2520,
+   "shapes": [
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {},
+     "evidence": {
+      "occurrences": 676,
+      "distinct_filters": 134,
+      "by_corpus": {
+       "morpheus": 676
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high shelf",
+     "seat": {
+      "pole_hz": 967.1,
+      "pole_r": 0.995235,
+      "zero_hz": 301.02,
+      "zero_r": 0.996485
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 929.5,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.2,
+       "median": 63.9,
+       "max": 8618.6
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 261.0,
+       "max": 13575.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 42.6,
+       "max": 6939.7
+      },
+      "gain_db": {
+       "min": -13.89,
+       "median": -0.81,
+       "max": -0.02
+      }
+     },
+     "evidence": {
+      "occurrences": 623,
+      "distinct_filters": 130,
+      "by_corpus": {
+       "morpheus": 598,
+       "p2k": 11,
+       "native": 14
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Odds",
+       "0>Shp1",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParaVowel",
+       "Acc.Vel-1"
+      ],
+      "clusters": [
+       "pole_zero-7",
+       "pole_zero-12",
+       "pole_zero-13",
+       "pole_zero-15"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -11.0,
+      "interval_st_p25": -17.74,
+      "interval_st_p75": -7.12
+     }
+    },
+    {
+     "name": "bell",
+     "seat": {
+      "pole_hz": 2335.04,
+      "pole_r": 0.995946,
+      "zero_hz": 2519.8,
+      "zero_r": 0.963154
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 59.6,
+       "median": 3451.1,
+       "max": 15730.8
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 84.5,
+       "max": 1474.3
+      },
+      "zero_hz": {
+       "min": 62.6,
+       "median": 4252.2,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.7,
+       "median": 802.1,
+       "max": 7864.6
+      },
+      "gain_db": {
+       "min": -14.25,
+       "median": -5.01,
+       "max": 4.0
+      }
+     },
+     "evidence": {
+      "occurrences": 291,
+      "distinct_filters": 79,
+      "by_corpus": {
+       "morpheus": 213,
+       "p2k": 30,
+       "native": 48
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "AllPoleDist",
+       "ApDistB6.4",
+       "BrsSwell2.4"
+      ],
+      "clusters": [
+       "pole_zero-0",
+       "pole_zero-1",
+       "pole_zero-3",
+       "pole_zero-5"
+      ],
+      "letters": [
+       "bell-high-pole-4",
+       "bell-high-zero-5",
+       "bell-low-zero-5",
+       "paravowel-a-pole-5",
+       "paravowel-a-zero-5"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 2.69,
+      "interval_st_p25": -2.32,
+      "interval_st_p75": 4.0
+     }
+    },
+    {
+     "name": "low shelf",
+     "seat": {
+      "pole_hz": 1135.15,
+      "pole_r": 0.993399,
+      "zero_hz": 4093.15,
+      "zero_r": 0.977874
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 1603.9,
+       "max": 13728.1
+      },
+      "pole_bw_hz": {
+       "min": 0.3,
+       "median": 116.6,
+       "max": 8618.6
+      },
+      "zero_hz": {
+       "min": 129.3,
+       "median": 4786.2,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 1.2,
+       "median": 426.0,
+       "max": 9010.3
+      },
+      "gain_db": {
+       "min": -23.65,
+       "median": -6.01,
+       "max": -0.43
+      }
+     },
+     "evidence": {
+      "occurrences": 236,
+      "distinct_filters": 81,
+      "by_corpus": {
+       "morpheus": 169,
+       "p2k": 66,
+       "native": 1
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Odds",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "BassXpress"
+      ],
+      "clusters": [
+       "pole_zero-10"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 13.18,
+      "interval_st_p25": 9.08,
+      "interval_st_p75": 22.83
+     }
+    },
+    {
+     "name": "carved band",
+     "seat": {
+      "pole_hz": 1205.01,
+      "pole_r": 0.972613,
+      "zero_hz": 1151.19,
+      "zero_r": 0.997483
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 1887.7,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 1.0,
+       "median": 612.8,
+       "max": 8235.9
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 2068.9,
+       "max": 18916.1
+      },
+      "zero_bw_hz": {
+       "min": 0.2,
+       "median": 48.7,
+       "max": 1785.5
+      },
+      "gain_db": {
+       "min": -7.34,
+       "median": -0.87,
+       "max": -0.87
+      }
+     },
+     "evidence": {
+      "occurrences": 180,
+      "distinct_filters": 70,
+      "by_corpus": {
+       "morpheus": 167,
+       "p2k": 4,
+       "native": 9
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "0>Muter",
+       "0>Odds",
+       "0>Shp2",
+       "AEParaVowel",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "ApDistB6.4"
+      ],
+      "clusters": [
+       "pole_zero-2",
+       "pole_zero-6",
+       "pole_zero-11"
+      ],
+      "letters": [
+       "vocal-comb-pole-5",
+       "vocal-comb-zero-5"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -2.31,
+      "interval_st_p25": -3.75,
+      "interval_st_p75": 1.76
+     }
+    },
+    {
+     "name": "close pair",
+     "seat": {
+      "pole_hz": 1919.8,
+      "pole_r": 0.993209,
+      "zero_hz": 1689.65,
+      "zero_r": 0.993625
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4500.1,
+       "max": 18534.7
+      },
+      "pole_bw_hz": {
+       "min": 0.2,
+       "median": 122.8,
+       "max": 8618.6
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 3794.4,
+       "max": 18839.8
+      },
+      "zero_bw_hz": {
+       "min": 0.3,
+       "median": 116.6,
+       "max": 7864.6
+      },
+      "gain_db": {
+       "min": -6.67,
+       "median": -4.01,
+       "max": -1.58
+      }
+     },
+     "evidence": {
+      "occurrences": 178,
+      "distinct_filters": 54,
+      "by_corpus": {
+       "morpheus": 170,
+       "p2k": 8
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Muter",
+       "0>Shp2",
+       "AEParaVowel",
+       "Acc.Vel-2",
+       "AllPoleDist",
+       "Auto Clang",
+       "Bel>Crs>Bel",
+       "Bendup"
+      ],
+      "clusters": [
+       "pole_zero-4",
+       "pole_zero-8",
+       "pole_zero-9"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -2.71,
+      "interval_st_p25": -3.74,
+      "interval_st_p75": -1.53
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 2484.62,
+      "pole_r": 0.946064,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 3908.9,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 159.6,
+       "median": 638.4,
+       "max": 9010.3
+      },
+      "gain_db": {
+       "min": -24.09,
+       "median": -20.35,
+       "max": -9.52
+      }
+     },
+     "evidence": {
+      "occurrences": 154,
+      "distinct_filters": 55,
+      "by_corpus": {
+       "morpheus": 150,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 Poles",
+       "4 Poles A",
+       "4 Poles B",
+       "4 Poles C",
+       "500up.4",
+       "6 Poles",
+       "AEParLPVow"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "octave-lowpass-pole-4",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "parked pair",
+     "seat": {
+      "pole_hz": 7722.14,
+      "pole_r": 0.99579,
+      "zero_hz": 7722.91,
+      "zero_r": 0.995956
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 16.9,
+       "median": 18229.5,
+       "max": 18763.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 1912.3
+      },
+      "zero_hz": {
+       "min": 16.9,
+       "median": 18229.5,
+       "max": 18763.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 1912.3
+      }
+     },
+     "evidence": {
+      "occurrences": 51,
+      "distinct_filters": 19,
+      "by_corpus": {
+       "morpheus": 51
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "BroadRes.4",
+       "ChimeFlange",
+       "DeepCombs.4",
+       "EZ Vibez.4",
+       "Flange6R.4",
+       "Flng>Flng3",
+       "HarmShiftr3",
+       "Hi Accent.4"
+      ],
+      "clusters": [],
+      "letters": [
+       "bell-low-pole-4"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 0.0,
+      "interval_st_p25": 0.0,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 1018.4,
+      "pole_r": 0.995127,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 10.3,
+       "median": 915.2,
+       "max": 18229.5
+      },
+      "pole_bw_hz": {
+       "min": 8.0,
+       "median": 70.0,
+       "max": 128.9
+      },
+      "gain_db": {
+       "min": -39.9,
+       "median": -36.71,
+       "max": -8.08
+      }
+     },
+     "evidence": {
+      "occurrences": 51,
+      "distinct_filters": 29,
+      "by_corpus": {
+       "morpheus": 46,
+       "p2k": 5
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "4 Poles A",
+       "500up.4",
+       "6 Poles",
+       "AHmBnd.4",
+       "Bassutoi.4",
+       "BrickWaLP.4",
+       "Chiffin.4"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-9",
+       "pole_only-10",
+       "pole_only-11"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "uhrrrah-vowel-1"
+      ]
+     }
+    },
+    {
+     "name": "dip",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 1329.26,
+      "zero_r": 0.88681
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 3947.0,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 154.2,
+       "median": 1729.5,
+       "max": 8095.3
+      }
+     },
+     "evidence": {
+      "occurrences": 50,
+      "distinct_filters": 26,
+      "by_corpus": {
+       "morpheus": 50
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp1",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "Ah Shaper"
+      ],
+      "clusters": [
+       "zero_only-0",
+       "zero_only-1",
+       "zero_only-3",
+       "zero_only-5"
+      ],
+      "letters": []
+     }
+    },
+    {
+     "name": "notch",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 117.13,
+      "zero_r": 0.99908
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 76.0,
+       "max": 18229.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 22.8,
+       "max": 76.5
+      }
+     },
+     "evidence": {
+      "occurrences": 19,
+      "distinct_filters": 10,
+      "by_corpus": {
+       "morpheus": 19
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "Analog.4",
+       "BssBOOST2.4",
+       "Chrs>Flng2",
+       "HarmTracker",
+       "HrmncPhaser",
+       "Oh Shaper"
+      ],
+      "clusters": [
+       "zero_only-2",
+       "zero_only-4"
+      ],
+      "letters": [
+       "octave-notch-1",
+       "octave-notch-2",
+       "octave-notch-3",
+       "octave-notch-4",
+       "octave-notch-5",
+       "octave-notch-6"
+      ]
+     }
+    },
+    {
+     "name": "real pair",
+     "seat": {
+      "pole_hz": 4144.4,
+      "pole_r": 0.994065,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 992.5,
+       "median": 3703.7,
+       "max": 14559.9
+      },
+      "pole_bw_hz": {
+       "min": 15.2,
+       "median": 73.2,
+       "max": 349.5
+      },
+      "gain_db": {
+       "min": -16.37,
+       "median": -3.57,
+       "max": 1.1
+      }
+     },
+     "evidence": {
+      "occurrences": 8,
+      "distinct_filters": 8,
+      "by_corpus": {
+       "p2k": 8
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "P2k_005_klub_klassik",
+       "P2k_016_bass_tracer",
+       "P2k_022_deep_bouche",
+       "P2k_023_freak_shifta",
+       "P2k_027_acid_ravage",
+       "P2k_028_bass_o_matic",
+       "P2k_030_tooth_comb",
+       "P2k_031_ear_bender"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S6": {
+   "stage_instances": 2520,
+   "shapes": [
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "gain_db": {
+       "min": -0.38,
+       "median": -0.38,
+       "max": -0.38
+      }
+     },
+     "evidence": {
+      "occurrences": 711,
+      "distinct_filters": 136,
+      "by_corpus": {
+       "morpheus": 710,
+       "native": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcB",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4"
+      ],
+      "clusters": [],
+      "letters": [
+       "idle-pole",
+       "off-zero"
+      ]
+     }
+    },
+    {
+     "name": "high shelf",
+     "seat": {
+      "pole_hz": 668.12,
+      "pole_r": 0.99654,
+      "zero_hz": 110.77,
+      "zero_r": 0.997294
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 21.1,
+       "median": 455.2,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 45.6,
+       "max": 9537.4
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 78.0,
+       "max": 10752.7
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 39.5,
+       "max": 9732.8
+      },
+      "gain_db": {
+       "min": -0.96,
+       "median": -0.87,
+       "max": -0.43
+      }
+     },
+     "evidence": {
+      "occurrences": 655,
+      "distinct_filters": 130,
+      "by_corpus": {
+       "morpheus": 644,
+       "native": 11
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParaVowel"
+      ],
+      "clusters": [
+       "pole_zero-7",
+       "pole_zero-12",
+       "pole_zero-13",
+       "pole_zero-15"
+      ],
+      "letters": [
+       "vocal-comb-pole-6",
+       "vocal-comb-zero-6"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": -13.58,
+      "interval_st_p25": -24.0,
+      "interval_st_p75": -12.0
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 1645.96,
+      "pole_r": 0.933733,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 3432.0,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 153.5,
+       "median": 773.4,
+       "max": 10628.2
+      },
+      "gain_db": {
+       "min": -0.89,
+       "median": -0.6,
+       "max": -0.6
+      }
+     },
+     "evidence": {
+      "occurrences": 187,
+      "distinct_filters": 61,
+      "by_corpus": {
+       "morpheus": 185,
+       "native": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp3",
+       "1BndPrmtrcB",
+       "2 Poles",
+       "4 Poles A",
+       "4 Poles B",
+       "4 Poles C",
+       "500up.4"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "octave-lowpass-pole-5",
+       "paravowel-a-pole-6",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "low shelf",
+     "seat": {
+      "pole_hz": 350.02,
+      "pole_r": 0.993524,
+      "zero_hz": 2446.7,
+      "zero_r": 0.991365
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 881.9,
+       "max": 8390.0
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 97.5,
+       "max": 8048.9
+      },
+      "zero_hz": {
+       "min": 24.3,
+       "median": 3966.1,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.2,
+       "median": 104.4,
+       "max": 10398.3
+      },
+      "gain_db": {
+       "min": -0.31,
+       "median": -0.31,
+       "max": -0.02
+      }
+     },
+     "evidence": {
+      "occurrences": 180,
+      "distinct_filters": 56,
+      "by_corpus": {
+       "morpheus": 171,
+       "native": 9
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "Ah Shaper",
+       "BassDrumEQ",
+       "BassXpress",
+       "Bel>Crs>Bel"
+      ],
+      "clusters": [
+       "pole_zero-10"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 16.28,
+      "interval_st_p25": 10.99,
+      "interval_st_p75": 32.98
+     }
+    },
+    {
+     "name": "bell",
+     "seat": {
+      "pole_hz": 1875.89,
+      "pole_r": 0.995853,
+      "zero_hz": 2008.4,
+      "zero_r": 0.957151
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 4175.9,
+       "max": 18229.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 104.0,
+       "max": 2330.0
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 4913.8,
+       "max": 18763.5
+      },
+      "zero_bw_hz": {
+       "min": 0.7,
+       "median": 939.0,
+       "max": 9732.8
+      },
+      "gain_db": {
+       "min": -5.01,
+       "median": -5.01,
+       "max": 4.0
+      }
+     },
+     "evidence": {
+      "occurrences": 171,
+      "distinct_filters": 47,
+      "by_corpus": {
+       "morpheus": 131,
+       "native": 40
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "1BndPrmtrcA",
+       "2pole>4pole",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "ApDistB6.4",
+       "Bendup",
+       "Bendup/Swap",
+       "Breather 2"
+      ],
+      "clusters": [
+       "pole_zero-0",
+       "pole_zero-1",
+       "pole_zero-3",
+       "pole_zero-5"
+      ],
+      "letters": [
+       "bell-high-pole-5",
+       "bell-high-zero-6",
+       "bell-low-pole-5"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 2.65,
+      "interval_st_p25": -0.0,
+      "interval_st_p75": 3.6
+     }
+    },
+    {
+     "name": "guarded peak",
+     "seat": {
+      "pole_hz": 1780.85,
+      "pole_r": 0.985866,
+      "zero_hz": 6217.7,
+      "zero_r": 1.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 32.2,
+       "median": 2315.1,
+       "max": 17927.6
+      },
+      "pole_bw_hz": {
+       "min": 0.2,
+       "median": 298.3,
+       "max": 8612.5
+      },
+      "zero_hz": {
+       "min": 24.3,
+       "median": 11333.4,
+       "max": 17960.8
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 0.1,
+       "max": 0.1
+      },
+      "gain_db": {
+       "min": -51.94,
+       "median": -5.21,
+       "max": 2.56
+      }
+     },
+     "evidence": {
+      "occurrences": 151,
+      "distinct_filters": 43,
+      "by_corpus": {
+       "morpheus": 15,
+       "p2k": 128,
+       "native": 8
+      },
+      "corpora_spanned": 3,
+      "exemplar_filters": [
+       "CableRing.4",
+       "EvenCuts.4",
+       "Flange3.4",
+       "HarmShiftr2",
+       "HrmncPeaks2",
+       "HrmncPhaser",
+       "InFifths.4",
+       "P2k_000_ace_of_bass"
+      ],
+      "clusters": [
+       "pole_zero-14"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 21.92,
+      "interval_st_p25": -0.17,
+      "interval_st_p75": 49.56
+     }
+    },
+    {
+     "name": "close pair",
+     "seat": {
+      "pole_hz": 1324.72,
+      "pole_r": 0.992995,
+      "zero_hz": 1211.57,
+      "zero_r": 0.99346
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 3241.3,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.2,
+       "median": 97.5,
+       "max": 9010.3
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 2993.3,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 97.5,
+       "max": 8618.6
+      }
+     },
+     "evidence": {
+      "occurrences": 142,
+      "distinct_filters": 43,
+      "by_corpus": {
+       "morpheus": 142
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Muter",
+       "0>Shp2",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "2pole>4pole",
+       "Acc.Vel-2",
+       "Auto Clang",
+       "BriteFlng.4"
+      ],
+      "clusters": [
+       "pole_zero-4",
+       "pole_zero-8",
+       "pole_zero-9"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -3.33,
+      "interval_st_p25": -4.98,
+      "interval_st_p75": 1.43
+     }
+    },
+    {
+     "name": "carved band",
+     "seat": {
+      "pole_hz": 689.07,
+      "pole_r": 0.962042,
+      "zero_hz": 627.92,
+      "zero_r": 0.996985
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 1992.6,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 3.8,
+       "median": 558.7,
+       "max": 8425.8
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 1611.1,
+       "max": 18916.1
+      },
+      "zero_bw_hz": {
+       "min": 0.2,
+       "median": 54.8,
+       "max": 1813.5
+      },
+      "gain_db": {
+       "min": -0.17,
+       "median": -0.17,
+       "max": -0.17
+      }
+     },
+     "evidence": {
+      "occurrences": 125,
+      "distinct_filters": 48,
+      "by_corpus": {
+       "morpheus": 124,
+       "native": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "AcGtrRs.4",
+       "Acc.Vel-2",
+       "ApDistB6.4",
+       "Auto Clang",
+       "Bel>Crs>Bel",
+       "Blow Cube",
+       "Breather 1"
+      ],
+      "clusters": [
+       "pole_zero-2",
+       "pole_zero-6",
+       "pole_zero-11"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": -2.4,
+      "interval_st_p25": -4.74,
+      "interval_st_p75": 0.22
+     }
+    },
+    {
+     "name": "parked pair",
+     "seat": {
+      "pole_hz": 2292.76,
+      "pole_r": 0.997515,
+      "zero_hz": 2292.98,
+      "zero_r": 0.997694
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 18229.5,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 8095.3
+      },
+      "zero_hz": {
+       "min": 0.3,
+       "median": 18229.5,
+       "max": 19526.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 8095.3
+      }
+     },
+     "evidence": {
+      "occurrences": 59,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 59
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "1BndPrmtrcA",
+       "BroadRes.4",
+       "ChimeFlange",
+       "DeepCombs.4",
+       "Flange6R.4",
+       "Flng>Flng3",
+       "HarmShifter",
+       "HarmShiftr3"
+      ],
+      "clusters": [],
+      "letters": [
+       "bell-low-zero-6"
+      ]
+     },
+     "slaving": {
+      "interval_st_median": 0.0,
+      "interval_st_p25": 0.0,
+      "interval_st_p75": 0.0
+     }
+    },
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 617.27,
+      "pole_r": 0.997952,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 10.3,
+       "median": 388.5,
+       "max": 18229.5
+      },
+      "pole_bw_hz": {
+       "min": 0.4,
+       "median": 44.1,
+       "max": 128.9
+      }
+     },
+     "evidence": {
+      "occurrences": 54,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 54
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "1BndPrmtrcD",
+       "4 Poles A",
+       "500up.4",
+       "6 Poles",
+       "AOParaVowel",
+       "Bonk>CO",
+       "BrickWaLP.4",
+       "Chiffin.4"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-8",
+       "pole_only-9",
+       "pole_only-10",
+       "pole_only-11",
+       "pole_only-12"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "uhrrrah-vowel-1"
+      ]
+     }
+    },
+    {
+     "name": "dip",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 547.03,
+      "zero_r": 0.920232
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 1563.4,
+       "max": 18229.5
+      },
+      "zero_bw_hz": {
+       "min": 154.2,
+       "median": 1117.1,
+       "max": 9732.8
+      }
+     },
+     "evidence": {
+      "occurrences": 49,
+      "distinct_filters": 23,
+      "by_corpus": {
+       "morpheus": 49
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp1",
+       "1BndPrmtrcA",
+       "1BndPrmtrcC",
+       "AllPoleDist",
+       "Brass Swell",
+       "BuzzyPad.4",
+       "CO>FlngT",
+       "Clr>Oboe"
+      ],
+      "clusters": [
+       "zero_only-0",
+       "zero_only-1",
+       "zero_only-3",
+       "zero_only-5"
+      ],
+      "letters": []
+     }
+    },
+    {
+     "name": "notch",
+     "seat": {
+      "pole_hz": 0.3,
+      "pole_r": 0.0,
+      "zero_hz": 1487.27,
+      "zero_r": 0.998862
+     },
+     "ranges": {
+      "zero_hz": {
+       "min": 0.3,
+       "median": 4195.0,
+       "max": 18229.5
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 54.8,
+       "max": 128.9
+      },
+      "gain_db": {
+       "min": -11.23,
+       "median": -8.1,
+       "max": -1.75
+      }
+     },
+     "evidence": {
+      "occurrences": 31,
+      "distinct_filters": 15,
+      "by_corpus": {
+       "morpheus": 28,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "1BndPrmtrcC",
+       "Bb80Hzbw1.4",
+       "BuzzyPad.4",
+       "CO>FlngT",
+       "CableRing.4",
+       "Chrs>Flng2",
+       "Clr>Oboe",
+       "HarmTracker"
+      ],
+      "clusters": [
+       "zero_only-2",
+       "zero_only-4"
+      ],
+      "letters": [
+       "octave-notch-1",
+       "octave-notch-2",
+       "octave-notch-3",
+       "octave-notch-4",
+       "octave-notch-5",
+       "octave-notch-6"
+      ]
+     }
+    }
+   ]
+  },
+  "S7": {
+   "stage_instances": 2384,
+   "shapes": [
+    {
+     "name": "peak",
+     "seat": {
+      "pole_hz": 313.78,
+      "pole_r": 0.999152,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 261.0,
+       "max": 18687.2
+      },
+      "pole_bw_hz": {
+       "min": 0.1,
+       "median": 18.2,
+       "max": 147.3
+      },
+      "gain_db": {
+       "min": -0.87,
+       "median": -0.87,
+       "max": -0.87
+      }
+     },
+     "evidence": {
+      "occurrences": 890,
+      "distinct_filters": 179,
+      "by_corpus": {
+       "morpheus": 882,
+       "native": 8
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcC",
+       "1BndPrmtrcD"
+      ],
+      "clusters": [
+       "pole_only-0",
+       "pole_only-2",
+       "pole_only-8",
+       "pole_only-9",
+       "pole_only-10",
+       "pole_only-11",
+       "pole_only-12"
+      ],
+      "letters": [
+       "be-ye-vowel-1",
+       "uhrrrah-vowel-1",
+       "vocal-comb-pole-7"
+      ]
+     }
+    },
+    {
+     "name": "idle",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {},
+     "evidence": {
+      "occurrences": 832,
+      "distinct_filters": 153,
+      "by_corpus": {
+       "morpheus": 832
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcD",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "lift",
+     "seat": {
+      "pole_hz": 794.86,
+      "pole_r": 0.923747,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 0.3,
+       "median": 2011.7,
+       "max": 19526.5
+      },
+      "pole_bw_hz": {
+       "min": 153.5,
+       "median": 773.4,
+       "max": 9732.8
+      }
+     },
+     "evidence": {
+      "occurrences": 598,
+      "distinct_filters": 176,
+      "by_corpus": {
+       "morpheus": 598
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "1BndPrmtrcD"
+      ],
+      "clusters": [
+       "pole_only-1",
+       "pole_only-3",
+       "pole_only-4",
+       "pole_only-5",
+       "pole_only-6",
+       "pole_only-7",
+       "pole_only-13",
+       "pole_only-14",
+       "pole_only-15"
+      ],
+      "letters": [
+       "be-ye-vowel-2",
+       "be-ye-vowel-3",
+       "be-ye-vowel-4",
+       "be-ye-vowel-5",
+       "octave-lowpass-pole-6",
+       "uhrrrah-vowel-2",
+       "uhrrrah-vowel-3",
+       "uhrrrah-vowel-4",
+       "uhrrrah-vowel-5"
+      ]
+     }
+    },
+    {
+     "name": "guarded peak",
+     "seat": {
+      "pole_hz": 514.88,
+      "pole_r": 0.994295,
+      "zero_hz": 8112.69,
+      "zero_r": 1.0
+     },
+     "ranges": {
+      "pole_hz": {
+       "min": 210.0,
+       "median": 249.7,
+       "max": 2021.3
+      },
+      "pole_bw_hz": {
+       "min": 39.8,
+       "median": 124.4,
+       "max": 130.0
+      },
+      "zero_hz": {
+       "min": 7000.0,
+       "median": 7221.2,
+       "max": 19501.8
+      },
+      "zero_bw_hz": {
+       "min": 0.1,
+       "median": 0.1,
+       "max": 0.1
+      },
+      "gain_db": {
+       "min": -5.01,
+       "median": -5.01,
+       "max": 9.5
+      }
+     },
+     "evidence": {
+      "occurrences": 32,
+      "distinct_filters": 4,
+      "by_corpus": {
+       "native": 32
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "hedz_ends",
+       "hedz_grammar",
+       "hedz_move",
+       "hedz_trim"
+      ],
+      "clusters": [
+       "pole_zero-14"
+      ],
+      "letters": []
+     },
+     "slaving": {
+      "interval_st_median": 60.04,
+      "interval_st_p25": 39.24,
+      "interval_st_p75": 60.04
+     }
+    }
+   ]
+  }
+ },
+ "coverage": {
+  "S1": {
+   "instances": 2520,
+   "classified": 2512,
+   "share": 0.9968
+  },
+  "S2": {
+   "instances": 2520,
+   "classified": 2513,
+   "share": 0.9972
+  },
+  "S3": {
+   "instances": 2520,
+   "classified": 2519,
+   "share": 0.9996
+  },
+  "S4": {
+   "instances": 2520,
+   "classified": 2502,
+   "share": 0.9929
+  },
+  "S5": {
+   "instances": 2520,
+   "classified": 2517,
+   "share": 0.9988
+  },
+  "S6": {
+   "instances": 2520,
+   "classified": 2515,
+   "share": 0.998
+  },
+  "S7": {
+   "instances": 2384,
+   "classified": 2352,
+   "share": 0.9866
+  }
+ },
+ "below_menu_floor": [
+  {
+   "position": "S1",
+   "shape": "parked pair",
+   "occurrences": 5,
+   "distinct_filters": 4
+  },
+  {
+   "position": "S1",
+   "shape": "guarded peak",
+   "occurrences": 3,
+   "distinct_filters": 3
+  },
+  {
+   "position": "S2",
+   "shape": "real pair",
+   "occurrences": 7,
+   "distinct_filters": 6
+  },
+  {
+   "position": "S3",
+   "shape": "real pair",
+   "occurrences": 1,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S4",
+   "shape": "guarded peak",
+   "occurrences": 8,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S4",
+   "shape": "notch",
+   "occurrences": 7,
+   "distinct_filters": 5
+  },
+  {
+   "position": "S4",
+   "shape": "real pair",
+   "occurrences": 3,
+   "distinct_filters": 2
+  },
+  {
+   "position": "S5",
+   "shape": "guarded peak",
+   "occurrences": 3,
+   "distinct_filters": 3
+  },
+  {
+   "position": "S6",
+   "shape": "real pair",
+   "occurrences": 5,
+   "distinct_filters": 3
+  },
+  {
+   "position": "S7",
+   "shape": "bell",
+   "occurrences": 16,
+   "distinct_filters": 2
+  },
+  {
+   "position": "S7",
+   "shape": "real pair",
+   "occurrences": 8,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S7",
+   "shape": "low shelf",
+   "occurrences": 3,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S7",
+   "shape": "high shelf",
+   "occurrences": 2,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S7",
+   "shape": "carved band",
+   "occurrences": 1,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S7",
+   "shape": "close pair",
+   "occurrences": 1,
+   "distinct_filters": 1
+  },
+  {
+   "position": "S7",
+   "shape": "parked pair",
+   "occurrences": 1,
+   "distinct_filters": 1
+  }
+ ],
+ "letter_shapes": {
+  "idle-pole": "idle",
+  "off-zero": "idle",
+  "top-shelf-pole": "peak",
+  "bell-low-pole-1": "parked pair",
+  "bell-low-zero-1": "parked pair",
+  "bell-low-pole-2": "parked pair",
+  "bell-low-zero-2": "parked pair",
+  "bell-low-pole-3": "bell",
+  "bell-low-zero-3": "bell",
+  "bell-low-pole-4": "parked pair",
+  "bell-low-zero-4": "parked pair",
+  "bell-low-pole-5": "bell",
+  "bell-low-zero-5": "bell",
+  "bell-low-pole-6": "parked pair",
+  "bell-low-zero-6": "parked pair",
+  "bell-high-pole-1": "bell",
+  "bell-high-zero-1": "bell",
+  "bell-high-pole-2": "bell",
+  "bell-high-zero-2": "bell",
+  "bell-high-pole-3": "bell",
+  "bell-high-zero-3": "bell",
+  "bell-high-pole-4": "bell",
+  "bell-high-zero-4": "bell",
+  "bell-high-pole-5": "bell",
+  "bell-high-zero-5": "bell",
+  "bell-high-pole-6": "bell",
+  "bell-high-zero-6": "bell",
+  "octave-notch-1": "notch",
+  "octave-notch-2": "notch",
+  "octave-notch-3": "notch",
+  "octave-notch-4": "notch",
+  "octave-notch-5": "notch",
+  "octave-notch-6": "notch",
+  "octave-lowpass-pole-1": "peak",
+  "octave-lowpass-pole-2": "peak",
+  "octave-lowpass-pole-3": "peak",
+  "octave-lowpass-pole-4": "lift",
+  "octave-lowpass-pole-5": "lift",
+  "octave-lowpass-pole-6": "lift",
+  "be-ye-vowel-1": "peak",
+  "be-ye-vowel-2": "lift",
+  "be-ye-vowel-3": "lift",
+  "be-ye-vowel-4": "lift",
+  "be-ye-vowel-5": "lift",
+  "uhrrrah-vowel-1": "peak",
+  "uhrrrah-vowel-2": "lift",
+  "uhrrrah-vowel-3": "lift",
+  "uhrrrah-vowel-4": "lift",
+  "uhrrrah-vowel-5": "lift",
+  "paravowel-a-pole-1": "carved band",
+  "paravowel-a-zero-1": "carved band",
+  "paravowel-a-pole-2": "bell",
+  "paravowel-a-zero-2": "bell",
+  "paravowel-a-pole-3": "low shelf",
+  "paravowel-a-zero-3": "low shelf",
+  "paravowel-a-pole-4": "bell",
+  "paravowel-a-zero-4": "bell",
+  "paravowel-a-pole-5": "bell",
+  "paravowel-a-zero-5": "bell",
+  "paravowel-a-pole-6": "lift",
+  "vocal-comb-pole-1": "carved band",
+  "vocal-comb-zero-1": "carved band",
+  "vocal-comb-pole-2": "close pair",
+  "vocal-comb-zero-2": "close pair",
+  "vocal-comb-pole-3": "close pair",
+  "vocal-comb-zero-3": "close pair",
+  "vocal-comb-pole-4": "close pair",
+  "vocal-comb-zero-4": "close pair",
+  "vocal-comb-pole-5": "carved band",
+  "vocal-comb-zero-5": "carved band",
+  "vocal-comb-pole-6": "high shelf",
+  "vocal-comb-zero-6": "high shelf",
+  "vocal-comb-pole-7": "peak",
+  "nyquist-trap-zero": "notch",
+  "bound-shelf-pole": "carved band",
+  "bound-shelf-zero": "carved band",
+  "sub-anchor-pole": "high shelf",
+  "sub-anchor-zero": "high shelf"
+ },
+ "cluster_shapes": [
+  {
+   "id": "pole_only-0",
+   "shape": "peak",
+   "occurrences": 243,
+   "positions": {
+    "S1": 19,
+    "S2": 29,
+    "S3": 22,
+    "S4": 14,
+    "S5": 19,
+    "S6": 12,
+    "S7": 128
+   }
+  },
+  {
+   "id": "pole_only-1",
+   "shape": "lift",
+   "occurrences": 213,
+   "positions": {
+    "S1": 31,
+    "S2": 39,
+    "S3": 29,
+    "S4": 25,
+    "S5": 9,
+    "S6": 18,
+    "S7": 62
+   }
+  },
+  {
+   "id": "pole_only-2",
+   "shape": "peak",
+   "occurrences": 171,
+   "positions": {
+    "S1": 22,
+    "S2": 8,
+    "S3": 9,
+    "S4": 12,
+    "S5": 12,
+    "S6": 15,
+    "S7": 93
+   }
+  },
+  {
+   "id": "pole_only-3",
+   "shape": "lift",
+   "occurrences": 209,
+   "positions": {
+    "S1": 33,
+    "S2": 16,
+    "S3": 9,
+    "S4": 8,
+    "S5": 17,
+    "S6": 21,
+    "S7": 105
+   }
+  },
+  {
+   "id": "pole_only-4",
+   "shape": "lift",
+   "occurrences": 232,
+   "positions": {
+    "S1": 16,
+    "S2": 31,
+    "S3": 19,
+    "S4": 23,
+    "S5": 40,
+    "S6": 43,
+    "S7": 60
+   }
+  },
+  {
+   "id": "pole_only-5",
+   "shape": "lift",
+   "occurrences": 242,
+   "positions": {
+    "S1": 10,
+    "S2": 15,
+    "S3": 34,
+    "S4": 30,
+    "S5": 30,
+    "S6": 30,
+    "S7": 93
+   }
+  },
+  {
+   "id": "pole_only-6",
+   "shape": "lift",
+   "occurrences": 192,
+   "positions": {
+    "S1": 21,
+    "S2": 23,
+    "S3": 22,
+    "S4": 21,
+    "S5": 19,
+    "S6": 16,
+    "S7": 70
+   }
+  },
+  {
+   "id": "pole_only-7",
+   "shape": "lift",
+   "occurrences": 197,
+   "positions": {
+    "S1": 22,
+    "S2": 22,
+    "S3": 10,
+    "S4": 13,
+    "S5": 19,
+    "S6": 25,
+    "S7": 86
+   }
+  },
+  {
+   "id": "pole_only-8",
+   "shape": "peak",
+   "occurrences": 172,
+   "positions": {
+    "S1": 11,
+    "S2": 3,
+    "S3": 1,
+    "S4": 1,
+    "S6": 3,
+    "S7": 153
+   }
+  },
+  {
+   "id": "pole_only-9",
+   "shape": "peak",
+   "occurrences": 149,
+   "positions": {
+    "S1": 5,
+    "S2": 2,
+    "S3": 2,
+    "S4": 2,
+    "S5": 1,
+    "S6": 1,
+    "S7": 136
+   }
+  },
+  {
+   "id": "pole_only-10",
+   "shape": "peak",
+   "occurrences": 178,
+   "positions": {
+    "S2": 16,
+    "S3": 14,
+    "S4": 2,
+    "S5": 16,
+    "S6": 12,
+    "S7": 118
+   }
+  },
+  {
+   "id": "pole_only-11",
+   "shape": "peak",
+   "occurrences": 212,
+   "positions": {
+    "S1": 26,
+    "S2": 17,
+    "S3": 6,
+    "S4": 2,
+    "S5": 7,
+    "S6": 7,
+    "S7": 147
+   }
+  },
+  {
+   "id": "pole_only-12",
+   "shape": "peak",
+   "occurrences": 121,
+   "positions": {
+    "S1": 5,
+    "S2": 3,
+    "S4": 2,
+    "S6": 5,
+    "S7": 106
+   }
+  },
+  {
+   "id": "pole_only-13",
+   "shape": "lift",
+   "occurrences": 129,
+   "positions": {
+    "S1": 32,
+    "S2": 8,
+    "S3": 11,
+    "S4": 9,
+    "S5": 8,
+    "S6": 16,
+    "S7": 45
+   }
+  },
+  {
+   "id": "pole_only-14",
+   "shape": "lift",
+   "occurrences": 101,
+   "positions": {
+    "S1": 11,
+    "S2": 4,
+    "S3": 4,
+    "S4": 6,
+    "S5": 8,
+    "S6": 17,
+    "S7": 51
+   }
+  },
+  {
+   "id": "pole_only-15",
+   "shape": "lift",
+   "occurrences": 40,
+   "positions": {
+    "S2": 2,
+    "S3": 1,
+    "S4": 2,
+    "S7": 35
+   }
+  },
+  {
+   "id": "pole_zero-0",
+   "shape": "bell",
+   "occurrences": 1067,
+   "positions": {
+    "S1": 110,
+    "S2": 154,
+    "S3": 208,
+    "S4": 209,
+    "S5": 239,
+    "S6": 139,
+    "S7": 8
+   }
+  },
+  {
+   "id": "pole_zero-1",
+   "shape": "bell",
+   "occurrences": 844,
+   "positions": {
+    "S1": 20,
+    "S2": 158,
+    "S3": 186,
+    "S4": 176,
+    "S5": 182,
+    "S6": 122
+   }
+  },
+  {
+   "id": "pole_zero-2",
+   "shape": "carved band",
+   "occurrences": 403,
+   "positions": {
+    "S1": 85,
+    "S2": 68,
+    "S3": 65,
+    "S4": 68,
+    "S5": 55,
+    "S6": 60,
+    "S7": 2
+   }
+  },
+  {
+   "id": "pole_zero-3",
+   "shape": "bell",
+   "occurrences": 950,
+   "positions": {
+    "S1": 56,
+    "S2": 207,
+    "S3": 234,
+    "S4": 203,
+    "S5": 146,
+    "S6": 96,
+    "S7": 8
+   }
+  },
+  {
+   "id": "pole_zero-4",
+   "shape": "close pair",
+   "occurrences": 506,
+   "positions": {
+    "S1": 55,
+    "S2": 108,
+    "S3": 83,
+    "S4": 87,
+    "S5": 86,
+    "S6": 87
+   }
+  },
+  {
+   "id": "pole_zero-5",
+   "shape": "bell",
+   "occurrences": 811,
+   "positions": {
+    "S1": 20,
+    "S2": 191,
+    "S3": 205,
+    "S4": 181,
+    "S5": 115,
+    "S6": 99
+   }
+  },
+  {
+   "id": "pole_zero-6",
+   "shape": "carved band",
+   "occurrences": 518,
+   "positions": {
+    "S1": 80,
+    "S2": 109,
+    "S3": 112,
+    "S4": 87,
+    "S5": 78,
+    "S6": 52
+   }
+  },
+  {
+   "id": "pole_zero-7",
+   "shape": "high shelf",
+   "occurrences": 350,
+   "positions": {
+    "S1": 132,
+    "S2": 34,
+    "S3": 41,
+    "S4": 47,
+    "S5": 55,
+    "S6": 41
+   }
+  },
+  {
+   "id": "pole_zero-8",
+   "shape": "close pair",
+   "occurrences": 670,
+   "positions": {
+    "S1": 12,
+    "S2": 117,
+    "S3": 119,
+    "S4": 149,
+    "S5": 157,
+    "S6": 116
+   }
+  },
+  {
+   "id": "pole_zero-9",
+   "shape": "close pair",
+   "occurrences": 394,
+   "positions": {
+    "S1": 84,
+    "S2": 65,
+    "S3": 67,
+    "S4": 58,
+    "S5": 72,
+    "S6": 44,
+    "S7": 4
+   }
+  },
+  {
+   "id": "pole_zero-10",
+   "shape": "low shelf",
+   "occurrences": 169,
+   "positions": {
+    "S1": 91,
+    "S2": 20,
+    "S3": 14,
+    "S4": 8,
+    "S5": 11,
+    "S6": 24,
+    "S7": 1
+   }
+  },
+  {
+   "id": "pole_zero-11",
+   "shape": "carved band",
+   "occurrences": 443,
+   "positions": {
+    "S1": 58,
+    "S2": 62,
+    "S3": 48,
+    "S4": 63,
+    "S5": 98,
+    "S6": 114
+   }
+  },
+  {
+   "id": "pole_zero-12",
+   "shape": "high shelf",
+   "occurrences": 642,
+   "positions": {
+    "S1": 8,
+    "S2": 88,
+    "S3": 86,
+    "S4": 98,
+    "S5": 171,
+    "S6": 191
+   }
+  },
+  {
+   "id": "pole_zero-13",
+   "shape": "high shelf",
+   "occurrences": 163,
+   "positions": {
+    "S1": 42,
+    "S2": 11,
+    "S3": 16,
+    "S4": 17,
+    "S5": 19,
+    "S6": 58
+   }
+  },
+  {
+   "id": "pole_zero-14",
+   "shape": "guarded peak",
+   "occurrences": 172,
+   "positions": {
+    "S4": 8,
+    "S6": 132,
+    "S7": 32
+   }
+  },
+  {
+   "id": "pole_zero-15",
+   "shape": "high shelf",
+   "occurrences": 133,
+   "positions": {
+    "S1": 6,
+    "S2": 19,
+    "S3": 14,
+    "S4": 26,
+    "S5": 23,
+    "S6": 45
+   }
+  },
+  {
+   "id": "zero_only-0",
+   "shape": "dip",
+   "occurrences": 221,
+   "positions": {
+    "S1": 135,
+    "S2": 30,
+    "S3": 12,
+    "S4": 17,
+    "S5": 13,
+    "S6": 14
+   }
+  },
+  {
+   "id": "zero_only-1",
+   "shape": "dip",
+   "occurrences": 243,
+   "positions": {
+    "S1": 123,
+    "S2": 29,
+    "S3": 19,
+    "S4": 40,
+    "S5": 24,
+    "S6": 8
+   }
+  },
+  {
+   "id": "zero_only-2",
+   "shape": "notch",
+   "occurrences": 239,
+   "positions": {
+    "S1": 178,
+    "S2": 22,
+    "S3": 15,
+    "S4": 2,
+    "S5": 4,
+    "S6": 18
+   }
+  },
+  {
+   "id": "zero_only-3",
+   "shape": "dip",
+   "occurrences": 196,
+   "positions": {
+    "S1": 136,
+    "S2": 8,
+    "S3": 6,
+    "S4": 13,
+    "S5": 9,
+    "S6": 24
+   }
+  },
+  {
+   "id": "zero_only-4",
+   "shape": "notch",
+   "occurrences": 161,
+   "positions": {
+    "S1": 133,
+    "S2": 5,
+    "S3": 5,
+    "S5": 11,
+    "S6": 7
+   }
+  },
+  {
+   "id": "zero_only-5",
+   "shape": "dip",
+   "occurrences": 48,
+   "positions": {
+    "S1": 21,
+    "S2": 1,
+    "S4": 9,
+    "S5": 8,
+    "S6": 9
+   }
+  }
+ ]
+}

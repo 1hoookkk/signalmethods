@@ -1,0 +1,716 @@
+[
+ {
+  "k_signatures": 1,
+  "signature": "M:moved/moved | Q:moved/moved | Z:moved/moved",
+  "count": 432,
+  "cumulative": 432,
+  "cumulative_fraction_of_active": 0.22302529685080022
+ },
+ {
+  "k_signatures": 2,
+  "signature": "M:held/moved | Q:held/moved | Z:held/moved",
+  "count": 180,
+  "cumulative": 612,
+  "cumulative_fraction_of_active": 0.31595250387196694
+ },
+ {
+  "k_signatures": 3,
+  "signature": "M:held/held | Q:held/held | Z:held/held",
+  "count": 119,
+  "cumulative": 731,
+  "cumulative_fraction_of_active": 0.37738771295818274
+ },
+ {
+  "k_signatures": 4,
+  "signature": "M:held/moved | Q:held/moved | Z:moved/moved",
+  "count": 108,
+  "cumulative": 839,
+  "cumulative_fraction_of_active": 0.4331440371708828
+ },
+ {
+  "k_signatures": 5,
+  "signature": "M:moved/moved | Q:held/held | Z:moved/moved",
+  "count": 99,
+  "cumulative": 938,
+  "cumulative_fraction_of_active": 0.48425400103252453
+ },
+ {
+  "k_signatures": 6,
+  "signature": "M:moved/moved | Q:moved/moved | Z:moved/held",
+  "count": 85,
+  "cumulative": 1023,
+  "cumulative_fraction_of_active": 0.5281362932369644
+ },
+ {
+  "k_signatures": 7,
+  "signature": "M:moved/moved | Q:moved/moved | Z:held/held",
+  "count": 83,
+  "cumulative": 1106,
+  "cumulative_fraction_of_active": 0.5709860609189468
+ },
+ {
+  "k_signatures": 8,
+  "signature": "M:held/held | Q:held/held | Z:moved/moved",
+  "count": 72,
+  "cumulative": 1178,
+  "cumulative_fraction_of_active": 0.6081569437274136
+ },
+ {
+  "k_signatures": 9,
+  "signature": "M:moved/moved | Q:moved/moved | Z:held/moved",
+  "count": 68,
+  "cumulative": 1246,
+  "cumulative_fraction_of_active": 0.6432627774909654
+ },
+ {
+  "k_signatures": 10,
+  "signature": "M:held/moved | Q:held/moved | Z:held/held",
+  "count": 52,
+  "cumulative": 1298,
+  "cumulative_fraction_of_active": 0.6701084150748581
+ },
+ {
+  "k_signatures": 11,
+  "signature": "M:held/moved | Q:held/held | Z:held/moved",
+  "count": 48,
+  "cumulative": 1346,
+  "cumulative_fraction_of_active": 0.6948890036138359
+ },
+ {
+  "k_signatures": 12,
+  "signature": "M:moved/moved | Q:moved/held | Z:moved/moved",
+  "count": 47,
+  "cumulative": 1393,
+  "cumulative_fraction_of_active": 0.719153329891585
+ },
+ {
+  "k_signatures": 13,
+  "signature": "M:held/held | Q:held/held | Z:held/moved",
+  "count": 38,
+  "cumulative": 1431,
+  "cumulative_fraction_of_active": 0.7387712958182757
+ },
+ {
+  "k_signatures": 14,
+  "signature": "M:moved/moved | Q:moved/held | Z:held/held",
+  "count": 35,
+  "cumulative": 1466,
+  "cumulative_fraction_of_active": 0.7568404749612804
+ },
+ {
+  "k_signatures": 15,
+  "signature": "M:held/held | Q:moved/moved | Z:moved/moved",
+  "count": 34,
+  "cumulative": 1500,
+  "cumulative_fraction_of_active": 0.7743933918430562
+ },
+ {
+  "k_signatures": 16,
+  "signature": "M:moved/held | Q:moved/held | Z:moved/held",
+  "count": 31,
+  "cumulative": 1531,
+  "cumulative_fraction_of_active": 0.7903975219411461
+ },
+ {
+  "k_signatures": 17,
+  "signature": "M:held/moved | Q:held/held | Z:moved/moved",
+  "count": 27,
+  "cumulative": 1558,
+  "cumulative_fraction_of_active": 0.8043366029943211
+ },
+ {
+  "k_signatures": 18,
+  "signature": "M:moved/moved | Q:moved/held | Z:moved/held",
+  "count": 26,
+  "cumulative": 1584,
+  "cumulative_fraction_of_active": 0.8177594217862674
+ },
+ {
+  "k_signatures": 19,
+  "signature": "M:moved/moved | Q:held/moved | Z:moved/moved",
+  "count": 23,
+  "cumulative": 1607,
+  "cumulative_fraction_of_active": 0.8296334537945276
+ },
+ {
+  "k_signatures": 20,
+  "signature": "M:held/moved | Q:held/held | Z:held/held",
+  "count": 22,
+  "cumulative": 1629,
+  "cumulative_fraction_of_active": 0.8409912235415591
+ },
+ {
+  "k_signatures": 21,
+  "signature": "M:held/held | Q:held/moved | Z:held/held",
+  "count": 21,
+  "cumulative": 1650,
+  "cumulative_fraction_of_active": 0.8518327310273619
+ },
+ {
+  "k_signatures": 22,
+  "signature": "M:held/held | Q:moved/moved | Z:held/held",
+  "count": 20,
+  "cumulative": 1670,
+  "cumulative_fraction_of_active": 0.862157976251936
+ },
+ {
+  "k_signatures": 23,
+  "signature": "M:moved/moved | Q:held/held | Z:held/held",
+  "count": 19,
+  "cumulative": 1689,
+  "cumulative_fraction_of_active": 0.8719669592152813
+ },
+ {
+  "k_signatures": 24,
+  "signature": "M:held/held | Q:held/moved | Z:held/moved",
+  "count": 19,
+  "cumulative": 1708,
+  "cumulative_fraction_of_active": 0.8817759421786268
+ },
+ {
+  "k_signatures": 25,
+  "signature": "M:moved/moved | Q:held/moved | Z:held/moved",
+  "count": 16,
+  "cumulative": 1724,
+  "cumulative_fraction_of_active": 0.890036138358286
+ },
+ {
+  "k_signatures": 26,
+  "signature": "M:moved/held | Q:moved/held | Z:moved/moved",
+  "count": 14,
+  "cumulative": 1738,
+  "cumulative_fraction_of_active": 0.8972638100154878
+ },
+ {
+  "k_signatures": 27,
+  "signature": "M:moved/held | Q:moved/moved | Z:moved/moved",
+  "count": 12,
+  "cumulative": 1750,
+  "cumulative_fraction_of_active": 0.9034589571502323
+ },
+ {
+  "k_signatures": 28,
+  "signature": "M:held/moved | Q:moved/moved | Z:moved/moved",
+  "count": 12,
+  "cumulative": 1762,
+  "cumulative_fraction_of_active": 0.9096541042849767
+ },
+ {
+  "k_signatures": 29,
+  "signature": "M:moved/held | Q:held/held | Z:moved/moved",
+  "count": 11,
+  "cumulative": 1773,
+  "cumulative_fraction_of_active": 0.9153329891584925
+ },
+ {
+  "k_signatures": 30,
+  "signature": "M:moved/held | Q:moved/moved | Z:moved/held",
+  "count": 10,
+  "cumulative": 1783,
+  "cumulative_fraction_of_active": 0.9204956117707795
+ },
+ {
+  "k_signatures": 31,
+  "signature": "M:topology_change/moved | Q:topology_change/moved | Z:topology_change/moved",
+  "count": 8,
+  "cumulative": 1791,
+  "cumulative_fraction_of_active": 0.9246257098606092
+ },
+ {
+  "k_signatures": 32,
+  "signature": "M:held/held | Q:moved/held | Z:held/held",
+  "count": 8,
+  "cumulative": 1799,
+  "cumulative_fraction_of_active": 0.9287558079504388
+ },
+ {
+  "k_signatures": 33,
+  "signature": "M:moved/moved | Q:moved/held | Z:held/moved",
+  "count": 8,
+  "cumulative": 1807,
+  "cumulative_fraction_of_active": 0.9328859060402684
+ },
+ {
+  "k_signatures": 34,
+  "signature": "M:moved/moved | Q:held/moved | Z:held/held",
+  "count": 8,
+  "cumulative": 1815,
+  "cumulative_fraction_of_active": 0.9370160041300981
+ },
+ {
+  "k_signatures": 35,
+  "signature": "M:moved/moved | Q:held/held | Z:held/moved",
+  "count": 8,
+  "cumulative": 1823,
+  "cumulative_fraction_of_active": 0.9411461022199277
+ },
+ {
+  "k_signatures": 36,
+  "signature": "M:moved/held | Q:held/held | Z:moved/held",
+  "count": 7,
+  "cumulative": 1830,
+  "cumulative_fraction_of_active": 0.9447599380485286
+ },
+ {
+  "k_signatures": 37,
+  "signature": "M:moved/held | Q:moved/held | Z:held/held",
+  "count": 7,
+  "cumulative": 1837,
+  "cumulative_fraction_of_active": 0.9483737738771296
+ },
+ {
+  "k_signatures": 38,
+  "signature": "M:held/moved | Q:moved/moved | Z:held/moved",
+  "count": 5,
+  "cumulative": 1842,
+  "cumulative_fraction_of_active": 0.9509550851832731
+ },
+ {
+  "k_signatures": 39,
+  "signature": "M:held/topology_change | Q:held/topology_change | Z:held/topology_change",
+  "count": 4,
+  "cumulative": 1846,
+  "cumulative_fraction_of_active": 0.9530201342281879
+ },
+ {
+  "k_signatures": 40,
+  "signature": "M:held/held | Q:moved/held | Z:moved/held",
+  "count": 4,
+  "cumulative": 1850,
+  "cumulative_fraction_of_active": 0.9550851832731028
+ },
+ {
+  "k_signatures": 41,
+  "signature": "M:held/held | Q:held/moved | Z:moved/moved",
+  "count": 4,
+  "cumulative": 1854,
+  "cumulative_fraction_of_active": 0.9571502323180175
+ },
+ {
+  "k_signatures": 42,
+  "signature": "M:held/held | Q:held/held | Z:moved/held",
+  "count": 4,
+  "cumulative": 1858,
+  "cumulative_fraction_of_active": 0.9592152813629323
+ },
+ {
+  "k_signatures": 43,
+  "signature": "M:held/held | Q:moved/moved | Z:moved/held",
+  "count": 3,
+  "cumulative": 1861,
+  "cumulative_fraction_of_active": 0.9607640681466185
+ },
+ {
+  "k_signatures": 44,
+  "signature": "M:held/moved | Q:moved/moved | Z:held/held",
+  "count": 3,
+  "cumulative": 1864,
+  "cumulative_fraction_of_active": 0.9623128549303046
+ },
+ {
+  "k_signatures": 45,
+  "signature": "M:held/held | Q:moved/moved | Z:held/moved",
+  "count": 3,
+  "cumulative": 1867,
+  "cumulative_fraction_of_active": 0.9638616417139907
+ },
+ {
+  "k_signatures": 46,
+  "signature": "M:topology_change/moved | Q:held/moved | Z:held/held",
+  "count": 2,
+  "cumulative": 1869,
+  "cumulative_fraction_of_active": 0.9648941662364481
+ },
+ {
+  "k_signatures": 47,
+  "signature": "M:moved/topology_change | Q:moved/held | Z:moved/held",
+  "count": 2,
+  "cumulative": 1871,
+  "cumulative_fraction_of_active": 0.9659266907589055
+ },
+ {
+  "k_signatures": 48,
+  "signature": "M:moved/held | Q:moved/moved | Z:held/held",
+  "count": 2,
+  "cumulative": 1873,
+  "cumulative_fraction_of_active": 0.966959215281363
+ },
+ {
+  "k_signatures": 49,
+  "signature": "M:moved/held | Q:held/held | Z:held/held",
+  "count": 2,
+  "cumulative": 1875,
+  "cumulative_fraction_of_active": 0.9679917398038204
+ },
+ {
+  "k_signatures": 50,
+  "signature": "M:moved/moved | Q:held/moved | Z:moved/held",
+  "count": 2,
+  "cumulative": 1877,
+  "cumulative_fraction_of_active": 0.9690242643262778
+ },
+ {
+  "k_signatures": 51,
+  "signature": "M:topology_change/moved | Q:held/moved | Z:topology_change/moved",
+  "count": 2,
+  "cumulative": 1879,
+  "cumulative_fraction_of_active": 0.9700567888487351
+ },
+ {
+  "k_signatures": 52,
+  "signature": "M:held/held | Q:moved/held | Z:moved/moved",
+  "count": 2,
+  "cumulative": 1881,
+  "cumulative_fraction_of_active": 0.9710893133711925
+ },
+ {
+  "k_signatures": 53,
+  "signature": "M:topology_change/topology_change | Q:held/held | Z:held/held",
+  "count": 2,
+  "cumulative": 1883,
+  "cumulative_fraction_of_active": 0.9721218378936499
+ },
+ {
+  "k_signatures": 54,
+  "signature": "M:moved/topology_change | Q:held/held | Z:held/held",
+  "count": 2,
+  "cumulative": 1885,
+  "cumulative_fraction_of_active": 0.9731543624161074
+ },
+ {
+  "k_signatures": 55,
+  "signature": "M:topology_change/topology_change | Q:topology_change/topology_change | Z:held/held",
+  "count": 2,
+  "cumulative": 1887,
+  "cumulative_fraction_of_active": 0.9741868869385648
+ },
+ {
+  "k_signatures": 56,
+  "signature": "M:topology_change/moved | Q:topology_change/moved | Z:held/held",
+  "count": 2,
+  "cumulative": 1889,
+  "cumulative_fraction_of_active": 0.9752194114610222
+ },
+ {
+  "k_signatures": 57,
+  "signature": "M:moved/moved | Q:moved/topology_change | Z:moved/moved",
+  "count": 2,
+  "cumulative": 1891,
+  "cumulative_fraction_of_active": 0.9762519359834796
+ },
+ {
+  "k_signatures": 58,
+  "signature": "M:held/held | Q:held/topology_change | Z:topology_change/held",
+  "count": 2,
+  "cumulative": 1893,
+  "cumulative_fraction_of_active": 0.977284460505937
+ },
+ {
+  "k_signatures": 59,
+  "signature": "M:moved/held | Q:held/moved | Z:held/held",
+  "count": 1,
+  "cumulative": 1894,
+  "cumulative_fraction_of_active": 0.9778007227671657
+ },
+ {
+  "k_signatures": 60,
+  "signature": "M:moved/moved | Q:topology_change/moved | Z:moved/held",
+  "count": 1,
+  "cumulative": 1895,
+  "cumulative_fraction_of_active": 0.9783169850283944
+ },
+ {
+  "k_signatures": 61,
+  "signature": "M:moved/topology_change | Q:held/held | Z:moved/topology_change",
+  "count": 1,
+  "cumulative": 1896,
+  "cumulative_fraction_of_active": 0.9788332472896232
+ },
+ {
+  "k_signatures": 62,
+  "signature": "M:held/held | Q:held/held | Z:held/topology_change",
+  "count": 1,
+  "cumulative": 1897,
+  "cumulative_fraction_of_active": 0.9793495095508519
+ },
+ {
+  "k_signatures": 63,
+  "signature": "M:topology_change/held | Q:held/moved | Z:topology_change/moved",
+  "count": 1,
+  "cumulative": 1898,
+  "cumulative_fraction_of_active": 0.9798657718120806
+ },
+ {
+  "k_signatures": 64,
+  "signature": "M:held/topology_change | Q:held/topology_change | Z:moved/moved",
+  "count": 1,
+  "cumulative": 1899,
+  "cumulative_fraction_of_active": 0.9803820340733093
+ },
+ {
+  "k_signatures": 65,
+  "signature": "M:moved/held | Q:held/moved | Z:held/moved",
+  "count": 1,
+  "cumulative": 1900,
+  "cumulative_fraction_of_active": 0.980898296334538
+ },
+ {
+  "k_signatures": 66,
+  "signature": "M:held/moved | Q:moved/held | Z:held/held",
+  "count": 1,
+  "cumulative": 1901,
+  "cumulative_fraction_of_active": 0.9814145585957667
+ },
+ {
+  "k_signatures": 67,
+  "signature": "M:held/moved | Q:moved/held | Z:moved/moved",
+  "count": 1,
+  "cumulative": 1902,
+  "cumulative_fraction_of_active": 0.9819308208569953
+ },
+ {
+  "k_signatures": 68,
+  "signature": "M:held/topology_change | Q:held/held | Z:moved/topology_change",
+  "count": 1,
+  "cumulative": 1903,
+  "cumulative_fraction_of_active": 0.982447083118224
+ },
+ {
+  "k_signatures": 69,
+  "signature": "M:held/topology_change | Q:held/held | Z:held/held",
+  "count": 1,
+  "cumulative": 1904,
+  "cumulative_fraction_of_active": 0.9829633453794527
+ },
+ {
+  "k_signatures": 70,
+  "signature": "M:moved/topology_change | Q:moved/held | Z:moved/topology_change",
+  "count": 1,
+  "cumulative": 1905,
+  "cumulative_fraction_of_active": 0.9834796076406814
+ },
+ {
+  "k_signatures": 71,
+  "signature": "M:moved/moved | Q:topology_change/moved | Z:moved/moved",
+  "count": 1,
+  "cumulative": 1906,
+  "cumulative_fraction_of_active": 0.9839958699019101
+ },
+ {
+  "k_signatures": 72,
+  "signature": "M:topology_change/topology_change | Q:topology_change/topology_change | Z:topology_change/topology_change",
+  "count": 1,
+  "cumulative": 1907,
+  "cumulative_fraction_of_active": 0.9845121321631388
+ },
+ {
+  "k_signatures": 73,
+  "signature": "M:moved/topology_change | Q:moved/moved | Z:moved/topology_change",
+  "count": 1,
+  "cumulative": 1908,
+  "cumulative_fraction_of_active": 0.9850283944243676
+ },
+ {
+  "k_signatures": 74,
+  "signature": "M:topology_change/moved | Q:moved/moved | Z:topology_change/moved",
+  "count": 1,
+  "cumulative": 1909,
+  "cumulative_fraction_of_active": 0.9855446566855963
+ },
+ {
+  "k_signatures": 75,
+  "signature": "M:moved/topology_change | Q:moved/topology_change | Z:moved/topology_change",
+  "count": 1,
+  "cumulative": 1910,
+  "cumulative_fraction_of_active": 0.986060918946825
+ },
+ {
+  "k_signatures": 76,
+  "signature": "M:topology_change/moved | Q:held/held | Z:held/moved",
+  "count": 1,
+  "cumulative": 1911,
+  "cumulative_fraction_of_active": 0.9865771812080537
+ },
+ {
+  "k_signatures": 77,
+  "signature": "M:topology_change/moved | Q:held/moved | Z:held/moved",
+  "count": 1,
+  "cumulative": 1912,
+  "cumulative_fraction_of_active": 0.9870934434692824
+ },
+ {
+  "k_signatures": 78,
+  "signature": "M:topology_change/moved | Q:topology_change/held | Z:held/held",
+  "count": 1,
+  "cumulative": 1913,
+  "cumulative_fraction_of_active": 0.9876097057305111
+ },
+ {
+  "k_signatures": 79,
+  "signature": "M:moved/topology_change | Q:moved/topology_change | Z:held/held",
+  "count": 1,
+  "cumulative": 1914,
+  "cumulative_fraction_of_active": 0.9881259679917398
+ },
+ {
+  "k_signatures": 80,
+  "signature": "M:moved/topology_change | Q:moved/topology_change | Z:moved/held",
+  "count": 1,
+  "cumulative": 1915,
+  "cumulative_fraction_of_active": 0.9886422302529685
+ },
+ {
+  "k_signatures": 81,
+  "signature": "M:held/moved | Q:moved/moved | Z:moved/held",
+  "count": 1,
+  "cumulative": 1916,
+  "cumulative_fraction_of_active": 0.9891584925141972
+ },
+ {
+  "k_signatures": 82,
+  "signature": "M:topology_change/held | Q:topology_change/held | Z:held/moved",
+  "count": 1,
+  "cumulative": 1917,
+  "cumulative_fraction_of_active": 0.9896747547754259
+ },
+ {
+  "k_signatures": 83,
+  "signature": "M:topology_change/held | Q:moved/held | Z:moved/held",
+  "count": 1,
+  "cumulative": 1918,
+  "cumulative_fraction_of_active": 0.9901910170366546
+ },
+ {
+  "k_signatures": 84,
+  "signature": "M:held/moved | Q:topology_change/moved | Z:topology_change/moved",
+  "count": 1,
+  "cumulative": 1919,
+  "cumulative_fraction_of_active": 0.9907072792978833
+ },
+ {
+  "k_signatures": 85,
+  "signature": "M:held/held | Q:held/topology_change | Z:held/held",
+  "count": 1,
+  "cumulative": 1920,
+  "cumulative_fraction_of_active": 0.9912235415591121
+ },
+ {
+  "k_signatures": 86,
+  "signature": "M:topology_change/held | Q:topology_change/held | Z:topology_change/held",
+  "count": 1,
+  "cumulative": 1921,
+  "cumulative_fraction_of_active": 0.9917398038203408
+ },
+ {
+  "k_signatures": 87,
+  "signature": "M:held/moved | Q:topology_change/topology_change | Z:topology_change/topology_change",
+  "count": 1,
+  "cumulative": 1922,
+  "cumulative_fraction_of_active": 0.9922560660815695
+ },
+ {
+  "k_signatures": 88,
+  "signature": "M:topology_change/moved | Q:topology_change/moved | Z:moved/held",
+  "count": 1,
+  "cumulative": 1923,
+  "cumulative_fraction_of_active": 0.9927723283427982
+ },
+ {
+  "k_signatures": 89,
+  "signature": "M:moved/held | Q:moved/topology_change | Z:moved/moved",
+  "count": 1,
+  "cumulative": 1924,
+  "cumulative_fraction_of_active": 0.9932885906040269
+ },
+ {
+  "k_signatures": 90,
+  "signature": "M:topology_change/moved | Q:topology_change/held | Z:held/moved",
+  "count": 1,
+  "cumulative": 1925,
+  "cumulative_fraction_of_active": 0.9938048528652556
+ },
+ {
+  "k_signatures": 91,
+  "signature": "M:moved/moved | Q:topology_change/held | Z:held/held",
+  "count": 1,
+  "cumulative": 1926,
+  "cumulative_fraction_of_active": 0.9943211151264842
+ },
+ {
+  "k_signatures": 92,
+  "signature": "M:topology_change/held | Q:held/held | Z:held/held",
+  "count": 1,
+  "cumulative": 1927,
+  "cumulative_fraction_of_active": 0.9948373773877129
+ },
+ {
+  "k_signatures": 93,
+  "signature": "M:topology_change/moved | Q:moved/moved | Z:held/held",
+  "count": 1,
+  "cumulative": 1928,
+  "cumulative_fraction_of_active": 0.9953536396489416
+ },
+ {
+  "k_signatures": 94,
+  "signature": "M:moved/topology_change | Q:moved/moved | Z:moved/held",
+  "count": 1,
+  "cumulative": 1929,
+  "cumulative_fraction_of_active": 0.9958699019101703
+ },
+ {
+  "k_signatures": 95,
+  "signature": "M:topology_change/held | Q:topology_change/held | Z:moved/held",
+  "count": 1,
+  "cumulative": 1930,
+  "cumulative_fraction_of_active": 0.996386164171399
+ },
+ {
+  "k_signatures": 96,
+  "signature": "M:moved/held | Q:moved/held | Z:held/moved",
+  "count": 1,
+  "cumulative": 1931,
+  "cumulative_fraction_of_active": 0.9969024264326277
+ },
+ {
+  "k_signatures": 97,
+  "signature": "M:topology_change/held | Q:topology_change/moved | Z:held/held",
+  "count": 1,
+  "cumulative": 1932,
+  "cumulative_fraction_of_active": 0.9974186886938565
+ },
+ {
+  "k_signatures": 98,
+  "signature": "M:held/topology_change | Q:held/topology_change | Z:held/held",
+  "count": 1,
+  "cumulative": 1933,
+  "cumulative_fraction_of_active": 0.9979349509550852
+ },
+ {
+  "k_signatures": 99,
+  "signature": "M:moved/held | Q:held/moved | Z:moved/held",
+  "count": 1,
+  "cumulative": 1934,
+  "cumulative_fraction_of_active": 0.9984512132163139
+ },
+ {
+  "k_signatures": 100,
+  "signature": "M:moved/moved | Q:held/held | Z:moved/held",
+  "count": 1,
+  "cumulative": 1935,
+  "cumulative_fraction_of_active": 0.9989674754775426
+ },
+ {
+  "k_signatures": 101,
+  "signature": "M:moved/moved | Q:moved/held | Z:topology_change/held",
+  "count": 1,
+  "cumulative": 1936,
+  "cumulative_fraction_of_active": 0.9994837377387713
+ },
+ {
+  "k_signatures": 102,
+  "signature": "M:moved/topology_change | Q:moved/moved | Z:moved/moved",
+  "count": 1,
+  "cumulative": 1937,
+  "cumulative_fraction_of_active": 1.0
+ }
+]

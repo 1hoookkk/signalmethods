@@ -1,0 +1,79 @@
+{
+  "schema": "trench-cleanroom-synth-filters-v1",
+  "description": "Synth filter archetypes derived from the common structural patterns across the P2K acid/bass/resonance corpus. Each archetype defines a single-corner starting geometry; the designer poses corners by moving poles and adjusting Q to taste.",
+  "sampling_rate_hz": 44100.0,
+  "archetypes": {
+    "acid_resonant_lp": {
+      "name": "Acid Resonant LP",
+      "description": "Classic acid sweep — one dominant resonant pole with guard zero, bass shelf, high rolloff, traveling null",
+      "stages": [
+        { "role": "bass shelf",    "pole_hz": 80,   "pole_r": 0.962, "zero_hz": 2300, "zero_r": 0.914 },
+        { "role": "resonance",     "pole_hz": 500,  "pole_r": 0.976, "zero_hz": 13400, "zero_r": 0.884 },
+        { "role": "high shape",    "pole_hz": 13000, "pole_r": 0.975, "zero_hz": 15200, "zero_r": 0.800 },
+        { "role": "rolloff",       "pole_hz": 15700, "pole_r": 0.964, "zero_hz": 17400, "zero_r": 0.914 },
+        { "role": "top shelf",     "pole_hz": 17700, "pole_r": 0.990, "zero_hz": 2900, "zero_r": 0.857 },
+        { "role": "null anchor",   "pole_hz": 0,    "pole_r": 0.753, "zero_hz": 6700, "zero_r": 1.0 }
+      ]
+    },
+    "tb_303_cavity": {
+      "name": "303 Cavity Acid",
+      "description": "TB-style acid — low resonant poles with guard zeros, one high rolloff pole, traveling null at mid frequency",
+      "stages": [
+        { "role": "attack peak",   "pole_hz": 580,  "pole_r": 0.740, "zero_hz": 360, "zero_r": 0.901 },
+        { "role": "mid resonance", "pole_hz": 1300, "pole_r": 0.956, "zero_hz": 1930, "zero_r": 0.940 },
+        { "role": "body",          "pole_hz": 1930, "pole_r": 0.950, "zero_hz": 15300, "zero_r": 0.839 },
+        { "role": "nasal",         "pole_hz": 750,  "pole_r": 0.969, "zero_hz": 1040, "zero_r": 0.871 },
+        { "role": "high shelf",    "pole_hz": 15000, "pole_r": 0.927, "zero_hz": 1180, "zero_r": 0.897 },
+        { "role": "null anchor",   "pole_hz": 360, "pole_r": 0.976, "zero_hz": 3100, "zero_r": 1.0 }
+      ]
+    },
+    "meaty_ladder": {
+      "name": "Meaty Resonance Ladder",
+      "description": "Dense high-frequency pole ladder with one bass anchor — heavy resonant character that blooms on Q",
+      "stages": [
+        { "role": "bass anchor",   "pole_hz": 60,   "pole_r": 0.999, "zero_hz": 9600, "zero_r": 0.810 },
+        { "role": "mid presence",  "pole_hz": 10300, "pole_r": 0.944, "zero_hz": 10600, "zero_r": 0.940 },
+        { "role": "upper body",    "pole_hz": 12900, "pole_r": 0.760, "zero_hz": 13400, "zero_r": 0.986 },
+        { "role": "high peak",     "pole_hz": 13600, "pole_r": 0.968, "zero_hz": 14400, "zero_r": 0.968 },
+        { "role": "air",           "pole_hz": 14700, "pole_r": 0.968, "zero_hz": 16300, "zero_r": 0.919 },
+        { "role": "null anchor",   "pole_hz": 16300, "pole_r": 0.901, "zero_hz": 10900, "zero_r": 1.0 }
+      ]
+    },
+    "bass_shaper": {
+      "name": "Bass Shaper",
+      "description": "Low-mid resonance cluster with guard zeros — sub and body, controlled by Q sweep",
+      "stages": [
+        { "role": "sub",           "pole_hz": 80,   "pole_r": 0.962, "zero_hz": 2300, "zero_r": 0.914 },
+        { "role": "body low",      "pole_hz": 450,  "pole_r": 0.970, "zero_hz": 2650, "zero_r": 0.875 },
+        { "role": "body mid",      "pole_hz": 480,  "pole_r": 0.976, "zero_hz": 13400, "zero_r": 0.884 },
+        { "role": "upper body",    "pole_hz": 13100, "pole_r": 0.975, "zero_hz": 15200, "zero_r": 0.800 },
+        { "role": "rolloff",       "pole_hz": 15700, "pole_r": 0.964, "zero_hz": 17400, "zero_r": 0.914 },
+        { "role": "null anchor",   "pole_hz": 0,    "pole_r": 0.753, "zero_hz": 7200, "zero_r": 1.0 }
+      ]
+    },
+    "resonant_sweep": {
+      "name": "Resonant Sweep",
+      "description": "High-Q resonant poles at mid frequencies — the morph sweeps the resonance peak across the spectrum",
+      "stages": [
+        { "role": "sweep low",     "pole_hz": 5100, "pole_r": 0.927, "zero_hz": 415, "zero_r": 0.960 },
+        { "role": "formant 1",     "pole_hz": 1380, "pole_r": 0.999, "zero_hz": 1230, "zero_r": 0.962 },
+        { "role": "formant 2",     "pole_hz": 2280, "pole_r": 0.996, "zero_hz": 2210, "zero_r": 0.954 },
+        { "role": "formant 3",     "pole_hz": 4140, "pole_r": 0.987, "zero_hz": 3190, "zero_r": 0.966 },
+        { "role": "formant 4",     "pole_hz": 3250, "pole_r": 0.994, "zero_hz": 4240, "zero_r": 0.974 },
+        { "role": "null anchor",   "pole_hz": 260,  "pole_r": 0.999, "zero_hz": 18000, "zero_r": 1.0 }
+      ]
+    },
+    "clean_lowpass_4pole": {
+      "name": "Clean 4-Pole Lowpass",
+      "description": "Simple resonant lowpass — two resonant pole pairs stacked, guard zeros above, clean rolloff for basic subtractive synthesis",
+      "stages": [
+        { "role": "cutoff low",    "pole_hz": 800,  "pole_r": 0.985, "zero_hz": 2400, "zero_r": 0.920 },
+        { "role": "cutoff high",   "pole_hz": 900,  "pole_r": 0.980, "zero_hz": 3200, "zero_r": 0.900 },
+        { "role": "rolloff 1",     "pole_hz": 4000, "pole_r": 0.920, "zero_hz": 8000, "zero_r": 0.850 },
+        { "role": "rolloff 2",     "pole_hz": 10000, "pole_r": 0.900, "zero_hz": 14000, "zero_r": 0.800 },
+        { "role": "air damp",      "pole_hz": 16000, "pole_r": 0.850, "zero_hz": 18000, "zero_r": 0.700 },
+        { "role": "null anchor",   "pole_hz": 0,    "pole_r": 0.500, "zero_hz": 5000, "zero_r": 1.0 }
+      ]
+    }
+  }
+}

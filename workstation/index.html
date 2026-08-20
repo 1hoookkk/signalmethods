@@ -3,30 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TRENCH WORKSTATION</title>
-<link rel="stylesheet" href="style.css">
+<title>TRENCH</title>
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
-<div id="frame">
-  <div id="titlebar">TRENCH WORKSTATION</div>
-  <div id="decks">
-    <div id="library" class="dock">
-      <div class="dock-title">LIBRARY</div>
-      <div id="library-list"></div>
-    </div>
-    <div id="work">
-      <div id="stages" class="dock"><div class="dock-title">CASCADE S1..S7</div></div>
-      <div id="spectrum" class="dock"><div class="dock-title">RESPONSE</div></div>
-      <div id="roots" class="dock"><div class="dock-title">ROOTS</div></div>
-    </div>
-    <div id="side">
-      <div id="corners" class="dock"><div class="dock-title">MORPH ENDPOINTS</div><div id="corners-body"></div></div>
-      <div id="analysis" class="dock" hidden><div class="dock-title">ANALYSIS</div><div id="analysis-body"></div></div>
-      <div id="pad" class="dock"><div class="dock-title"></div></div>
-      <div id="verdict" class="dock"><div class="dock-title">STATUS</div><div id="verdict-text">—</div></div>
-    </div>
-  </div>
+<div id="app"></div>
+<div id="palette" class="pop" hidden>
+  <input id="palette-input" class="search" type="text" placeholder="FIND BODY, SOURCE OR COMMAND" autocomplete="off" spellcheck="false">
+  <div id="palette-list" class="list"></div>
 </div>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="/src/app.ts"></script>
 </body>
 </html>

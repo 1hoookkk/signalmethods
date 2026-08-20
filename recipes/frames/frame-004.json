@@ -1,0 +1,130 @@
+{
+  "lanes": [
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    },
+    {
+      "pole_hz": 0.0,
+      "pole_r": 0.0,
+      "scale_db": 0.0,
+      "zero_hz": 0.0,
+      "zero_r": 0.0
+    }
+  ],
+  "laws": [
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    },
+    {
+      "freedom": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "writable": true,
+      "zone": null
+    }
+  ],
+  "name": "frame-004",
+  "provenance": "s2-13-ich-c",
+  "schema": "trench-frame-v1",
+  "sr_hz": 44100.0,
+  "words": ""
+}

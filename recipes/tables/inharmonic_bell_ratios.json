@@ -1,0 +1,162 @@
+{
+  "schema": "trench-cleanroom-bell-ratios-v1",
+  "description": "Inharmonic modal frequency ratios for acoustic bells, chimes, and plates (Fletcher & Rossing)",
+  "archetypes": {
+    "church_carillon": {
+      "name": "Church Carillon Bell",
+      "intervals_st": [
+        0.0,
+        12.0,
+        15.6,
+        19.2,
+        24.0,
+        28.5,
+        36.0
+      ],
+      "ratios": [
+        1.0,
+        2.0,
+        2.47,
+        3.03,
+        4.0,
+        5.2,
+        8.0
+      ],
+      "mode_names": [
+        "Hum",
+        "Prime",
+        "Tierce (Minor 3rd)",
+        "Quint (Fifth)",
+        "Nominal (Octave)",
+        "Decim",
+        "Double Octave"
+      ],
+      "default_radii": [
+        0.9996,
+        0.9992,
+        0.9988,
+        0.9982,
+        0.9975,
+        0.9965,
+        0.995
+      ]
+    },
+    "gamelan_bronze_pot": {
+      "name": "Gamelan Bonang Bronze Pot",
+      "intervals_st": [
+        0.0,
+        7.2,
+        13.1,
+        18.2,
+        21.3,
+        24.5,
+        27.2
+      ],
+      "ratios": [
+        1.0,
+        1.52,
+        2.14,
+        2.87,
+        3.42,
+        4.1,
+        4.88
+      ],
+      "mode_names": [
+        "Fund",
+        "Mode 2",
+        "Mode 3",
+        "Mode 4",
+        "Mode 5",
+        "Mode 6",
+        "Mode 7"
+      ],
+      "default_radii": [
+        0.9995,
+        0.999,
+        0.9985,
+        0.998,
+        0.9972,
+        0.9965,
+        0.9955
+      ]
+    },
+    "tubular_chime": {
+      "name": "Tubular Orchestral Chime",
+      "intervals_st": [
+        0.0,
+        17.5,
+        29.2,
+        37.8,
+        44.8,
+        50.4,
+        55.2
+      ],
+      "ratios": [
+        1.0,
+        2.76,
+        5.4,
+        8.93,
+        13.34,
+        18.64,
+        24.8
+      ],
+      "mode_names": [
+        "Mode 1",
+        "Mode 2",
+        "Mode 3",
+        "Mode 4",
+        "Mode 5",
+        "Mode 6",
+        "Mode 7"
+      ],
+      "default_radii": [
+        0.9997,
+        0.9993,
+        0.9988,
+        0.998,
+        0.997,
+        0.996,
+        0.995
+      ]
+    },
+    "circular_plate_anvil": {
+      "name": "Circular Steel Plate / Anvil",
+      "intervals_st": [
+        0.0,
+        12.7,
+        21.3,
+        27.6,
+        32.8,
+        37.1,
+        40.8
+      ],
+      "ratios": [
+        1.0,
+        2.08,
+        3.41,
+        4.95,
+        6.67,
+        8.56,
+        10.6
+      ],
+      "mode_names": [
+        "(0,1)",
+        "(1,1)",
+        "(2,1)",
+        "(0,2)",
+        "(3,1)",
+        "(1,2)",
+        "(4,1)"
+      ],
+      "default_radii": [
+        0.9994,
+        0.9988,
+        0.9982,
+        0.9975,
+        0.9968,
+        0.996,
+        0.995
+      ]
+    }
+  }
+}

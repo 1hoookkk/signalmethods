@@ -1,0 +1,5517 @@
+{
+ "contract": "stage vocabulary keyed by the OPERATION each stage performs on the running cascade C_{k-1} -> C_k (resonances and nulls added or removed, and the dB change at each band edge), measured on a 2048-point log grid 40 Hz-16 kHz at the 39,062.5 Hz datum. Seats are the medoid geometry of each class.",
+ "generated_by": "dev/derive_operation_vocabulary.py",
+ "supersedes": "ref/stage_vocabulary.silhouette.json (shape-name taxonomy)",
+ "sources": [
+  "ref/morpheus/cubes_decoded.json",
+  "ref/presets/*.bin",
+  "ref/cubes/*.body",
+  "recipes/hero/*.body",
+  "ref/stage_state_census.json",
+  "recipes/alphabet.json"
+ ],
+ "shapes": {
+  "transparent": {
+   "structure": "leaves the running cascade where it was: no resonance, no null, no shelf movement at either band edge",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "resonance": {
+   "structure": "adds a resonant peak and little else",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "resonance + guard zero": {
+   "structure": "adds a resonant peak with a companion null beside it \u2014 the chained pole/zero rung",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "resonance over low cut": {
+   "structure": "adds a resonant peak while removing level below 80 Hz: presence plus headroom, in one section",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "resonance over high cut": {
+   "structure": "adds a resonant peak while removing level above 12 kHz",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "null": {
+   "structure": "carves a null into the running cascade without adding a resonance",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "null relocation": {
+   "structure": "removes one null and opens another elsewhere",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "resonance removal": {
+   "structure": "cancels a resonance the earlier stages had built",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "low cut": {
+   "structure": "removes level below 80 Hz, no new resonance or null",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "low boost": {
+   "structure": "adds level below 80 Hz, no new resonance or null",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "high cut": {
+   "structure": "removes level above 12 kHz, no new resonance or null",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "high boost": {
+   "structure": "adds level above 12 kHz, no new resonance or null",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "broadband tilt": {
+   "structure": "moves both band edges in opposite directions without adding a resonance or a null",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  },
+  "broadband level": {
+   "structure": "moves the whole response up or down together",
+   "free": [],
+   "freedom": [],
+   "slaving": null
+  }
+ },
+ "positions": {
+  "S1": {
+   "stage_instances": 2115,
+   "shapes": [
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 9572.51,
+      "pole_r": 0.468865,
+      "zero_hz": 9152.89,
+      "zero_r": 0.970215
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -13.15,
+       "median": 1.36,
+       "max": 13.0
+      },
+      "d_low_edge_db": {
+       "min": -93.84,
+       "median": -10.34,
+       "max": 90.89
+      },
+      "d_high_edge_db": {
+       "min": -23.6,
+       "median": 3.5,
+       "max": 18.38
+      },
+      "d_level_db": {
+       "min": -44.41,
+       "median": -7.98,
+       "max": 40.98
+      }
+     },
+     "evidence": {
+      "occurrences": 852,
+      "distinct_filters": 184,
+      "by_corpus": {
+       "morpheus": 837,
+       "p2k": 15
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Odds",
+       "0>Shp1",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "2pole>4pole"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 3031.49,
+      "pole_r": 0.449328,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.85,
+       "median": -1.2,
+       "max": 12.41
+      },
+      "d_low_edge_db": {
+       "min": -87.53,
+       "median": 11.76,
+       "max": 95.55
+      },
+      "d_high_edge_db": {
+       "min": -15.51,
+       "median": -6.59,
+       "max": 14.43
+      },
+      "d_level_db": {
+       "min": -44.38,
+       "median": 9.92,
+       "max": 46.75
+      }
+     },
+     "evidence": {
+      "occurrences": 395,
+      "distinct_filters": 155,
+      "by_corpus": {
+       "morpheus": 392,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcD",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles C",
+       "500up.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 9381.77,
+      "zero_r": 0.125031
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.19,
+       "median": 0.01,
+       "max": 0.33
+      },
+      "d_low_edge_db": {
+       "min": -3.66,
+       "median": -0.0,
+       "max": 1.32
+      },
+      "d_high_edge_db": {
+       "min": -0.87,
+       "median": -0.05,
+       "max": 2.18
+      },
+      "d_level_db": {
+       "min": -1.43,
+       "median": 0.02,
+       "max": 1.09
+      }
+     },
+     "evidence": {
+      "occurrences": 279,
+      "distinct_filters": 88,
+      "by_corpus": {
+       "morpheus": 278,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "2 Poles",
+       "4 PoleMidQ.4",
+       "4 Poles A",
+       "4 Poles B"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 5338.19,
+      "pole_r": 0.947756,
+      "zero_hz": 30.09,
+      "zero_r": 0.997315
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.47,
+       "median": 4.71,
+       "max": 12.97
+      },
+      "d_low_edge_db": {
+       "min": -85.44,
+       "median": -26.18,
+       "max": -4.29
+      },
+      "d_high_edge_db": {
+       "min": -1.76,
+       "median": 1.72,
+       "max": 22.89
+      },
+      "d_level_db": {
+       "min": -39.84,
+       "median": -14.77,
+       "max": -1.45
+      }
+     },
+     "evidence": {
+      "occurrences": 189,
+      "distinct_filters": 75,
+      "by_corpus": {
+       "morpheus": 119,
+       "p2k": 70
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "2pole>4pole",
+       "APass.4",
+       "Ace of Bass",
+       "AcidRavage",
+       "AllPoleDist",
+       "Analog.4",
+       "AngelzHairz",
+       "Band-aid"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 1202.86,
+      "pole_r": 0.99216,
+      "zero_hz": 0.3,
+      "zero_r": 0.015625
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -13.33,
+       "median": -4.35,
+       "max": 0.71
+      },
+      "d_low_edge_db": {
+       "min": -1.5,
+       "median": 29.57,
+       "max": 92.93
+      },
+      "d_high_edge_db": {
+       "min": -22.45,
+       "median": -9.95,
+       "max": -4.73
+      },
+      "d_level_db": {
+       "min": -0.01,
+       "median": 21.97,
+       "max": 46.25
+      }
+     },
+     "evidence": {
+      "occurrences": 119,
+      "distinct_filters": 52,
+      "by_corpus": {
+       "morpheus": 98,
+       "p2k": 21
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp1",
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4>2 LowQHiQ",
+       "500up.4",
+       "6 Poles",
+       "AEParaVowel"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 18534.66,
+      "zero_r": 0.991152
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -7.27,
+       "median": -0.87,
+       "max": -0.11
+      },
+      "d_low_edge_db": {
+       "min": 4.16,
+       "median": 11.91,
+       "max": 47.25
+      },
+      "d_high_edge_db": {
+       "min": -3.95,
+       "median": -3.38,
+       "max": 1.62
+      },
+      "d_level_db": {
+       "min": 2.38,
+       "median": 10.44,
+       "max": 18.64
+      }
+     },
+     "evidence": {
+      "occurrences": 115,
+      "distinct_filters": 57,
+      "by_corpus": {
+       "morpheus": 115
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "AHmBnd.4",
+       "Acc.Vel-1",
+       "Ah Shaper",
+       "AllPoleDist",
+       "Analog.4",
+       "Bonk>CO"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance + guard zero",
+     "seat": {
+      "pole_hz": 867.55,
+      "pole_r": 0.999268,
+      "zero_hz": 800.79,
+      "zero_r": 0.999329
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.15,
+       "median": -0.47,
+       "max": 0.6
+      },
+      "d_low_edge_db": {
+       "min": -3.86,
+       "median": 5.1,
+       "max": 80.04
+      },
+      "d_high_edge_db": {
+       "min": -2.8,
+       "median": -0.01,
+       "max": 11.85
+      },
+      "d_level_db": {
+       "min": -3.9,
+       "median": 0.67,
+       "max": 31.67
+      }
+     },
+     "evidence": {
+      "occurrences": 57,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 51,
+       "p2k": 6
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp1",
+       "0>Shp2",
+       "AHmBnd.4",
+       "BrassRez.4",
+       "BriteFlng.4",
+       "CO>FlngT",
+       "Comb Voices",
+       "DeepBouche"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 15101.43,
+      "pole_r": 0.214896,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.45,
+       "median": 0.13,
+       "max": 0.42
+      },
+      "d_low_edge_db": {
+       "min": -3.52,
+       "median": -2.45,
+       "max": 3.91
+      },
+      "d_high_edge_db": {
+       "min": -2.57,
+       "median": 1.58,
+       "max": 3.29
+      },
+      "d_level_db": {
+       "min": -2.83,
+       "median": -2.06,
+       "max": 3.36
+      }
+     },
+     "evidence": {
+      "occurrences": 38,
+      "distinct_filters": 32,
+      "by_corpus": {
+       "morpheus": 38
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "AHmBnd.4",
+       "Acc.Vel-1",
+       "Bendup",
+       "BrickWaLP.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 2993.35,
+      "pole_r": 0.954106,
+      "zero_hz": 0.3,
+      "zero_r": 0.566422
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -5.17,
+       "median": 0.03,
+       "max": 0.59
+      },
+      "d_low_edge_db": {
+       "min": -3.52,
+       "median": -0.4,
+       "max": 35.8
+      },
+      "d_high_edge_db": {
+       "min": -3.71,
+       "median": -0.39,
+       "max": 10.82
+      },
+      "d_level_db": {
+       "min": -2.66,
+       "median": 1.03,
+       "max": 10.51
+      }
+     },
+     "evidence": {
+      "occurrences": 37,
+      "distinct_filters": 23,
+      "by_corpus": {
+       "morpheus": 23,
+       "p2k": 14
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "AcidRavage",
+       "BassTracer",
+       "BolandBass",
+       "Bonk>CO",
+       "BrickWaLP.4",
+       "C1-6Harms.4",
+       "DeepBouche"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 1801.85,
+      "pole_r": 0.866239,
+      "zero_hz": 260.99,
+      "zero_r": 0.978274
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.03,
+       "median": 2.18,
+       "max": 8.92
+      },
+      "d_low_edge_db": {
+       "min": -64.36,
+       "median": -13.92,
+       "max": -4.34
+      },
+      "d_high_edge_db": {
+       "min": -1.37,
+       "median": 1.55,
+       "max": 3.82
+      },
+      "d_level_db": {
+       "min": -21.47,
+       "median": -6.7,
+       "max": -1.83
+      }
+     },
+     "evidence": {
+      "occurrences": 33,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 31,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "AEParLPVow",
+       "Analog.4",
+       "Auto Clang",
+       "BassBox-303",
+       "BrassyBlast",
+       "Bw65Hz/2k.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 12583.73,
+      "pole_r": 0.355556,
+      "zero_hz": 13575.55,
+      "zero_r": 0.685592
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.49,
+       "median": -0.49,
+       "max": -0.49
+      },
+      "d_low_edge_db": {
+       "min": 3.92,
+       "median": 3.92,
+       "max": 3.92
+      },
+      "d_high_edge_db": {
+       "min": -4.48,
+       "median": -4.48,
+       "max": -4.48
+      },
+      "d_level_db": {
+       "min": 3.11,
+       "median": 3.11,
+       "max": 3.11
+      }
+     },
+     "evidence": {
+      "occurrences": 1,
+      "distinct_filters": 1,
+      "by_corpus": {
+       "morpheus": 1
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "HeeghCube"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S2": {
+   "stage_instances": 2115,
+   "shapes": [
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 9381.77,
+      "zero_r": 0.125031
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.81,
+       "median": 0.01,
+       "max": 0.68
+      },
+      "d_low_edge_db": {
+       "min": -3.37,
+       "median": -0.0,
+       "max": 3.15
+      },
+      "d_high_edge_db": {
+       "min": -3.97,
+       "median": 0.0,
+       "max": 3.96
+      },
+      "d_level_db": {
+       "min": -1.5,
+       "median": 0.0,
+       "max": 1.49
+      }
+     },
+     "evidence": {
+      "occurrences": 471,
+      "distinct_filters": 136,
+      "by_corpus": {
+       "morpheus": 466,
+       "p2k": 5
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp1",
+       "0>Shp2",
+       "0>Shp3",
+       "2 Poles",
+       "4 PoleMidQ.4",
+       "4 Poles A",
+       "4 Poles B",
+       "4 Poles C"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance + guard zero",
+     "seat": {
+      "pole_hz": 867.55,
+      "pole_r": 0.999802,
+      "zero_hz": 1744.63,
+      "zero_r": 0.993622
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -7.43,
+       "median": -0.17,
+       "max": 1.13
+      },
+      "d_low_edge_db": {
+       "min": -3.98,
+       "median": 0.15,
+       "max": 39.33
+      },
+      "d_high_edge_db": {
+       "min": -3.6,
+       "median": 0.0,
+       "max": 13.64
+      },
+      "d_level_db": {
+       "min": -4.33,
+       "median": -0.32,
+       "max": 22.45
+      }
+     },
+     "evidence": {
+      "occurrences": 393,
+      "distinct_filters": 130,
+      "by_corpus": {
+       "morpheus": 349,
+       "p2k": 44
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Odds",
+       "0>Shp1",
+       "0>Shp2",
+       "AEParLPVow",
+       "AOLpParaVow"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null relocation",
+     "seat": {
+      "pole_hz": 1067.82,
+      "pole_r": 0.999756,
+      "zero_hz": 2154.71,
+      "zero_r": 0.984741
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -10.76,
+       "median": 0.08,
+       "max": 9.6
+      },
+      "d_low_edge_db": {
+       "min": -54.89,
+       "median": -2.18,
+       "max": 63.15
+      },
+      "d_high_edge_db": {
+       "min": -22.27,
+       "median": -0.01,
+       "max": 22.94
+      },
+      "d_level_db": {
+       "min": -33.81,
+       "median": -0.47,
+       "max": 39.3
+      }
+     },
+     "evidence": {
+      "occurrences": 372,
+      "distinct_filters": 114,
+      "by_corpus": {
+       "morpheus": 363,
+       "p2k": 9
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 3050.57,
+      "pole_r": 0.99463,
+      "zero_hz": 2412.2,
+      "zero_r": 0.99463
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.2,
+       "median": 1.37,
+       "max": 10.16
+      },
+      "d_low_edge_db": {
+       "min": -60.77,
+       "median": -9.41,
+       "max": -4.01
+      },
+      "d_high_edge_db": {
+       "min": -2.32,
+       "median": 0.57,
+       "max": 16.46
+      },
+      "d_level_db": {
+       "min": -35.34,
+       "median": -6.08,
+       "max": -0.0
+      }
+     },
+     "evidence": {
+      "occurrences": 183,
+      "distinct_filters": 78,
+      "by_corpus": {
+       "morpheus": 172,
+       "p2k": 11
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcD",
+       "AHmBnd.4",
+       "AcidRavage",
+       "Auto Clang",
+       "Bell Wah A",
+       "Bendup",
+       "Blow Cube"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 4271.27,
+      "pole_r": 0.995118,
+      "zero_hz": 4042.39,
+      "zero_r": 0.996582
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -13.09,
+       "median": 0.07,
+       "max": 9.67
+      },
+      "d_low_edge_db": {
+       "min": -62.87,
+       "median": -3.56,
+       "max": 88.79
+      },
+      "d_high_edge_db": {
+       "min": -23.02,
+       "median": 2.34,
+       "max": 14.43
+      },
+      "d_level_db": {
+       "min": -42.25,
+       "median": -3.66,
+       "max": 39.35
+      }
+     },
+     "evidence": {
+      "occurrences": 165,
+      "distinct_filters": 68,
+      "by_corpus": {
+       "morpheus": 147,
+       "p2k": 18
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "AEParaVowel",
+       "AcidRavage",
+       "Auto Clang",
+       "BassBox-303"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 1172.72,
+      "pole_r": 0.973268,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -13.09,
+       "median": -2.7,
+       "max": 9.95
+      },
+      "d_low_edge_db": {
+       "min": -67.81,
+       "median": 19.73,
+       "max": 98.39
+      },
+      "d_high_edge_db": {
+       "min": -13.51,
+       "median": -8.92,
+       "max": 17.94
+      },
+      "d_level_db": {
+       "min": -35.36,
+       "median": 14.96,
+       "max": 47.15
+      }
+     },
+     "evidence": {
+      "occurrences": 114,
+      "distinct_filters": 59,
+      "by_corpus": {
+       "morpheus": 105,
+       "p2k": 9
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "500up.4",
+       "6 Poles"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 1801.85,
+      "pole_r": 0.982303,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -13.21,
+       "median": -3.13,
+       "max": 0.57
+      },
+      "d_low_edge_db": {
+       "min": -0.5,
+       "median": 22.48,
+       "max": 98.21
+      },
+      "d_high_edge_db": {
+       "min": -18.59,
+       "median": -9.73,
+       "max": -4.06
+      },
+      "d_level_db": {
+       "min": 0.9,
+       "median": 17.58,
+       "max": 47.52
+      }
+     },
+     "evidence": {
+      "occurrences": 110,
+      "distinct_filters": 54,
+      "by_corpus": {
+       "morpheus": 91,
+       "p2k": 19
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "4 PoleMidQ.4",
+       "500up.4",
+       "6 Poles",
+       "Ace of Bass",
+       "Arpeggio",
+       "Auto Clang",
+       "BassBox-303"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 10828.97,
+      "pole_r": 0.599634,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.57,
+       "median": 0.3,
+       "max": 0.82
+      },
+      "d_low_edge_db": {
+       "min": -3.94,
+       "median": -2.72,
+       "max": 3.57
+      },
+      "d_high_edge_db": {
+       "min": -3.78,
+       "median": 0.75,
+       "max": 3.46
+      },
+      "d_level_db": {
+       "min": -3.71,
+       "median": -2.07,
+       "max": 3.38
+      }
+     },
+     "evidence": {
+      "occurrences": 76,
+      "distinct_filters": 44,
+      "by_corpus": {
+       "morpheus": 76
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "2 PoleLoQ.4",
+       "4 PoleLoQ.4",
+       "Acc.Vel-1",
+       "Ah Shaper",
+       "Bb80Hzbw1.4",
+       "Bel>Crs>Bel",
+       "Blow Cube",
+       "Brass Swell"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 3546.48,
+      "pole_r": 0.914072,
+      "zero_hz": 595.9,
+      "zero_r": 0.98523
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.28,
+       "median": 1.17,
+       "max": 5.99
+      },
+      "d_low_edge_db": {
+       "min": -33.97,
+       "median": -11.91,
+       "max": -4.11
+      },
+      "d_high_edge_db": {
+       "min": -1.79,
+       "median": 1.84,
+       "max": 3.97
+      },
+      "d_level_db": {
+       "min": -22.06,
+       "median": -6.72,
+       "max": -0.35
+      }
+     },
+     "evidence": {
+      "occurrences": 69,
+      "distinct_filters": 39,
+      "by_corpus": {
+       "morpheus": 66,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "4>2 LowQHiQ",
+       "APass.4",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "AllPoleDist",
+       "ApDistB6.4",
+       "Auto Clang",
+       "Band-aid"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 104.27,
+      "pole_r": 0.968269,
+      "zero_hz": 179.93,
+      "zero_r": 0.927259
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -9.7,
+       "median": -1.58,
+       "max": -0.35
+      },
+      "d_low_edge_db": {
+       "min": 4.07,
+       "median": 11.91,
+       "max": 65.23
+      },
+      "d_high_edge_db": {
+       "min": -3.4,
+       "median": -0.37,
+       "max": 0.24
+      },
+      "d_level_db": {
+       "min": 0.32,
+       "median": 6.68,
+       "max": 24.24
+      }
+     },
+     "evidence": {
+      "occurrences": 48,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 43,
+       "p2k": 5
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "4>2 LowQHiQ",
+       "AEParaVowel",
+       "Ace of Bass",
+       "BassTracer",
+       "BassXpress",
+       "BolandBass",
+       "C1-6Harms.4",
+       "ChimeFlange"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 729.26,
+      "pole_r": 0.99646,
+      "zero_hz": 934.3,
+      "zero_r": 0.918468
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -6.81,
+       "median": -1.78,
+       "max": 0.75
+      },
+      "d_low_edge_db": {
+       "min": -3.16,
+       "median": 9.08,
+       "max": 35.44
+      },
+      "d_high_edge_db": {
+       "min": -3.34,
+       "median": -0.7,
+       "max": 9.22
+      },
+      "d_level_db": {
+       "min": -2.41,
+       "median": 4.55,
+       "max": 18.03
+      }
+     },
+     "evidence": {
+      "occurrences": 24,
+      "distinct_filters": 16,
+      "by_corpus": {
+       "morpheus": 15,
+       "p2k": 9
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "2pole>4pole",
+       "BrassyBlast",
+       "CombSweep.4",
+       "DeepBouche",
+       "Flng>FlngC",
+       "MegaSweepz",
+       "Millennium"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high boost",
+     "seat": {
+      "pole_hz": 12278.56,
+      "pole_r": 0.943849,
+      "zero_hz": 11515.62,
+      "zero_r": 0.896978
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.09,
+       "median": 0.04,
+       "max": 0.23
+      },
+      "d_low_edge_db": {
+       "min": -2.76,
+       "median": -1.39,
+       "max": -0.62
+      },
+      "d_high_edge_db": {
+       "min": 4.13,
+       "median": 5.06,
+       "max": 9.32
+      },
+      "d_level_db": {
+       "min": -2.71,
+       "median": -1.42,
+       "max": -0.61
+      }
+     },
+     "evidence": {
+      "occurrences": 15,
+      "distinct_filters": 10,
+      "by_corpus": {
+       "morpheus": 15
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell+",
+       "Bell Wah B",
+       "Breather 1",
+       "C1Harmonic",
+       "ElGuit Pick",
+       "HeavyFilt.4",
+       "HeeghCube",
+       "Ntches2Oct.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance removal",
+     "seat": {
+      "pole_hz": 64.95,
+      "pole_r": 0.858425,
+      "zero_hz": 148.38,
+      "zero_r": 0.980227
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.6,
+       "median": 1.12,
+       "max": 4.4
+      },
+      "d_low_edge_db": {
+       "min": -26.66,
+       "median": -17.93,
+       "max": -5.69
+      },
+      "d_high_edge_db": {
+       "min": 1.09,
+       "median": 4.21,
+       "max": 11.82
+      },
+      "d_level_db": {
+       "min": -16.85,
+       "median": -10.91,
+       "max": -5.28
+      }
+     },
+     "evidence": {
+      "occurrences": 3,
+      "distinct_filters": 3,
+      "by_corpus": {
+       "morpheus": 3
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "Bonk>CO",
+       "ChimeFlange",
+       "Snare LPEQ2"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 5643.37,
+      "pole_r": 0.875,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.2,
+       "median": 0.02,
+       "max": 0.3
+      },
+      "d_low_edge_db": {
+       "min": -0.57,
+       "median": 0.62,
+       "max": 3.24
+      },
+      "d_high_edge_db": {
+       "min": -6.62,
+       "median": -5.43,
+       "max": -4.08
+      },
+      "d_level_db": {
+       "min": -0.88,
+       "median": 1.89,
+       "max": 3.79
+      }
+     },
+     "evidence": {
+      "occurrences": 3,
+      "distinct_filters": 3,
+      "by_corpus": {
+       "morpheus": 3
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "BrassyBlast",
+       "Cymbal Cube",
+       "StrngThng.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S3": {
+   "stage_instances": 2115,
+   "shapes": [
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 9381.77,
+      "zero_r": 0.125031
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.57,
+       "median": 0.01,
+       "max": 0.77
+      },
+      "d_low_edge_db": {
+       "min": -3.98,
+       "median": -0.0,
+       "max": 2.8
+      },
+      "d_high_edge_db": {
+       "min": -3.78,
+       "median": -0.05,
+       "max": 3.78
+      },
+      "d_level_db": {
+       "min": -1.48,
+       "median": 0.0,
+       "max": 1.44
+      }
+     },
+     "evidence": {
+      "occurrences": 488,
+      "distinct_filters": 139,
+      "by_corpus": {
+       "morpheus": 480,
+       "p2k": 8
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp1",
+       "0>Shp2",
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles A"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null relocation",
+     "seat": {
+      "pole_hz": 1563.43,
+      "pole_r": 0.992645,
+      "zero_hz": 2650.02,
+      "zero_r": 0.927259
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -9.3,
+       "median": 0.26,
+       "max": 7.98
+      },
+      "d_low_edge_db": {
+       "min": -42.32,
+       "median": -3.06,
+       "max": 59.09
+      },
+      "d_high_edge_db": {
+       "min": -23.17,
+       "median": -0.01,
+       "max": 20.47
+      },
+      "d_level_db": {
+       "min": -26.22,
+       "median": -1.19,
+       "max": 34.89
+      }
+     },
+     "evidence": {
+      "occurrences": 430,
+      "distinct_filters": 133,
+      "by_corpus": {
+       "morpheus": 400,
+       "p2k": 30
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "4 Poles C",
+       "4>2 LowQHiQ"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance + guard zero",
+     "seat": {
+      "pole_hz": 1744.63,
+      "pole_r": 0.997559,
+      "zero_hz": 3451.11,
+      "zero_r": 0.98871
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -4.66,
+       "median": -0.29,
+       "max": 1.18
+      },
+      "d_low_edge_db": {
+       "min": -3.99,
+       "median": 2.35,
+       "max": 39.58
+      },
+      "d_high_edge_db": {
+       "min": -3.68,
+       "median": 0.0,
+       "max": 11.87
+      },
+      "d_level_db": {
+       "min": -4.66,
+       "median": 0.8,
+       "max": 17.84
+      }
+     },
+     "evidence": {
+      "occurrences": 411,
+      "distinct_filters": 140,
+      "by_corpus": {
+       "morpheus": 362,
+       "p2k": 49
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Odds",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParLPVow"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 1954.44,
+      "pole_r": 0.995606,
+      "zero_hz": 1544.36,
+      "zero_r": 0.985718
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.07,
+       "median": 1.32,
+       "max": 12.62
+      },
+      "d_low_edge_db": {
+       "min": -77.38,
+       "median": -7.95,
+       "max": -4.07
+      },
+      "d_high_edge_db": {
+       "min": -2.74,
+       "median": 0.29,
+       "max": 21.32
+      },
+      "d_level_db": {
+       "min": -42.07,
+       "median": -4.53,
+       "max": 0.73
+      }
+     },
+     "evidence": {
+      "occurrences": 273,
+      "distinct_filters": 108,
+      "by_corpus": {
+       "morpheus": 267,
+       "p2k": 6
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Odds",
+       "1BndPrmtrcD",
+       "AHmBnd.4",
+       "APass.4",
+       "Acc.Vel-2",
+       "AcidRavage"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 2068.88,
+      "pole_r": 0.892582,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.11,
+       "median": -2.13,
+       "max": 7.34
+      },
+      "d_low_edge_db": {
+       "min": -43.61,
+       "median": 17.07,
+       "max": 84.01
+      },
+      "d_high_edge_db": {
+       "min": -10.21,
+       "median": -9.23,
+       "max": 11.46
+      },
+      "d_level_db": {
+       "min": -29.23,
+       "median": 14.3,
+       "max": 36.64
+      }
+     },
+     "evidence": {
+      "occurrences": 99,
+      "distinct_filters": 51,
+      "by_corpus": {
+       "morpheus": 93,
+       "p2k": 6
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "4 Poles C",
+       "4>2 LowQHiQ",
+       "500up.4",
+       "6 Poles",
+       "AEParaVowel",
+       "AllPoleDist",
+       "Bassutoi.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 2783.54,
+      "pole_r": 0.982303,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.16,
+       "median": -1.79,
+       "max": 0.53
+      },
+      "d_low_edge_db": {
+       "min": 0.3,
+       "median": 17.02,
+       "max": 80.56
+      },
+      "d_high_edge_db": {
+       "min": -23.03,
+       "median": -9.86,
+       "max": -4.31
+      },
+      "d_level_db": {
+       "min": 1.48,
+       "median": 14.71,
+       "max": 41.1
+      }
+     },
+     "evidence": {
+      "occurrences": 81,
+      "distinct_filters": 47,
+      "by_corpus": {
+       "morpheus": 64,
+       "p2k": 17
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "500up.4",
+       "6 Poles",
+       "AEParLPVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "Ace of Bass",
+       "BassBox-303"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 7665.16,
+      "pole_r": 0.662149,
+      "zero_hz": 800.79,
+      "zero_r": 0.998047
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -6.96,
+       "median": -0.05,
+       "max": 9.17
+      },
+      "d_low_edge_db": {
+       "min": -54.98,
+       "median": -3.01,
+       "max": 37.19
+      },
+      "d_high_edge_db": {
+       "min": -13.57,
+       "median": 2.19,
+       "max": 13.48
+      },
+      "d_level_db": {
+       "min": -39.22,
+       "median": -2.39,
+       "max": 19.39
+      }
+     },
+     "evidence": {
+      "occurrences": 58,
+      "distinct_filters": 32,
+      "by_corpus": {
+       "morpheus": 53,
+       "p2k": 5
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "AEParaVowel",
+       "BassDrumEQ",
+       "BassTracer",
+       "Bb80Hzbw1.4",
+       "Comb/Swap.4",
+       "Cymbal Cube",
+       "DeepBouche",
+       "Diffuser.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 467.15,
+      "pole_r": 0.998047,
+      "zero_hz": 867.55,
+      "zero_r": 0.943849
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -8.75,
+       "median": -1.1,
+       "max": -0.45
+      },
+      "d_low_edge_db": {
+       "min": 4.1,
+       "median": 8.05,
+       "max": 60.88
+      },
+      "d_high_edge_db": {
+       "min": -3.71,
+       "median": -0.51,
+       "max": 1.07
+      },
+      "d_level_db": {
+       "min": 0.42,
+       "median": 3.88,
+       "max": 21.68
+      }
+     },
+     "evidence": {
+      "occurrences": 52,
+      "distinct_filters": 27,
+      "by_corpus": {
+       "morpheus": 48,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "AcidRavage",
+       "ApDistB6.4",
+       "Arpeggio",
+       "BassTracer",
+       "BassXpress",
+       "BolandBass",
+       "BrassyBlast",
+       "BrickWaLP.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 6215.57,
+      "pole_r": 0.810562,
+      "zero_hz": 5223.75,
+      "zero_r": 0.870147
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.73,
+       "median": 0.27,
+       "max": 0.8
+      },
+      "d_low_edge_db": {
+       "min": -3.97,
+       "median": -2.25,
+       "max": 3.88
+      },
+      "d_high_edge_db": {
+       "min": -3.84,
+       "median": 0.52,
+       "max": 3.99
+      },
+      "d_level_db": {
+       "min": -3.27,
+       "median": -1.73,
+       "max": 3.11
+      }
+     },
+     "evidence": {
+      "occurrences": 52,
+      "distinct_filters": 33,
+      "by_corpus": {
+       "morpheus": 50,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "AcidRavage",
+       "Bel>Crs>Bel",
+       "Bell Wah B",
+       "Blow Cube",
+       "Breather 1",
+       "Breather 2",
+       "BrickWaLP.4",
+       "C1Harmonic"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 5223.75,
+      "pole_r": 0.870147,
+      "zero_hz": 3546.48,
+      "zero_r": 0.69536
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.21,
+       "median": 1.1,
+       "max": 7.08
+      },
+      "d_low_edge_db": {
+       "min": -40.35,
+       "median": -10.73,
+       "max": -4.53
+      },
+      "d_high_edge_db": {
+       "min": -1.73,
+       "median": 2.15,
+       "max": 3.8
+      },
+      "d_level_db": {
+       "min": -20.47,
+       "median": -6.44,
+       "max": -0.76
+      }
+     },
+     "evidence": {
+      "occurrences": 49,
+      "distinct_filters": 29,
+      "by_corpus": {
+       "morpheus": 49
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp1",
+       "4>2 LowQHiQ",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "Ah Shaper",
+       "Be-Ye.4",
+       "Comb/Swap.4",
+       "EZ Rhodez.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 4481.08,
+      "pole_r": 0.989992,
+      "zero_hz": 6520.75,
+      "zero_r": 0.899908
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -1.29,
+       "median": 0.03,
+       "max": 0.83
+      },
+      "d_low_edge_db": {
+       "min": -3.47,
+       "median": 0.81,
+       "max": 12.28
+      },
+      "d_high_edge_db": {
+       "min": -3.89,
+       "median": -1.83,
+       "max": 1.2
+      },
+      "d_level_db": {
+       "min": -1.58,
+       "median": 2.67,
+       "max": 10.72
+      }
+     },
+     "evidence": {
+      "occurrences": 18,
+      "distinct_filters": 15,
+      "by_corpus": {
+       "morpheus": 16,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "500up.4",
+       "Analog.4",
+       "ApDistB6.4",
+       "Breather 2",
+       "El Pick It",
+       "HeavyFilt.4",
+       "HeeghCube",
+       "KlubKlassik"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 6978.51,
+      "pole_r": 0.829121,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.25,
+       "median": 0.13,
+       "max": 0.59
+      },
+      "d_low_edge_db": {
+       "min": -0.57,
+       "median": 0.28,
+       "max": 3.23
+      },
+      "d_high_edge_db": {
+       "min": -6.73,
+       "median": -5.34,
+       "max": -4.15
+      },
+      "d_level_db": {
+       "min": -0.96,
+       "median": 1.65,
+       "max": 3.17
+      }
+     },
+     "evidence": {
+      "occurrences": 15,
+      "distinct_filters": 8,
+      "by_corpus": {
+       "morpheus": 15
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "2pole>4pole",
+       "500up.4",
+       "6 Poles",
+       "BrassyBlast",
+       "Harmo",
+       "MildPolSwap",
+       "NoizCube",
+       "Shp>Shp1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance removal",
+     "seat": {
+      "pole_hz": 9709.44,
+      "pole_r": 0.910064,
+      "zero_hz": 13158.4,
+      "zero_r": 0.879505
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -4.1,
+       "median": -0.1,
+       "max": 6.37
+      },
+      "d_low_edge_db": {
+       "min": -39.57,
+       "median": 5.88,
+       "max": 31.82
+      },
+      "d_high_edge_db": {
+       "min": -20.43,
+       "median": -10.82,
+       "max": 11.6
+      },
+      "d_level_db": {
+       "min": -27.1,
+       "median": 5.97,
+       "max": 24.94
+      }
+     },
+     "evidence": {
+      "occurrences": 4,
+      "distinct_filters": 4,
+      "by_corpus": {
+       "morpheus": 1,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "APass.4",
+       "DreamWeava",
+       "EarlyRizer",
+       "FreakShifta"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high boost",
+     "seat": {
+      "pole_hz": 12660.03,
+      "pole_r": 0.905769,
+      "zero_hz": 11439.32,
+      "zero_r": 0.914072
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.03,
+       "median": 0.18,
+       "max": 0.43
+      },
+      "d_low_edge_db": {
+       "min": -2.63,
+       "median": -1.09,
+       "max": 2.02
+      },
+      "d_high_edge_db": {
+       "min": 4.77,
+       "median": 5.07,
+       "max": 10.59
+      },
+      "d_level_db": {
+       "min": -2.49,
+       "median": -1.11,
+       "max": 2.73
+      }
+     },
+     "evidence": {
+      "occurrences": 3,
+      "distinct_filters": 3,
+      "by_corpus": {
+       "morpheus": 3
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp1",
+       "Flng>Flng1",
+       "Snare LPEQ2"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S4": {
+   "stage_instances": 2115,
+   "shapes": [
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 9381.77,
+      "zero_r": 0.125031
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.64,
+       "median": 0.01,
+       "max": 0.83
+      },
+      "d_low_edge_db": {
+       "min": -3.9,
+       "median": -0.0,
+       "max": 3.43
+      },
+      "d_high_edge_db": {
+       "min": -3.47,
+       "median": 0.0,
+       "max": 4.0
+      },
+      "d_level_db": {
+       "min": -1.48,
+       "median": 0.0,
+       "max": 1.46
+      }
+     },
+     "evidence": {
+      "occurrences": 424,
+      "distinct_filters": 133,
+      "by_corpus": {
+       "morpheus": 414,
+       "p2k": 10
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles A",
+       "4 Poles B"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance + guard zero",
+     "seat": {
+      "pole_hz": 2669.1,
+      "pole_r": 0.991152,
+      "zero_hz": 3279.45,
+      "zero_r": 0.97632
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -7.3,
+       "median": -0.1,
+       "max": 0.87
+      },
+      "d_low_edge_db": {
+       "min": -3.94,
+       "median": 0.52,
+       "max": 42.59
+      },
+      "d_high_edge_db": {
+       "min": -4.0,
+       "median": 0.0,
+       "max": 9.06
+      },
+      "d_level_db": {
+       "min": -3.34,
+       "median": 0.36,
+       "max": 25.02
+      }
+     },
+     "evidence": {
+      "occurrences": 422,
+      "distinct_filters": 139,
+      "by_corpus": {
+       "morpheus": 380,
+       "p2k": 42
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Muter",
+       "0>Odds",
+       "0>Shp2",
+       "0>Shp3",
+       "2pole>4pole",
+       "500up.4",
+       "AEParLPVow",
+       "AEParaVowel"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null relocation",
+     "seat": {
+      "pole_hz": 2211.93,
+      "pole_r": 0.994385,
+      "zero_hz": 2993.35,
+      "zero_r": 0.780281
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -11.82,
+       "median": 0.62,
+       "max": 8.05
+      },
+      "d_low_edge_db": {
+       "min": -46.03,
+       "median": -4.37,
+       "max": 66.95
+      },
+      "d_high_edge_db": {
+       "min": -17.79,
+       "median": 0.0,
+       "max": 21.04
+      },
+      "d_level_db": {
+       "min": -27.04,
+       "median": -1.7,
+       "max": 32.97
+      }
+     },
+     "evidence": {
+      "occurrences": 361,
+      "distinct_filters": 127,
+      "by_corpus": {
+       "morpheus": 342,
+       "p2k": 19
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "AOParaVowel"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 1563.43,
+      "pole_r": 0.99646,
+      "zero_hz": 1172.72,
+      "zero_r": 0.989198
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.09,
+       "median": 1.31,
+       "max": 11.63
+      },
+      "d_low_edge_db": {
+       "min": -78.47,
+       "median": -8.46,
+       "max": -4.01
+      },
+      "d_high_edge_db": {
+       "min": -1.72,
+       "median": 0.27,
+       "max": 20.61
+      },
+      "d_level_db": {
+       "min": -37.21,
+       "median": -4.42,
+       "max": 0.64
+      }
+     },
+     "evidence": {
+      "occurrences": 340,
+      "distinct_filters": 124,
+      "by_corpus": {
+       "morpheus": 320,
+       "p2k": 20
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Odds",
+       "1BndPrmtrcD",
+       "4 Poles B",
+       "AEParaVowel",
+       "AHmBnd.4",
+       "AcidRavage"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 1515.75,
+      "pole_r": 0.829121,
+      "zero_hz": 18229.49,
+      "zero_r": 0.995606
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -11.98,
+       "median": -1.35,
+       "max": 10.83
+      },
+      "d_low_edge_db": {
+       "min": -74.22,
+       "median": 12.05,
+       "max": 83.64
+      },
+      "d_high_edge_db": {
+       "min": -11.81,
+       "median": -8.1,
+       "max": 13.77
+      },
+      "d_level_db": {
+       "min": -30.59,
+       "median": 9.74,
+       "max": 36.33
+      }
+     },
+     "evidence": {
+      "occurrences": 105,
+      "distinct_filters": 52,
+      "by_corpus": {
+       "morpheus": 99,
+       "p2k": 6
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2 Poles",
+       "2pole>4pole",
+       "4 Poles A",
+       "4 Poles B",
+       "4 Poles C",
+       "500up.4",
+       "6 Poles"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 519.6,
+      "pole_r": 0.986207,
+      "zero_hz": 221.65,
+      "zero_r": 0.978274
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.1,
+       "median": 0.85,
+       "max": 6.63
+      },
+      "d_low_edge_db": {
+       "min": -43.83,
+       "median": -5.71,
+       "max": -4.02
+      },
+      "d_high_edge_db": {
+       "min": -0.93,
+       "median": 0.43,
+       "max": 3.73
+      },
+      "d_level_db": {
+       "min": -19.5,
+       "median": -3.57,
+       "max": 0.87
+      }
+     },
+     "evidence": {
+      "occurrences": 94,
+      "distinct_filters": 51,
+      "by_corpus": {
+       "morpheus": 94
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell-",
+       "0>Shp1",
+       "APass.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "AllPoleDist",
+       "Auto Clang"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 3184.08,
+      "pole_r": 0.975343,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -11.23,
+       "median": -1.45,
+       "max": 0.94
+      },
+      "d_low_edge_db": {
+       "min": -3.53,
+       "median": 13.24,
+       "max": 68.94
+      },
+      "d_high_edge_db": {
+       "min": -18.63,
+       "median": -9.28,
+       "max": -4.03
+      },
+      "d_level_db": {
+       "min": -1.62,
+       "median": 11.69,
+       "max": 40.26
+      }
+     },
+     "evidence": {
+      "occurrences": 81,
+      "distinct_filters": 44,
+      "by_corpus": {
+       "morpheus": 70,
+       "p2k": 11
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "4 Poles B",
+       "500up.4",
+       "6 Poles",
+       "AEParLPVow",
+       "AOLpParaVow",
+       "Analog.4",
+       "AngelzHairz"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 16551.02,
+      "pole_r": 0.977297,
+      "zero_hz": 12660.03,
+      "zero_r": 0.905769
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -2.83,
+       "median": 0.03,
+       "max": 6.52
+      },
+      "d_low_edge_db": {
+       "min": -34.76,
+       "median": -2.93,
+       "max": 17.56
+      },
+      "d_high_edge_db": {
+       "min": -11.97,
+       "median": 0.99,
+       "max": 15.88
+      },
+      "d_level_db": {
+       "min": -27.46,
+       "median": -2.99,
+       "max": 12.87
+      }
+     },
+     "evidence": {
+      "occurrences": 73,
+      "distinct_filters": 35,
+      "by_corpus": {
+       "morpheus": 70,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp1",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "Bassutoi.4",
+       "BssBOOST2.4",
+       "Cavatate.4",
+       "Flange4.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 8580.68,
+      "pole_r": 0.125031,
+      "zero_hz": 1468.06,
+      "zero_r": 0.175824
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.43,
+       "median": 0.37,
+       "max": 0.76
+      },
+      "d_low_edge_db": {
+       "min": -3.9,
+       "median": -2.95,
+       "max": 3.3
+      },
+      "d_high_edge_db": {
+       "min": -1.92,
+       "median": 1.41,
+       "max": 3.86
+      },
+      "d_level_db": {
+       "min": -3.13,
+       "median": -2.26,
+       "max": 3.23
+      }
+     },
+     "evidence": {
+      "occurrences": 35,
+      "distinct_filters": 24,
+      "by_corpus": {
+       "morpheus": 33,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "Acc.Vel-2",
+       "BassTracer",
+       "Brass Swell",
+       "BrassRez.4",
+       "BrickWaLP.4",
+       "Cavatate.4",
+       "Cello",
+       "Chrs>Flng1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 256.23,
+      "pole_r": 0.990663,
+      "zero_hz": 178.74,
+      "zero_r": 0.955327
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -6.07,
+       "median": -1.57,
+       "max": -0.45
+      },
+      "d_low_edge_db": {
+       "min": 4.16,
+       "median": 11.07,
+       "max": 33.18
+      },
+      "d_high_edge_db": {
+       "min": -3.89,
+       "median": -1.22,
+       "max": 0.17
+      },
+      "d_level_db": {
+       "min": 0.36,
+       "median": 6.35,
+       "max": 16.67
+      }
+     },
+     "evidence": {
+      "occurrences": 32,
+      "distinct_filters": 19,
+      "by_corpus": {
+       "morpheus": 31,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "2pole>4pole",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "BassXpress",
+       "BolandBass",
+       "BrickWaLP.4",
+       "C1-6Harms.4",
+       "ChimeFlange"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 11227.0,
+      "pole_r": 0.962199,
+      "zero_hz": 12237.16,
+      "zero_r": 0.684831
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.98,
+       "median": 0.34,
+       "max": 0.66
+      },
+      "d_low_edge_db": {
+       "min": -3.3,
+       "median": -1.29,
+       "max": 4.92
+      },
+      "d_high_edge_db": {
+       "min": -3.89,
+       "median": 0.52,
+       "max": 9.12
+      },
+      "d_level_db": {
+       "min": -3.45,
+       "median": -0.07,
+       "max": 2.95
+      }
+     },
+     "evidence": {
+      "occurrences": 18,
+      "distinct_filters": 17,
+      "by_corpus": {
+       "morpheus": 7,
+       "p2k": 11
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "AcidRavage",
+       "BassEQ 1.4",
+       "BassOMatic",
+       "BolandBass",
+       "ChimeFlange",
+       "DeadRinger",
+       "EarBender",
+       "El Pick It"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance removal",
+     "seat": {
+      "pole_hz": 158.47,
+      "pole_r": 0.995118,
+      "zero_hz": 0.3,
+      "zero_r": 0.991274
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -5.94,
+       "median": 0.55,
+       "max": 3.96
+      },
+      "d_low_edge_db": {
+       "min": -21.07,
+       "median": -11.24,
+       "max": 36.97
+      },
+      "d_high_edge_db": {
+       "min": -9.65,
+       "median": -0.03,
+       "max": 9.47
+      },
+      "d_level_db": {
+       "min": -15.9,
+       "median": -0.34,
+       "max": 24.63
+      }
+     },
+     "evidence": {
+      "occurrences": 15,
+      "distinct_filters": 11,
+      "by_corpus": {
+       "morpheus": 12,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "AHmBnd.4",
+       "GtrSkwk",
+       "Head Pan 1",
+       "KitchenSink",
+       "KlangKling",
+       "MegaSweepz",
+       "Qbase.4",
+       "Spectra"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high boost",
+     "seat": {
+      "pole_hz": 12202.26,
+      "pole_r": 0.996704,
+      "zero_hz": 10981.56,
+      "zero_r": 0.996338
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.01,
+       "median": 0.11,
+       "max": 0.44
+      },
+      "d_low_edge_db": {
+       "min": -3.1,
+       "median": -2.07,
+       "max": 1.51
+      },
+      "d_high_edge_db": {
+       "min": 4.38,
+       "median": 6.74,
+       "max": 8.05
+      },
+      "d_level_db": {
+       "min": -3.14,
+       "median": -2.01,
+       "max": 1.73
+      }
+     },
+     "evidence": {
+      "occurrences": 13,
+      "distinct_filters": 9,
+      "by_corpus": {
+       "morpheus": 10,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "2pole>4pole",
+       "CubeFlanger",
+       "DJAlkaline",
+       "FreakShifta",
+       "HeavyFilt.4",
+       "HeeghCube",
+       "Odd/EvnNtch",
+       "RippleSheet"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 17804.86,
+      "pole_r": 0.971279,
+      "zero_hz": 14901.1,
+      "zero_r": 0.838635
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.38,
+       "median": -0.18,
+       "max": -0.12
+      },
+      "d_low_edge_db": {
+       "min": -2.43,
+       "median": 0.77,
+       "max": 3.24
+      },
+      "d_high_edge_db": {
+       "min": -6.51,
+       "median": -5.43,
+       "max": -5.01
+      },
+      "d_level_db": {
+       "min": -2.78,
+       "median": 0.31,
+       "max": 3.35
+      }
+     },
+     "evidence": {
+      "occurrences": 8,
+      "distinct_filters": 4,
+      "by_corpus": {
+       "morpheus": 7,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "BrassyBlast",
+       "DJAlkaline",
+       "HarmShiftr2",
+       "Shp>Shp1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S5": {
+   "stage_instances": 2115,
+   "shapes": [
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 934.3,
+      "pole_r": 0.995118,
+      "zero_hz": 541.06,
+      "zero_r": 0.99823
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.02,
+       "median": 1.22,
+       "max": 11.86
+      },
+      "d_low_edge_db": {
+       "min": -83.54,
+       "median": -9.2,
+       "max": -4.03
+      },
+      "d_high_edge_db": {
+       "min": -1.42,
+       "median": 0.19,
+       "max": 18.02
+      },
+      "d_level_db": {
+       "min": -35.1,
+       "median": -4.55,
+       "max": 0.69
+      }
+     },
+     "evidence": {
+      "occurrences": 386,
+      "distinct_filters": 122,
+      "by_corpus": {
+       "morpheus": 378,
+       "p2k": 8
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Odds",
+       "0>Shp3",
+       "1BndPrmtrcD",
+       "500up.4",
+       "AEParLPVow",
+       "AEParaVowel"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null relocation",
+     "seat": {
+      "pole_hz": 1954.44,
+      "pole_r": 0.999558,
+      "zero_hz": 2764.46,
+      "zero_r": 0.943849
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.36,
+       "median": 0.9,
+       "max": 12.25
+      },
+      "d_low_edge_db": {
+       "min": -82.95,
+       "median": -6.62,
+       "max": 73.42
+      },
+      "d_high_edge_db": {
+       "min": -21.86,
+       "median": 0.0,
+       "max": 16.42
+      },
+      "d_level_db": {
+       "min": -33.03,
+       "median": -2.21,
+       "max": 43.7
+      }
+     },
+     "evidence": {
+      "occurrences": 379,
+      "distinct_filters": 130,
+      "by_corpus": {
+       "morpheus": 350,
+       "p2k": 29
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Shp1",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "Acc.Vel-1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 9381.77,
+      "zero_r": 0.125031
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.62,
+       "median": 0.01,
+       "max": 0.77
+      },
+      "d_low_edge_db": {
+       "min": -3.28,
+       "median": -0.0,
+       "max": 3.76
+      },
+      "d_high_edge_db": {
+       "min": -3.44,
+       "median": -0.05,
+       "max": 2.4
+      },
+      "d_level_db": {
+       "min": -1.48,
+       "median": 0.02,
+       "max": 1.37
+      }
+     },
+     "evidence": {
+      "occurrences": 374,
+      "distinct_filters": 109,
+      "by_corpus": {
+       "morpheus": 370,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles A",
+       "4 Poles B"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance + guard zero",
+     "seat": {
+      "pole_hz": 3145.93,
+      "pole_r": 0.992188,
+      "zero_hz": 3927.95,
+      "zero_r": 0.905769
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -8.57,
+       "median": -0.18,
+       "max": 0.87
+      },
+      "d_low_edge_db": {
+       "min": -3.96,
+       "median": 1.51,
+       "max": 61.33
+      },
+      "d_high_edge_db": {
+       "min": -3.94,
+       "median": -0.01,
+       "max": 9.76
+      },
+      "d_level_db": {
+       "min": -3.61,
+       "median": 1.25,
+       "max": 17.41
+      }
+     },
+     "evidence": {
+      "occurrences": 364,
+      "distinct_filters": 116,
+      "by_corpus": {
+       "morpheus": 331,
+       "p2k": 33
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Muter",
+       "0>Odds",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 1563.43,
+      "pole_r": 0.943849,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.11,
+       "median": -1.33,
+       "max": 13.13
+      },
+      "d_low_edge_db": {
+       "min": -90.02,
+       "median": 12.06,
+       "max": 84.01
+      },
+      "d_high_edge_db": {
+       "min": -20.71,
+       "median": -8.5,
+       "max": 10.82
+      },
+      "d_level_db": {
+       "min": -38.42,
+       "median": 10.43,
+       "max": 43.7
+      }
+     },
+     "evidence": {
+      "occurrences": 133,
+      "distinct_filters": 63,
+      "by_corpus": {
+       "morpheus": 120,
+       "p2k": 13
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "2 Poles",
+       "4 Poles A",
+       "4 Poles B",
+       "4 Poles C",
+       "500up.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 3658.97,
+      "pole_r": 0.972284,
+      "zero_hz": 0.3,
+      "zero_r": 0.015625
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.99,
+       "median": -1.23,
+       "max": 0.69
+      },
+      "d_low_edge_db": {
+       "min": -1.95,
+       "median": 11.93,
+       "max": 96.95
+      },
+      "d_high_edge_db": {
+       "min": -15.84,
+       "median": -9.28,
+       "max": -4.0
+      },
+      "d_level_db": {
+       "min": -0.83,
+       "median": 9.83,
+       "max": 47.02
+      }
+     },
+     "evidence": {
+      "occurrences": 125,
+      "distinct_filters": 64,
+      "by_corpus": {
+       "morpheus": 97,
+       "p2k": 28
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp3",
+       "500up.4",
+       "6 Poles",
+       "AEParaVowel",
+       "AHmBnd.4",
+       "Acc.Vel-2",
+       "Ace of Bass"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 815.09,
+      "pole_r": 0.889652,
+      "zero_hz": 163.24,
+      "zero_r": 0.970826
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.08,
+       "median": 1.33,
+       "max": 5.62
+      },
+      "d_low_edge_db": {
+       "min": -41.89,
+       "median": -10.19,
+       "max": -4.06
+      },
+      "d_high_edge_db": {
+       "min": -1.13,
+       "median": 0.56,
+       "max": 3.9
+      },
+      "d_level_db": {
+       "min": -16.89,
+       "median": -4.76,
+       "max": 0.39
+      }
+     },
+     "evidence": {
+      "occurrences": 104,
+      "distinct_filters": 49,
+      "by_corpus": {
+       "morpheus": 104
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell-",
+       "1BndPrmtrcB",
+       "500up.4",
+       "AHmBnd.4",
+       "AcGtrRs.4",
+       "AllPoleDist",
+       "Auto Clang",
+       "B BOOST.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 6330.01,
+      "pole_r": 0.985718,
+      "zero_hz": 4214.05,
+      "zero_r": 0.990175
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.98,
+       "median": 1.45,
+       "max": 12.49
+      },
+      "d_low_edge_db": {
+       "min": -85.98,
+       "median": -13.43,
+       "max": 5.25
+      },
+      "d_high_edge_db": {
+       "min": -9.96,
+       "median": 3.55,
+       "max": 17.59
+      },
+      "d_level_db": {
+       "min": -41.61,
+       "median": -7.03,
+       "max": 3.3
+      }
+     },
+     "evidence": {
+      "occurrences": 44,
+      "distinct_filters": 25,
+      "by_corpus": {
+       "morpheus": 44
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp1",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "2pole>4pole",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "Bonk>CO",
+       "BrassRez.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 6215.57,
+      "pole_r": 0.914072,
+      "zero_hz": 5376.34,
+      "zero_r": 0.922863
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.65,
+       "median": 0.34,
+       "max": 1.22
+      },
+      "d_low_edge_db": {
+       "min": -3.9,
+       "median": -2.25,
+       "max": 3.51
+      },
+      "d_high_edge_db": {
+       "min": -3.02,
+       "median": 0.68,
+       "max": 1.98
+      },
+      "d_level_db": {
+       "min": -3.07,
+       "median": -1.64,
+       "max": 3.33
+      }
+     },
+     "evidence": {
+      "occurrences": 43,
+      "distinct_filters": 29,
+      "by_corpus": {
+       "morpheus": 43
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "4 Poles A",
+       "500up.4",
+       "ApDistB6.4",
+       "Auto Clang",
+       "Bb80Hzbw1.4",
+       "Breather 2",
+       "BrickWaLP.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 412.32,
+      "pole_r": 0.995118,
+      "zero_hz": 412.32,
+      "zero_r": 0.935562
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -9.55,
+       "median": -1.34,
+       "max": 0.01
+      },
+      "d_low_edge_db": {
+       "min": 4.05,
+       "median": 9.01,
+       "max": 58.11
+      },
+      "d_high_edge_db": {
+       "min": -3.77,
+       "median": -1.23,
+       "max": 0.1
+      },
+      "d_level_db": {
+       "min": -0.23,
+       "median": 4.68,
+       "max": 24.69
+      }
+     },
+     "evidence": {
+      "occurrences": 41,
+      "distinct_filters": 19,
+      "by_corpus": {
+       "morpheus": 40,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "2pole>4pole",
+       "6 Poles",
+       "ApDistB6.4",
+       "C1-6Harms.4",
+       "Chrs>Flng2",
+       "GtrSkwk",
+       "HarmTracker",
+       "HiSwept1.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance removal",
+     "seat": {
+      "pole_hz": 4181.97,
+      "pole_r": 0.829267,
+      "zero_hz": 9468.97,
+      "zero_r": 0.949942
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -8.86,
+       "median": -1.08,
+       "max": 7.95
+      },
+      "d_low_edge_db": {
+       "min": -52.67,
+       "median": 7.2,
+       "max": 51.71
+      },
+      "d_high_edge_db": {
+       "min": -14.96,
+       "median": 0.37,
+       "max": 16.42
+      },
+      "d_level_db": {
+       "min": -32.66,
+       "median": 1.58,
+       "max": 31.79
+      }
+     },
+     "evidence": {
+      "occurrences": 20,
+      "distinct_filters": 16,
+      "by_corpus": {
+       "morpheus": 12,
+       "p2k": 8
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "2pole>4pole",
+       "BassBox-303",
+       "BassTracer",
+       "BolandBass",
+       "Clr>Oboe",
+       "CruzPusher",
+       "EarlyRizer",
+       "ElGuit Cube"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 10142.33,
+      "pole_r": 0.939698,
+      "zero_hz": 9229.18,
+      "zero_r": 0.75
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -8.7,
+       "median": -0.11,
+       "max": 0.47
+      },
+      "d_low_edge_db": {
+       "min": -2.88,
+       "median": 1.22,
+       "max": 50.23
+      },
+      "d_high_edge_db": {
+       "min": -3.79,
+       "median": -0.0,
+       "max": 10.52
+      },
+      "d_level_db": {
+       "min": -2.18,
+       "median": 1.56,
+       "max": 25.21
+      }
+     },
+     "evidence": {
+      "occurrences": 19,
+      "distinct_filters": 16,
+      "by_corpus": {
+       "morpheus": 15,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "1BndPrmtrcD",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "BassTracer",
+       "BolandBass",
+       "EarBender",
+       "GtrSkwk"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high boost",
+     "seat": {
+      "pole_hz": 14394.08,
+      "pole_r": 0.910064,
+      "zero_hz": 16811.22,
+      "zero_r": 0.637569
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.21,
+       "median": 0.4,
+       "max": 0.44
+      },
+      "d_low_edge_db": {
+       "min": -1.55,
+       "median": 0.47,
+       "max": 1.33
+      },
+      "d_high_edge_db": {
+       "min": 5.5,
+       "median": 6.92,
+       "max": 10.84
+      },
+      "d_level_db": {
+       "min": -0.94,
+       "median": 0.8,
+       "max": 1.97
+      }
+     },
+     "evidence": {
+      "occurrences": 7,
+      "distinct_filters": 4,
+      "by_corpus": {
+       "morpheus": 4,
+       "p2k": 3
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "BassBox-303",
+       "EarBender",
+       "OddCuts.4",
+       "UOParaVow.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 6711.48,
+      "pole_r": 0.866239,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.1,
+       "median": 0.26,
+       "max": 0.37
+      },
+      "d_low_edge_db": {
+       "min": 0.6,
+       "median": 1.48,
+       "max": 2.54
+      },
+      "d_high_edge_db": {
+       "min": -6.67,
+       "median": -5.46,
+       "max": -4.02
+      },
+      "d_level_db": {
+       "min": 1.21,
+       "median": 2.37,
+       "max": 3.19
+      }
+     },
+     "evidence": {
+      "occurrences": 5,
+      "distinct_filters": 4,
+      "by_corpus": {
+       "morpheus": 4,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "HP LP PZ",
+       "LowPassPlus",
+       "MegaSweepz",
+       "Odd-Ev Hrm"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S6": {
+   "stage_instances": 2115,
+   "shapes": [
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 776.95,
+      "pole_r": 0.996338,
+      "zero_hz": 443.31,
+      "zero_r": 0.99164
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.36,
+       "median": 1.66,
+       "max": 12.22
+      },
+      "d_low_edge_db": {
+       "min": -86.27,
+       "median": -12.55,
+       "max": -4.02
+      },
+      "d_high_edge_db": {
+       "min": -2.3,
+       "median": 0.19,
+       "max": 19.97
+      },
+      "d_level_db": {
+       "min": -40.33,
+       "median": -4.63,
+       "max": 1.1
+      }
+     },
+     "evidence": {
+      "occurrences": 386,
+      "distinct_filters": 125,
+      "by_corpus": {
+       "morpheus": 384,
+       "p2k": 2
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "500up.4",
+       "AEParaVowel",
+       "Acc.Vel-1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 9381.77,
+      "zero_r": 0.125031
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.46,
+       "median": 0.01,
+       "max": 0.78
+      },
+      "d_low_edge_db": {
+       "min": -3.55,
+       "median": -0.0,
+       "max": 3.53
+      },
+      "d_high_edge_db": {
+       "min": -3.92,
+       "median": -0.05,
+       "max": 2.19
+      },
+      "d_level_db": {
+       "min": -1.47,
+       "median": 0.02,
+       "max": 1.46
+      }
+     },
+     "evidence": {
+      "occurrences": 383,
+      "distinct_filters": 118,
+      "by_corpus": {
+       "morpheus": 379,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "2pole>4pole",
+       "4 PoleLoQ.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null relocation",
+     "seat": {
+      "pole_hz": 1653.66,
+      "pole_r": 0.999023,
+      "zero_hz": 17960.83,
+      "zero_r": 0.99999
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.21,
+       "median": 0.98,
+       "max": 13.59
+      },
+      "d_low_edge_db": {
+       "min": -103.33,
+       "median": -9.12,
+       "max": 86.45
+      },
+      "d_high_edge_db": {
+       "min": -23.93,
+       "median": 0.0,
+       "max": 18.91
+      },
+      "d_level_db": {
+       "min": -48.16,
+       "median": -2.23,
+       "max": 40.86
+      }
+     },
+     "evidence": {
+      "occurrences": 355,
+      "distinct_filters": 127,
+      "by_corpus": {
+       "morpheus": 320,
+       "p2k": 35
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Shp1",
+       "AEParLPVow",
+       "AEParaVowel",
+       "AOLpParaVow",
+       "AOParaVowel",
+       "AUParaVow.4",
+       "Acc.Vel-1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance + guard zero",
+     "seat": {
+      "pole_hz": 1382.23,
+      "pole_r": 0.996826,
+      "zero_hz": 1963.97,
+      "zero_r": 0.98328
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -11.43,
+       "median": -0.48,
+       "max": 0.82
+      },
+      "d_low_edge_db": {
+       "min": -3.98,
+       "median": 2.8,
+       "max": 64.03
+      },
+      "d_high_edge_db": {
+       "min": -3.66,
+       "median": -0.02,
+       "max": 11.04
+      },
+      "d_level_db": {
+       "min": -4.03,
+       "median": 1.66,
+       "max": 33.0
+      }
+     },
+     "evidence": {
+      "occurrences": 198,
+      "distinct_filters": 81,
+      "by_corpus": {
+       "morpheus": 181,
+       "p2k": 17
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "AcGtrRs.4",
+       "Acc.Vel-2",
+       "AcidRavage",
+       "Ah Shaper",
+       "ApDistB6.4",
+       "BriteFlng.4",
+       "BrsSwell2.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 1239.18,
+      "pole_r": 0.975343,
+      "zero_hz": 815.09,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.04,
+       "median": -1.61,
+       "max": 13.09
+      },
+      "d_low_edge_db": {
+       "min": -98.38,
+       "median": 16.29,
+       "max": 84.29
+      },
+      "d_high_edge_db": {
+       "min": -14.49,
+       "median": -7.63,
+       "max": 17.26
+      },
+      "d_level_db": {
+       "min": -47.15,
+       "median": 13.62,
+       "max": 40.99
+      }
+     },
+     "evidence": {
+      "occurrences": 158,
+      "distinct_filters": 70,
+      "by_corpus": {
+       "morpheus": 150,
+       "p2k": 8
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp1",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC",
+       "2 Poles",
+       "2pole>4pole"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 1744.63,
+      "pole_r": 0.992188,
+      "zero_hz": 19526.48,
+      "zero_r": 0.199267
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -13.35,
+       "median": -2.91,
+       "max": 0.65
+      },
+      "d_low_edge_db": {
+       "min": -1.01,
+       "median": 23.49,
+       "max": 97.63
+      },
+      "d_high_edge_db": {
+       "min": -24.06,
+       "median": -9.76,
+       "max": -4.03
+      },
+      "d_level_db": {
+       "min": 0.21,
+       "median": 19.0,
+       "max": 47.68
+      }
+     },
+     "evidence": {
+      "occurrences": 156,
+      "distinct_filters": 77,
+      "by_corpus": {
+       "morpheus": 116,
+       "p2k": 40
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcD",
+       "6 Poles",
+       "AEParLPVow",
+       "AOLpParaVow",
+       "AOParaVowel"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 209.73,
+      "pole_r": 0.960211,
+      "zero_hz": 158.47,
+      "zero_r": 0.98328
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.17,
+       "median": 1.68,
+       "max": 12.19
+      },
+      "d_low_edge_db": {
+       "min": -81.93,
+       "median": -12.42,
+       "max": -4.09
+      },
+      "d_high_edge_db": {
+       "min": -2.51,
+       "median": 0.23,
+       "max": 3.91
+      },
+      "d_level_db": {
+       "min": -31.48,
+       "median": -3.92,
+       "max": 0.81
+      }
+     },
+     "evidence": {
+      "occurrences": 142,
+      "distinct_filters": 68,
+      "by_corpus": {
+       "morpheus": 142
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell-",
+       "0>Odds",
+       "0>Shp2",
+       "2pole>4pole",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2",
+       "AllPoleDist"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 915.23,
+      "pole_r": 0.901374,
+      "zero_hz": 0.3,
+      "zero_r": 0.770513
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -7.66,
+       "median": -0.88,
+       "max": -0.15
+      },
+      "d_low_edge_db": {
+       "min": 4.03,
+       "median": 7.99,
+       "max": 53.89
+      },
+      "d_high_edge_db": {
+       "min": -3.58,
+       "median": -1.22,
+       "max": 0.89
+      },
+      "d_level_db": {
+       "min": 0.91,
+       "median": 5.06,
+       "max": 18.25
+      }
+     },
+     "evidence": {
+      "occurrences": 57,
+      "distinct_filters": 34,
+      "by_corpus": {
+       "morpheus": 53,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp1",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "AngelzHairz",
+       "CO>FlngT",
+       "Comb/HP.4",
+       "ElGuit Cube"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 1294.65,
+      "pole_r": 0.770671,
+      "zero_hz": 7162.29,
+      "zero_r": 0.99999
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -10.19,
+       "median": 0.58,
+       "max": 13.6
+      },
+      "d_low_edge_db": {
+       "min": -103.48,
+       "median": -5.68,
+       "max": 70.47
+      },
+      "d_high_edge_db": {
+       "min": -16.23,
+       "median": 0.59,
+       "max": 18.92
+      },
+      "d_level_db": {
+       "min": -48.18,
+       "median": -5.18,
+       "max": 33.75
+      }
+     },
+     "evidence": {
+      "occurrences": 54,
+      "distinct_filters": 29,
+      "by_corpus": {
+       "morpheus": 45,
+       "p2k": 9
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "0>Shp2",
+       "1BndPrmtrcC",
+       "6 Poles",
+       "B BOOST.4",
+       "BassEQ 1.4",
+       "BassOMatic",
+       "Bonk>CO",
+       "BssBOOST2.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 4500.15,
+      "pole_r": 0.250061,
+      "zero_hz": 815.09,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.49,
+       "median": -0.02,
+       "max": 0.79
+      },
+      "d_low_edge_db": {
+       "min": -3.86,
+       "median": -1.68,
+       "max": 3.81
+      },
+      "d_high_edge_db": {
+       "min": -2.18,
+       "median": 0.51,
+       "max": 3.71
+      },
+      "d_level_db": {
+       "min": -2.72,
+       "median": 1.62,
+       "max": 3.39
+      }
+     },
+     "evidence": {
+      "occurrences": 44,
+      "distinct_filters": 27,
+      "by_corpus": {
+       "morpheus": 43,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "1BndPrmtrcB",
+       "4 Poles A",
+       "500up.4",
+       "Ace of Bass",
+       "Auto Clang",
+       "BrassyBlast",
+       "BrickWaLP.4",
+       "Chiffin.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 624.36,
+      "pole_r": 0.969238,
+      "zero_hz": 0.3,
+      "zero_r": 0.812515
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -6.8,
+       "median": -0.74,
+       "max": 0.81
+      },
+      "d_low_edge_db": {
+       "min": -2.7,
+       "median": 8.0,
+       "max": 36.26
+      },
+      "d_high_edge_db": {
+       "min": -3.4,
+       "median": -0.02,
+       "max": 8.0
+      },
+      "d_level_db": {
+       "min": -0.91,
+       "median": 1.54,
+       "max": 18.4
+      }
+     },
+     "evidence": {
+      "occurrences": 39,
+      "distinct_filters": 22,
+      "by_corpus": {
+       "morpheus": 38,
+       "p2k": 1
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "Bendup/Swap",
+       "Breather 2",
+       "BrsSwell2.4",
+       "Chrs>Flng2",
+       "Comb Voices",
+       "Comb/HP.4",
+       "Cym",
+       "GtrSkwk"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance removal",
+     "seat": {
+      "pole_hz": 1840.0,
+      "pole_r": 0.800794,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.3,
+       "median": 0.58,
+       "max": 10.36
+      },
+      "d_low_edge_db": {
+       "min": -63.82,
+       "median": -7.84,
+       "max": 87.38
+      },
+      "d_high_edge_db": {
+       "min": -15.33,
+       "median": 0.01,
+       "max": 13.35
+      },
+      "d_level_db": {
+       "min": -33.96,
+       "median": -3.02,
+       "max": 36.9
+      }
+     },
+     "evidence": {
+      "occurrences": 35,
+      "distinct_filters": 26,
+      "by_corpus": {
+       "morpheus": 28,
+       "p2k": 7
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "6 Poles",
+       "AEParaVowel",
+       "BassDrumEQ",
+       "DeadRinger",
+       "Dragon Claw",
+       "EZ Vibez.4",
+       "EarlyRizer",
+       "El Pick It"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 6940.37,
+      "pole_r": 0.945803,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.05,
+       "median": 0.37,
+       "max": 0.85
+      },
+      "d_low_edge_db": {
+       "min": -2.36,
+       "median": -0.04,
+       "max": 2.92
+      },
+      "d_high_edge_db": {
+       "min": -7.5,
+       "median": -5.46,
+       "max": -4.29
+      },
+      "d_level_db": {
+       "min": -0.51,
+       "median": 0.85,
+       "max": 3.82
+      }
+     },
+     "evidence": {
+      "occurrences": 10,
+      "distinct_filters": 7,
+      "by_corpus": {
+       "morpheus": 10
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "HPSweep.4",
+       "Harmonix.4",
+       "MovingPick1",
+       "Nexus.4",
+       "Oh Shaper",
+       "TensionWire",
+       "YahYahs.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high boost",
+     "seat": {
+      "pole_hz": 14772.06,
+      "pole_r": 0.866078,
+      "zero_hz": 17960.83,
+      "zero_r": 0.99999
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.41,
+       "median": 0.2,
+       "max": 0.37
+      },
+      "d_low_edge_db": {
+       "min": -3.86,
+       "median": 0.6,
+       "max": 2.36
+      },
+      "d_high_edge_db": {
+       "min": 5.35,
+       "median": 6.66,
+       "max": 9.76
+      },
+      "d_level_db": {
+       "min": -3.86,
+       "median": 0.45,
+       "max": 2.72
+      }
+     },
+     "evidence": {
+      "occurrences": 10,
+      "distinct_filters": 7,
+      "by_corpus": {
+       "morpheus": 6,
+       "p2k": 4
+      },
+      "corpora_spanned": 2,
+      "exemplar_filters": [
+       "ApDistB6.4",
+       "BassOMatic",
+       "FreakShifta",
+       "HrmncPhsr2",
+       "MeatyGizmo",
+       "Millennium",
+       "Shp>Shp1"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  },
+  "S7": {
+   "stage_instances": 1983,
+   "shapes": [
+    {
+     "name": "broadband tilt",
+     "seat": {
+      "pole_hz": 357.48,
+      "pole_r": 0.99984,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.82,
+       "median": -5.67,
+       "max": 1.27
+      },
+      "d_low_edge_db": {
+       "min": -11.18,
+       "median": 35.39,
+       "max": 93.84
+      },
+      "d_high_edge_db": {
+       "min": -10.11,
+       "median": -9.77,
+       "max": 13.88
+      },
+      "d_level_db": {
+       "min": -9.7,
+       "median": 23.48,
+       "max": 37.77
+      }
+     },
+     "evidence": {
+      "occurrences": 490,
+      "distinct_filters": 169,
+      "by_corpus": {
+       "morpheus": 490
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcC"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over high cut",
+     "seat": {
+      "pole_hz": 767.41,
+      "pole_r": 0.999825,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.82,
+       "median": -5.16,
+       "max": 0.89
+      },
+      "d_low_edge_db": {
+       "min": -2.78,
+       "median": 32.62,
+       "max": 93.84
+      },
+      "d_high_edge_db": {
+       "min": -10.11,
+       "median": -9.83,
+       "max": -4.55
+      },
+      "d_level_db": {
+       "min": -0.89,
+       "median": 23.42,
+       "max": 37.81
+      }
+     },
+     "evidence": {
+      "occurrences": 485,
+      "distinct_filters": 163,
+      "by_corpus": {
+       "morpheus": 485
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Muter",
+       "0>Shp1",
+       "0>Shp2",
+       "0>Shp3",
+       "1BndPrmtrcC",
+       "2pole>4pole"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "transparent",
+     "seat": {
+      "pole_hz": 9381.77,
+      "pole_r": 0.125031,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.18,
+       "median": 0.01,
+       "max": 0.57
+      },
+      "d_low_edge_db": {
+       "min": -1.5,
+       "median": -0.0,
+       "max": 1.53
+      },
+      "d_high_edge_db": {
+       "min": -3.71,
+       "median": -0.05,
+       "max": 0.92
+      },
+      "d_level_db": {
+       "min": -1.18,
+       "median": 0.02,
+       "max": 1.29
+      }
+     },
+     "evidence": {
+      "occurrences": 287,
+      "distinct_filters": 80,
+      "by_corpus": {
+       "morpheus": 287
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Odds",
+       "0>Shp3",
+       "2 PoleLoQ.4",
+       "2 Poles",
+       "4 PoleLoQ.4",
+       "4 PoleMidQ.4",
+       "4 Poles A",
+       "4 Poles B"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null relocation",
+     "seat": {
+      "pole_hz": 257.42,
+      "pole_r": 0.99942,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.82,
+       "median": -8.7,
+       "max": 1.33
+      },
+      "d_low_edge_db": {
+       "min": -11.91,
+       "median": 50.59,
+       "max": 93.84
+      },
+      "d_high_edge_db": {
+       "min": -10.11,
+       "median": -10.07,
+       "max": 11.43
+      },
+      "d_level_db": {
+       "min": -10.42,
+       "median": 30.9,
+       "max": 37.81
+      }
+     },
+     "evidence": {
+      "occurrences": 275,
+      "distinct_filters": 108,
+      "by_corpus": {
+       "morpheus": 275
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Bell+",
+       "0>Bell-",
+       "0>Shp1",
+       "1BndPrmtrcD",
+       "AEParaVowel",
+       "AcGtrRs.4",
+       "Acc.Vel-1",
+       "Acc.Vel-2"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low cut",
+     "seat": {
+      "pole_hz": 18229.49,
+      "pole_r": 0.995606,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.56,
+       "median": 0.88,
+       "max": 1.13
+      },
+      "d_low_edge_db": {
+       "min": -11.91,
+       "median": -11.91,
+       "max": -5.44
+      },
+      "d_high_edge_db": {
+       "min": -0.38,
+       "median": 3.4,
+       "max": 3.86
+      },
+      "d_level_db": {
+       "min": -10.45,
+       "median": -10.42,
+       "max": -3.48
+      }
+     },
+     "evidence": {
+      "occurrences": 83,
+      "distinct_filters": 36,
+      "by_corpus": {
+       "morpheus": 83
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcD",
+       "2pole>4pole",
+       "Acc.Vel-2",
+       "Ah Shaper",
+       "Bendup/Swap",
+       "BroadRes.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance removal",
+     "seat": {
+      "pole_hz": 388.47,
+      "pole_r": 0.999817,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.62,
+       "median": -8.11,
+       "max": 0.88
+      },
+      "d_low_edge_db": {
+       "min": -11.91,
+       "median": 48.31,
+       "max": 89.6
+      },
+      "d_high_edge_db": {
+       "min": -10.11,
+       "median": -9.83,
+       "max": 4.39
+      },
+      "d_level_db": {
+       "min": -10.42,
+       "median": 29.56,
+       "max": 37.65
+      }
+     },
+     "evidence": {
+      "occurrences": 68,
+      "distinct_filters": 43,
+      "by_corpus": {
+       "morpheus": 68
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "1BndPrmtrcA",
+       "1BndPrmtrcB",
+       "1BndPrmtrcD",
+       "Acc.Vel-1",
+       "Ah Shaper",
+       "Analog.4",
+       "B BOOST.4",
+       "BrassyBlast"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "broadband level",
+     "seat": {
+      "pole_hz": 3679.99,
+      "pole_r": 0.214896,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.5,
+       "median": -0.24,
+       "max": 0.81
+      },
+      "d_low_edge_db": {
+       "min": -3.87,
+       "median": 2.0,
+       "max": 3.98
+      },
+      "d_high_edge_db": {
+       "min": -2.21,
+       "median": -1.17,
+       "max": 2.33
+      },
+      "d_level_db": {
+       "min": -2.83,
+       "median": 1.56,
+       "max": 3.06
+      }
+     },
+     "evidence": {
+      "occurrences": 48,
+      "distinct_filters": 26,
+      "by_corpus": {
+       "morpheus": 48
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp2",
+       "1BndPrmtrcD",
+       "4 Poles A",
+       "500up.4",
+       "Blow Cube",
+       "BrickWaLP.4",
+       "ChimeFlange",
+       "Chrs>Flng2"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "high cut",
+     "seat": {
+      "pole_hz": 5948.54,
+      "pole_r": 0.958013,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.17,
+       "median": 0.31,
+       "max": 0.91
+      },
+      "d_low_edge_db": {
+       "min": -3.09,
+       "median": 1.79,
+       "max": 3.29
+      },
+      "d_high_edge_db": {
+       "min": -7.57,
+       "median": -6.54,
+       "max": -4.38
+      },
+      "d_level_db": {
+       "min": -1.18,
+       "median": 2.83,
+       "max": 4.1
+      }
+     },
+     "evidence": {
+      "occurrences": 28,
+      "distinct_filters": 14,
+      "by_corpus": {
+       "morpheus": 28
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "ApDistB6.4",
+       "Cymbal Cube",
+       "GentleRez.4",
+       "HeeghCube",
+       "New Boost",
+       "Noiz Cube 2",
+       "Null Cube",
+       "One Peak"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "null",
+     "seat": {
+      "pole_hz": 776.95,
+      "pole_r": 0.662149,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -12.21,
+       "median": -2.62,
+       "max": 1.11
+      },
+      "d_low_edge_db": {
+       "min": -11.91,
+       "median": 18.1,
+       "max": 86.35
+      },
+      "d_high_edge_db": {
+       "min": -10.11,
+       "median": -6.95,
+       "max": 10.14
+      },
+      "d_level_db": {
+       "min": -10.42,
+       "median": 12.82,
+       "max": 36.72
+      }
+     },
+     "evidence": {
+      "occurrences": 23,
+      "distinct_filters": 18,
+      "by_corpus": {
+       "morpheus": 23
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2pole>4pole",
+       "Analog.4",
+       "Bendup/Swap",
+       "Breather 2",
+       "BrsSwell2.4",
+       "Dragon Claw",
+       "EvnHrm+Rez"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance over low cut",
+     "seat": {
+      "pole_hz": 10371.21,
+      "pole_r": 0.995362,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": 0.87,
+       "median": 1.09,
+       "max": 1.27
+      },
+      "d_low_edge_db": {
+       "min": -11.91,
+       "median": -6.03,
+       "max": -4.24
+      },
+      "d_high_edge_db": {
+       "min": -3.82,
+       "median": 0.25,
+       "max": 13.5
+      },
+      "d_level_db": {
+       "min": -10.42,
+       "median": -3.87,
+       "max": -2.19
+      }
+     },
+     "evidence": {
+      "occurrences": 19,
+      "distinct_filters": 13,
+      "by_corpus": {
+       "morpheus": 19
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "0>Shp3",
+       "2pole>4pole",
+       "500up.4",
+       "Bendup/Swap",
+       "Chrs>Flng2",
+       "G MajTrans.4",
+       "GentleRez.4",
+       "More Peaks"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "low boost",
+     "seat": {
+      "pole_hz": 1534.82,
+      "pole_r": 0.304762,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.79,
+       "median": -0.74,
+       "max": -0.51
+      },
+      "d_low_edge_db": {
+       "min": 4.05,
+       "median": 5.99,
+       "max": 6.29
+      },
+      "d_high_edge_db": {
+       "min": -3.99,
+       "median": -3.19,
+       "max": -2.26
+      },
+      "d_level_db": {
+       "min": 3.12,
+       "median": 4.56,
+       "max": 4.86
+      }
+     },
+     "evidence": {
+      "occurrences": 8,
+      "distinct_filters": 6,
+      "by_corpus": {
+       "morpheus": 8
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "Flng>FlngT",
+       "Hi Accent.4",
+       "PZ Syn Horn",
+       "Piano 1",
+       "Swell Cube",
+       "VowelSpace"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    },
+    {
+     "name": "resonance",
+     "seat": {
+      "pole_hz": 6711.48,
+      "pole_r": 0.515629,
+      "zero_hz": 0.3,
+      "zero_r": 0.0
+     },
+     "ranges": {
+      "d_slope_db_per_oct": {
+       "min": -0.11,
+       "median": -0.11,
+       "max": -0.11
+      },
+      "d_low_edge_db": {
+       "min": 2.17,
+       "median": 2.17,
+       "max": 2.17
+      },
+      "d_high_edge_db": {
+       "min": -2.8,
+       "median": -2.8,
+       "max": -2.8
+      },
+      "d_level_db": {
+       "min": 2.11,
+       "median": 2.11,
+       "max": 2.11
+      }
+     },
+     "evidence": {
+      "occurrences": 2,
+      "distinct_filters": 1,
+      "by_corpus": {
+       "morpheus": 2
+      },
+      "corpora_spanned": 1,
+      "exemplar_filters": [
+       "UduFilter.4"
+      ],
+      "clusters": [],
+      "letters": []
+     }
+    }
+   ]
+  }
+ },
+ "coverage": {
+  "S1": {
+   "instances": 2115,
+   "classified": 2115,
+   "share": 1.0
+  },
+  "S2": {
+   "instances": 2115,
+   "classified": 2046,
+   "share": 0.9674
+  },
+  "S3": {
+   "instances": 2115,
+   "classified": 2033,
+   "share": 0.9612
+  },
+  "S4": {
+   "instances": 2115,
+   "classified": 2021,
+   "share": 0.9556
+  },
+  "S5": {
+   "instances": 2115,
+   "classified": 2044,
+   "share": 0.9664
+  },
+  "S6": {
+   "instances": 2115,
+   "classified": 2027,
+   "share": 0.9584
+  },
+  "S7": {
+   "instances": 1983,
+   "classified": 1816,
+   "share": 0.9158
+  }
+ },
+ "cluster_shapes": [
+  {
+   "id": "pole_only-0",
+   "shape": "peak",
+   "occurrences": 243,
+   "positions": {
+    "S1": 19,
+    "S2": 29,
+    "S3": 22,
+    "S4": 14,
+    "S5": 19,
+    "S6": 12,
+    "S7": 128
+   }
+  },
+  {
+   "id": "pole_only-1",
+   "shape": "lift",
+   "occurrences": 213,
+   "positions": {
+    "S1": 31,
+    "S2": 39,
+    "S3": 29,
+    "S4": 25,
+    "S5": 9,
+    "S6": 18,
+    "S7": 62
+   }
+  },
+  {
+   "id": "pole_only-2",
+   "shape": "peak",
+   "occurrences": 171,
+   "positions": {
+    "S1": 22,
+    "S2": 8,
+    "S3": 9,
+    "S4": 12,
+    "S5": 12,
+    "S6": 15,
+    "S7": 93
+   }
+  },
+  {
+   "id": "pole_only-3",
+   "shape": "lift",
+   "occurrences": 209,
+   "positions": {
+    "S1": 33,
+    "S2": 16,
+    "S3": 9,
+    "S4": 8,
+    "S5": 17,
+    "S6": 21,
+    "S7": 105
+   }
+  },
+  {
+   "id": "pole_only-4",
+   "shape": "lift",
+   "occurrences": 232,
+   "positions": {
+    "S1": 16,
+    "S2": 31,
+    "S3": 19,
+    "S4": 23,
+    "S5": 40,
+    "S6": 43,
+    "S7": 60
+   }
+  },
+  {
+   "id": "pole_only-5",
+   "shape": "lift",
+   "occurrences": 242,
+   "positions": {
+    "S1": 10,
+    "S2": 15,
+    "S3": 34,
+    "S4": 30,
+    "S5": 30,
+    "S6": 30,
+    "S7": 93
+   }
+  },
+  {
+   "id": "pole_only-6",
+   "shape": "lift",
+   "occurrences": 192,
+   "positions": {
+    "S1": 21,
+    "S2": 23,
+    "S3": 22,
+    "S4": 21,
+    "S5": 19,
+    "S6": 16,
+    "S7": 70
+   }
+  },
+  {
+   "id": "pole_only-7",
+   "shape": "lift",
+   "occurrences": 197,
+   "positions": {
+    "S1": 22,
+    "S2": 22,
+    "S3": 10,
+    "S4": 13,
+    "S5": 19,
+    "S6": 25,
+    "S7": 86
+   }
+  },
+  {
+   "id": "pole_only-8",
+   "shape": "peak",
+   "occurrences": 172,
+   "positions": {
+    "S1": 11,
+    "S2": 3,
+    "S3": 1,
+    "S4": 1,
+    "S6": 3,
+    "S7": 153
+   }
+  },
+  {
+   "id": "pole_only-9",
+   "shape": "peak",
+   "occurrences": 149,
+   "positions": {
+    "S1": 5,
+    "S2": 2,
+    "S3": 2,
+    "S4": 2,
+    "S5": 1,
+    "S6": 1,
+    "S7": 136
+   }
+  },
+  {
+   "id": "pole_only-10",
+   "shape": "peak",
+   "occurrences": 178,
+   "positions": {
+    "S2": 16,
+    "S3": 14,
+    "S4": 2,
+    "S5": 16,
+    "S6": 12,
+    "S7": 118
+   }
+  },
+  {
+   "id": "pole_only-11",
+   "shape": "peak",
+   "occurrences": 212,
+   "positions": {
+    "S1": 26,
+    "S2": 17,
+    "S3": 6,
+    "S4": 2,
+    "S5": 7,
+    "S6": 7,
+    "S7": 147
+   }
+  },
+  {
+   "id": "pole_only-12",
+   "shape": "peak",
+   "occurrences": 121,
+   "positions": {
+    "S1": 5,
+    "S2": 3,
+    "S4": 2,
+    "S6": 5,
+    "S7": 106
+   }
+  },
+  {
+   "id": "pole_only-13",
+   "shape": "lift",
+   "occurrences": 129,
+   "positions": {
+    "S1": 32,
+    "S2": 8,
+    "S3": 11,
+    "S4": 9,
+    "S5": 8,
+    "S6": 16,
+    "S7": 45
+   }
+  },
+  {
+   "id": "pole_only-14",
+   "shape": "lift",
+   "occurrences": 101,
+   "positions": {
+    "S1": 11,
+    "S2": 4,
+    "S3": 4,
+    "S4": 6,
+    "S5": 8,
+    "S6": 17,
+    "S7": 51
+   }
+  },
+  {
+   "id": "pole_only-15",
+   "shape": "lift",
+   "occurrences": 40,
+   "positions": {
+    "S2": 2,
+    "S3": 1,
+    "S4": 2,
+    "S7": 35
+   }
+  },
+  {
+   "id": "pole_zero-0",
+   "shape": "bell",
+   "occurrences": 1067,
+   "positions": {
+    "S1": 110,
+    "S2": 154,
+    "S3": 208,
+    "S4": 209,
+    "S5": 239,
+    "S6": 139,
+    "S7": 8
+   }
+  },
+  {
+   "id": "pole_zero-1",
+   "shape": "bell",
+   "occurrences": 844,
+   "positions": {
+    "S1": 20,
+    "S2": 158,
+    "S3": 186,
+    "S4": 176,
+    "S5": 182,
+    "S6": 122
+   }
+  },
+  {
+   "id": "pole_zero-2",
+   "shape": "carved band",
+   "occurrences": 403,
+   "positions": {
+    "S1": 85,
+    "S2": 68,
+    "S3": 65,
+    "S4": 68,
+    "S5": 55,
+    "S6": 60,
+    "S7": 2
+   }
+  },
+  {
+   "id": "pole_zero-3",
+   "shape": "bell",
+   "occurrences": 950,
+   "positions": {
+    "S1": 56,
+    "S2": 207,
+    "S3": 234,
+    "S4": 203,
+    "S5": 146,
+    "S6": 96,
+    "S7": 8
+   }
+  },
+  {
+   "id": "pole_zero-4",
+   "shape": "close pair",
+   "occurrences": 506,
+   "positions": {
+    "S1": 55,
+    "S2": 108,
+    "S3": 83,
+    "S4": 87,
+    "S5": 86,
+    "S6": 87
+   }
+  },
+  {
+   "id": "pole_zero-5",
+   "shape": "bell",
+   "occurrences": 811,
+   "positions": {
+    "S1": 20,
+    "S2": 191,
+    "S3": 205,
+    "S4": 181,
+    "S5": 115,
+    "S6": 99
+   }
+  },
+  {
+   "id": "pole_zero-6",
+   "shape": "carved band",
+   "occurrences": 518,
+   "positions": {
+    "S1": 80,
+    "S2": 109,
+    "S3": 112,
+    "S4": 87,
+    "S5": 78,
+    "S6": 52
+   }
+  },
+  {
+   "id": "pole_zero-7",
+   "shape": "high shelf",
+   "occurrences": 350,
+   "positions": {
+    "S1": 132,
+    "S2": 34,
+    "S3": 41,
+    "S4": 47,
+    "S5": 55,
+    "S6": 41
+   }
+  },
+  {
+   "id": "pole_zero-8",
+   "shape": "close pair",
+   "occurrences": 670,
+   "positions": {
+    "S1": 12,
+    "S2": 117,
+    "S3": 119,
+    "S4": 149,
+    "S5": 157,
+    "S6": 116
+   }
+  },
+  {
+   "id": "pole_zero-9",
+   "shape": "close pair",
+   "occurrences": 394,
+   "positions": {
+    "S1": 84,
+    "S2": 65,
+    "S3": 67,
+    "S4": 58,
+    "S5": 72,
+    "S6": 44,
+    "S7": 4
+   }
+  },
+  {
+   "id": "pole_zero-10",
+   "shape": "low shelf",
+   "occurrences": 169,
+   "positions": {
+    "S1": 91,
+    "S2": 20,
+    "S3": 14,
+    "S4": 8,
+    "S5": 11,
+    "S6": 24,
+    "S7": 1
+   }
+  },
+  {
+   "id": "pole_zero-11",
+   "shape": "carved band",
+   "occurrences": 443,
+   "positions": {
+    "S1": 58,
+    "S2": 62,
+    "S3": 48,
+    "S4": 63,
+    "S5": 98,
+    "S6": 114
+   }
+  },
+  {
+   "id": "pole_zero-12",
+   "shape": "high shelf",
+   "occurrences": 642,
+   "positions": {
+    "S1": 8,
+    "S2": 88,
+    "S3": 86,
+    "S4": 98,
+    "S5": 171,
+    "S6": 191
+   }
+  },
+  {
+   "id": "pole_zero-13",
+   "shape": "high shelf",
+   "occurrences": 163,
+   "positions": {
+    "S1": 42,
+    "S2": 11,
+    "S3": 16,
+    "S4": 17,
+    "S5": 19,
+    "S6": 58
+   }
+  },
+  {
+   "id": "pole_zero-14",
+   "shape": "guarded peak",
+   "occurrences": 172,
+   "positions": {
+    "S4": 8,
+    "S6": 132,
+    "S7": 32
+   }
+  },
+  {
+   "id": "pole_zero-15",
+   "shape": "high shelf",
+   "occurrences": 133,
+   "positions": {
+    "S1": 6,
+    "S2": 19,
+    "S3": 14,
+    "S4": 26,
+    "S5": 23,
+    "S6": 45
+   }
+  },
+  {
+   "id": "zero_only-0",
+   "shape": "dip",
+   "occurrences": 221,
+   "positions": {
+    "S1": 135,
+    "S2": 30,
+    "S3": 12,
+    "S4": 17,
+    "S5": 13,
+    "S6": 14
+   }
+  },
+  {
+   "id": "zero_only-1",
+   "shape": "dip",
+   "occurrences": 243,
+   "positions": {
+    "S1": 123,
+    "S2": 29,
+    "S3": 19,
+    "S4": 40,
+    "S5": 24,
+    "S6": 8
+   }
+  },
+  {
+   "id": "zero_only-2",
+   "shape": "notch",
+   "occurrences": 239,
+   "positions": {
+    "S1": 178,
+    "S2": 22,
+    "S3": 15,
+    "S4": 2,
+    "S5": 4,
+    "S6": 18
+   }
+  },
+  {
+   "id": "zero_only-3",
+   "shape": "dip",
+   "occurrences": 196,
+   "positions": {
+    "S1": 136,
+    "S2": 8,
+    "S3": 6,
+    "S4": 13,
+    "S5": 9,
+    "S6": 24
+   }
+  },
+  {
+   "id": "zero_only-4",
+   "shape": "notch",
+   "occurrences": 161,
+   "positions": {
+    "S1": 133,
+    "S2": 5,
+    "S3": 5,
+    "S5": 11,
+    "S6": 7
+   }
+  },
+  {
+   "id": "zero_only-5",
+   "shape": "dip",
+   "occurrences": 48,
+   "positions": {
+    "S1": 21,
+    "S2": 1,
+    "S4": 9,
+    "S5": 8,
+    "S6": 9
+   }
+  }
+ ],
+ "letter_shapes": {
+  "idle-pole": "idle",
+  "off-zero": "idle",
+  "top-shelf-pole": "peak",
+  "bell-low-pole-1": "parked pair",
+  "bell-low-zero-1": "parked pair",
+  "bell-low-pole-2": "parked pair",
+  "bell-low-zero-2": "parked pair",
+  "bell-low-pole-3": "bell",
+  "bell-low-zero-3": "bell",
+  "bell-low-pole-4": "parked pair",
+  "bell-low-zero-4": "parked pair",
+  "bell-low-pole-5": "bell",
+  "bell-low-zero-5": "bell",
+  "bell-low-pole-6": "parked pair",
+  "bell-low-zero-6": "parked pair",
+  "bell-high-pole-1": "bell",
+  "bell-high-zero-1": "bell",
+  "bell-high-pole-2": "bell",
+  "bell-high-zero-2": "bell",
+  "bell-high-pole-3": "bell",
+  "bell-high-zero-3": "bell",
+  "bell-high-pole-4": "bell",
+  "bell-high-zero-4": "bell",
+  "bell-high-pole-5": "bell",
+  "bell-high-zero-5": "bell",
+  "bell-high-pole-6": "bell",
+  "bell-high-zero-6": "bell",
+  "octave-notch-1": "notch",
+  "octave-notch-2": "notch",
+  "octave-notch-3": "notch",
+  "octave-notch-4": "notch",
+  "octave-notch-5": "notch",
+  "octave-notch-6": "notch",
+  "octave-lowpass-pole-1": "peak",
+  "octave-lowpass-pole-2": "peak",
+  "octave-lowpass-pole-3": "peak",
+  "octave-lowpass-pole-4": "lift",
+  "octave-lowpass-pole-5": "lift",
+  "octave-lowpass-pole-6": "lift",
+  "be-ye-vowel-1": "peak",
+  "be-ye-vowel-2": "lift",
+  "be-ye-vowel-3": "lift",
+  "be-ye-vowel-4": "lift",
+  "be-ye-vowel-5": "lift",
+  "uhrrrah-vowel-1": "peak",
+  "uhrrrah-vowel-2": "lift",
+  "uhrrrah-vowel-3": "lift",
+  "uhrrrah-vowel-4": "lift",
+  "uhrrrah-vowel-5": "lift",
+  "paravowel-a-pole-1": "carved band",
+  "paravowel-a-zero-1": "carved band",
+  "paravowel-a-pole-2": "bell",
+  "paravowel-a-zero-2": "bell",
+  "paravowel-a-pole-3": "low shelf",
+  "paravowel-a-zero-3": "low shelf",
+  "paravowel-a-pole-4": "bell",
+  "paravowel-a-zero-4": "bell",
+  "paravowel-a-pole-5": "bell",
+  "paravowel-a-zero-5": "bell",
+  "paravowel-a-pole-6": "lift",
+  "vocal-comb-pole-1": "carved band",
+  "vocal-comb-zero-1": "carved band",
+  "vocal-comb-pole-2": "close pair",
+  "vocal-comb-zero-2": "close pair",
+  "vocal-comb-pole-3": "close pair",
+  "vocal-comb-zero-3": "close pair",
+  "vocal-comb-pole-4": "close pair",
+  "vocal-comb-zero-4": "close pair",
+  "vocal-comb-pole-5": "carved band",
+  "vocal-comb-zero-5": "carved band",
+  "vocal-comb-pole-6": "high shelf",
+  "vocal-comb-zero-6": "high shelf",
+  "vocal-comb-pole-7": "peak",
+  "nyquist-trap-zero": "notch",
+  "bound-shelf-pole": "carved band",
+  "bound-shelf-zero": "carved band",
+  "sub-anchor-pole": "high shelf",
+  "sub-anchor-zero": "high shelf"
+ }
+}

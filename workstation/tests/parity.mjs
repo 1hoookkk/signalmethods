@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { interpolateWords, interpolateBiquad, rowDb } from "../js/dsp.js";
+import { interpolateWords, interpolateBiquad, rowDb } from "../src/dsp.ts";
 
 const file = process.argv[2];
 if (!file) {

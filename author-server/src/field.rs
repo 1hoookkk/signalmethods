@@ -73,32 +73,6 @@ pub fn report(packed: &PackedCorners, sr: f64) -> (bool, Value) {
     )
 }
 
-pub fn words_frame(payload: &[u8], sr: f64) -> Option<Vec<u8>> {
-    if payload.len() != 4 + NUM_STAGES * 20 {
-        return None;
-    }
-    let mut reply = Vec::with_capacity(4 + NUM_STAGES * NUM_COEFFS * 2);
-    reply.extend_from_slice(&payload[..4]);
-    for si in 0..NUM_STAGES {
-        let mut f = [0.0f32; 5];
-        for (k, slot) in f.iter_mut().enumerate() {
-            let at = 4 + si * 20 + k * 4;
-            *slot = f32::from_le_bytes(payload[at..at + 4].try_into().ok()?);
-        }
-        let lane = StageRoots {
-            pole_hz: f[0] as f64,
-            pole_r: f[1] as f64,
-            zero_hz: f[2] as f64,
-            zero_r: f[3] as f64,
-            scale: f[4] as f64,
-        };
-        for word in words_from_roots_at(&lane, sr) {
-            reply.extend_from_slice(&word.to_le_bytes());
-        }
-    }
-    Some(reply)
-}
-
 pub fn corners_words(req: &Value) -> Result<Value, String> {
     let corners = corners_from_value(req.get("corners").ok_or("no corners")?)?;
     let sr = req.get("sr").and_then(|x| x.as_f64()).unwrap_or(SR);
