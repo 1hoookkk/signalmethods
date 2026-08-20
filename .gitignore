@@ -17,6 +17,7 @@ venv/
 # Generated and local output
 /artifacts/
 /generated/
+/out/
 /renders/
 /scratch/
 *.log
