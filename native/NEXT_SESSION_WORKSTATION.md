@@ -40,9 +40,21 @@ The fitter is proven. The user configures it with exactly this:
   pins on its chain chip. Pole, zero, scale independently. Freedom is
   read live every step — pinning mid-fit excludes that section from the
   next step on. No panel duplicates of the click.
-- WHAT TO CHASE: the target — a reference curve assigned from another
-  body/corner's response (first target source; the analyzer comes
-  later). Drawn behind the live response. No target = FIT disabled.
+- WHAT TO CHASE: the target. Two sources, no more:
+  (a) a reference curve pasted from another body/corner's response;
+  (b) THE PUSH — from the current words, enumerate every legal one-rung
+  move allowed by the live mask (the sweep machinery already knows the
+  candidates), measure each as an ERB-weighted, mean-removed
+  complete-cascade response delta, SVD the matrix, and render the top
+  few directions as unlabeled ghost curves. Dragging along a ghost sets
+  target = current + alpha * direction and arms FIT. Rows are NOT
+  normalized (a row's magnitude is what one click can do from here);
+  directions are unsigned, the drag supplies sign and size; the matrix
+  is recomputed after every accepted step because local directions
+  change. Directions are never auto-named and never persisted — they
+  die when the words move. Scale steps vanish under mean removal, so
+  gain stays out of the search by construction.
+  Drawn behind the live response. No target = FIT disabled.
 - WHEN TO STOP: STOP & KEEP commits the current accepted state as one
   undoable edit. DISCARD restores the exact pre-fit state. The hand is
   the step budget — no iteration-count knob, no tolerance knob, no
