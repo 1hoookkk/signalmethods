@@ -59,6 +59,25 @@ double radius_of_warp(double warp) {
   return 1.0 - std::pow(10.0, -std::max(warp, 0.0) / 20.0);
 }
 
+constexpr double kOverflowBandPx = 30.0;
+constexpr double kOverflowScaleDb = 18.0;
+
+double y_for_contribution(double db, double low_db, double high_db, const QRectF& plot) {
+  const auto top = plot.top() + kOverflowBandPx;
+  const auto bottom = plot.bottom() - kOverflowBandPx;
+  if (db > high_db) {
+    const auto excess = db - high_db;
+    return plot.top() + kTokenRadiusPx +
+           (kOverflowBandPx - kTokenRadiusPx) / (1.0 + excess / kOverflowScaleDb);
+  }
+  if (db < low_db) {
+    const auto excess = low_db - db;
+    return plot.bottom() - kTokenRadiusPx -
+           (kOverflowBandPx - kTokenRadiusPx) / (1.0 + excess / kOverflowScaleDb);
+  }
+  return bottom - (db - low_db) / (high_db - low_db) * (bottom - top);
+}
+
 QColor section_color(std::size_t section) {
   return QColor::fromHsvF(static_cast<double>(section) / 7.0, 0.58, 1.0);
 }
@@ -323,8 +342,7 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
       token.position = QPointF{
           std::clamp(x_for_frequency(hz, low_hz, high_hz, plot),
                      plot.left() + kTokenRadiusPx, plot.right() - kTokenRadiusPx),
-          std::clamp(y_for_db(contributionAt(section, hz), low_db, high_db, plot),
-                     plot.top() + kTokenRadiusPx, plot.bottom() - kTokenRadiusPx)};
+          y_for_contribution(contributionAt(section, hz), low_db, high_db, plot)};
       token.live = live;
       token.pinned = (freedom_mask_ & bit) == 0U;
       out.push_back(token);
