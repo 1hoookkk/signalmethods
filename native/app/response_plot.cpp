@@ -59,15 +59,6 @@ double radius_of_warp(double warp) {
   return 1.0 - std::pow(10.0, -std::max(warp, 0.0) / 20.0);
 }
 
-double y_for_radius(double radius, const QRectF& plot) {
-  return plot.bottom() - warp_of_radius(radius) / kRadiusWarpMax * plot.height();
-}
-
-double radius_for_y(double y, const QRectF& plot) {
-  const auto warp = (plot.bottom() - y) / plot.height() * kRadiusWarpMax;
-  return radius_of_warp(std::clamp(warp, 0.0, kRadiusWarpMax));
-}
-
 QColor section_color(std::size_t section) {
   return QColor::fromHsvF(static_cast<double>(section) / 7.0, 0.58, 1.0);
 }
@@ -140,8 +131,24 @@ void ResponsePlotWidget::refresh() {
     response_db_.push_back(
         trench::core::cascade_response_db(cascade, frequency_hz, sample_rate_hz_));
   }
+  contributions_ = trench::core::marginal_contributions_db(cascade, frequencies_hz_,
+                                                           sample_rate_hz_);
   ++body_revision_;
   update();
+}
+
+double ResponsePlotWidget::contributionAt(std::size_t section, double hz) const {
+  if (section >= contributions_.size() || frequencies_hz_.empty()) return 0.0;
+  const auto& curve = contributions_[section];
+  const auto low = frequencies_hz_.front();
+  const auto high = frequencies_hz_.back();
+  const auto clamped = std::clamp(hz, low, high);
+  const auto position = std::log(clamped / low) / std::log(high / low) *
+                        static_cast<double>(curve.size() - 1);
+  const auto lower = static_cast<std::size_t>(std::floor(position));
+  const auto upper = std::min(lower + 1, curve.size() - 1);
+  const auto blend = position - static_cast<double>(lower);
+  return curve[lower] * (1.0 - blend) + curve[upper] * blend;
 }
 
 void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double high_db) {
@@ -309,14 +316,15 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
       const auto live = root_placement(pair, low_hz, high_hz, hz, radius);
       const auto bit = lane == Lane::kPole ? trench::core::p2k::pole_bit(section)
                                            : trench::core::p2k::zero_bit(section);
+      const auto [low_db, high_db] = latched_db_.value_or(dbRange());
       TokenInfo token;
       token.section = section;
       token.lane = lane;
       token.position = QPointF{
           std::clamp(x_for_frequency(hz, low_hz, high_hz, plot),
                      plot.left() + kTokenRadiusPx, plot.right() - kTokenRadiusPx),
-          std::clamp(y_for_radius(radius, plot), plot.top() + kTokenRadiusPx,
-                     plot.bottom() - kTokenRadiusPx)};
+          std::clamp(y_for_db(contributionAt(section, hz), low_db, high_db, plot),
+                     plot.top() + kTokenRadiusPx, plot.bottom() - kTokenRadiusPx)};
       token.live = live;
       token.pinned = (freedom_mask_ & bit) == 0U;
       out.push_back(token);
@@ -360,7 +368,10 @@ void ResponsePlotWidget::moveTo(const QPointF& at) {
 
   const auto hz = std::clamp(frequency_for_x(at.x(), low_hz, high_hz, plot), 20.0,
                              p2k::kRootHiHz);
-  double radius = s6_zero ? p2k::s6_zero_radius() : radius_for_y(at.y(), plot);
+  const auto warp_delta =
+      (press_position_.y() - at.y()) / plot.height() * kRadiusWarpMax;
+  double radius = s6_zero ? p2k::s6_zero_radius()
+                          : radius_of_warp(warp_of_radius(press_radius_) + warp_delta);
   radius = is_pole ? std::clamp(radius, 0.0, p2k::kPoleRMax)
                    : std::clamp(radius, 0.0, 1.0);
 
@@ -401,6 +412,14 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   press_lane_ = token->lane;
   press_position_ = event->position();
   origin_words_ = body_->words[0][token->section];
+  const auto geometry = trench::core::geometry_from_words(
+      origin_words_, trench::core::kP2kDatumHz);
+  const auto& pair = token->lane == Lane::kPole ? geometry.pole : geometry.zero;
+  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
+    press_radius_ = conjugate->radius;
+  } else {
+    press_radius_ = 0.0;
+  }
   event->accept();
 }
 

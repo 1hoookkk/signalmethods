@@ -65,6 +65,7 @@ class ResponsePlotWidget final : public QWidget {
  private:
   [[nodiscard]] QRectF plotRect() const;
   [[nodiscard]] std::pair<double, double> dbRange() const;
+  [[nodiscard]] double contributionAt(std::size_t section, double hz) const;
   [[nodiscard]] std::optional<TokenInfo> hit(const QPointF& at) const;
   void moveTo(const QPointF& at);
   void refuse(double frequency_hz);
@@ -78,6 +79,8 @@ class ResponsePlotWidget final : public QWidget {
   std::vector<double> response_db_;
   QString source_label_;
 
+  std::vector<std::vector<double>> contributions_;
+  double press_radius_{};
   bool pressed_{};
   bool moved_{};
   bool dragging_{};
