@@ -1,6 +1,7 @@
 #include "main_window.hpp"
 
 #include "body_document.hpp"
+#include "chassis_bar.hpp"
 #include "fit_controller.hpp"
 #include "response_plot.hpp"
 #include "trench/core/p2k.hpp"
@@ -8,9 +9,7 @@
 
 #include <QAction>
 #include <QFileDialog>
-#include <QHBoxLayout>
 #include <QKeySequence>
-#include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -64,13 +63,6 @@ trench::core::p2k::StoredCorner unflatten_stored(const QList<quint16>& words) {
   return out;
 }
 
-QPushButton* make_button(const QString& text, QWidget* parent) {
-  auto* button = new QPushButton(text, parent);
-  button->setFocusPolicy(Qt::NoFocus);
-  button->setFlat(true);
-  return button;
-}
-
 }  // namespace
 
 MainWindow::MainWindow(const std::filesystem::path& body_path,
@@ -94,20 +86,9 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   response_plot_->setFreedomMask(document_->freedomMask());
   column->addWidget(response_plot_, 1);
 
-  auto* bar = new QWidget(central);
-  auto* row = new QHBoxLayout(bar);
-  row->setContentsMargins(6, 2, 6, 2);
-  row->setSpacing(4);
-  target_button_ = make_button(QStringLiteral("TARGET"), bar);
-  fit_button_ = make_button(QStringLiteral("FIT"), bar);
-  keep_button_ = make_button(QStringLiteral("STOP && KEEP"), bar);
-  discard_button_ = make_button(QStringLiteral("DISCARD"), bar);
-  row->addWidget(target_button_);
-  row->addWidget(fit_button_);
-  row->addWidget(keep_button_);
-  row->addWidget(discard_button_);
-  row->addStretch(1);
-  column->addWidget(bar, 0);
+  chassis_bar_ = new ChassisBar(central);
+  chassis_bar_->setBodyName(QString::fromStdString(body_path.filename().string()));
+  column->addWidget(chassis_bar_, 0);
 
   setCentralWidget(central);
   setWindowTitle(QStringLiteral("TRENCH — %1").arg(QString::fromStdString(body_path.stem().string())));
@@ -160,10 +141,22 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
             endRun();
           });
 
-  connect(target_button_, &QPushButton::clicked, this, &MainWindow::chooseTarget);
-  connect(fit_button_, &QPushButton::clicked, this, &MainWindow::startFit);
-  connect(keep_button_, &QPushButton::clicked, this, &MainWindow::stopAndKeep);
-  connect(discard_button_, &QPushButton::clicked, this, &MainWindow::discardFit);
+  connect(chassis_bar_, &ChassisBar::verbClicked, this, [this](ChassisBar::Verb verb) {
+    switch (verb) {
+      case ChassisBar::Verb::kTarget:
+        chooseTarget();
+        break;
+      case ChassisBar::Verb::kFit:
+        startFit();
+        break;
+      case ChassisBar::Verb::kKeep:
+        stopAndKeep();
+        break;
+      case ChassisBar::Verb::kDiscard:
+        discardFit();
+        break;
+    }
+  });
 
   auto* target_action = new QAction(this);
   target_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+T")));
@@ -208,6 +201,7 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     auto curve = read_curve(path);
     if (curve.size() != trench::core::p2k::kNpts) return false;
     document_->setTarget(std::move(curve));
+    chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
     return true;
   }
   std::vector<std::uint8_t> bytes;
@@ -219,6 +213,7 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
   if (bytes.size() != trench::core::kLegacyBodyBytes) return false;
   document_->setTarget(
       trench::core::p2k::corner_response_db(trench::core::p2k::rom_corner_words(bytes, 0)));
+  chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
   return true;
 }
 
@@ -260,10 +255,7 @@ void MainWindow::endRun() {
 
 void MainWindow::updateVerbs() {
   const auto has_target = document_->target().has_value();
-  fit_button_->setEnabled(has_target && !fit_active_);
-  target_button_->setEnabled(!fit_active_);
-  keep_button_->setEnabled(fit_active_);
-  discard_button_->setEnabled(fit_active_);
+  chassis_bar_->setState(has_target, fit_active_);
   if (undo_action_ != nullptr) {
     undo_action_->setEnabled(!fit_active_ && document_->undoStack()->canUndo());
   }

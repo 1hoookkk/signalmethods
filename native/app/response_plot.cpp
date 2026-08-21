@@ -559,9 +559,4 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
                      QString::number(token.section + 1));
   }
   painter.setClipping(false);
-
-  painter.setFont(QFont(QStringLiteral("Segoe UI"), 8));
-  painter.setPen(kText);
-  painter.drawText(QRectF{plot.left(), 5.0, plot.width(), 18.0},
-                   Qt::AlignLeft | Qt::AlignVCenter, source_label_);
 }

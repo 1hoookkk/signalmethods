@@ -5,6 +5,8 @@ qt_standard_project_setup()
 add_library(trench_native_ui STATIC
   body_document.cpp
   body_document.hpp
+  chassis_bar.cpp
+  chassis_bar.hpp
   fit_controller.cpp
   fit_controller.hpp
   main_window.cpp

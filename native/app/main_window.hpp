@@ -14,7 +14,7 @@
 #include <filesystem>
 
 class QAction;
-class QPushButton;
+class ChassisBar;
 
 class MainWindow final : public QMainWindow {
   Q_OBJECT
@@ -49,10 +49,7 @@ class MainWindow final : public QMainWindow {
   BodyDocument::CornerSnapshot pre_fit_{};
   bool fit_active_{};
   ResponsePlotWidget* response_plot_{};
-  QPushButton* target_button_{};
-  QPushButton* fit_button_{};
-  QPushButton* keep_button_{};
-  QPushButton* discard_button_{};
+  ChassisBar* chassis_bar_{};
   QAction* undo_action_{};
   QAction* redo_action_{};
 };
