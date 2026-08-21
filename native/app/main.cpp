@@ -29,9 +29,20 @@ int main(int argc, char* argv[]) {
   QCommandLineOption shot_option(QStringLiteral("shot"),
                                  QStringLiteral("Grab the window to a file and quit."),
                                  QStringLiteral("path"));
+  QCommandLineOption shot_after_option(QStringLiteral("shot-after"),
+                                       QStringLiteral("Delay before the grab in ms."),
+                                       QStringLiteral("ms"), QStringLiteral("0"));
+  QCommandLineOption target_option(QStringLiteral("target"),
+                                   QStringLiteral("Load a fit target on startup."),
+                                   QStringLiteral("path"));
+  QCommandLineOption fit_option(QStringLiteral("fit"),
+                                QStringLiteral("Start FIT after showing."));
   parser.addOption(body_option);
   parser.addOption(sample_rate_option);
   parser.addOption(shot_option);
+  parser.addOption(shot_after_option);
+  parser.addOption(target_option);
+  parser.addOption(fit_option);
   parser.process(application);
 
   const auto default_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
@@ -48,9 +59,17 @@ int main(int argc, char* argv[]) {
   try {
     MainWindow window(body_path, sample_rate_hz);
     window.show();
+    if (parser.isSet(target_option)) {
+      window.loadTarget(
+          std::filesystem::path(parser.value(target_option).toStdWString()));
+    }
+    if (parser.isSet(fit_option)) {
+      QTimer::singleShot(0, &window, [&window] { window.startFit(); });
+    }
     if (parser.isSet(shot_option)) {
       const auto shot_path = parser.value(shot_option);
-      QTimer::singleShot(0, &window, [&window, shot_path] {
+      const auto delay_ms = parser.value(shot_after_option).toInt();
+      QTimer::singleShot(delay_ms, &window, [&window, shot_path] {
         window.grab().save(shot_path);
         QCoreApplication::quit();
       });

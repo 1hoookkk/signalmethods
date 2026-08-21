@@ -31,6 +31,8 @@ constexpr double kRadiusWarpMax = 60.0;
 constexpr double kHitRadiusPx = 11.0;
 constexpr double kTokenRadiusPx = 8.0;
 constexpr qint64 kRefusalHoldMs = 600;
+constexpr qint64 kFlashHoldMs = 200;
+const QColor kTarget{72, 82, 88};
 
 double x_for_frequency(double frequency_hz, double low_hz, double high_hz,
                        const QRectF& plot) {
@@ -107,6 +109,23 @@ void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
 
 void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
   freedom_mask_ = mask;
+  update();
+}
+
+void ResponsePlotWidget::setTarget(const std::vector<double>* target) {
+  target_db_ = target == nullptr ? std::vector<double>{} : *target;
+  update();
+}
+
+void ResponsePlotWidget::setFitRunning(bool running) {
+  fit_running_ = running;
+  update();
+}
+
+void ResponsePlotWidget::flashLane(std::size_t section) {
+  flash_section_ = section;
+  flash_age_.start();
+  QTimer::singleShot(kFlashHoldMs + 10, this, [this] { update(); });
   update();
 }
 
@@ -399,7 +418,7 @@ void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
     }
     moved_ = true;
     const auto token = hit(press_position_);
-    if (!token || !token->live || token->pinned) {
+    if (fit_running_ || !token || !token->live || token->pinned) {
       event->accept();
       return;
     }
@@ -472,6 +491,23 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
 
   ensureTrace(plot, low_db, high_db);
   painter.setClipRect(plot);
+
+  if (target_db_.size() == frequencies_hz_.size()) {
+    QPainterPath target_path;
+    for (std::size_t index = 0; index < target_db_.size(); ++index) {
+      const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
+      const auto y = y_for_db(target_db_[index], low_db, high_db, plot);
+      if (index == 0) {
+        target_path.moveTo(x, y);
+      } else {
+        target_path.lineTo(x, y);
+      }
+    }
+    painter.setPen(QPen(kTarget, kTraceWidthPx));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawPath(target_path);
+  }
+
   strokeTrace(painter, kTrace);
 
   if (refusalVisible()) {
@@ -491,8 +527,11 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   }
 
   const auto glyph = QFont(QStringLiteral("Segoe UI"), 7, QFont::DemiBold);
+  const auto flashing = flash_section_ && flash_age_.isValid() &&
+                        flash_age_.elapsed() <= kFlashHoldMs;
   for (const auto& token : tokens()) {
-    const auto ink = token.live ? section_color(token.section) : kGrid;
+    auto ink = token.live ? section_color(token.section) : kGrid;
+    if (flashing && token.section == *flash_section_) ink = ink.lighter(160);
     const auto arm = kTokenRadiusPx * 0.62;
     painter.setPen(QPen(ink, token.pinned ? 2.6 : 1.5));
     painter.setBrush(Qt::NoBrush);

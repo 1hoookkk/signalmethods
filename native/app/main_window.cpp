@@ -1,15 +1,22 @@
 #include "main_window.hpp"
 
+#include "body_document.hpp"
+#include "fit_controller.hpp"
 #include "response_plot.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
 #include <QAction>
+#include <QFileDialog>
+#include <QHBoxLayout>
 #include <QKeySequence>
-#include <QUndoCommand>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QWidget>
 
 #include <fstream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace {
@@ -25,87 +32,242 @@ std::vector<std::uint8_t> read_bytes(const std::filesystem::path& path) {
   return bytes;
 }
 
-void write_section(trench::core::PackedBody& body, std::size_t section,
-                   const trench::core::PackedSection& words) {
-  body.words[0][section] = words;
-  body.words[4][section] = words;
+std::vector<double> read_curve(const std::filesystem::path& path) {
+  std::ifstream stream(path);
+  if (!stream) return {};
+  std::vector<double> values;
+  double value = 0.0;
+  while (stream >> value) values.push_back(value);
+  if (!stream.eof() || values.size() != trench::core::p2k::kNpts) return {};
+  return values;
 }
 
-class SectionEditCommand final : public QUndoCommand {
- public:
-  SectionEditCommand(MainWindow* window, std::size_t section,
-                     trench::core::PackedSection before,
-                     trench::core::PackedSection after)
-      : window_(window), section_(section), before_(before), after_(after) {}
+trench::core::p2k::CornerWords unflatten(const QList<quint16>& words) {
+  trench::core::p2k::CornerWords out{};
+  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
+    for (std::size_t word = 0; word < out[section].size(); ++word) {
+      out[section][word] =
+          words[static_cast<qsizetype>(section * out[section].size() + word)];
+    }
+  }
+  return out;
+}
 
-  void redo() override { window_->applySection(section_, after_); }
-  void undo() override { window_->applySection(section_, before_); }
+trench::core::p2k::StoredCorner unflatten_stored(const QList<quint16>& words) {
+  trench::core::p2k::StoredCorner out{};
+  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
+    for (std::size_t word = 0; word < trench::core::p2k::kWordCount; ++word) {
+      out[section][word] = words[static_cast<qsizetype>(
+          section * trench::core::p2k::kWordCount + word)];
+    }
+  }
+  return out;
+}
 
- private:
-  MainWindow* window_;
-  std::size_t section_;
-  trench::core::PackedSection before_;
-  trench::core::PackedSection after_;
-};
+QPushButton* make_button(const QString& text, QWidget* parent) {
+  auto* button = new QPushButton(text, parent);
+  button->setFocusPolicy(Qt::NoFocus);
+  button->setFlat(true);
+  return button;
+}
 
 }  // namespace
 
 MainWindow::MainWindow(const std::filesystem::path& body_path,
                        double sample_rate_hz,
                        QWidget* parent)
-    : QMainWindow(parent),
-      body_(trench::core::PackedBody::from_body_bytes(read_bytes(body_path))),
-      sample_rate_hz_(sample_rate_hz),
-      freedom_mask_(trench::core::p2k::kAllFree),
-      undo_stack_(this) {
-  response_plot_ = new ResponsePlotWidget(this);
+    : QMainWindow(parent) {
+  document_ = new BodyDocument(
+      trench::core::PackedBody::from_body_bytes(read_bytes(body_path)),
+      sample_rate_hz, this);
+  fit_controller_ = new FitController(this);
+
+  auto* central = new QWidget(this);
+  auto* column = new QVBoxLayout(central);
+  column->setContentsMargins(0, 0, 0, 0);
+  column->setSpacing(0);
+
+  response_plot_ = new ResponsePlotWidget(central);
   response_plot_->setObjectName(QStringLiteral("responsePlot"));
-  response_plot_->setBody(&body_, sample_rate_hz_, body_path.filename().string());
-  response_plot_->setFreedomMask(freedom_mask_);
-  setCentralWidget(response_plot_);
+  response_plot_->setBody(&document_->body(), document_->sampleRateHz(),
+                          body_path.filename().string());
+  response_plot_->setFreedomMask(document_->freedomMask());
+  column->addWidget(response_plot_, 1);
+
+  auto* bar = new QWidget(central);
+  auto* row = new QHBoxLayout(bar);
+  row->setContentsMargins(6, 2, 6, 2);
+  row->setSpacing(4);
+  target_button_ = make_button(QStringLiteral("TARGET"), bar);
+  fit_button_ = make_button(QStringLiteral("FIT"), bar);
+  keep_button_ = make_button(QStringLiteral("STOP && KEEP"), bar);
+  discard_button_ = make_button(QStringLiteral("DISCARD"), bar);
+  row->addWidget(target_button_);
+  row->addWidget(fit_button_);
+  row->addWidget(keep_button_);
+  row->addWidget(discard_button_);
+  row->addStretch(1);
+  column->addWidget(bar, 0);
+
+  setCentralWidget(central);
   setWindowTitle(QStringLiteral("TRENCH — %1").arg(QString::fromStdString(body_path.stem().string())));
   resize(960, 540);
 
   connect(response_plot_, &ResponsePlotWidget::gestureStarted, this,
-          [this](std::size_t section) { before_words_ = body_.words[0][section]; });
+          [this](std::size_t section) {
+            before_words_ = document_->body().words[0][section];
+          });
   connect(response_plot_, &ResponsePlotWidget::sectionEdited, this,
           [this](std::size_t section, const trench::core::PackedSection& words) {
-            write_section(body_, section, words);
-            response_plot_->refresh();
+            document_->applySection(section, words);
           });
   connect(response_plot_, &ResponsePlotWidget::gestureFinished, this,
           [this](std::size_t section) {
-            if (body_.words[0][section] == before_words_) return;
-            undo_stack_.push(new SectionEditCommand(this, section, before_words_,
-                                                    body_.words[0][section]));
+            document_->commitGesture(section, before_words_);
           });
   connect(response_plot_, &ResponsePlotWidget::pinToggled, this,
           [this](std::size_t section, ResponsePlotWidget::Lane lane) {
-            const auto bit = lane == ResponsePlotWidget::Lane::kPole
-                                 ? trench::core::p2k::pole_bit(section)
-                                 : trench::core::p2k::zero_bit(section);
-            freedom_mask_ ^= bit;
-            response_plot_->setFreedomMask(freedom_mask_);
+            document_->toggleLane(section, lane == ResponsePlotWidget::Lane::kPole);
           });
 
-  auto* undo_action = undo_stack_.createUndoAction(this);
-  undo_action->setShortcut(QKeySequence::Undo);
-  addAction(undo_action);
-  auto* redo_action = undo_stack_.createRedoAction(this);
-  redo_action->setShortcut(QKeySequence::Redo);
-  addAction(redo_action);
+  connect(document_, &BodyDocument::bodyChanged, this,
+          [this] { response_plot_->refresh(); });
+  connect(document_, &BodyDocument::freedomMaskChanged, this,
+          [this](std::uint32_t mask) {
+            response_plot_->setFreedomMask(mask);
+            fit_controller_->setMask(mask);
+          });
+  connect(document_, &BodyDocument::targetChanged, this, [this] {
+    response_plot_->setTarget(document_->target() ? &*document_->target() : nullptr);
+    updateVerbs();
+  });
+
+  connect(fit_controller_, &FitController::stepReady, this,
+          [this](quint64 generation, quint64 section, const QList<quint16>& words) {
+            if (!fit_active_ || generation != fit_controller_->generation()) return;
+            document_->applyFitStep(unflatten(words));
+            response_plot_->flashLane(static_cast<std::size_t>(section));
+          });
+  connect(fit_controller_, &FitController::finished, this,
+          [this](quint64 generation, bool ok, const QList<quint16>& words) {
+            if (!fit_active_ || generation != fit_controller_->generation()) return;
+            if (ok) {
+              document_->applyFitResult(unflatten_stored(words));
+              document_->commitFit(pre_fit_);
+            } else {
+              document_->applyCorner(pre_fit_);
+            }
+            endRun();
+          });
+
+  connect(target_button_, &QPushButton::clicked, this, &MainWindow::chooseTarget);
+  connect(fit_button_, &QPushButton::clicked, this, &MainWindow::startFit);
+  connect(keep_button_, &QPushButton::clicked, this, &MainWindow::stopAndKeep);
+  connect(discard_button_, &QPushButton::clicked, this, &MainWindow::discardFit);
+
+  auto* target_action = new QAction(this);
+  target_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+T")));
+  connect(target_action, &QAction::triggered, this, &MainWindow::chooseTarget);
+  addAction(target_action);
+
+  undo_action_ = document_->undoStack()->createUndoAction(this);
+  undo_action_->setShortcut(QKeySequence::Undo);
+  addAction(undo_action_);
+  redo_action_ = document_->undoStack()->createRedoAction(this);
+  redo_action_->setShortcut(QKeySequence::Redo);
+  addAction(redo_action_);
+
+  updateVerbs();
 }
 
 ResponsePlotWidget* MainWindow::responsePlot() const noexcept { return response_plot_; }
 
-const trench::core::PackedBody& MainWindow::body() const noexcept { return body_; }
+BodyDocument* MainWindow::document() const noexcept { return document_; }
 
-QUndoStack* MainWindow::undoStack() noexcept { return &undo_stack_; }
+FitController* MainWindow::fitController() const noexcept { return fit_controller_; }
 
-std::uint32_t MainWindow::freedomMask() const noexcept { return freedom_mask_; }
+const trench::core::PackedBody& MainWindow::body() const noexcept {
+  return document_->body();
+}
+
+QUndoStack* MainWindow::undoStack() noexcept { return document_->undoStack(); }
+
+std::uint32_t MainWindow::freedomMask() const noexcept {
+  return document_->freedomMask();
+}
+
+bool MainWindow::fitRunning() const noexcept { return fit_active_; }
 
 void MainWindow::applySection(std::size_t section,
                               const trench::core::PackedSection& words) {
-  write_section(body_, section, words);
-  response_plot_->refresh();
+  document_->applySection(section, words);
+}
+
+bool MainWindow::loadTarget(const std::filesystem::path& path) {
+  if (path.extension() == ".txt") {
+    auto curve = read_curve(path);
+    if (curve.size() != trench::core::p2k::kNpts) return false;
+    document_->setTarget(std::move(curve));
+    return true;
+  }
+  std::vector<std::uint8_t> bytes;
+  try {
+    bytes = read_bytes(path);
+  } catch (const std::exception&) {
+    return false;
+  }
+  if (bytes.size() != trench::core::kLegacyBodyBytes) return false;
+  document_->setTarget(
+      trench::core::p2k::corner_response_db(trench::core::p2k::rom_corner_words(bytes, 0)));
+  return true;
+}
+
+void MainWindow::chooseTarget() {
+  const auto chosen = QFileDialog::getOpenFileName(
+      this, QStringLiteral("TARGET"), QString(),
+      QStringLiteral("Target (*.body240 *.bin *.txt)"));
+  if (chosen.isEmpty()) return;
+  loadTarget(std::filesystem::path(chosen.toStdWString()));
+}
+
+void MainWindow::startFit() {
+  if (fit_active_ || !document_->target()) return;
+  pre_fit_ = document_->cornerSnapshot();
+  fit_active_ = true;
+  response_plot_->setFitRunning(true);
+  updateVerbs();
+  fit_controller_->start(*document_->target(), document_->seedWords(),
+                         document_->freedomMask());
+}
+
+void MainWindow::stopAndKeep() {
+  if (!fit_active_) return;
+  fit_controller_->requestStop();
+}
+
+void MainWindow::discardFit() {
+  if (!fit_active_) return;
+  fit_controller_->abandon();
+  document_->applyCorner(pre_fit_);
+  endRun();
+}
+
+void MainWindow::endRun() {
+  fit_active_ = false;
+  response_plot_->setFitRunning(false);
+  updateVerbs();
+}
+
+void MainWindow::updateVerbs() {
+  const auto has_target = document_->target().has_value();
+  fit_button_->setEnabled(has_target && !fit_active_);
+  target_button_->setEnabled(!fit_active_);
+  keep_button_->setEnabled(fit_active_);
+  discard_button_->setEnabled(fit_active_);
+  if (undo_action_ != nullptr) {
+    undo_action_->setEnabled(!fit_active_ && document_->undoStack()->canUndo());
+  }
+  if (redo_action_ != nullptr) {
+    redo_action_->setEnabled(!fit_active_ && document_->undoStack()->canRedo());
+  }
 }

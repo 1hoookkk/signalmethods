@@ -39,6 +39,9 @@ class ResponsePlotWidget final : public QWidget {
   void setBody(const trench::core::PackedBody* body, double sample_rate_hz,
                std::string source_label);
   void setFreedomMask(std::uint32_t mask);
+  void setTarget(const std::vector<double>* target);
+  void setFitRunning(bool running);
+  void flashLane(std::size_t section);
   void refresh();
 
   [[nodiscard]] std::size_t responsePointCount() const noexcept;
@@ -87,6 +90,11 @@ class ResponsePlotWidget final : public QWidget {
   bool refusal_active_{};
   double refusal_hz_{};
   QElapsedTimer refusal_age_;
+
+  std::vector<double> target_db_;
+  bool fit_running_{};
+  std::optional<std::size_t> flash_section_;
+  QElapsedTimer flash_age_;
 
   std::uint64_t body_revision_{};
   QPainterPath trace_path_;

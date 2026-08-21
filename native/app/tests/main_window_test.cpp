@@ -306,6 +306,91 @@ class MainWindowTest final : public QObject {
     QVERIFY(pair_radius_of(after[2], after[3]) <= trench::core::p2k::pole_radius_ceiling());
     QCOMPARE(window.body().words[4][0], after);
   }
+
+  void fitRequiresATarget() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    window.startFit();
+    QVERIFY(!window.fitRunning());
+    QCOMPARE(window.undoStack()->count(), 0);
+  }
+
+  void stopAndKeepCommitsOneUndoEntry() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    const auto target_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                             "ref/presets/P2k_002_early_rizer.bin";
+    QVERIFY(window.loadTarget(target_body));
+    const auto before = window.body().native_bytes();
+
+    window.startFit();
+    QVERIFY(window.fitRunning());
+    QTRY_VERIFY_WITH_TIMEOUT(window.body().native_bytes() != before, 30000);
+    window.stopAndKeep();
+    QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
+
+    QCOMPARE(window.undoStack()->count(), 1);
+    QVERIFY(window.body().is_legacy_representable());
+    QVERIFY(window.body().native_bytes() != before);
+    window.undoStack()->undo();
+    QVERIFY(window.body().native_bytes() == before);
+  }
+
+  void discardRestoresPreFitBytesAndDropsStragglers() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    const auto target_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                             "ref/presets/P2k_002_early_rizer.bin";
+    QVERIFY(window.loadTarget(target_body));
+    const auto before = window.body().native_bytes();
+
+    window.startFit();
+    QTRY_VERIFY_WITH_TIMEOUT(window.body().native_bytes() != before, 30000);
+    window.discardFit();
+    QVERIFY(window.body().native_bytes() == before);
+    QTest::qWait(300);
+    QVERIFY(window.body().native_bytes() == before);
+    QCOMPARE(window.undoStack()->count(), 0);
+    QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
+  }
+
+  void pinnedSectionsAreNeverTouchedByFit() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    const auto target_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                             "ref/presets/P2k_002_early_rizer.bin";
+    QVERIFY(window.loadTarget(target_body));
+
+    auto* document = window.document();
+    for (std::size_t section = 0; section < 6; ++section) {
+      if (section == 3) continue;
+      document->toggleLane(section, true);
+      document->toggleLane(section, false);
+    }
+    std::array<trench::core::PackedSection, 6> before{};
+    for (std::size_t section = 0; section < 6; ++section) {
+      before[section] = window.body().words[0][section];
+    }
+
+    window.startFit();
+    QTRY_VERIFY_WITH_TIMEOUT(window.body().words[0][3] != before[3], 30000);
+    for (std::size_t section = 0; section < 6; ++section) {
+      if (section == 3) continue;
+      for (std::size_t wi = 0; wi < 4; ++wi) {
+        QCOMPARE(window.body().words[0][section][wi], before[section][wi]);
+      }
+    }
+    window.discardFit();
+    QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
+
+    for (std::size_t section = 0; section < 6; ++section) {
+      QCOMPARE(window.body().words[0][section], before[section]);
+    }
+  }
 };
 
 QTEST_MAIN(MainWindowTest)

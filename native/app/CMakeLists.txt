@@ -3,6 +3,10 @@ find_package(Qt6 6.11.2 EXACT REQUIRED COMPONENTS Test Widgets)
 qt_standard_project_setup()
 
 add_library(trench_native_ui STATIC
+  body_document.cpp
+  body_document.hpp
+  fit_controller.cpp
+  fit_controller.hpp
   main_window.cpp
   main_window.hpp
   response_plot.cpp
