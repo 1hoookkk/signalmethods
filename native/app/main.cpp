@@ -5,6 +5,7 @@
 #include <QCommandLineParser>
 #include <QGuiApplication>
 #include <QMessageBox>
+#include <QTimer>
 
 #include <filesystem>
 #include <stdexcept>
@@ -25,8 +26,12 @@ int main(int argc, char* argv[]) {
       {QStringLiteral("r"), QStringLiteral("sample-rate")},
       QStringLiteral("Authoring datum in Hz."), QStringLiteral("hz"),
       QStringLiteral("44100"));
+  QCommandLineOption shot_option(QStringLiteral("shot"),
+                                 QStringLiteral("Grab the window to a file and quit."),
+                                 QStringLiteral("path"));
   parser.addOption(body_option);
   parser.addOption(sample_rate_option);
+  parser.addOption(shot_option);
   parser.process(application);
 
   const auto default_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
@@ -43,6 +48,13 @@ int main(int argc, char* argv[]) {
   try {
     MainWindow window(body_path, sample_rate_hz);
     window.show();
+    if (parser.isSet(shot_option)) {
+      const auto shot_path = parser.value(shot_option);
+      QTimer::singleShot(0, &window, [&window, shot_path] {
+        window.grab().save(shot_path);
+        QCoreApplication::quit();
+      });
+    }
     return application.exec();
   } catch (const std::exception& error) {
     QMessageBox::critical(nullptr, QStringLiteral("TRENCH"),
