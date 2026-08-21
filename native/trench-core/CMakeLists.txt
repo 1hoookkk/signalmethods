@@ -23,6 +23,9 @@ endif()
 add_executable(trench_corpus_contribution tools/corpus_contribution.cpp)
 target_link_libraries(trench_corpus_contribution PRIVATE trench_native_core)
 
+add_executable(trench_fit_target tools/fit_target.cpp)
+target_link_libraries(trench_fit_target PRIVATE trench_native_core)
+
 if(BUILD_TESTING)
   find_package(GTest CONFIG REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
