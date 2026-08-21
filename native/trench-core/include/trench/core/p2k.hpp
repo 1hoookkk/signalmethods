@@ -123,23 +123,31 @@ struct Scratch {
   std::vector<double> bank = std::vector<double>(kNpts, 0.0);
   std::vector<double> resid = std::vector<double>(kNpts, 0.0);
   std::vector<double> tmp = std::vector<double>(kNpts, 0.0);
+  std::vector<double> cand = std::vector<double>(kNpts, 0.0);
 };
+
+using LossFn = std::function<double(std::span<const double> target,
+                                    std::span<const double> candidate)>;
 
 double residual_var(std::span<const double> target, std::span<const double> model, Scratch& s);
 double corner_var(const Corner& c, std::span<const double> target, Scratch& s);
-double corner_cost(const Corner& c, std::span<const double> target, Cost cost, Scratch& s);
+double corner_cost(const Corner& c, std::span<const double> target, Cost cost, Scratch& s,
+                   const LossFn* loss = nullptr);
 std::pair<double, bool> sweep_axis(Corner& c, std::span<const double> target, std::size_t si,
                                    std::size_t wi, double best, Scratch& s);
 std::pair<double, bool> sweep_axis_cost(Corner& c, std::span<const double> target, std::size_t si,
-                                        std::size_t wi, double best, Cost cost, Scratch& s);
+                                        std::size_t wi, double best, Cost cost, Scratch& s,
+                                        const LossFn* loss = nullptr);
 std::pair<double, bool> sweep_radius(Corner& c, std::span<const double> target, std::size_t si,
                                      std::size_t root, double best, Scratch& s);
 std::pair<double, bool> sweep_radius_cost(Corner& c, std::span<const double> target, std::size_t si,
-                                          std::size_t root, double best, Cost cost, Scratch& s);
+                                          std::size_t root, double best, Cost cost, Scratch& s,
+                                          const LossFn* loss = nullptr);
 std::pair<double, bool> stage_moves(Corner& c, std::span<const double> target, std::size_t si,
                                     double best, Scratch& s);
 std::pair<double, bool> stage_moves_cost(Corner& c, std::span<const double> target, std::size_t si,
-                                         double best, Cost cost, Scratch& s);
+                                         double best, Cost cost, Scratch& s,
+                                         const LossFn* loss = nullptr);
 double polish(Corner& c, std::span<const double> target, std::size_t max_passes, Scratch& s);
 
 inline constexpr std::int32_t kFineSpan = 255;
@@ -148,7 +156,7 @@ std::pair<double, bool> sweep_axis_fine(Corner& c, std::span<const double> targe
                                         std::size_t wi, double best, Scratch& s);
 std::pair<double, bool> sweep_axis_fine_cost(Corner& c, std::span<const double> target,
                                              std::size_t si, std::size_t wi, double best, Cost cost,
-                                             Scratch& s);
+                                             Scratch& s, const LossFn* loss = nullptr);
 double polish_fine(Corner& c, std::span<const double> target, std::size_t max_passes, Scratch& s);
 
 class Rng {
@@ -201,7 +209,12 @@ struct FitOptions {
   std::size_t continuous_starts = kContinuousStarts;
   std::uint64_t rng_seed = 20'260'820;
   bool allow_continuous = false;
+  LossFn loss;
+  std::optional<PackedCorner> baseline;
 };
+
+StageScales stage_gain_pass_held(const Corner& c, std::uint32_t mask,
+                                 const PackedCorner& baseline);
 
 struct P2kFit {
   CornerWords words{};
@@ -225,11 +238,17 @@ using FreedomFn = std::function<std::uint32_t()>;
 inline constexpr std::uint32_t kAllFree = 0xFFFFFFFFU;
 
 constexpr bool pole_free(std::uint32_t mask, std::size_t si) {
-  return (mask >> (2 * si)) & 1U;
+  return (mask >> (3 * si)) & 1U;
 }
 constexpr bool zero_free(std::uint32_t mask, std::size_t si) {
-  return (mask >> (2 * si + 1)) & 1U;
+  return (mask >> (3 * si + 1)) & 1U;
 }
+constexpr bool scale_free(std::uint32_t mask, std::size_t si) {
+  return (mask >> (3 * si + 2)) & 1U;
+}
+constexpr std::uint32_t pole_bit(std::size_t si) { return 1U << (3 * si); }
+constexpr std::uint32_t zero_bit(std::size_t si) { return 1U << (3 * si + 1); }
+constexpr std::uint32_t scale_bit(std::size_t si) { return 1U << (3 * si + 2); }
 
 struct StepReport {
   std::size_t section{};

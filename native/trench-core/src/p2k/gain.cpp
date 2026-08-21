@@ -27,6 +27,38 @@ StageScales stage_gain_pass(const Corner& c) {
   return out;
 }
 
+StageScales stage_gain_pass_held(const Corner& c, std::uint32_t mask,
+                                 const PackedCorner& baseline) {
+  double ratio = 1.0;
+  for (std::size_t si = 0; si < kStageCount; ++si) {
+    auto [n, d] = dc_terms(c.w[si]);
+    if (std::abs(n) < 1e-15) {
+      n = std::copysign(1e-15, n == 0.0 ? 1.0 : n);
+    }
+    ratio *= d / n;
+  }
+  double held_product = 1.0;
+  std::size_t free_count = 0;
+  for (std::size_t si = 0; si < kStageCount; ++si) {
+    if (scale_free(mask, si)) {
+      ++free_count;
+    } else {
+      held_product *= 4.0 * decode_word(baseline[si * kWordCount + 4]);
+    }
+  }
+  StageScales out{};
+  const double free_scale =
+      free_count == 0
+          ? 1.0
+          : std::pow(std::abs(ratio) / std::max(held_product, 1e-30),
+                     1.0 / static_cast<double>(free_count));
+  for (std::size_t si = 0; si < kStageCount; ++si) {
+    out[si] = scale_free(mask, si) ? free_scale
+                                   : 4.0 * decode_word(baseline[si * kWordCount + 4]);
+  }
+  return out;
+}
+
 PackedCorner pack_corner(const Corner& c, const StageScales& scales) {
   PackedCorner out{};
   for (std::size_t si = 0; si < kStageCount; ++si) {

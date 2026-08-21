@@ -32,8 +32,12 @@ double corner_var(const Corner& c, std::span<const double> target, Scratch& s) {
   return corner_cost(c, target, Cost::kWeightedVar, s);
 }
 
-double corner_cost(const Corner& c, std::span<const double> target, Cost cost, Scratch& s) {
+double corner_cost(const Corner& c, std::span<const double> target, Cost cost, Scratch& s,
+                   const LossFn* loss) {
   c.total_into(s.total);
+  if (loss) {
+    return (*loss)(target, s.total);
+  }
   for (std::size_t i = 0; i < kNpts; ++i) {
     s.resid[i] = target[i] - s.total[i];
   }
@@ -46,7 +50,8 @@ std::pair<double, bool> sweep_axis(Corner& c, std::span<const double> target, st
 }
 
 std::pair<double, bool> sweep_axis_cost(Corner& c, std::span<const double> target, std::size_t si,
-                                        std::size_t wi, double best, Cost cost, Scratch& s) {
+                                        std::size_t wi, double best, Cost cost, Scratch& s,
+                                        const LossFn* loss) {
   const Grid& g = grid();
   load_base(s, c, si);
   const bool sweep_is_mag = wi % 2 == 0;
@@ -72,9 +77,13 @@ std::pair<double, bool> sweep_axis_cost(Corner& c, std::span<const double> targe
     for (std::size_t i = 0; i < kNpts; ++i) {
       const double cand = wi < 2 ? s.base[i] + s.bank[i] - d_stage[i]
                                  : s.base[i] + n[i] - s.bank[i];
-      s.resid[i] = target[i] - cand;
+      if (loss) {
+        s.cand[i] = cand;
+      } else {
+        s.resid[i] = target[i] - cand;
+      }
     }
-    const double v = g.score(s.resid, cost, s.tmp);
+    const double v = loss ? (*loss)(target, s.cand) : g.score(s.resid, cost, s.tmp);
     if (v < best_v) {
       best_v = v;
       best_k = k;
@@ -98,7 +107,8 @@ std::pair<double, bool> sweep_radius(Corner& c, std::span<const double> target, 
 }
 
 std::pair<double, bool> sweep_radius_cost(Corner& c, std::span<const double> target, std::size_t si,
-                                          std::size_t root, double best, Cost cost, Scratch& s) {
+                                          std::size_t root, double best, Cost cost, Scratch& s,
+                                          const LossFn* loss) {
   const Grid& g = grid();
   const std::size_t wm = root == 0 ? 0 : 2;
   const std::size_t wr = root == 0 ? 1 : 3;
@@ -137,9 +147,13 @@ std::pair<double, bool> sweep_radius_cost(Corner& c, std::span<const double> tar
     for (std::size_t i = 0; i < kNpts; ++i) {
       const double cand = root == 0 ? s.base[i] + (s.bank[i] - d_stage[i])
                                     : s.base[i] + (n[i] - s.bank[i]);
-      s.resid[i] = target[i] - cand;
+      if (loss) {
+        s.cand[i] = cand;
+      } else {
+        s.resid[i] = target[i] - cand;
+      }
     }
-    const double v = g.score(s.resid, cost, s.tmp);
+    const double v = loss ? (*loss)(target, s.cand) : g.score(s.resid, cost, s.tmp);
     if (v < best_v) {
       best_v = v;
       best_k = k;
@@ -168,13 +182,13 @@ std::pair<double, bool> stage_moves(Corner& c, std::span<const double> target, s
 }
 
 std::pair<double, bool> stage_moves_cost(Corner& c, std::span<const double> target, std::size_t si,
-                                         double best, Cost cost, Scratch& s) {
+                                         double best, Cost cost, Scratch& s, const LossFn* loss) {
   bool moved = false;
   for (std::size_t wi = 0; wi < 4; ++wi) {
     if (si == 5 && wi == 1) {
       continue;
     }
-    const auto [v, ch] = sweep_axis_cost(c, target, si, wi, best, cost, s);
+    const auto [v, ch] = sweep_axis_cost(c, target, si, wi, best, cost, s, loss);
     best = v;
     moved |= ch;
   }
@@ -182,7 +196,7 @@ std::pair<double, bool> stage_moves_cost(Corner& c, std::span<const double> targ
     if (si == 5 && root == 0) {
       continue;
     }
-    const auto [v, ch] = sweep_radius_cost(c, target, si, root, best, cost, s);
+    const auto [v, ch] = sweep_radius_cost(c, target, si, root, best, cost, s, loss);
     best = v;
     moved |= ch;
   }
@@ -221,7 +235,7 @@ std::pair<double, bool> sweep_axis_fine(Corner& c, std::span<const double> targe
 
 std::pair<double, bool> sweep_axis_fine_cost(Corner& c, std::span<const double> target,
                                              std::size_t si, std::size_t wi, double best, Cost cost,
-                                             Scratch& s) {
+                                             Scratch& s, const LossFn* loss) {
   const Grid& g = grid();
   load_base(s, c, si);
   const bool is_pole = wi >= 2;
@@ -249,9 +263,13 @@ std::pair<double, bool> sweep_axis_fine_cost(Corner& c, std::span<const double> 
     for (std::size_t i = 0; i < kNpts; ++i) {
       const double cand_db = wi < 2 ? s.base[i] + s.bank[i] - d_stage[i]
                                     : s.base[i] + n[i] - s.bank[i];
-      s.resid[i] = target[i] - cand_db;
+      if (loss) {
+        s.cand[i] = cand_db;
+      } else {
+        s.resid[i] = target[i] - cand_db;
+      }
     }
-    const double v = g.score(s.resid, cost, s.tmp);
+    const double v = loss ? (*loss)(target, s.cand) : g.score(s.resid, cost, s.tmp);
     if (v < best_v) {
       best_v = v;
       best_w = word;

@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -98,7 +100,7 @@ TEST(P2kFitterSemantics, EveryStepNamesOneSectionAndOnlyThatSectionChanges) {
 TEST(P2kFitterSemantics, APinnedSectionIsNeverWritten) {
   const auto kase = cross_case();
   const std::vector<p2k::Seed> seeds{p2k::Seed{kase.seed}};
-  const std::uint32_t mask = p2k::kAllFree & ~(3U << (2 * 2));
+  const std::uint32_t mask = p2k::kAllFree & ~(p2k::pole_bit(2) | p2k::zero_bit(2));
   const auto watched = p2k::fit_corner_watched(
       kase.target, seeds, p2k::FitOptions{}, [mask] { return mask; }, nullptr,
       [](const p2k::StepReport& r) { ASSERT_NE(r.section, 2U); });
@@ -118,7 +120,7 @@ TEST(P2kFitterSemantics, APinFlippedMidFitIsExcludedFromTheNextStepOn) {
         if (!flipped) {
           flipped = true;
           held = r.words[0];
-          mask.store(p2k::kAllFree & ~3U);
+          mask.store(p2k::kAllFree & ~(p2k::pole_bit(0) | p2k::zero_bit(0)));
           return;
         }
         ASSERT_EQ(r.words[0], held) << "section 0 moved after its pin";
@@ -126,6 +128,59 @@ TEST(P2kFitterSemantics, APinFlippedMidFitIsExcludedFromTheNextStepOn) {
   ASSERT_TRUE(watched.has_value());
   ASSERT_TRUE(flipped);
   ASSERT_EQ(watched->words[0], held);
+}
+
+TEST(P2kFitterSemantics, ALossCallbackReproducesTheDefaultObjectiveExactly) {
+  const auto kase = cross_case();
+  const std::vector<p2k::Seed> seeds{p2k::Seed{kase.seed}};
+  const auto plain = p2k::fit_corner_watched(kase.target, seeds, p2k::FitOptions{}, nullptr,
+                                             nullptr, nullptr);
+  ASSERT_TRUE(plain.has_value());
+
+  p2k::FitOptions opts;
+  std::size_t calls = 0;
+  opts.loss = [&calls](std::span<const double> target, std::span<const double> cand) {
+    ++calls;
+    std::vector<double> resid(p2k::kNpts, 0.0);
+    std::vector<double> tmp(p2k::kNpts, 0.0);
+    for (std::size_t i = 0; i < p2k::kNpts; ++i) {
+      resid[i] = target[i] - cand[i];
+    }
+    return p2k::grid().weighted_var(resid, tmp);
+  };
+  const auto via_loss =
+      p2k::fit_corner_watched(kase.target, seeds, opts, nullptr, nullptr, nullptr);
+  ASSERT_TRUE(via_loss.has_value());
+  ASSERT_GT(calls, 0U);
+  ASSERT_EQ(via_loss->words, plain->words);
+  ASSERT_EQ(via_loss->packed, plain->packed);
+  ASSERT_EQ(via_loss->shape_rms_db, plain->shape_rms_db);
+}
+
+TEST(P2kFitterSemantics, AHeldScaleWordIsWrittenBackVerbatim) {
+  const auto& c0 = fixture()["corners"][0];
+  const auto kase = cross_case();
+  const std::vector<p2k::Seed> seeds{p2k::Seed{kase.seed}};
+  p2k::FitOptions opts;
+  p2k::PackedCorner baseline{};
+  const auto packed_words = c0["packed_words"].get<std::vector<std::uint16_t>>();
+  std::copy(packed_words.begin(), packed_words.end(), baseline.begin());
+  opts.baseline = baseline;
+  const std::uint32_t mask = p2k::kAllFree & ~p2k::scale_bit(3);
+  const auto watched = p2k::fit_corner_watched(kase.target, seeds, opts, [mask] { return mask; },
+                                               nullptr, nullptr);
+  ASSERT_TRUE(watched.has_value());
+  ASSERT_EQ(watched->packed[3 * p2k::kWordCount + 4], baseline[3 * p2k::kWordCount + 4]);
+  ASSERT_LT(std::abs(p2k::dc_gain_db(watched->packed)), 0.1);
+}
+
+TEST(P2kFitterSemantics, AHeldScaleWithoutABaselineIsRefused) {
+  const auto kase = cross_case();
+  const std::vector<p2k::Seed> seeds{p2k::Seed{kase.seed}};
+  const std::uint32_t mask = p2k::kAllFree & ~p2k::scale_bit(1);
+  const auto watched = p2k::fit_corner_watched(kase.target, seeds, p2k::FitOptions{},
+                                               [mask] { return mask; }, nullptr, nullptr);
+  ASSERT_FALSE(watched.has_value());
 }
 
 TEST(P2kFitterSemantics, StopAndKeepReturnsTheLastAcceptedLegalState) {
