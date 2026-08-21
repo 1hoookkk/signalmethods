@@ -7,9 +7,13 @@ add_library(trench_native_core STATIC
   src/p2k/gain.cpp
   src/p2k/objective.cpp
   src/p2k/polish.cpp
+  src/p2k/push.cpp
   src/p2k/seed.cpp
   src/p2k/watched.cpp
 )
+
+find_package(Eigen3 5.0.1 EXACT CONFIG REQUIRED)
+target_link_libraries(trench_native_core PRIVATE Eigen3::Eigen)
 
 target_include_directories(trench_native_core PUBLIC include)
 target_compile_features(trench_native_core PUBLIC cxx_std_20)
@@ -34,6 +38,7 @@ if(BUILD_TESTING)
     tests/p2k_parity_test.cpp
     tests/p2k_container_laws_test.cpp
     tests/p2k_fitter_semantics_test.cpp
+    tests/p2k_push_test.cpp
     tests/p2k_refit_bank_test.cpp
   )
   target_link_libraries(trench_native_core_tests PRIVATE trench_native_core GTest::gtest_main
