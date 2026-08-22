@@ -1,8 +1,10 @@
 #include "chassis_bar.hpp"
 
 #include <QFontMetricsF>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QResizeEvent>
 
 #include <cmath>
 
@@ -22,6 +24,7 @@ constexpr double kPadHeight = 22.0;
 constexpr double kPadPaddingX = 10.0;
 constexpr double kPadGap = 8.0;
 constexpr double kPadRadius = 2.0;
+constexpr double kEntryWidth = 96.0;
 
 constexpr double kDcDeadbandDb = 0.05;
 
@@ -51,6 +54,19 @@ QColor section_color(std::size_t section) {
 ChassisBar::ChassisBar(QWidget* parent) : QWidget(parent) {
   setFixedHeight(static_cast<int>(kBarHeight));
   setMouseTracking(true);
+  entry_ = new QLineEdit(this);
+  entry_->setObjectName(QStringLiteral("rootEntry"));
+  entry_->setFont(pad_font());
+  entry_->setPlaceholderText(QStringLiteral("Hz Q"));
+  entry_->setFrame(false);
+  entry_->setStyleSheet(QStringLiteral(
+      "QLineEdit { background: #1a1f23; color: #aebabe; border: 1px solid #373f43; "
+      "border-radius: 2px; padding: 0 4px; selection-background-color: #57decd; }"));
+  entry_->hide();
+  connect(entry_, &QLineEdit::returnPressed, this, [this] {
+    emit rootTyped(entry_->text());
+    entry_->selectAll();
+  });
 }
 
 void ChassisBar::setBodyName(const QString& name) {
@@ -81,7 +97,13 @@ void ChassisBar::setSourceSawtooth(bool sawtooth) {
 
 void ChassisBar::setReadout(const std::optional<Readout>& readout) {
   readout_ = readout;
+  entry_->setVisible(readout.has_value());
   update();
+}
+
+void ChassisBar::resizeEvent(QResizeEvent*) {
+  entry_->setGeometry(QRect(static_cast<int>(entry_left_), static_cast<int>((kBarHeight - kPadHeight) * 0.5),
+                            static_cast<int>(kEntryWidth), static_cast<int>(kPadHeight)));
 }
 
 QString ChassisBar::readoutText() const {
@@ -188,8 +210,14 @@ void ChassisBar::paintEvent(QPaintEvent*) {
     }
     x += 12.0;
     painter.setPen(ink);
-    const auto text = metrics.elidedText(readout_->text, Qt::ElideRight, pads_left - x - 12.0);
+    const auto text =
+        metrics.elidedText(readout_->text, Qt::ElideRight, pads_left - x - kEntryWidth - 24.0);
     painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
+    x += metrics.horizontalAdvance(text) + 12.0;
+    if (entry_left_ != x) {
+      entry_left_ = x;
+      resizeEvent(nullptr);
+    }
   }
 
   for (const auto& pad : laid) {

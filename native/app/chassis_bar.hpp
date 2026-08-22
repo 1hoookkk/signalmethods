@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QLineEdit>
 #include <QString>
 #include <QWidget>
 
@@ -32,9 +33,11 @@ class ChassisBar final : public QWidget {
 
  signals:
   void verbClicked(ChassisBar::Verb verb);
+  void rootTyped(const QString& text);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
@@ -58,6 +61,8 @@ class ChassisBar final : public QWidget {
   double dc_drift_db_{};
   bool source_sawtooth_{};
   std::optional<Readout> readout_;
+  QLineEdit* entry_{};
+  double entry_left_{};
   std::optional<Verb> hover_;
   std::optional<Verb> pressed_;
 };

@@ -41,6 +41,7 @@ class MainWindow final : public QMainWindow {
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   bool loadTarget(const std::filesystem::path& path);
   void setSourceModel(trench::core::measure::Source source);
+  bool applyTypedRoot(const QString& text);
   [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
   void startFit();
   void stopAndKeep();

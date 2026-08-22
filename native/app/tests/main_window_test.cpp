@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <fstream>
 #include <numbers>
+#include <variant>
 #include <optional>
 #include <vector>
 
@@ -457,6 +458,45 @@ class MainWindowTest final : public QObject {
         words, trench::core::kP2kDatumHz, hz, weight, target);
     QVERIFY2(report.rms_db < 0.5, qPrintable(QString::number(report.rms_db)));
     std::filesystem::remove(wav);
+  }
+
+  void typedHzAndQMoveTheSelectedRootThroughTheLatticeAsOneUndoStep() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    QVERIFY(!window.applyTypedRoot(QStringLiteral("800 6")));
+    const auto token = find_token(plot, 1, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    press(plot, token->position);
+    release(plot, token->position);
+    const auto undo_before = window.undoStack()->count();
+    const auto words_before = window.body().words[0][1];
+
+    QVERIFY(window.applyTypedRoot(QStringLiteral("800 6")));
+    const auto& after = window.body().words[0][1];
+    QVERIFY(after != words_before);
+    QCOMPARE(after[0], words_before[0]);
+    QCOMPARE(after[1], words_before[1]);
+    QCOMPARE(after[4], words_before[4]);
+    QCOMPARE(window.undoStack()->count(), undo_before + 1);
+    const auto geometry = trench::core::geometry_from_words(after, trench::core::kP2kDatumHz);
+    const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+    QVERIFY(pole != nullptr);
+    const auto cents = std::abs(std::log2(pole->hz / 800.0) * 1200.0);
+    QVERIFY2(cents < 25.0, qPrintable(QString::number(pole->hz)));
+    const auto expected_r = std::exp(-std::numbers::pi * 800.0 / (6.0 * trench::core::kP2kDatumHz));
+    QVERIFY2(std::abs(pole->radius - expected_r) < 5.0e-3, qPrintable(QString::number(pole->radius)));
+
+    QVERIFY(!window.applyTypedRoot(QStringLiteral("nope")));
+    QVERIFY(!window.applyTypedRoot(QStringLiteral("800 0")));
+    QCOMPARE(window.undoStack()->count(), undo_before + 1);
+    QVERIFY(window.applyTypedRoot(QStringLiteral("1200")));
+    const auto kept = trench::core::geometry_from_words(window.body().words[0][1], trench::core::kP2kDatumHz);
+    const auto* kept_pole = std::get_if<trench::core::ConjugatePair>(&kept.pole);
+    QVERIFY(kept_pole != nullptr);
+    QVERIFY(std::abs(kept_pole->radius - pole->radius) < 5.0e-3);
   }
 
   void pressPublishesSelectedTokenReadout() {

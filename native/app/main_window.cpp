@@ -15,8 +15,11 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <fstream>
+#include <numbers>
 #include <stdexcept>
 #include <string>
 #include <variant>
@@ -172,6 +175,8 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
             endRun();
           });
 
+  connect(chassis_bar_, &ChassisBar::rootTyped, this,
+          [this](const QString& text) { applyTypedRoot(text); });
   connect(chassis_bar_, &ChassisBar::verbClicked, this, [this](ChassisBar::Verb verb) {
     switch (verb) {
       case ChassisBar::Verb::kUnity:
@@ -238,6 +243,45 @@ QString MainWindow::readoutText() const { return chassis_bar_->readoutText(); }
 void MainWindow::applySection(std::size_t section,
                               const trench::core::PackedSection& words) {
   document_->applySection(section, words);
+}
+
+bool MainWindow::applyTypedRoot(const QString& text) {
+  namespace p2k = trench::core::p2k;
+  if (!selected_ || fit_active_) return false;
+  const auto parts = text.simplified().split(QLatin1Char(' '), Qt::SkipEmptyParts);
+  if (parts.isEmpty() || parts.size() > 2) return false;
+  bool ok = false;
+  const double hz = parts[0].toDouble(&ok);
+  if (!ok || !(hz > 0.0)) return false;
+  const auto [section, lane] = *selected_;
+  const bool pole = lane == ResponsePlotWidget::Lane::kPole;
+  const auto before = document_->body().words[0][section];
+  const auto geometry = trench::core::geometry_from_words(before, trench::core::kP2kDatumHz);
+  const auto& pair = pole ? geometry.pole : geometry.zero;
+  double radius = 0.9;
+  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
+    radius = conjugate->radius;
+  }
+  if (parts.size() == 2) {
+    const double q = parts[1].toDouble(&ok);
+    if (!ok || !(q > 0.0)) return false;
+    radius = std::exp(-std::numbers::pi * hz / (q * trench::core::kP2kDatumHz));
+  }
+  radius = pole ? std::clamp(radius, 0.0, p2k::kPoleRMax) : std::clamp(radius, 0.0, 1.0);
+  const double clamped_hz = std::clamp(hz, 20.0, p2k::kRootHiHz);
+  const auto [word_mag, word_rsq] = p2k::words_from_root(clamped_hz, radius);
+  const auto [p, q] = p2k::pq(word_mag, word_rsq);
+  if (!p2k::is_legal(p, q, pole) ||
+      !p2k::magnitude_admissible(p2k::nearest_lattice_word(word_mag), pole)) {
+    return false;
+  }
+  auto candidate = before;
+  candidate[pole ? 2 : 0] = word_mag;
+  candidate[pole ? 3 : 1] = word_rsq;
+  if (candidate == before) return true;
+  document_->applySection(section, candidate);
+  document_->commitGesture(section, before);
+  return true;
 }
 
 void MainWindow::setSourceModel(trench::core::measure::Source source) {
