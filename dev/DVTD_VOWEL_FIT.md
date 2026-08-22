@@ -307,6 +307,13 @@ again.
 
 ## 4. Correction: `.4` is about corners, not sections
 
+> **Superseded in part.** The definitive statement is the Rossum Morpheus
+> manual's — `.4` means four Frequency Responses, with the Transform axis
+> repurposed to distortion (`CITATIONS_MORPHEUS_MANUAL.md`). And
+> `NATIVE_CONTAINER_SURVEY.md` §9a settles the byte question: the property is
+> not in the 560 bytes at all. What follows is the original UltraProteus-based
+> reasoning, kept because the section-count measurement in it still stands.
+
 Printed page 178, first paragraph:
 
 > A suffix of '4' or '.4' indicates filter is square, not cube and does not
