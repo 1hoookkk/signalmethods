@@ -148,17 +148,54 @@ unmodelled:
 - **Output stage**: a 1.5-LSB round-toward-zero quantiser, then a parabolic
   C¹ soft clip saturating at ±2³¹.
 
-## 8. Sample rate is NOT decoded
+## 8. The datum is 39,062.5 Hz, decoded from the clock tree
 
-No `48000` or `44100` literal exists in the firmware image. The clock query
-returns a hard-coded `12288000` = 48 kHz × 256, but the SAI divider was not
-read. Angle is stored as a direct fraction of Nyquist (`θ_max = 3.1408 ≈ π`), so
-the datum is simply whatever the hardware clocks at.
+An earlier pass on the firmware read a `12288000` literal and inferred 48 kHz.
+That was wrong, and the correction is decisive: **the clock tree cannot produce
+48 kHz at all.**
 
-This does **not** license changing the 39,062.5 Hz datum for the decoded
-Morpheus corpus, which rests on separate established evidence. It does mean the
-firmware image is silent on the question rather than supporting either value.
-Open.
+The 12.288 MHz constant is the HAL's external-clock value, returned by the SAI
+clock getter only when `RCC_DCKCFGR[23:20] == 0x300000`. The firmware programs
+those bits to zero, so that branch is never taken. It is a dead constant.
+
+The live chain, read instruction by instruction:
+
+```
+HSE                        8,000,000 Hz
+PLLI2S    M=4  N=200  R=5  ->  VCO 400 MHz, R output 80.000 MHz
+SAI1 Block A, master TX, I2S 32-bit x 2 slots = 64-bit frame
+AudioFrequency == 0 (MCKDIV mode), literal divider written to CR1[23:20]
+Fs = SAI_CK / (MCKDIV * 512)
+```
+
+| MCKDIV | MCLK | Fs |
+|---|---|---|
+| **4** | 10.000000 MHz | **39,062.5000 Hz — exact** |
+| 3 | 13.333333 MHz | 52,083.33 Hz — used by nothing |
+
+`80e6 / 39062.5 = 2048 = 512 x 4`, an integer. `80e6 / 48000 = 1666.67`, which
+would need MCKDIV = 3.255 and is not representable. Neither VCO — 360 MHz nor
+400 MHz — has any integer divisor yielding 12.288, 24.576 or 73.728 MHz, so a
+48 kHz design is arithmetically unreachable from this clock tree. Every number
+in the chain is round: 8 -> 400 -> 80 -> 10.000 MHz MCLK = 256 x 39,062.5.
+
+**This independently confirms the hard invariant.** The Morpheus datum was
+already established from the decoded corpus; it is now also read out of the
+hardware clock configuration. The eurorack unit clocks the same rate the 1993
+machine did.
+
+Why it matters beyond bookkeeping: the angle encoding is a pure fraction of
+Nyquist (`θ = ((m|0x800) << e) · π/2^27`, max 3.140826 ≈ π). The cube data
+carries **no absolute Hz**. Every formant therefore scales linearly with
+whatever rate the hardware runs, so decoding this corpus at 44,100 Hz would
+shift every root by 1.2288x — about +3.57 semitones — and produce geometry that
+is wrong everywhere while looking plausible. Use `f_Hz = θ · 39062.5 / (2π)`.
+
+One caveat kept honest: the handle field read as `Init.Mckdiv` holds 3, while
+the app also writes `0x400000` to `handle+0x1C`, which is MCKDIV = 4 pre-shifted
+into CR1[23:20]. This driver stores raw register bit patterns rather than HAL
+enums elsewhere too, so its struct is not the vanilla ST layout. The arithmetic
+breaks the tie: only MCKDIV = 4 yields a rate anything uses.
 
 ## 9. Decoded corpus
 
@@ -182,7 +219,6 @@ Still open:
 - The fitter core is six-stage. Fitting this lineage needs a seven-stage path
   that honours the row-7 zero law.
 - Whether our 5th word corresponds to the runtime's single DC-normalise bit.
-- The datum question in section 8.
 - Which physical axis (Morph / Q / Z) maps to which corner bit — the firmware
   reads three ADC sums into corner bits 0,1,2 but the labels need the UI side.
 - 32 bytes at struct `+0x1C4` are unpacked from the file and never read.
