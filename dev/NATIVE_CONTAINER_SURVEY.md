@@ -54,6 +54,78 @@ pole.
 Our current DVTD fit violates this: it puts a bell zero in row 7. It must be
 rebuilt as lowpass + 6 bells with the pairing offset by one row.
 
+## 1a. The 6+1 structure, read directly off the decompilation
+
+Section 1 rested on an agent's report of the audio callback. The decompiled
+function has since been read directly and it shows the structure without
+interpretation.
+
+The per-sample loop is `for (uVar12 = 0; uVar12 < 6; uVar12++)` — **six
+iterations.** Each one ends with the zero pair applied:
+
+```c
+fVar35 = fVar25 * fVar19 + fVar35;                 // w = u' + cot*v'
+fVar24 = pfVar13[1];
+pfVar13[1] = fVar35;
+fVar25 = (fVar35 - fVar24 * fVar34) + pfVar13[2] * fVar32 * fVar32;
+pfVar13[2] = fVar24;                               // w2 <- w1
+```
+
+After the loop exits there is a seventh block. It computes the resonator
+recurrence and the `cot` tap, stores `w`, and passes the value straight to the
+output — **no `w1`/`w2` recursion, no zero coefficients, for either channel:**
+
+```c
+fVar26 = fVar35 * fVar19 + fVar26;   // w = u' + cot*v'
+pfVar13[1] = fVar26;                 // stored, then used directly
+```
+
+Six sections with zeros plus one pole-only section. The law is visible in the
+control flow, not inferred from the data.
+
+## 1b. Parameter count, read off the unpacker
+
+The unpacker's outer loop runs 8 times. Seven iterations emit 16 words each and
+consume 11 input words; the eighth emits 4 words and consumes 2. Four output
+words hold one parameter across all 8 corners (4 x int32 = 8 x int16), so:
+
+    7 iterations x 4 parameters + 1 x 1 parameter = **29 parameters x 8 corners**
+
+29 x 8 x 2 bytes = 464 bytes of runtime coefficient table, from 332 bytes of
+packed storage.
+
+## 1c. The per-stage flag bit
+
+The unpacker's tail sets bit 31 of one word per stage:
+
+```c
+puVar1 = (uint *)(param_2 + -0x6c);
+*puVar1 = *puVar1 | 0x80000000;
+if ((*param_1 & 1) != 0) {
+    for (cVar8 = 0; cVar8 < 6; cVar8++) {
+        puVar1 = puVar1 + 0x10;      // stride 16 words = 4 parameters
+        *puVar1 = *puVar1 | 0x80000000;
+    }
+}
+```
+
+Seven stages, stride one stage. The audio path reads it as a flag and masks it
+off before use:
+
+```c
+uVar15 = piVar16[0x11] & 0x7fffffff;
+if (piVar16[0x11] == uVar15) {
+    fVar31 = 1.0; fVar35 = 1.0;                              // unity gain
+} else {
+    fVar35 = (fVar35 * fVar35 + 1.0) - (fVar24 + fVar24);    // r^2 + 1 - 2 r cos
+    fVar31 = (fVar31 * fVar31 + 1.0) - (fVar27 + fVar27);
+}
+```
+
+`r^2 + 1 - 2*r*cos(theta)` is `|1 - r*e^{j theta}|^2`, the denominator's DC gain.
+So the flag selects DC-normalise versus unity, per stage, as a single bit. There
+is no per-stage scale word in the runtime at all.
+
 ## 2. There is no lattice in this lineage
 
 The P2K container writes magnitudes on a 272-rung exponent-indexed lattice,
@@ -263,6 +335,17 @@ lineage is no longer refused for lack of evidence. The correct quantiser is
 and 6 zeros with row 7 bare.
 
 Still open:
+- **Is the runtime's 11-bit encoding the same law as our body minifloat?**
+  Storage is an 11-bit field; the unpacker expands it to `(field11 << 4) | 0xF`
+  and the trilinear result is decoded with exponent at bits 26-29 and mantissa
+  at bits 15-25 — an 11-bit minifloat of 4 exponent bits and 7 mantissa bits,
+  with the low four mantissa bits filled by the constant `0xF`. Our 560-byte
+  body words are 16-bit and decode by a 4-exponent / 12-mantissa law. Those are
+  not obviously the same encoding, and the difference has not been reconciled.
+  It is possible the `.body` files are a converted form rather than the device's
+  own storage — `dev/cubes_bitstream.bin` in trench-authoring suggests the
+  bitstream was handled separately. **This should be settled before any export
+  path claims device compatibility.**
 - The fitter core is six-stage. Fitting this lineage needs a seven-stage path
   that honours the row-7 zero law.
 - Whether our 5th word corresponds to the runtime's single DC-normalise bit.

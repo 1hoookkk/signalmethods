@@ -37,20 +37,30 @@ delta = (int16)(int32)(diff * frac)
 out   = (uint16)(a + delta)
 ```
 
-Compared against a model of the device arithmetic decoded from firmware — Q15
-axis weights, `SMUAD`, `>>15` renormalise, negate — over 60,000 random
-`(a, b, frac)` draws including the identity and S6 sentinel words
-(`dev/lerp_parity.py`):
+The `int16` truncation looked like a wrap hazard and is not one: the result is
+masked to 16 bits either way, so truncation and mask are the same operation
+modulo 2^16.
 
-| model | mismatch | worst word error |
-|---|---|---|
-| device, words read as **unsigned** | 30.4% | **1 LSB** |
-| device, words read as signed int16 | 54.0% | 32768 |
+**Correction, from reading the device decompilation directly.** An earlier pass
+compared our arithmetic against a device model over random full-range `u16`
+draws and concluded "the device reads packed words as unsigned" (signed being
+54% wrong, unsigned within 1 LSB). That conclusion was an artefact of testing
+outside the real value range.
 
-The device reads packed words as **unsigned**, and our arithmetic agrees to
-within one LSB. The `int16` truncation looked like a wrap hazard and is not one:
-the result is masked to 16 bits either way, so truncation and mask are the same
-operation modulo 2¹⁶. Not the cause.
+The decompilation shows the interpolation operand is `(int)(short)` on both
+halves of each 32-bit word — genuinely **signed** int16 SMUAD. But the values it
+operates on are the unpacker's output, which is `(field11 << 4) | 0xF`, or `0`
+when the field is zero. That range is **[0x000F, 0x7FFF]** — never above 0x7FFF,
+so never negative as int16. Signed and unsigned coincide on every value the
+device actually interpolates, and the question is moot rather than settled
+either way.
+
+The one word that could set bit 15 is the per-stage flag (below), and the audio
+path masks it with `& 0x7fffffff` *before* using that word as the SMUAD operand.
+So even that never reaches the multiply as a negative.
+
+`dev/lerp_parity.py` should be re-run restricted to `[0x000F, 0x7FFF]` if this
+is revisited; its current sweep tests inputs the device never sees.
 
 ## The cause is almost certainly the interpolation *domain*
 
