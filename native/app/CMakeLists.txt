@@ -9,6 +9,8 @@ add_library(trench_native_ui STATIC
   chassis_bar.hpp
   fit_controller.cpp
   fit_controller.hpp
+  fit_room.cpp
+  fit_room.hpp
   main_window.cpp
   main_window.hpp
   morph_strip.cpp

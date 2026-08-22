@@ -7,6 +7,7 @@
 #include "response_plot.hpp"
 #include "section_strip.hpp"
 #include "trench/audio/audio_boundary.hpp"
+#include "trench/core/formants.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
@@ -238,6 +239,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
         chooseTarget();
         break;
       case ChassisBar::Verb::kFit:
+        openFitRoom();
         startFit();
         break;
       case ChassisBar::Verb::kKeep:
@@ -248,6 +250,21 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
         break;
     }
   });
+
+  fit_room_ = new FitRoom(this);
+  QStringList vowels;
+  for (const auto& vowel : trench::core::p2k::klatt_vowels()) {
+    vowels.push_back(QString::fromUtf8(vowel.symbol.data(), static_cast<int>(vowel.symbol.size())));
+  }
+  fit_room_->setVowels(vowels);
+  connect(fit_room_, &FitRoom::overlaySelected, this, &MainWindow::selectOverlay);
+  connect(fit_room_, &FitRoom::overlayRemoved, this, &MainWindow::removeOverlay);
+  connect(fit_room_, &FitRoom::loadRequested, this, &MainWindow::chooseTarget);
+  connect(fit_room_, &FitRoom::vowelRequested, this, &MainWindow::applyVowel);
+  auto* fit_room_action = new QAction(this);
+  fit_room_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+F")));
+  connect(fit_room_action, &QAction::triggered, this, &MainWindow::openFitRoom);
+  addAction(fit_room_action);
 
   auto* target_action = new QAction(this);
   target_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+T")));
@@ -396,15 +413,13 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     } catch (const std::exception&) {
       return false;
     }
-    document_->setTarget(std::move(target));
-    chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
+    addOverlay(QString::fromStdString(path.filename().string()), std::move(target));
     return true;
   }
   if (path.extension() == ".txt") {
     auto curve = read_curve(path);
     if (curve.size() != trench::core::p2k::kNpts) return false;
-    document_->setTarget(std::move(curve));
-    chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
+    addOverlay(QString::fromStdString(path.filename().string()), std::move(curve));
     return true;
   }
   std::vector<std::uint8_t> bytes;
@@ -414,10 +429,70 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     return false;
   }
   if (bytes.size() != trench::core::kLegacyBodyBytes) return false;
-  document_->setTarget(trench::core::p2k::corner_response_db(
-      trench::core::p2k::rom_corner_words(bytes, document_->corner()), document_->grid()));
-  chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
+  addOverlay(QString::fromStdString(path.filename().string()),
+             trench::core::p2k::corner_response_db(
+                 trench::core::p2k::rom_corner_words(bytes, document_->corner()),
+                 document_->grid()));
   return true;
+}
+
+void MainWindow::addOverlay(const QString& name, std::vector<double> curve) {
+  overlays_.push_back(FitRoom::Overlay{name, std::move(curve)});
+  selectOverlay(static_cast<int>(overlays_.size()) - 1);
+}
+
+void MainWindow::selectOverlay(int index) {
+  if (index < 0 || index >= overlays_.size()) return;
+  selected_overlay_ = index;
+  chassis_bar_->setTargetName(overlays_[index].name);
+  document_->setTarget(overlays_[index].db);
+}
+
+void MainWindow::removeOverlay(int index) {
+  if (index < 0 || index >= overlays_.size()) return;
+  overlays_.removeAt(index);
+  if (overlays_.isEmpty()) {
+    selected_overlay_ = -1;
+    chassis_bar_->setTargetName(QString());
+    document_->clearTarget();
+    return;
+  }
+  selectOverlay(std::min(index, static_cast<int>(overlays_.size()) - 1));
+}
+
+int MainWindow::overlayCount() const noexcept { return static_cast<int>(overlays_.size()); }
+
+FitRoom* MainWindow::fitRoom() const noexcept { return fit_room_; }
+
+void MainWindow::openFitRoom() {
+  refreshFitRoom();
+  fit_room_->show();
+  fit_room_->raise();
+}
+
+void MainWindow::refreshFitRoom() {
+  if (fit_room_ == nullptr) return;
+  fit_room_->setGridHz(document_->grid().hz);
+  fit_room_->setResponse(document_->viewResponseDb());
+  fit_room_->setOverlays(overlays_, selected_overlay_);
+  fit_room_->setScoreDb(document_->targetScoreDb());
+  fit_room_->setFitRunning(fit_active_);
+}
+
+void MainWindow::applyVowel(const QString& symbol) {
+  namespace p2k = trench::core::p2k;
+  if (fit_active_) return;
+  const auto* vowel = p2k::klatt_vowel(symbol.toStdString());
+  if (vowel == nullptr) return;
+  const auto words = p2k::words_from_recipe(p2k::rows_from_formants(vowel->f));
+  const auto before = document_->cornerSnapshot();
+  auto after = before;
+  for (std::size_t section = 0; section < p2k::kStageCount; ++section) {
+    for (std::size_t word = 0; word < 4; ++word) after[section][word] = words[section][word];
+  }
+  if (after == before) return;
+  document_->applyCorner(after);
+  document_->commitFit(document_->corner(), before);
 }
 
 void MainWindow::chooseTarget() {
@@ -479,6 +554,7 @@ void MainWindow::updateProbes() {
   dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
   chassis_bar_->setDcDriftDb(dc_drift_db_);
   chassis_bar_->setScoreDb(document_->targetScoreDb());
+  refreshFitRoom();
 }
 
 void MainWindow::updateStrips() {
@@ -509,6 +585,7 @@ void MainWindow::endRun() {
 void MainWindow::updateVerbs() {
   const auto has_target = document_->target().has_value();
   chassis_bar_->setState(has_target, fit_active_);
+  refreshFitRoom();
   if (undo_action_ != nullptr) {
     undo_action_->setEnabled(!fit_active_ && document_->undoStack()->canUndo());
   }

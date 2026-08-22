@@ -1,4 +1,5 @@
 #include "chassis_bar.hpp"
+#include "fit_room.hpp"
 #include "main_window.hpp"
 #include "morph_strip.hpp"
 #include "response_plot.hpp"
@@ -12,7 +13,9 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDoubleSpinBox>
+#include <QListWidget>
 #include <QMouseEvent>
+#include <QSignalSpy>
 #include <QPointer>
 #include <QSlider>
 #include <QUndoStack>
@@ -1034,6 +1037,108 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.document()->space().lo_hz, 200.0);
     QVERIFY(std::abs(window.chassisBar()->scoreDb() - before) > 1.0e-9);
     QVERIFY(window.body().native_bytes() == bytes);
+  }
+
+  void fitRoomSelectsTheOverlayAsTheTarget() {
+    FitRoom room;
+    room.setGridHz({100.0, 1000.0, 10000.0});
+    room.setResponse({0.0, 6.0, -3.0});
+    room.setOverlays({{QStringLiteral("one"), {1.0, 2.0, 3.0}},
+                      {QStringLiteral("two"), {4.0, 5.0, 6.0}}},
+                     1);
+    QCOMPARE(room.overlayCount(), 2);
+    QCOMPARE(room.selectedOverlay(), 1);
+    QCOMPARE(room.pointCount(), std::size_t{3});
+
+    QSignalSpy spy(&room, &FitRoom::overlaySelected);
+    room.overlayList()->setCurrentRow(0);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toInt(), 0);
+    QCOMPARE(room.selectedOverlay(), 0);
+  }
+
+  void fitRoomDifferenceIsOverlayMinusResponse() {
+    FitRoom room;
+    room.setGridHz({100.0, 1000.0, 10000.0});
+    room.setResponse({0.0, 6.0, -3.0});
+    room.setOverlays({{QStringLiteral("one"), {1.0, 2.0, 3.0}}}, 0);
+    QCOMPARE(room.differenceDbAt(0), 1.0);
+    QCOMPARE(room.differenceDbAt(1), -4.0);
+    QCOMPARE(room.differenceDbAt(2), 6.0);
+  }
+
+  void fitRoomVowelChoiceEmitsTheSymbol() {
+    FitRoom room;
+    room.setVowels({QStringLiteral("aa"), QStringLiteral("iy")});
+    QCOMPARE(room.vowelBox()->count(), 2);
+    QSignalSpy spy(&room, &FitRoom::vowelRequested);
+    room.vowelBox()->setCurrentIndex(1);
+    emit room.vowelBox()->activated(1);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toString(), QStringLiteral("iy"));
+  }
+
+  void fitRoomScreenshot() {
+    FitRoom room;
+    std::vector<double> hz(256);
+    std::vector<double> response(256);
+    std::vector<double> overlay(256);
+    for (std::size_t index = 0; index < hz.size(); ++index) {
+      const auto fraction = static_cast<double>(index) / 255.0;
+      hz[index] = 40.0 * std::pow(18000.0 / 40.0, fraction);
+      const auto octaves = std::log2(hz[index] / 1000.0);
+      response[index] = 12.0 * std::exp(-octaves * octaves * 1.5) - 6.0;
+      overlay[index] = response[index] + 3.0 * std::sin(fraction * 18.0);
+    }
+    room.setGridHz(hz);
+    room.setResponse(response);
+    room.setOverlays({{QStringLiteral("vowel aa"), overlay}}, 0);
+    room.setVowels({QStringLiteral("aa"), QStringLiteral("iy"), QStringLiteral("uw")});
+    room.setScoreDb(2.1);
+    room.resize(640, 460);
+    room.show();
+    QTest::qWait(50);
+    const auto path = QString(TRENCH_SOURCE_ROOT) + "/dev/app_slice_fitroom.png";
+    QVERIFY(room.grab().save(path));
+  }
+
+  void overlaysAreTheTargetsAndTheSelectedOneIsTheTarget() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    const auto root = std::filesystem::path(TRENCH_SOURCE_ROOT);
+    QVERIFY(window.loadTarget(root / "ref/presets/P2k_002_early_rizer.bin"));
+    QVERIFY(window.loadTarget(root / "ref/presets/P2k_013_talking_hedz.bin"));
+    QCOMPARE(window.overlayCount(), 2);
+    QCOMPARE(window.fitRoom()->selectedOverlay(), 1);
+    window.openFitRoom();
+    window.fitRoom()->resize(640, 460);
+    QTest::qWait(50);
+    QVERIFY(window.fitRoom()->grab().save(QString(TRENCH_SOURCE_ROOT) +
+                                          "/dev/app_slice_fitroom_hedz.png"));
+    const auto hedz = *window.document()->target();
+    window.fitRoom()->overlayList()->setCurrentRow(0);
+    QVERIFY(*window.document()->target() != hedz);
+    window.removeOverlay(0);
+    QCOMPARE(window.overlayCount(), 1);
+    QCOMPARE(*window.document()->target(), hedz);
+    window.removeOverlay(0);
+    QVERIFY(!window.document()->target().has_value());
+  }
+
+  void aVowelWritesTypedRowsAsOneUndoEntry() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    const auto before = window.body().native_bytes();
+    window.applyVowel(QStringLiteral("aa"));
+    QVERIFY(window.body().native_bytes() != before);
+    QCOMPARE(window.undoStack()->count(), 1);
+    std::size_t eq = 0;
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      const auto param = p2k::param_of(window.body().words[0][section], trench::core::kP2kDatumHz);
+      eq += param.type == p2k::SectionType::kEq ? 1U : 0U;
+    }
+    QCOMPARE(eq, std::size_t{3});
+    window.undoStack()->undo();
+    QCOMPARE(window.body().native_bytes(), before);
   }
 };
 

@@ -2,6 +2,7 @@
 
 #include "body_document.hpp"
 #include "fit_controller.hpp"
+#include "fit_room.hpp"
 #include "response_plot.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/packed_body.hpp"
@@ -55,12 +56,20 @@ class MainWindow final : public QMainWindow {
   void setSourceModel(trench::core::measure::Source source);
   [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
   void startFit();
+  void openFitRoom();
+  void applyVowel(const QString& symbol);
+  [[nodiscard]] FitRoom* fitRoom() const noexcept;
+  [[nodiscard]] int overlayCount() const noexcept;
+  void selectOverlay(int index);
+  void removeOverlay(int index);
   void stopAndKeep();
   void discardFit();
   void renormalizeDc();
 
  private:
   void chooseTarget();
+  void addOverlay(const QString& name, std::vector<double> curve);
+  void refreshFitRoom();
   void saveBodyAs();
   void updateVerbs();
   void updateProbes();
@@ -82,6 +91,9 @@ class MainWindow final : public QMainWindow {
   MorphStrip* morph_strip_{};
   std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};
   ChassisBar* chassis_bar_{};
+  FitRoom* fit_room_{};
+  QList<FitRoom::Overlay> overlays_;
+  int selected_overlay_{-1};
   QAction* undo_action_{};
   QAction* redo_action_{};
 };
