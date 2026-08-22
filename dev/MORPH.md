@@ -134,6 +134,10 @@ output gain. Tyson's rule (2026-08-22): zero must equal X3, character is
 additive above zero — so the one change that closes parity is a fixed
 +4.14 dB at the wet output, nothing else.
 
+**Applied** (`kX3VoiceGain = 1.6107` after `processTrajectory`, before SLAM
+and MIX): re-rendered at zero, X3 − plugin level **+0.00 dB**, raw null
+**−71.4 dB** with no gain matching, peaks both −1.1 dBFS. Installed.
+
 **Conclusion for the product.** Corner (−80 dB), interior (< 1 dB), slow
 travel (< 1 dB) and fast step (−33/−65 dB beyond 20 ms) all match X3 with
 the engine's filter alone. Whatever makes TRENCH sound different from X3

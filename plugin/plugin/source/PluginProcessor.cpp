@@ -308,6 +308,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     }
     processChunk (buffer);
 }
+static constexpr float kX3VoiceGain = 1.6107f;
 void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
 {
     const int numSamples = buffer.getNumSamples();
@@ -395,6 +396,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     params.keySnap = keyChoice;
     // 9. The wet path — mono and stereo both traverse the real engine.
     dspBridge.processTrajectory (buffer, morphBuffer.data(), params);
+    buffer.applyGain (kX3VoiceGain);
     // 10. OUTPUT/SLAM once, part of the WET voice, before MIX.
     float limitFrac = 0.0f;
     if (buffer.getNumChannels() >= 2)
