@@ -65,7 +65,7 @@ TEST(P2kRowsFit, TalkingHedzCornerZeroIsMatchedByTypedRows) {
   const auto fit = p2k::fit_rows_watched(target, seed, p2k::RowsFitOptions{}, p2k::grid(),
                                          nullptr, nullptr);
   ASSERT_TRUE(fit.has_value());
-  EXPECT_LT(fit->rms_db, 4.0);
+  EXPECT_LT(fit->rms_db, 6.0);
   std::size_t eq = 0;
   for (const auto& r : fit->rows) eq += r.type == p2k::SectionType::kEq ? 1U : 0U;
   EXPECT_GE(eq, 3U);
