@@ -454,7 +454,19 @@ replaces it with: destination written at the OS control rate, linear
 per-sample ramp in packed space with the OS's approach time. The three
 host-side numbers — control rate, approach time, knob→destination mapping —
 are in `Downloads\emu_re_artifacts\p2k226\p2k226.dli` (Proteus 2000 OS
-2.26, payload at 0x1A0) and are the next decompile target.
+2.26) and are the next decompile target.
+
+Offline triage of that image, for the Ghidra import: 535,080 bytes; a
+0x1A0-byte E-mu loader header (fields `0x1`, `0x1A0` = payload offset,
+`0x82888` = payload length, checksum); payload is **Motorola 68000-family,
+big-endian** (3,071 `rts`, 5,119 `jsr abs.l`, 541 `link a6`; no ARM or Thumb
+signatures). The payload begins with a vector table — initial SP
+`0x0115BB20`, reset PC `0x01000402` — so the **load address is
+`0x01000000`**. The filter catalog strings ("TalkingHedz  12 VOW",
+"FILTER   Ord Type") are in the image; no "Morph" string, so the movement
+code must be found from the filter-chip register writes, not by name.
+Import as 68000 BE at base `0x01000000`, file offset `0x1A0`, length
+`0x82888`.
 
 ## 12. Measured corners fit in perceptual space: the 303 square
 
