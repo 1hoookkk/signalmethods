@@ -68,6 +68,8 @@ void MorphStrip::setWorstStepDb(double db) {
   update();
 }
 
+double MorphStrip::worstStepDb() const { return worst_step_db_; }
+
 void MorphStrip::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.fillRect(rect(), kChassis);

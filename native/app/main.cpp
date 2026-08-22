@@ -1,15 +1,92 @@
+#include "body_document.hpp"
 #include "fit_controller.hpp"
 #include "main_window.hpp"
+#include "trench/core/packed_body.hpp"
+#include "trench/core/role.hpp"
 
 #include <QApplication>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QGuiApplication>
 #include <QMessageBox>
+#include <QString>
 #include <QTimer>
 
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
+
+namespace {
+
+namespace p2k = trench::core::p2k;
+
+std::optional<p2k::Role> role_from_name(const QString& name, bool& ok) {
+  ok = true;
+  if (name == QLatin1String("free")) return std::nullopt;
+  if (name == QLatin1String("tilt")) return p2k::Role::kTilt;
+  if (name == QLatin1String("peak")) return p2k::Role::kPeak;
+  if (name == QLatin1String("notch")) return p2k::Role::kNotch;
+  if (name == QLatin1String("peak+notch")) return p2k::Role::kPeakNotch;
+  if (name == QLatin1String("parked")) return p2k::Role::kParked;
+  ok = false;
+  return std::nullopt;
+}
+
+bool apply_intent(BodyDocument* document, const QString& spec) {
+  for (const auto& entry : spec.split(QLatin1Char(','), Qt::SkipEmptyParts)) {
+    const auto parts = entry.split(QLatin1Char('='));
+    if (parts.size() != 2) return false;
+    bool row_ok = false;
+    const auto row = parts[0].trimmed().toUInt(&row_ok);
+    if (!row_ok || row < 1 || row > trench::core::kLegacySectionCount) return false;
+    bool role_ok = false;
+    const auto role = role_from_name(parts[1].trimmed().toLower(), role_ok);
+    if (!role_ok) return false;
+    document->setIntent(row - 1, role);
+  }
+  return true;
+}
+
+bool apply_space(BodyDocument* document, const QString& spec) {
+  const auto parts = spec.split(QLatin1Char(','), Qt::SkipEmptyParts);
+  if (parts.size() < 2 || parts.size() > 4) return false;
+  auto space = document->space();
+  bool ok = false;
+  space.lo_hz = parts[0].trimmed().toDouble(&ok);
+  if (!ok) return false;
+  space.hi_hz = parts[1].trimmed().toDouble(&ok);
+  if (!ok || space.hi_hz <= space.lo_hz) return false;
+  if (parts.size() > 2) {
+    const auto weight = parts[2].trimmed().toLower();
+    if (weight == QLatin1String("erb")) {
+      space.weight = p2k::PerceptualSpace::Weight::kErb;
+    } else if (weight == QLatin1String("flat")) {
+      space.weight = p2k::PerceptualSpace::Weight::kFlat;
+    } else {
+      return false;
+    }
+  }
+  if (parts.size() > 3) {
+    space.smooth_octaves = parts[3].trimmed().toDouble(&ok);
+    if (!ok || space.smooth_octaves < 0.0) return false;
+  }
+  document->setSpace(space);
+  return true;
+}
+
+bool apply_view(BodyDocument* document, const QString& spec) {
+  const auto parts = spec.split(QLatin1Char(','), Qt::SkipEmptyParts);
+  if (parts.size() != 2) return false;
+  bool morph_ok = false;
+  bool q_ok = false;
+  const auto morph = parts[0].trimmed().toFloat(&morph_ok);
+  const auto q = parts[1].trimmed().toFloat(&q_ok);
+  if (!morph_ok || !q_ok) return false;
+  document->setView(morph, q);
+  return true;
+}
+
+}  // namespace
 
 int main(int argc, char* argv[]) {
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
@@ -53,7 +130,22 @@ int main(int argc, char* argv[]) {
   parser.addOption(corner_option);
   QCommandLineOption saw_option(QStringLiteral("saw"),
                                 QStringLiteral("Measure audio targets as a sawtooth source."));
+  QCommandLineOption intent_option(
+      QStringLiteral("intent"),
+      QStringLiteral("Row intents, \"1=tilt,2=peak,...\" over rows 1-6 and "
+                     "tilt|peak|notch|peak+notch|parked|free."),
+      QStringLiteral("spec"));
+  QCommandLineOption space_option(
+      QStringLiteral("space"),
+      QStringLiteral("Perceptual space, \"lo,hi[,erb|flat[,smooth_oct]]\"."),
+      QStringLiteral("spec"));
+  QCommandLineOption view_option(QStringLiteral("view"),
+                                 QStringLiteral("Interior view \"morph,q\" after showing."),
+                                 QStringLiteral("spec"));
   parser.addOption(saw_option);
+  parser.addOption(intent_option);
+  parser.addOption(space_option);
+  parser.addOption(view_option);
   parser.addOption(save_option);
   parser.process(application);
 
@@ -71,13 +163,25 @@ int main(int argc, char* argv[]) {
   try {
     MainWindow window(body_path, sample_rate_hz);
     window.show();
+    window.setCorner(static_cast<std::size_t>(parser.value(corner_option).toUInt()));
+    if (parser.isSet(saw_option)) {
+      window.setSourceModel(trench::core::measure::Source::kSawtooth);
+    }
+    if (parser.isSet(space_option) &&
+        !apply_space(window.document(), parser.value(space_option))) {
+      parser.showHelp(2);
+    }
+    if (parser.isSet(intent_option) &&
+        !apply_intent(window.document(), parser.value(intent_option))) {
+      parser.showHelp(2);
+    }
     if (parser.isSet(target_option)) {
       window.loadTarget(
           std::filesystem::path(parser.value(target_option).toStdWString()));
     }
-    window.setCorner(static_cast<std::size_t>(parser.value(corner_option).toUInt()));
-    if (parser.isSet(saw_option)) {
-      window.setSourceModel(trench::core::measure::Source::kSawtooth);
+    if (parser.isSet(view_option) &&
+        !apply_view(window.document(), parser.value(view_option))) {
+      parser.showHelp(2);
     }
     const auto save_path = parser.isSet(save_option)
                                ? std::filesystem::path(parser.value(save_option).toStdWString())

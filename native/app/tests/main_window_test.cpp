@@ -855,6 +855,16 @@ class MainWindowTest final : public QObject {
     QVERIFY(!plot->tokens().empty());
   }
 
+  void theStripReadsTheWorstInteriorStep() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto worst = window.morphStrip()->worstStepDb();
+    QVERIFY(worst > 5.0);
+    QVERIFY(worst < 6.5);
+  }
+
   void spaceEditRescoresWithoutTouchingTheBody() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);

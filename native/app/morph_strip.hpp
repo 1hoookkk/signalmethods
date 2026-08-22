@@ -14,6 +14,7 @@ class MorphStrip final : public QWidget {
   [[nodiscard]] float morph() const;
   [[nodiscard]] float q() const;
   void setWorstStepDb(double db);
+  [[nodiscard]] double worstStepDb() const;
 
  signals:
   void viewEdited(float morph, float q);

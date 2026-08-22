@@ -62,6 +62,7 @@ class MainWindow final : public QMainWindow {
   void saveBodyAs();
   void updateVerbs();
   void updateProbes();
+  void updateInterior();
   void endRun();
 
   BodyDocument* document_{};

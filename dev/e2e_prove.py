@@ -1,5 +1,6 @@
 import ctypes
 import math
+import os
 import pathlib
 import shutil
 import subprocess
@@ -22,7 +23,8 @@ APP = ROOT / "out/build/windows-msvc-release/native/app/trench_native.exe"
 RENDER = ROOT / "plugin/build-juce9/TRENCH_RenderNull_artefacts/Release/TRENCH_RenderNull.exe"
 RUNTIME = ROOT / "out/build/windows-msvc-release/vcpkg_installed/x64-windows-release"
 IDENTITY = ROOT / "plugin/plugin/assets/bodies/identity.body240"
-WORK = ROOT / "dev/e2e/tb303.body240"
+WORK = ROOT / os.environ.get("TRENCH_E2E_OUT", "dev/e2e/tb303.body240")
+EXTRA = os.environ.get("TRENCH_E2E_ARGS", "").split()
 DRY = pathlib.Path(r"C:\Users\hooki\Downloads\trench_capture\dry_saw_49hz_-12dBFS.wav")
 TARGETS = {0: "m0.wav", 1: "m100.wav", 2: "m0q100.wav", 3: "m100q100.wav"}
 WAVS = pathlib.Path(r"C:\Users\hooki\Downloads")
@@ -34,14 +36,14 @@ WEIGHT = np.asarray(core.erb_grid_weight())
 def author():
     WORK.parent.mkdir(exist_ok=True)
     shutil.copyfile(IDENTITY, WORK)
-    env = dict(**__import__("os").environ)
+    env = dict(**os.environ)
     env["PATH"] = str(RUNTIME / "bin") + ";" + env["PATH"]
     env["QT_PLUGIN_PATH"] = str(RUNTIME / "Qt6/plugins")
     env["QT_QPA_PLATFORM"] = "offscreen"
     for corner, wav in TARGETS.items():
         before = WORK.read_bytes()
         run = subprocess.run([str(APP), "--body", str(WORK), "--corner", str(corner), "--saw",
-                              "--target", str(WAVS / wav), "--fit", "--save", str(WORK)],
+                              "--target", str(WAVS / wav), "--fit", "--save", str(WORK)] + EXTRA,
                              env=env, capture_output=True, text=True, timeout=600)
         after = WORK.read_bytes()
         words = np.frombuffer(after, dtype="<u2").reshape(4, 6, 5)

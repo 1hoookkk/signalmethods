@@ -9,6 +9,7 @@
 #include "space_dock.hpp"
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
+#include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
@@ -173,6 +174,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   connect(document_, &BodyDocument::bodyChanged, this, [this] {
     response_plot_->refresh();
     updateProbes();
+    updateInterior();
   });
   connect(document_, &BodyDocument::cornerChanged, this, [this](std::size_t corner) {
     response_plot_->setCorner(corner);
@@ -196,6 +198,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   connect(document_, &BodyDocument::spaceChanged, this, [this] {
     space_dock_->setSpace(document_->space());
     updateProbes();
+    updateInterior();
   });
   connect(document_, &BodyDocument::freedomMaskChanged, this,
           [this](std::uint32_t mask) {
@@ -282,6 +285,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
 
   updateVerbs();
   updateProbes();
+  updateInterior();
 }
 
 ResponsePlotWidget* MainWindow::responsePlot() const noexcept { return response_plot_; }
@@ -365,7 +369,7 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     try {
       const auto envelope = trench::core::measure::harmonic_envelope(
           clip->samples, clip->sample_rate_hz, source_model_);
-      target = trench::core::measure::target_on_grid(envelope, trench::core::p2k::grid().hz);
+      target = trench::core::measure::target_on_grid(envelope, document_->grid().hz);
     } catch (const std::exception&) {
       return false;
     }
@@ -388,7 +392,7 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
   }
   if (bytes.size() != trench::core::kLegacyBodyBytes) return false;
   document_->setTarget(trench::core::p2k::corner_response_db(
-      trench::core::p2k::rom_corner_words(bytes, document_->corner())));
+      trench::core::p2k::rom_corner_words(bytes, document_->corner()), document_->grid()));
   chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
   return true;
 }
@@ -447,6 +451,17 @@ void MainWindow::updateProbes() {
   dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
   chassis_bar_->setDcDriftDb(dc_drift_db_);
   chassis_bar_->setScoreDb(document_->targetScoreDb());
+}
+
+void MainWindow::updateInterior() {
+  std::array<std::uint8_t, trench::core::kLegacyBodyBytes> bytes{};
+  try {
+    bytes = document_->body().legacy_bytes();
+  } catch (const std::exception&) {
+    return;
+  }
+  const auto audit = trench::core::p2k::interior_audit(bytes, document_->grid());
+  morph_strip_->setWorstStepDb(audit.max_step_db);
 }
 
 void MainWindow::endRun() {
