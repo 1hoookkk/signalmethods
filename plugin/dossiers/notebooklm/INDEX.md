@@ -1,0 +1,37 @@
+# P2K reference corpus — NotebookLM index
+
+- [Ace of Bass](P2k_000_Ace of Bass.md) — ref 0, EQ+
+- [MegaSweepz](P2k_001_MegaSweepz.md) — ref 1, LPF
+- [EarlyRizer](P2k_002_EarlyRizer.md) — ref 2, LPF
+- [Millennium](P2k_003_Millennium.md) — ref 3, LPF
+- [MeatyGizmo](P2k_004_MeatyGizmo.md) — ref 4, REZ
+- [KlubKlassik](P2k_005_KlubKlassik.md) — ref 5, LPF
+- [BassBox-303](P2k_006_BassBox-303.md) — ref 6, LPF
+- [FuzziFace](P2k_007_FuzziFace.md) — ref 7, DST
+- [DeadRinger](P2k_008_DeadRinger.md) — ref 8, REZ
+- [TB-OrNot-TB](P2k_009_TB-OrNot-TB.md) — ref 9, EQ+
+- [Ooh-To-Eee](P2k_010_Ooh-To-Eee.md) — ref 10, VOW
+- [BolandBass](P2k_011_BolandBass.md) — ref 11, EQ+
+- [MultiQVox](P2k_012_MultiQVox.md) — ref 12, VOW
+- [TalkingHedz](P2k_013_TalkingHedz.md) — ref 13, VOW
+- [ZoomPeaks](P2k_014_ZoomPeaks.md) — ref 14, REZ
+- [DJAlkaline](P2k_015_DJAlkaline.md) — ref 15, EQ+
+- [BassTracer](P2k_016_BassTracer.md) — ref 16, EQ+
+- [RogueHertz](P2k_017_RogueHertz.md) — ref 17, EQ+
+- [RazorBlades](P2k_018_RazorBlades.md) — ref 18, EQ-
+- [RadioCraze](P2k_019_RadioCraze.md) — ref 19, EQ-
+- [Eeh-To-Aah](P2k_020_Eeh-To-Aah.md) — ref 20, VOW
+- [UbuOrator](P2k_021_UbuOrator.md) — ref 21, VOW
+- [DeepBouche](P2k_022_DeepBouche.md) — ref 22, VOW
+- [FreakShifta](P2k_023_FreakShifta.md) — ref 23, PHA
+- [CruzPusher](P2k_024_CruzPusher.md) — ref 24, PHA
+- [AngelzHairz](P2k_025_AngelzHairz.md) — ref 25, FLG
+- [DreamWeava](P2k_026_DreamWeava.md) — ref 26, FLG
+- [AcidRavage](P2k_027_AcidRavage.md) — ref 27, REZ
+- [BassOMatic](P2k_028_BassOMatic.md) — ref 28, REZ
+- [LucifersQ](P2k_029_LucifersQ.md) — ref 29, REZ
+- [ToothComb](P2k_030_ToothComb.md) — ref 30, REZ
+- [EarBender](P2k_031_EarBender.md) — ref 31, WAH
+- [KlangKling](P2k_032_KlangKling.md) — ref 32, SFX
+
+- [trench-cascade-trace-v1 format](trench-cascade-trace-format.md)

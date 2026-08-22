@@ -1,0 +1,273 @@
+{
+  "_law": "One source for the whole face. Roles follow 60:30:10 (design/PALETTE.md). The plate is the 60 and is LOCKED artwork - it is recorded here for derivation, never written. Everything else derives from 'accent' and 'aperture'. Apply with: python tools/apply_theme.py <name>",
+  "active": "bright-orange",
+  "themes": {
+    "petrol-citron": {
+      "description": "Selected dark-instrument display direction: deep petrol-green glass, restrained green-grey graticule, and one pale citron signal shared by the response trace and the wheel cores. It preserves the X3 hierarchy without copying its cyan, while the cool aperture separates decisively from the warm taupe panel.",
+      "plate": "#9E917C",
+      "glass": "#1E5149",
+      "accent": "#D8F09D",
+      "curve_highlight": "#EEF8C9",
+      "lamp": "#7FA82D",
+      "lamp_core": "#D8F09D",
+      "support": "#3C7569",
+      "edge": "#0D221E",
+      "aperture_hue": 170,
+      "aperture_sat": 0.45
+    },
+    "acid-lime": {
+      "description": "Inverted display: a LIGHT field. Pale acid-lime #E2EB98 is the display field and the wheel's luminous core; deep olive-lime #6F7C12 is the response curve, the display markings and the glow falloff. Both are hue 67 - one family, split by lightness (0.76 against 0.28), so the only event on the face is light against dark inside a single colour. Field-to-curve contrast is 3.63:1.",
+      "plate": "#9E917C",
+      "glass": "#E2EB98",
+      "lamp_core": "#E2EB98",
+      "accent": "#6F7C12",
+      "support": "#6F7C12",
+      "lamp": "#6F7C12",
+      "aperture_hue": 67,
+      "aperture_sat": 0.67,
+      "edge": "#050607"
+    },
+    "cyan-lab": {
+      "description": "Beige plate, deep cool aperture, saturated cyan-blue as the only lit colour.",
+      "plate": "#9E917C",
+      "accent": "#20C1E9",
+      "aperture_hue": 192,
+      "aperture_sat": 0.3,
+      "support": "#7C8B90",
+      "edge": "#0E181C"
+    },
+    "phosphor": {
+      "description": "The instrument-green alternative. Reads as old lab/radar equipment.",
+      "plate": "#9E917C",
+      "accent": "#31D9A0",
+      "aperture_hue": 168,
+      "aperture_sat": 0.28,
+      "support": "#7F8E88",
+      "edge": "#0E1A16"
+    },
+    "signal-amber": {
+      "description": "Warm analogous scheme - accent shares the plate's family instead of opposing it. Lowest tension, vintage test-gear feel. Kept as the warm counter-proposal.",
+      "plate": "#9E917C",
+      "accent": "#F2A73B",
+      "aperture_hue": 28,
+      "aperture_sat": 0.26,
+      "support": "#8D8578",
+      "edge": "#1A140C"
+    },
+    "deep-current": {
+      "description": "Beige plate, deep teal window, warm coral as the single lit colour on both the trace and the wheel lamp. The wheel is the CAUSE and the trace is the EFFECT, so they share a colour; the teal window is the cool ground they sit on. One lit colour, one ground, one chassis.",
+      "plate": "#9E917C",
+      "accent": "#E8836E",
+      "lamp": "#2BD8C3",
+      "aperture_hue": 176,
+      "aperture_sat": 0.44,
+      "support": "#8FA6A2",
+      "edge": "#0C1F1D"
+    },
+    "arctic-ice": {
+      "description": "SELECTED 2026-08-09. Exact Arctic Ice board: locked beige plate, smoked slate glass, pale arctic curve, frosted internal wheel light, and dusty blue-grey telemetry. The readouts remain white hardware with only a subtle reflection from the glass.",
+      "plate": "#9E917C",
+      "glass": "#4E6270",
+      "accent": "#B9D9F2",
+      "curve_highlight": "#DCECF8",
+      "lamp": "#8FB9D6",
+      "lamp_core": "#B9D9F2",
+      "aperture_hue": 205,
+      "aperture_sat": 0.18,
+      "support": "#6A7E8B",
+      "edge": "#273138"
+    },
+    "deep-current-amber": {
+      "description": "Same structure as deep-current with the warm swapped for amber. Amber sits closer to the plate's own family, so it reads as instrument rather than signal. The Aug-4 build wore this.",
+      "plate": "#9E917C",
+      "accent": "#F0A93C",
+      "lamp": "#2BD8C3",
+      "aperture_hue": 176,
+      "aperture_sat": 0.44,
+      "support": "#8FA6A2",
+      "edge": "#0C1F1D"
+    },
+    "patina": {
+      "description": "The restrained answer. The window goes almost neutral - a very dark green-grey at 0.16 saturation, barely more chromatic than the plate itself - so the ONLY colour event on the face is the accent. No split, no competing 30, nothing loud.",
+      "plate": "#9E917C",
+      "accent": "#4DCBAC",
+      "lamp": "#4DCBAC",
+      "aperture_hue": 165,
+      "aperture_sat": 0.16,
+      "support": "#7E8A85",
+      "edge": "#141C19"
+    },
+    "phosphor-glass": {
+      "description": "Restrained purple-grey glass (authored vertical gradient #625A68 -> #49434F in make_glass.py), graticule multiplied in beneath it at ~30%, and a pale phosphor trace carried on a darker olive under-stroke - weight from two strokes, never a bloom. The wheel is RE-BAKED in Blender at the lamp colour, not retinted.",
+      "plate": "#9E917C",
+      "accent": "#D7E2A0",
+      "lamp": "#D7E2A0",
+      "aperture_hue": 285,
+      "aperture_sat": 0.1,
+      "support": "#8B8694",
+      "edge": "#2A2530"
+    },
+    "bone-signal": {
+      "description": "One system, not three. Bone/tan chassis (60), a deep teal-black window (30) that is the only cool mass on the face, and coral (10) as the single lit colour worn by BOTH the trace and the wheel lamp. Coral is complementary to the glass it sits in and analogous to the chassis it sits on, so it cuts against its background while belonging to the machine.",
+      "plate": "#9E917C",
+      "accent": "#E8836E",
+      "lamp": "#E8836E",
+      "aperture_hue": 178,
+      "aperture_sat": 0.35,
+      "support": "#8A9490",
+      "edge": "#0E1B1A"
+    },
+    "plum-mint": {
+      "description": "Bone chassis (60), deep plum-black window (30), mint signal (10). The wheel body is dark, belonging to the aperture family with the window, never to the chassis.",
+      "plate": "#9E917C",
+      "accent": "#66DBB8",
+      "lamp": "#66DBB8",
+      "aperture_hue": 285,
+      "aperture_sat": 0.24,
+      "support": "#8B8496",
+      "edge": "#150F1E"
+    },
+    "plum": {
+      "description": "light plum against a deep olive-black window - complements, warm chassis. Bone chassis 60, dark aperture 30, one signal colour 10 worn by both the trace and the wheel lamp. Wheel body stays dark - it belongs to the aperture family, never the chassis.",
+      "plate": "#9E917C",
+      "accent": "#C489C8",
+      "lamp": "#C489C8",
+      "aperture_hue": 95,
+      "aperture_sat": 0.2,
+      "support": "#8E8590",
+      "edge": "#171320"
+    },
+    "ultraviolet": {
+      "description": "violet is triadic with the beige (36 + 240); window goes dark olive. Bone chassis 60, dark aperture 30, one signal colour 10 worn by both the trace and the wheel lamp. Wheel body stays dark - it belongs to the aperture family, never the chassis.",
+      "plate": "#9E917C",
+      "accent": "#A78BE6",
+      "lamp": "#A78BE6",
+      "aperture_hue": 70,
+      "aperture_sat": 0.18,
+      "support": "#8A8698",
+      "edge": "#141024"
+    },
+    "mint-green": {
+      "description": "mint against a deep plum-black window - the strongest lamp of the four. Bone chassis 60, dark aperture 30, one signal colour 10 worn by both the trace and the wheel lamp. Wheel body stays dark - it belongs to the aperture family, never the chassis.",
+      "plate": "#9E917C",
+      "accent": "#66DBB8",
+      "lamp": "#66DBB8",
+      "aperture_hue": 330,
+      "aperture_sat": 0.2,
+      "support": "#8B9490",
+      "edge": "#151B1A"
+    },
+    "mineral-blue": {
+      "description": "chalky mineral blue, near the beige's complement; window a warm near-black. Bone chassis 60, dark aperture 30, one signal colour 10 worn by both the trace and the wheel lamp. Wheel body stays dark - it belongs to the aperture family, never the chassis.",
+      "plate": "#9E917C",
+      "accent": "#6FA8C8",
+      "lamp": "#6FA8C8",
+      "aperture_hue": 28,
+      "aperture_sat": 0.2,
+      "support": "#87909A",
+      "edge": "#121A20"
+    },
+    "module": {
+      "description": "Bone chassis (60), deep plum window (30), MINT signal (10) worn by BOTH the trace and the wheel lamp - the glow matches the curve. Wheel body stays dark: it belongs to the aperture family with the window, never to the chassis.",
+      "plate": "#9E917C",
+      "accent": "#66DBB8",
+      "lamp": "#66DBB8",
+      "aperture_hue": 285,
+      "aperture_sat": 0.26,
+      "support": "#8B86A8",
+      "edge": "#150F1E"
+    },
+    "citron": {
+      "description": "CITRON CLASSIC - Tyson's pick 2026-08-06, the 'A' panel of the 2026-07-27 three-up: navy glass, citron trace, citron wheels. Numbers measured off that exact render (final_A_citron_classic_q100.png): glass bed hue 229.5 sat 0.18, trace 216/239/138 = #D9EF8A, wheel lamp body #C8E07A. The lamp is deliberately a touch deeper than the trace here - the LED family, not the token, is what made the wheel match the curve on that face.",
+      "plate": "#9E917C",
+      "accent": "#D9EF8A",
+      "lamp": "#C8E07A",
+      "lamp_core": "#F0FFD2",
+      "aperture_hue": 230,
+      "aperture_sat": 0.18,
+      "support": "#A2A989",
+      "edge": "#10141F"
+    },
+    "mint-smoked": {
+      "description": "The mint signal on the SMOKED navy window instead of the plum one. Mint over plum reads sci-fi - two saturated families lit against each other (Tyson 2026-08-06: 'maybe too scifi'). The aperture here is the smoked blue-grey Tyson approved as the exact glass (hue 230 sat 0.18), which carries almost no chroma, so the mint is the only lit colour and the window is just a dark cool value. Citron was the other direction and lost: at hue 74 it sat 38 degrees off the beige plate and fused with it.",
+      "plate": "#9E917C",
+      "accent": "#66DBB8",
+      "lamp": "#66DBB8",
+      "aperture_hue": 230,
+      "aperture_sat": 0.18,
+      "support": "#8B93A2",
+      "edge": "#10141F"
+    },
+    "ultraviolet-smoked": {
+      "description": "The restoration face (Photo-1, 2026-08-09): dusty-violet signal on the smoked blue-grey glass Tyson approved as the exact glass. Violet is signal-only: never labels, panel furniture or readout bodies.",
+      "plate": "#9E917C",
+      "accent": "#A78BE6",
+      "lamp": "#B4A0DC",
+      "lamp_core": "#E7D8F9",
+      "aperture_hue": 230,
+      "aperture_sat": 0.18,
+      "support": "#8B93A2",
+      "edge": "#10141F"
+    },
+    "saffron-indigo": {
+      "description": "SELECTED 2026-08-09: the exact boutique face direction. Locked beige plate, deeply smoked indigo glass, saturated saffron trace and the same saffron filtered through the MORPH/Q/MIX wheel hardware. Frosted white controls take only a low-chroma tint from the glass.",
+      "plate": "#9E917C",
+      "accent": "#FFC229",
+      "lamp": "#FFC229",
+      "lamp_core": "#FFF1B5",
+      "aperture_hue": 236,
+      "aperture_sat": 0.39,
+      "support": "#808397",
+      "edge": "#0D0E17"
+    },
+    "citron-fivepoint": {
+      "description": "SHIPPING 2026-08-09 final: Five Point construction + citron. Curve D9EF8A / highlight EAFFB0, lamps C4D67C-rehued LEDs, telemetry 8895A8, edge 1A1D28. WARNING: do NOT run apply_theme against this - the wheel strip is a PRESERVED asset (a6f80568 body, lamp layer rehued via rehue_wheel_lamp.py) and the glass ratio was hand-deepened in make_glass.py; apply_theme would regenerate both and lose the exact art. UiLayout.h is the token authority for this state.",
+      "plate": "#9E917C",
+      "accent": "#D9EF8A",
+      "lamp": "#C4D67C",
+      "aperture_hue": 230,
+      "aperture_sat": 0.18,
+      "support": "#8895A8",
+      "edge": "#1A1D28"
+    },
+    "bright-orange": {
+      "description": "SELECTED 2026-08-10. Measured directly from dev/reference/selected_palette/TRENCH_BRIGHT_ORANGE_TARGET.png, which is the specification. White readouts keep their subtle cool tint, the beige faceplate is untouched, MIX stays outside the palette pass. GLASS KEY NOTE: tools/make_glass.py now states the smoked-cobalt field directly and no longer derives it from this key, so 'glass' here only feeds phosphor/spectrumGhost - the TRENCH title and the curve's ghost. Set to the cobalt major-grid value so those stay in family with the window.",
+      "plate": "#9E917C",
+      "glass": "#202A40",
+      "accent": "#EC3C1C",
+      "curve_highlight": "#F04120",
+      "lamp_core": "#F27035",
+      "aperture_hue": 146,
+      "aperture_sat": 0.24,
+      "support": "#8A93A2",
+      "edge": "#0C110E"
+    },
+    "trench-identity": {
+      "description": "THE identity (Tyson 2026-08-10 final brief): unchanged beige chassis; smoked petrol/green-grey technical glass, near-colourless until the trace; STRONG cold mint internal wheel light (the identity object); pale mint-white sea-glass trace; neutral silver readouts. Hierarchy: wheel = most saturated, trace = pale luminous, glass = dark quiet ground. Not a theme \u2014 materials + physics.",
+      "plate": "#9E917C",
+      "accent": "#E7E0D2",
+      "lamp": "#2BD8C3",
+      "glass": "#443B47",
+      "edge": "#181420",
+      "aperture_hue": 285,
+      "aperture_sat": 0.08,
+      "support": "#8F8A9C",
+      "lamp_core": "#7FF2E3",
+      "curve_highlight": "#F4EFE4"
+    },
+    "trench-oled": {
+      "description": "Hyper-modern OLED in the old encasing (candidate 2026-08-10): true-black screen, crisp data colours, 1997 chassis around a 2026 display.",
+      "plate": "#9E917C",
+      "accent": "#E7E0D2",
+      "lamp": "#2BD8C3",
+      "glass": "#0E1112",
+      "edge": "#050607",
+      "aperture_hue": 285,
+      "aperture_sat": 0.08,
+      "support": "#8F8A9C",
+      "lamp_core": "#7FF2E3",
+      "curve_highlight": "#F4EFE4"
+    }
+  },
+  "_roles": "60 plate (locked art) / 30 aperture - the glass / 10 accent - the TRACE / lamp - the wheels. The trace OPPOSES the glass; that opposition is what makes it sing. An aperture and a trace in the same hue family reads flat, which cyan-lab proved."
+}

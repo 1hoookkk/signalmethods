@@ -1,0 +1,248 @@
+{
+  "schema": "trench-rejected-experiment-v1",
+  "status": "REJECTED_EQ_BAND_MODEL",
+  "valid_scope": "exact isolated P2k_013 TalkingHedz S1 only",
+  "rejection": "S2-S5 were independently mapped formant rows, not sequential four-corner stage quartets against cumulative residuals",
+  "date": "2026-08-11",
+  "selection_note": "ETL S0001 w01 frame 3 is the authored middle-frame choice for a controlled same-speaker comparison; it is not claimed as a corpus medoid.",
+  "pipeline": "CornerSession -> registered lanes -> isolated P2K S1 conditioning -> closed per-corner unity-DC anchor -> filter_cli/trench-core packed proof",
+  "promotion": "FORBIDDEN; packed proofs were temporary and are retained only as failure evidence",
+  "candidates": [
+    {
+      "name": "etl_i_to_a_hedz_s1",
+      "intent": "controlled same-speaker Japanese /i/ to /a/ opening",
+      "sources": {
+        "M0_Q0": [
+          "recipes/tables/academia/etl_mokhtari_tanaka_2000.json",
+          "ETL_S0001_i_w01_f3"
+        ],
+        "M100_Q0": [
+          "recipes/tables/academia/etl_mokhtari_tanaka_2000.json",
+          "ETL_S0001_a_w01_f3"
+        ]
+      },
+      "conditioning": "exact isolated P2k_013 TalkingHedz S1, 44.1 kHz bank",
+      "measured_lane_scope": "S2-S5 poles only; frequency and bandwidth from source",
+      "zero_scope": "measured lanes remain all-pole; no invented zero positions",
+      "q_link_state": {
+        "M0": "broken",
+        "M100": "broken"
+      },
+      "dc_anchor": {
+        "M0_Q0": {
+          "raw_dc_db": 50.058,
+          "applied_total_trim_db": -50.058,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.23673864355412824
+        },
+        "M100_Q0": {
+          "raw_dc_db": 71.466,
+          "applied_total_trim_db": -71.466,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.1278442285585119
+        },
+        "M0_Q100": {
+          "raw_dc_db": 48.166,
+          "applied_total_trim_db": -48.166,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.24999005901865973
+        },
+        "M100_Q100": {
+          "raw_dc_db": 68.989,
+          "applied_total_trim_db": -68.989,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.13729008440566082
+        }
+      },
+      "registered_lanes": "etl_i_to_a_hedz_s1.registered_lanes.json",
+      "session": "etl_i_to_a_hedz_s1.session.json",
+      "inspector": "etl_i_to_a_hedz_s1_inspect.png",
+      "auditions": [
+        "etl_i_to_a_hedz_s1_ride_q0.wav",
+        "etl_i_to_a_hedz_s1_ride_q100.wav"
+      ],
+      "audition_shared_gain": 0.8048443385712154,
+      "packed_proof": {
+        "sha256": "48174d18e0f4ad085f80883ab81a810b7da1e104ee26a7a0ca9deb771b2c63a1",
+        "bytes": 240,
+        "distinct_corner_banks": 4,
+        "morph_travel_rms_db_q0": 16.161,
+        "morph_travel_rms_db_q100": 15.754,
+        "q_width_rms_db_m0": 2.691,
+        "q_width_rms_db_m100": 2.404,
+        "sampled_response_min_db": -119.137,
+        "sampled_response_max_db": 23.862,
+        "corner_dc_db": {
+          "M0_Q0": -0.002,
+          "M100_Q0": -0.002,
+          "M0_Q100": 0.001,
+          "M100_Q100": 0.002
+        },
+        "sampled_grid": "9 morph x 9 Q, 700 frequencies, packed runtime",
+        "word_law": "exact match against trench_core.dll"
+      },
+      "permanent_body240": false,
+      "operator_status": "AWAITING_TASTE"
+    },
+    {
+      "name": "etl_uu_to_sung_a_hedz_s1",
+      "intent": "rounded Japanese /uu/ opening into measured sung /a/",
+      "sources": {
+        "M0_Q0": [
+          "recipes/tables/academia/etl_mokhtari_tanaka_2000.json",
+          "ETL_S0001_uu_w01_f3"
+        ],
+        "M100_Q0": [
+          "recipes/tables/academia/hanna_epps_wolfe_2015.json",
+          "HEW15_a_sung"
+        ]
+      },
+      "conditioning": "exact isolated P2k_013 TalkingHedz S1, 44.1 kHz bank",
+      "measured_lane_scope": "S2-S5 poles only; frequency and bandwidth from source",
+      "zero_scope": "measured lanes remain all-pole; no invented zero positions",
+      "q_link_state": {
+        "M0": "broken",
+        "M100": "broken"
+      },
+      "dc_anchor": {
+        "M0_Q0": {
+          "raw_dc_db": 59.1,
+          "applied_total_trim_db": -59.1,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.18249361328038938
+        },
+        "M100_Q0": {
+          "raw_dc_db": 79.046,
+          "applied_total_trim_db": -79.046,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.10278310353703081
+        },
+        "M0_Q100": {
+          "raw_dc_db": 57.208,
+          "applied_total_trim_db": -57.208,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.19270867007422904
+        },
+        "M100_Q100": {
+          "raw_dc_db": 76.57,
+          "applied_total_trim_db": -76.57,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.11037730149559591
+        }
+      },
+      "registered_lanes": "etl_uu_to_sung_a_hedz_s1.registered_lanes.json",
+      "session": "etl_uu_to_sung_a_hedz_s1.session.json",
+      "inspector": "etl_uu_to_sung_a_hedz_s1_inspect.png",
+      "auditions": [
+        "etl_uu_to_sung_a_hedz_s1_ride_q0.wav",
+        "etl_uu_to_sung_a_hedz_s1_ride_q100.wav"
+      ],
+      "audition_shared_gain": 0.6360678168267591,
+      "packed_proof": {
+        "sha256": "c6e92aad07ed5efa8155f9df4dd6c19d59e8dca28d6e3451d01bcedcda0d33a7",
+        "bytes": 240,
+        "distinct_corner_banks": 4,
+        "morph_travel_rms_db_q0": 15.03,
+        "morph_travel_rms_db_q100": 14.951,
+        "q_width_rms_db_m0": 2.691,
+        "q_width_rms_db_m100": 2.404,
+        "sampled_response_min_db": -127.216,
+        "sampled_response_max_db": 24.084,
+        "corner_dc_db": {
+          "M0_Q0": 0.0,
+          "M100_Q0": 0.0,
+          "M0_Q100": 0.002,
+          "M100_Q100": 0.002
+        },
+        "sampled_grid": "9 morph x 9 Q, 700 frequencies, packed runtime",
+        "word_law": "exact match against trench_core.dll"
+      },
+      "permanent_body240": false,
+      "operator_status": "AWAITING_TASTE"
+    },
+    {
+      "name": "etl_kaleido_mouth_hedz_s1",
+      "intent": "four-mouth surface: M0 /i/ to /uu/ across Q; M100 Japanese /e/ to sung /a/ across Q",
+      "sources": {
+        "M0_Q0": [
+          "recipes/tables/academia/etl_mokhtari_tanaka_2000.json",
+          "ETL_S0001_i_w01_f3"
+        ],
+        "M100_Q0": [
+          "recipes/tables/academia/etl_mokhtari_tanaka_2000.json",
+          "ETL_S0001_e_w01_f3"
+        ],
+        "M0_Q100": [
+          "recipes/tables/academia/etl_mokhtari_tanaka_2000.json",
+          "ETL_S0001_uu_w01_f3"
+        ],
+        "M100_Q100": [
+          "recipes/tables/academia/hanna_epps_wolfe_2015.json",
+          "HEW15_a_sung"
+        ]
+      },
+      "conditioning": "exact isolated P2k_013 TalkingHedz S1, 44.1 kHz bank",
+      "measured_lane_scope": "S2-S5 poles only; frequency and bandwidth from source",
+      "zero_scope": "measured lanes remain all-pole; no invented zero positions",
+      "q_link_state": {
+        "M0": "broken",
+        "M100": "broken"
+      },
+      "dc_anchor": {
+        "M0_Q0": {
+          "raw_dc_db": 50.058,
+          "applied_total_trim_db": -50.058,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.23673864355412824
+        },
+        "M100_Q0": {
+          "raw_dc_db": 70.688,
+          "applied_total_trim_db": -70.688,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.1307372572207908
+        },
+        "M0_Q100": {
+          "raw_dc_db": 57.208,
+          "applied_total_trim_db": -57.208,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.19270867007422904
+        },
+        "M100_Q100": {
+          "raw_dc_db": 76.57,
+          "applied_total_trim_db": -76.57,
+          "measured_lanes": 4,
+          "per_lane_scale_multiplier": 0.11037730149559591
+        }
+      },
+      "registered_lanes": "etl_kaleido_mouth_hedz_s1.registered_lanes.json",
+      "session": "etl_kaleido_mouth_hedz_s1.session.json",
+      "inspector": "etl_kaleido_mouth_hedz_s1_inspect.png",
+      "auditions": [
+        "etl_kaleido_mouth_hedz_s1_ride_q0.wav",
+        "etl_kaleido_mouth_hedz_s1_ride_q100.wav"
+      ],
+      "audition_shared_gain": 0.6360678168267591,
+      "packed_proof": {
+        "sha256": "c1544c9e7e1b20f2ee5f9d751b9c4585fceb3726fd76a0a22ad4274f701d0191",
+        "bytes": 240,
+        "distinct_corner_banks": 4,
+        "morph_travel_rms_db_q0": 14.571,
+        "morph_travel_rms_db_q100": 14.951,
+        "q_width_rms_db_m0": 8.912,
+        "q_width_rms_db_m100": 8.583,
+        "sampled_response_min_db": -124.375,
+        "sampled_response_max_db": 24.084,
+        "corner_dc_db": {
+          "M0_Q0": -0.002,
+          "M100_Q0": 0.0,
+          "M0_Q100": 0.002,
+          "M100_Q100": 0.002
+        },
+        "sampled_grid": "9 morph x 9 Q, 700 frequencies, packed runtime",
+        "word_law": "exact match against trench_core.dll"
+      },
+      "permanent_body240": false,
+      "operator_status": "AWAITING_TASTE"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "juce-docs": {
+      "type": "local",
+      "command": ["node", "C:/Users/hooki/mcp-servers-jos/juce-docs-mcp-server/dist/index.js"],
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    }
+  }
+}

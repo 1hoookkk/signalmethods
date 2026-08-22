@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trench/four-corner-target.schema.json",
+  "title": "TRENCH four-corner target sheet",
+  "description": "Canonical response authority for sequential stage-quartet authoring. Feature tables may constrain a fit, but they are not target responses.",
+  "type": "object",
+  "required": ["schema", "name", "datum_rate_hz", "corner_order", "q_axis", "corners", "conditioning"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "trench-four-corner-target-v1" },
+    "name": { "type": "string", "minLength": 1 },
+    "datum_rate_hz": { "const": 44100.0 },
+    "corner_order": { "const": ["M0_Q0", "M100_Q0", "M0_Q100", "M100_Q100"] },
+    "q_axis": {
+      "type": "object",
+      "required": ["mode", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["authored", "collapsed"] },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "corners": {
+      "type": "object",
+      "required": ["M0_Q0", "M100_Q0", "M0_Q100", "M100_Q100"],
+      "additionalProperties": false,
+      "properties": {
+        "M0_Q0": { "$ref": "#/$defs/corner" },
+        "M100_Q0": { "$ref": "#/$defs/corner" },
+        "M0_Q100": { "$ref": "#/$defs/corner" },
+        "M100_Q100": { "$ref": "#/$defs/corner" }
+      }
+    },
+    "conditioning": {
+      "type": "object",
+      "required": ["architecture", "slots"],
+      "additionalProperties": false,
+      "properties": {
+        "architecture": { "type": "string", "minLength": 1 },
+        "slots": { "const": [1], "description": "Version 1 canon begins with one exact S1 conditioning quartet." }
+      }
+    }
+  },
+  "$defs": {
+    "corner": {
+      "type": "object",
+      "required": ["role"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "type": "string", "minLength": 1 },
+        "target_response": {
+          "type": "object",
+          "required": ["path", "sha256", "format"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "format": { "const": "frequency_db_json" }
+          }
+        },
+        "copy_of": { "enum": ["M0_Q0", "M100_Q0"] },
+        "feature_constraints": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  }
+}

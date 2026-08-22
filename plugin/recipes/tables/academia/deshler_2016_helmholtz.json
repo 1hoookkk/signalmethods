@@ -1,0 +1,34 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "deshler_2016_helmholtz",
+ "category": "objects",
+ "citation": "Deshler 2016, Helmholtz resonator lab measurements",
+ "source": "Deshler (2016) bottle resonator fit",
+ "measurement_method": "Resonant frequency with the fitted full width at half maximum",
+ "note": "Low Q by design: a Helmholtz resonator is a broad single mode.",
+ "objects": [
+  {
+   "object_id": "DES16_bottle",
+   "label": "Helmholtz bottle resonator",
+   "f0_hz": null,
+   "rows": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 200.0,
+     "bandwidth_hz": 50.0,
+     "q": 4.0,
+     "provenance": "resonance and FWHM as measured; Q = f/B = 4.0"
+    }
+   ],
+   "formants": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 200.0,
+     "bandwidth_hz": 50.0,
+     "q": 4.0,
+     "provenance": "resonance and FWHM as measured; Q = f/B = 4.0"
+    }
+   ]
+  }
+ ]
+}

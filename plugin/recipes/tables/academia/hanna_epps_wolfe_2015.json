@@ -1,0 +1,90 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "hanna_epps_wolfe_2015",
+ "category": "vowels",
+ "citation": "Hanna, Epps & Wolfe 2015, JASA (vocal-tract acoustic impedance)",
+ "source": "Hanna/Epps/Wolfe 2015 Table 1",
+ "measurement_method": "Vocal tract resonances measured through the lips with the glottis closed; frequency and bandwidth measured on the same resonance",
+ "note": "Only the rows stated with BOTH frequency and bandwidth are recorded. The paper's summary ranges (men B ~50-90 Hz, women ~70-90 Hz for R1-R3) are context, not rows, and are not invented into objects.",
+ "objects": [
+  {
+   "object_id": "HEW15_a_sung",
+   "label": "a (sung)",
+   "f0_hz": null,
+   "rows": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 555.0,
+     "bandwidth_hz": 68.0,
+     "q": 8.162,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1120.0,
+     "bandwidth_hz": 33.0,
+     "q": 33.939,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2468.0,
+     "bandwidth_hz": 69.0,
+     "q": 35.768,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 2737.0,
+     "bandwidth_hz": 74.0,
+     "q": 36.986,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F5",
+     "frequency_hz": 3301.0,
+     "bandwidth_hz": 140.0,
+     "q": 23.579,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    }
+   ],
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 555.0,
+     "bandwidth_hz": 68.0,
+     "q": 8.162,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1120.0,
+     "bandwidth_hz": 33.0,
+     "q": 33.939,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2468.0,
+     "bandwidth_hz": 69.0,
+     "q": 35.768,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 2737.0,
+     "bandwidth_hz": 74.0,
+     "q": 36.986,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    },
+    {
+     "mode_or_formant": "F5",
+     "frequency_hz": 3301.0,
+     "bandwidth_hz": 140.0,
+     "q": 23.579,
+     "provenance": "measured resonance and bandwidth through the lips, glottis closed (Table 1)"
+    }
+   ]
+  }
+ ]
+}

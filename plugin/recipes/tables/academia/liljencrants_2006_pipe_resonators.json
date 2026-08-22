@@ -1,0 +1,189 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "liljencrants_2006_pipe_resonators",
+ "category": "objects",
+ "citation": "Liljencrants 2006, pipe resonator Q measurements",
+ "source": "Liljencrants (2006) Table 1",
+ "measurement_method": "Measured Q1-Q5 for open pipe resonators of a stated 100 Hz fundamental; per-mode frequencies not printed",
+ "note": "REFERENCE ONLY. Q rises with mode number (radiation damping dominates at low frequency). Deriving mode frequencies as n*100 Hz would be an assumption, not a measurement, so the frequencies are null.",
+ "objects": [
+  {
+   "object_id": "LIL06_wood_open",
+   "label": "wood open pipe resonator",
+   "f0_hz": 100.0,
+   "rows": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q1 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 25
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q2 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 40
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q3 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 60
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q4 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 80
+    },
+    {
+     "mode_or_formant": "M5",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q5 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 100
+    }
+   ],
+   "formants": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q1 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 25
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q2 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 40
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q3 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 60
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q4 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 80
+    },
+    {
+     "mode_or_formant": "M5",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q5 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 100
+    }
+   ]
+  },
+  {
+   "object_id": "LIL06_metal_open",
+   "label": "metal open pipe resonator",
+   "f0_hz": 100.0,
+   "rows": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q1 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 40
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q2 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 70
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q3 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 110
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q4 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 150
+    },
+    {
+     "mode_or_formant": "M5",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q5 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 200
+    }
+   ],
+   "formants": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q1 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 40
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q2 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 70
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q3 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 110
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q4 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 150
+    },
+    {
+     "mode_or_formant": "M5",
+     "frequency_hz": null,
+     "bandwidth_hz": null,
+     "q": null,
+     "provenance": "measured Q5 as printed; the mode frequency is not stated per row, so it is left null rather than assumed to be the n-th harmonic",
+     "q_measured": 200
+    }
+   ]
+  }
+ ]
+}

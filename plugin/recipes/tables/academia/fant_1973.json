@@ -1,0 +1,290 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "fant_1973",
+ "category": "vowels",
+ "citation": "Fant 1973, Speech Sounds and Features",
+ "source": "phonTools data(f73)",
+ "measurement_method": "published mean formant table",
+ "objects": [
+  {
+   "object_id": "F73_spk0_i_0",
+   "label": "i",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 255.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2190.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 3150.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3730.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk1_e_1",
+   "label": "e",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 345.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2250.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2850.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3540.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk2_E_2",
+   "label": "E",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 505.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1935.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2540.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3370.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk3_a_3",
+   "label": "a",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 625.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1720.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2500.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3440.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk4_y_4",
+   "label": "y",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 260.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2060.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2675.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3310.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk5_}_5",
+   "label": "}",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 285.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1640.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2250.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3250.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk6_2_6",
+   "label": "2",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 380.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1730.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2290.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3225.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk7_u_7",
+   "label": "u",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 290.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 595.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2330.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3260.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk8_o_8",
+   "label": "o",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 390.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 690.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2415.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3160.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "F73_spk9_A_9",
+   "label": "A",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 600.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 925.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2540.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F4",
+     "frequency_hz": 3320.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  }
+ ]
+}

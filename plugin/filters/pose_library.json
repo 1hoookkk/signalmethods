@@ -1,0 +1,2093 @@
+{
+ "format": "trench-pose-library-v2",
+ "law": "the WORDS are the truth, geometry is a view. The vocabulary atom is the FOUR geometry words (zero-mag, zero-r2, pole-mag, pole-r2) of a body240 cell at a stated datum; SCALE is per-placement seasoning (the corpus reuses geometry rows at different gains - the corner-gain law). Place = copy the words, bit-exact; rate changes go through the Hz-anchored recompile law. Cluster identity is exact u16 equality; encode/decode round-trip verified 0 failures across all 792 cells.",
+ "source": "recipes/architectures encoded through trench_stage_words_from_roots_at at each filter's datum",
+ "rows": [
+  {
+   "geometry_words": [
+    62973,
+    56316,
+    27132,
+    47100
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 478.6,
+    "pole_r": 0.9763,
+    "zero_hz": 13366.6,
+    "zero_r": 0.8839
+   },
+   "filters": [
+    "BassBox-303",
+    "BassTracer",
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BassBox-303",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 52654,
+     "scale_db": -6.7
+    },
+    {
+     "filter": "BolandBass",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48307,
+     "scale_db": -13.0
+    },
+    {
+     "filter": "BassTracer",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 55288,
+     "scale_db": -2.5
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48239,
+     "scale_db": -13.1
+    }
+   ],
+   "count": 4,
+   "id": "p479-z13367"
+  },
+  {
+   "geometry_words": [
+    63613,
+    44028,
+    62077,
+    60156
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 12893.0,
+    "pole_r": 0.7605,
+    "zero_hz": 13401.3,
+    "zero_r": 0.9862
+   },
+   "filters": [
+    "MeatyGizmo",
+    "MegaSweepz",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "MegaSweepz",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53904,
+     "scale_db": -4.7
+    },
+    {
+     "filter": "Millennium",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    }
+   ],
+   "count": 3,
+   "id": "p12893-z13401"
+  },
+  {
+   "geometry_words": [
+    63997,
+    49148,
+    63613,
+    49148
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 13615.5,
+    "pole_r": 0.9683,
+    "zero_hz": 14391.2,
+    "zero_r": 0.9683
+   },
+   "filters": [
+    "MeatyGizmo",
+    "MegaSweepz",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "MegaSweepz",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53904,
+     "scale_db": -4.7
+    },
+    {
+     "filter": "Millennium",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    }
+   ],
+   "count": 3,
+   "id": "p13616-z14391"
+  },
+  {
+   "geometry_words": [
+    45308,
+    54524,
+    18939,
+    49916
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 79.4,
+    "pole_r": 0.9622,
+    "zero_hz": 2315.6,
+    "zero_r": 0.9143
+   },
+   "filters": [
+    "BassBox-303",
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BassBox-303",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 52654,
+     "scale_db": -6.7
+    },
+    {
+     "filter": "BolandBass",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48307,
+     "scale_db": -13.0
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48239,
+     "scale_db": -13.1
+    }
+   ],
+   "count": 3,
+   "id": "p79-z2316"
+  },
+  {
+   "geometry_words": [
+    33276,
+    51452,
+    50428,
+    39164
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 3622.0,
+    "pole_r": 0.9939,
+    "zero_hz": 783.3,
+    "zero_r": 0.9499
+   },
+   "filters": [
+    "DeadRinger",
+    "Eeh-To-Aah",
+    "UbuOrator"
+   ],
+   "placements": [
+    {
+     "filter": "DeadRinger",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 52514,
+     "scale_db": -6.8
+    },
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53031,
+     "scale_db": -6.3
+    },
+    {
+     "filter": "UbuOrator",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53254,
+     "scale_db": -6.0
+    }
+   ],
+   "count": 3,
+   "id": "p3622-z783"
+  },
+  {
+   "geometry_words": [
+    48636,
+    51196,
+    52732,
+    43516
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 4371.9,
+    "pole_r": 0.9872,
+    "zero_hz": 3101.0,
+    "zero_r": 0.952
+   },
+   "filters": [
+    "DeadRinger",
+    "Eeh-To-Aah",
+    "UbuOrator"
+   ],
+   "placements": [
+    {
+     "filter": "DeadRinger",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 52514,
+     "scale_db": -6.8
+    },
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53031,
+     "scale_db": -6.3
+    },
+    {
+     "filter": "UbuOrator",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53254,
+     "scale_db": -6.0
+    }
+   ],
+   "count": 3,
+   "id": "p4372-z3101"
+  },
+  {
+   "geometry_words": [
+    50684,
+    50684,
+    44540,
+    45308
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2154.0,
+    "pole_r": 0.9833,
+    "zero_hz": 3774.0,
+    "zero_r": 0.9561
+   },
+   "filters": [
+    "DeadRinger",
+    "Eeh-To-Aah",
+    "UbuOrator"
+   ],
+   "placements": [
+    {
+     "filter": "DeadRinger",
+     "lane": 5,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 52514,
+     "scale_db": -6.8
+    },
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 5,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53031,
+     "scale_db": -6.3
+    },
+    {
+     "filter": "UbuOrator",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53254,
+     "scale_db": -6.0
+    }
+   ],
+   "count": 3,
+   "id": "p2154-z3774"
+  },
+  {
+   "geometry_words": [
+    59900,
+    58876,
+    3054,
+    29438
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 58.9,
+    "pole_r": 0.9988,
+    "zero_hz": 9642.2,
+    "zero_r": 0.8102
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    }
+   ],
+   "count": 2,
+   "id": "p59-z9642"
+  },
+  {
+   "geometry_words": [
+    57084,
+    57852,
+    54268,
+    49148
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 5134.0,
+    "pole_r": 0.9683,
+    "zero_hz": 6915.2,
+    "zero_r": 0.8479
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    }
+   ],
+   "count": 2,
+   "id": "p5134-z6915"
+  },
+  {
+   "geometry_words": [
+    61693,
+    52732,
+    61565,
+    52220
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 10329.1,
+    "pole_r": 0.9438,
+    "zero_hz": 10565.7,
+    "zero_r": 0.9396
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    }
+   ],
+   "count": 2,
+   "id": "p10329-z10566"
+  },
+  {
+   "geometry_words": [
+    40700,
+    50428,
+    59132,
+    51196
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 8216.5,
+    "pole_r": 0.952,
+    "zero_hz": 1543.7,
+    "zero_r": 0.9581
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 2,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 2,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    }
+   ],
+   "count": 2,
+   "id": "p8216-z1544"
+  },
+  {
+   "geometry_words": [
+    46332,
+    52220,
+    33788,
+    44284
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 871.0,
+    "pole_r": 0.9857,
+    "zero_hz": 2584.9,
+    "zero_r": 0.9438
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 3,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 3,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    }
+   ],
+   "count": 2,
+   "id": "p871-z2585"
+  },
+  {
+   "geometry_words": [
+    53244,
+    51708,
+    49916,
+    49660
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 3486.7,
+    "pole_r": 0.9642,
+    "zero_hz": 4606.9,
+    "zero_r": 0.9479
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    }
+   ],
+   "count": 2,
+   "id": "p3487-z4607"
+  },
+  {
+   "geometry_words": [
+    64381,
+    54268,
+    64125,
+    49148
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 14669.7,
+    "pole_r": 0.9683,
+    "zero_hz": 16286.9,
+    "zero_r": 0.9186
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    }
+   ],
+   "count": 2,
+   "id": "p14670-z16287"
+  },
+  {
+   "geometry_words": [
+    29948,
+    51964,
+    45564,
+    45820
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2364.0,
+    "pole_r": 0.9813,
+    "zero_hz": 546.8,
+    "zero_r": 0.9458
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 5,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 5,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    }
+   ],
+   "count": 2,
+   "id": "p2364-z547"
+  },
+  {
+   "geometry_words": [
+    62205,
+    536,
+    64253,
+    55292
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 16276.7,
+    "pole_r": 0.9014,
+    "zero_hz": 10935.2,
+    "zero_r": 1.0
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 6,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 6,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 47308,
+     "scale_db": -14.3
+    }
+   ],
+   "count": 2,
+   "id": "p16277-z10935"
+  },
+  {
+   "geometry_words": [
+    62333,
+    536,
+    26620,
+    47356
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 456.1,
+    "pole_r": 0.9753,
+    "zero_hz": 11133.6,
+    "zero_r": 1.0
+   },
+   "filters": [
+    "MeatyGizmo",
+    "Millennium"
+   ],
+   "placements": [
+    {
+     "filter": "Millennium",
+     "lane": 6,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    },
+    {
+     "filter": "MeatyGizmo",
+     "lane": 6,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53850,
+     "scale_db": -4.8
+    }
+   ],
+   "count": 2,
+   "id": "p456-z11134"
+  },
+  {
+   "geometry_words": [
+    38908,
+    55548,
+    52988,
+    55292
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 4615.7,
+    "pole_r": 0.9014,
+    "zero_hz": 1252.1,
+    "zero_r": 0.8971
+   },
+   "filters": [
+    "AcidRavage",
+    "KlubKlassik"
+   ],
+   "placements": [
+    {
+     "filter": "KlubKlassik",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53692,
+     "scale_db": -5.1
+    },
+    {
+     "filter": "AcidRavage",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 52504,
+     "scale_db": -6.8
+    }
+   ],
+   "count": 2,
+   "id": "p4616-z1252"
+  },
+  {
+   "geometry_words": [
+    43516,
+    50172,
+    34812,
+    53500
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 881.8,
+    "pole_r": 0.9313,
+    "zero_hz": 2014.4,
+    "zero_r": 0.9602
+   },
+   "filters": [
+    "KlubKlassik",
+    "ToothComb"
+   ],
+   "placements": [
+    {
+     "filter": "KlubKlassik",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53692,
+     "scale_db": -5.1
+    },
+    {
+     "filter": "ToothComb",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 50866,
+     "scale_db": -9.0
+    }
+   ],
+   "count": 2,
+   "id": "p882-z2014"
+  },
+  {
+   "geometry_words": [
+    48124,
+    48124,
+    60412,
+    53756
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 9395.9,
+    "pole_r": 0.9271,
+    "zero_hz": 2971.3,
+    "zero_r": 0.9723
+   },
+   "filters": [
+    "AcidRavage",
+    "KlubKlassik"
+   ],
+   "placements": [
+    {
+     "filter": "KlubKlassik",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53692,
+     "scale_db": -5.1
+    },
+    {
+     "filter": "AcidRavage",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 52504,
+     "scale_db": -6.8
+    }
+   ],
+   "count": 2,
+   "id": "p9396-z2971"
+  },
+  {
+   "geometry_words": [
+    57596,
+    58364,
+    63229,
+    52732
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 13219.7,
+    "pole_r": 0.9396,
+    "zero_hz": 7359.8,
+    "zero_r": 0.8293
+   },
+   "filters": [
+    "AcidRavage",
+    "KlubKlassik"
+   ],
+   "placements": [
+    {
+     "filter": "KlubKlassik",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 55181,
+     "scale_db": -2.7
+    },
+    {
+     "filter": "AcidRavage",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 54705,
+     "scale_db": -3.4
+    }
+   ],
+   "count": 2,
+   "id": "p13220-z7360"
+  },
+  {
+   "geometry_words": [
+    57852,
+    60412,
+    41212,
+    53500
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 1603.9,
+    "pole_r": 0.9313,
+    "zero_hz": 7921.9,
+    "zero_r": 0.7501
+   },
+   "filters": [
+    "AcidRavage",
+    "KlubKlassik"
+   ],
+   "placements": [
+    {
+     "filter": "KlubKlassik",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53692,
+     "scale_db": -5.1
+    },
+    {
+     "filter": "AcidRavage",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 52504,
+     "scale_db": -6.8
+    }
+   ],
+   "count": 2,
+   "id": "p1604-z7922"
+  },
+  {
+   "geometry_words": [
+    37884,
+    47868,
+    37372,
+    51196
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 1156.2,
+    "pole_r": 0.952,
+    "zero_hz": 1235.7,
+    "zero_r": 0.9733
+   },
+   "filters": [
+    "BassBox-303",
+    "BolandBass"
+   ],
+   "placements": [
+    {
+     "filter": "BassBox-303",
+     "lane": 3,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 52423,
+     "scale_db": -6.9
+    },
+    {
+     "filter": "BolandBass",
+     "lane": 3,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 52602,
+     "scale_db": -6.7
+    }
+   ],
+   "count": 2,
+   "id": "p1156-z1236"
+  },
+  {
+   "geometry_words": [
+    43516,
+    46588,
+    40444,
+    56572
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 1394.3,
+    "pole_r": 0.8795,
+    "zero_hz": 2006.7,
+    "zero_r": 0.9783
+   },
+   "filters": [
+    "BassBox-303",
+    "BolandBass"
+   ],
+   "placements": [
+    {
+     "filter": "BassBox-303",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 52423,
+     "scale_db": -6.9
+    },
+    {
+     "filter": "BolandBass",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 52602,
+     "scale_db": -6.7
+    }
+   ],
+   "count": 2,
+   "id": "p1394-z2007"
+  },
+  {
+   "geometry_words": [
+    57340,
+    65533,
+    51708,
+    31741
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 4035.5,
+    "pole_r": 0.9983,
+    "zero_hz": 9644.2,
+    "zero_r": 0.0156
+   },
+   "filters": [
+    "CruzPusher",
+    "FuzziFace"
+   ],
+   "placements": [
+    {
+     "filter": "FuzziFace",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 29877,
+     "scale_db": -39.9
+    },
+    {
+     "filter": "FuzziFace",
+     "lane": 1,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 43155,
+     "scale_db": -20.4
+    },
+    {
+     "filter": "CruzPusher",
+     "lane": 1,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 30837,
+     "scale_db": -38.5
+    }
+   ],
+   "count": 3,
+   "id": "p4036-z9644"
+  },
+  {
+   "geometry_words": [
+    57340,
+    65533,
+    28668,
+    42748
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 548.2,
+    "pole_r": 0.9887,
+    "zero_hz": 9644.2,
+    "zero_r": 0.0156
+   },
+   "filters": [
+    "CruzPusher",
+    "FuzziFace"
+   ],
+   "placements": [
+    {
+     "filter": "FuzziFace",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 29877,
+     "scale_db": -39.9
+    },
+    {
+     "filter": "CruzPusher",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 30837,
+     "scale_db": -38.5
+    },
+    {
+     "filter": "CruzPusher",
+     "lane": 2,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 32233,
+     "scale_db": -36.7
+    }
+   ],
+   "count": 3,
+   "id": "p548-z9644"
+  },
+  {
+   "geometry_words": [
+    57340,
+    65533,
+    29436,
+    38652
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 599.5,
+    "pole_r": 0.9944,
+    "zero_hz": 9644.2,
+    "zero_r": 0.0156
+   },
+   "filters": [
+    "CruzPusher",
+    "FuzziFace"
+   ],
+   "placements": [
+    {
+     "filter": "FuzziFace",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 21685,
+     "scale_db": -51.9
+    },
+    {
+     "filter": "CruzPusher",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 26741,
+     "scale_db": -44.5
+    }
+   ],
+   "count": 2,
+   "id": "p600-z9644"
+  },
+  {
+   "geometry_words": [
+    57340,
+    65533,
+    24060,
+    34043
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 376.4,
+    "pole_r": 0.9974,
+    "zero_hz": 9644.2,
+    "zero_r": 0.0156
+   },
+   "filters": [
+    "CruzPusher",
+    "FuzziFace"
+   ],
+   "placements": [
+    {
+     "filter": "FuzziFace",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 29877,
+     "scale_db": -39.9
+    },
+    {
+     "filter": "CruzPusher",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 30837,
+     "scale_db": -38.5
+    }
+   ],
+   "count": 2,
+   "id": "p376-z9644"
+  },
+  {
+   "geometry_words": [
+    57340,
+    65533,
+    22012,
+    36604
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 321.9,
+    "pole_r": 0.9962,
+    "zero_hz": 9644.2,
+    "zero_r": 0.0156
+   },
+   "filters": [
+    "CruzPusher",
+    "FuzziFace"
+   ],
+   "placements": [
+    {
+     "filter": "FuzziFace",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 29877,
+     "scale_db": -39.9
+    },
+    {
+     "filter": "CruzPusher",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 30837,
+     "scale_db": -38.5
+    }
+   ],
+   "count": 2,
+   "id": "p322-z9644"
+  },
+  {
+   "geometry_words": [
+    39420,
+    52476,
+    28668,
+    46076
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 541.1,
+    "pole_r": 0.9803,
+    "zero_hz": 1397.1,
+    "zero_r": 0.9417
+   },
+   "filters": [
+    "Eeh-To-Aah",
+    "Ooh-To-Eee"
+   ],
+   "placements": [
+    {
+     "filter": "Ooh-To-Eee",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 52011,
+     "scale_db": -7.4
+    },
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 2,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53031,
+     "scale_db": -6.3
+    }
+   ],
+   "count": 2,
+   "id": "p541-z1397"
+  },
+  {
+   "geometry_words": [
+    41724,
+    47100,
+    17915,
+    39420
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 225.0,
+    "pole_r": 0.9936,
+    "zero_hz": 1712.5,
+    "zero_r": 0.9763
+   },
+   "filters": [
+    "Eeh-To-Aah",
+    "Ooh-To-Eee"
+   ],
+   "placements": [
+    {
+     "filter": "Ooh-To-Eee",
+     "lane": 2,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53613,
+     "scale_db": -5.3
+    },
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 2,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 55352,
+     "scale_db": -2.4
+    }
+   ],
+   "count": 2,
+   "id": "p225-z1712"
+  },
+  {
+   "geometry_words": [
+    50428,
+    55548,
+    47868,
+    43516
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2898.2,
+    "pole_r": 0.9872,
+    "zero_hz": 3754.5,
+    "zero_r": 0.8971
+   },
+   "filters": [
+    "MultiQVox",
+    "Ooh-To-Eee"
+   ],
+   "placements": [
+    {
+     "filter": "Ooh-To-Eee",
+     "lane": 3,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53613,
+     "scale_db": -5.3
+    },
+    {
+     "filter": "MultiQVox",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53832,
+     "scale_db": -4.9
+    }
+   ],
+   "count": 2,
+   "id": "p2898-z3754"
+  },
+  {
+   "geometry_words": [
+    57084,
+    63229,
+    53756,
+    48892
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 4852.8,
+    "pole_r": 0.9693,
+    "zero_hz": 7903.4,
+    "zero_r": 0.5306
+   },
+   "filters": [
+    "MultiQVox",
+    "Ooh-To-Eee"
+   ],
+   "placements": [
+    {
+     "filter": "Ooh-To-Eee",
+     "lane": 4,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53613,
+     "scale_db": -5.3
+    },
+    {
+     "filter": "MultiQVox",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53832,
+     "scale_db": -4.9
+    }
+   ],
+   "count": 2,
+   "id": "p4853-z7903"
+  },
+  {
+   "geometry_words": [
+    59388,
+    48124,
+    59388,
+    33533
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 8203.5,
+    "pole_r": 0.9977,
+    "zero_hz": 8326.7,
+    "zero_r": 0.9723
+   },
+   "filters": [
+    "MultiQVox",
+    "Ooh-To-Eee"
+   ],
+   "placements": [
+    {
+     "filter": "Ooh-To-Eee",
+     "lane": 5,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53613,
+     "scale_db": -5.3
+    },
+    {
+     "filter": "MultiQVox",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53832,
+     "scale_db": -4.9
+    }
+   ],
+   "count": 2,
+   "id": "p8204-z8327"
+  },
+  {
+   "geometry_words": [
+    39420,
+    52732,
+    60668,
+    50684
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 9432.7,
+    "pole_r": 0.9561,
+    "zero_hz": 1395.0,
+    "zero_r": 0.9396
+   },
+   "filters": [
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BolandBass",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 54766,
+     "scale_db": -3.3
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 54821,
+     "scale_db": -3.2
+    }
+   ],
+   "count": 2,
+   "id": "p9433-z1395"
+  },
+  {
+   "geometry_words": [
+    62717,
+    53500,
+    63101,
+    50428
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 12781.3,
+    "pole_r": 0.9581,
+    "zero_hz": 12366.8,
+    "zero_r": 0.9313
+   },
+   "filters": [
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BolandBass",
+     "lane": 1,
+     "corner": "M100_Q100",
+     "datum": 39062.5,
+     "scale_word": 56661,
+     "scale_db": -0.8
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 1,
+     "corner": "M100_Q100",
+     "datum": 39062.5,
+     "scale_word": 58744,
+     "scale_db": 2.6
+    }
+   ],
+   "count": 2,
+   "id": "p12781-z12367"
+  },
+  {
+   "geometry_words": [
+    27388,
+    50940,
+    24828,
+    48892
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 357.4,
+    "pole_r": 0.9693,
+    "zero_hz": 426.0,
+    "zero_r": 0.954
+   },
+   "filters": [
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BolandBass",
+     "lane": 2,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 54766,
+     "scale_db": -3.3
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 2,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 54821,
+     "scale_db": -3.2
+    }
+   ],
+   "count": 2,
+   "id": "p357-z426"
+  },
+  {
+   "geometry_words": [
+    51452,
+    57852,
+    46844,
+    61180
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2335.7,
+    "pole_r": 0.7182,
+    "zero_hz": 4169.6,
+    "zero_r": 0.8479
+   },
+   "filters": [
+    "BassTracer",
+    "BolandBass"
+   ],
+   "placements": [
+    {
+     "filter": "BolandBass",
+     "lane": 3,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 54766,
+     "scale_db": -3.3
+    },
+    {
+     "filter": "BassTracer",
+     "lane": 3,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53596,
+     "scale_db": -5.3
+    }
+   ],
+   "count": 2,
+   "id": "p2336-z4170"
+  },
+  {
+   "geometry_words": [
+    63229,
+    59132,
+    63357,
+    47356
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 13057.8,
+    "pole_r": 0.9753,
+    "zero_hz": 15232.0,
+    "zero_r": 0.8005
+   },
+   "filters": [
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BolandBass",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48307,
+     "scale_db": -13.0
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 4,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48239,
+     "scale_db": -13.1
+    }
+   ],
+   "count": 2,
+   "id": "p13058-z15232"
+  },
+  {
+   "geometry_words": [
+    64637,
+    54524,
+    64509,
+    49660
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 15675.4,
+    "pole_r": 0.9642,
+    "zero_hz": 17432.7,
+    "zero_r": 0.9143
+   },
+   "filters": [
+    "BolandBass",
+    "LucifersQ"
+   ],
+   "placements": [
+    {
+     "filter": "BolandBass",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48307,
+     "scale_db": -13.0
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 5,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 48239,
+     "scale_db": -13.1
+    }
+   ],
+   "count": 2,
+   "id": "p15675-z17433"
+  },
+  {
+   "geometry_words": [
+    26620,
+    50172,
+    54012,
+    53756
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 5092.7,
+    "pole_r": 0.9271,
+    "zero_hz": 414.7,
+    "zero_r": 0.9602
+   },
+   "filters": [
+    "LucifersQ",
+    "ZoomPeaks"
+   ],
+   "placements": [
+    {
+     "filter": "ZoomPeaks",
+     "lane": 1,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 55980,
+     "scale_db": -1.6
+    },
+    {
+     "filter": "ZoomPeaks",
+     "lane": 1,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 55383,
+     "scale_db": -2.4
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 1,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 54300,
+     "scale_db": -4.0
+    }
+   ],
+   "count": 3,
+   "id": "p5093-z415"
+  },
+  {
+   "geometry_words": [
+    37884,
+    49916,
+    39164,
+    30460
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 1377.2,
+    "pole_r": 0.9986,
+    "zero_hz": 1231.2,
+    "zero_r": 0.9622
+   },
+   "filters": [
+    "LucifersQ",
+    "ZoomPeaks"
+   ],
+   "placements": [
+    {
+     "filter": "ZoomPeaks",
+     "lane": 2,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 55383,
+     "scale_db": -2.4
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 2,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 54300,
+     "scale_db": -4.0
+    }
+   ],
+   "count": 2,
+   "id": "p1377-z1231"
+  },
+  {
+   "geometry_words": [
+    44796,
+    50940,
+    45308,
+    37116
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2282.3,
+    "pole_r": 0.9958,
+    "zero_hz": 2206.7,
+    "zero_r": 0.954
+   },
+   "filters": [
+    "LucifersQ",
+    "ZoomPeaks"
+   ],
+   "placements": [
+    {
+     "filter": "ZoomPeaks",
+     "lane": 3,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 47191,
+     "scale_db": -14.4
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 3,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 54300,
+     "scale_db": -4.0
+    }
+   ],
+   "count": 2,
+   "id": "p2282-z2207"
+  },
+  {
+   "geometry_words": [
+    49148,
+    49404,
+    51964,
+    43772
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 4139.4,
+    "pole_r": 0.9867,
+    "zero_hz": 3189.4,
+    "zero_r": 0.9663
+   },
+   "filters": [
+    "LucifersQ",
+    "ZoomPeaks"
+   ],
+   "placements": [
+    {
+     "filter": "ZoomPeaks",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 55383,
+     "scale_db": -2.4
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 54300,
+     "scale_db": -4.0
+    }
+   ],
+   "count": 2,
+   "id": "p4139-z3189"
+  },
+  {
+   "geometry_words": [
+    52220,
+    47612,
+    49404,
+    39164
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 3249.5,
+    "pole_r": 0.9939,
+    "zero_hz": 4244.0,
+    "zero_r": 0.9743
+   },
+   "filters": [
+    "LucifersQ",
+    "ZoomPeaks"
+   ],
+   "placements": [
+    {
+     "filter": "ZoomPeaks",
+     "lane": 5,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 55383,
+     "scale_db": -2.4
+    },
+    {
+     "filter": "LucifersQ",
+     "lane": 5,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 54300,
+     "scale_db": -4.0
+    }
+   ],
+   "count": 2,
+   "id": "p3250-z4244"
+  },
+  {
+   "geometry_words": [
+    43516,
+    46588,
+    43772,
+    28671
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2028.6,
+    "pole_r": 0.999,
+    "zero_hz": 2006.7,
+    "zero_r": 0.9783
+   },
+   "filters": [
+    "BassOMatic",
+    "BassTracer"
+   ],
+   "placements": [
+    {
+     "filter": "BassTracer",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 53436,
+     "scale_db": -5.6
+    },
+    {
+     "filter": "BassOMatic",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 53601,
+     "scale_db": -5.3
+    }
+   ],
+   "count": 2,
+   "id": "p2029-z2007"
+  },
+  {
+   "geometry_words": [
+    45564,
+    49404,
+    33532,
+    38908
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 849.0,
+    "pole_r": 0.9941,
+    "zero_hz": 2375.8,
+    "zero_r": 0.9663
+   },
+   "filters": [
+    "Eeh-To-Aah",
+    "UbuOrator"
+   ],
+   "placements": [
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 3,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53031,
+     "scale_db": -6.3
+    },
+    {
+     "filter": "UbuOrator",
+     "lane": 3,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53254,
+     "scale_db": -6.0
+    }
+   ],
+   "count": 2,
+   "id": "p849-z2376"
+  },
+  {
+   "geometry_words": [
+    65405,
+    536,
+    47612,
+    42748
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2841.0,
+    "pole_r": 0.9887,
+    "zero_hz": 17960.8,
+    "zero_r": 1.0
+   },
+   "filters": [
+    "Eeh-To-Aah",
+    "UbuOrator"
+   ],
+   "placements": [
+    {
+     "filter": "Eeh-To-Aah",
+     "lane": 6,
+     "corner": "M100_Q0",
+     "datum": 39062.5,
+     "scale_word": 53031,
+     "scale_db": -6.3
+    },
+    {
+     "filter": "UbuOrator",
+     "lane": 6,
+     "corner": "M0_Q0",
+     "datum": 39062.5,
+     "scale_word": 53254,
+     "scale_db": -6.0
+    }
+   ],
+   "count": 2,
+   "id": "p2841-z17961"
+  },
+  {
+   "geometry_words": [
+    43516,
+    50172,
+    45564,
+    28671
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 2345.6,
+    "pole_r": 0.999,
+    "zero_hz": 2014.4,
+    "zero_r": 0.9602
+   },
+   "filters": [
+    "AcidRavage",
+    "ToothComb"
+   ],
+   "placements": [
+    {
+     "filter": "AcidRavage",
+     "lane": 3,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 50983,
+     "scale_db": -8.8
+    },
+    {
+     "filter": "ToothComb",
+     "lane": 3,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 49908,
+     "scale_db": -10.6
+    }
+   ],
+   "count": 2,
+   "id": "p2346-z2014"
+  },
+  {
+   "geometry_words": [
+    38908,
+    55548,
+    40956,
+    28671
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 1558.8,
+    "pole_r": 0.999,
+    "zero_hz": 1252.1,
+    "zero_r": 0.8971
+   },
+   "filters": [
+    "AcidRavage",
+    "ToothComb"
+   ],
+   "placements": [
+    {
+     "filter": "AcidRavage",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 50983,
+     "scale_db": -8.8
+    },
+    {
+     "filter": "ToothComb",
+     "lane": 4,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 49908,
+     "scale_db": -10.6
+    }
+   ],
+   "count": 2,
+   "id": "p1559-z1252"
+  },
+  {
+   "geometry_words": [
+    47356,
+    52220,
+    33788,
+    28671
+   ],
+   "datum_sr_hz": 39062.5,
+   "geometry_at_datum": {
+    "pole_hz": 869.7,
+    "pole_r": 0.999,
+    "zero_hz": 2828.9,
+    "zero_r": 0.9438
+   },
+   "filters": [
+    "AcidRavage",
+    "ToothComb"
+   ],
+   "placements": [
+    {
+     "filter": "AcidRavage",
+     "lane": 5,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 50983,
+     "scale_db": -8.8
+    },
+    {
+     "filter": "ToothComb",
+     "lane": 5,
+     "corner": "M0_Q100",
+     "datum": 39062.5,
+     "scale_word": 49908,
+     "scale_db": -10.6
+    }
+   ],
+   "count": 2,
+   "id": "p870-z2829"
+  }
+ ],
+ "indexing": "machine key = the four geometry words + datum (bit-exact). human handle = p<poleHz>-z<zeroHz> at datum, letter-suffixed on collision. Shelf sorts by pole Hz / radius / reuse / provenance - measured facts only, no role words. Recipes reference rows by id; the compiler resolves id -> words."
+}

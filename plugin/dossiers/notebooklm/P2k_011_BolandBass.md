@@ -1,0 +1,332 @@
+# BolandBass — P2K reference 11 [EQ+]
+
+Architecture source: `P2k_011_BolandBass.json` (datum 39062.5 Hz). Lanes are fixed slot numbers; never frequency-sort them.
+
+## Dossier (verbatim, recipes/INTENT.md — manual quote included)
+
+```text
+**11 BolandBass** [EQ+] "Constant bass boost with mid-tone Q control"
+- IS: the shared bass-vocabulary pose (79 Hz pole, 479+13367 pair, 17.6 k
+  air) with −13 dB scale = headroom for a permanent low shelf. M100 respreads
+  into a played mid ladder (357/1344/2336/4182/6367).
+- MORPH: floor constant, mids materialize (crossings: 7 — the ladder threads
+  through the frame).
+- Q: S6 +0.14 only — one mid-tone bloomer, exactly as the manual says.
+- RECIPE: this family (Boland/Lucifer/Tracer/303) is ONE vocabulary with four
+  wirings. Author the vocabulary once (our own Hz), then ship multiple
+  characters as re-pairings — the E-MU production method itself.
+```
+
+## Section anatomy (all numbers from the architecture)
+
+| lane | pole Hz M0→M100 (Q0) | pole r Q0 | pole r Q100 | zero Hz M0→M100 (Q0) | zero r Q0 | scale dB (corners) |
+|---|---|---|---|---|---|---|
+| S1 | 79 → 9433 | 0.962 → 0.956 | 0.975 → 0.958 | 2316 → 1395 | 0.914 → 0.940 | -13.0/-3.3/-6.7/-0.8 |
+| S2 | 17683 → 357 | 0.990 → 0.969 | 0.970 → 0.970 | 2646 → 426 | 0.875 → 0.954 | -13.0/-3.3/-6.7/-0.8 |
+| S3 | 479 → 2336 | 0.976 → 0.718 | 0.952 → 0.948 | 13367 → 4170 | 0.884 → 0.848 | -13.0/-3.3/-6.7/-0.8 |
+| S4 | 13058 → 4182 | 0.975 → 0.829 | 0.880 → 0.950 | 15232 → 6458 | 0.801 → 0.871 | -13.0/-3.3/-6.7/-0.8 |
+| S5 | 15675 → 6367 | 0.964 → 0.857 | 0.962 → 0.935 | 17433 → 9469 | 0.914 → 0.950 | -13.0/-3.3/-6.7/-0.8 |
+| S6 | 0 → 1344 | 0.753 → 0.948 | 0.893 → 0.638 | 7162 → 6396 | 1.000 → 1.000 | -13.0/-3.3/-6.7/-0.8 |
+
+## Machine block (architecture JSON, whole)
+
+```json
+{
+ "schema": "trench-architecture-v1",
+ "index": 11,
+ "name": "BolandBass",
+ "x3_type": "EQ+",
+ "datum_sr_hz": 39062.5,
+ "source": "dossiers/characters/P2k_011_BolandBass.json",
+ "sections": [
+  {
+   "slot": 1,
+   "pole_hz": {
+    "M0_Q0": 79.43,
+    "M100_Q0": 9432.73,
+    "M0_Q100": 9918.86,
+    "M100_Q100": 12781.35
+   },
+   "pole_r": {
+    "M0_Q0": 0.962199,
+    "M100_Q0": 0.95609,
+    "M0_Q100": 0.975292,
+    "M100_Q100": 0.958131
+   },
+   "zero_hz": {
+    "M0_Q0": 2315.58,
+    "M100_Q0": 1395.02,
+    "M0_Q100": 0.0,
+    "M100_Q100": 12366.78
+   },
+   "zero_r": {
+    "M0_Q0": 0.914346,
+    "M100_Q0": 0.939605,
+    "M0_Q100": 0.976187,
+    "M100_Q100": 0.931278
+   },
+   "carve_st": {
+    "M0_Q0": 58.39,
+    "M100_Q0": -33.09,
+    "M0_Q100": null,
+    "M100_Q100": -0.57
+   },
+   "unit_zero": {
+    "M0_Q0": false,
+    "M100_Q0": false,
+    "M0_Q100": false,
+    "M100_Q100": false
+   },
+   "travel_st_Q0": 82.7,
+   "q_lift_M0": 0.013093,
+   "q_revoice_st_M0": 83.57,
+   "scale_db": {
+    "M0_Q0": -12.986,
+    "M100_Q0": -3.281,
+    "M0_Q100": -6.733,
+    "M100_Q100": -0.755
+   }
+  },
+  {
+   "slot": 2,
+   "pole_hz": {
+    "M0_Q0": 17683.33,
+    "M100_Q0": 357.43,
+    "M0_Q100": 445.17,
+    "M100_Q100": 373.87
+   },
+   "pole_r": {
+    "M0_Q0": 0.990192,
+    "M100_Q0": 0.969266,
+    "M0_Q100": 0.970273,
+    "M100_Q100": 0.970273
+   },
+   "zero_hz": {
+    "M0_Q0": 2646.35,
+    "M100_Q0": 425.97,
+    "M0_Q100": 2646.35,
+    "M100_Q100": 0.0
+   },
+   "zero_r": {
+    "M0_Q0": 0.875052,
+    "M100_Q0": 0.954045,
+    "M0_Q100": 0.875052,
+    "M100_Q100": 0.979415
+   },
+   "carve_st": {
+    "M0_Q0": -32.88,
+    "M100_Q0": 3.04,
+    "M0_Q100": 30.86,
+    "M100_Q100": null
+   },
+   "unit_zero": {
+    "M0_Q0": false,
+    "M100_Q0": false,
+    "M0_Q100": false,
+    "M100_Q100": false
+   },
+   "travel_st_Q0": -67.54,
+   "q_lift_M0": -0.019919,
+   "q_revoice_st_M0": -63.74,
+   "scale_db": {
+    "M0_Q0": -12.986,
+    "M100_Q0": -3.281,
+    "M0_Q100": -6.733,
+    "M100_Q100": -0.755
+   }
+  },
+  {
+   "slot": 3,
+   "pole_hz": {
+    "M0_Q0": 478.59,
+    "M100_Q0": 2335.68,
+    "M0_Q100": 1156.16,
+    "M100_Q100": 10507.02
+   },
+   "pole_r": {
+    "M0_Q0": 0.976293,
+    "M100_Q0": 0.718198,
+    "M0_Q100": 0.951996,
+    "M100_Q100": 0.947884
+   },
+   "zero_hz": {
+    "M0_Q0": 13366.63,
+    "M100_Q0": 4169.59,
+    "M0_Q100": 1235.72,
+    "M100_Q100": 11098.99
+   },
+   "zero_r": {
+    "M0_Q0": 0.883935,
+    "M100_Q0": 0.847899,
+    "M0_Q100": 0.973287,
+    "M100_Q100": 0.951996
+   },
+   "carve_st": {
+    "M0_Q0": 57.64,
+    "M100_Q0": 10.03,
+    "M0_Q100": 1.15,
+    "M100_Q100": 0.95
+   },
+   "unit_zero": {
+    "M0_Q0": false,
+    "M100_Q0": false,
+    "M0_Q100": false,
+    "M100_Q100": false
+   },
+   "travel_st_Q0": 27.44,
+   "q_lift_M0": -0.024297,
+   "q_revoice_st_M0": 15.27,
+   "scale_db": {
+    "M0_Q0": -12.986,
+    "M100_Q0": -3.281,
+    "M0_Q100": -6.733,
+    "M100_Q100": -0.755
+   }
+  },
+  {
+   "slot": 4,
+   "pole_hz": {
+    "M0_Q0": 13057.83,
+    "M100_Q0": 4181.97,
+    "M0_Q100": 1394.29,
+    "M100_Q100": 11537.36
+   },
+   "pole_r": {
+    "M0_Q0": 0.975292,
+    "M100_Q0": 0.829267,
+    "M0_Q100": 0.879505,
+    "M100_Q100": 0.949942
+   },
+   "zero_hz": {
+    "M0_Q0": 15232.04,
+    "M100_Q0": 6457.95,
+    "M0_Q100": 2006.74,
+    "M100_Q100": 12237.16
+   },
+   "zero_r": {
+    "M0_Q0": 0.800505,
+    "M100_Q0": 0.870577,
+    "M0_Q100": 0.978291,
+    "M100_Q100": 0.684831
+   },
+   "carve_st": {
+    "M0_Q0": 2.67,
+    "M100_Q0": 7.52,
+    "M0_Q100": 6.3,
+    "M100_Q100": 1.02
+   },
+   "unit_zero": {
+    "M0_Q0": false,
+    "M100_Q0": false,
+    "M0_Q100": false,
+    "M100_Q100": false
+   },
+   "travel_st_Q0": -19.71,
+   "q_lift_M0": -0.095787,
+   "q_revoice_st_M0": -38.73,
+   "scale_db": {
+    "M0_Q0": -12.986,
+    "M100_Q0": -3.281,
+    "M0_Q100": -6.733,
+    "M100_Q100": -0.755
+   }
+  },
+  {
+   "slot": 5,
+   "pole_hz": {
+    "M0_Q0": 15675.4,
+    "M100_Q0": 6366.59,
+    "M0_Q100": 2053.18,
+    "M100_Q100": 8508.35
+   },
+   "pole_r": {
+    "M0_Q0": 0.964227,
+    "M100_Q0": 0.857064,
+    "M0_Q100": 0.962199,
+    "M100_Q100": 0.935439
+   },
+   "zero_hz": {
+    "M0_Q0": 17432.67,
+    "M100_Q0": 9468.97,
+    "M0_Q100": 10045.75,
+    "M100_Q100": 8720.93
+   },
+   "zero_r": {
+    "M0_Q0": 0.914346,
+    "M100_Q0": 0.949942,
+    "M0_Q100": 0.857064,
+    "M100_Q100": 0.750122
+   },
+   "carve_st": {
+    "M0_Q0": 1.84,
+    "M100_Q0": 6.87,
+    "M0_Q100": 27.49,
+    "M100_Q100": 0.43
+   },
+   "unit_zero": {
+    "M0_Q0": false,
+    "M100_Q0": false,
+    "M0_Q100": false,
+    "M100_Q100": false
+   },
+   "travel_st_Q0": -15.6,
+   "q_lift_M0": -0.002028,
+   "q_revoice_st_M0": -35.19,
+   "scale_db": {
+    "M0_Q0": -12.986,
+    "M100_Q0": -3.281,
+    "M0_Q100": -6.733,
+    "M100_Q100": -0.755
+   }
+  },
+  {
+   "slot": 6,
+   "pole_hz": {
+    "M0_Q0": 0.0,
+    "M100_Q0": 1344.14,
+    "M0_Q100": 0.0,
+    "M100_Q100": 14671.72
+   },
+   "pole_r": {
+    "M0_Q0": 0.75269,
+    "M100_Q0": 0.947884,
+    "M0_Q100": 0.892669,
+    "M100_Q100": 0.637569
+   },
+   "zero_hz": {
+    "M0_Q0": 7162.29,
+    "M100_Q0": 6396.33,
+    "M0_Q100": 6396.33,
+    "M100_Q100": 9763.36
+   },
+   "zero_r": {
+    "M0_Q0": 0.999998,
+    "M100_Q0": 0.999998,
+    "M0_Q100": 0.999998,
+    "M100_Q100": 0.999998
+   },
+   "carve_st": {
+    "M0_Q0": null,
+    "M100_Q0": 27.01,
+    "M0_Q100": null,
+    "M100_Q100": -7.05
+   },
+   "unit_zero": {
+    "M0_Q0": true,
+    "M100_Q0": true,
+    "M0_Q100": true,
+    "M100_Q100": true
+   },
+   "travel_st_Q0": null,
+   "q_lift_M0": 0.139979,
+   "q_revoice_st_M0": null,
+   "scale_db": {
+    "M0_Q0": -12.986,
+    "M100_Q0": -3.281,
+    "M0_Q100": -6.733,
+    "M100_Q100": -0.755
+   }
+  }
+ ]
+}
+```

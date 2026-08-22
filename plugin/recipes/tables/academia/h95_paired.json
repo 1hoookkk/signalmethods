@@ -1,0 +1,291 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "hillenbrand_1995_paired_etl",
+ "category": "vowels",
+ "citation": "paired frequency (measured) + ETL bandwidth prior (authored)",
+ "source": "C:\\Users\\hooki\\trench-x3-clean\\recipes\\tables\\academia",
+ "measurement_method": "LPC formant tracking, /hVd/ syllables; 139 speakers x 12 vowels",
+ "note": "frequencies measured by the survey corpus; bandwidths are AUTHORED PRIORS = median ETL measured bandwidth, never Klatt, never implied measured. Lane grammar: S2-S4 talkers + S5 sentinel (identity) because the survey carries F1-F3.",
+ "objects": [
+  {
+   "object_id": "hillenbrand_1995_3'",
+   "representative_of": "vowel 3'",
+   "label": "3'",
+   "f0_hz": 212.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 508.0,
+     "bandwidth_hz": 65.55,
+     "q": 7.7,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1556.0,
+     "bandwidth_hz": 102.05,
+     "q": 15.2,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 1915.0,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 13.5,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_a",
+   "representative_of": "vowel a",
+   "label": "a",
+   "f0_hz": 208.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 875.0,
+     "bandwidth_hz": 65.55,
+     "q": 13.3,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1495.0,
+     "bandwidth_hz": 102.05,
+     "q": 14.6,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2753.0,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 19.3,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_e",
+   "representative_of": "vowel e",
+   "label": "e",
+   "f0_hz": 211.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 582.5,
+     "bandwidth_hz": 65.55,
+     "q": 8.9,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2199.0,
+     "bandwidth_hz": 102.05,
+     "q": 21.5,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2986.0,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 21.0,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_i",
+   "representative_of": "vowel i",
+   "label": "i",
+   "f0_hz": 219.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 442.0,
+     "bandwidth_hz": 65.55,
+     "q": 6.7,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2498.0,
+     "bandwidth_hz": 102.05,
+     "q": 24.5,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 3180.0,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 22.3,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_o",
+   "representative_of": "vowel o",
+   "label": "o",
+   "f0_hz": 210.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 636.5,
+     "bandwidth_hz": 65.55,
+     "q": 9.7,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1067.0,
+     "bandwidth_hz": 102.05,
+     "q": 10.5,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2767.5,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 19.4,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_u",
+   "representative_of": "vowel u",
+   "label": "u",
+   "f0_hz": 222.5,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 490.0,
+     "bandwidth_hz": 65.55,
+     "q": 7.5,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1162.5,
+     "bandwidth_hz": 102.05,
+     "q": 11.4,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2727.5,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 19.2,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_v",
+   "representative_of": "vowel v",
+   "label": "v",
+   "f0_hz": 212.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 695.0,
+     "bandwidth_hz": 65.55,
+     "q": 10.6,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1397.0,
+     "bandwidth_hz": 102.05,
+     "q": 13.7,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2881.0,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 20.2,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  },
+  {
+   "object_id": "hillenbrand_1995_{",
+   "representative_of": "vowel {",
+   "label": "{",
+   "f0_hz": 209.0,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 649.0,
+     "bandwidth_hz": 65.55,
+     "q": 9.9,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2299.0,
+     "bandwidth_hz": 102.05,
+     "q": 22.5,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    },
+    {
+     "mode_or_formant": "F3",
+     "frequency_hz": 2927.0,
+     "bandwidth_hz": 142.35000000000002,
+     "q": 20.6,
+     "frequency_provenance": "measured",
+     "bandwidth_provenance": "authored_prior",
+     "prior_source": "etl_mokhtari_tanaka_2000 (median measured BW)"
+    }
+   ]
+  }
+ ]
+}

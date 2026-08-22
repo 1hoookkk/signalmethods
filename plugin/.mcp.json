@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "juce-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "C:/Users/hooki/mcp-servers-jos/juce-docs-mcp-server/dist/index.js"
+      ],
+      "env": {}
+    },
+    "ghidra": {
+      "command": "uv",
+      "args": ["run", "--directory", "C:/Users/hooki/ghidra-mcp", "bridge-mcp-ghidra"]
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}

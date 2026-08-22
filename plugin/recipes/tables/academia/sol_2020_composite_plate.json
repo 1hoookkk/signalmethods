@@ -1,0 +1,91 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "sol_2020_composite_plate",
+ "category": "objects",
+ "citation": "Sol et al. 2020, measured damping ratios of composite plates",
+ "source": "Sol et al. (2020) modal damping table",
+ "measurement_method": "Measured modal frequencies and damping ratios per mode shape; bandwidth derived as B = 2*zeta*f",
+ "objects": [
+  {
+   "object_id": "SOL20_composite_plate",
+   "label": "composite plate (4 modes)",
+   "f0_hz": null,
+   "rows": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 94.4,
+     "bandwidth_hz": 0.944,
+     "q": 100.0,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.500%",
+     "mode_shape": "torsion",
+     "damping_ratio": 0.005
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": 241.2,
+     "bandwidth_hz": 1.1433,
+     "q": 210.968,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.237%",
+     "mode_shape": "saddle",
+     "damping_ratio": 0.00237
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": 264.4,
+     "bandwidth_hz": 0.9201,
+     "q": 287.36,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.174%",
+     "mode_shape": "breathing",
+     "damping_ratio": 0.00174
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": 394.0,
+     "bandwidth_hz": 0.6462,
+     "q": 609.718,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.082%",
+     "mode_shape": "beam-X",
+     "damping_ratio": 0.00082
+    }
+   ],
+   "formants": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 94.4,
+     "bandwidth_hz": 0.944,
+     "q": 100.0,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.500%",
+     "mode_shape": "torsion",
+     "damping_ratio": 0.005
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": 241.2,
+     "bandwidth_hz": 1.1433,
+     "q": 210.968,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.237%",
+     "mode_shape": "saddle",
+     "damping_ratio": 0.00237
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": 264.4,
+     "bandwidth_hz": 0.9201,
+     "q": 287.36,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.174%",
+     "mode_shape": "breathing",
+     "damping_ratio": 0.00174
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": 394.0,
+     "bandwidth_hz": 0.6462,
+     "q": 609.718,
+     "provenance": "B = 2*zeta*f with the paper's zeta = 0.082%",
+     "mode_shape": "beam-X",
+     "damping_ratio": 0.00082
+    }
+   ]
+  }
+ ]
+}

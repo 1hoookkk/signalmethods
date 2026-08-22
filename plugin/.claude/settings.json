@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/Users/hooki/trench-x3-clean/.claude/hooks/df2_series_law.py\"",
+            "statusMessage": "Enforce_DF2_Series_Topology",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"C:/Users/hooki/trench-x3-clean/.claude/hooks/cascade_detector.py\"",
+            "statusMessage": "Cascade_Detector",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

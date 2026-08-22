@@ -1,0 +1,218 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "rossing_fletcher_1983_plates",
+ "category": "instruments",
+ "citation": "Rossing & Fletcher 1983, 'Nonlinear vibrations in plates and gongs', JASA 73(1):345-351",
+ "source": "https://www.phys.unsw.edu.au/music/people/publications/Rossingetal1983.pdf",
+ "measurement_method": "Table I: fundamental mode under soft vs hard blows. Table II: gold pan dish modes, observed at atmospheric pressure",
+ "note": "Opera-gong objects carry a single measured fundamental, not a full mode set -- the soft/hard pair shows amplitude-dependent pitch (hardening in small gongs, softening in large). frequency_hz for the gold pan is the OBSERVED value; the paper's calculated and minimum-pressure values are kept alongside for reference.",
+ "objects": [
+  {
+   "object_id": "RF83_opera_gong_1_soft",
+   "label": "Chinese opera gong 1 (soft blow)",
+   "f0_hz": null,
+   "excitation": "soft",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 180.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_1_hard",
+   "label": "Chinese opera gong 1 (hard blow)",
+   "f0_hz": null,
+   "excitation": "hard",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 212.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_2_soft",
+   "label": "Chinese opera gong 2 (soft blow)",
+   "f0_hz": null,
+   "excitation": "soft",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 176.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_2_hard",
+   "label": "Chinese opera gong 2 (hard blow)",
+   "f0_hz": null,
+   "excitation": "hard",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 212.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_3_soft",
+   "label": "Chinese opera gong 3 (soft blow)",
+   "f0_hz": null,
+   "excitation": "soft",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 376.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_3_hard",
+   "label": "Chinese opera gong 3 (hard blow)",
+   "f0_hz": null,
+   "excitation": "hard",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 404.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_4_soft",
+   "label": "Chinese opera gong 4 (soft blow)",
+   "f0_hz": null,
+   "excitation": "soft",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 472.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_4_hard",
+   "label": "Chinese opera gong 4 (hard blow)",
+   "f0_hz": null,
+   "excitation": "hard",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 430.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_5_soft",
+   "label": "Chinese opera gong 5 (soft blow)",
+   "f0_hz": null,
+   "excitation": "soft",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 472.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_5_hard",
+   "label": "Chinese opera gong 5 (hard blow)",
+   "f0_hz": null,
+   "excitation": "hard",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 390.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_6_soft",
+   "label": "Chinese opera gong 6 (soft blow)",
+   "f0_hz": null,
+   "excitation": "soft",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 700.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_opera_gong_6_hard",
+   "label": "Chinese opera gong 6 (hard blow)",
+   "f0_hz": null,
+   "excitation": "hard",
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 640.0,
+     "bandwidth_hz": null,
+     "mode_label": "fundamental"
+    }
+   ]
+  },
+  {
+   "object_id": "RF83_gold_pan",
+   "label": "Gold pan, dish modes (measured at atmospheric pressure)",
+   "f0_hz": null,
+   "modes": [
+    {
+     "mode_or_formant": "M1",
+     "frequency_hz": 180.0,
+     "bandwidth_hz": null,
+     "mode_label": "0,1",
+     "frequency_calculated_hz": 91.0,
+     "frequency_minimum_hz": 116.0
+    },
+    {
+     "mode_or_formant": "M2",
+     "frequency_hz": 252.0,
+     "bandwidth_hz": null,
+     "mode_label": "1,1",
+     "frequency_calculated_hz": 189.0,
+     "frequency_minimum_hz": 190.0
+    },
+    {
+     "mode_or_formant": "M3",
+     "frequency_hz": 356.0,
+     "bandwidth_hz": null,
+     "mode_label": "2,1",
+     "frequency_calculated_hz": 310.0,
+     "frequency_minimum_hz": 284.0
+    },
+    {
+     "mode_or_formant": "M4",
+     "frequency_hz": 428.0,
+     "bandwidth_hz": null,
+     "mode_label": "0,2",
+     "frequency_calculated_hz": 354.0,
+     "frequency_minimum_hz": 358.0
+    }
+   ]
+  }
+ ]
+}

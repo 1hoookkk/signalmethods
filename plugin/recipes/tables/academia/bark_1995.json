@@ -1,0 +1,100 @@
+{
+ "schema": "acoustic-source-v1",
+ "dataset": "bark_1995",
+ "category": "vowels",
+ "citation": "phonTools data(b95)",
+ "source": "phonTools data(b95)",
+ "measurement_method": "published mean formant table",
+ "objects": [
+  {
+   "object_id": "B95_spk0_i_0",
+   "label": "i",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 286.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 2147.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "B95_spk1_e_1",
+   "label": "e",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 458.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1814.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "B95_spk2_a_2",
+   "label": "a",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 638.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1353.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "B95_spk3_o_3",
+   "label": "o",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 460.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 1019.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  },
+  {
+   "object_id": "B95_spk4_u_4",
+   "label": "u",
+   "f0_hz": null,
+   "formants": [
+    {
+     "mode_or_formant": "F1",
+     "frequency_hz": 322.0,
+     "bandwidth_hz": null
+    },
+    {
+     "mode_or_formant": "F2",
+     "frequency_hz": 992.0,
+     "bandwidth_hz": null
+    }
+   ],
+   "sex": "m"
+  }
+ ]
+}

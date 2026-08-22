@@ -1,0 +1,267 @@
+{
+  "format": "x3-runtime-preset-manifest-v1",
+  "rates": {
+    "44100": 0,
+    "48000": 1,
+    "96000": 2,
+    "192000": 3
+  },
+  "note": "X3 xStream banks are distinct designs per rate \u2014 bank selection, not remapping.",
+  "presets": [
+    {
+      "stem": "2_pole_bandpass",
+      "name": "2 Pole Bandpass",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/2_pole_bandpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/2_pole_bandpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/2_pole_bandpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/2_pole_bandpass_192000.raw"
+      }
+    },
+    {
+      "stem": "2_pole_highpass",
+      "name": "2 Pole Highpass",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/2_pole_highpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/2_pole_highpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/2_pole_highpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/2_pole_highpass_192000.raw"
+      }
+    },
+    {
+      "stem": "2_pole_lowpass",
+      "name": "2 Pole Lowpass",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/2_pole_lowpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/2_pole_lowpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/2_pole_lowpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/2_pole_lowpass_192000.raw"
+      }
+    },
+    {
+      "stem": "4_pole_bandpass",
+      "name": "4 Pole Bandpass",
+      "active_stages": 2,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/4_pole_bandpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/4_pole_bandpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/4_pole_bandpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/4_pole_bandpass_192000.raw"
+      }
+    },
+    {
+      "stem": "4_pole_highpass",
+      "name": "4 Pole Highpass",
+      "active_stages": 2,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/4_pole_highpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/4_pole_highpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/4_pole_highpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/4_pole_highpass_192000.raw"
+      }
+    },
+    {
+      "stem": "4_pole_lowpass",
+      "name": "4 Pole Lowpass",
+      "active_stages": 2,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/4_pole_lowpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/4_pole_lowpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/4_pole_lowpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/4_pole_lowpass_192000.raw"
+      }
+    },
+    {
+      "stem": "6_pole_lowpass",
+      "name": "6 Pole Lowpass",
+      "active_stages": 3,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/6_pole_lowpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/6_pole_lowpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/6_pole_lowpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/6_pole_lowpass_192000.raw"
+      }
+    },
+    {
+      "stem": "bat_phaser",
+      "name": "Bat Phaser",
+      "active_stages": 2,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/bat_phaser_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/bat_phaser_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/bat_phaser_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/bat_phaser_192000.raw"
+      }
+    },
+    {
+      "stem": "contrary_bandpass",
+      "name": "Contrary Bandpass",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/contrary_bandpass_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/contrary_bandpass_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/contrary_bandpass_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/contrary_bandpass_192000.raw"
+      }
+    },
+    {
+      "stem": "flanger_lite",
+      "name": "Flanger Lite",
+      "active_stages": 3,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/flanger_lite_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/flanger_lite_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/flanger_lite_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/flanger_lite_192000.raw"
+      }
+    },
+    {
+      "stem": "phaser_1",
+      "name": "Phaser 1",
+      "active_stages": 2,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/phaser_1_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/phaser_1_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/phaser_1_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/phaser_1_192000.raw"
+      }
+    },
+    {
+      "stem": "phaser_2",
+      "name": "Phaser 2",
+      "active_stages": 2,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/phaser_2_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/phaser_2_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/phaser_2_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/phaser_2_192000.raw"
+      }
+    },
+    {
+      "stem": "swept_eq_1_octave",
+      "name": "Swept Eq 1 Octave",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/swept_eq_1_octave_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/swept_eq_1_octave_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/swept_eq_1_octave_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/swept_eq_1_octave_192000.raw"
+      }
+    },
+    {
+      "stem": "swept_eq_2_1_octave",
+      "name": "Swept Eq 2 1 Octave",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/swept_eq_2_1_octave_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/swept_eq_2_1_octave_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/swept_eq_2_1_octave_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/swept_eq_2_1_octave_192000.raw"
+      }
+    },
+    {
+      "stem": "swept_eq_3_1_octave",
+      "name": "Swept Eq 3 1 Octave",
+      "active_stages": 1,
+      "controls": {
+        "x": "Freq",
+        "q": "Res"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/swept_eq_3_1_octave_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/swept_eq_3_1_octave_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/swept_eq_3_1_octave_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/swept_eq_3_1_octave_192000.raw"
+      }
+    },
+    {
+      "stem": "vocal_ah_ay_ee",
+      "name": "Vocal Ah Ay Ee",
+      "active_stages": 3,
+      "controls": {
+        "x": "Freq",
+        "q": "Body"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/vocal_ah_ay_ee_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/vocal_ah_ay_ee_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/vocal_ah_ay_ee_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/vocal_ah_ay_ee_192000.raw"
+      }
+    },
+    {
+      "stem": "vocal_oo_ah",
+      "name": "Vocal Oo Ah",
+      "active_stages": 3,
+      "controls": {
+        "x": "Freq",
+        "q": "Body"
+      },
+      "rates": {
+        "44100": "ref/x3_menu/runtime_blocks/vocal_oo_ah_44100.raw",
+        "48000": "ref/x3_menu/runtime_blocks/vocal_oo_ah_48000.raw",
+        "96000": "ref/x3_menu/runtime_blocks/vocal_oo_ah_96000.raw",
+        "192000": "ref/x3_menu/runtime_blocks/vocal_oo_ah_192000.raw"
+      }
+    }
+  ]
+}

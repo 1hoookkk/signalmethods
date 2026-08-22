@@ -1,0 +1,22 @@
+[workspace]
+members = ["trench-core"]
+# Station is the authoring desk, and it is moving to its own repository. Its
+# source stays here until it does — but it is its own workspace (see
+# station/Cargo.toml), so the root lockfile holds only what the RUNTIME needs.
+# As a member it pulled eframe/egui into the root Cargo.lock (+4,082 lines), and
+# every `cargo metadata`, `cargo test -p trench-core` and the plugin's own
+# `cargo rustc -p trench-core` had to resolve a GUI dependency tree they never
+# link. Build it with: cargo build --manifest-path station/Cargo.toml
+exclude = ["station"]
+resolver = "2"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+# `package."*"` skips workspace members. Keep the packed runtime and audio
+# engine optimized in development builds.
+[profile.dev.package.trench-core]
+opt-level = 3

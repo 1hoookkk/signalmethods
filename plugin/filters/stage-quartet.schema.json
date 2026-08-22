@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trench/stage-quartet.schema.json",
+  "title": "TRENCH atomic stage quartet",
+  "description": "One stage proposed at all four corners against one exact previous cascade. The composer commits all four rows or none.",
+  "type": "object",
+  "required": ["schema", "target_sheet_sha256", "against_registered_lanes_sha256", "stage", "stage_plan", "assignments"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "trench-stage-quartet-v1" },
+    "target_sheet_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "against_registered_lanes_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "stage": { "type": "integer", "minimum": 2, "maximum": 6 },
+    "stage_plan": {
+      "type": "object",
+      "required": ["role", "law", "topology", "pole_zero_relation", "limits"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "type": "string", "minLength": 1 },
+        "law": { "enum": ["local_peak_notch", "high_zero_cliff", "low_zero_sub_cut", "free"] },
+        "topology": { "const": "conjugate" },
+        "pole_zero_relation": { "type": "string", "minLength": 1 },
+        "limits": { "type": "object" },
+        "law_params": { "type": "object" }
+      }
+    },
+    "assignments": {
+      "type": "object",
+      "required": ["M0_Q0", "M100_Q0", "M0_Q100", "M100_Q100"],
+      "additionalProperties": false,
+      "properties": {
+        "M0_Q0": { "$ref": "registered-lanes.schema.json#/$defs/assignment" },
+        "M100_Q0": { "$ref": "registered-lanes.schema.json#/$defs/assignment" },
+        "M0_Q100": { "$ref": "registered-lanes.schema.json#/$defs/assignment" },
+        "M100_Q100": { "$ref": "registered-lanes.schema.json#/$defs/assignment" }
+      }
+    }
+  }
+}

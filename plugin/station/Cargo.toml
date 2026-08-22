@@ -1,0 +1,19 @@
+# Its own workspace root: station is leaving for its own repository, and the
+# runtime's lockfile must not carry its GUI tree in the meantime. trench-core
+# stays a path dependency, so station still builds against the live source.
+[workspace]
+
+[package]
+name = "station"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "station"
+path = "src/main.rs"
+
+[dependencies]
+trench-core = { path = "../trench-core" }
+eframe = "0.31"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
