@@ -176,6 +176,96 @@ body is assembled.
 This confirms the earlier "cross-boundary pole/zero bells" observation and puts
 byte-level evidence under it.
 
+## 3d. The seeding carries a formant prior, and it binds
+
+Asked directly whether the fit selects formants with a prior inside the chosen
+band: it does, in three ways, and they are not cosmetic.
+
+**The prior binds.** Comparing each seeded frequency to where its pole finished:
+
+| percentile of seed-to-final pole movement | semitones |
+|---|---|
+| p10 | 0.11 |
+| p25 | 0.25 |
+| p50 | **0.67** |
+| p75 | 4.75 |
+| p90 | 9.57 |
+
+56% of poles move less than one semitone from where the peak picker put them.
+For more than half the cascade, the seed *is* the answer, and the optimiser only
+polishes. So the selection rule is doing real work and has to be judged as part
+of the method rather than as a convenience.
+
+**Prior 1 — the band gate.** Peaks are only picked between `FIT_LO_HZ` and
+`FIT_HI_HZ` (100 Hz - 8 kHz). The optimiser's bounds run to 0.46 x the rate, so
+a pole *may* leave the band, but 97% of fitted poles finish inside it and only
+3% outside. A pole above 8 kHz that would shape the in-band response can never
+be seeded, and in practice is almost never discovered.
+
+Related: the lowpass pole's median lands at 7309 Hz with a range to 8618 Hz —
+at or past the top of the band, where the loss weight is zero. Its position is
+therefore only weakly determined, and should not be read as a measured cutoff.
+
+**Prior 2 — prominence ranking with top-N truncation.** The seeder ranks local
+maxima by prominence and keeps the N most prominent. That encodes an assumption
+that the most prominent spectral peaks are where the limited pole budget should
+go. For a vocal tract it is defensible, but it is an assumption, not a
+measurement, and it is the strongest of the three.
+
+**Prior 3 — the prominence measure is one-sided, which is a defect.** The
+shipped `pick_extrema` computes rise from the left only:
+
+```
+left = curve[max(0, i - 12):i].min(initial=curve[i])
+prominence = curve[i] - left
+```
+
+The right-hand term was lost when `pick_peaks` was refactored into
+`pick_extrema`. The consequence is systematic: a low formant sitting near the
+bottom of the band has little room to its left, so its prominence is
+under-measured and it can be dropped in favour of a high-frequency peak.
+
+It changes the picked set on 11 of 44 mouths, and the misses are exactly the
+ones that matter:
+
+| mouth | left-only picks | two-sided picks |
+|---|---|---|
+| `s1-03-tiere-tense-i` | 1842, 2855, 5513 | **184**, 1842, 2855 |
+| `s1-22-ehe-schwa` | 1606, 3230, 6959 | **337**, 3230, 6959 |
+| `s1-06-laehmung-tense-ae` | 437, 1628, 5904 | 437, 1628, **2231** |
+
+For /i/ the rule drops F1 at 184 Hz — the defining low formant of a close front
+vowel — and spends the section on a 5.5 kHz peak instead. This is very likely
+part of the F1 undershoot noted in section 2, which was previously attributed
+only to the ERB weighting.
+
+**But fixing prior 3 alone is a wash.** Re-fitting the six affected mouths with
+a two-sided prominence, everything else unchanged:
+
+| mouth | left-only | two-sided | change |
+|---|---|---|---|
+| `s1-03-tiere-tense-i` | 2.200 | 1.528 | **-30.5%** |
+| `s1-06-laehmung-tense-ae` | 1.446 | 1.335 | -7.6% |
+| `s1-15-bass-lax-a` | 0.970 | 0.957 | -1.3% |
+| `s1-08-guete-tense-y` | 1.541 | 1.547 | +0.4% |
+| `s1-22-ehe-schwa` | 1.246 | 1.429 | +14.7% |
+| `s2-08-guete-tense-y` | 1.194 | 1.552 | +30.0% |
+| mean | 1.433 | 1.391 | -2.9% |
+
+A large win where it recovers a real formant, large losses elsewhere, and
+essentially no net change. That result is the useful one: it says the problem is
+not which prominence formula is used, it is **prior 2** — ranking by prominence
+at all. Prominence is a proxy for "worth spending a section on", and it is a
+poor one when the budget is six.
+
+**The replacement, for whoever picks this up.** Drop the peak picker and seed by
+greedy matching pursuit against the weighted residual: place pole 1 where a
+single resonator most reduces the loss, subtract, repeat. It needs no prominence
+measure, no top-N truncation, no band gate on selection, and no separate
+boost/cut allocation sweep — a cut is simply what wins when the residual is
+negative there. That removes all three priors at once and replaces them with the
+loss, which is the thing actually being minimised.
+
 ## 4. Correction: `.4` is about corners, not sections
 
 Printed page 178, first paragraph:
