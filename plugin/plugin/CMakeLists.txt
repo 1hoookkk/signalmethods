@@ -13,8 +13,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # DPI/host-scaling fixes 8.0.13 lacked. The old 628b cache dir held 8.0.13,
 # so the default pin points at an 8.0.15 cache slot; absent, FetchContent
 # pulls the 8.0.15 tag.
-set(TRENCH_JUCE_DIR "$ENV{USERPROFILE}/.cache/CPM/juce/8015" CACHE PATH
-    "Pinned JUCE 8.0.15 source directory")
+set(TRENCH_JUCE_DIR "$ENV{USERPROFILE}/.cache/CPM/juce/901" CACHE PATH
+    "Pinned JUCE 9.0.1 source directory")
 if(EXISTS "${TRENCH_JUCE_DIR}/CMakeLists.txt")
     add_subdirectory("${TRENCH_JUCE_DIR}" "${CMAKE_BINARY_DIR}/JUCE")
 else()
@@ -22,7 +22,7 @@ else()
     FetchContent_Declare(
         JUCE
         GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-        GIT_TAG 8.0.15
+        GIT_TAG 9.0.1
         GIT_SHALLOW TRUE)
     FetchContent_MakeAvailable(JUCE)
 endif()
