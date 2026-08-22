@@ -21,7 +21,42 @@ and they have nothing to do with each other. Keep them apart.
 
 ---
 
-# §1 Parity: plugin vs EmulatorX3, same preset
+# §0 Measured 2026-08-22: the interior matches X3; the knob does not
+
+Two EmulatorX3 renders of Talking Hedz playing the same dry sawtooth
+(`Downloads/trench_capture/dry_saw_49hz_-12dBFS.wav`, root key, insert at
+100%), scored against the real `trench_core.dll` through `pyruntime`
+(`dev/x3_capture_null.py`, `dev/x3_capture_detail.py`). Response = capture
+harmonics minus dry harmonics, ERB-weighted, mean-removed.
+
+**Sweep** (`hedzenv.wav`: Filter Env + → Filter Frequency +100, attack set to
+4 s, panel Frequency 0, Q 50). The morph position X3 actually played, frame
+by frame, against the engine at Q 0.5:
+
+    morph(t) = 0.2498·t + 0.0002   (t from note-on; residual rms 0.002)
+    morph 1 reached at 4.003 s
+
+A straight line, no pole, no step: the envelope attack is linear in morph
+and the *engine's interior reproduces every frame at 0.15–0.8 dB rms*
+(the 0.5–0.8 dB frames are sweep smear inside the analysis window). So the
+interpolation domain and law are the X3's — the "decode-then-lerp" theory
+in §1 below is dead, as the DLL read in `plugin/X3_MOVEMENT_SPEC.md` §2 had
+already said. Interior parity at the response level is **done**.
+
+**Static** (`hedznoenv.wav`: cord off, panel Frequency 50, Q 50):
+
+    best match: engine morph 0.00, q 0.50 — 0.16 dB rms
+    engine (0.5, 0.5): 15.45 dB rms; morph 0.05 already 3.7 dB
+
+Panel "Frequency 50" is **morph 0**, not morph 0.5. The X3's knob → morph
+mapping is not the identity the plugin uses. That is the parity gap that
+remains, and it is a *mapping*, not the filter: at the same *morph* the two
+agree to 0.16 dB; at the same *knob reading* they are 15 dB apart.
+
+Open: the knob law itself — needs static captures at several Frequency
+readouts (0, 64, 128, 192, 255 or the UI's scale) to map reading → morph.
+
+# §1 Parity: plugin vs EmulatorX3, same preset (superseded in part by §0)
 
 Reported by ear: identical presets, different sound between corners.
 
