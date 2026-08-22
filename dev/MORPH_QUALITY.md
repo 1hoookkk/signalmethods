@@ -72,3 +72,14 @@ corners, and directly targets the mechanism.
 The row-7 law from `NATIVE_CONTAINER_SURVEY.md` constrains any permutation —
 row 7 must hold no zero, so a permutation may not move a zero-bearing row into
 position 7.
+
+## Correction, same session
+
+The report that prompted this document was about the plugin not matching
+EmulatorX3 on the *same factory preset*, which is a parity problem and not an
+authoring one. See `dev/MORPH_PARITY.md`; the interpolation domain is worth
+12-25 dB in the interior while leaving every corner bit-identical.
+
+What is written below still stands for OUR OWN fitted bodies, where corners are
+fitted independently and row assignment is left unconstrained. Two separate
+problems with the same symptom.

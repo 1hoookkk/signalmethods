@@ -1,0 +1,145 @@
+08027D80: add.w    r0, r0, r0, lsl #2 
+08027D84: lsls     r0, r0, #1 
+08027D86: add.w    r1, r0, #0x64 
+08027D8A: eor.w    r1, r1, r2, asr #31 
+08027D8E: add.w    r1, r1, r2, lsr #31 
+08027D92: ldr      r3, [pc, #0x2a4] 
+08027D94: ldr      r0, [pc, #0x2a4] 
+08027D96: movw     r2, #0x943e 
+08027D9A: mul      r2, r2, r1 
+08027D9E: smull    r1, r3, r3, r2 
+08027DA2: asrs     r2, r2, #0x1f 
+08027DA4: rsb      r3, r2, r3, asr #6 
+08027DA8: rsb      r2, r3, r3, lsl #18 
+08027DAC: rsb      r2, r3, r2, lsl #3 
+08027DB0: lsls     r2, r2, #0xb 
+08027DB2: sxtb     r5, r5 
+08027DB4: add.w    r2, r2, #0x4000000 
+08027DB8: mla      r2, r0, r5, r2 
+08027DBC: str      r2, [r6, #8] 
+08027DBE: str      r3, [r6, #0xc] 
+08027DC0: ldrb     r3, [r4, #0x1a] 
+08027DC2: ldrb     r7, [r4, #0xe] 
+08027DC4: lsls     r3, r3, #0x1e 
+08027DC6: itet     mi 
+08027DC8: ldrbmi   r1, [r4, #0x11] 
+08027DCA: ldrbpl   r2, [r4, #0x11] 
+08027DCC: rsbmi    r2, r1, #0 
+08027DCE: eor.w    r1, r2, r2, asr #31 
+08027DD2: sub.w    r1, r1, r2, asr #31 
+08027DD6: cmp      r1, #0x64 
+08027DD8: ble      #0x8027de8 
+08027DDA: sub.w    r0, r1, #0x64 
+08027DDE: add.w    r0, r0, r0, lsl #2 
+08027DE2: lsls     r0, r0, #1 
+08027DE4: add.w    r1, r0, #0x64 
+08027DE8: eor.w    r1, r1, r2, asr #31 
+08027DEC: add.w    r1, r1, r2, lsr #31 
+08027DF0: ldr      r3, [pc, #0x244] 
+08027DF2: ldr      r0, [pc, #0x248] 
+08027DF4: ldr      r5, [pc, #0x248] 
+08027DF6: ldr.w    r8, [pc, #0x264] 
+08027DFA: vldr     s15, [pc, #0x248] 
+08027DFE: vldr     s13, [pc, #0x248] 
+08027E02: movw     r2, #0x943e 
+08027E06: mul      r2, r2, r1 
+08027E0A: smull    r1, r3, r3, r2 
+08027E0E: asrs     r2, r2, #0x1f 
+08027E10: rsb      r3, r2, r3, asr #6 
+08027E14: rsb      r2, r3, r3, lsl #18 
+08027E18: rsb      r2, r3, r2, lsl #3 
+08027E1C: lsls     r2, r2, #0xb 
+08027E1E: sxtb     r7, r7 
+08027E20: add.w    r2, r2, #0x4000000 
+08027E24: mla      r2, r0, r7, r2 
+08027E28: str      r3, [r6, #0x14] 
+08027E2A: str      r2, [r6, #0x10] 
+08027E2C: ldrb     r7, [r4, #0x1a] 
+08027E2E: ldm      r5!, {r0, r1, r2, r3} 
+08027E30: and      r7, r7, #1 
+08027E34: str      r7, [r6, #0x18] 
+08027E36: ldrb     r7, [r4, #0x18] 
+08027E38: mov      lr, sp 
+08027E3A: rsbs     r7, r7, #0 
+08027E3C: stm.w    lr!, {r0, r1, r2, r3} 
+08027E40: sxtb     r3, r7 
+08027E42: adds     r3, #0x50 
+08027E44: umull    r7, r2, r8, r3 
+08027E48: ldm.w    r5, {r0, r1} 
+08027E4C: lsrs     r2, r2, #2 
+08027E4E: add.w    r7, r2, r2, lsl #1 
+08027E52: sub.w    r3, r3, r7, lsl #1 
+08027E56: movs     r7, #1 
+08027E58: stm.w    lr, {r0, r1} 
+08027E5C: lsl.w    r2, r7, r2 
+08027E60: add      r1, sp, #0x18 
+08027E62: vmov     s14, r2 
+08027E66: add.w    r3, r1, r3, lsl #2 
+08027E6A: vldr     s12, [r3, #-0x18] 
+08027E6E: vcvt.f32.s32 s14, s14 
+08027E72: sub.w    ip, r5, #0x10 
+08027E76: vmul.f32 s14, s14, s12 
+08027E7A: ldm.w    ip!, {r0, r1, r2, r3} 
+08027E7E: vmul.f32 s14, s14, s15 
+08027E82: mov      ip, sp 
+08027E84: vmul.f32 s14, s14, s13 
+08027E88: stm.w    ip!, {r0, r1, r2, r3} 
+08027E8C: vstr     s14, [r6, #0x1c] 
+08027E90: ldrb     r3, [r4, #0x19] 
+08027E92: ldrh     r0, [r4, #0xc] 
+08027E94: rsbs     r3, r3, #0 
+08027E96: sxtb     r3, r3 
+08027E98: adds     r3, #0x50 
+08027E9A: umull    ip, r2, r8, r3 
+08027E9E: lsrs     r2, r2, #2 
+08027EA0: add.w    r1, r2, r2, lsl #1 
+08027EA4: lsl.w    r2, r7, r2 
+08027EA8: vmov     s14, r2 
+08027EAC: sub.w    r3, r3, r1, lsl #1 
+08027EB0: add      r1, sp, #0x18 
+08027EB2: add.w    r3, r1, r3, lsl #2 
+08027EB6: vldr     s12, [r3, #-0x18] 
+08027EBA: vcvt.f32.s32 s14, s14 
+08027EBE: mov.w    r3, #0x14c 
+08027EC2: vmul.f32 s14, s14, s12 
+08027EC6: smulbb   r0, r0, r3 
+08027ECA: vmul.f32 s15, s14, s15 
+08027ECE: add.w    r0, r0, #0x8000000 
+08027ED2: vmul.f32 s15, s15, s13 
+08027ED6: add.w    r1, r6, #0x24 
+08027EDA: vstr     s15, [r6, #0x20] 
+08027EDE: add.w    r0, r0, #0x8000 
+08027EE2: bl       #0x80382fc 
+08027EE6: sub.w    lr, r5, #0x10 
+08027EEA: ldm.w    lr!, {r0, r1, r2, r3} 
+08027EEE: mov      ip, sp 
+08027EF0: ldrb.w   lr, [r4, #0x16] 
+08027EF4: vldr     s13, [pc, #0x154] 
+08027EF8: stm.w    ip!, {r0, r1, r2, r3} 
+08027EFC: sxtb.w   r3, lr 
+08027F00: ldm.w    r5, {r0, r1} 
+08027F04: adds     r3, #0x50 
+08027F06: umull    lr, r2, r8, r3 
+08027F0A: lsrs     r2, r2, #2 
+08027F0C: stm.w    ip, {r0, r1} 
+08027F10: add.w    lr, r2, r2, lsl #1 
+08027F14: lsl.w    r2, r7, r2 
+08027F18: sub.w    r3, r3, lr, lsl #1 
+08027F1C: add      r1, sp, #0x18 
+08027F1E: vmov     s15, r2 
+08027F22: add.w    r3, r1, r3, lsl #2 
+08027F26: vldr     s14, [r3, #-0x18] 
+08027F2A: vcvt.f32.s32 s15, s15 
+08027F2E: sub.w    lr, r5, #0x10 
+08027F32: vmul.f32 s15, s15, s14 
+08027F36: ldm.w    lr!, {r0, r1, r2, r3} 
+08027F3A: vstr     s15, [r6, #0x1f4] 
+08027F3E: ldrb.w   lr, [r4, #0x17] 
+08027F42: mov      sb, sp 
+08027F44: sxtb.w   lr, lr 
+08027F48: stm.w    sb!, {r0, r1, r2, r3} 
+08027F4C: add.w    r3, lr, #0x50 
+08027F50: umull    r2, r8, r8, r3 
+08027F54: lsr.w    r8, r8, #2 
+08027F58: add.w    r2, r8, r8, lsl #1 
+08027F5C: lsl.w    r7, r7, r8 
