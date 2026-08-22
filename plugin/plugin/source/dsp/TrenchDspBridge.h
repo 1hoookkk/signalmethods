@@ -252,8 +252,7 @@ public:
     /// sound different. They stay in the build and stay switchable from the dev
     /// desk — they are just no longer what you get for free.
     ///
-    /// The AGC stays on: the X3 has one. Its DRIVE is a separate question —
-    /// 2.0 is ours, and the DLL's own is 1.0.
+    /// The AGC stays on: the X3 has one. Its DRIVE is 1.0, the DLL's own.
     struct Bypass
     {
         bool nonlinearity = false;  // section state clamp + pole-radius modulator
@@ -261,11 +260,9 @@ public:
         // UNITY, because the DLL has no pre-scale. ref/ghidra_extracts/
         // runtime_hacks.md, verbatim: "The repo's agc_drive pre-scale is an
         // authoring and audition control. It is not part of the observed DLL
-        // path." trench-core/src/engine.rs says the same in its own words and
-        // calls unity the shipped value — but AGC_DRIVE there is still 2.0, and
-        // this desk was independently sending 2.0 over the top of it every
-        // block. At 2.0 the leveller engages in 85 of the 360 X3 preset states;
-        // at unity, 28. It is still the audition hook: drag the bar.
+        // path." engine.rs AGC_DRIVE is the same 1.0. At 2.0 the leveller
+        // engaged in 85 of the 360 X3 preset states; at unity, 28. It is still
+        // the audition hook: drag the bar.
         float agcDrive = 1.0f;
         bool saturate = false;      // the output tanh
         bool dcBlock = false;

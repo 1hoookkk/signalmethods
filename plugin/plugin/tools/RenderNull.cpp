@@ -15,7 +15,7 @@ int main (int argc, char** argv)
 {
     if (argc < 4)
     {
-        std::printf ("usage: RenderNull in.wav body240 out.wav [id=value ...]  (ids: morph q chew amount slamDrive preamp envAmount track movePreset keySnap)\n");
+        std::printf ("usage: RenderNull in.wav body240 out.wav [id=value ...]  (ids: morph q chew amount slamDrive preamp envAmount track movePreset keySnap; morphRamp=<seconds> drives morph 0->1 linearly per block)\n");
         return 2;
     }
     juce::ScopedJuceInitialiser_GUI init;
@@ -43,14 +43,18 @@ int main (int argc, char** argv)
         std::printf ("no parameter %s\n", id.toRawUTF8()); return false;
     };
     for (const auto& a : defaults) set (a.id, a.value);
+    double morphRampSeconds = 0.0;
     for (int i = 4; i < argc; ++i)
     {
         const juce::String s (argv[i]);
         const auto eq = s.indexOfChar ('=');
-        if (eq > 0) set (s.substring (0, eq), s.substring (eq + 1).getFloatValue());
+        if (eq <= 0) continue;
+        if (s.substring (0, eq) == "morphRamp") { morphRampSeconds = s.substring (eq + 1).getDoubleValue(); continue; }
+        set (s.substring (0, eq), s.substring (eq + 1).getFloatValue());
     }
-    p.setPlayConfigDetails (2, 2, rate, prepared);
-    p.prepareToPlay (rate, prepared);
+    constexpr int block = 512;
+    p.setPlayConfigDetails (2, 2, rate, block);
+    p.prepareToPlay (rate, block);
     juce::AudioBuffer<float> out (2, frames);
     for (int ch = 0; ch < 2; ++ch)
         out.copyFrom (ch, 0, in, juce::jmin (ch, in.getNumChannels() - 1), 0, frames);
@@ -58,6 +62,8 @@ int main (int argc, char** argv)
     for (int start = 0; start < frames; start += block)
     {
         const int n = juce::jmin (block, frames - start);
+        if (morphRampSeconds > 0.0)
+            set (ParamID::morph, (float) juce::jmin (1.0, (double) start / rate / morphRampSeconds));
         float* chans[2] = { out.getWritePointer (0) + start, out.getWritePointer (1) + start };
         juce::AudioBuffer<float> slice (chans, 2, n);
         p.processBlock (slice, midi);

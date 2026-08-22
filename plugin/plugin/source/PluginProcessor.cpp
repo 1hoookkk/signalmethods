@@ -406,12 +406,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     else if (buffer.getNumChannels() == 1)
         limitFrac = trench::slamOutputPressureBlock (buffer.getWritePointer (0),
                                                      numSamples, slam);
-    // 11. The safety ceiling protects the WET voice only — after MIX it would
-    //     alter full-scale dry audio even at MIX 0.
-    limitFrac = juce::jmax (limitFrac, trench::finalSafetyCeilingBlockStereo (
-        buffer.getNumChannels() > 0 ? buffer.getWritePointer (0) : nullptr,
-        buffer.getNumChannels() > 1 ? buffer.getWritePointer (1) : nullptr,
-        numSamples));
     // 12. MIX blend; MIX 0 returns the untouched dry signal, sample-identical.
     punchBlend.blend (buffer.getArrayOfWritePointers(), buffer.getNumChannels(), numSamples, mix);
     // 13. Telemetry only while the editor is looking.

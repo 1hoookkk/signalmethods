@@ -142,35 +142,7 @@ impl GuardBiquad {
         self.w2 = 0.0;
     }
 }
-// ---- output stage, reworked 2026-07-27 (RE-vault-authentic chain, probe cond G) ----
-//
-// AGC drive. The reverse-engineered DLL path (ref/ghidra_extracts/runtime_hacks.md,
-// "AGC Processing") feeds the leveller the raw sample magnitude: there is no
-// pre-scale, and the extract says so explicitly ("the repo's agc_drive pre-scale is
-// an authoring and audition control, not part of the observed DLL path"). The old
-// default was AGC_FIRST_TOOTH (2.0) / old SATURATE_KNEE (0.9) = 2.2222 — a number we
-// invented so the leveller would hand the output tanh a signal already sitting on
-// its knee. That made the tanh a tone stage. Default is now unity; set_agc_drive()
-// survives as the authoring/audition hook (still clamped to >= 1.0).
-/// How hard the cascade output is pushed into the AGC table. It scales ONLY
-/// the index lookup — `agc_step_stereo(s * d, ...)` then divides d back out —
-/// so it moves the engagement threshold, never the output scaling.
-///
-/// 1.8, not 1.0 (Tyson 2026-08-05, "zero friction"). The table is flat
-/// (1.0001) below |sample| = 2.0 = +6.02 dBFS and its knee is at +13.98, so at
-/// 1.0 a normal DAW signal never reaches it and E-mu's limiting character
-/// never appears. 1.8 puts a -12 dBFS source into the knee natively — measured
-/// 4.5 dB of pull on Shift, which is the squish we were after.
-///
-/// It is NOT uniform across the set, because the bodies are not level-matched:
-/// the 40 dB clamp equalised their peaks, not their loudness. At 1.8 and
-/// -12 dBFS in: Shift 4.5 dB, Twin Peak 0.1, Opium 0.0, Drift 18.1. Raising
-/// this further crushes the hot bodies before it wakes the quiet ones — the
-/// fix for that is per-body loudness, not more drive.
-// 2.0 (Tyson 2026-08-06): a notch over the proven 1.8 so the leveller sings
-// without crushing the hot bodies before the quiet ones wake. Per-body
-// loudness remains the real equaliser.
-pub const AGC_DRIVE: f32 = 2.0;
+pub const AGC_DRIVE: f32 = 1.0;
 // No fixed broadband trim lives here. SCALE owns the body's authored level and
 // the AGC may reduce only genuinely hot signal. A former -6.5 dB reference-match
 // trim made every body quiet before the plugin's separately calibrated SLAM stage.

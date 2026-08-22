@@ -183,7 +183,7 @@ def main():
     ap.add_argument("--q", type=float, default=0.0)
     ap.add_argument("--in-process", action="store_true")
     ap.add_argument("--agc", action="store_true")
-    ap.add_argument("--agc-drive", type=float, default=2.0)
+    ap.add_argument("--agc-drive", type=float, default=1.0)
     args = ap.parse_args()
 
     if args.one:
