@@ -1,0 +1,2610 @@
+{
+ "schema": "trench-native-decoded-index-v1",
+ "datum_hz": 39062.5,
+ "sections": 7,
+ "corners": 8,
+ "count": 289,
+ "filters": [
+  {
+   "filter_number": 0,
+   "source_file": "000_Null_Cube.body",
+   "manual_name": "Null Filter",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/000_Null_Cube.json"
+  },
+  {
+   "filter_number": 1,
+   "source_file": "001_LPFlange.4.body",
+   "manual_name": "Low Pass Flange .4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/001_LPFlange.4.json"
+  },
+  {
+   "filter_number": 2,
+   "source_file": "002_LPFlngBk.4.body",
+   "manual_name": "Low Pass Flange Bk .4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/002_LPFlngBk.4.json"
+  },
+  {
+   "filter_number": 3,
+   "source_file": "003_Flange2.4.body",
+   "manual_name": "Flange 2 .4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/003_Flange2.4.json"
+  },
+  {
+   "filter_number": 4,
+   "source_file": "004_CubeFlanger.body",
+   "manual_name": "CubeFlanger",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/004_CubeFlanger.json"
+  },
+  {
+   "filter_number": 5,
+   "source_file": "005_Flange3.4.body",
+   "manual_name": "Flange3.4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/005_Flange3.4.json"
+  },
+  {
+   "filter_number": 6,
+   "source_file": "006_Flange4.4.body",
+   "manual_name": "Flange 4.4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/006_Flange4.4.json"
+  },
+  {
+   "filter_number": 7,
+   "source_file": "007_Flange5.body",
+   "manual_name": "Flange 5",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/007_Flange5.json"
+  },
+  {
+   "filter_number": 8,
+   "source_file": "008_Flange6.4.body",
+   "manual_name": "Flange 6.4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/008_Flange6.4.json"
+  },
+  {
+   "filter_number": 9,
+   "source_file": "009_Flange6R.4.body",
+   "manual_name": "Flange 6R.4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/009_Flange6R.4.json"
+  },
+  {
+   "filter_number": 10,
+   "source_file": "010_Flange7.4.body",
+   "manual_name": "Flanger 7.4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/010_Flange7.4.json"
+  },
+  {
+   "filter_number": 11,
+   "source_file": "011_BriteFlng.4.body",
+   "manual_name": "BriteFlnge.4",
+   "family": "FLANGERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "flangers/011_BriteFlng.4.json"
+  },
+  {
+   "filter_number": 12,
+   "source_file": "012_Flng_Flng1.body",
+   "manual_name": "Flng>Flng1",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/012_Flng_Flng1.json"
+  },
+  {
+   "filter_number": 13,
+   "source_file": "013_LP_Flng2.body",
+   "manual_name": "0>Flng2",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/013_LP_Flng2.json"
+  },
+  {
+   "filter_number": 14,
+   "source_file": "014_Flng_Flng3.body",
+   "manual_name": "Flng>Flng3b",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/014_Flng_Flng3.json"
+  },
+  {
+   "filter_number": 15,
+   "source_file": "015_Flng_Flng4.body",
+   "manual_name": "Flng>Flng4",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/015_Flng_Flng4.json"
+  },
+  {
+   "filter_number": 16,
+   "source_file": "016_Flng_Flng5.body",
+   "manual_name": "Flng>Flng5",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/016_Flng_Flng5.json"
+  },
+  {
+   "filter_number": 17,
+   "source_file": "017_Flng_Flng6.body",
+   "manual_name": "Flng>Flng6",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/017_Flng_Flng6.json"
+  },
+  {
+   "filter_number": 18,
+   "source_file": "018_Flng_FlngT.body",
+   "manual_name": "Flng>FlngT",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/018_Flng_FlngT.json"
+  },
+  {
+   "filter_number": 19,
+   "source_file": "019_Flng_FlngC.body",
+   "manual_name": "Flng>FlngC",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/019_Flng_FlngC.json"
+  },
+  {
+   "filter_number": 20,
+   "source_file": "020_CO_FlngT.body",
+   "manual_name": "CO>FlngT",
+   "family": "FLANGERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "flangers/020_CO_FlngT.json"
+  },
+  {
+   "filter_number": 21,
+   "source_file": "021_AEParLPVow.body",
+   "manual_name": "AEParLPVow",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "dipthongs/021_AEParLPVow.json"
+  },
+  {
+   "filter_number": 22,
+   "source_file": "022_AEParaVowel.body",
+   "manual_name": "AEParaVowel",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/022_AEParaVowel.json"
+  },
+  {
+   "filter_number": 23,
+   "source_file": "023_AOLpParaVow.body",
+   "manual_name": "AOLpParaVow",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "dipthongs/023_AOLpParaVow.json"
+  },
+  {
+   "filter_number": 24,
+   "source_file": "024_AOParaVowel.body",
+   "manual_name": "AOParaVowel",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "dipthongs/024_AOParaVowel.json"
+  },
+  {
+   "filter_number": 25,
+   "source_file": "025_AUParaVow.4.body",
+   "manual_name": "AUParaVow.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 6,
+   "path": "dipthongs/025_AUParaVow.4.json"
+  },
+  {
+   "filter_number": 26,
+   "source_file": "026_UOParaVow.4.body",
+   "manual_name": "UOParaVow.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 6,
+   "path": "dipthongs/026_UOParaVow.4.json"
+  },
+  {
+   "filter_number": 27,
+   "source_file": "027_SftEOVowl.4.body",
+   "manual_name": "SftEOVowel4",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/027_SftEOVowl.4.json"
+  },
+  {
+   "filter_number": 28,
+   "source_file": "028_SoftEOAE.body",
+   "manual_name": "SoftEOAE",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/028_SoftEOAE.json"
+  },
+  {
+   "filter_number": 29,
+   "source_file": "029_Vocal_Cube.body",
+   "manual_name": "Vocal Cube",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/029_Vocal_Cube.json"
+  },
+  {
+   "filter_number": 30,
+   "source_file": "030_C1-6Harms.4.body",
+   "manual_name": "C1-6 Harms4",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/030_C1-6Harms.4.json"
+  },
+  {
+   "filter_number": 31,
+   "source_file": "031_Voce.4.body",
+   "manual_name": "Voce.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/031_Voce.4.json"
+  },
+  {
+   "filter_number": 32,
+   "source_file": "032_ChoralComb.4.body",
+   "manual_name": "ChoralComb4",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "dipthongs/032_ChoralComb.4.json"
+  },
+  {
+   "filter_number": 33,
+   "source_file": "033_Bassutoi.4.body",
+   "manual_name": "Bassutoi.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/033_Bassutoi.4.json"
+  },
+  {
+   "filter_number": 34,
+   "source_file": "034_Be-Ye.4.body",
+   "manual_name": "Be Ye.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/034_Be-Ye.4.json"
+  },
+  {
+   "filter_number": 35,
+   "source_file": "035_Ee-Yi.4.body",
+   "manual_name": "Ee-Yi.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/035_Ee-Yi.4.json"
+  },
+  {
+   "filter_number": 36,
+   "source_file": "036_Ii-Yi.4.body",
+   "manual_name": "Ii-Yi.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/036_Ii-Yi.4.json"
+  },
+  {
+   "filter_number": 37,
+   "source_file": "037_Uhrrrah.4.body",
+   "manual_name": "Uhrrrah.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/037_Uhrrrah.4.json"
+  },
+  {
+   "filter_number": 38,
+   "source_file": "038_YeahYeah.4.body",
+   "manual_name": "YeahYeah.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/038_YeahYeah.4.json"
+  },
+  {
+   "filter_number": 39,
+   "source_file": "039_Vow_Vow1.body",
+   "manual_name": "Vow>Vow1",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/039_Vow_Vow1.json"
+  },
+  {
+   "filter_number": 40,
+   "source_file": "040_Vow_Vow2.body",
+   "manual_name": "Vow>Vow2",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/040_Vow_Vow2.json"
+  },
+  {
+   "filter_number": 41,
+   "source_file": "041_YahYahs.4.body",
+   "manual_name": "YahYahs.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/041_YahYahs.4.json"
+  },
+  {
+   "filter_number": 42,
+   "source_file": "042_YoYo.4.body",
+   "manual_name": "YoYo.4",
+   "family": "DIPTHONGS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "dipthongs/042_YoYo.4.json"
+  },
+  {
+   "filter_number": 43,
+   "source_file": "043_VowelSpace.body",
+   "manual_name": "VowelSpace",
+   "family": "DIPTHONGS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "dipthongs/043_VowelSpace.json"
+  },
+  {
+   "filter_number": 44,
+   "source_file": "044_BrickWaLP.4.body",
+   "manual_name": "BrickWaLP.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/044_BrickWaLP.4.json"
+  },
+  {
+   "filter_number": 45,
+   "source_file": "045_BrickWaLP2.body",
+   "manual_name": "BrickWaLP2",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/045_BrickWaLP2.json"
+  },
+  {
+   "filter_number": 46,
+   "source_file": "046_MdQ_2PoleLP.body",
+   "manual_name": "MdQ 2PoleLP",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/046_MdQ_2PoleLP.json"
+  },
+  {
+   "filter_number": 47,
+   "source_file": "047_HiQ_2PoleLP.body",
+   "manual_name": "HiQ 2PoleLP",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/047_HiQ_2PoleLP.json"
+  },
+  {
+   "filter_number": 48,
+   "source_file": "048_MdQ_4PoleLP.body",
+   "manual_name": "MdQ 4PoleLP",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/048_MdQ_4PoleLP.json"
+  },
+  {
+   "filter_number": 49,
+   "source_file": "049_HiQ_4PoleLP.body",
+   "manual_name": "HiQ 4PoleLP",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/049_HiQ_4PoleLP.json"
+  },
+  {
+   "filter_number": 50,
+   "source_file": "050_2_PoleLoQ.4.body",
+   "manual_name": "2poleLoQLP4",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/050_2_PoleLoQ.4.json"
+  },
+  {
+   "filter_number": 51,
+   "source_file": "051_4_PoleLoQ.4.body",
+   "manual_name": "4 PoleLoQ.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/051_4_PoleLoQ.4.json"
+  },
+  {
+   "filter_number": 52,
+   "source_file": "052_4_PoleMidQ.4.body",
+   "manual_name": "4PoleMidQ.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/052_4_PoleMidQ.4.json"
+  },
+  {
+   "filter_number": 53,
+   "source_file": "053_2pole_4pole.body",
+   "manual_name": "2p>4p 0",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/053_2pole_4pole.json"
+  },
+  {
+   "filter_number": 54,
+   "source_file": "054_LowPassPlus.body",
+   "manual_name": "LowPassPlus",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/054_LowPassPlus.json"
+  },
+  {
+   "filter_number": 55,
+   "source_file": "055_Low_Past.4.body",
+   "manual_name": "Low Past.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 1,
+   "path": "standard/055_Low_Past.4.json"
+  },
+  {
+   "filter_number": 56,
+   "source_file": "056_APass.4.body",
+   "manual_name": "APass.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 5,
+   "path": "standard/056_APass.4.json"
+  },
+  {
+   "filter_number": 57,
+   "source_file": "057_HPSweep.4.body",
+   "manual_name": "HPSweep.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/057_HPSweep.4.json"
+  },
+  {
+   "filter_number": 58,
+   "source_file": "058_HiSwept1.4.body",
+   "manual_name": "HiSwept1.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/058_HiSwept1.4.json"
+  },
+  {
+   "filter_number": 59,
+   "source_file": "059_HghsSwpt2.4.body",
+   "manual_name": "HghsSwpt2.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/059_HghsSwpt2.4.json"
+  },
+  {
+   "filter_number": 60,
+   "source_file": "060_Hi_Accent.4.body",
+   "manual_name": "HighAccent.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/060_Hi_Accent.4.json"
+  },
+  {
+   "filter_number": 61,
+   "source_file": "061_HiPassSwp.4.body",
+   "manual_name": "HiPassSweep.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/061_HiPassSwp.4.json"
+  },
+  {
+   "filter_number": 62,
+   "source_file": "062_DeepCombs.4.body",
+   "manual_name": "Deep Combs",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/062_DeepCombs.4.json"
+  },
+  {
+   "filter_number": 63,
+   "source_file": "063_One_Peak.body",
+   "manual_name": "One Peak",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/063_One_Peak.json"
+  },
+  {
+   "filter_number": 64,
+   "source_file": "064_More_Peaks.body",
+   "manual_name": "More Peaks",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/064_More_Peaks.json"
+  },
+  {
+   "filter_number": 65,
+   "source_file": "065_Rev_Peaks.body",
+   "manual_name": "Rev Peaks",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/065_Rev_Peaks.json"
+  },
+  {
+   "filter_number": 66,
+   "source_file": "066_Notcher2.4.body",
+   "manual_name": "Notcher 2.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "standard/066_Notcher2.4.json"
+  },
+  {
+   "filter_number": 67,
+   "source_file": "067_Ntches2Oct.4.body",
+   "manual_name": "Ntches2Oct4",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/067_Ntches2Oct.4.json"
+  },
+  {
+   "filter_number": 68,
+   "source_file": "068_Odd__.body",
+   "manual_name": "Odd>+",
+   "family": "STANDARD",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "standard/068_Odd__.json"
+  },
+  {
+   "filter_number": 69,
+   "source_file": "069_VarSlope.4.body",
+   "manual_name": "VarSlope.4",
+   "family": "STANDARD",
+   "geometry": "square",
+   "active_sections": 5,
+   "path": "standard/069_VarSlope.4.json"
+  },
+  {
+   "filter_number": 70,
+   "source_file": "070_BassEQ_1.4.body",
+   "manual_name": "BassEQ 1.4",
+   "family": "EQUALIZATION FILTERS",
+   "geometry": "square",
+   "active_sections": 4,
+   "path": "equalization_filters/070_BassEQ_1.4.json"
+  },
+  {
+   "filter_number": 71,
+   "source_file": "071_B_BOOST.4.body",
+   "manual_name": "B BOOST.4",
+   "family": "EQUALIZATION FILTERS",
+   "geometry": "square",
+   "active_sections": 4,
+   "path": "equalization_filters/071_B_BOOST.4.json"
+  },
+  {
+   "filter_number": 72,
+   "source_file": "072_BssBOOST2.4.body",
+   "manual_name": "BssBOOST2.4",
+   "family": "EQUALIZATION FILTERS",
+   "geometry": "square",
+   "active_sections": 5,
+   "path": "equalization_filters/072_BssBOOST2.4.json"
+  },
+  {
+   "filter_number": 73,
+   "source_file": "073_BassDrumEQ.body",
+   "manual_name": "BassDrumEQ",
+   "family": "EQUALIZATION FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "equalization_filters/073_BassDrumEQ.json"
+  },
+  {
+   "filter_number": 74,
+   "source_file": "074_Snare_LPEQ2.body",
+   "manual_name": "Snare LPEQ2",
+   "family": "EQUALIZATION FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "equalization_filters/074_Snare_LPEQ2.json"
+  },
+  {
+   "filter_number": 75,
+   "source_file": "075_HiHatLPEQ.body",
+   "manual_name": "HiHatLPEQ",
+   "family": "EQUALIZATION FILTERS",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "equalization_filters/075_HiHatLPEQ.json"
+  },
+  {
+   "filter_number": 76,
+   "source_file": "076_HP_LP_PZ.body",
+   "manual_name": "HP LP PZ",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "complex_filters/076_HP_LP_PZ.json"
+  },
+  {
+   "filter_number": 77,
+   "source_file": "077_PZ_Notch.body",
+   "manual_name": "PZ Notch",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/077_PZ_Notch.json"
+  },
+  {
+   "filter_number": 78,
+   "source_file": "078_Band-aid.body",
+   "manual_name": "Band-aid",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/078_Band-aid.json"
+  },
+  {
+   "filter_number": 79,
+   "source_file": "079_4_2_LowQHiQ.body",
+   "manual_name": "LowQHiQ",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "complex_filters/079_4_2_LowQHiQ.json"
+  },
+  {
+   "filter_number": 80,
+   "source_file": "080_Wah4Vib.4.body",
+   "manual_name": "Wah4Vib.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/080_Wah4Vib.4.json"
+  },
+  {
+   "filter_number": 81,
+   "source_file": "081_Wa_Wa.4.body",
+   "manual_name": "WaWa",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/081_Wa_Wa.4.json"
+  },
+  {
+   "filter_number": 82,
+   "source_file": "082_BrassRez.4.body",
+   "manual_name": "BrassRez.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/082_BrassRez.4.json"
+  },
+  {
+   "filter_number": 83,
+   "source_file": "083_Clr_Oboe.body",
+   "manual_name": "Clr>Oboe",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/083_Clr_Oboe.json"
+  },
+  {
+   "filter_number": 84,
+   "source_file": "084_0_Muter.body",
+   "manual_name": "0>Muter",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/084_0_Muter.json"
+  },
+  {
+   "filter_number": 85,
+   "source_file": "085_PZ_Syn_Horn.body",
+   "manual_name": "PZ Syn Horn",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/085_PZ_Syn_Horn.json"
+  },
+  {
+   "filter_number": 86,
+   "source_file": "086_HP_Brass.body",
+   "manual_name": "HP Brass",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/086_HP_Brass.json"
+  },
+  {
+   "filter_number": 87,
+   "source_file": "087_BrassyBlast.body",
+   "manual_name": "BrassyBlast",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/087_BrassyBlast.json"
+  },
+  {
+   "filter_number": 88,
+   "source_file": "088_Brass_Swell.body",
+   "manual_name": "BrassSwell",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/088_Brass_Swell.json"
+  },
+  {
+   "filter_number": 89,
+   "source_file": "089_BrsSwell2.4.body",
+   "manual_name": "BrsSwell2.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/089_BrsSwell2.4.json"
+  },
+  {
+   "filter_number": 90,
+   "source_file": "090_LoVelTrum.body",
+   "manual_name": "LoVelTrum",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "complex_filters/090_LoVelTrum.json"
+  },
+  {
+   "filter_number": 91,
+   "source_file": "091_Chiffin.4.body",
+   "manual_name": "Chiffin.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/091_Chiffin.4.json"
+  },
+  {
+   "filter_number": 92,
+   "source_file": "092_ShakuFilter.body",
+   "manual_name": "ShakuFilter",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/092_ShakuFilter.json"
+  },
+  {
+   "filter_number": 93,
+   "source_file": "093_Cym.body",
+   "manual_name": "Cym",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/093_Cym.json"
+  },
+  {
+   "filter_number": 94,
+   "source_file": "094_VelMarim.body",
+   "manual_name": "VelMarim",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/094_VelMarim.json"
+  },
+  {
+   "filter_number": 95,
+   "source_file": "095_EZ_Vibez.4.body",
+   "manual_name": "EZ Vibez.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 6,
+   "path": "complex_filters/095_EZ_Vibez.4.json"
+  },
+  {
+   "filter_number": 96,
+   "source_file": "096_Piano_1.body",
+   "manual_name": "Piano 01",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/096_Piano_1.json"
+  },
+  {
+   "filter_number": 97,
+   "source_file": "097_Piano_2.4.body",
+   "manual_name": "PianoFltr4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 1,
+   "path": "complex_filters/097_Piano_2.4.json"
+  },
+  {
+   "filter_number": 98,
+   "source_file": "098_EZ_Rhodez.4.body",
+   "manual_name": "EZ Rhodez4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/098_EZ_Rhodez.4.json"
+  },
+  {
+   "filter_number": 99,
+   "source_file": "099_MoogVocodr.4.body",
+   "manual_name": "MoogVocodr4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/099_MoogVocodr.4.json"
+  },
+  {
+   "filter_number": 100,
+   "source_file": "100_MoogVocSwp.body",
+   "manual_name": "MoogVocSwp",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "complex_filters/100_MoogVocSwp.json"
+  },
+  {
+   "filter_number": 101,
+   "source_file": "101_StrngThng.4.body",
+   "manual_name": "StrngThing4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "complex_filters/101_StrngThng.4.json"
+  },
+  {
+   "filter_number": 102,
+   "source_file": "102_StrSweep.4.body",
+   "manual_name": "StrSweep.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/102_StrSweep.4.json"
+  },
+  {
+   "filter_number": 103,
+   "source_file": "103_BassXpress.body",
+   "manual_name": "BassXpress",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/103_BassXpress.json"
+  },
+  {
+   "filter_number": 104,
+   "source_file": "104_Qbase.4.body",
+   "manual_name": "Qbase.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/104_Qbase.4.json"
+  },
+  {
+   "filter_number": 105,
+   "source_file": "105_AcGtrRs.4.body",
+   "manual_name": "AcGtrRs.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/105_AcGtrRs.4.json"
+  },
+  {
+   "filter_number": 106,
+   "source_file": "106_TubeSust.4.body",
+   "manual_name": "Tube Sust.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/106_TubeSust.4.json"
+  },
+  {
+   "filter_number": 107,
+   "source_file": "107_GtrSkwk.body",
+   "manual_name": "GtrSkwk",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/107_GtrSkwk.json"
+  },
+  {
+   "filter_number": 108,
+   "source_file": "108_GuitXpress.body",
+   "manual_name": "GuitXpress",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/108_GuitXpress.json"
+  },
+  {
+   "filter_number": 109,
+   "source_file": "109_G_MajTrans.4.body",
+   "manual_name": "FG MajTrans4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/109_G_MajTrans.4.json"
+  },
+  {
+   "filter_number": 110,
+   "source_file": "110_Tam.body",
+   "manual_name": "Tam",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/110_Tam.json"
+  },
+  {
+   "filter_number": 111,
+   "source_file": "111_HOTwell.4.body",
+   "manual_name": "HOTwell.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/111_HOTwell.4.json"
+  },
+  {
+   "filter_number": 112,
+   "source_file": "112_Bell_Wah_A.body",
+   "manual_name": "Bell.Waha",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/112_Bell_Wah_A.json"
+  },
+  {
+   "filter_number": 113,
+   "source_file": "113_Bell_Wah_B.body",
+   "manual_name": "Belwahb",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/113_Bell_Wah_B.json"
+  },
+  {
+   "filter_number": 114,
+   "source_file": "114_0_Bell-.body",
+   "manual_name": "0>Bell-",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/114_0_Bell-.json"
+  },
+  {
+   "filter_number": 115,
+   "source_file": "115_0_Bell_.body",
+   "manual_name": "0>Bell+",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/115_0_Bell_.json"
+  },
+  {
+   "filter_number": 116,
+   "source_file": "116_Bel_Crs_Bel.body",
+   "manual_name": "Bel>Crs>Bel",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/116_Bel_Crs_Bel.json"
+  },
+  {
+   "filter_number": 117,
+   "source_file": "117_Chrs_Flng1.body",
+   "manual_name": "Chrs>Flng1",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/117_Chrs_Flng1.json"
+  },
+  {
+   "filter_number": 118,
+   "source_file": "118_Chrs_Flng2.body",
+   "manual_name": "Chrs>Flng2",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/118_Chrs_Flng2.json"
+  },
+  {
+   "filter_number": 119,
+   "source_file": "119_Ev_OdNtch.4.body",
+   "manual_name": "Ev/OdNtch.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/119_Ev_OdNtch.4.json"
+  },
+  {
+   "filter_number": 120,
+   "source_file": "120_Odd_EvnNtch.body",
+   "manual_name": "Odd/EvnNtch",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/120_Odd_EvnNtch.json"
+  },
+  {
+   "filter_number": 121,
+   "source_file": "121_NotchPeaks.4.body",
+   "manual_name": "NotchPkSwp4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/121_NotchPeaks.4.json"
+  },
+  {
+   "filter_number": 122,
+   "source_file": "122_LoudBoost.4.body",
+   "manual_name": "1.5/3KNBPR4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/122_LoudBoost.4.json"
+  },
+  {
+   "filter_number": 123,
+   "source_file": "123_Swingshift.body",
+   "manual_name": "Swingshift",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/123_Swingshift.json"
+  },
+  {
+   "filter_number": 124,
+   "source_file": "124_500up.4.body",
+   "manual_name": "500up.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/124_500up.4.json"
+  },
+  {
+   "filter_number": 125,
+   "source_file": "125_C1Harmonic.body",
+   "manual_name": "C1Harmonic5oct.8R",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/125_C1Harmonic.json"
+  },
+  {
+   "filter_number": 126,
+   "source_file": "126_Odd_Even.body",
+   "manual_name": "Odd>Even",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/126_Odd_Even.json"
+  },
+  {
+   "filter_number": 127,
+   "source_file": "127_0_Shp1.body",
+   "manual_name": "0>Shp1",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/127_0_Shp1.json"
+  },
+  {
+   "filter_number": 128,
+   "source_file": "128_0_Shp2.body",
+   "manual_name": "0>Shp2",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/128_0_Shp2.json"
+  },
+  {
+   "filter_number": 129,
+   "source_file": "129_0_Shp3.body",
+   "manual_name": "0>Shp3",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/129_0_Shp3.json"
+  },
+  {
+   "filter_number": 130,
+   "source_file": "130_Shp_Shp1.body",
+   "manual_name": "Shp>Shp1",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/130_Shp_Shp1.json"
+  },
+  {
+   "filter_number": 131,
+   "source_file": "131_Lpeq_Vel.body",
+   "manual_name": "Lpeq Vel",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/131_Lpeq_Vel.json"
+  },
+  {
+   "filter_number": 132,
+   "source_file": "132_PeakSweep.4.body",
+   "manual_name": "CleanSweep4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/132_PeakSweep.4.json"
+  },
+  {
+   "filter_number": 133,
+   "source_file": "133_PowerSweeps.body",
+   "manual_name": "PowerSweeps",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/133_PowerSweeps.json"
+  },
+  {
+   "filter_number": 134,
+   "source_file": "134_TSweep.4.body",
+   "manual_name": "TSweep.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/134_TSweep.4.json"
+  },
+  {
+   "filter_number": 135,
+   "source_file": "135_SweepHiQ1.4.body",
+   "manual_name": "SweepHiQ1.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/135_SweepHiQ1.4.json"
+  },
+  {
+   "filter_number": 136,
+   "source_file": "136_V_FcQuad.4.body",
+   "manual_name": "V>FcQuad.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/136_V_FcQuad.4.json"
+  },
+  {
+   "filter_number": 137,
+   "source_file": "137_Nexus.4.body",
+   "manual_name": "Nexus.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/137_Nexus.4.json"
+  },
+  {
+   "filter_number": 138,
+   "source_file": "138_Krators.4.body",
+   "manual_name": "Krators.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/138_Krators.4.json"
+  },
+  {
+   "filter_number": 139,
+   "source_file": "139_Harmonix.4.body",
+   "manual_name": "Harmonix.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/139_Harmonix.4.json"
+  },
+  {
+   "filter_number": 140,
+   "source_file": "140_GreenWorld.4.body",
+   "manual_name": "GreenWorld4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/140_GreenWorld.4.json"
+  },
+  {
+   "filter_number": 141,
+   "source_file": "141_Comb_Swap.4.body",
+   "manual_name": "Comb/Swap.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/141_Comb_Swap.4.json"
+  },
+  {
+   "filter_number": 142,
+   "source_file": "142_Comb_HP.4.body",
+   "manual_name": "Comb/HP.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/142_Comb_HP.4.json"
+  },
+  {
+   "filter_number": 143,
+   "source_file": "143_Swirly.body",
+   "manual_name": "Swirly",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/143_Swirly.json"
+  },
+  {
+   "filter_number": 144,
+   "source_file": "144_Cavatate.4.body",
+   "manual_name": "Cavatate.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 7,
+   "path": "complex_filters/144_Cavatate.4.json"
+  },
+  {
+   "filter_number": 145,
+   "source_file": "145_GentleRez.4.body",
+   "manual_name": "GentleRZ4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/145_GentleRez.4.json"
+  },
+  {
+   "filter_number": 146,
+   "source_file": "146_Bendup_Swap.body",
+   "manual_name": "Bendup/Swap",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/146_Bendup_Swap.json"
+  },
+  {
+   "filter_number": 147,
+   "source_file": "147_Bendup.body",
+   "manual_name": "Bendup",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/147_Bendup.json"
+  },
+  {
+   "filter_number": 148,
+   "source_file": "148_Skweezit.body",
+   "manual_name": "SKWEEZIT",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/148_Skweezit.json"
+  },
+  {
+   "filter_number": 149,
+   "source_file": "149_Lo_High.4.body",
+   "manual_name": "Lo/High4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/149_Lo_High.4.json"
+  },
+  {
+   "filter_number": 150,
+   "source_file": "150_SubtleMove.4.body",
+   "manual_name": "SbtleMvmnt4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 2,
+   "path": "complex_filters/150_SubtleMove.4.json"
+  },
+  {
+   "filter_number": 151,
+   "source_file": "151_BuzzyPad.4.body",
+   "manual_name": "Buzzy Pad.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 3,
+   "path": "complex_filters/151_BuzzyPad.4.json"
+  },
+  {
+   "filter_number": 152,
+   "source_file": "152_Bw5kHz_6.4.body",
+   "manual_name": "Bw5kHz+6.4",
+   "family": "COMPLEX FILTERS",
+   "geometry": "square",
+   "active_sections": 2,
+   "path": "complex_filters/152_Bw5kHz_6.4.json"
+  },
+  {
+   "filter_number": 153,
+   "source_file": "153_Bw65Hz_2k.4.body",
+   "manual_name": null,
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 2,
+   "path": "complex_filters/153_Bw65Hz_2k.4.json"
+  },
+  {
+   "filter_number": 154,
+   "source_file": "154_Bb80Hzbw1.4.body",
+   "manual_name": null,
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/154_Bb80Hzbw1.4.json"
+  },
+  {
+   "filter_number": 155,
+   "source_file": "155_HighsTwist.4.body",
+   "manual_name": null,
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/155_HighsTwist.4.json"
+  },
+  {
+   "filter_number": 156,
+   "source_file": "156_Cubix.body",
+   "manual_name": null,
+   "family": "COMPLEX FILTERS",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "complex_filters/156_Cubix.json"
+  },
+  {
+   "filter_number": 157,
+   "source_file": "157_HarmSweep.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/157_HarmSweep.4.json"
+  },
+  {
+   "filter_number": 158,
+   "source_file": "158_EvenCuts.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/158_EvenCuts.4.json"
+  },
+  {
+   "filter_number": 159,
+   "source_file": "159_OddCuts.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/159_OddCuts.4.json"
+  },
+  {
+   "filter_number": 160,
+   "source_file": "160_PWMTrans.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/160_PWMTrans.4.json"
+  },
+  {
+   "filter_number": 161,
+   "source_file": "161_HiEndQ.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/161_HiEndQ.4.json"
+  },
+  {
+   "filter_number": 162,
+   "source_file": "162_BroadRes.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/162_BroadRes.4.json"
+  },
+  {
+   "filter_number": 163,
+   "source_file": "163_ResoHose.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/163_ResoHose.4.json"
+  },
+  {
+   "filter_number": 164,
+   "source_file": "164_HeeghCube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/164_HeeghCube.json"
+  },
+  {
+   "filter_number": 165,
+   "source_file": "165_NoizCube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/165_NoizCube.json"
+  },
+  {
+   "filter_number": 166,
+   "source_file": "166_VeloctyTilt.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/166_VeloctyTilt.json"
+  },
+  {
+   "filter_number": 167,
+   "source_file": "167_Syn_Wow.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/167_Syn_Wow.4.json"
+  },
+  {
+   "filter_number": 168,
+   "source_file": "168_CombSweep.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "unlisted/168_CombSweep.4.json"
+  },
+  {
+   "filter_number": 169,
+   "source_file": "169_Diffuser.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/169_Diffuser.4.json"
+  },
+  {
+   "filter_number": 170,
+   "source_file": "170_MdlySweep.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "unlisted/170_MdlySweep.4.json"
+  },
+  {
+   "filter_number": 171,
+   "source_file": "171_StrongShimr.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/171_StrongShimr.json"
+  },
+  {
+   "filter_number": 172,
+   "source_file": "172_Acc.Vel-1.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/172_Acc.Vel-1.json"
+  },
+  {
+   "filter_number": 173,
+   "source_file": "173_Acc.Vel-2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/173_Acc.Vel-2.json"
+  },
+  {
+   "filter_number": 174,
+   "source_file": "174_Vel2-Wind.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/174_Vel2-Wind.json"
+  },
+  {
+   "filter_number": 175,
+   "source_file": "175_Harmo.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/175_Harmo.json"
+  },
+  {
+   "filter_number": 176,
+   "source_file": "176_Start_EndA.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/176_Start_EndA.json"
+  },
+  {
+   "filter_number": 177,
+   "source_file": "177_Start_EndB.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/177_Start_EndB.json"
+  },
+  {
+   "filter_number": 178,
+   "source_file": "178_MovingPick1.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/178_MovingPick1.json"
+  },
+  {
+   "filter_number": 179,
+   "source_file": "179_MovingPick2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/179_MovingPick2.json"
+  },
+  {
+   "filter_number": 180,
+   "source_file": "180_Mph_Trns1.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/180_Mph_Trns1.json"
+  },
+  {
+   "filter_number": 181,
+   "source_file": "181_0_Odds.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/181_0_Odds.json"
+  },
+  {
+   "filter_number": 182,
+   "source_file": "182_Comb_Voices.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/182_Comb_Voices.json"
+  },
+  {
+   "filter_number": 183,
+   "source_file": "183_Odd-Ev_Hrm.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/183_Odd-Ev_Hrm.json"
+  },
+  {
+   "filter_number": 184,
+   "source_file": "184_OddHrm_Rez.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/184_OddHrm_Rez.json"
+  },
+  {
+   "filter_number": 185,
+   "source_file": "185_EvnHrm_Rez.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/185_EvnHrm_Rez.json"
+  },
+  {
+   "filter_number": 186,
+   "source_file": "186_MellowPeaks.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/186_MellowPeaks.json"
+  },
+  {
+   "filter_number": 187,
+   "source_file": "187_AHmBnd.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "unlisted/187_AHmBnd.4.json"
+  },
+  {
+   "filter_number": 188,
+   "source_file": "188_Vintage.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/188_Vintage.json"
+  },
+  {
+   "filter_number": 189,
+   "source_file": "189_MildQPole.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/189_MildQPole.json"
+  },
+  {
+   "filter_number": 190,
+   "source_file": "190_Bonk_CO.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "unlisted/190_Bonk_CO.json"
+  },
+  {
+   "filter_number": 191,
+   "source_file": "191_Speaker.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/191_Speaker.json"
+  },
+  {
+   "filter_number": 192,
+   "source_file": "192_Expander.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/192_Expander.json"
+  },
+  {
+   "filter_number": 193,
+   "source_file": "193_Separator.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/193_Separator.json"
+  },
+  {
+   "filter_number": 194,
+   "source_file": "194_MildPolSwap.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "unlisted/194_MildPolSwap.json"
+  },
+  {
+   "filter_number": 195,
+   "source_file": "195_PoleCross.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/195_PoleCross.4.json"
+  },
+  {
+   "filter_number": 196,
+   "source_file": "196_ApDistB6.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/196_ApDistB6.4.json"
+  },
+  {
+   "filter_number": 197,
+   "source_file": "197_Dave_sRave.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/197_Dave_sRave.json"
+  },
+  {
+   "filter_number": 198,
+   "source_file": "198_Poles_1-7.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/198_Poles_1-7.json"
+  },
+  {
+   "filter_number": 199,
+   "source_file": "199_2_Poles.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/199_2_Poles.json"
+  },
+  {
+   "filter_number": 200,
+   "source_file": "200_4_Poles_A.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/200_4_Poles_A.json"
+  },
+  {
+   "filter_number": 201,
+   "source_file": "201_4_Poles_B.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/201_4_Poles_B.json"
+  },
+  {
+   "filter_number": 202,
+   "source_file": "202_4_Poles_C.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/202_4_Poles_C.json"
+  },
+  {
+   "filter_number": 203,
+   "source_file": "203_6_Poles.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/203_6_Poles.json"
+  },
+  {
+   "filter_number": 204,
+   "source_file": "204_MultiPole.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/204_MultiPole.json"
+  },
+  {
+   "filter_number": 205,
+   "source_file": "205_Tracker.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "unlisted/205_Tracker.json"
+  },
+  {
+   "filter_number": 206,
+   "source_file": "206_Tracker_2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/206_Tracker_2.json"
+  },
+  {
+   "filter_number": 207,
+   "source_file": "207_Tracker_3.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/207_Tracker_3.json"
+  },
+  {
+   "filter_number": 208,
+   "source_file": "208_Tracker5ths.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/208_Tracker5ths.json"
+  },
+  {
+   "filter_number": 209,
+   "source_file": "209_InFifths.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/209_InFifths.4.json"
+  },
+  {
+   "filter_number": 210,
+   "source_file": "210_HarmTracker.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 4,
+   "path": "unlisted/210_HarmTracker.json"
+  },
+  {
+   "filter_number": 211,
+   "source_file": "211_1BndPrmtrcA.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 4,
+   "path": "unlisted/211_1BndPrmtrcA.json"
+  },
+  {
+   "filter_number": 212,
+   "source_file": "212_1BndPrmtrcB.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 4,
+   "path": "unlisted/212_1BndPrmtrcB.json"
+  },
+  {
+   "filter_number": 213,
+   "source_file": "213_1BndPrmtrcC.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 3,
+   "path": "unlisted/213_1BndPrmtrcC.json"
+  },
+  {
+   "filter_number": 214,
+   "source_file": "214_1BndPrmtrcD.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/214_1BndPrmtrcD.json"
+  },
+  {
+   "filter_number": 215,
+   "source_file": "215_MltiMetricA.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/215_MltiMetricA.json"
+  },
+  {
+   "filter_number": 216,
+   "source_file": "216_MltiMetricB.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/216_MltiMetricB.json"
+  },
+  {
+   "filter_number": 217,
+   "source_file": "217_MltiMetricC.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "unlisted/217_MltiMetricC.json"
+  },
+  {
+   "filter_number": 218,
+   "source_file": "218_Omni_Metric.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/218_Omni_Metric.json"
+  },
+  {
+   "filter_number": 219,
+   "source_file": "219_HarmncPeaks.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/219_HarmncPeaks.json"
+  },
+  {
+   "filter_number": 220,
+   "source_file": "220_HrmncPeaks2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/220_HrmncPeaks2.json"
+  },
+  {
+   "filter_number": 221,
+   "source_file": "221_InHarMetric.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/221_InHarMetric.json"
+  },
+  {
+   "filter_number": 222,
+   "source_file": "222_HarmShifter.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/222_HarmShifter.json"
+  },
+  {
+   "filter_number": 223,
+   "source_file": "223_HarmShiftr2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/223_HarmShiftr2.json"
+  },
+  {
+   "filter_number": 224,
+   "source_file": "224_HarmShiftr3.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/224_HarmShiftr3.json"
+  },
+  {
+   "filter_number": 225,
+   "source_file": "225_Phaser.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/225_Phaser.json"
+  },
+  {
+   "filter_number": 226,
+   "source_file": "226_HrmncPhaser.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/226_HrmncPhaser.json"
+  },
+  {
+   "filter_number": 227,
+   "source_file": "227_HrmncPhsr2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/227_HrmncPhsr2.json"
+  },
+  {
+   "filter_number": 228,
+   "source_file": "228_Wide_Bands.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/228_Wide_Bands.json"
+  },
+  {
+   "filter_number": 229,
+   "source_file": "229_New_Boost.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/229_New_Boost.json"
+  },
+  {
+   "filter_number": 230,
+   "source_file": "230_VowelSpace2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/230_VowelSpace2.json"
+  },
+  {
+   "filter_number": 231,
+   "source_file": "231_VowelSpace3.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/231_VowelSpace3.json"
+  },
+  {
+   "filter_number": 232,
+   "source_file": "232_Oh_Shaper.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "unlisted/232_Oh_Shaper.json"
+  },
+  {
+   "filter_number": 233,
+   "source_file": "233_Ah_Shaper.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/233_Ah_Shaper.json"
+  },
+  {
+   "filter_number": 234,
+   "source_file": "234_Oo_Shaper.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/234_Oo_Shaper.json"
+  },
+  {
+   "filter_number": 235,
+   "source_file": "235_FrmntShaper.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/235_FrmntShaper.json"
+  },
+  {
+   "filter_number": 236,
+   "source_file": "236_Piano_LP.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/236_Piano_LP.4.json"
+  },
+  {
+   "filter_number": 237,
+   "source_file": "237_PianoSndBrd.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/237_PianoSndBrd.json"
+  },
+  {
+   "filter_number": 238,
+   "source_file": "238_Strike_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/238_Strike_Cube.json"
+  },
+  {
+   "filter_number": 239,
+   "source_file": "239_Clav_Curves.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/239_Clav_Curves.json"
+  },
+  {
+   "filter_number": 240,
+   "source_file": "240_Symphony.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/240_Symphony.json"
+  },
+  {
+   "filter_number": 241,
+   "source_file": "241_String_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "unlisted/241_String_Cube.json"
+  },
+  {
+   "filter_number": 242,
+   "source_file": "242_Swell_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/242_Swell_Cube.json"
+  },
+  {
+   "filter_number": 243,
+   "source_file": "243_Quartet.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/243_Quartet.4.json"
+  },
+  {
+   "filter_number": 244,
+   "source_file": "244_Mellotron.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/244_Mellotron.4.json"
+  },
+  {
+   "filter_number": 245,
+   "source_file": "245_Cello.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/245_Cello.json"
+  },
+  {
+   "filter_number": 246,
+   "source_file": "246_Key_Squeak.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/246_Key_Squeak.json"
+  },
+  {
+   "filter_number": 247,
+   "source_file": "247_Pluck.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/247_Pluck.4.json"
+  },
+  {
+   "filter_number": 248,
+   "source_file": "248_Pick_It.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/248_Pick_It.json"
+  },
+  {
+   "filter_number": 249,
+   "source_file": "249_El_Pick_It.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/249_El_Pick_It.json"
+  },
+  {
+   "filter_number": 250,
+   "source_file": "250_ElGuit_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/250_ElGuit_Cube.json"
+  },
+  {
+   "filter_number": 251,
+   "source_file": "251_ElGuit_Pick.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/251_ElGuit_Pick.json"
+  },
+  {
+   "filter_number": 252,
+   "source_file": "252_Breather_1.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/252_Breather_1.json"
+  },
+  {
+   "filter_number": 253,
+   "source_file": "253_Breather_2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/253_Breather_2.json"
+  },
+  {
+   "filter_number": 254,
+   "source_file": "254_WindNoise_1.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/254_WindNoise_1.json"
+  },
+  {
+   "filter_number": 255,
+   "source_file": "255_WindNoise_2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/255_WindNoise_2.json"
+  },
+  {
+   "filter_number": 256,
+   "source_file": "256_Blow_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/256_Blow_Cube.json"
+  },
+  {
+   "filter_number": 257,
+   "source_file": "257_Overblow.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/257_Overblow.json"
+  },
+  {
+   "filter_number": 258,
+   "source_file": "258_Wind_Filter.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/258_Wind_Filter.json"
+  },
+  {
+   "filter_number": 259,
+   "source_file": "259_FlutBreth.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/259_FlutBreth.4.json"
+  },
+  {
+   "filter_number": 260,
+   "source_file": "260_VClarinet.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/260_VClarinet.4.json"
+  },
+  {
+   "filter_number": 261,
+   "source_file": "261_New_Mute.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/261_New_Mute.4.json"
+  },
+  {
+   "filter_number": 262,
+   "source_file": "262_Trempeto.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 6,
+   "path": "unlisted/262_Trempeto.4.json"
+  },
+  {
+   "filter_number": 263,
+   "source_file": "263_SfBrzando.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/263_SfBrzando.4.json"
+  },
+  {
+   "filter_number": 264,
+   "source_file": "264_UduFilter.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/264_UduFilter.4.json"
+  },
+  {
+   "filter_number": 265,
+   "source_file": "265_Hip_Kick.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/265_Hip_Kick.json"
+  },
+  {
+   "filter_number": 266,
+   "source_file": "266_Cymbal_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/266_Cymbal_Cube.json"
+  },
+  {
+   "filter_number": 267,
+   "source_file": "267_ChimeFlange.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/267_ChimeFlange.json"
+  },
+  {
+   "filter_number": 268,
+   "source_file": "268_CableRing.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/268_CableRing.4.json"
+  },
+  {
+   "filter_number": 269,
+   "source_file": "269_TensionWire.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "unlisted/269_TensionWire.json"
+  },
+  {
+   "filter_number": 270,
+   "source_file": "270_Auto_Clang.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/270_Auto_Clang.json"
+  },
+  {
+   "filter_number": 271,
+   "source_file": "271_Dragon_Claw.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/271_Dragon_Claw.json"
+  },
+  {
+   "filter_number": 272,
+   "source_file": "272_Spectra.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/272_Spectra.json"
+  },
+  {
+   "filter_number": 273,
+   "source_file": "273_RippleSheet.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/273_RippleSheet.json"
+  },
+  {
+   "filter_number": 274,
+   "source_file": "274_Clear_Water.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/274_Clear_Water.json"
+  },
+  {
+   "filter_number": 275,
+   "source_file": "275_Invisible.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 5,
+   "path": "unlisted/275_Invisible.json"
+  },
+  {
+   "filter_number": 276,
+   "source_file": "276_Wine_Glass.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/276_Wine_Glass.json"
+  },
+  {
+   "filter_number": 277,
+   "source_file": "277_SnakeCros.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/277_SnakeCros.4.json"
+  },
+  {
+   "filter_number": 278,
+   "source_file": "278_Analog.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/278_Analog.4.json"
+  },
+  {
+   "filter_number": 279,
+   "source_file": "279_Skrtch_Cube.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/279_Skrtch_Cube.json"
+  },
+  {
+   "filter_number": 280,
+   "source_file": "280_KitchenSink.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/280_KitchenSink.json"
+  },
+  {
+   "filter_number": 281,
+   "source_file": "281_Head_Pan_1.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/281_Head_Pan_1.json"
+  },
+  {
+   "filter_number": 282,
+   "source_file": "282_Head_Pan_2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/282_Head_Pan_2.json"
+  },
+  {
+   "filter_number": 283,
+   "source_file": "283_Arpeggio.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 4,
+   "path": "unlisted/283_Arpeggio.json"
+  },
+  {
+   "filter_number": 284,
+   "source_file": "284_HeavyFilt.4.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/284_HeavyFilt.4.json"
+  },
+  {
+   "filter_number": 285,
+   "source_file": "285_Noiz_Cube_2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/285_Noiz_Cube_2.json"
+  },
+  {
+   "filter_number": 286,
+   "source_file": "286_Feedback.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/286_Feedback.json"
+  },
+  {
+   "filter_number": 287,
+   "source_file": "287_AllPoleDist.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 7,
+   "path": "unlisted/287_AllPoleDist.json"
+  },
+  {
+   "filter_number": 288,
+   "source_file": "288_AllPoleDst2.body",
+   "manual_name": null,
+   "family": "UNLISTED",
+   "geometry": "cube",
+   "active_sections": 1,
+   "path": "unlisted/288_AllPoleDst2.json"
+  }
+ ]
+}

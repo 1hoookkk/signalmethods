@@ -271,3 +271,18 @@ So the family-to-recipe map, stated as authoring rules:
 - The F1 undershoot and whether a perceptually flatter weight fixes it.
 - The Transform 2 corner pairing from section 4.
 - No listening yet. Per the standing rule, a build is not acceptance.
+
+## 8. Superseded by the container survey
+
+`dev/NATIVE_CONTAINER_SURVEY.md`, same session, establishes that **section 7 of
+this machine can never hold a zero** — 100% of the 289 decoded bodies, and the
+device firmware does not even read the stage-7 zero slots.
+
+The fit in this document violates that law: it places a bell zero in row 7. The
+response is still correct as a 7-section cascade, but it is not a legal body for
+this container and must be rebuilt as one lowpass plus six bells with the
+pole/zero pairing offset by one row, leaving row 7 a bare pole.
+
+The cross-boundary structure described in section 3b is therefore not an E-mu
+stylistic preference. It is the only legal way to put a zero against the
+seventh pole.

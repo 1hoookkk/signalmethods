@@ -24,6 +24,7 @@ SECTIONS = 7
 BELLS = SECTIONS - 1
 FIT_LO_HZ = 100.0
 FIT_HI_HZ = 8000.0
+MAX_CUT_BELLS = 3
 
 
 def read_vvtf(path):
@@ -54,24 +55,28 @@ def smooth_third_octave(grid, db):
     return out
 
 
-def pick_peaks(grid, db, count):
-    smooth = np.convolve(db, np.ones(5) / 5.0, mode="same")
+def pick_extrema(grid, db, count, sign=1.0):
+    """Local maxima of sign*db, ranked by prominence.  sign=-1 finds valleys."""
+    curve = sign * np.convolve(db, np.ones(5) / 5.0, mode="same")
     band = (grid >= FIT_LO_HZ) & (grid <= FIT_HI_HZ)
-    peaks = []
+    found = []
     for i in range(1, len(grid) - 1):
         if not band[i]:
             continue
-        if smooth[i] >= smooth[i - 1] and smooth[i] > smooth[i + 1]:
-            left = smooth[max(0, i - 12):i].min() if i else smooth[i]
-            right = smooth[i + 1:i + 13].max(initial=smooth[i])
-            prominence = smooth[i] - max(left, min(right, smooth[i]))
-            peaks.append((grid[i], smooth[i], prominence))
-    peaks.sort(key=lambda p: -p[2])
-    peaks = peaks[:count]
-    peaks.sort(key=lambda p: p[0])
-    while len(peaks) < count:
-        peaks.append((FIT_HI_HZ * 0.9, db.mean(), 3.0))
-    return peaks
+        if curve[i] >= curve[i - 1] and curve[i] > curve[i + 1]:
+            left = curve[max(0, i - 12):i].min(initial=curve[i])
+            prominence = curve[i] - left
+            found.append((grid[i], curve[i], prominence))
+    found.sort(key=lambda p: -p[2])
+    found = found[:count]
+    found.sort(key=lambda p: p[0])
+    while len(found) < count:
+        found.append((FIT_HI_HZ * 0.9, curve[band].mean(), 3.0))
+    return found
+
+
+def pick_peaks(grid, db, count):
+    return pick_extrema(grid, db, count, 1.0)
 
 
 def words_from_root(hz, radius, sample_rate_hz):
@@ -217,21 +222,29 @@ def fit_mouth(path, sample_rate_hz, verbose=True):
         delta = delta - np.sum(weight * delta) / np.sum(weight)
         return sqrt_w * delta
 
-    peaks = pick_peaks(grid, target, BELLS)
-    best_solution, best_cost = None, math.inf
-    for pole_warp in (16.0, 24.0, 32.0):
-        seed = [math.log(min(max(peaks[-1][0] * 1.5, 1200.0), 0.4 * sample_rate_hz)), 8.0]
-        for hz, _, prominence in peaks:
-            boost = min(max(prominence, 1.0), 26.0)
-            seed += [math.log(hz), pole_warp, max(pole_warp - boost, 0.0)]
-        seed = np.clip(np.asarray(seed), lo + 1e-6, hi - 1e-6)
-        try:
-            candidate = least_squares(residual, seed, bounds=(lo, hi), method="trf",
-                                      x_scale="jac", max_nfev=4000)
-        except ValueError:
-            continue
-        if candidate.cost < best_cost:
-            best_solution, best_cost = candidate, candidate.cost
+    best_solution, best_cost, best_split = None, math.inf, None
+    for cuts in range(0, MAX_CUT_BELLS + 1):
+        peaks = pick_extrema(grid, target, BELLS - cuts, 1.0)
+        valleys = pick_extrema(grid, target, cuts, -1.0) if cuts else []
+        for pole_warp in (18.0, 30.0):
+            anchor = peaks[-1][0] if peaks else FIT_HI_HZ * 0.5
+            seed = [math.log(min(max(anchor * 1.5, 1200.0), 0.4 * sample_rate_hz)), 8.0]
+            for hz, _, prominence in peaks:
+                boost = min(max(prominence, 1.0), 26.0)
+                seed += [math.log(hz), pole_warp, max(pole_warp - boost, 0.0)]
+            for hz, _, depth in valleys:
+                # a cut is the same bell inverted: the zero sits nearer the circle
+                notch = min(max(depth, 2.0), 30.0)
+                pole = max(pole_warp - notch, 0.0)
+                seed += [math.log(hz), pole, min(pole + notch, WARP_MAX)]
+            seed = np.clip(np.asarray(seed), lo + 1e-6, hi - 1e-6)
+            try:
+                candidate = least_squares(residual, seed, bounds=(lo, hi), method="trf",
+                                          x_scale="jac", max_nfev=4000)
+            except ValueError:
+                continue
+            if candidate.cost < best_cost:
+                best_solution, best_cost, best_split = candidate, candidate.cost, cuts
     solution = best_solution
 
     continuous = model_db(solution.x, grid, sample_rate_hz)
@@ -248,9 +261,10 @@ def fit_mouth(path, sample_rate_hz, verbose=True):
     if verbose:
         print(f"{path.parent.name:28s} continuous {cont_rms:6.3f}  "
               f"packed {packed_rms:6.3f}  polished {polished_rms:6.3f} dB rms "
-              f"(worst {polished_max:5.2f})")
+              f"(worst {polished_max:5.2f})  cuts seeded {best_split}")
     return {
         "mouth": path.parent.name,
+        "cut_bells_seeded": best_split,
         "continuous_rms_db": cont_rms,
         "packed_rms_db": packed_rms,
         "polished_rms_db": polished_rms,
