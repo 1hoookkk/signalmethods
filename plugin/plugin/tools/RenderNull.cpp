@@ -49,9 +49,8 @@ int main (int argc, char** argv)
         const auto eq = s.indexOfChar ('=');
         if (eq > 0) set (s.substring (0, eq), s.substring (eq + 1).getFloatValue());
     }
-    constexpr int block = 512;
-    p.setPlayConfigDetails (2, 2, rate, block);
-    p.prepareToPlay (rate, block);
+    p.setPlayConfigDetails (2, 2, rate, prepared);
+    p.prepareToPlay (rate, prepared);
     juce::AudioBuffer<float> out (2, frames);
     for (int ch = 0; ch < 2; ++ch)
         out.copyFrom (ch, 0, in, juce::jmin (ch, in.getNumChannels() - 1), 0, frames);
