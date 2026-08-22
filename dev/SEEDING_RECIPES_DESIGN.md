@@ -231,6 +231,17 @@ Untested, and the obvious first experiment: whether a family-prototype seed
 actually beats the peak picker on in-family targets. Given that matching pursuit
 lost badly to the peak picker, this should be measured before it is believed.
 
+**Flag before anyone builds this.** The step-2 wording above — "fit the family
+mean response once offline" — is the exact construction Sandell & Martens tried
+and reported against. See `dev/CITATIONS_PCA_MARTENS.md`; the relevant passages
+are on p. 37 of the 1992 paper, where a simple average is said to carry
+"objectionable idiosyncrasies" that a PC-based prototype does not, and where the
+prototype itself is described as "bland" and "perhaps not musically useful".
+They also give a specific alternative construction — a MANOVA split into
+pooled-within-groups and between-groups SSCP matrices — rather than a mean.
+The citations are recorded; the reasoning over them is deliberately left open
+and is not settled here.
+
 ## What the evidence already says each recipe will need
 
 From `DVTD_VOWEL_FIT.md` §7, measured over the decoded bodies — recorded here so
