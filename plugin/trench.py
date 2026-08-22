@@ -11,8 +11,10 @@ COMMANDS = {
                 [sys.executable, "-m", "bench.doctor"]),
     "facts":   ("re-derive every measured constant from the corpus and report drift",
                 [sys.executable, "-m", "bench.facts"]),
-    "gate":    ("prove no shipped body changed",
+    "gate":    ("prove no shipped body changed (hash must equal gate.expected)",
                 [str(ROOT / "target/release/topology-gate.exe"), str(ROOT / "target/gate.bin")]),
+    "roster":  ("bake a 240-byte body into the shipping roster: add BODY NAME CATEGORY | list",
+                [sys.executable, "tools/roster.py"]),
     "sheet":   ("open the editor",
                 [sys.executable, "-m", "tools.wordsheet"]),
     "inspect": ("cascade plate for one body: BODY [RATE] [OUT.png]",
@@ -65,7 +67,29 @@ def main() -> int:
         print(f"unknown command '{name}'. try: trench help")
         return 2
     what, cmd = COMMANDS[name]
+    if name == "gate":
+        return gate(cmd)
     return subprocess.run(cmd + sys.argv[2:], cwd=str(ROOT)).returncode
+
+
+def gate(cmd: list[str]) -> int:
+    run = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
+    print(run.stdout, end="")
+    if run.returncode != 0:
+        print(run.stderr, end="")
+        return run.returncode
+    got = next((line.split()[1] for line in run.stdout.splitlines() if line.strip().startswith("fnv1a64")), "")
+    expected_path = ROOT / "gate.expected"
+    if "--rebaseline" in sys.argv[2:]:
+        expected_path.write_text(got + "\n", encoding="utf-8")
+        print(f"  rebaselined       {got}")
+        return 0
+    expected = expected_path.read_text(encoding="utf-8").strip() if expected_path.exists() else ""
+    if got != expected:
+        print(f"  GATE FAIL         expected {expected or '(no gate.expected)'} got {got}")
+        return 1
+    print("  GATE OK")
+    return 0
 
 
 if __name__ == "__main__":

@@ -15,10 +15,11 @@ const RENDER_POINTS: [(f32, f32); 5] = [
 ];
 
 /// The frozen reference set. New work goes elsewhere; these must never move.
-const REFERENCE_DIRS: [(&str, &str); 3] = [
+const REFERENCE_DIRS: [(&str, &str); 4] = [
     ("ref/presets", "bin"),
     ("filters/bodies", "body240"),
     ("plugin/assets/bodies", "body240"),
+    ("plugin/presets/bodies", "body240"),
 ];
 
 fn corpus() -> Vec<PathBuf> {

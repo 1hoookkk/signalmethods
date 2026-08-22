@@ -25,6 +25,9 @@ constexpr double kPadPaddingX = 10.0;
 constexpr double kPadGap = 8.0;
 constexpr double kPadRadius = 2.0;
 constexpr double kEntryWidth = 96.0;
+constexpr double kCornerCell = 9.0;
+constexpr double kCornerGap = 2.0;
+constexpr double kCornerLeft = 12.0;
 
 constexpr double kDcDeadbandDb = 0.05;
 
@@ -72,6 +75,20 @@ ChassisBar::ChassisBar(QWidget* parent) : QWidget(parent) {
 void ChassisBar::setBodyName(const QString& name) {
   body_name_ = name;
   update();
+}
+
+void ChassisBar::setCorner(std::size_t corner) {
+  if (corner == corner_) return;
+  corner_ = corner;
+  update();
+}
+
+QRectF ChassisBar::cornerCellRect(std::size_t corner) const {
+  const auto column = static_cast<double>(corner & 1U);
+  const auto row = corner & 2U ? 0.0 : 1.0;
+  const auto top = (kBarHeight - (2.0 * kCornerCell + kCornerGap)) * 0.5;
+  return QRectF(kCornerLeft + column * (kCornerCell + kCornerGap),
+                top + row * (kCornerCell + kCornerGap), kCornerCell, kCornerCell);
 }
 
 void ChassisBar::setTargetName(const QString& name) {
@@ -177,9 +194,22 @@ void ChassisBar::paintEvent(QPaintEvent*) {
   auto pads_left = width() - 10.0;
   for (const auto& pad : laid) pads_left = std::min(pads_left, pad.rect.left());
 
+  for (std::size_t corner = 0; corner < 4; ++corner) {
+    const auto cell = cornerCellRect(corner);
+    if (corner == corner_) {
+      painter.setPen(Qt::NoPen);
+      painter.setBrush(kIdentity);
+      painter.drawRect(cell);
+    } else {
+      painter.setPen(QPen(kGhost, 1.0));
+      painter.setBrush(Qt::NoBrush);
+      painter.drawRect(cell.adjusted(0.5, 0.5, -0.5, -0.5));
+    }
+  }
+
   painter.setFont(pad_font());
   const QFontMetricsF metrics(painter.font());
-  auto x = 12.0;
+  auto x = kCornerLeft + 2.0 * kCornerCell + kCornerGap + 10.0;
   if (!body_name_.isEmpty()) {
     painter.setPen(kIdentity);
     const auto text = metrics.elidedText(body_name_, Qt::ElideMiddle, pads_left - x - 12.0);
@@ -260,6 +290,12 @@ void ChassisBar::mouseMoveEvent(QMouseEvent* event) {
 
 void ChassisBar::mousePressEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton) return;
+  for (std::size_t corner = 0; corner < 4; ++corner) {
+    if (cornerCellRect(corner).contains(event->position())) {
+      emit cornerClicked(corner);
+      return;
+    }
+  }
   pressed_ = hit(event->position());
   if (pressed_) update();
 }

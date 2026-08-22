@@ -28,6 +28,8 @@ class MainWindow final : public QMainWindow {
                       QWidget* parent = nullptr);
 
   [[nodiscard]] ResponsePlotWidget* responsePlot() const noexcept;
+  [[nodiscard]] ChassisBar* chassisBar() const noexcept;
+  [[nodiscard]] const std::filesystem::path& bodyPath() const noexcept;
   [[nodiscard]] BodyDocument* document() const noexcept;
   [[nodiscard]] FitController* fitController() const noexcept;
   [[nodiscard]] const trench::core::PackedBody& body() const noexcept;
@@ -39,6 +41,8 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] QString readoutText() const;
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
+  void setCorner(std::size_t corner);
+  bool saveBody(const std::filesystem::path& path);
   bool loadTarget(const std::filesystem::path& path);
   void setSourceModel(trench::core::measure::Source source);
   bool applyTypedRoot(const QString& text);
@@ -50,14 +54,17 @@ class MainWindow final : public QMainWindow {
 
  private:
   void chooseTarget();
+  void saveBodyAs();
   void updateVerbs();
   void updateProbes();
   void endRun();
 
   BodyDocument* document_{};
   FitController* fit_controller_{};
+  std::filesystem::path body_path_;
   trench::core::PackedSection before_words_{};
   BodyDocument::CornerSnapshot pre_fit_{};
+  std::size_t fit_corner_{};
   bool fit_active_{};
   double dc_drift_db_{};
   trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};

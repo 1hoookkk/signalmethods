@@ -16,6 +16,7 @@
 //      teardown — the message thread never runs an FFT.
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "TrenchBodyRoster.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <atomic>
 #include <cmath>
@@ -385,6 +386,30 @@ void testAutoKeyWorkerLifecycle()
 }
 }
 
+void testEveryRosterBodyLoads()
+{
+    PluginProcessor processor;
+    processor.setPlayConfigDetails (2, 2, 48000.0, 512);
+    processor.prepareToPlay (48000.0, 512);
+    int bodies = 0;
+    int failed = 0;
+    for (int index = 0; index < trench::bodyCount(); ++index)
+    {
+        juce::MemoryBlock raw;
+        if (! trench::bodyRawBytes (index, raw))
+            continue;
+        ++bodies;
+        if (! processor.installBodyBytes (raw.getData(), raw.getSize()))
+        {
+            ++failed;
+            std::printf ("   %s did not install\n", trench::bodyDisplayName (index).toRawUTF8());
+        }
+    }
+    processor.releaseResources();
+    std::printf ("   %d baked 240-byte bodies\n", bodies);
+    check (bodies > 0 && failed == 0, "every baked 240-byte body in the roster installs");
+}
+
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
@@ -395,6 +420,7 @@ int main()
     testBlockSizes();
     testStateMigration();
     testAutoKeyWorkerLifecycle();
+    testEveryRosterBodyLoads();
     std::printf ("\n%s (%d failure%s)\n", failures == 0 ? "PASS" : "FAIL",
                  failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;

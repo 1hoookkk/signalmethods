@@ -95,7 +95,7 @@ trench::core::p2k::StoredCorner unflatten_stored(const QList<quint16>& words) {
 MainWindow::MainWindow(const std::filesystem::path& body_path,
                        double sample_rate_hz,
                        QWidget* parent)
-    : QMainWindow(parent) {
+    : QMainWindow(parent), body_path_(body_path) {
   document_ = new BodyDocument(
       trench::core::PackedBody::from_body_bytes(read_bytes(body_path)),
       sample_rate_hz, this);
@@ -123,7 +123,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
 
   connect(response_plot_, &ResponsePlotWidget::gestureStarted, this,
           [this](std::size_t section) {
-            before_words_ = document_->body().words[0][section];
+            before_words_ = document_->body().words[document_->corner()][section];
           });
   connect(response_plot_, &ResponsePlotWidget::sectionEdited, this,
           [this](std::size_t section, const trench::core::PackedSection& words) {
@@ -147,6 +147,13 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     response_plot_->refresh();
     updateProbes();
   });
+  connect(document_, &BodyDocument::cornerChanged, this, [this](std::size_t corner) {
+    response_plot_->setCorner(corner);
+    chassis_bar_->setCorner(corner);
+    updateProbes();
+  });
+  connect(chassis_bar_, &ChassisBar::cornerClicked, this,
+          [this](std::size_t corner) { document_->setCorner(corner); });
   connect(document_, &BodyDocument::freedomMaskChanged, this,
           [this](std::uint32_t mask) {
             response_plot_->setFreedomMask(mask);
@@ -160,17 +167,17 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   connect(fit_controller_, &FitController::stepReady, this,
           [this](quint64 generation, quint64 section, const QList<quint16>& words) {
             if (!fit_active_ || generation != fit_controller_->generation()) return;
-            document_->applyFitStep(unflatten(words));
+            document_->applyFitStep(fit_corner_, unflatten(words));
             response_plot_->flashLane(static_cast<std::size_t>(section));
           });
   connect(fit_controller_, &FitController::finished, this,
           [this](quint64 generation, bool ok, const QList<quint16>& words) {
             if (!fit_active_ || generation != fit_controller_->generation()) return;
             if (ok) {
-              document_->applyFitResult(unflatten_stored(words));
-              document_->commitFit(pre_fit_);
+              document_->applyFitResult(fit_corner_, unflatten_stored(words));
+              document_->commitFit(fit_corner_, pre_fit_);
             } else {
-              document_->applyCorner(pre_fit_);
+              document_->applyCorner(fit_corner_, pre_fit_);
             }
             endRun();
           });
@@ -207,6 +214,23 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   connect(target_action, &QAction::triggered, this, &MainWindow::chooseTarget);
   addAction(target_action);
 
+  auto* save_action = new QAction(this);
+  save_action->setShortcut(QKeySequence::Save);
+  connect(save_action, &QAction::triggered, this, [this] { saveBody(body_path_); });
+  addAction(save_action);
+  auto* save_as_action = new QAction(this);
+  save_as_action->setShortcut(QKeySequence::SaveAs);
+  connect(save_as_action, &QAction::triggered, this, &MainWindow::saveBodyAs);
+  addAction(save_as_action);
+
+  for (std::size_t corner = 0; corner < trench::core::kLegacyCornerCount; ++corner) {
+    auto* corner_action = new QAction(this);
+    corner_action->setShortcut(QKeySequence(QString::number(corner + 1)));
+    connect(corner_action, &QAction::triggered, this,
+            [this, corner] { document_->setCorner(corner); });
+    addAction(corner_action);
+  }
+
   undo_action_ = document_->undoStack()->createUndoAction(this);
   undo_action_->setShortcut(QKeySequence::Undo);
   addAction(undo_action_);
@@ -219,6 +243,39 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
 }
 
 ResponsePlotWidget* MainWindow::responsePlot() const noexcept { return response_plot_; }
+
+ChassisBar* MainWindow::chassisBar() const noexcept { return chassis_bar_; }
+
+const std::filesystem::path& MainWindow::bodyPath() const noexcept { return body_path_; }
+
+void MainWindow::setCorner(std::size_t corner) { document_->setCorner(corner); }
+
+bool MainWindow::saveBody(const std::filesystem::path& path) {
+  if (fit_active_) return false;
+  std::array<std::uint8_t, trench::core::kLegacyBodyBytes> bytes{};
+  try {
+    bytes = document_->body().legacy_bytes();
+  } catch (const std::exception&) {
+    return false;
+  }
+  std::ofstream stream(path, std::ios::binary | std::ios::trunc);
+  if (!stream) return false;
+  stream.write(reinterpret_cast<const char*>(bytes.data()),
+               static_cast<std::streamsize>(bytes.size()));
+  if (!stream) return false;
+  body_path_ = path;
+  chassis_bar_->setBodyName(QString::fromStdString(path.filename().string()));
+  setWindowTitle(QStringLiteral("TRENCH — %1").arg(QString::fromStdString(path.stem().string())));
+  return true;
+}
+
+void MainWindow::saveBodyAs() {
+  const auto chosen = QFileDialog::getSaveFileName(
+      this, QStringLiteral("SAVE"), QString::fromStdWString(body_path_.wstring()),
+      QStringLiteral("Body (*.body240)"));
+  if (chosen.isEmpty()) return;
+  saveBody(std::filesystem::path(chosen.toStdWString()));
+}
 
 BodyDocument* MainWindow::document() const noexcept { return document_; }
 
@@ -255,7 +312,7 @@ bool MainWindow::applyTypedRoot(const QString& text) {
   if (!ok || !(hz > 0.0)) return false;
   const auto [section, lane] = *selected_;
   const bool pole = lane == ResponsePlotWidget::Lane::kPole;
-  const auto before = document_->body().words[0][section];
+  const auto before = document_->body().words[document_->corner()][section];
   const auto geometry = trench::core::geometry_from_words(before, trench::core::kP2kDatumHz);
   const auto& pair = pole ? geometry.pole : geometry.zero;
   double radius = 0.9;
@@ -323,8 +380,8 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     return false;
   }
   if (bytes.size() != trench::core::kLegacyBodyBytes) return false;
-  document_->setTarget(
-      trench::core::p2k::corner_response_db(trench::core::p2k::rom_corner_words(bytes, 0)));
+  document_->setTarget(trench::core::p2k::corner_response_db(
+      trench::core::p2k::rom_corner_words(bytes, document_->corner())));
   chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
   return true;
 }
@@ -340,6 +397,7 @@ void MainWindow::chooseTarget() {
 void MainWindow::startFit() {
   if (fit_active_ || !document_->target()) return;
   pre_fit_ = document_->cornerSnapshot();
+  fit_corner_ = document_->corner();
   fit_active_ = true;
   response_plot_->setFitRunning(true);
   updateVerbs();
@@ -355,7 +413,7 @@ void MainWindow::stopAndKeep() {
 void MainWindow::discardFit() {
   if (!fit_active_) return;
   fit_controller_->abandon();
-  document_->applyCorner(pre_fit_);
+  document_->applyCorner(fit_corner_, pre_fit_);
   endRun();
 }
 
@@ -373,7 +431,7 @@ void MainWindow::renormalizeDc() {
   }
   if (after == before) return;
   document_->applyCorner(after);
-  document_->commitFit(before);
+  document_->commitFit(document_->corner(), before);
 }
 
 void MainWindow::updateProbes() {
@@ -386,7 +444,7 @@ void MainWindow::updateProbes() {
   }
   const auto [section, lane] = *selected_;
   const auto pole = lane == ResponsePlotWidget::Lane::kPole;
-  const auto& words = document_->body().words[0][section];
+  const auto& words = document_->body().words[document_->corner()][section];
   const auto mag = words[pole ? 2 : 0];
   const auto rsq = words[pole ? 3 : 1];
   const auto geometry =

@@ -24,6 +24,8 @@ class ChassisBar final : public QWidget {
   explicit ChassisBar(QWidget* parent = nullptr);
 
   void setBodyName(const QString& name);
+  void setCorner(std::size_t corner);
+  [[nodiscard]] QRectF cornerCellRect(std::size_t corner) const;
   void setTargetName(const QString& name);
   void setState(bool has_target, bool running);
   void setDcDriftDb(double db);
@@ -33,6 +35,7 @@ class ChassisBar final : public QWidget {
 
  signals:
   void verbClicked(ChassisBar::Verb verb);
+  void cornerClicked(std::size_t corner);
   void rootTyped(const QString& text);
 
  protected:
@@ -55,6 +58,7 @@ class ChassisBar final : public QWidget {
   [[nodiscard]] QString labelFor(Verb verb) const;
 
   QString body_name_;
+  std::size_t corner_{};
   QString target_name_;
   bool has_target_{};
   bool running_{};

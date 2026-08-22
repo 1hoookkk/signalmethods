@@ -104,6 +104,15 @@ bool root_placement(const trench::core::RootPair& pair, double low_hz, double hi
   return false;
 }
 
+trench::core::Cascade corner_cascade(const trench::core::PackedBody& body,
+                                     std::size_t corner) {
+  trench::core::Cascade out{};
+  for (std::size_t section = 0; section < trench::core::kSectionCount; ++section) {
+    out[section] = trench::core::section_words_to_biquad(body.words[corner][section]);
+  }
+  return out;
+}
+
 }  // namespace
 
 ResponsePlotWidget::ResponsePlotWidget(QWidget* parent) : QWidget(parent) {
@@ -118,6 +127,12 @@ void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
   body_ = body;
   sample_rate_hz_ = sample_rate_hz;
   source_label_ = QString::fromStdString(std::move(source_label));
+  refresh();
+}
+
+void ResponsePlotWidget::setCorner(std::size_t corner) {
+  if (corner == corner_) return;
+  corner_ = corner;
   refresh();
 }
 
@@ -148,7 +163,7 @@ void ResponsePlotWidget::refresh() {
   if (body_ == nullptr) return;
   frequencies_hz_ = trench::core::logarithmic_frequency_grid(
       20.0, sample_rate_hz_ * 0.499, 512);
-  const auto cascade = body_->interpolate_biquads(0.0F, 0.0F, 0.0F);
+  const auto cascade = corner_cascade(*body_, corner_);
   response_db_.clear();
   response_db_.reserve(frequencies_hz_.size());
   for (const auto frequency_hz : frequencies_hz_) {
@@ -219,7 +234,7 @@ void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double h
   if (frequencies_hz_.empty()) return;
   const auto axis_low_hz = frequencies_hz_.front();
   const auto axis_high_hz = frequencies_hz_.back();
-  const auto cascade = body_->interpolate_biquads(0.0F, 0.0F, 0.0F);
+  const auto cascade = corner_cascade(*body_, corner_);
   const auto bins =
       std::max(kTraceMinimumBins, static_cast<int>(std::lround(plot.width())));
   const auto points = bins * kTraceOversample;
@@ -377,7 +392,7 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
 
   for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
     const auto geometry = trench::core::geometry_from_words(
-        body_->words[0][section], trench::core::kP2kDatumHz);
+        body_->words[corner_][section], trench::core::kP2kDatumHz);
     for (const auto lane : {Lane::kPole, Lane::kZero}) {
       const auto& pair = lane == Lane::kPole ? geometry.pole : geometry.zero;
       double hz = low_hz;
@@ -456,7 +471,7 @@ void ResponsePlotWidget::moveTo(const QPointF& at) {
   candidate[is_pole ? 2 : 0] = word_mag;
   candidate[is_pole ? 3 : 1] = word_rsq;
   refusal_active_ = false;
-  if (candidate == body_->words[0][press_section_]) {
+  if (candidate == body_->words[corner_][press_section_]) {
     update();
     return;
   }
@@ -479,7 +494,7 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   press_section_ = token->section;
   press_lane_ = token->lane;
   press_position_ = event->position();
-  origin_words_ = body_->words[0][token->section];
+  origin_words_ = body_->words[corner_][token->section];
   const auto geometry = trench::core::geometry_from_words(
       origin_words_, trench::core::kP2kDatumHz);
   const auto& pair = token->lane == Lane::kPole ? geometry.pole : geometry.zero;

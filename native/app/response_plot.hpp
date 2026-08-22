@@ -39,6 +39,7 @@ class ResponsePlotWidget final : public QWidget {
 
   void setBody(const trench::core::PackedBody* body, double sample_rate_hz,
                std::string source_label);
+  void setCorner(std::size_t corner);
   void setFreedomMask(std::uint32_t mask);
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
@@ -79,6 +80,7 @@ class ResponsePlotWidget final : public QWidget {
   void rebuildResidual();
 
   const trench::core::PackedBody* body_{};
+  std::size_t corner_{};
   double sample_rate_hz_{trench::core::kP2kDatumHz};
   std::uint32_t freedom_mask_{0xFFFFFFFFU};
   std::vector<double> frequencies_hz_;

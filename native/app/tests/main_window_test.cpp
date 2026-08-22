@@ -1,3 +1,4 @@
+#include "chassis_bar.hpp"
 #include "main_window.hpp"
 #include "response_plot.hpp"
 #include "trench/core/measure.hpp"
@@ -652,6 +653,101 @@ class MainWindowTest final : public QObject {
 
     for (std::size_t section = 0; section < 6; ++section) {
       QCOMPARE(window.body().words[0][section], before[section]);
+    }
+  }
+
+  void editAtCornerTwoWritesOnlyThatCorner() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto untouched = window.body();
+    press(window.chassisBar(), window.chassisBar()->cornerCellRect(2).center());
+    QCOMPARE(window.document()->corner(), std::size_t{2});
+    auto* plot = window.responsePlot();
+    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    drag(plot, token->position, token->position + QPointF{-70.0, 22.0}, 5);
+    const auto& after = window.body();
+    QVERIFY(after.words[2][0] != untouched.words[2][0]);
+    QCOMPARE(after.words[6][0], after.words[2][0]);
+    for (const std::size_t corner : {0U, 1U, 3U, 4U, 5U, 7U}) {
+      QCOMPARE(after.words[corner], untouched.words[corner]);
+    }
+  }
+
+  void undoLandsOnTheCornerThatWasEdited() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto untouched = window.body();
+    window.setCorner(2);
+    auto* plot = window.responsePlot();
+    const auto token = find_token(plot, 1, ResponsePlotWidget::Lane::kZero);
+    QVERIFY(token.has_value());
+    drag(plot, token->position, token->position + QPointF{60.0, -18.0}, 5);
+    QVERIFY(window.body().words[2][1] != untouched.words[2][1]);
+    window.setCorner(0);
+    QCOMPARE(window.undoStack()->count(), 1);
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[2][1], untouched.words[2][1]);
+    QCOMPARE(window.body().words[6][1], untouched.words[2][1]);
+    QCOMPARE(window.body().words[0], untouched.words[0]);
+    QCOMPARE(window.document()->corner(), std::size_t{0});
+  }
+
+  void saveWritesTheLegacyBytesBackExactly() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto out = std::filesystem::temp_directory_path() / "trench_native_save_test.body240";
+    QVERIFY(window.saveBody(out));
+    QCOMPARE(window.bodyPath(), out);
+    QVERIFY(read_fixture(out) == read_fixture(fixture_path()));
+    window.setCorner(3);
+    auto* plot = window.responsePlot();
+    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    drag(plot, token->position, token->position + QPointF{-70.0, 22.0}, 5);
+    QVERIFY(window.saveBody(out));
+    const auto reloaded = trench::core::PackedBody::from_body_bytes(read_fixture(out));
+    QVERIFY(reloaded.words == window.body().words);
+    QVERIFY(reloaded.words[3][0] != trench::core::PackedBody::from_body_bytes(read_fixture(fixture_path())).words[3][0]);
+    std::filesystem::remove(out);
+  }
+
+  void fitAtCornerThreeLeavesTheOtherCornersAlone() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    const auto target_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                             "ref/presets/P2k_002_early_rizer.bin";
+    QVERIFY(window.loadTarget(target_body));
+    window.setCorner(3);
+    const auto before = window.body();
+    window.startFit();
+    QTRY_VERIFY_WITH_TIMEOUT(window.body().words[3] != before.words[3], 30000);
+    for (const std::size_t corner : {0U, 1U, 2U, 4U, 5U, 6U}) {
+      QCOMPARE(window.body().words[corner], before.words[corner]);
+    }
+    window.discardFit();
+    QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
+    QVERIFY(window.body().words == before.words);
+  }
+
+  void anIdentityCornerSeedsItsFitFromCornerZero() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    BodyDocument::CornerSnapshot identity{};
+    identity.fill(trench::core::kIdentitySection);
+    window.document()->applyCorner(1, identity);
+    window.setCorner(1);
+    const auto seed = window.document()->seedWords();
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      for (std::size_t word = 0; word < seed[section].size(); ++word) {
+        QCOMPARE(seed[section][word], window.body().words[0][section][word]);
+      }
     }
   }
 };
