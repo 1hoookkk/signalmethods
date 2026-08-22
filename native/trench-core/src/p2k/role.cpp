@@ -100,4 +100,54 @@ bool within_envelope(Role role, const PackedSection& words, double sample_rate_h
   return within_envelope(role, geometry_from_words(words, sample_rate_hz));
 }
 
+std::array<std::uint16_t, 4> seat_words(Role role, const std::array<std::uint16_t, 4>& words,
+                                        std::size_t section) {
+  const PackedSection packed{words[0], words[1], words[2], words[3], 0};
+  if (within_envelope(role, packed, kSr)) {
+    return words;
+  }
+  const auto current = roots_of(geometry_from_words(packed, kSr));
+  const double pole_hz = current.conjugate ? current.pole_hz : 1000.0;
+  double ph = pole_hz;
+  double pr = 0.95;
+  double zh = pole_hz * 1.414;
+  double zr = 0.6;
+  switch (role) {
+    case Role::kTilt:
+      ph = 655.0;
+      pr = 0.986;
+      zh = 12372.0;
+      zr = 0.9;
+      break;
+    case Role::kPeak:
+      break;
+    case Role::kNotch:
+      pr = 0.4;
+      zr = 0.99;
+      zh = pole_hz;
+      break;
+    case Role::kPeakNotch:
+      pr = 0.97;
+      zr = 0.99;
+      zh = pole_hz * 1.19;
+      break;
+    case Role::kParked:
+      ph = 18000.0;
+      pr = 0.8;
+      zh = 18500.0;
+      zr = 0.8;
+      break;
+    case Role::kRealAxis:
+      return words;
+  }
+  std::array<std::uint16_t, 4> out = words;
+  const auto [zm, zrw] = words_from_root(zh, zr);
+  const auto [pm, prw] = words_from_root(ph, pr);
+  out[0] = zm;
+  out[1] = section == 5 ? kS6ZeroRsqWord : zrw;
+  out[2] = pm;
+  out[3] = prw;
+  return out;
+}
+
 }  // namespace trench::core::p2k

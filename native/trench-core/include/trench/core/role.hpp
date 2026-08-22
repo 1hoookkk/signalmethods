@@ -31,4 +31,7 @@ bool within_envelope(Role role, const PackedSection& words,
 
 using RoleIntent = std::array<std::optional<Role>, 6>;
 
+std::array<std::uint16_t, 4> seat_words(Role role, const std::array<std::uint16_t, 4>& words,
+                                        std::size_t section);
+
 }  // namespace trench::core::p2k

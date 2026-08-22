@@ -129,16 +129,7 @@ TEST(P2kRole, ATiltIntentKeepsTheFitInsideTheTiltEnvelope) {
     s6[wi] = fit->packed[5 * p2k::kWordCount + wi];
   }
   const auto geometry = trench::core::geometry_from_words(s6, p2k::kSr);
-  const auto seed_geometry = trench::core::geometry_from_words(
-      trench::core::PackedSection{p2k::peel_seed(target)[5][0], p2k::peel_seed(target)[5][1],
-                                  p2k::peel_seed(target)[5][2], p2k::peel_seed(target)[5][3], 0},
-      p2k::kSr);
-  const bool seed_inside = p2k::within_envelope(p2k::Role::kTilt, seed_geometry);
-  if (seed_inside) {
-    EXPECT_TRUE(p2k::within_envelope(p2k::Role::kTilt, geometry));
-  } else {
-    EXPECT_EQ(fit->packed[5 * p2k::kWordCount + 2], p2k::enter(p2k::peel_seed(target))[5][2]);
-  }
+  EXPECT_TRUE(p2k::within_envelope(p2k::Role::kTilt, geometry));
 }
 
 TEST(P2kRole, NoIntentIsByteIdenticalToTheUnconstrainedFit) {
@@ -155,4 +146,27 @@ TEST(P2kRole, NoIntentIsByteIdenticalToTheUnconstrainedFit) {
   const auto b = p2k::fit_corner_watched(target, seeds, with_empty_intent, nullptr, nullptr, nullptr);
   ASSERT_TRUE(a && b);
   EXPECT_EQ(a->packed, b->packed);
+}
+
+TEST(P2kRole, ASeatedTiltRowStartsInsideTheTiltEnvelope) {
+  const auto& body = bank().front();
+  const auto rom = p2k::rom_corner_words(body, 0);
+  const auto target = p2k::corner_response_db(rom);
+  const auto peel = p2k::peel_seed(target);
+  for (const std::size_t si : {std::size_t{0}, std::size_t{5}}) {
+    const auto seated = p2k::seat_words(p2k::Role::kTilt, peel[si], si);
+    const trench::core::PackedSection words{seated[0], seated[1], seated[2], seated[3], 0};
+    EXPECT_TRUE(p2k::within_envelope(p2k::Role::kTilt, words)) << "section " << si;
+  }
+  p2k::FitOptions opts;
+  opts.max_passes = 2;
+  opts.intent[5] = p2k::Role::kTilt;
+  const std::array<p2k::Seed, 1> seeds{p2k::SeedPeel{}};
+  const auto fit = p2k::fit_corner_watched(target, seeds, opts, nullptr, nullptr, nullptr);
+  ASSERT_TRUE(fit.has_value());
+  trench::core::PackedSection s6{};
+  for (std::size_t wi = 0; wi < 5; ++wi) {
+    s6[wi] = fit->packed[5 * p2k::kWordCount + wi];
+  }
+  EXPECT_TRUE(p2k::within_envelope(p2k::Role::kTilt, s6));
 }

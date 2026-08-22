@@ -184,6 +184,11 @@ std::optional<WatchedFit> fit_corner_watched(std::span<const double> target,
       words = std::get<CornerWords>(seed);
       label = "rom";
     }
+    for (std::size_t si = 0; si < kStageCount; ++si) {
+      if (opts.intent[si]) {
+        words[si] = seat_words(*opts.intent[si], words[si], si);
+      }
+    }
     auto run = watched_polish(enter(words), target, opts.max_passes, freedom, stop_requested,
                               on_step, loss, g, opts.intent);
     const double rms = std::sqrt(run.var);
