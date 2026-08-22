@@ -1387,7 +1387,7 @@
    "source_file": "153_Bw65Hz_2k.4.body",
    "manual_name": null,
    "family": "COMPLEX FILTERS",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 2,
    "path": "complex_filters/153_Bw65Hz_2k.4.json"
   },
@@ -1396,7 +1396,7 @@
    "source_file": "154_Bb80Hzbw1.4.body",
    "manual_name": null,
    "family": "COMPLEX FILTERS",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "complex_filters/154_Bb80Hzbw1.4.json"
   },
@@ -1405,7 +1405,7 @@
    "source_file": "155_HighsTwist.4.body",
    "manual_name": null,
    "family": "COMPLEX FILTERS",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "complex_filters/155_HighsTwist.4.json"
   },
@@ -1414,7 +1414,7 @@
    "source_file": "156_Cubix.body",
    "manual_name": null,
    "family": "COMPLEX FILTERS",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "complex_filters/156_Cubix.json"
   },
@@ -1423,7 +1423,7 @@
    "source_file": "157_HarmSweep.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/157_HarmSweep.4.json"
   },
@@ -1432,7 +1432,7 @@
    "source_file": "158_EvenCuts.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/158_EvenCuts.4.json"
   },
@@ -1441,7 +1441,7 @@
    "source_file": "159_OddCuts.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/159_OddCuts.4.json"
   },
@@ -1450,7 +1450,7 @@
    "source_file": "160_PWMTrans.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/160_PWMTrans.4.json"
   },
@@ -1459,7 +1459,7 @@
    "source_file": "161_HiEndQ.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/161_HiEndQ.4.json"
   },
@@ -1468,7 +1468,7 @@
    "source_file": "162_BroadRes.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/162_BroadRes.4.json"
   },
@@ -1477,7 +1477,7 @@
    "source_file": "163_ResoHose.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/163_ResoHose.4.json"
   },
@@ -1486,7 +1486,7 @@
    "source_file": "164_HeeghCube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/164_HeeghCube.json"
   },
@@ -1495,7 +1495,7 @@
    "source_file": "165_NoizCube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/165_NoizCube.json"
   },
@@ -1504,7 +1504,7 @@
    "source_file": "166_VeloctyTilt.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/166_VeloctyTilt.json"
   },
@@ -1513,7 +1513,7 @@
    "source_file": "167_Syn_Wow.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/167_Syn_Wow.4.json"
   },
@@ -1522,7 +1522,7 @@
    "source_file": "168_CombSweep.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 3,
    "path": "unlisted/168_CombSweep.4.json"
   },
@@ -1531,7 +1531,7 @@
    "source_file": "169_Diffuser.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/169_Diffuser.4.json"
   },
@@ -1540,7 +1540,7 @@
    "source_file": "170_MdlySweep.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 5,
    "path": "unlisted/170_MdlySweep.4.json"
   },
@@ -1549,7 +1549,7 @@
    "source_file": "171_StrongShimr.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/171_StrongShimr.json"
   },
@@ -1558,7 +1558,7 @@
    "source_file": "172_Acc.Vel-1.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/172_Acc.Vel-1.json"
   },
@@ -1567,7 +1567,7 @@
    "source_file": "173_Acc.Vel-2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/173_Acc.Vel-2.json"
   },
@@ -1576,7 +1576,7 @@
    "source_file": "174_Vel2-Wind.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/174_Vel2-Wind.json"
   },
@@ -1585,7 +1585,7 @@
    "source_file": "175_Harmo.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/175_Harmo.json"
   },
@@ -1594,7 +1594,7 @@
    "source_file": "176_Start_EndA.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/176_Start_EndA.json"
   },
@@ -1603,7 +1603,7 @@
    "source_file": "177_Start_EndB.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/177_Start_EndB.json"
   },
@@ -1612,7 +1612,7 @@
    "source_file": "178_MovingPick1.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/178_MovingPick1.json"
   },
@@ -1621,7 +1621,7 @@
    "source_file": "179_MovingPick2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/179_MovingPick2.json"
   },
@@ -1630,7 +1630,7 @@
    "source_file": "180_Mph_Trns1.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/180_Mph_Trns1.json"
   },
@@ -1639,7 +1639,7 @@
    "source_file": "181_0_Odds.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/181_0_Odds.json"
   },
@@ -1648,7 +1648,7 @@
    "source_file": "182_Comb_Voices.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/182_Comb_Voices.json"
   },
@@ -1657,7 +1657,7 @@
    "source_file": "183_Odd-Ev_Hrm.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/183_Odd-Ev_Hrm.json"
   },
@@ -1666,7 +1666,7 @@
    "source_file": "184_OddHrm_Rez.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/184_OddHrm_Rez.json"
   },
@@ -1675,7 +1675,7 @@
    "source_file": "185_EvnHrm_Rez.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/185_EvnHrm_Rez.json"
   },
@@ -1684,7 +1684,7 @@
    "source_file": "186_MellowPeaks.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/186_MellowPeaks.json"
   },
@@ -1693,7 +1693,7 @@
    "source_file": "187_AHmBnd.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 5,
    "path": "unlisted/187_AHmBnd.4.json"
   },
@@ -1702,7 +1702,7 @@
    "source_file": "188_Vintage.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/188_Vintage.json"
   },
@@ -1711,7 +1711,7 @@
    "source_file": "189_MildQPole.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/189_MildQPole.json"
   },
@@ -1720,7 +1720,7 @@
    "source_file": "190_Bonk_CO.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 6,
    "path": "unlisted/190_Bonk_CO.json"
   },
@@ -1729,7 +1729,7 @@
    "source_file": "191_Speaker.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/191_Speaker.json"
   },
@@ -1738,7 +1738,7 @@
    "source_file": "192_Expander.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/192_Expander.json"
   },
@@ -1747,7 +1747,7 @@
    "source_file": "193_Separator.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/193_Separator.json"
   },
@@ -1756,7 +1756,7 @@
    "source_file": "194_MildPolSwap.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 3,
    "path": "unlisted/194_MildPolSwap.json"
   },
@@ -1765,7 +1765,7 @@
    "source_file": "195_PoleCross.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/195_PoleCross.4.json"
   },
@@ -1774,7 +1774,7 @@
    "source_file": "196_ApDistB6.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/196_ApDistB6.4.json"
   },
@@ -1783,7 +1783,7 @@
    "source_file": "197_Dave_sRave.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/197_Dave_sRave.json"
   },
@@ -1792,7 +1792,7 @@
    "source_file": "198_Poles_1-7.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/198_Poles_1-7.json"
   },
@@ -1801,7 +1801,7 @@
    "source_file": "199_2_Poles.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/199_2_Poles.json"
   },
@@ -1810,7 +1810,7 @@
    "source_file": "200_4_Poles_A.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/200_4_Poles_A.json"
   },
@@ -1819,7 +1819,7 @@
    "source_file": "201_4_Poles_B.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/201_4_Poles_B.json"
   },
@@ -1828,7 +1828,7 @@
    "source_file": "202_4_Poles_C.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/202_4_Poles_C.json"
   },
@@ -1837,7 +1837,7 @@
    "source_file": "203_6_Poles.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/203_6_Poles.json"
   },
@@ -1846,7 +1846,7 @@
    "source_file": "204_MultiPole.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/204_MultiPole.json"
   },
@@ -1855,7 +1855,7 @@
    "source_file": "205_Tracker.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 3,
    "path": "unlisted/205_Tracker.json"
   },
@@ -1864,7 +1864,7 @@
    "source_file": "206_Tracker_2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/206_Tracker_2.json"
   },
@@ -1873,7 +1873,7 @@
    "source_file": "207_Tracker_3.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/207_Tracker_3.json"
   },
@@ -1882,7 +1882,7 @@
    "source_file": "208_Tracker5ths.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/208_Tracker5ths.json"
   },
@@ -1891,7 +1891,7 @@
    "source_file": "209_InFifths.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/209_InFifths.4.json"
   },
@@ -1900,7 +1900,7 @@
    "source_file": "210_HarmTracker.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 4,
    "path": "unlisted/210_HarmTracker.json"
   },
@@ -1909,7 +1909,7 @@
    "source_file": "211_1BndPrmtrcA.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 4,
    "path": "unlisted/211_1BndPrmtrcA.json"
   },
@@ -1918,7 +1918,7 @@
    "source_file": "212_1BndPrmtrcB.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 4,
    "path": "unlisted/212_1BndPrmtrcB.json"
   },
@@ -1927,7 +1927,7 @@
    "source_file": "213_1BndPrmtrcC.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 3,
    "path": "unlisted/213_1BndPrmtrcC.json"
   },
@@ -1936,7 +1936,7 @@
    "source_file": "214_1BndPrmtrcD.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/214_1BndPrmtrcD.json"
   },
@@ -1945,7 +1945,7 @@
    "source_file": "215_MltiMetricA.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/215_MltiMetricA.json"
   },
@@ -1954,7 +1954,7 @@
    "source_file": "216_MltiMetricB.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/216_MltiMetricB.json"
   },
@@ -1963,7 +1963,7 @@
    "source_file": "217_MltiMetricC.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 6,
    "path": "unlisted/217_MltiMetricC.json"
   },
@@ -1972,7 +1972,7 @@
    "source_file": "218_Omni_Metric.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/218_Omni_Metric.json"
   },
@@ -1981,7 +1981,7 @@
    "source_file": "219_HarmncPeaks.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/219_HarmncPeaks.json"
   },
@@ -1990,7 +1990,7 @@
    "source_file": "220_HrmncPeaks2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/220_HrmncPeaks2.json"
   },
@@ -1999,7 +1999,7 @@
    "source_file": "221_InHarMetric.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/221_InHarMetric.json"
   },
@@ -2008,7 +2008,7 @@
    "source_file": "222_HarmShifter.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/222_HarmShifter.json"
   },
@@ -2017,7 +2017,7 @@
    "source_file": "223_HarmShiftr2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/223_HarmShiftr2.json"
   },
@@ -2026,7 +2026,7 @@
    "source_file": "224_HarmShiftr3.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/224_HarmShiftr3.json"
   },
@@ -2035,7 +2035,7 @@
    "source_file": "225_Phaser.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/225_Phaser.json"
   },
@@ -2044,7 +2044,7 @@
    "source_file": "226_HrmncPhaser.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/226_HrmncPhaser.json"
   },
@@ -2053,7 +2053,7 @@
    "source_file": "227_HrmncPhsr2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/227_HrmncPhsr2.json"
   },
@@ -2062,7 +2062,7 @@
    "source_file": "228_Wide_Bands.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/228_Wide_Bands.json"
   },
@@ -2071,7 +2071,7 @@
    "source_file": "229_New_Boost.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/229_New_Boost.json"
   },
@@ -2080,7 +2080,7 @@
    "source_file": "230_VowelSpace2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/230_VowelSpace2.json"
   },
@@ -2089,7 +2089,7 @@
    "source_file": "231_VowelSpace3.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/231_VowelSpace3.json"
   },
@@ -2098,7 +2098,7 @@
    "source_file": "232_Oh_Shaper.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 6,
    "path": "unlisted/232_Oh_Shaper.json"
   },
@@ -2107,7 +2107,7 @@
    "source_file": "233_Ah_Shaper.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/233_Ah_Shaper.json"
   },
@@ -2116,7 +2116,7 @@
    "source_file": "234_Oo_Shaper.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/234_Oo_Shaper.json"
   },
@@ -2125,7 +2125,7 @@
    "source_file": "235_FrmntShaper.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/235_FrmntShaper.json"
   },
@@ -2134,7 +2134,7 @@
    "source_file": "236_Piano_LP.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/236_Piano_LP.4.json"
   },
@@ -2143,7 +2143,7 @@
    "source_file": "237_PianoSndBrd.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/237_PianoSndBrd.json"
   },
@@ -2152,7 +2152,7 @@
    "source_file": "238_Strike_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/238_Strike_Cube.json"
   },
@@ -2161,7 +2161,7 @@
    "source_file": "239_Clav_Curves.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/239_Clav_Curves.json"
   },
@@ -2170,7 +2170,7 @@
    "source_file": "240_Symphony.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/240_Symphony.json"
   },
@@ -2179,7 +2179,7 @@
    "source_file": "241_String_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 6,
    "path": "unlisted/241_String_Cube.json"
   },
@@ -2188,7 +2188,7 @@
    "source_file": "242_Swell_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/242_Swell_Cube.json"
   },
@@ -2197,7 +2197,7 @@
    "source_file": "243_Quartet.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/243_Quartet.4.json"
   },
@@ -2206,7 +2206,7 @@
    "source_file": "244_Mellotron.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/244_Mellotron.4.json"
   },
@@ -2215,7 +2215,7 @@
    "source_file": "245_Cello.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/245_Cello.json"
   },
@@ -2224,7 +2224,7 @@
    "source_file": "246_Key_Squeak.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/246_Key_Squeak.json"
   },
@@ -2233,7 +2233,7 @@
    "source_file": "247_Pluck.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/247_Pluck.4.json"
   },
@@ -2242,7 +2242,7 @@
    "source_file": "248_Pick_It.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/248_Pick_It.json"
   },
@@ -2251,7 +2251,7 @@
    "source_file": "249_El_Pick_It.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/249_El_Pick_It.json"
   },
@@ -2260,7 +2260,7 @@
    "source_file": "250_ElGuit_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/250_ElGuit_Cube.json"
   },
@@ -2269,7 +2269,7 @@
    "source_file": "251_ElGuit_Pick.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/251_ElGuit_Pick.json"
   },
@@ -2278,7 +2278,7 @@
    "source_file": "252_Breather_1.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/252_Breather_1.json"
   },
@@ -2287,7 +2287,7 @@
    "source_file": "253_Breather_2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/253_Breather_2.json"
   },
@@ -2296,7 +2296,7 @@
    "source_file": "254_WindNoise_1.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/254_WindNoise_1.json"
   },
@@ -2305,7 +2305,7 @@
    "source_file": "255_WindNoise_2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/255_WindNoise_2.json"
   },
@@ -2314,7 +2314,7 @@
    "source_file": "256_Blow_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/256_Blow_Cube.json"
   },
@@ -2323,7 +2323,7 @@
    "source_file": "257_Overblow.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/257_Overblow.json"
   },
@@ -2332,7 +2332,7 @@
    "source_file": "258_Wind_Filter.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/258_Wind_Filter.json"
   },
@@ -2341,7 +2341,7 @@
    "source_file": "259_FlutBreth.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/259_FlutBreth.4.json"
   },
@@ -2350,7 +2350,7 @@
    "source_file": "260_VClarinet.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/260_VClarinet.4.json"
   },
@@ -2359,7 +2359,7 @@
    "source_file": "261_New_Mute.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/261_New_Mute.4.json"
   },
@@ -2368,7 +2368,7 @@
    "source_file": "262_Trempeto.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 6,
    "path": "unlisted/262_Trempeto.4.json"
   },
@@ -2377,7 +2377,7 @@
    "source_file": "263_SfBrzando.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/263_SfBrzando.4.json"
   },
@@ -2386,7 +2386,7 @@
    "source_file": "264_UduFilter.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/264_UduFilter.4.json"
   },
@@ -2395,7 +2395,7 @@
    "source_file": "265_Hip_Kick.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/265_Hip_Kick.json"
   },
@@ -2404,7 +2404,7 @@
    "source_file": "266_Cymbal_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/266_Cymbal_Cube.json"
   },
@@ -2413,7 +2413,7 @@
    "source_file": "267_ChimeFlange.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/267_ChimeFlange.json"
   },
@@ -2422,7 +2422,7 @@
    "source_file": "268_CableRing.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/268_CableRing.4.json"
   },
@@ -2431,7 +2431,7 @@
    "source_file": "269_TensionWire.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 5,
    "path": "unlisted/269_TensionWire.json"
   },
@@ -2440,7 +2440,7 @@
    "source_file": "270_Auto_Clang.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/270_Auto_Clang.json"
   },
@@ -2449,7 +2449,7 @@
    "source_file": "271_Dragon_Claw.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/271_Dragon_Claw.json"
   },
@@ -2458,7 +2458,7 @@
    "source_file": "272_Spectra.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/272_Spectra.json"
   },
@@ -2467,7 +2467,7 @@
    "source_file": "273_RippleSheet.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/273_RippleSheet.json"
   },
@@ -2476,7 +2476,7 @@
    "source_file": "274_Clear_Water.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/274_Clear_Water.json"
   },
@@ -2485,7 +2485,7 @@
    "source_file": "275_Invisible.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 5,
    "path": "unlisted/275_Invisible.json"
   },
@@ -2494,7 +2494,7 @@
    "source_file": "276_Wine_Glass.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/276_Wine_Glass.json"
   },
@@ -2503,7 +2503,7 @@
    "source_file": "277_SnakeCros.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/277_SnakeCros.4.json"
   },
@@ -2512,7 +2512,7 @@
    "source_file": "278_Analog.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/278_Analog.4.json"
   },
@@ -2521,7 +2521,7 @@
    "source_file": "279_Skrtch_Cube.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/279_Skrtch_Cube.json"
   },
@@ -2530,7 +2530,7 @@
    "source_file": "280_KitchenSink.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/280_KitchenSink.json"
   },
@@ -2539,7 +2539,7 @@
    "source_file": "281_Head_Pan_1.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/281_Head_Pan_1.json"
   },
@@ -2548,7 +2548,7 @@
    "source_file": "282_Head_Pan_2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/282_Head_Pan_2.json"
   },
@@ -2557,7 +2557,7 @@
    "source_file": "283_Arpeggio.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 4,
    "path": "unlisted/283_Arpeggio.json"
   },
@@ -2566,7 +2566,7 @@
    "source_file": "284_HeavyFilt.4.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/284_HeavyFilt.4.json"
   },
@@ -2575,7 +2575,7 @@
    "source_file": "285_Noiz_Cube_2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/285_Noiz_Cube_2.json"
   },
@@ -2584,7 +2584,7 @@
    "source_file": "286_Feedback.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/286_Feedback.json"
   },
@@ -2593,7 +2593,7 @@
    "source_file": "287_AllPoleDist.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 7,
    "path": "unlisted/287_AllPoleDist.json"
   },
@@ -2602,7 +2602,7 @@
    "source_file": "288_AllPoleDst2.body",
    "manual_name": null,
    "family": "UNLISTED",
-   "geometry": "cube",
+   "geometry": "unknown",
    "active_sections": 1,
    "path": "unlisted/288_AllPoleDst2.json"
   }

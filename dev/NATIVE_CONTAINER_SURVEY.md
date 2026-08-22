@@ -208,6 +208,42 @@ per-section span, and a 256-point response per corner. Plus `index.json`.
 and 132 not named in the UltraProteus manual (numbers above F156 — the Morpheus
 corpus is larger than the UltraProteus filter list).
 
+## 9a. Square vs cube is NOT in the body bytes
+
+The manual says `.4` means square rather than cube — four corners, no Transform
+2 axis. The obvious expectation is that a square body duplicates its corners
+along the dead axis. **It does not.**
+
+Testing all three corner-index bits against the 153 manual-labelled bodies
+(`dev/axis_probe.py`); the firmware gives corner index as
+`bit0 | bit1<<1 | bit2<<2`, so a flat axis would show as `corner[c] ==
+corner[c ^ bit]`:
+
+| axis bit | exact equality on square | on cube |
+|---|---|---|
+| bit 0 (stride 1) | **0 / 58** | 0 / 95 |
+| bit 1 (stride 2) | **0 / 58** | 0 / 95 |
+| bit 2 (stride 4) | **0 / 58** | 0 / 95 |
+
+Nor is it near-equality. Taking each body's flattest axis by mean absolute word
+difference, the median is 1727 for square bodies and 1624 for cube — the same
+number. And which axis is flattest does not separate the labels either (square
+18/28/12 across the three bits, cube 20/35/40).
+
+**All eight corners carry distinct data in square and cube bodies alike.** The
+`.4` property lives in the instrument's filter table, not in the 560 bytes.
+
+Consequence for the decoded corpus: `geometry` can only be set from the manual
+name suffix, and a body with no manual entry must be recorded as `"unknown"` —
+never defaulted to `"cube"`. `dev/decode_native_presets.py` now does this and
+carries a `geometry_source` field. The counts are 58 square, 95 cube, 136
+unknown; the 132 unlisted bodies plus 4 complex-family bodies whose numbers fall
+outside the manual's list are all unknown.
+
+This also means the Transform 2 axis mapping remains open. Knowing which bit is
+T2 would require either a body whose T2 plane happens to be flat, or evidence
+from the instrument side.
+
 ## 10. What this unblocks, and what it does not
 
 Unblocked: the container's write laws are now measured, so authoring in this
@@ -221,6 +257,7 @@ Still open:
 - Whether our 5th word corresponds to the runtime's single DC-normalise bit.
 - Which physical axis (Morph / Q / Z) maps to which corner bit — the firmware
   reads three ADC sums into corner bits 0,1,2 but the labels need the UI side.
+  Section 9a shows the bodies themselves cannot settle it.
 - 32 bytes at struct `+0x1C4` are unpacked from the file and never read.
 
 ## 11. Evidence quality note

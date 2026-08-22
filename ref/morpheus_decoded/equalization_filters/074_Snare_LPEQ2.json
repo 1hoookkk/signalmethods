@@ -5,6 +5,7 @@
  "manual_name": "Snare LPEQ2",
  "family": "EQUALIZATION FILTERS",
  "geometry": "cube",
+ "geometry_source": "manual name suffix",
  "datum_hz": 39062.5,
  "sections": 7,
  "corners": 8,

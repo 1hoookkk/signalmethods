@@ -52,8 +52,18 @@ def main():
         w = struct.unpack("<280H", raw)
         family = fams.get(num, "UNLISTED")
         manual_name = names.get(num)
-        square = bool(manual_name) and (manual_name.rstrip().endswith(".4")
-                                        or manual_name.rstrip().endswith(" 4"))
+        # square vs cube is NOT derivable from the 560 bytes: no corner-index bit
+        # is flat for .4 filters (scratchpad/axis_probe.py -- 0/58 exact on every
+        # bit, and the flattest-axis distribution does not separate the two
+        # labels).  The property lives in the instrument's filter table.  The
+        # manual name suffix is therefore the only authority, and a body with no
+        # manual entry is "unknown", never "cube".
+        if manual_name is None:
+            geometry = "unknown"
+        elif manual_name.rstrip().endswith(".4") or manual_name.rstrip().endswith(" 4"):
+            geometry = "square"
+        else:
+            geometry = "cube"
 
         corners, active_any = [], set()
         for c in range(CORNERS):
@@ -90,7 +100,8 @@ def main():
             "filter_number": num,
             "manual_name": manual_name,
             "family": family,
-            "geometry": "square" if square else "cube",
+            "geometry": geometry,
+            "geometry_source": "manual name suffix" if manual_name else "not determined",
             "datum_hz": SR,
             "sections": SECTIONS,
             "corners": CORNERS,
@@ -106,7 +117,7 @@ def main():
             "source_file": path.name,
             "manual_name": manual_name,
             "family": family,
-            "geometry": "square" if square else "cube",
+            "geometry": geometry,
             "active_sections": len(active_any),
             "path": f"{sub.name}/{path.stem}.json",
         })
@@ -121,7 +132,9 @@ def main():
         by_fam.setdefault(row["family"], []).append(row)
     for fam, rows in sorted(by_fam.items()):
         sq = sum(1 for r in rows if r["geometry"] == "square")
-        print(f"  {fam:<22} {len(rows):>4}   square {sq:>3}   cube {len(rows)-sq:>3}")
+        cu = sum(1 for r in rows if r["geometry"] == "cube")
+        un = sum(1 for r in rows if r["geometry"] == "unknown")
+        print(f"  {fam:<22} {len(rows):>4}   square {sq:>3}   cube {cu:>3}   unknown {un:>3}")
 
 
 if __name__ == "__main__":
