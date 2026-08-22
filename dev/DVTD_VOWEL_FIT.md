@@ -33,9 +33,12 @@ packed words:
 
 | | rms dB |
 |---|---|
-| best | 0.638 (`s1-14-ach-x`) |
-| median | ~1.55 |
-| worst | 3.483 (`s1-05-bude-tense-u`) |
+| best | 0.585 (`s2-06-laehmung-tense-ae`) |
+| median | 1.255 |
+| worst | 2.332 (`s1-05-bude-tense-u`) |
+
+Those are the figures after the cut-seeding change in section 3c; the original
+boost-only seeding gave 0.638 / 1.579 / 3.483.
 
 **Quantisation is free.** On every one of the 44 mouths the packed error equals
 the continuous error to three decimals. The container's word resolution is not
@@ -107,6 +110,40 @@ worst error on every mouth is an uncut antiresonance. The fix is a seeding
 change — start some bells as cuts on the residual's minima — not a change of
 topology or resolution. It matches the Kerkhoff/Boves rule already cited in
 `native/CLAUDE.md`: poles track formants, zeros shape the global spectrum.
+
+## 3c. Reseeding with cuts on the residual minima
+
+The fix in 3a was implemented and run over all 44 mouths. Rather than seeding
+every bell as a boost, the seeder now picks both peaks and valleys from the
+target and sweeps the allocation — 0, 1, 2 or 3 of the six bells seeded as cuts,
+with the pole set inside the zero — keeping whichever allocation wins.
+
+| | boost-only | cut-seeded | change |
+|---|---|---|---|
+| rms best | 0.638 | 0.585 | -8% |
+| rms median | 1.579 | 1.255 | **-21%** |
+| rms mean | 1.658 | 1.307 | -21% |
+| rms worst | 3.483 | 2.332 | **-33%** |
+| largest single-point error, worst mouth | 13.30 | 7.85 | **-41%** |
+| largest single-point error, median mouth | 5.27 | 4.10 | -22% |
+
+38 of 44 improved, 6 got slightly worse. The 6 are an artefact of the sweep
+choosing its allocation on the continuous cost while the table reports the
+post-polish figure; they are within 0.06 dB and not worth a second sweep.
+
+Allocation actually chosen, out of six bells:
+
+| cut bells | mouths |
+|---|---|
+| 0 | 8 |
+| 1 | 6 |
+| 2 | **22** |
+| 3 | 8 |
+
+**Two antiresonances is the mode for a real vocal tract.** And eight mouths
+still do best with no cuts at all, which is consistent with E-mu's all-boost
+paravowel construction being the right answer for some vowels rather than a
+shortcut.
 
 ## 3b. E-mu pairs a zero with the *next* row's pole
 
