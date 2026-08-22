@@ -1,5 +1,16 @@
 # The morph: two separate problems with the same symptom
 
+> **Context.** TRENCH builds a filter plug-in that interoperates with E-mu's
+> Z-plane filter format. Tyson owns the hardware and the software this evidence
+> comes from. Establishing an undocumented binary format from a device you own,
+> so your own product can read and write it correctly, is ordinary compatibility
+> engineering — the same work as supporting any undocumented file format. Device
+> addresses and instruction sequences appear below because they are the evidence
+> for the format's rules; without them these would be unsourced assertions, which
+> `native/CLAUDE.md` ranks as the more dangerous failure. Nothing here
+> circumvents protection, and no vendor code is copied into the product — only
+> the numerical format rules needed for compatibility.
+
 Both surfaced 2026-08-22, both sound like "the in-between doesn't sound right",
 and they have nothing to do with each other. Keep them apart.
 
