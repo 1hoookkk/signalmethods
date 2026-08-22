@@ -4,7 +4,6 @@
 #include <cmath>
 #include <vector>
 
-#include "trench/core/formants.hpp"
 
 namespace trench::core::p2k {
 
@@ -39,18 +38,55 @@ double rows_rms_db(const Rows& rows, std::span<const double> target, const Grid&
 Rows seed_rows_from_target(std::span<const double> target, const Grid& g) {
   Rows rows{};
   for (auto& r : rows) r = {SectionType::kOff, 18000.0, 1.0, 0.0};
-  auto peaks = peaks_of_envelope(g.hz, target, 12);
-  std::erase_if(peaks, [](const SpectralPeak& p) { return p.hz < 250.0 || p.hz > 8000.0; });
-  std::sort(peaks.begin(), peaks.end(),
-            [](const SpectralPeak& a, const SpectralPeak& b) { return a.db > b.db; });
-  if (peaks.size() > 4) peaks.resize(4);
-  std::sort(peaks.begin(), peaks.end(),
-            [](const SpectralPeak& a, const SpectralPeak& b) { return a.hz < b.hz; });
+  struct Feature {
+    double hz;
+    double bw_oct;
+    double prominence;
+  };
+  const std::size_t n = target.size();
+  const auto extremum_at = [&](std::size_t i, int sign) {
+    const double v = sign * target[i];
+    return v > sign * target[i - 1] && v >= sign * target[i + 1] && v >= sign * target[i - 2] &&
+           v >= sign * target[i + 2];
+  };
+  std::vector<Feature> features;
+  for (int sign : {1, -1}) {
+    for (std::size_t i = 2; i + 2 < n; ++i) {
+      if (!extremum_at(i, sign)) continue;
+      double left = sign * target[i];
+      for (std::size_t k = i; k-- > 2;) {
+        left = std::min(left, sign * target[k]);
+        if (extremum_at(k, sign)) break;
+      }
+      double right = sign * target[i];
+      for (std::size_t k = i + 1; k + 2 < n; ++k) {
+        right = std::min(right, sign * target[k]);
+        if (extremum_at(k, sign)) break;
+      }
+      const double prominence = sign * target[i] - std::max(left, right);
+      std::size_t lo = i;
+      while (lo > 0 && sign * target[lo] > sign * target[i] - 3.0) --lo;
+      std::size_t hi = i;
+      while (hi + 1 < n && sign * target[hi] > sign * target[i] - 3.0) ++hi;
+      const double bw_hz = std::max(g.hz[hi] - g.hz[lo], 1.0);
+      const double bw_oct =
+          std::clamp(2.0 * std::asinh(bw_hz / (2.0 * g.hz[i])) / std::log(2.0), 0.05, 2.0);
+      features.push_back({g.hz[i], bw_oct, sign * prominence});
+    }
+  }
+  std::erase_if(features, [](const Feature& f) {
+    return f.hz < 250.0 || f.hz > 8000.0 || std::abs(f.prominence) < 3.0;
+  });
+  std::sort(features.begin(), features.end(), [](const Feature& a, const Feature& b) {
+    if ((a.prominence > 0.0) != (b.prominence > 0.0)) return a.prominence > 0.0;
+    return std::abs(a.prominence) > std::abs(b.prominence);
+  });
+  if (features.size() > 4) features.resize(4);
+  std::sort(features.begin(), features.end(),
+            [](const Feature& a, const Feature& b) { return a.hz < b.hz; });
   std::size_t row = 1;
-  for (const auto& p : peaks) {
-    const double bw_oct = std::clamp(2.0 * std::asinh(p.bw_hz / (2.0 * p.hz)) / std::log(2.0),
-                                     0.05, 2.0);
-    rows[row++] = {SectionType::kEq, clamp_fc(p.hz), bw_oct, 12.0};
+  for (const auto& f : features) {
+    rows[row++] = {SectionType::kEq, clamp_fc(f.hz), f.bw_oct, f.prominence < 0.0 ? -12.0 : 12.0};
   }
   rows[0] = {SectionType::kHighPass, 10500.0, 0.05, 0.0};
   rows[5] = {SectionType::kLowPass, 225.0, 0.8, 0.0};
