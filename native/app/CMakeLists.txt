@@ -15,8 +15,9 @@ add_library(trench_native_ui STATIC
   morph_strip.hpp
   response_plot.cpp
   response_plot.hpp
-  section_model.cpp
-  section_model.hpp
+  section_color.hpp
+  section_strip.cpp
+  section_strip.hpp
   space_dock.cpp
   space_dock.hpp
 )

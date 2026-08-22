@@ -2,14 +2,14 @@
 #include "main_window.hpp"
 #include "morph_strip.hpp"
 #include "response_plot.hpp"
-#include "section_model.hpp"
-#include "space_dock.hpp"
+#include "section_strip.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 #include "trench/core/section_param.hpp"
 
 #include <QTest>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QDoubleSpinBox>
 #include <QMouseEvent>
@@ -819,72 +819,121 @@ class MainWindowTest final : public QObject {
                                  trench::core::kP2kDatumHz));
   }
 
-  void sectionCellEditWritesLatticeWordsAsOneUndoStep() {
+  void theGainFaderWritesLatticeWordsAsOneUndoStep() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
-    auto* model = window.sectionModel();
-    QVERIFY(model != nullptr);
+    const auto row = first_eq_row(window);
+    QVERIFY(row >= 0);
+    auto* strip = window.sectionStrip(static_cast<std::size_t>(row));
+    QVERIFY(strip != nullptr);
+    auto* fader = strip->findChild<QSlider*>(QStringLiteral("gainFader"));
+    QVERIFY(fader != nullptr);
 
-    const auto before = window.body().words[0][0];
-    const auto cell = model->index(0, SectionModel::kFc);
-    const auto hz = cell.data(Qt::EditRole).toDouble();
-    QVERIFY(hz > 0.0);
-    QVERIFY(model->setData(cell, QVariant(hz * 0.85), Qt::EditRole));
+    const auto before = window.body().words[0][static_cast<std::size_t>(row)];
+    const auto start =
+        trench::core::p2k::param_of(before, trench::core::kP2kDatumHz).gain_db;
+    fader->setSliderDown(true);
+    for (int step = 1; step <= 12; ++step) {
+      fader->setValue(fader->value() + 5);
+    }
+    fader->setSliderDown(false);
 
-    const auto& after = window.body().words[0][0];
+    const auto after = window.body().words[0][static_cast<std::size_t>(row)];
     QVERIFY(after != before);
     QVERIFY(is_lattice_word(after[0]));
-    QVERIFY(is_lattice_word(after[2]));
-    QVERIFY(is_lattice_word(after[3]));
-    const auto [p, q] = trench::core::p2k::pq(after[2], after[3]);
-    QVERIFY(trench::core::p2k::is_legal(p, q, true));
+    QVERIFY(is_lattice_word(after[1]));
+    QCOMPARE(after[2], before[2]);
+    QCOMPARE(after[3], before[3]);
     QCOMPARE(after[4], before[4]);
-    QCOMPARE(window.body().words[4][0], after);
+    QVERIFY(trench::core::p2k::param_of(after, trench::core::kP2kDatumHz).gain_db > start);
+    QCOMPARE(window.body().words[4][static_cast<std::size_t>(row)], after);
     QCOMPARE(window.undoStack()->count(), 1);
   }
 
-  void editingFcMovesThePoleAndTheZeroToTheNewFc() {
+  void pressingAPlotMarkerSelectsThatStripsBandwidth() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
-    auto* model = window.sectionModel();
     const auto row = first_eq_row(window);
-    QVERIFY(row >= 0);
+    QVERIFY(row >= 1);
+    const auto section = static_cast<std::size_t>(row);
 
-    const auto cell = model->index(row, SectionModel::kFc);
-    const auto hz = cell.data(Qt::EditRole).toDouble() * 0.8;
-    QVERIFY(model->setData(cell, QVariant(hz), Qt::EditRole));
+    auto* plot = window.responsePlot();
+    const auto token = find_token(plot, section, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    press(plot, token->position);
+    release(plot, token->position);
+    QTest::qWait(20);
 
-    const auto geometry = trench::core::geometry_from_words(
-        window.body().words[0][static_cast<std::size_t>(row)], trench::core::kP2kDatumHz);
-    const auto& pole = std::get<trench::core::ConjugatePair>(geometry.pole);
-    const auto& zero = std::get<trench::core::ConjugatePair>(geometry.zero);
-    QVERIFY(std::abs(pole.hz - hz) <= hz * 0.02);
-    QVERIFY(std::abs(zero.hz - hz) <= hz * 0.02);
-    QCOMPARE(window.undoStack()->count(), 1);
+    for (std::size_t index = 0; index < trench::core::kLegacySectionCount; ++index) {
+      auto* control = window.sectionStrip(index)->findChild<QDoubleSpinBox*>(
+          QStringLiteral("bwControl"));
+      auto* type = window.sectionStrip(index)->findChild<QComboBox*>(
+          QStringLiteral("typeCombo"));
+      QVERIFY(control != nullptr);
+      QVERIFY(type != nullptr);
+      QCOMPARE(control->isVisible(), index == section);
+      QCOMPARE(type->isVisible(), index == section);
+    }
   }
 
-  void aTwelveDecibelBoostPullsTheZeroInsideThePole() {
+  void anFcEditSlidesTheBandAndKeepsTheZeroOffset() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
-    auto* model = window.sectionModel();
     const auto row = first_eq_row(window);
     QVERIFY(row >= 0);
+    const auto section = static_cast<std::size_t>(row);
 
-    QVERIFY(model->setData(model->index(row, SectionModel::kGain), QVariant(12.0),
-                           Qt::EditRole));
-    const auto geometry = trench::core::geometry_from_words(
-        window.body().words[0][static_cast<std::size_t>(row)], trench::core::kP2kDatumHz);
-    const auto& pole = std::get<trench::core::ConjugatePair>(geometry.pole);
-    const auto& zero = std::get<trench::core::ConjugatePair>(geometry.zero);
-    QVERIFY(zero.radius < pole.radius);
-    QVERIFY(std::abs(model->index(row, SectionModel::kGain).data(Qt::EditRole).toDouble() -
-                     12.0) < 1.5);
+    const auto offset_of = [&] {
+      const auto geometry = trench::core::geometry_from_words(
+          window.body().words[0][section], trench::core::kP2kDatumHz);
+      const auto& pole = std::get<trench::core::ConjugatePair>(geometry.pole);
+      const auto& zero = std::get<trench::core::ConjugatePair>(geometry.zero);
+      return std::log2(zero.hz / pole.hz);
+    };
+    const auto before = offset_of();
+    QVERIFY(std::abs(before) > 0.1);
+
+    auto param = trench::core::p2k::param_of(window.body().words[0][section],
+                                             trench::core::kP2kDatumHz);
+    param.fc_hz *= 0.8;
+    window.applyParam(section, trench::core::p2k::SectionEdit::kFc, param);
+
+    const auto pole = std::get<trench::core::ConjugatePair>(
+        trench::core::geometry_from_words(window.body().words[0][section],
+                                          trench::core::kP2kDatumHz)
+            .pole);
+    QVERIFY(std::abs(pole.hz - param.fc_hz) <= param.fc_hz * 0.05);
+    QVERIFY(std::abs(offset_of() - before) < 0.05);
+    QCOMPARE(window.undoStack()->count(), 1);
+  }
+
+  void aGainEditMovesOnlyTheZeroRadius() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto row = first_eq_row(window);
+    QVERIFY(row >= 0);
+    const auto section = static_cast<std::size_t>(row);
+
+    const auto before = window.body().words[0][section];
+    auto param = trench::core::p2k::param_of(before, trench::core::kP2kDatumHz);
+    param.gain_db += 12.0;
+    window.applyParam(section, trench::core::p2k::SectionEdit::kGain, param);
+
+    const auto after = window.body().words[0][section];
+    QCOMPARE(after[2], before[2]);
+    QCOMPARE(after[3], before[3]);
+    QVERIFY(pair_radius_of(after[0], after[1]) != pair_radius_of(before[0], before[1]));
+    QVERIFY(trench::core::p2k::param_of(after, trench::core::kP2kDatumHz).gain_db >
+            trench::core::p2k::param_of(before, trench::core::kP2kDatumHz).gain_db);
+    QCOMPARE(window.undoStack()->count(), 1);
   }
 
   void choosingLowPassPutsTheZeroTwoOctavesAboveFc() {
@@ -892,21 +941,28 @@ class MainWindowTest final : public QObject {
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
-    auto* model = window.sectionModel();
     const auto row = first_eq_row(window);
     QVERIFY(row >= 0);
+    const auto section = static_cast<std::size_t>(row);
+    auto* type = window.sectionStrip(section)->findChild<QComboBox*>(
+        QStringLiteral("typeCombo"));
+    QVERIFY(type != nullptr);
 
-    const auto fc = model->index(row, SectionModel::kFc).data(Qt::EditRole).toDouble();
-    QVERIFY(model->setData(model->index(row, SectionModel::kType),
-                           QVariant(SectionModel::typeIndex(
-                               trench::core::p2k::SectionType::kLowPass)),
-                           Qt::EditRole));
+    const auto fc = trench::core::p2k::param_of(window.body().words[0][section],
+                                                trench::core::kP2kDatumHz)
+                        .fc_hz;
+    type->setCurrentIndex(
+        SectionStrip::typeIndex(trench::core::p2k::SectionType::kLowPass));
+
     const auto geometry = trench::core::geometry_from_words(
-        window.body().words[0][static_cast<std::size_t>(row)], trench::core::kP2kDatumHz);
+        window.body().words[0][section], trench::core::kP2kDatumHz);
     const auto& zero = std::get<trench::core::ConjugatePair>(geometry.zero);
     QVERIFY(std::log2(zero.hz / fc) >= 2.0);
-    QCOMPARE(model->index(row, SectionModel::kType).data(Qt::DisplayRole).toString(),
-             QStringLiteral("LP"));
+    QCOMPARE(trench::core::p2k::param_of(window.body().words[0][section],
+                                         trench::core::kP2kDatumHz)
+                 .type,
+             trench::core::p2k::SectionType::kLowPass);
+    QCOMPARE(window.undoStack()->count(), 1);
   }
 
   void thePlotBandFollowsTheSpace() {
@@ -923,20 +979,6 @@ class MainWindowTest final : public QObject {
     QCOMPARE(plot->responsePointCount(), 512U);
     QVERIFY(std::abs(plot->frequencyAt(0) - 100.0) < 0.5);
     QVERIFY(std::abs(plot->frequencyAt(plot->responsePointCount() - 1) - 8000.0) < 4.0);
-  }
-
-  void intentCellWritesTheDocumentIntent() {
-    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    window.resize(960, 540);
-    window.show();
-    QTest::qWait(20);
-    auto* model = window.sectionModel();
-    QVERIFY(!window.document()->intent()[2].has_value());
-    const auto cell = model->index(2, SectionModel::kIntent);
-    QVERIFY(model->setData(cell, QVariant(SectionModel::intentIndex(trench::core::p2k::Role::kPeak)),
-                           Qt::EditRole));
-    QVERIFY(window.document()->intent()[2] == trench::core::p2k::Role::kPeak);
-    QCOMPARE(window.undoStack()->count(), 1);
   }
 
   void morphStripShowsTheInteriorAndSelectsCorners() {
@@ -982,9 +1024,9 @@ class MainWindowTest final : public QObject {
     const auto before = window.chassisBar()->scoreDb();
     QVERIFY(std::isfinite(before));
 
-    auto* lo = window.spaceDock()->findChild<QDoubleSpinBox*>(QStringLiteral("spaceLo"));
-    QVERIFY(lo != nullptr);
-    lo->setValue(200.0);
+    auto space = window.document()->space();
+    space.lo_hz = 200.0;
+    window.document()->setSpace(space);
 
     QCOMPARE(window.document()->space().lo_hz, 200.0);
     QVERIFY(std::abs(window.chassisBar()->scoreDb() - before) > 1.0e-9);

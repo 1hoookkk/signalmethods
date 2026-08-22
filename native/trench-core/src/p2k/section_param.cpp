@@ -52,6 +52,34 @@ bool root_admissible(std::uint16_t mag, std::uint16_t rsq, bool is_pole) {
   return is_legal(p, q, is_pole) && magnitude_admissible(nearest_lattice_word(mag), is_pole);
 }
 
+double pole_radius_of(double fc_hz, double bw_oct, double sample_rate_hz) {
+  return std::clamp(std::exp(-std::numbers::pi *
+                             bandwidth_hz(fc_hz, std::max(bw_oct, 0.0)) / sample_rate_hz),
+                    kPoleRMin, kPoleRMax);
+}
+
+double realized_hz(double hz, double radius, double sample_rate_hz) {
+  const auto [mag, rsq] = words_from_root(hz, radius);
+  const auto pair = geometry_from_words({0, 0, mag, rsq, 0}, sample_rate_hz).pole;
+  const auto* conjugate = std::get_if<ConjugatePair>(&pair);
+  return conjugate != nullptr ? conjugate->hz : hz;
+}
+
+std::array<std::uint16_t, 4> roots_from(double pole_hz, double pole_r, double zero_hz,
+                                        double zero_r, std::size_t section,
+                                        const std::array<std::uint16_t, 4>& current) {
+  const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, pole_r);
+  if (!root_admissible(pole_mag, pole_rsq, true)) {
+    return current;
+  }
+  const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, zero_r);
+  const std::uint16_t rsq = section == 5 ? kS6ZeroRsqWord : zero_rsq;
+  if (!root_admissible(zero_mag, rsq, false)) {
+    return current;
+  }
+  return {zero_mag, rsq, pole_mag, pole_rsq};
+}
+
 }  // namespace
 
 SectionParam param_of(const PackedSection& words, double sample_rate_hz) {
@@ -85,10 +113,7 @@ std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
   double zero_hz = kParkedRootHz;
   if (param.type != SectionType::kOff) {
     pole_hz = std::clamp(param.fc_hz, 20.0, kRootHiHz);
-    pole_r = std::clamp(std::exp(-std::numbers::pi *
-                                 bandwidth_hz(pole_hz, std::max(param.bw_oct, 0.0)) /
-                                 sample_rate_hz),
-                        kPoleRMin, kPoleRMax);
+    pole_r = pole_radius_of(pole_hz, param.bw_oct, sample_rate_hz);
     zero_hz = param.type == SectionType::kEq        ? pole_hz
               : param.type == SectionType::kLowPass ? std::min(pole_hz * kFarRatio, kRootHiHz)
                                                     : std::max(pole_hz / kFarRatio, 20.0);
@@ -118,6 +143,66 @@ std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
       continue;
     }
     const PackedSection probe{zero_mag, zero_rsq, pole_mag, pole_rsq, kProbeScaleWord};
+    const double error =
+        std::abs(gain_of(probe, param.type, pole_hz, sample_rate_hz) - param.gain_db);
+    if (error < best_error) {
+      best_error = error;
+      best = {zero_mag, zero_rsq, pole_mag, pole_rsq};
+    }
+  }
+  return best;
+}
+
+std::array<std::uint16_t, 4> words_from_param_keeping_offset(
+    const SectionParam& param, SectionEdit edit,
+    const std::array<std::uint16_t, 4>& current, std::size_t section,
+    double sample_rate_hz) {
+  if (edit == SectionEdit::kType || param.type == SectionType::kOff) {
+    return words_from_param(param, current, section, sample_rate_hz);
+  }
+  const PackedSection words{current[0], current[1], current[2], current[3],
+                            kProbeScaleWord};
+  const auto geometry = geometry_from_words(words, sample_rate_hz);
+  const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
+  const auto* zero = std::get_if<ConjugatePair>(&geometry.zero);
+  if (pole == nullptr || zero == nullptr) {
+    return words_from_param(param, current, section, sample_rate_hz);
+  }
+
+  double pole_hz = pole->hz;
+  double pole_r = pole->radius;
+  double zero_hz = zero->hz;
+  const double zero_r = section == 5 ? s6_zero_radius() : zero->radius;
+
+  if (edit == SectionEdit::kFc) {
+    const double target = std::clamp(param.fc_hz, 20.0, kRootHiHz);
+    const auto realized = realized_hz(target, pole_r, sample_rate_hz);
+    zero_hz = std::clamp(zero_hz * realized / std::max(pole_hz, 1.0), 20.0, kRootHiHz);
+    pole_hz = target;
+  } else if (edit == SectionEdit::kBw) {
+    pole_r = pole_radius_of(pole_hz, param.bw_oct, sample_rate_hz);
+  }
+  if (edit != SectionEdit::kGain || section == 5) {
+    return roots_from(pole_hz, pole_r, zero_hz, zero_r, section, current);
+  }
+
+  const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, pole_r);
+  if (!root_admissible(pole_mag, pole_rsq, true)) {
+    return current;
+  }
+  std::array<std::uint16_t, 4> best = current;
+  double best_error = std::numeric_limits<double>::infinity();
+  for (const double decoded : lattice_decoded()) {
+    const double radius = std::sqrt(std::max(1.0 - decoded, 0.0));
+    const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, radius);
+    if (!root_admissible(zero_mag, zero_rsq, false)) {
+      continue;
+    }
+    const PackedSection probe{zero_mag, zero_rsq, pole_mag, pole_rsq, kProbeScaleWord};
+    const auto pair = geometry_from_words(probe, sample_rate_hz).zero;
+    if (!std::holds_alternative<ConjugatePair>(pair)) {
+      continue;
+    }
     const double error =
         std::abs(gain_of(probe, param.type, pole_hz, sample_rate_hz) - param.gain_db);
     if (error < best_error) {

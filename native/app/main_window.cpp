@@ -5,8 +5,7 @@
 #include "fit_controller.hpp"
 #include "morph_strip.hpp"
 #include "response_plot.hpp"
-#include "section_model.hpp"
-#include "space_dock.hpp"
+#include "section_strip.hpp"
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/morph.hpp"
@@ -15,9 +14,8 @@
 
 #include <QAction>
 #include <QFileDialog>
-#include <QHeaderView>
+#include <QHBoxLayout>
 #include <QKeySequence>
-#include <QTableView>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -71,7 +69,7 @@ trench::core::p2k::PackedCorner flatten_corner(const BodyDocument::CornerSnapsho
   return out;
 }
 
-constexpr int kSectionRowHeight = 18;
+constexpr int kStripBankHeight = 148;
 
 bool is_audio(const std::filesystem::path& path) {
   auto ext = path.extension().string();
@@ -118,36 +116,17 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   morph_strip_->setObjectName(QStringLiteral("morphStrip"));
   column->addWidget(morph_strip_, 0);
 
-  section_model_ = new SectionModel(document_, this);
-  section_table_ = new QTableView(central);
-  section_table_->setObjectName(QStringLiteral("sectionTable"));
-  section_table_->setModel(section_model_);
-  section_table_->setItemDelegateForColumn(SectionModel::kType, new TypeDelegate(this));
-  section_table_->setItemDelegateForColumn(SectionModel::kIntent, new IntentDelegate(this));
-  section_table_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
-  section_table_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  section_table_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  section_table_->setSelectionMode(QAbstractItemView::SingleSelection);
-  section_table_->verticalHeader()->setMinimumSectionSize(kSectionRowHeight);
-  section_table_->verticalHeader()->setDefaultSectionSize(kSectionRowHeight);
-  section_table_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-  section_table_->verticalHeader()->setFixedWidth(18);
-  section_table_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-  section_table_->horizontalHeader()->setFixedHeight(kSectionRowHeight);
-  section_table_->setFixedHeight(kSectionRowHeight *
-                                 (static_cast<int>(trench::core::kLegacySectionCount) + 1));
-  section_table_->setStyleSheet(QStringLiteral(
-      "QTableView { background: #1a1f23; color: #aebabe; gridline-color: #373f43; "
-      "border: none; selection-background-color: #373f43; selection-color: #aebabe; }"
-      "QHeaderView::section { background: #1a1f23; color: #767f83; border: none; "
-      "border-bottom: 1px solid #373f43; padding: 0 4px; }"
-      "QTableCornerButton::section { background: #1a1f23; border: none; }"));
-  column->addWidget(section_table_, 0);
-
-  space_dock_ = new SpaceDock(central);
-  space_dock_->setObjectName(QStringLiteral("spaceDock"));
-  space_dock_->setSpace(document_->space());
-  column->addWidget(space_dock_, 0);
+  auto* bank = new QWidget(central);
+  bank->setObjectName(QStringLiteral("sectionStrips"));
+  bank->setFixedHeight(kStripBankHeight);
+  auto* row = new QHBoxLayout(bank);
+  row->setContentsMargins(0, 0, 0, 0);
+  row->setSpacing(0);
+  for (std::size_t section = 0; section < strips_.size(); ++section) {
+    strips_[section] = new SectionStrip(section, bank);
+    row->addWidget(strips_[section], 1);
+  }
+  column->addWidget(bank, 0);
 
   chassis_bar_ = new ChassisBar(central);
   chassis_bar_->setBodyName(QString::fromStdString(body_path.filename().string()));
@@ -173,8 +152,25 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](std::size_t section, ResponsePlotWidget::Lane lane) {
             document_->toggleLane(section, lane == ResponsePlotWidget::Lane::kPole);
           });
+  connect(response_plot_, &ResponsePlotWidget::tokenSelected, this,
+          [this](std::size_t section, ResponsePlotWidget::Lane) {
+            selectSection(section);
+          });
+  for (auto* strip : strips_) {
+    connect(strip, &SectionStrip::selectRequested, this, &MainWindow::selectSection);
+    connect(strip, &SectionStrip::gestureStarted, this, [this](std::size_t section) {
+      before_words_ = document_->body().words[document_->corner()][section];
+      strip_gesture_ = true;
+    });
+    connect(strip, &SectionStrip::gestureFinished, this, [this](std::size_t section) {
+      strip_gesture_ = false;
+      document_->commitGesture(section, before_words_);
+    });
+    connect(strip, &SectionStrip::paramEdited, this, &MainWindow::applyParam);
+  }
   connect(document_, &BodyDocument::bodyChanged, this, [this] {
     response_plot_->refresh();
+    updateStrips();
     updateProbes();
     updateInterior();
   });
@@ -189,16 +185,12 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     const auto view = document_->view();
     morph_strip_->setView(view.morph, view.q);
     response_plot_->setView(view.morph, view.q);
+    updateStrips();
     updateProbes();
   });
   connect(morph_strip_, &MorphStrip::viewEdited, this,
           [this](float morph, float q) { document_->setView(morph, q); });
-  connect(space_dock_, &SpaceDock::spaceEdited, this,
-          [this](const trench::core::p2k::PerceptualSpace& space) {
-            document_->setSpace(space);
-          });
   connect(document_, &BodyDocument::spaceChanged, this, [this] {
-    space_dock_->setSpace(document_->space());
     response_plot_->setSpace(document_->space());
     updateProbes();
     updateInterior();
@@ -286,6 +278,8 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   redo_action_->setShortcut(QKeySequence::Redo);
   addAction(redo_action_);
 
+  selectSection(0);
+  updateStrips();
   updateVerbs();
   updateProbes();
   updateInterior();
@@ -297,9 +291,9 @@ ChassisBar* MainWindow::chassisBar() const noexcept { return chassis_bar_; }
 
 MorphStrip* MainWindow::morphStrip() const noexcept { return morph_strip_; }
 
-SpaceDock* MainWindow::spaceDock() const noexcept { return space_dock_; }
-
-SectionModel* MainWindow::sectionModel() const noexcept { return section_model_; }
+SectionStrip* MainWindow::sectionStrip(std::size_t section) const noexcept {
+  return section < strips_.size() ? strips_[section] : nullptr;
+}
 
 const std::filesystem::path& MainWindow::bodyPath() const noexcept { return body_path_; }
 
@@ -353,6 +347,31 @@ double MainWindow::dcDriftDb() const noexcept { return dc_drift_db_; }
 void MainWindow::applySection(std::size_t section,
                               const trench::core::PackedSection& words) {
   document_->applySection(section, words);
+}
+
+void MainWindow::applyParam(std::size_t section, trench::core::p2k::SectionEdit edit,
+                            const trench::core::p2k::SectionParam& param) {
+  if (section >= trench::core::kLegacySectionCount) return;
+  const auto before = document_->body().words[document_->corner()][section];
+  const std::array<std::uint16_t, 4> current{before[0], before[1], before[2], before[3]};
+  const auto roots = trench::core::p2k::words_from_param_keeping_offset(
+      param, edit, current, section, trench::core::kP2kDatumHz);
+  auto candidate = before;
+  for (std::size_t word = 0; word < roots.size(); ++word) {
+    candidate[word] = roots[word];
+  }
+  if (candidate == before) return;
+  document_->applySection(section, candidate);
+  if (!strip_gesture_) {
+    document_->commitGesture(section, before);
+  }
+}
+
+void MainWindow::selectSection(std::size_t section) {
+  if (section >= strips_.size()) return;
+  for (auto* strip : strips_) {
+    strip->setSelected(strip->section() == section);
+  }
 }
 
 void MainWindow::setSourceModel(trench::core::measure::Source source) {
@@ -454,6 +473,14 @@ void MainWindow::updateProbes() {
   dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
   chassis_bar_->setDcDriftDb(dc_drift_db_);
   chassis_bar_->setScoreDb(document_->targetScoreDb());
+}
+
+void MainWindow::updateStrips() {
+  for (auto* strip : strips_) {
+    strip->setParam(trench::core::p2k::param_of(
+        document_->body().words[document_->corner()][strip->section()],
+        trench::core::kP2kDatumHz));
+  }
 }
 
 void MainWindow::updateInterior() {

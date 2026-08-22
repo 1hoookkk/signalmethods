@@ -5,11 +5,13 @@
 #include "response_plot.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/packed_body.hpp"
+#include "trench/core/section_param.hpp"
 
 #include <QList>
 #include <QMainWindow>
 #include <QUndoStack>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -17,11 +19,9 @@
 #include <utility>
 
 class QAction;
-class QTableView;
 class ChassisBar;
 class MorphStrip;
-class SectionModel;
-class SpaceDock;
+class SectionStrip;
 
 class MainWindow final : public QMainWindow {
   Q_OBJECT
@@ -34,8 +34,7 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] ResponsePlotWidget* responsePlot() const noexcept;
   [[nodiscard]] ChassisBar* chassisBar() const noexcept;
   [[nodiscard]] MorphStrip* morphStrip() const noexcept;
-  [[nodiscard]] SpaceDock* spaceDock() const noexcept;
-  [[nodiscard]] SectionModel* sectionModel() const noexcept;
+  [[nodiscard]] SectionStrip* sectionStrip(std::size_t section) const noexcept;
   [[nodiscard]] const std::filesystem::path& bodyPath() const noexcept;
   [[nodiscard]] BodyDocument* document() const noexcept;
   [[nodiscard]] FitController* fitController() const noexcept;
@@ -47,6 +46,9 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] double dcDriftDb() const noexcept;
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
+  void applyParam(std::size_t section, trench::core::p2k::SectionEdit edit,
+                  const trench::core::p2k::SectionParam& param);
+  void selectSection(std::size_t section);
   void setCorner(std::size_t corner);
   bool saveBody(const std::filesystem::path& path);
   bool loadTarget(const std::filesystem::path& path);
@@ -63,6 +65,7 @@ class MainWindow final : public QMainWindow {
   void updateVerbs();
   void updateProbes();
   void updateInterior();
+  void updateStrips();
   void endRun();
 
   BodyDocument* document_{};
@@ -74,11 +77,10 @@ class MainWindow final : public QMainWindow {
   bool fit_active_{};
   double dc_drift_db_{};
   trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
+  bool strip_gesture_{};
   ResponsePlotWidget* response_plot_{};
   MorphStrip* morph_strip_{};
-  SectionModel* section_model_{};
-  QTableView* section_table_{};
-  SpaceDock* space_dock_{};
+  std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};
   ChassisBar* chassis_bar_{};
   QAction* undo_action_{};
   QAction* redo_action_{};

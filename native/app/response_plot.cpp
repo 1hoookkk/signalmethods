@@ -1,5 +1,6 @@
 #include "response_plot.hpp"
 
+#include "section_color.hpp"
 #include "trench/core/p2k.hpp"
 
 #include <QApplication>
@@ -93,10 +94,6 @@ double y_for_contribution(double db, double low_db, double high_db, const QRectF
            (kOverflowBandPx - kTokenRadiusPx) / (1.0 + excess / kOverflowScaleDb);
   }
   return bottom - (db - low_db) / (high_db - low_db) * (bottom - top);
-}
-
-QColor section_color(std::size_t section) {
-  return QColor::fromHsvF(static_cast<double>(section) / 7.0, 0.58, 1.0);
 }
 
 bool root_placement(const trench::core::RootPair& pair, double low_hz, double high_hz,
