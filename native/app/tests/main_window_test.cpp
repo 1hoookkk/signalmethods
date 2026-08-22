@@ -750,6 +750,119 @@ class MainWindowTest final : public QObject {
       }
     }
   }
+
+  void theSpaceIsOneUndoEntryAndLeavesTheBodyAlone() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    auto* document = window.document();
+    const auto before_bytes = window.body().native_bytes();
+    const auto before_lo = document->grid().hz.front();
+    QVERIFY(std::abs(before_lo - trench::core::p2k::kLoHz) < 1.0e-9);
+
+    auto space = document->space();
+    space.lo_hz = 200.0;
+    document->setSpace(space);
+
+    QCOMPARE(window.undoStack()->count(), 1);
+    QVERIFY(std::abs(document->grid().hz.front() - 200.0) < 1.0e-9);
+    QVERIFY(window.body().native_bytes() == before_bytes);
+
+    window.undoStack()->undo();
+    QVERIFY(std::abs(document->grid().hz.front() - before_lo) < 1.0e-12);
+    QVERIFY(window.body().native_bytes() == before_bytes);
+  }
+
+  void roleIntentIsOneUndoEntryAndRoundTrips() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    auto* document = window.document();
+    QVERIFY(!document->intent()[5].has_value());
+
+    document->setIntent(5, trench::core::p2k::Role::kTilt);
+    QCOMPARE(window.undoStack()->count(), 1);
+    QVERIFY(document->intent()[5].has_value());
+    QCOMPARE(*document->intent()[5], trench::core::p2k::Role::kTilt);
+
+    window.undoStack()->undo();
+    QVERIFY(!document->intent()[5].has_value());
+    window.undoStack()->redo();
+    QCOMPARE(*document->intent()[5], trench::core::p2k::Role::kTilt);
+    QCOMPARE(window.undoStack()->count(), 1);
+  }
+
+  void theViewIsTheCornerSelectorAtItsCorners() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    auto* document = window.document();
+    QVERIFY(document->atCorner());
+    const auto corner_zero = document->viewResponseDb();
+    QCOMPARE(corner_zero.size(), trench::core::p2k::kNpts);
+
+    document->setView(1.0F, 0.0F);
+    QCOMPARE(document->corner(), std::size_t{1});
+    QVERIFY(document->atCorner());
+
+    document->setView(0.5F, 0.5F);
+    QCOMPARE(document->corner(), std::size_t{1});
+    QVERIFY(!document->atCorner());
+    const auto interior = document->viewResponseDb();
+    QCOMPARE(interior.size(), corner_zero.size());
+    bool differs = false;
+    for (std::size_t index = 0; index < interior.size(); ++index) {
+      differs = differs || std::abs(interior[index] - corner_zero[index]) > 1.0e-9;
+    }
+    QVERIFY(differs);
+
+    document->setCorner(2);
+    QCOMPARE(document->view().morph, 0.0F);
+    QCOMPARE(document->view().q, 1.0F);
+    QVERIFY(document->atCorner());
+  }
+
+  void theTargetScoreFollowsThePerceptualSpace() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    auto* document = window.document();
+    QVERIFY(std::isnan(document->targetScoreDb()));
+
+    QVERIFY(window.loadTarget(std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                              "ref/presets/P2k_002_early_rizer.bin"));
+    const auto wide = document->targetScoreDb();
+    QVERIFY(std::isfinite(wide));
+    QVERIFY(wide > 0.0);
+
+    auto space = document->space();
+    space.lo_hz = 300.0;
+    space.hi_hz = 4000.0;
+    document->setSpace(space);
+    const auto narrow = document->targetScoreDb();
+    QVERIFY(std::isfinite(narrow));
+    QVERIFY(std::abs(narrow - wide) > 1.0e-6);
+  }
+
+  void aTiltIntentKeepsSectionSixInsideItsEnvelope() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    QVERIFY(window.loadTarget(std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                              "ref/presets/P2k_002_early_rizer.bin"));
+
+    auto* document = window.document();
+    auto tilted = window.body().words[0][5];
+    tilted[0] = p2k::words_from_root(4000.0, p2k::s6_zero_radius()).first;
+    const auto pole = p2k::words_from_root(500.0, 0.76);
+    tilted[2] = pole.first;
+    tilted[3] = pole.second;
+    document->applySection(5, tilted);
+    QVERIFY(p2k::within_envelope(p2k::Role::kTilt, window.body().words[0][5],
+                                 trench::core::kP2kDatumHz));
+    document->setIntent(5, p2k::Role::kTilt);
+
+    const auto before = window.body().native_bytes();
+    window.startFit();
+    QTRY_VERIFY_WITH_TIMEOUT(window.body().native_bytes() != before, 60000);
+    QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 60000);
+
+    QVERIFY(p2k::within_envelope(p2k::Role::kTilt, window.body().words[0][5],
+                                 trench::core::kP2kDatumHz));
+  }
 };
 
 QTEST_MAIN(MainWindowTest)

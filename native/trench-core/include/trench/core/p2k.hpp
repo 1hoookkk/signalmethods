@@ -72,6 +72,7 @@ struct PerceptualSpace {
     double lo_hz{};
     double hi_hz{};
     double gain{1.0};
+    bool operator==(const Band&) const = default;
   };
   double lo_hz{kLoHz};
   double hi_hz{kHiHz};

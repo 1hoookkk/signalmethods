@@ -2,6 +2,7 @@
 
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
+#include "trench/core/role.hpp"
 
 #include <QObject>
 #include <QUndoStack>
@@ -19,6 +20,11 @@ class BodyDocument final : public QObject {
   using CornerSnapshot =
       std::array<trench::core::PackedSection, trench::core::kLegacySectionCount>;
 
+  struct View {
+    float morph{0};
+    float q{0};
+  };
+
   BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
                QObject* parent = nullptr);
 
@@ -31,9 +37,24 @@ class BodyDocument final : public QObject {
   [[nodiscard]] CornerSnapshot cornerSnapshot() const;
   [[nodiscard]] trench::core::p2k::CornerWords seedWords() const;
 
+  [[nodiscard]] const trench::core::p2k::PerceptualSpace& space() const noexcept;
+  [[nodiscard]] const trench::core::p2k::Grid& grid() const noexcept;
+  [[nodiscard]] const trench::core::p2k::RoleIntent& intent() const noexcept;
+  [[nodiscard]] View view() const noexcept;
+  [[nodiscard]] bool atCorner() const noexcept;
+  [[nodiscard]] std::vector<double> viewResponseDb() const;
+  [[nodiscard]] double targetScoreDb() const;
+  [[nodiscard]] trench::core::p2k::Role roleOf(std::size_t section) const;
+
   void setCorner(std::size_t corner);
   void setTarget(std::vector<double> target);
   void clearTarget();
+  void setSpace(const trench::core::p2k::PerceptualSpace& space);
+  void setIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
+  void setView(float morph, float q);
+
+  void applySpace(const trench::core::p2k::PerceptualSpace& space);
+  void applyIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
 
   void toggleLane(std::size_t section, bool pole);
   void applySection(std::size_t section, const trench::core::PackedSection& words);
@@ -52,6 +73,9 @@ class BodyDocument final : public QObject {
   void cornerChanged(std::size_t corner);
   void freedomMaskChanged(std::uint32_t mask);
   void targetChanged();
+  void spaceChanged();
+  void intentChanged(std::size_t section);
+  void viewChanged();
 
  private:
   trench::core::PackedBody body_;
@@ -59,5 +83,9 @@ class BodyDocument final : public QObject {
   double sample_rate_hz_{};
   std::uint32_t freedom_mask_{};
   std::optional<std::vector<double>> target_;
+  trench::core::p2k::PerceptualSpace space_{};
+  trench::core::p2k::Grid grid_;
+  trench::core::p2k::RoleIntent intent_{};
+  View view_{};
   QUndoStack undo_stack_;
 };

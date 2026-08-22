@@ -21,7 +21,8 @@ class FitController final : public QObject {
   [[nodiscard]] quint64 generation() const noexcept;
 
   void start(std::vector<double> target, trench::core::p2k::CornerWords seed,
-             std::uint32_t mask);
+             std::uint32_t mask, trench::core::p2k::Grid grid,
+             trench::core::p2k::RoleIntent intent);
   void setMask(std::uint32_t mask);
   void requestStop();
   void abandon();

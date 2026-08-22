@@ -1,9 +1,13 @@
 #include "body_document.hpp"
 
+#include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
 
 #include <QUndoCommand>
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <utility>
 
 namespace {
@@ -53,6 +57,38 @@ class SectionEditCommand final : public QUndoCommand {
   trench::core::PackedSection after_;
 };
 
+class SpaceEditCommand final : public QUndoCommand {
+ public:
+  SpaceEditCommand(BodyDocument* document, trench::core::p2k::PerceptualSpace before,
+                   trench::core::p2k::PerceptualSpace after)
+      : document_(document), before_(std::move(before)), after_(std::move(after)) {}
+
+  void redo() override { document_->applySpace(after_); }
+  void undo() override { document_->applySpace(before_); }
+
+ private:
+  BodyDocument* document_;
+  trench::core::p2k::PerceptualSpace before_;
+  trench::core::p2k::PerceptualSpace after_;
+};
+
+class IntentEditCommand final : public QUndoCommand {
+ public:
+  IntentEditCommand(BodyDocument* document, std::size_t section,
+                    std::optional<trench::core::p2k::Role> before,
+                    std::optional<trench::core::p2k::Role> after)
+      : document_(document), section_(section), before_(before), after_(after) {}
+
+  void redo() override { document_->applyIntent(section_, after_); }
+  void undo() override { document_->applyIntent(section_, before_); }
+
+ private:
+  BodyDocument* document_;
+  std::size_t section_;
+  std::optional<trench::core::p2k::Role> before_;
+  std::optional<trench::core::p2k::Role> after_;
+};
+
 }  // namespace
 
 BodyDocument::BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
@@ -61,6 +97,7 @@ BodyDocument::BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
       body_(std::move(body)),
       sample_rate_hz_(sample_rate_hz),
       freedom_mask_(trench::core::p2k::kAllFree),
+      grid_(trench::core::p2k::make_grid(space_)),
       undo_stack_(this) {}
 
 const trench::core::PackedBody& BodyDocument::body() const noexcept { return body_; }
@@ -68,7 +105,13 @@ const trench::core::PackedBody& BodyDocument::body() const noexcept { return bod
 std::size_t BodyDocument::corner() const noexcept { return corner_; }
 
 void BodyDocument::setCorner(std::size_t corner) {
-  if (corner >= trench::core::kLegacyCornerCount || corner == corner_) return;
+  if (corner >= trench::core::kLegacyCornerCount) return;
+  const View wanted{(corner & 1U) != 0U ? 1.0F : 0.0F, (corner & 2U) != 0U ? 1.0F : 0.0F};
+  if (wanted.morph != view_.morph || wanted.q != view_.q) {
+    view_ = wanted;
+    emit viewChanged();
+  }
+  if (corner == corner_) return;
   corner_ = corner;
   emit cornerChanged(corner_);
 }
@@ -117,6 +160,81 @@ void BodyDocument::clearTarget() {
   if (!target_) return;
   target_.reset();
   emit targetChanged();
+}
+
+const trench::core::p2k::PerceptualSpace& BodyDocument::space() const noexcept {
+  return space_;
+}
+
+const trench::core::p2k::Grid& BodyDocument::grid() const noexcept { return grid_; }
+
+void BodyDocument::setSpace(const trench::core::p2k::PerceptualSpace& space) {
+  undo_stack_.push(new SpaceEditCommand(this, space_, space));
+}
+
+void BodyDocument::applySpace(const trench::core::p2k::PerceptualSpace& space) {
+  space_ = space;
+  grid_ = trench::core::p2k::make_grid(space_);
+  emit spaceChanged();
+}
+
+const trench::core::p2k::RoleIntent& BodyDocument::intent() const noexcept {
+  return intent_;
+}
+
+void BodyDocument::setIntent(std::size_t section,
+                             std::optional<trench::core::p2k::Role> role) {
+  if (section >= intent_.size() || intent_[section] == role) return;
+  undo_stack_.push(new IntentEditCommand(this, section, intent_[section], role));
+}
+
+void BodyDocument::applyIntent(std::size_t section,
+                               std::optional<trench::core::p2k::Role> role) {
+  intent_[section] = role;
+  emit intentChanged(section);
+}
+
+BodyDocument::View BodyDocument::view() const noexcept { return view_; }
+
+void BodyDocument::setView(float morph, float q) {
+  const View wanted{std::clamp(morph, 0.0F, 1.0F), std::clamp(q, 0.0F, 1.0F)};
+  if (wanted.morph != view_.morph || wanted.q != view_.q) {
+    view_ = wanted;
+    emit viewChanged();
+  }
+  if (!atCorner()) return;
+  setCorner((view_.morph > 0.5F ? 1U : 0U) | ((view_.q > 0.5F ? 1U : 0U) << 1U));
+}
+
+bool BodyDocument::atCorner() const noexcept {
+  return (view_.morph == 0.0F || view_.morph == 1.0F) &&
+         (view_.q == 0.0F || view_.q == 1.0F);
+}
+
+std::vector<double> BodyDocument::viewResponseDb() const {
+  if (atCorner()) {
+    trench::core::p2k::StoredCorner words{};
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      for (std::size_t word = 0; word < trench::core::p2k::kWordCount; ++word) {
+        words[section][word] = body_.words[corner_][section][word];
+      }
+    }
+    return trench::core::p2k::corner_response_db(words, grid_);
+  }
+  const auto bytes = body_.legacy_bytes();
+  return trench::core::p2k::morph_response_db(bytes, view_.morph, view_.q, grid_);
+}
+
+double BodyDocument::targetScoreDb() const {
+  if (!target_) return std::numeric_limits<double>::quiet_NaN();
+  const auto model = viewResponseDb();
+  std::vector<double> scratch(model.size(), 0.0);
+  return std::sqrt(grid_.residual_var(*target_, model, scratch));
+}
+
+trench::core::p2k::Role BodyDocument::roleOf(std::size_t section) const {
+  return trench::core::p2k::role_of(body_.words[corner_][section],
+                                    trench::core::kP2kDatumHz);
 }
 
 BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot() const {

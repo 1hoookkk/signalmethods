@@ -402,7 +402,8 @@ void MainWindow::startFit() {
   response_plot_->setFitRunning(true);
   updateVerbs();
   fit_controller_->start(*document_->target(), document_->seedWords(),
-                         document_->freedomMask());
+                         document_->freedomMask(), document_->grid(),
+                         document_->intent());
 }
 
 void MainWindow::stopAndKeep() {
