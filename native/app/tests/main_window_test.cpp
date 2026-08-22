@@ -1,5 +1,6 @@
 #include "main_window.hpp"
 #include "response_plot.hpp"
+#include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
@@ -13,6 +14,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <numbers>
 #include <optional>
 #include <vector>
 
@@ -86,6 +88,54 @@ trench::core::p2k::PackedCorner flatten_first_corner(const trench::core::PackedB
     }
   }
   return out;
+}
+
+void put32(std::ofstream& out, std::uint32_t v) { out.write(reinterpret_cast<const char*>(&v), 4); }
+void put16(std::ofstream& out, std::uint16_t v) { out.write(reinterpret_cast<const char*>(&v), 2); }
+
+std::filesystem::path write_filtered_sawtooth_wav(
+    double f0, double seconds, const std::vector<trench::core::PackedSection>& sections) {
+  const double rate = trench::core::kP2kDatumHz;
+  const auto count = static_cast<std::size_t>(seconds * rate);
+  std::vector<double> x(count, 0.0);
+  for (std::size_t k = 1; static_cast<double>(k) * f0 < 0.5 * rate; ++k) {
+    for (std::size_t i = 0; i < count; ++i) {
+      x[i] += std::sin(2.0 * std::numbers::pi * static_cast<double>(k) * f0 * static_cast<double>(i) / rate) /
+              static_cast<double>(k);
+    }
+  }
+  for (const auto& words : sections) {
+    const auto b = trench::core::section_words_to_biquad(words);
+    double w1 = 0.0;
+    double w2 = 0.0;
+    for (auto& sample : x) {
+      const double w0 = sample - b[3] * w1 - b[4] * w2;
+      sample = b[0] * w0 + b[1] * w1 + b[2] * w2;
+      w2 = w1;
+      w1 = w0;
+    }
+  }
+  double peak = 1e-9;
+  for (const auto v : x) peak = std::max(peak, std::abs(v));
+  const auto path = std::filesystem::temp_directory_path() / "trench_main_window_303.wav";
+  std::ofstream out(path, std::ios::binary);
+  const auto data_bytes = static_cast<std::uint32_t>(count * 2);
+  out.write("RIFF", 4);
+  put32(out, 36 + data_bytes);
+  out.write("WAVEfmt ", 8);
+  put32(out, 16);
+  put16(out, 1);
+  put16(out, 1);
+  put32(out, static_cast<std::uint32_t>(rate));
+  put32(out, static_cast<std::uint32_t>(rate) * 2);
+  put16(out, 2);
+  put16(out, 16);
+  out.write("data", 4);
+  put32(out, data_bytes);
+  for (const auto v : x) {
+    put16(out, static_cast<std::uint16_t>(static_cast<std::int16_t>(std::lround(30000.0 * v / peak))));
+  }
+  return path;
 }
 
 }  // namespace
@@ -371,6 +421,42 @@ class MainWindowTest final : public QObject {
       weighted_sum += grid.weight[index] * plot->residualDbAt(index);
     }
     QVERIFY(std::abs(weighted_sum) < 1.0e-6);
+  }
+
+  void audioTargetMeasuresTheRecordingOntoTheFitGrid() {
+    const auto sections = std::vector<trench::core::PackedSection>{
+        trench::core::words_from_geometry(
+            {trench::core::ConjugatePair{1200.0, 0.97}, trench::core::DegeneratePair{}, 0.25},
+            trench::core::kP2kDatumHz),
+        trench::core::words_from_geometry(
+            {trench::core::ConjugatePair{400.0, 0.9}, trench::core::ConjugatePair{3000.0, 0.8}, 1.0},
+            trench::core::kP2kDatumHz)};
+    const auto wav = write_filtered_sawtooth_wav(49.14, 2.0, sections);
+
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    QCOMPARE(window.sourceModel(), trench::core::measure::Source::kFlat);
+    window.setSourceModel(trench::core::measure::Source::kSawtooth);
+    QVERIFY(window.loadTarget(wav));
+    QVERIFY(window.document()->target().has_value());
+    QCOMPARE(window.document()->target()->size(), trench::core::p2k::kNpts);
+
+    const auto& grid = trench::core::p2k::grid();
+    std::vector<double> hz;
+    std::vector<double> weight;
+    std::vector<double> target;
+    for (std::size_t i = 0; i < grid.hz.size(); ++i) {
+      if (grid.hz[i] >= 49.14 && grid.hz[i] <= 12000.0) {
+        hz.push_back(grid.hz[i]);
+        weight.push_back(grid.weight[i]);
+        target.push_back((*window.document()->target())[i]);
+      }
+    }
+    std::vector<std::uint16_t> words;
+    for (const auto& s : sections) words.insert(words.end(), s.begin(), s.end());
+    const auto report = trench::core::measure::score_words(
+        words, trench::core::kP2kDatumHz, hz, weight, target);
+    QVERIFY2(report.rms_db < 0.5, qPrintable(QString::number(report.rms_db)));
+    std::filesystem::remove(wav);
   }
 
   void pressPublishesSelectedTokenReadout() {

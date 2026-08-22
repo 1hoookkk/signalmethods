@@ -3,6 +3,7 @@
 #include "body_document.hpp"
 #include "fit_controller.hpp"
 #include "response_plot.hpp"
+#include "trench/core/measure.hpp"
 #include "trench/core/packed_body.hpp"
 
 #include <QList>
@@ -39,6 +40,8 @@ class MainWindow final : public QMainWindow {
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   bool loadTarget(const std::filesystem::path& path);
+  void setSourceModel(trench::core::measure::Source source);
+  [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
   void startFit();
   void stopAndKeep();
   void discardFit();
@@ -56,6 +59,7 @@ class MainWindow final : public QMainWindow {
   BodyDocument::CornerSnapshot pre_fit_{};
   bool fit_active_{};
   double dc_drift_db_{};
+  trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
   std::optional<std::pair<std::size_t, ResponsePlotWidget::Lane>> selected_;
   ResponsePlotWidget* response_plot_{};
   ChassisBar* chassis_bar_{};

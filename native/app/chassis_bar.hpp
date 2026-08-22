@@ -12,7 +12,7 @@ class ChassisBar final : public QWidget {
   Q_OBJECT
 
  public:
-  enum class Verb { kUnity, kTarget, kFit, kKeep, kDiscard };
+  enum class Verb { kUnity, kSource, kTarget, kFit, kKeep, kDiscard };
 
   struct Readout {
     std::size_t section{};
@@ -26,6 +26,7 @@ class ChassisBar final : public QWidget {
   void setTargetName(const QString& name);
   void setState(bool has_target, bool running);
   void setDcDriftDb(double db);
+  void setSourceSawtooth(bool sawtooth);
   void setReadout(const std::optional<Readout>& readout);
   [[nodiscard]] QString readoutText() const;
 
@@ -55,6 +56,7 @@ class ChassisBar final : public QWidget {
   bool has_target_{};
   bool running_{};
   double dc_drift_db_{};
+  bool source_sawtooth_{};
   std::optional<Readout> readout_;
   std::optional<Verb> hover_;
   std::optional<Verb> pressed_;

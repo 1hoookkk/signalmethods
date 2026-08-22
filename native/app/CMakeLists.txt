@@ -14,7 +14,7 @@ add_library(trench_native_ui STATIC
   response_plot.cpp
   response_plot.hpp
 )
-target_link_libraries(trench_native_ui PUBLIC trench_native_core Qt6::Widgets)
+target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(trench_native_ui PRIVATE TRENCH_SOURCE_ROOT="${PROJECT_SOURCE_DIR}")
 

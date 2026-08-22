@@ -4,6 +4,8 @@
 #include "chassis_bar.hpp"
 #include "fit_controller.hpp"
 #include "response_plot.hpp"
+#include "trench/audio/audio_boundary.hpp"
+#include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
@@ -13,6 +15,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <cctype>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -61,6 +64,12 @@ trench::core::p2k::PackedCorner flatten_corner(const BodyDocument::CornerSnapsho
     }
   }
   return out;
+}
+
+bool is_audio(const std::filesystem::path& path) {
+  auto ext = path.extension().string();
+  for (auto& c : ext) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  return ext == ".wav" || ext == ".aif" || ext == ".aiff" || ext == ".flac";
 }
 
 QString hex_word(std::uint16_t word) {
@@ -168,6 +177,11 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
       case ChassisBar::Verb::kUnity:
         renormalizeDc();
         break;
+      case ChassisBar::Verb::kSource:
+        setSourceModel(source_model_ == trench::core::measure::Source::kFlat
+                           ? trench::core::measure::Source::kSawtooth
+                           : trench::core::measure::Source::kFlat);
+        break;
       case ChassisBar::Verb::kTarget:
         chooseTarget();
         break;
@@ -226,7 +240,31 @@ void MainWindow::applySection(std::size_t section,
   document_->applySection(section, words);
 }
 
+void MainWindow::setSourceModel(trench::core::measure::Source source) {
+  source_model_ = source;
+  chassis_bar_->setSourceSawtooth(source == trench::core::measure::Source::kSawtooth);
+}
+
+trench::core::measure::Source MainWindow::sourceModel() const noexcept {
+  return source_model_;
+}
+
 bool MainWindow::loadTarget(const std::filesystem::path& path) {
+  if (is_audio(path)) {
+    const auto clip = trench::audio::decode_mono(path);
+    if (!clip) return false;
+    std::vector<double> target;
+    try {
+      const auto envelope = trench::core::measure::harmonic_envelope(
+          clip->samples, clip->sample_rate_hz, source_model_);
+      target = trench::core::measure::target_on_grid(envelope, trench::core::p2k::grid().hz);
+    } catch (const std::exception&) {
+      return false;
+    }
+    document_->setTarget(std::move(target));
+    chassis_bar_->setTargetName(QString::fromStdString(path.filename().string()));
+    return true;
+  }
   if (path.extension() == ".txt") {
     auto curve = read_curve(path);
     if (curve.size() != trench::core::p2k::kNpts) return false;
@@ -250,7 +288,7 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
 void MainWindow::chooseTarget() {
   const auto chosen = QFileDialog::getOpenFileName(
       this, QStringLiteral("TARGET"), QString(),
-      QStringLiteral("Target (*.body240 *.bin *.txt)"));
+      QStringLiteral("Target (*.body240 *.bin *.txt *.wav *.aif *.aiff *.flac)"));
   if (chosen.isEmpty()) return;
   loadTarget(std::filesystem::path(chosen.toStdWString()));
 }
