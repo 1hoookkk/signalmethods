@@ -9,7 +9,7 @@ import soundfile as sf
 from scipy.signal import coherence, lfilter, resample_poly, welch
 
 
-ROOT = Path(r"C:\Users\hooki\trench-x3-clean")
+ROOT = Path(r"C:\Users\hooki\trench-native\plugin")
 REC = Path(r"C:\Users\hooki\OneDrive\Documents\Image-Line\FL Studio\Audio\Recorded")
 BYPASS = Path(r"C:\Users\hooki\trench-s6-slot-law\ref\inputs\bypassed-pinknoise.wav")
 PRESET = ROOT / "plugin/presets/bodies/X3F_phaser_2.json"

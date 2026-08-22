@@ -16,9 +16,9 @@ import numpy as np
 import soundfile as sf
 
 
-ROOT = Path(r"C:\Users\hooki\trench-x3-clean")
+ROOT = Path(r"C:\Users\hooki\trench-native\plugin")
 HERE = Path(__file__).resolve().parent
-DLL = HERE / "cargo_target/release/trench_core.dll"
+DLL = ROOT / "target" / "release" / "trench_core.dll"
 PRESET = ROOT / "plugin/presets/bodies/X3F_phaser_2.json"
 OUT = HERE / "headless_null"
 SAMPLE_RATE = 48_000

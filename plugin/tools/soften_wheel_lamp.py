@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from PIL import Image, ImageFilter
 
-STRIP = r"C:\Users\hooki\trench-x3-clean\plugin\assets\trench_roller_strip.png"
+STRIP = r"C:\Users\hooki\trench-native\plugin\plugin\assets\trench_roller_strip.png"
 
 BLEED = float(sys.argv[1]) if len(sys.argv) > 1 else 3.0
 AMOUNT = float(sys.argv[2]) if len(sys.argv) > 2 else 0.28

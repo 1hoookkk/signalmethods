@@ -17,7 +17,7 @@ import numpy as np
 from scipy.io import wavfile
 
 ROOT = pathlib.Path(r"C:\Users\hooki\trench-native")
-sys.path.insert(0, r"C:\Users\hooki\trench-x3-clean\pyruntime")
+sys.path.insert(0, r"C:\Users\hooki\trench-native\plugin\pyruntime")
 from ffi import probe  # noqa: E402
 
 SR = 44100.0

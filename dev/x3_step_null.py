@@ -11,10 +11,8 @@ import sys
 import numpy as np
 from scipy.io import wavfile
 
-sys.path.insert(0, r"C:\Users\hooki\trench-x3-clean\dev\experiments\phaser2_capture_diagnostic_20260813")
+sys.path.insert(0, r"C:\Users\hooki\trench-native\plugin\dev\experiments\phaser2_capture_diagnostic_20260813")
 import headless_null as hn  # noqa: E402
-
-hn.DLL = pathlib.Path(r"C:\Users\hooki\trench-x3-clean\target\release\trench_core.dll")
 
 SR = 44100.0
 BLOCK = 512

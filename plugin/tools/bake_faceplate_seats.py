@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 from scipy.ndimage import gaussian_filter
 
-ASSETS = r"C:\Users\hooki\trench-x3-clean\plugin\assets"
+ASSETS = r"C:\Users\hooki\trench-native\plugin\plugin\assets"
 PLATE = ASSETS + r"\df2_panel_beige.png"
 PX, PY = 828.0 / 326.0, 1280.0 / 503.0
 

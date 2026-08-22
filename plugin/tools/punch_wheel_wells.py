@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-PLATE = r"C:\Users\hooki\trench-x3-clean\plugin\assets\df2_panel_beige.png"
+PLATE = r"C:\Users\hooki\trench-native\plugin\plugin\assets\df2_panel_beige.png"
 
 RING_A, RING_W = 0.66, 7.5
 TOP_A, TOP_W = 0.0, 10.0
