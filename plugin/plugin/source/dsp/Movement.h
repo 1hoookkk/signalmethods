@@ -75,9 +75,14 @@ public:
     // pitch lives — this renderer passes the base wheel through untouched),
     // kNumFuncGenPatterns + 2 = LIVE (the workstation phrase, when fed).
     static constexpr int kGrowlIndex = kNumFuncGenPatterns + 1;
+    static constexpr double kDivisionBeats[7] = { 1.0, 0.5, 1.0 / 3.0, 0.25, 1.0 / 6.0, 0.125, 1.0 / 12.0 };
+    static double stepBeatsFor (int division) noexcept
+    {
+        return division >= 0 && division < 7 ? kDivisionBeats[division] : kStepBeats;
+    }
     void render (float* morphBuffer, int numSamples, float baseMorph,
                  const MovementTransport& t, int presetIndex,
-                 const FuncGenPattern* livePhrase) noexcept
+                 const FuncGenPattern* livePhrase, double stepBeats = kStepBeats) noexcept
     {
         const float base = clamp01 (baseMorph);
         // OWNERSHIP (X3_MOVEMENT_SPEC.md): this renderer owns WHAT the
@@ -124,7 +129,7 @@ public:
         for (int i = 0; i < numSamples; ++i)
         {
             const double beats = startBeats + (double) i * beatsPerSample;
-            const double stepPos = (oneShot ? beats - anchorBeats : beats) / kStepBeats;
+            const double stepPos = (oneShot ? beats - anchorBeats : beats) / stepBeats;
             const std::int64_t g = (std::int64_t) std::floor (stepPos);
             const float frac = (float) (stepPos - (double) g);
             int pos, next;

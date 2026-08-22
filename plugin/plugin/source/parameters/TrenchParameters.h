@@ -14,6 +14,7 @@ namespace ParamID
     // is a self-contained record: values, step law, cycle, reset. OFF is
     // index 0. DEPTH scales the travel; FOLLOW is the engine's one detector.
     inline constexpr auto movePreset = "movePreset"; // choice: OFF + curated phrases + LIVE
+    inline constexpr auto moveDivision = "moveDivision";
     inline constexpr auto envAmount  = "envAmount";  // 0..1 FOLLOW depth; 0 = off
     inline constexpr auto track      = "track";      // 0..1 Hz-axis: the body follows the note; 0 = off
 }

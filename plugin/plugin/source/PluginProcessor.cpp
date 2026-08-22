@@ -54,6 +54,7 @@ PluginProcessor::PluginProcessor()
     pFollow     = apvts.getRawParameterValue (ParamID::envAmount);
     pTrack      = apvts.getRawParameterValue (ParamID::track);
     pMovePreset = apvts.getRawParameterValue (ParamID::movePreset);
+    pMoveDivision = apvts.getRawParameterValue (ParamID::moveDivision);
     pKeySnap    = apvts.getRawParameterValue (ParamID::keySnap);
     if (trench::clean_audio::kEnabled())
         forceCleanAudioUiState();
@@ -322,6 +323,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     const float follow    = juce::jlimit (0.0f, 1.0f, pFollow->load());
     const float track     = juce::jlimit (0.0f, 1.0f, pTrack->load());
     const int movePreset  = (int) pMovePreset->load();
+    const int moveDivision = (int) pMoveDivision->load();
     const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
     // 4. True dry capture, before anything touches the buffer, for MIX.
     punchBlend.captureDry (buffer.getArrayOfReadPointers(), buffer.getNumChannels(), numSamples);
@@ -362,7 +364,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     movement.render (morphBuffer.data(), numSamples, baseMorph, transport, movePreset,
                      livePhraseValid.load (std::memory_order_acquire)
                          ? &livePhrase[livePhraseSlot.load (std::memory_order_acquire)].desc
-                         : nullptr);
+                         : nullptr,
+                     trench::Movement::stepBeatsFor (moveDivision));
     // 8. Static controls that changed since last block.
     const bool preampActive = preamp > 0.001f;
     if (preampActive != lastPreampActive)

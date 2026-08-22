@@ -67,6 +67,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             presetNames,
             0));
     }
+    layout.add (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { ParamID::moveDivision, 1 },
+        "Division",
+        juce::StringArray { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32", "1/32T" },
+        3));
     // DEPTH retired 2026-08-10 ("it's confusing"): the bank plays at one
     // verdicted throw (Movement::kTravel), never a second dial.
     // ENV macro depth (trench-core/src/env.rs). Its own parameter rather than

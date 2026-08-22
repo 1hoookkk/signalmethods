@@ -117,6 +117,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     chewKnob   = std::make_unique<MixKnob> (processor.apvts, theme, ParamID::chew,   "Bite");
     slamKnob   = std::make_unique<MixKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
     followKnob = std::make_unique<MixKnob> (processor.apvts, theme, ParamID::envAmount, "Follow");
+    divisionBox = std::make_unique<trench::ui::ChoiceStepper> (processor.apvts, theme, ParamID::moveDivision, "Division");
     // TRACK retired from the face (Tyson 2026-08-15): the pitch listener was a
     // detector-driven retuner the X3 never had, and E-mu's authored answer to
     // pitch-following is the cube's own third axis. The parameter stays for
@@ -242,6 +243,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addChildComponent (*slamKnob);
     addChildComponent (*modSourceBox);
     addChildComponent (*followKnob);
+    addChildComponent (*divisionBox);
     applySectionVisibility();
     addChildComponent (*onboarding);
     // First-run teach: shown for the first few openings, or until clicked away.
@@ -412,6 +414,12 @@ void PluginEditor::layoutComponents()
         // FOLLOW is the room's one knob under the header — the input's
         // dynamics driving the wheel.
         followKnob->setBounds (rowAt (1));
+        {
+            constexpr int capH = 13;
+            const auto row = rowAt (2);
+            divisionBox->setBounds (x0, row.getCentreY() - kBaySourceHeight / 2 - capH,
+                                    w, kBaySourceHeight + capH);
+        }
         // SOURCE has no knob, so it occupies the value column alone - the same
         // box, on the same axis, as every knob row's readout (MixKnob's block
         // starts 36px in and its box is kBayValueWidth centred in what's left).
@@ -469,6 +477,7 @@ void PluginEditor::applySectionVisibility()
     slamKnob->setVisible (gain);
     modSourceBox->setVisible (motion);
     followKnob->setVisible (motion);
+    divisionBox->setVisible (motion);
     // -1 reaches the rail as the CLOSED state: both words engraved quiet.
     sectionRail->setOpenSection (openSection);
     // The visible cap hugs the selected word. Seat it here as well as in

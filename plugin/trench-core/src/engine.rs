@@ -1077,7 +1077,7 @@ impl FilterEngine {
                 // Dev bypass, re-stated each control block so it survives a
                 // body switch (which hands the ringing voice to the outgoing
                 // pair). Costs a bool store per block.
-                let linear = !self.debug.nonlinearity_enabled;
+                let linear = !self.debug.nonlinearity_enabled && self.target_grit <= 0.0;
                 self.cascade_l.set_linear(linear);
                 self.cascade_r.set_linear(linear);
             }
@@ -2877,6 +2877,25 @@ mod trajectory_law {
         e.cascade_l.get_coeffs(&mut moved);
         assert_ne!(before, moved, "a moved wheel must rebuild the cascade");
     }
+    #[test]
+    fn grit_engages_the_section_nonlinearity_without_the_dev_flag() {
+        let render = |grit: f32| {
+            let mut e = engine_with_body();
+            e.debug.nonlinearity_enabled = false;
+            e.set_grit(grit);
+            let n = 44_100;
+            let mut l: Vec<f32> = (0..n).map(|i| ((i % 900) as f32 / 900.0 * 2.0 - 1.0) * 0.9).collect();
+            let mut r = l.clone();
+            let traj = vec![0.5f32; n];
+            e.process_trajectory(&mut l, &mut r, &traj, 1.0);
+            l
+        };
+        let off = render(0.0);
+        let on = render(0.6);
+        let diff: f64 = off.iter().zip(on.iter()).skip(20_000).map(|(a, b)| ((a - b) as f64).powi(2)).sum();
+        assert!(diff > 1e-6, "BITE above zero must change the output; diff {diff}");
+        assert_eq!(off, render(0.0));
+    }
 }
 #[cfg(test)]
 mod stage_taste {
@@ -3032,4 +3051,5 @@ mod stage_taste {
         let (l, r) = render(0.0, true, true);
         write("6_QSOUND", &l, &r);
     }
+
 }

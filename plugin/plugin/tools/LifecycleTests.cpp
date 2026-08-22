@@ -342,6 +342,11 @@ void testStateMigration()
     check (juce::approximatelyEqual (processor.apvts.getParameter (ParamID::movePreset)->getValue(),
                                      defaultMove),
            "MOVEMENT absent from an old session loads at its default");
+    check (juce::approximatelyEqual (processor.apvts.getParameter (ParamID::moveDivision)->getValue(),
+                                     processor.apvts.getParameter (ParamID::moveDivision)->getDefaultValue()),
+           "DIVISION absent from an old session loads at 1/16");
+    check (processor.apvts.getParameter (ParamID::moveDivision)->getCurrentValueAsText() == "1/16",
+           "DIVISION's default is the old fixed 16th");
     check (juce::approximatelyEqual (processor.apvts.getParameter (ParamID::track)->getValue(),
                                      defaultTrack),
            "TRACK absent from an old session loads at its default");
@@ -386,6 +391,29 @@ void testAutoKeyWorkerLifecycle()
 }
 }
 
+void testDivisionSetsTheStepPeriod()
+{
+    trench::Movement movement;
+    movement.prepare (48000.0);
+    trench::MovementTransport transport;
+    transport.bpm = 120.0;
+    transport.ppq = 0.0;
+    transport.playing = true;
+    const int preset = 1 + 14;
+    for (const auto [division, expectedStepsPerSecond] : { std::pair { 3, 8.0 }, std::pair { 0, 2.0 }, std::pair { 5, 16.0 } })
+    {
+        std::vector<float> morph (96000, 0.0f);
+        movement.render (morph.data(), (int) morph.size(), 0.0f, transport, preset, nullptr,
+                         trench::Movement::stepBeatsFor (division));
+        int changes = 0;
+        for (size_t i = 1; i < morph.size(); ++i)
+            changes += morph[i] != morph[i - 1] ? 1 : 0;
+        const double perSecond = changes / 2.0;
+        std::printf ("   division %d: %.1f steps/s\n", division, perSecond);
+        check (std::abs (perSecond - expectedStepsPerSecond) < 0.6, "DIVISION changes the step period as labelled");
+    }
+}
+
 void testEveryRosterBodyLoads()
 {
     PluginProcessor processor;
@@ -421,6 +449,7 @@ int main()
     testStateMigration();
     testAutoKeyWorkerLifecycle();
     testEveryRosterBodyLoads();
+    testDivisionSetsTheStepPeriod();
     std::printf ("\n%s (%d failure%s)\n", failures == 0 ? "PASS" : "FAIL",
                  failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;

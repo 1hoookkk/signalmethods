@@ -6,6 +6,7 @@
 #include "ui/GraphDisplay.h"
 #include "ui/KeySnapBox.h"
 #include "ui/ModSourceBox.h"
+#include "ui/ChoiceStepper.h"
 #include "ui/Onboarding.h"
 #include "ui/WheelControl.h"
 #include "ui/ValueReadout.h"
@@ -64,6 +65,7 @@ private:
     std::unique_ptr<trench::ui::GraphDisplay>     graph;
     std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
     std::unique_ptr<trench::ui::ModSourceBox>     modSourceBox;
+    std::unique_ptr<trench::ui::ChoiceStepper>    divisionBox;
     std::unique_ptr<trench::ui::TypeSelectorView> typeSelector;
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
     std::unique_ptr<trench::ui::SectionRail>      sectionRail;

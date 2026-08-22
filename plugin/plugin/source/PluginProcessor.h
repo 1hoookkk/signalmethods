@@ -204,6 +204,7 @@ private:
     std::atomic<float>* pFollow = nullptr;
     std::atomic<float>* pTrack = nullptr;
     std::atomic<float>* pMovePreset = nullptr;
+    std::atomic<float>* pMoveDivision = nullptr;
     std::atomic<float>* pKeySnap = nullptr;
     std::atomic<float> inputMeterL { 0.0f };
     std::atomic<float> inputMeterR { 0.0f };
