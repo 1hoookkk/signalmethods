@@ -139,8 +139,9 @@ Encoding and packed interpolation:
   1992. `C:\Users\hooki\Downloads\df2_notebooklm_zplane_lean_20260609\01_primary_sources\US5170369_Rossum_E_Mu_Dynamic_Digital_IIR_Audio_Filter.pdf`
 - Dave Rossum, US 10,514,883, *Morphing Digital Audio Filter*, 2019.
   `C:\Users\hooki\Downloads\df2_notebooklm_zplane_lean_20260609\01_primary_sources\US10514883_Rossum_Morphing_Digital_Audio_Filter.pdf`
-- Live mechanical oracle: `trench-core/src/minifloat.rs`,
-  `trench-core/src/stage_law.rs`, `trench-core/src/response.rs`.
+- Live mechanical oracle: `plugin/trench-core/src/minifloat.rs`,
+  `plugin/trench-core/src/stage_law.rs`, `plugin/trench-core/src/response.rs`
+  (the shipping plugin's Rust core, imported under `plugin/`).
 
 Serial pole-zero analysis-by-synthesis:
 
