@@ -90,7 +90,7 @@ impl BiquadState {
     /// 1. Apply coefficient ramp (per-sample deltas)
     /// 2. Compute DF-II output: y = b0·x + w1
     /// 3. Amplitude-dependent pole-radius modulation:
-    ///    if |y_prev| > vt:  R_new = R + R(1-R) · (|y_prev| − vt)
+    ///    if |y_prev| > vt:  R_new = R + R(1-R) · (|y_prev| − vt) / |y_prev|   (US 10,514,883)
     /// 4. Compute new DF-II states: w1', w2'
     /// 5. Saturate states to ±ceiling (recursive nonlinearity)
     /// 6. Store y_prev = y for next sample's distortion detector
@@ -99,15 +99,6 @@ impl BiquadState {
     /// accumulator, saturate only the value entering the delays, output tapped
     /// off the accumulator before the saturate. Those agree with the source.
     ///
-    /// Step 3 does NOT come from any source and previously claimed a patent it
-    /// is not in. Rossum's pole movement is a *consequence* of step 5, not a
-    /// separate step: "one could either say that the signal had been saturated
-    /// ... or alternatively that the coefficient had been reduced in such a
-    /// manner as to give the same smaller product." Two further departures:
-    /// he describes a shift in the *pitch* of the resonance, while step 3 holds
-    /// cos θ fixed and moves only the radius; and his coefficient is *reduced*,
-    /// while step 3 raises R toward 1. Kept because it is what shipped and the
-    /// ears passed it — see bench/facts.py NONLINEARITY_MATCHES_SOURCE.
     #[inline(always)]
     fn process_sample(&mut self, x: f64, vt: f64, ceiling: f64, kernel_ramp: bool) -> (f64, bool) {
         if kernel_ramp {
@@ -123,13 +114,12 @@ impl BiquadState {
         let (mut a1, mut a2) = (self.coeffs[3], self.coeffs[4]);
         let (b0, b1, b2) = (self.coeffs[0], self.coeffs[1], self.coeffs[2]);
 
-        // Amplitude-dependent pole-radius modulation (Rossum patent)
         let vg = self.y_prev.abs();
         if vg > vt && a2 > 1.0e-9 {
             let r = a2.sqrt();
             if r > 1.0e-6 && r < 1.0 {
                 let cos_theta = (-a1 / (2.0 * r)).clamp(-1.0, 1.0);
-                let ratio = (vg - vt).min(0.5);
+                let ratio = (vg - vt) / vg;
                 let r_new = (r + r * (1.0 - r) * ratio).clamp(0.0, 0.999_9);
                 a1 = -2.0 * r_new * cos_theta;
                 a2 = r_new * r_new;

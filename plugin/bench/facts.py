@@ -570,23 +570,20 @@ FACTS = [
                "comments herein apply as well to zeroes and feedforward "
                "coefficients (an/a0) when the gain (a0) is separated as shown above.",
          cite="Rossum 1991, ARMAdillo, p.1"),
-    Fact("NONLINEARITY_MATCHES_SOURCE", 0, "1 = agrees, 0 = recorded disagreement",
+    Fact("NONLINEARITY_MATCHES_SOURCE", 1, "1 = agrees, 0 = recorded disagreement",
          "SOURCED", "trench-core/src/cascade.rs process_sample",
          "AGREES: output tapped off the accumulator before the saturate; only "
-         "the value entering the delays is saturated; per section. DISAGREES: "
-         "cascade.rs adds an explicit pole-radius modulator with a threshold vt "
-         "and a stored y_prev. Rossum has no such step — the pole movement is a "
-         "consequence of the saturation, not a second operation. It also runs "
-         "the wrong way: he describes a shift in the PITCH of the resonance from "
-         "a coefficient being REDUCED; ours holds cos(theta) fixed and RAISES R. "
-         "Not changed — it shipped and the ears passed it. Recorded, not fixed.",
-         quote="The cause of this behavior can be understood by considering the "
-               "consequence of saturating the inputs to the multipliers. When "
-               "this occurs, one could either say that the signal had been "
-               "saturated (thus producing a smaller product at the output of the "
-               "multiplier), or alternatively that the coefficient had been "
-               "reduced in such a manner as to give the same smaller product.",
-         cite="Rossum, ICMC 1992, pp.32-33 sec.5"),
+         "the value entering the delays is saturated; per section (ICMC 1992 "
+         "fig. 3). AGREES: the pole-radius modulator is Rossum's 2019 law, "
+         "applied per section from the pole's previous real output against a "
+         "threshold Vt, radius increased by R(1-R)(|Vp|-Vt)/|Vp|. The earlier "
+         "record of this step as unsourced was wrong: it read only the 1992 "
+         "paper.",
+         quote="a pole radius Rp can be increased by an amount equal to "
+               "Rp * (1 - Rp) * (abs(Vp) - Vt) / abs(Vp) where Vp is the signal "
+               "level of the pole's real output, and Vt is the distortion "
+               "threshold.",
+         cite="Rossum, US 10,514,883 (2019), detailed description, pole-radius correction (block 714)"),
     Fact("US5952599_RELEVANT", 0, "1 = relevant", "SOURCED",
          "nothing — do not open this file again",
          "read 2026-08-13. Interval Research, not E-mu. Mouse-gesture music "
