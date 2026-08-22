@@ -58,9 +58,42 @@ ramp only show on steps and fast modulation, and a 4 s envelope is far too
 slow to excite them. That, plus level staging outside the filter, is where
 "doesn't sound the same" must now live.
 
-Next capture: a step. Filter Env → Filter Frequency +100, Attack 1 = 2.0 s
-at level 0, Attack 2 = 0.000 s at level 100 — morph jumps 0 → 1 at 2.0 s.
-The settling shape after the step is X3's movement law, directly.
+**Step** (`hedzstep.wav`: Filter Env → Filter Frequency +100, Attack 1 =
+2.0 s at level 0, Attack 2 = 0.000 s at level 100; `dev/x3_step_null.py`,
+`dev/x3_step_fit.py`). Time-domain null, sample-aligned, filter-only engine
+render (AGC/DC/saturation/nonlinearity/preamp/grit/key all off), level
+matched on the settled tail:
+
+| region | engine X3 path | engine per-sample |
+|---|---|---|
+| before the step, 1.0–1.9 s | **−80.4 dB** | −80.4 |
+| 2.00–2.02 (first 20 ms) | −9 … −11 | −7 |
+| 2.02–2.06 | −33.5 | −15 |
+| 2.06–2.15 | −65.3 | −50 |
+| settled, 6–11 s | **−72.1 dB** | −72.1 |
+
+Trajectory fits on the per-sample path: a one-pole with τ ≈ 1–2 ms from
+the step nulls the tail best (−68.6 dB at 2.06–2.15 for τ = 1 ms); that is
+the X3's tick pole (R = 0.4516 per 32-sample tick ⇒ τ ≈ 1.2 ms). Host-buffer
+-sized ramps (256–2048 samples) are *worse* by 10–20 dB at every region, so
+X3 does **not** ramp across the DAW buffer; the 32-sample tick model is the
+right one. The engine's X3 path reproduces the step to −33 dB after 20 ms
+and −65 dB after 60 ms.
+
+What remains is the first ~20 ms at about −10 dB, which no pole or ramp on
+the morph reproduces. The likeliest cause is the capture, not the engine:
+the envelope's "0.000 s" attack has a finite minimum segment time, so the
+source of the step is itself a few-ms slope. A step from a MIDI CC would
+settle this; it is not a product question.
+
+**Conclusion for the product.** Corner (−80 dB), interior (< 1 dB), slow
+travel (< 1 dB) and fast step (−33/−65 dB beyond 20 ms) all match X3 with
+the engine's filter alone. Whatever makes TRENCH sound different from X3
+is not in the filter, its interpolation or its movement law. The next null
+must be TRENCH-the-VST rendered in the **same FL chain** as the X3 capture
+(Tyson, 2026-08-22: "to null you must render TRENCH at the same stack") —
+that measures the level staging and the defaults (AGC, GRIT, preamp,
+FOLLOW, MOVE, KEY) that this harness switched off.
 
 # §1 Parity: plugin vs EmulatorX3, same preset (superseded in part by §0)
 
