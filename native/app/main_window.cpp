@@ -16,6 +16,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QKeySequence>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -414,6 +415,8 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
       return false;
     }
     addOverlay(QString::fromStdString(path.filename().string()), std::move(target));
+    audition_clip_ = *clip;
+    if (audition_) audition_->setClip(*clip);
     return true;
   }
   if (path.extension() == ".txt") {
@@ -549,12 +552,53 @@ void MainWindow::renormalizeDc() {
   document_->commitFit(document_->corner(), before);
 }
 
+void MainWindow::setAuditionGate(bool open) {
+  if (open && !audition_) {
+    audition_ = std::make_unique<trench::audio::Audition>();
+    if (!audition_->start().empty()) {
+      audition_.reset();
+      return;
+    }
+    if (audition_clip_) audition_->setClip(*audition_clip_);
+    updateAudition();
+  }
+  audition_open_ = open && audition_ != nullptr;
+  if (audition_) audition_->setGate(audition_open_);
+}
+
+bool MainWindow::auditionOpen() const noexcept { return audition_open_; }
+
+void MainWindow::updateAudition() {
+  if (!audition_) return;
+  const auto view = document_->view();
+  audition_->setCascade(document_->body().interpolate_biquads(view.morph, view.q, 0.0F));
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+  if (event->key() == Qt::Key_Space && !event->isAutoRepeat()) {
+    setAuditionGate(true);
+    event->accept();
+    return;
+  }
+  QMainWindow::keyPressEvent(event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* event) {
+  if (event->key() == Qt::Key_Space && !event->isAutoRepeat()) {
+    setAuditionGate(false);
+    event->accept();
+    return;
+  }
+  QMainWindow::keyReleaseEvent(event);
+}
+
 void MainWindow::updateProbes() {
   namespace p2k = trench::core::p2k;
   dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
   chassis_bar_->setDcDriftDb(dc_drift_db_);
   chassis_bar_->setScoreDb(document_->targetScoreDb());
   refreshFitRoom();
+  updateAudition();
 }
 
 void MainWindow::updateStrips() {

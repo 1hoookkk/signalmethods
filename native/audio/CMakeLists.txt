@@ -9,8 +9,9 @@ FetchContent_Declare(juce
 )
 FetchContent_MakeAvailable(juce)
 
-add_library(trench_native_audio_boundary STATIC audio_boundary.cpp)
+add_library(trench_native_audio_boundary STATIC audio_boundary.cpp audition.cpp)
 target_include_directories(trench_native_audio_boundary PUBLIC include)
+target_link_libraries(trench_native_audio_boundary PUBLIC trench_native_core)
 target_link_libraries(trench_native_audio_boundary PRIVATE
   juce::juce_audio_basics
   juce::juce_audio_devices

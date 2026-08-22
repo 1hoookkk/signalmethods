@@ -4,6 +4,7 @@
 #include "fit_controller.hpp"
 #include "fit_room.hpp"
 #include "response_plot.hpp"
+#include "trench/audio/audition.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/packed_body.hpp"
 #include "trench/core/section_param.hpp"
@@ -16,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -65,11 +67,18 @@ class MainWindow final : public QMainWindow {
   void stopAndKeep();
   void discardFit();
   void renormalizeDc();
+  void setAuditionGate(bool open);
+  [[nodiscard]] bool auditionOpen() const noexcept;
+
+ protected:
+  void keyPressEvent(QKeyEvent* event) override;
+  void keyReleaseEvent(QKeyEvent* event) override;
 
  private:
   void chooseTarget();
   void addOverlay(const QString& name, std::vector<double> curve);
   void refreshFitRoom();
+  void updateAudition();
   void saveBodyAs();
   void updateVerbs();
   void updateProbes();
@@ -92,6 +101,9 @@ class MainWindow final : public QMainWindow {
   std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};
   ChassisBar* chassis_bar_{};
   FitRoom* fit_room_{};
+  std::unique_ptr<trench::audio::Audition> audition_;
+  bool audition_open_{};
+  std::optional<trench::audio::MonoClip> audition_clip_;
   QList<FitRoom::Overlay> overlays_;
   int selected_overlay_{-1};
   QAction* undo_action_{};

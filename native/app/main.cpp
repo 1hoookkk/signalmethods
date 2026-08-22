@@ -10,7 +10,11 @@
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QString>
+#include <QElapsedTimer>
 #include <QTimer>
+
+#include <cmath>
+#include <cstdio>
 
 #include <filesystem>
 #include <optional>
@@ -128,6 +132,10 @@ int main(int argc, char* argv[]) {
   parser.addOption(target_option);
   parser.addOption(fit_option);
   parser.addOption(corner_option);
+  QCommandLineOption audition_option(QStringLiteral("audition"),
+                                     QStringLiteral("Open the gate, sweep Morph 0-1-0 over this many seconds, then quit."),
+                                     QStringLiteral("seconds"));
+  parser.addOption(audition_option);
   QCommandLineOption saw_option(QStringLiteral("saw"),
                                 QStringLiteral("Measure audio targets as a sawtooth source."));
   QCommandLineOption intent_option(
@@ -200,6 +208,30 @@ int main(int argc, char* argv[]) {
       QTimer::singleShot(0, &window, [&window] { window.startFit(); });
     } else if (!save_path.empty()) {
       QTimer::singleShot(0, &window, save_and_quit);
+    }
+    if (parser.isSet(audition_option)) {
+      const auto seconds = std::max(parser.value(audition_option).toDouble(), 0.5);
+      auto* sweep = new QTimer(&window);
+      auto* clock = new QElapsedTimer();
+      QObject::connect(sweep, &QTimer::timeout, &window, [&window, sweep, clock, seconds] {
+        const double t = static_cast<double>(clock->elapsed()) / 1000.0;
+        if (t >= seconds) {
+          window.setAuditionGate(false);
+          sweep->stop();
+          delete clock;
+          QTimer::singleShot(300, &QCoreApplication::quit);
+          return;
+        }
+        const double phase = t / seconds;
+        window.document()->setView(static_cast<float>(1.0 - std::abs(2.0 * phase - 1.0)), 0.0F);
+      });
+      QTimer::singleShot(0, &window, [&window, sweep, clock] {
+        window.setAuditionGate(true);
+        std::fprintf(stderr, "audition %s\n", window.auditionOpen() ? "open" : "no device");
+        if (!window.auditionOpen()) QCoreApplication::exit(2);
+        clock->start();
+        sweep->start(10);
+      });
     }
     if (parser.isSet(shot_option)) {
       const auto shot_path = parser.value(shot_option);
