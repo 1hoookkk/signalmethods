@@ -111,6 +111,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   response_plot_->setBody(&document_->body(), document_->sampleRateHz(),
                           body_path.filename().string());
   response_plot_->setFreedomMask(document_->freedomMask());
+  response_plot_->setSpace(document_->space());
   column->addWidget(response_plot_, 1);
 
   morph_strip_ = new MorphStrip(central);
@@ -121,6 +122,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   section_table_ = new QTableView(central);
   section_table_->setObjectName(QStringLiteral("sectionTable"));
   section_table_->setModel(section_model_);
+  section_table_->setItemDelegateForColumn(SectionModel::kType, new TypeDelegate(this));
   section_table_->setItemDelegateForColumn(SectionModel::kIntent, new IntentDelegate(this));
   section_table_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
   section_table_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -197,6 +199,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           });
   connect(document_, &BodyDocument::spaceChanged, this, [this] {
     space_dock_->setSpace(document_->space());
+    response_plot_->setSpace(document_->space());
     updateProbes();
     updateInterior();
   });

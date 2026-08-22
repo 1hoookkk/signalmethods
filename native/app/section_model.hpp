@@ -2,6 +2,7 @@
 
 #include "body_document.hpp"
 #include "trench/core/role.hpp"
+#include "trench/core/section_param.hpp"
 
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
@@ -13,7 +14,7 @@ class SectionModel final : public QAbstractTableModel {
   Q_OBJECT
 
  public:
-  enum Column { kIntent = 0, kPoleHz, kPoleQ, kZeroHz, kZeroQ, kScaleDb, kColumnCount };
+  enum Column { kType = 0, kFc, kBw, kGain, kIntent, kScale, kColumnCount };
 
   explicit SectionModel(BodyDocument* document, QObject* parent = nullptr);
 
@@ -30,14 +31,31 @@ class SectionModel final : public QAbstractTableModel {
   static std::optional<trench::core::p2k::Role> intentFromIndex(int index);
   static int intentIndex(std::optional<trench::core::p2k::Role> intent);
 
+  static QString typeName(trench::core::p2k::SectionType type);
+  static trench::core::p2k::SectionType typeFromIndex(int index);
+  static int typeIndex(trench::core::p2k::SectionType type);
+
  private:
-  [[nodiscard]] bool writeRoot(std::size_t section, bool pole, double hz, double q);
+  [[nodiscard]] bool writeParam(std::size_t section,
+                                const trench::core::p2k::SectionParam& param);
   [[nodiscard]] bool writeScale(std::size_t section, double db);
 
   BodyDocument* document_;
 };
 
 class IntentDelegate final : public QStyledItemDelegate {
+  Q_OBJECT
+
+ public:
+  using QStyledItemDelegate::QStyledItemDelegate;
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                        const QModelIndex& index) const override;
+  void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+  void setModelData(QWidget* editor, QAbstractItemModel* model,
+                    const QModelIndex& index) const override;
+};
+
+class TypeDelegate final : public QStyledItemDelegate {
   Q_OBJECT
 
  public:

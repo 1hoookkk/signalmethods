@@ -11,6 +11,7 @@ add_library(trench_native_core STATIC
   src/p2k/push.cpp
   src/p2k/role.cpp
   src/p2k/morph.cpp
+  src/p2k/section_param.cpp
   src/p2k/seed.cpp
   src/p2k/watched.cpp
 )
@@ -48,6 +49,7 @@ if(BUILD_TESTING)
     tests/p2k_refit_bank_test.cpp
     tests/p2k_space_test.cpp
     tests/p2k_role_test.cpp
+    tests/p2k_section_param_test.cpp
     tests/p2k_morph_test.cpp
   )
   target_link_libraries(trench_native_core_tests PRIVATE trench_native_core GTest::gtest_main

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
 #include <QColor>
@@ -40,6 +41,7 @@ class ResponsePlotWidget final : public QWidget {
   void setBody(const trench::core::PackedBody* body, double sample_rate_hz,
                std::string source_label);
   void setCorner(std::size_t corner);
+  void setSpace(const trench::core::p2k::PerceptualSpace& space);
   void setView(float morph, float q);
   void setFreedomMask(std::uint32_t mask);
   void setTarget(const std::vector<double>* target);
@@ -87,6 +89,7 @@ class ResponsePlotWidget final : public QWidget {
   float view_q_{0.0F};
   bool at_corner_{true};
   double sample_rate_hz_{trench::core::kP2kDatumHz};
+  trench::core::p2k::PerceptualSpace space_{};
   std::uint32_t freedom_mask_{0xFFFFFFFFU};
   std::vector<double> frequencies_hz_;
   std::vector<double> response_db_;

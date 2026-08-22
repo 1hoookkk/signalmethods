@@ -1,0 +1,131 @@
+#include "trench/core/section_param.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <numbers>
+#include <variant>
+
+#include "trench/core/p2k.hpp"
+
+namespace trench::core::p2k {
+
+namespace {
+
+constexpr double kParkedHz = 15'000.0;
+constexpr double kTypeOffsetOct = 2.0;
+constexpr double kFarRatio = 8.0;
+constexpr double kParkedRootHz = 18'000.0;
+constexpr double kParkedRootR = 0.8;
+constexpr double kPoleRMin = 0.3;
+constexpr std::uint16_t kProbeScaleWord = 0xDFFF;
+
+double root_hz(const RootPair& pair, double fallback_hz, double high_hz) {
+  if (const auto* conjugate = std::get_if<ConjugatePair>(&pair)) {
+    return conjugate->hz;
+  }
+  if (const auto* real = std::get_if<RealPair>(&pair)) {
+    return real->root_a + real->root_b >= 0.0 ? 20.0 : high_hz;
+  }
+  return fallback_hz;
+}
+
+double far_hz(SectionType type, double fc_hz, double sample_rate_hz) {
+  if (type == SectionType::kHighPass) {
+    return std::max(fc_hz / kFarRatio, 20.0);
+  }
+  return std::min(fc_hz * kFarRatio, 0.45 * sample_rate_hz);
+}
+
+double gain_of(const PackedSection& words, SectionType type, double fc_hz,
+               double sample_rate_hz) {
+  const auto biquad = section_words_to_biquad(words);
+  return stage_db(biquad, fc_hz) - stage_db(biquad, far_hz(type, fc_hz, sample_rate_hz));
+}
+
+double bandwidth_hz(double fc_hz, double bw_oct) {
+  return fc_hz * (std::pow(2.0, bw_oct * 0.5) - std::pow(2.0, -bw_oct * 0.5));
+}
+
+bool root_admissible(std::uint16_t mag, std::uint16_t rsq, bool is_pole) {
+  const auto [p, q] = pq(mag, rsq);
+  return is_legal(p, q, is_pole) && magnitude_admissible(nearest_lattice_word(mag), is_pole);
+}
+
+}  // namespace
+
+SectionParam param_of(const PackedSection& words, double sample_rate_hz) {
+  const auto geometry = geometry_from_words(words, sample_rate_hz);
+  const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
+  if (pole == nullptr) {
+    return {};
+  }
+  const double zero_hz = root_hz(geometry.zero, pole->hz, 0.4665 * sample_rate_hz);
+  if (pole->hz > kParkedHz && zero_hz > kParkedHz) {
+    return {SectionType::kOff, pole->hz, 0.0, 0.0};
+  }
+  SectionParam out;
+  out.fc_hz = pole->hz;
+  const double bw_hz =
+      -std::log(std::max(pole->radius, 1e-9)) * sample_rate_hz / std::numbers::pi;
+  out.bw_oct = 2.0 * std::asinh(bw_hz / (2.0 * out.fc_hz)) / std::numbers::ln2;
+  const double octaves = std::log2(std::max(zero_hz, 1.0) / std::max(pole->hz, 1.0));
+  out.type = octaves >= kTypeOffsetOct    ? SectionType::kLowPass
+             : octaves <= -kTypeOffsetOct ? SectionType::kHighPass
+                                          : SectionType::kEq;
+  out.gain_db = gain_of(words, out.type, out.fc_hz, sample_rate_hz);
+  return out;
+}
+
+std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
+                                              const std::array<std::uint16_t, 4>& current,
+                                              std::size_t section, double sample_rate_hz) {
+  double pole_hz = kParkedRootHz;
+  double pole_r = kParkedRootR;
+  double zero_hz = kParkedRootHz;
+  if (param.type != SectionType::kOff) {
+    pole_hz = std::clamp(param.fc_hz, 20.0, kRootHiHz);
+    pole_r = std::clamp(std::exp(-std::numbers::pi *
+                                 bandwidth_hz(pole_hz, std::max(param.bw_oct, 0.0)) /
+                                 sample_rate_hz),
+                        kPoleRMin, kPoleRMax);
+    zero_hz = param.type == SectionType::kEq        ? pole_hz
+              : param.type == SectionType::kLowPass ? std::min(pole_hz * kFarRatio, kRootHiHz)
+                                                    : std::max(pole_hz / kFarRatio, 20.0);
+  }
+  const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, pole_r);
+  if (!root_admissible(pole_mag, pole_rsq, true)) {
+    return current;
+  }
+
+  const bool forced = section == 5;
+  if (forced || param.type == SectionType::kOff) {
+    const double radius = forced ? s6_zero_radius() : kParkedRootR;
+    const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, radius);
+    const std::uint16_t rsq = forced ? kS6ZeroRsqWord : zero_rsq;
+    if (!root_admissible(zero_mag, rsq, false)) {
+      return current;
+    }
+    return {zero_mag, rsq, pole_mag, pole_rsq};
+  }
+
+  std::array<std::uint16_t, 4> best = current;
+  double best_error = std::numeric_limits<double>::infinity();
+  for (const double decoded : lattice_decoded()) {
+    const double radius = std::sqrt(std::max(1.0 - decoded, 0.0));
+    const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, radius);
+    if (!root_admissible(zero_mag, zero_rsq, false)) {
+      continue;
+    }
+    const PackedSection probe{zero_mag, zero_rsq, pole_mag, pole_rsq, kProbeScaleWord};
+    const double error =
+        std::abs(gain_of(probe, param.type, pole_hz, sample_rate_hz) - param.gain_db);
+    if (error < best_error) {
+      best_error = error;
+      best = {zero_mag, zero_rsq, pole_mag, pole_rsq};
+    }
+  }
+  return best;
+}
+
+}  // namespace trench::core::p2k

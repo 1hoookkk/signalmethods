@@ -38,15 +38,28 @@ const QColor kResidual{156, 130, 224};
 constexpr double kLevelLanePx = 40.0;
 constexpr double kResidualBandPx = 34.0;
 
+double erb_rate(double frequency_hz) {
+  return 21.4 * std::log10(1.0 + 0.00437 * frequency_hz);
+}
+
+double frequency_for_erb_rate(double rate) {
+  return (std::pow(10.0, rate / 21.4) - 1.0) / 0.00437;
+}
+
+double frequency_for_fraction(double fraction, double low_hz, double high_hz) {
+  return frequency_for_erb_rate(erb_rate(low_hz) +
+                                fraction * (erb_rate(high_hz) - erb_rate(low_hz)));
+}
+
 double x_for_frequency(double frequency_hz, double low_hz, double high_hz,
                        const QRectF& plot) {
-  const auto fraction = std::log(frequency_hz / low_hz) / std::log(high_hz / low_hz);
+  const auto fraction = (erb_rate(frequency_hz) - erb_rate(low_hz)) /
+                        (erb_rate(high_hz) - erb_rate(low_hz));
   return plot.left() + fraction * plot.width();
 }
 
 double frequency_for_x(double x, double low_hz, double high_hz, const QRectF& plot) {
-  const auto fraction = (x - plot.left()) / plot.width();
-  return low_hz * std::pow(high_hz / low_hz, fraction);
+  return frequency_for_fraction((x - plot.left()) / plot.width(), low_hz, high_hz);
 }
 
 double y_for_db(double db, double low_db, double high_db, const QRectF& plot) {
@@ -130,6 +143,12 @@ void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
   refresh();
 }
 
+void ResponsePlotWidget::setSpace(const trench::core::p2k::PerceptualSpace& space) {
+  if (space == space_) return;
+  space_ = space;
+  refresh();
+}
+
 void ResponsePlotWidget::setCorner(std::size_t corner) {
   if (corner == corner_) return;
   corner_ = corner;
@@ -173,8 +192,7 @@ void ResponsePlotWidget::flashLane(std::size_t section) {
 
 void ResponsePlotWidget::refresh() {
   if (body_ == nullptr) return;
-  frequencies_hz_ = trench::core::logarithmic_frequency_grid(
-      20.0, sample_rate_hz_ * 0.499, 512);
+  frequencies_hz_ = trench::core::p2k::make_grid(space_).hz;
   const auto cascade = viewCascade();
   response_db_.clear();
   response_db_.reserve(frequencies_hz_.size());
@@ -265,8 +283,7 @@ void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double h
       const auto index = bin * kTraceOversample + step;
       const auto fraction =
           static_cast<double>(index) / static_cast<double>(points - 1);
-      const auto frequency_hz =
-          axis_low_hz * std::pow(axis_high_hz / axis_low_hz, fraction);
+      const auto frequency_hz = frequency_for_fraction(fraction, axis_low_hz, axis_high_hz);
       const auto omega = 2.0 * std::numbers::pi * frequency_hz / sample_rate_hz_;
       const auto cw = static_cast<float>(std::cos(omega));
       const auto sw = static_cast<float>(std::sin(omega));
