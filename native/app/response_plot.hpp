@@ -40,6 +40,7 @@ class ResponsePlotWidget final : public QWidget {
   void setBody(const trench::core::PackedBody* body, double sample_rate_hz,
                std::string source_label);
   void setCorner(std::size_t corner);
+  void setView(float morph, float q);
   void setFreedomMask(std::uint32_t mask);
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
@@ -70,6 +71,7 @@ class ResponsePlotWidget final : public QWidget {
 
  private:
   [[nodiscard]] QRectF plotRect() const;
+  [[nodiscard]] trench::core::Cascade viewCascade() const;
   [[nodiscard]] std::pair<double, double> dbRange() const;
   [[nodiscard]] double contributionAt(std::size_t section, double hz) const;
   [[nodiscard]] std::optional<TokenInfo> hit(const QPointF& at) const;
@@ -81,6 +83,9 @@ class ResponsePlotWidget final : public QWidget {
 
   const trench::core::PackedBody* body_{};
   std::size_t corner_{};
+  float view_morph_{0.0F};
+  float view_q_{0.0F};
+  bool at_corner_{true};
   double sample_rate_hz_{trench::core::kP2kDatumHz};
   std::uint32_t freedom_mask_{0xFFFFFFFFU};
   std::vector<double> frequencies_hz_;

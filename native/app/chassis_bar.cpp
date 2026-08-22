@@ -1,10 +1,8 @@
 #include "chassis_bar.hpp"
 
 #include <QFontMetricsF>
-#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QResizeEvent>
 
 #include <cmath>
 
@@ -24,10 +22,7 @@ constexpr double kPadHeight = 22.0;
 constexpr double kPadPaddingX = 10.0;
 constexpr double kPadGap = 8.0;
 constexpr double kPadRadius = 2.0;
-constexpr double kEntryWidth = 96.0;
-constexpr double kCornerCell = 9.0;
-constexpr double kCornerGap = 2.0;
-constexpr double kCornerLeft = 12.0;
+constexpr double kTextLeft = 12.0;
 
 constexpr double kDcDeadbandDb = 0.05;
 
@@ -48,47 +43,16 @@ const std::array<VerbLook, 6> kVerbs{{
 
 QFont pad_font() { return QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold); }
 
-QColor section_color(std::size_t section) {
-  return QColor::fromHsvF(static_cast<double>(section) / 7.0, 0.58, 1.0);
-}
-
 }  // namespace
 
 ChassisBar::ChassisBar(QWidget* parent) : QWidget(parent) {
   setFixedHeight(static_cast<int>(kBarHeight));
   setMouseTracking(true);
-  entry_ = new QLineEdit(this);
-  entry_->setObjectName(QStringLiteral("rootEntry"));
-  entry_->setFont(pad_font());
-  entry_->setPlaceholderText(QStringLiteral("Hz Q"));
-  entry_->setFrame(false);
-  entry_->setStyleSheet(QStringLiteral(
-      "QLineEdit { background: #1a1f23; color: #aebabe; border: 1px solid #373f43; "
-      "border-radius: 2px; padding: 0 4px; selection-background-color: #57decd; }"));
-  entry_->hide();
-  connect(entry_, &QLineEdit::returnPressed, this, [this] {
-    emit rootTyped(entry_->text());
-    entry_->selectAll();
-  });
 }
 
 void ChassisBar::setBodyName(const QString& name) {
   body_name_ = name;
   update();
-}
-
-void ChassisBar::setCorner(std::size_t corner) {
-  if (corner == corner_) return;
-  corner_ = corner;
-  update();
-}
-
-QRectF ChassisBar::cornerCellRect(std::size_t corner) const {
-  const auto column = static_cast<double>(corner & 1U);
-  const auto row = corner & 2U ? 0.0 : 1.0;
-  const auto top = (kBarHeight - (2.0 * kCornerCell + kCornerGap)) * 0.5;
-  return QRectF(kCornerLeft + column * (kCornerCell + kCornerGap),
-                top + row * (kCornerCell + kCornerGap), kCornerCell, kCornerCell);
 }
 
 void ChassisBar::setTargetName(const QString& name) {
@@ -112,20 +76,12 @@ void ChassisBar::setSourceSawtooth(bool sawtooth) {
   update();
 }
 
-void ChassisBar::setReadout(const std::optional<Readout>& readout) {
-  readout_ = readout;
-  entry_->setVisible(readout.has_value());
+void ChassisBar::setScoreDb(double db) {
+  score_db_ = db;
   update();
 }
 
-void ChassisBar::resizeEvent(QResizeEvent*) {
-  entry_->setGeometry(QRect(static_cast<int>(entry_left_), static_cast<int>((kBarHeight - kPadHeight) * 0.5),
-                            static_cast<int>(kEntryWidth), static_cast<int>(kPadHeight)));
-}
-
-QString ChassisBar::readoutText() const {
-  return readout_ ? readout_->text : QString();
-}
+double ChassisBar::scoreDb() const noexcept { return score_db_; }
 
 QString ChassisBar::labelFor(Verb verb) const {
   if (verb == Verb::kUnity) {
@@ -194,22 +150,9 @@ void ChassisBar::paintEvent(QPaintEvent*) {
   auto pads_left = width() - 10.0;
   for (const auto& pad : laid) pads_left = std::min(pads_left, pad.rect.left());
 
-  for (std::size_t corner = 0; corner < 4; ++corner) {
-    const auto cell = cornerCellRect(corner);
-    if (corner == corner_) {
-      painter.setPen(Qt::NoPen);
-      painter.setBrush(kIdentity);
-      painter.drawRect(cell);
-    } else {
-      painter.setPen(QPen(kGhost, 1.0));
-      painter.setBrush(Qt::NoBrush);
-      painter.drawRect(cell.adjusted(0.5, 0.5, -0.5, -0.5));
-    }
-  }
-
   painter.setFont(pad_font());
   const QFontMetricsF metrics(painter.font());
-  auto x = kCornerLeft + 2.0 * kCornerCell + kCornerGap + 10.0;
+  auto x = kTextLeft;
   if (!body_name_.isEmpty()) {
     painter.setPen(kIdentity);
     const auto text = metrics.elidedText(body_name_, Qt::ElideMiddle, pads_left - x - 12.0);
@@ -227,27 +170,10 @@ void ChassisBar::paintEvent(QPaintEvent*) {
     painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
     x += metrics.horizontalAdvance(text) + 14.0;
   }
-  if (readout_ && x < pads_left - 60.0) {
-    const auto ink = section_color(readout_->section);
-    const auto mark_y = kBarHeight * 0.5;
-    painter.setPen(QPen(ink, 1.4));
-    painter.setBrush(Qt::NoBrush);
-    if (readout_->pole) {
-      painter.drawLine(QPointF{x, mark_y - 3.5}, QPointF{x + 7.0, mark_y + 3.5});
-      painter.drawLine(QPointF{x, mark_y + 3.5}, QPointF{x + 7.0, mark_y - 3.5});
-    } else {
-      painter.drawEllipse(QPointF{x + 3.5, mark_y}, 3.5, 3.5);
-    }
-    x += 12.0;
-    painter.setPen(ink);
-    const auto text =
-        metrics.elidedText(readout_->text, Qt::ElideRight, pads_left - x - kEntryWidth - 24.0);
-    painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
-    x += metrics.horizontalAdvance(text) + 12.0;
-    if (entry_left_ != x) {
-      entry_left_ = x;
-      resizeEvent(nullptr);
-    }
+  if (std::isfinite(score_db_) && x < pads_left - 40.0) {
+    painter.setPen(kIdentity);
+    painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0},
+                     QStringLiteral("%1 dB").arg(score_db_, 0, 'f', 2));
   }
 
   for (const auto& pad : laid) {
@@ -290,12 +216,6 @@ void ChassisBar::mouseMoveEvent(QMouseEvent* event) {
 
 void ChassisBar::mousePressEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton) return;
-  for (std::size_t corner = 0; corner < 4; ++corner) {
-    if (cornerCellRect(corner).contains(event->position())) {
-      emit cornerClicked(corner);
-      return;
-    }
-  }
   pressed_ = hit(event->position());
   if (pressed_) update();
 }

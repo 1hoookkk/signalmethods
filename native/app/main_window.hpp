@@ -17,7 +17,11 @@
 #include <utility>
 
 class QAction;
+class QTableView;
 class ChassisBar;
+class MorphStrip;
+class SectionModel;
+class SpaceDock;
 
 class MainWindow final : public QMainWindow {
   Q_OBJECT
@@ -29,6 +33,9 @@ class MainWindow final : public QMainWindow {
 
   [[nodiscard]] ResponsePlotWidget* responsePlot() const noexcept;
   [[nodiscard]] ChassisBar* chassisBar() const noexcept;
+  [[nodiscard]] MorphStrip* morphStrip() const noexcept;
+  [[nodiscard]] SpaceDock* spaceDock() const noexcept;
+  [[nodiscard]] SectionModel* sectionModel() const noexcept;
   [[nodiscard]] const std::filesystem::path& bodyPath() const noexcept;
   [[nodiscard]] BodyDocument* document() const noexcept;
   [[nodiscard]] FitController* fitController() const noexcept;
@@ -38,14 +45,12 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] bool fitRunning() const noexcept;
 
   [[nodiscard]] double dcDriftDb() const noexcept;
-  [[nodiscard]] QString readoutText() const;
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   void setCorner(std::size_t corner);
   bool saveBody(const std::filesystem::path& path);
   bool loadTarget(const std::filesystem::path& path);
   void setSourceModel(trench::core::measure::Source source);
-  bool applyTypedRoot(const QString& text);
   [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
   void startFit();
   void stopAndKeep();
@@ -68,8 +73,11 @@ class MainWindow final : public QMainWindow {
   bool fit_active_{};
   double dc_drift_db_{};
   trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
-  std::optional<std::pair<std::size_t, ResponsePlotWidget::Lane>> selected_;
   ResponsePlotWidget* response_plot_{};
+  MorphStrip* morph_strip_{};
+  SectionModel* section_model_{};
+  QTableView* section_table_{};
+  SpaceDock* space_dock_{};
   ChassisBar* chassis_bar_{};
   QAction* undo_action_{};
   QAction* redo_action_{};

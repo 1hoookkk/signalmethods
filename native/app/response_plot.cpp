@@ -136,6 +136,18 @@ void ResponsePlotWidget::setCorner(std::size_t corner) {
   refresh();
 }
 
+void ResponsePlotWidget::setView(float morph, float q) {
+  view_morph_ = morph;
+  view_q_ = q;
+  at_corner_ = (morph == 0.0F || morph == 1.0F) && (q == 0.0F || q == 1.0F);
+  refresh();
+}
+
+trench::core::Cascade ResponsePlotWidget::viewCascade() const {
+  if (at_corner_) return corner_cascade(*body_, corner_);
+  return body_->interpolate_biquads(view_morph_, view_q_, 0.0F);
+}
+
 void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
   freedom_mask_ = mask;
   update();
@@ -163,7 +175,7 @@ void ResponsePlotWidget::refresh() {
   if (body_ == nullptr) return;
   frequencies_hz_ = trench::core::logarithmic_frequency_grid(
       20.0, sample_rate_hz_ * 0.499, 512);
-  const auto cascade = corner_cascade(*body_, corner_);
+  const auto cascade = viewCascade();
   response_db_.clear();
   response_db_.reserve(frequencies_hz_.size());
   for (const auto frequency_hz : frequencies_hz_) {
@@ -234,7 +246,7 @@ void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double h
   if (frequencies_hz_.empty()) return;
   const auto axis_low_hz = frequencies_hz_.front();
   const auto axis_high_hz = frequencies_hz_.back();
-  const auto cascade = corner_cascade(*body_, corner_);
+  const auto cascade = viewCascade();
   const auto bins =
       std::max(kTraceMinimumBins, static_cast<int>(std::lround(plot.width())));
   const auto points = bins * kTraceOversample;
@@ -384,7 +396,7 @@ std::pair<double, double> ResponsePlotWidget::dbRange() const {
 
 std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
   std::vector<TokenInfo> out;
-  if (body_ == nullptr || frequencies_hz_.empty()) return out;
+  if (body_ == nullptr || !at_corner_ || frequencies_hz_.empty()) return out;
   const auto plot = plotRect();
   if (plot.width() <= 0.0 || plot.height() <= 0.0) return out;
   const auto low_hz = frequencies_hz_.front();

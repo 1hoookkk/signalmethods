@@ -3,7 +3,10 @@
 #include "body_document.hpp"
 #include "chassis_bar.hpp"
 #include "fit_controller.hpp"
+#include "morph_strip.hpp"
 #include "response_plot.hpp"
+#include "section_model.hpp"
+#include "space_dock.hpp"
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
@@ -11,18 +14,16 @@
 
 #include <QAction>
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QKeySequence>
+#include <QTableView>
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include <algorithm>
 #include <cctype>
-#include <cmath>
 #include <fstream>
-#include <numbers>
 #include <stdexcept>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace {
@@ -69,14 +70,12 @@ trench::core::p2k::PackedCorner flatten_corner(const BodyDocument::CornerSnapsho
   return out;
 }
 
+constexpr int kSectionRowHeight = 18;
+
 bool is_audio(const std::filesystem::path& path) {
   auto ext = path.extension().string();
   for (auto& c : ext) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   return ext == ".wav" || ext == ".aif" || ext == ".aiff" || ext == ".flac";
-}
-
-QString hex_word(std::uint16_t word) {
-  return QString::number(word, 16).toUpper().rightJustified(4, QLatin1Char('0'));
 }
 
 trench::core::p2k::StoredCorner unflatten_stored(const QList<quint16>& words) {
@@ -113,6 +112,40 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   response_plot_->setFreedomMask(document_->freedomMask());
   column->addWidget(response_plot_, 1);
 
+  morph_strip_ = new MorphStrip(central);
+  morph_strip_->setObjectName(QStringLiteral("morphStrip"));
+  column->addWidget(morph_strip_, 0);
+
+  section_model_ = new SectionModel(document_, this);
+  section_table_ = new QTableView(central);
+  section_table_->setObjectName(QStringLiteral("sectionTable"));
+  section_table_->setModel(section_model_);
+  section_table_->setItemDelegateForColumn(SectionModel::kIntent, new IntentDelegate(this));
+  section_table_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
+  section_table_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  section_table_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  section_table_->setSelectionMode(QAbstractItemView::SingleSelection);
+  section_table_->verticalHeader()->setMinimumSectionSize(kSectionRowHeight);
+  section_table_->verticalHeader()->setDefaultSectionSize(kSectionRowHeight);
+  section_table_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  section_table_->verticalHeader()->setFixedWidth(18);
+  section_table_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  section_table_->horizontalHeader()->setFixedHeight(kSectionRowHeight);
+  section_table_->setFixedHeight(kSectionRowHeight *
+                                 (static_cast<int>(trench::core::kLegacySectionCount) + 1));
+  section_table_->setStyleSheet(QStringLiteral(
+      "QTableView { background: #1a1f23; color: #aebabe; gridline-color: #373f43; "
+      "border: none; selection-background-color: #373f43; selection-color: #aebabe; }"
+      "QHeaderView::section { background: #1a1f23; color: #767f83; border: none; "
+      "border-bottom: 1px solid #373f43; padding: 0 4px; }"
+      "QTableCornerButton::section { background: #1a1f23; border: none; }"));
+  column->addWidget(section_table_, 0);
+
+  space_dock_ = new SpaceDock(central);
+  space_dock_->setObjectName(QStringLiteral("spaceDock"));
+  space_dock_->setSpace(document_->space());
+  column->addWidget(space_dock_, 0);
+
   chassis_bar_ = new ChassisBar(central);
   chassis_bar_->setBodyName(QString::fromStdString(body_path.filename().string()));
   column->addWidget(chassis_bar_, 0);
@@ -137,23 +170,33 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](std::size_t section, ResponsePlotWidget::Lane lane) {
             document_->toggleLane(section, lane == ResponsePlotWidget::Lane::kPole);
           });
-  connect(response_plot_, &ResponsePlotWidget::tokenSelected, this,
-          [this](std::size_t section, ResponsePlotWidget::Lane lane) {
-            selected_ = std::make_pair(section, lane);
-            updateProbes();
-          });
-
   connect(document_, &BodyDocument::bodyChanged, this, [this] {
     response_plot_->refresh();
     updateProbes();
   });
   connect(document_, &BodyDocument::cornerChanged, this, [this](std::size_t corner) {
     response_plot_->setCorner(corner);
-    chassis_bar_->setCorner(corner);
+    const auto view = document_->view();
+    morph_strip_->setView(view.morph, view.q);
+    response_plot_->setView(view.morph, view.q);
     updateProbes();
   });
-  connect(chassis_bar_, &ChassisBar::cornerClicked, this,
-          [this](std::size_t corner) { document_->setCorner(corner); });
+  connect(document_, &BodyDocument::viewChanged, this, [this] {
+    const auto view = document_->view();
+    morph_strip_->setView(view.morph, view.q);
+    response_plot_->setView(view.morph, view.q);
+    updateProbes();
+  });
+  connect(morph_strip_, &MorphStrip::viewEdited, this,
+          [this](float morph, float q) { document_->setView(morph, q); });
+  connect(space_dock_, &SpaceDock::spaceEdited, this,
+          [this](const trench::core::p2k::PerceptualSpace& space) {
+            document_->setSpace(space);
+          });
+  connect(document_, &BodyDocument::spaceChanged, this, [this] {
+    space_dock_->setSpace(document_->space());
+    updateProbes();
+  });
   connect(document_, &BodyDocument::freedomMaskChanged, this,
           [this](std::uint32_t mask) {
             response_plot_->setFreedomMask(mask);
@@ -162,6 +205,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   connect(document_, &BodyDocument::targetChanged, this, [this] {
     response_plot_->setTarget(document_->target() ? &*document_->target() : nullptr);
     updateVerbs();
+    updateProbes();
   });
 
   connect(fit_controller_, &FitController::stepReady, this,
@@ -182,8 +226,6 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
             endRun();
           });
 
-  connect(chassis_bar_, &ChassisBar::rootTyped, this,
-          [this](const QString& text) { applyTypedRoot(text); });
   connect(chassis_bar_, &ChassisBar::verbClicked, this, [this](ChassisBar::Verb verb) {
     switch (verb) {
       case ChassisBar::Verb::kUnity:
@@ -246,6 +288,12 @@ ResponsePlotWidget* MainWindow::responsePlot() const noexcept { return response_
 
 ChassisBar* MainWindow::chassisBar() const noexcept { return chassis_bar_; }
 
+MorphStrip* MainWindow::morphStrip() const noexcept { return morph_strip_; }
+
+SpaceDock* MainWindow::spaceDock() const noexcept { return space_dock_; }
+
+SectionModel* MainWindow::sectionModel() const noexcept { return section_model_; }
+
 const std::filesystem::path& MainWindow::bodyPath() const noexcept { return body_path_; }
 
 void MainWindow::setCorner(std::size_t corner) { document_->setCorner(corner); }
@@ -295,50 +343,9 @@ bool MainWindow::fitRunning() const noexcept { return fit_active_; }
 
 double MainWindow::dcDriftDb() const noexcept { return dc_drift_db_; }
 
-QString MainWindow::readoutText() const { return chassis_bar_->readoutText(); }
-
 void MainWindow::applySection(std::size_t section,
                               const trench::core::PackedSection& words) {
   document_->applySection(section, words);
-}
-
-bool MainWindow::applyTypedRoot(const QString& text) {
-  namespace p2k = trench::core::p2k;
-  if (!selected_ || fit_active_) return false;
-  const auto parts = text.simplified().split(QLatin1Char(' '), Qt::SkipEmptyParts);
-  if (parts.isEmpty() || parts.size() > 2) return false;
-  bool ok = false;
-  const double hz = parts[0].toDouble(&ok);
-  if (!ok || !(hz > 0.0)) return false;
-  const auto [section, lane] = *selected_;
-  const bool pole = lane == ResponsePlotWidget::Lane::kPole;
-  const auto before = document_->body().words[document_->corner()][section];
-  const auto geometry = trench::core::geometry_from_words(before, trench::core::kP2kDatumHz);
-  const auto& pair = pole ? geometry.pole : geometry.zero;
-  double radius = 0.9;
-  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
-    radius = conjugate->radius;
-  }
-  if (parts.size() == 2) {
-    const double q = parts[1].toDouble(&ok);
-    if (!ok || !(q > 0.0)) return false;
-    radius = std::exp(-std::numbers::pi * hz / (q * trench::core::kP2kDatumHz));
-  }
-  radius = pole ? std::clamp(radius, 0.0, p2k::kPoleRMax) : std::clamp(radius, 0.0, 1.0);
-  const double clamped_hz = std::clamp(hz, 20.0, p2k::kRootHiHz);
-  const auto [word_mag, word_rsq] = p2k::words_from_root(clamped_hz, radius);
-  const auto [p, q] = p2k::pq(word_mag, word_rsq);
-  if (!p2k::is_legal(p, q, pole) ||
-      !p2k::magnitude_admissible(p2k::nearest_lattice_word(word_mag), pole)) {
-    return false;
-  }
-  auto candidate = before;
-  candidate[pole ? 2 : 0] = word_mag;
-  candidate[pole ? 3 : 1] = word_rsq;
-  if (candidate == before) return true;
-  document_->applySection(section, candidate);
-  document_->commitGesture(section, before);
-  return true;
 }
 
 void MainWindow::setSourceModel(trench::core::measure::Source source) {
@@ -439,28 +446,7 @@ void MainWindow::updateProbes() {
   namespace p2k = trench::core::p2k;
   dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
   chassis_bar_->setDcDriftDb(dc_drift_db_);
-  if (!selected_) {
-    chassis_bar_->setReadout(std::nullopt);
-    return;
-  }
-  const auto [section, lane] = *selected_;
-  const auto pole = lane == ResponsePlotWidget::Lane::kPole;
-  const auto& words = document_->body().words[document_->corner()][section];
-  const auto mag = words[pole ? 2 : 0];
-  const auto rsq = words[pole ? 3 : 1];
-  const auto geometry =
-      trench::core::geometry_from_words(words, trench::core::kP2kDatumHz);
-  const auto& pair = pole ? geometry.pole : geometry.zero;
-  auto text = QString::number(section + 1);
-  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
-    text += QStringLiteral("  %1 Hz  r %2")
-                .arg(conjugate->hz, 0, 'f', conjugate->hz < 100.0 ? 1 : 0)
-                .arg(conjugate->radius, 0, 'f', 5);
-  }
-  text += QStringLiteral("  %1·%2  #%3")
-              .arg(hex_word(mag), hex_word(rsq))
-              .arg(p2k::nearest_lattice_word(mag));
-  chassis_bar_->setReadout(ChassisBar::Readout{section, pole, text});
+  chassis_bar_->setScoreDb(document_->targetScoreDb());
 }
 
 void MainWindow::endRun() {

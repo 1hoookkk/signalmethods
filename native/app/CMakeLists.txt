@@ -11,8 +11,14 @@ add_library(trench_native_ui STATIC
   fit_controller.hpp
   main_window.cpp
   main_window.hpp
+  morph_strip.cpp
+  morph_strip.hpp
   response_plot.cpp
   response_plot.hpp
+  section_model.cpp
+  section_model.hpp
+  space_dock.cpp
+  space_dock.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

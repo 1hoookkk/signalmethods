@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QLineEdit>
 #include <QString>
 #include <QWidget>
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <optional>
 #include <vector>
 
@@ -15,32 +15,21 @@ class ChassisBar final : public QWidget {
  public:
   enum class Verb { kUnity, kSource, kTarget, kFit, kKeep, kDiscard };
 
-  struct Readout {
-    std::size_t section{};
-    bool pole{};
-    QString text;
-  };
-
   explicit ChassisBar(QWidget* parent = nullptr);
 
   void setBodyName(const QString& name);
-  void setCorner(std::size_t corner);
-  [[nodiscard]] QRectF cornerCellRect(std::size_t corner) const;
   void setTargetName(const QString& name);
   void setState(bool has_target, bool running);
   void setDcDriftDb(double db);
   void setSourceSawtooth(bool sawtooth);
-  void setReadout(const std::optional<Readout>& readout);
-  [[nodiscard]] QString readoutText() const;
+  void setScoreDb(double db);
+  [[nodiscard]] double scoreDb() const noexcept;
 
  signals:
   void verbClicked(ChassisBar::Verb verb);
-  void cornerClicked(std::size_t corner);
-  void rootTyped(const QString& text);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
-  void resizeEvent(QResizeEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
@@ -58,15 +47,12 @@ class ChassisBar final : public QWidget {
   [[nodiscard]] QString labelFor(Verb verb) const;
 
   QString body_name_;
-  std::size_t corner_{};
   QString target_name_;
   bool has_target_{};
   bool running_{};
   double dc_drift_db_{};
   bool source_sawtooth_{};
-  std::optional<Readout> readout_;
-  QLineEdit* entry_{};
-  double entry_left_{};
+  double score_db_{std::numeric_limits<double>::quiet_NaN()};
   std::optional<Verb> hover_;
   std::optional<Verb> pressed_;
 };

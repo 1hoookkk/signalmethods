@@ -1,14 +1,19 @@
 #include "chassis_bar.hpp"
 #include "main_window.hpp"
+#include "morph_strip.hpp"
 #include "response_plot.hpp"
+#include "section_model.hpp"
+#include "space_dock.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
 #include <QTest>
 #include <QCoreApplication>
+#include <QDoubleSpinBox>
 #include <QMouseEvent>
 #include <QPointer>
+#include <QSlider>
 #include <QUndoStack>
 
 #include <algorithm>
@@ -461,83 +466,6 @@ class MainWindowTest final : public QObject {
     std::filesystem::remove(wav);
   }
 
-  void typedHzAndQMoveTheSelectedRootThroughTheLatticeAsOneUndoStep() {
-    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    window.resize(960, 540);
-    window.show();
-    QTest::qWait(20);
-    auto* plot = window.responsePlot();
-    QVERIFY(!window.applyTypedRoot(QStringLiteral("800 6")));
-    const auto token = find_token(plot, 1, ResponsePlotWidget::Lane::kPole);
-    QVERIFY(token.has_value());
-    press(plot, token->position);
-    release(plot, token->position);
-    const auto undo_before = window.undoStack()->count();
-    const auto words_before = window.body().words[0][1];
-
-    QVERIFY(window.applyTypedRoot(QStringLiteral("800 6")));
-    const auto& after = window.body().words[0][1];
-    QVERIFY(after != words_before);
-    QCOMPARE(after[0], words_before[0]);
-    QCOMPARE(after[1], words_before[1]);
-    QCOMPARE(after[4], words_before[4]);
-    QCOMPARE(window.undoStack()->count(), undo_before + 1);
-    const auto geometry = trench::core::geometry_from_words(after, trench::core::kP2kDatumHz);
-    const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
-    QVERIFY(pole != nullptr);
-    const auto cents = std::abs(std::log2(pole->hz / 800.0) * 1200.0);
-    QVERIFY2(cents < 25.0, qPrintable(QString::number(pole->hz)));
-    const auto expected_r = std::exp(-std::numbers::pi * 800.0 / (6.0 * trench::core::kP2kDatumHz));
-    QVERIFY2(std::abs(pole->radius - expected_r) < 5.0e-3, qPrintable(QString::number(pole->radius)));
-
-    QVERIFY(!window.applyTypedRoot(QStringLiteral("nope")));
-    QVERIFY(!window.applyTypedRoot(QStringLiteral("800 0")));
-    QCOMPARE(window.undoStack()->count(), undo_before + 1);
-    QVERIFY(window.applyTypedRoot(QStringLiteral("1200")));
-    const auto kept = trench::core::geometry_from_words(window.body().words[0][1], trench::core::kP2kDatumHz);
-    const auto* kept_pole = std::get_if<trench::core::ConjugatePair>(&kept.pole);
-    QVERIFY(kept_pole != nullptr);
-    QVERIFY(std::abs(kept_pole->radius - pole->radius) < 5.0e-3);
-  }
-
-  void pressPublishesSelectedTokenReadout() {
-    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    window.resize(960, 540);
-    window.show();
-    QTest::qWait(20);
-    auto* plot = window.responsePlot();
-
-    QVERIFY(window.readoutText().isEmpty());
-    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
-    QVERIFY(token.has_value());
-    press(plot, token->position);
-    release(plot, token->position);
-
-    const auto mag = window.body().words[0][0][2];
-    const auto rsq = window.body().words[0][0][3];
-    const auto text = window.readoutText();
-    QVERIFY(text.contains(QString::number(mag, 16).toUpper().rightJustified(4, '0')));
-    QVERIFY(text.contains(QString::number(rsq, 16).toUpper().rightJustified(4, '0')));
-    QVERIFY(text.contains(
-        QStringLiteral("#%1").arg(trench::core::p2k::nearest_lattice_word(mag))));
-    const auto geometry = trench::core::geometry_from_words(window.body().words[0][0],
-                                                            trench::core::kP2kDatumHz);
-    const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
-    QVERIFY(conjugate != nullptr);
-    QVERIFY(text.contains(QString::number(conjugate->radius, 'f', 5)));
-
-    press(plot, token->position);
-    release(plot, token->position);
-    QCOMPARE(window.freedomMask() & trench::core::p2k::pole_bit(0),
-             trench::core::p2k::pole_bit(0));
-
-    drag(plot, token->position, token->position + QPointF{-70.0, 22.0}, 5);
-    const auto moved_mag = window.body().words[0][0][2];
-    QVERIFY(moved_mag != mag);
-    QVERIFY(window.readoutText().contains(
-        QString::number(moved_mag, 16).toUpper().rightJustified(4, '0')));
-  }
-
   void unityVerbRenormalizesDcAsOneUndo() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
@@ -662,7 +590,7 @@ class MainWindowTest final : public QObject {
     window.show();
     QTest::qWait(20);
     const auto untouched = window.body();
-    press(window.chassisBar(), window.chassisBar()->cornerCellRect(2).center());
+    window.setCorner(2);
     QCOMPARE(window.document()->corner(), std::size_t{2});
     auto* plot = window.responsePlot();
     const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
@@ -862,6 +790,89 @@ class MainWindowTest final : public QObject {
 
     QVERIFY(p2k::within_envelope(p2k::Role::kTilt, window.body().words[0][5],
                                  trench::core::kP2kDatumHz));
+  }
+
+  void sectionCellEditWritesLatticeWordsAsOneUndoStep() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* model = window.sectionModel();
+    QVERIFY(model != nullptr);
+
+    const auto before = window.body().words[0][0];
+    const auto cell = model->index(0, SectionModel::kPoleHz);
+    const auto hz = cell.data(Qt::EditRole).toDouble();
+    QVERIFY(hz > 0.0);
+    QVERIFY(model->setData(cell, QVariant(hz * 0.85), Qt::EditRole));
+
+    const auto& after = window.body().words[0][0];
+    QVERIFY(after != before);
+    QVERIFY(is_lattice_word(after[2]));
+    QVERIFY(is_lattice_word(after[3]));
+    const auto [p, q] = trench::core::p2k::pq(after[2], after[3]);
+    QVERIFY(trench::core::p2k::is_legal(p, q, true));
+    QCOMPARE(after[4], before[4]);
+    QCOMPARE(after[0], before[0]);
+    QCOMPARE(after[1], before[1]);
+    QCOMPARE(window.body().words[4][0], after);
+    QCOMPARE(window.undoStack()->count(), 1);
+  }
+
+  void intentCellWritesTheDocumentIntent() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* model = window.sectionModel();
+    QVERIFY(!window.document()->intent()[2].has_value());
+    const auto cell = model->index(2, SectionModel::kIntent);
+    QVERIFY(model->setData(cell, QVariant(SectionModel::intentIndex(trench::core::p2k::Role::kPeak)),
+                           Qt::EditRole));
+    QVERIFY(window.document()->intent()[2] == trench::core::p2k::Role::kPeak);
+    QCOMPARE(window.undoStack()->count(), 1);
+  }
+
+  void morphStripShowsTheInteriorAndSelectsCorners() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    const auto corner_zero_db = plot->responseDbAt(256);
+    QVERIFY(!plot->tokens().empty());
+
+    auto* morph = window.morphStrip()->findChild<QSlider*>(QStringLiteral("morphSlider"));
+    QVERIFY(morph != nullptr);
+    morph->setValue(morph->maximum() / 2);
+    QVERIFY(!window.document()->atCorner());
+    QVERIFY(plot->tokens().empty());
+    QVERIFY(std::abs(plot->responseDbAt(256) - corner_zero_db) > 1.0e-9);
+
+    morph->setValue(morph->maximum());
+    QCOMPARE(window.document()->corner(), std::size_t{1});
+    QVERIFY(window.document()->atCorner());
+    QVERIFY(!plot->tokens().empty());
+  }
+
+  void spaceEditRescoresWithoutTouchingTheBody() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    QVERIFY(window.loadTarget(std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                              "ref/presets/P2k_002_early_rizer.bin"));
+    const auto bytes = window.body().native_bytes();
+    const auto before = window.chassisBar()->scoreDb();
+    QVERIFY(std::isfinite(before));
+
+    auto* lo = window.spaceDock()->findChild<QDoubleSpinBox*>(QStringLiteral("spaceLo"));
+    QVERIFY(lo != nullptr);
+    lo->setValue(200.0);
+
+    QCOMPARE(window.document()->space().lo_hz, 200.0);
+    QVERIFY(std::abs(window.chassisBar()->scoreDb() - before) > 1.0e-9);
+    QVERIFY(window.body().native_bytes() == bytes);
   }
 };
 
