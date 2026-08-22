@@ -116,6 +116,24 @@ Not rendered here (JUCE wrapper, outside the DLL): SLAM limiter, MIX, the
 preamp taper, the MOVE renderer. SLAM at default is a safety ceiling and
 X3's −1.1 dBFS peaks sit below it.
 
+
+**The whole plugin, headless, every control at zero** (`plugin/plugin/tools/
+RenderNull.cpp` drives the real `PluginProcessor` — JUCE wrapper and engine —
+on the dry file with MIX wet and everything else at zero; scored by
+`dev/x3_wrapper_null.py`):
+
+| pair | level | null, gain-matched | shape |
+|---|---|---|---|
+| wrapper (zero) vs engine filter-only | 0.00 dB | **−156.8 dB** (float noise) | 0.00 |
+| X3 vs wrapper (zero) | X3 **+4.14 dB** | −80.4 dB | 0.15 |
+
+At zero the shipping plugin *is* the filter math, bit for bit: no DC blocker,
+no AGC, nothing in the wrapper touches the signal. The entire remaining
+difference from X3 at zero is one number, **+4.14 dB**, X3's voice/preset
+output gain. Tyson's rule (2026-08-22): zero must equal X3, character is
+additive above zero — so the one change that closes parity is a fixed
++4.14 dB at the wet output, nothing else.
+
 **Conclusion for the product.** Corner (−80 dB), interior (< 1 dB), slow
 travel (< 1 dB) and fast step (−33/−65 dB beyond 20 ms) all match X3 with
 the engine's filter alone. Whatever makes TRENCH sound different from X3

@@ -231,6 +231,20 @@ add_dependencies(TRENCH_FaceShot trench_core_build)
 # The runtime proof: engine lifetime under an in-flight callback, host blocks
 # larger and smaller than the prepared size, old-session parameter migration,
 # and the AUTO KEY worker's bounded start/stop. Headless, no DAW.
+juce_add_console_app(TRENCH_RenderNull PRODUCT_NAME "TRENCH Render Null")
+target_sources(TRENCH_RenderNull PRIVATE tools/RenderNull.cpp)
+target_include_directories(TRENCH_RenderNull PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_RenderNull PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+target_link_libraries(TRENCH_RenderNull PRIVATE
+    TRENCHPluginCommon
+    "${TRENCH_CORE_LIB}"
+    ${TRENCH_WINDOWS_LIBS}
+    juce::juce_audio_formats
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_lto_flags
+    juce::juce_recommended_warning_flags)
+add_dependencies(TRENCH_RenderNull trench_core_build)
+
 juce_add_console_app(TRENCH_LifecycleTests PRODUCT_NAME "TRENCH Lifecycle Tests")
 target_sources(TRENCH_LifecycleTests PRIVATE tools/LifecycleTests.cpp)
 target_include_directories(TRENCH_LifecycleTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
