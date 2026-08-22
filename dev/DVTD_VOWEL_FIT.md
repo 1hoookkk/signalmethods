@@ -266,6 +266,45 @@ boost/cut allocation sweep — a cut is simply what wins when the residual is
 negative there. That removes all three priors at once and replaces them with the
 loss, which is the thing actually being minimised.
 
+## 3e. Matching pursuit was tried and is worse. Keep the peak picker.
+
+Section 3d proposed replacing the peak picker with greedy matching pursuit —
+place each section where it most reduces the weighted residual, no prominence
+measure, no top-N, no band gate, no cut allocation. It was implemented and run
+over all 44 mouths. It loses badly:
+
+| | peak picker | matching pursuit | change |
+|---|---|---|---|
+| rms best | 0.585 | 1.573 | +169% |
+| rms median | **1.255** | **4.101** | **+227%** |
+| rms mean | 1.307 | 4.139 | +217% |
+| rms worst | 2.332 | 7.321 | +214% |
+| largest single-point error | 7.845 | 21.009 | +168% |
+
+Better on **1 of 44** mouths.
+
+Two visible causes. First, the allocation it chooses is wrong: matching pursuit
+picks 3-5 cut bells (mode 4) where the peak picker picks 0-3 (mode 2). Greedy
+variance reduction finds that a broad cut removes more weighted variance in one
+step than a narrow resonance does, so it spends sections carving valleys instead
+of building formants, and the local polish afterwards cannot undo it. Second,
+greedy is irrevocable — an early bad placement is permanent, and with only seven
+sections there is no slack to absorb one.
+
+**The conclusion inverts section 3d.** The peak picker is not a crude proxy
+standing in for the loss. It encodes real domain knowledge — formants are
+spectral peaks, and poles belong on formants — that a loss-greedy search does
+not have and does not discover. The "prior" is the useful part.
+
+That does not retract the defect found in 3d: the one-sided prominence really
+does drop F1 on close front vowels, and that is worth fixing on its own terms.
+It retracts only the proposed replacement. The shipped seeder is unchanged and
+remains the peak picker with the cut-allocation sweep of section 3c.
+
+Recorded because a negative result that cost a full batch is evidence, and
+because the plausible-sounding version of this idea will otherwise be proposed
+again.
+
 ## 4. Correction: `.4` is about corners, not sections
 
 Printed page 178, first paragraph:
