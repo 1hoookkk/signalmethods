@@ -40,7 +40,7 @@ TEST(P2kRowsFit, AVowelMadeFromRowsIsRecoveredFromItsOwnResponseWithDerivedZeros
   const auto truth = p2k::rows_from_formants(aa->f).rows;
   const auto target = response_of(truth);
   const auto seed = p2k::seed_rows_from_target(target);
-  const auto fit = p2k::fit_rows_watched(target, seed, p2k::RowsFitOptions{}, p2k::grid(),
+  const auto fit = p2k::fit_rows_watched(target, seed, p2k::identity_words(), p2k::kAllFree, p2k::RowsFitOptions{}, p2k::grid(),
                                          nullptr, nullptr);
   ASSERT_TRUE(fit.has_value());
   EXPECT_LT(fit->rms_db, 1.5);
@@ -62,7 +62,7 @@ TEST(P2kRowsFit, TalkingHedzCornerZeroIsMatchedByTypedRows) {
   const auto body = hedz();
   const auto target = p2k::corner_response_db(p2k::rom_corner_words(body, 0));
   const auto seed = p2k::seed_rows_from_target(target);
-  const auto fit = p2k::fit_rows_watched(target, seed, p2k::RowsFitOptions{}, p2k::grid(),
+  const auto fit = p2k::fit_rows_watched(target, seed, p2k::identity_words(), p2k::kAllFree, p2k::RowsFitOptions{}, p2k::grid(),
                                          nullptr, nullptr);
   ASSERT_TRUE(fit.has_value());
   EXPECT_LT(fit->rms_db, 6.0);
@@ -71,13 +71,33 @@ TEST(P2kRowsFit, TalkingHedzCornerZeroIsMatchedByTypedRows) {
   EXPECT_GE(eq, 3U);
 }
 
+TEST(P2kRowsFit, HeldAndUntypedRowsKeepTheirWordsVerbatim) {
+  const auto body = hedz();
+  const auto stored = p2k::rom_corner_words(body, 0);
+  p2k::CornerWords held{};
+  for (std::size_t si = 0; si < 6; ++si)
+    for (std::size_t wi = 0; wi < 4; ++wi) held[si][wi] = stored[si][wi];
+  const auto target = p2k::corner_response_db(p2k::rom_corner_words(body, 1));
+  auto seed = p2k::rows_of_corner(held);
+  seed[4].type = p2k::SectionType::kOff;
+  const std::uint32_t mask = p2k::kAllFree & ~p2k::pole_bit(2);
+  const auto fit = p2k::fit_rows_watched(target, seed, held, mask, p2k::RowsFitOptions{},
+                                         p2k::grid(), nullptr, nullptr);
+  ASSERT_TRUE(fit.has_value());
+  EXPECT_EQ(fit->words[2], held[2]);
+  EXPECT_EQ(fit->words[4], held[4]);
+  bool moved = false;
+  for (std::size_t si : {std::size_t{1}, std::size_t{3}}) moved |= fit->words[si] != held[si];
+  EXPECT_TRUE(moved);
+}
+
 TEST(P2kRowsFit, StopRequestedReturnsTheLastAcceptedRows) {
   const auto body = hedz();
   const auto target = p2k::corner_response_db(p2k::rom_corner_words(body, 1));
   const auto seed = p2k::seed_rows_from_target(target);
   int calls = 0;
   const auto fit = p2k::fit_rows_watched(
-      target, seed, p2k::RowsFitOptions{}, p2k::grid(), [&calls] { return ++calls > 2; },
+      target, seed, p2k::identity_words(), p2k::kAllFree, p2k::RowsFitOptions{}, p2k::grid(), [&calls] { return ++calls > 2; },
       nullptr);
   ASSERT_TRUE(fit.has_value());
   EXPECT_TRUE(fit->stopped);

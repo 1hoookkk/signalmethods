@@ -435,9 +435,14 @@ void MainWindow::startFit() {
   fit_active_ = true;
   response_plot_->setFitRunning(true);
   updateVerbs();
-  fit_controller_->start(*document_->target(), document_->seedWords(),
-                         document_->freedomMask(), document_->grid(),
-                         document_->intent(), document_->seedIsInherited());
+  namespace p2k = trench::core::p2k;
+  const auto held = document_->seedWords();
+  auto seed = p2k::rows_of_corner(held);
+  bool typed = false;
+  for (const auto& row : seed) typed |= row.type != p2k::SectionType::kOff;
+  if (!typed) seed = p2k::seed_rows_from_target(*document_->target(), document_->grid());
+  fit_controller_->startRows(*document_->target(), seed, held, flatten_corner(pre_fit_),
+                             document_->freedomMask(), document_->grid());
 }
 
 void MainWindow::stopAndKeep() {

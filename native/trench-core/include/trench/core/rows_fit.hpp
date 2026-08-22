@@ -39,11 +39,19 @@ struct RowsFitOptions {
 
 Rows seed_rows_from_target(std::span<const double> target, const Grid& g = grid());
 
+Rows rows_of_corner(const CornerWords& words, double sample_rate_hz = kP2kDatumHz);
+
+bool row_held(std::size_t section, std::uint32_t mask);
+
+CornerWords words_from_rows(const Rows& rows, const CornerWords& held, std::uint32_t mask,
+                            double sample_rate_hz = kP2kDatumHz);
+
 CornerWords words_from_rows(const Rows& rows, double sample_rate_hz = kP2kDatumHz);
 
 double rows_rms_db(const Rows& rows, std::span<const double> target, const Grid& g = grid());
 
 std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows seed,
+                                        const CornerWords& held, std::uint32_t mask,
                                         const RowsFitOptions& opts, const Grid& g,
                                         const std::function<bool()>& stop_requested,
                                         const std::function<void(const RowsStep&)>& on_step);

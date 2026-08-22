@@ -9,30 +9,46 @@ namespace trench::core::p2k {
 
 namespace {
 
-double cost_of(const Rows& rows, std::span<const double> target, const Grid& g, Scratch& s,
-               double sample_rate_hz) {
-  const auto words = words_from_rows(rows, sample_rate_hz);
-  const Corner c = Corner::from_words(words, g);
+double cost_of(const Rows& rows, const CornerWords& held, std::uint32_t mask,
+               std::span<const double> target, const Grid& g, Scratch& s) {
+  const Corner c = Corner::from_words(words_from_rows(rows, held, mask, kSr), g);
   return corner_cost(c, target, Cost::kWeightedVar, s);
 }
-
-bool row_live(const SectionParam& p) { return p.type != SectionType::kOff; }
 
 double clamp_fc(double hz) { return std::clamp(hz, 20.0, kRootHiHz); }
 
 }  // namespace
 
-CornerWords words_from_rows(const Rows& rows, double sample_rate_hz) {
-  CornerWords out = identity_words();
+bool row_held(std::size_t section, std::uint32_t mask) {
+  return (mask & pole_bit(section)) == 0U || (mask & zero_bit(section)) == 0U;
+}
+
+Rows rows_of_corner(const CornerWords& words, double sample_rate_hz) {
+  Rows rows{};
   for (std::size_t si = 0; si < 6; ++si) {
-    out[si] = words_from_param(rows[si], out[si], si, sample_rate_hz);
+    rows[si] = param_of({words[si][0], words[si][1], words[si][2], words[si][3], 0},
+                        sample_rate_hz);
+  }
+  return rows;
+}
+
+CornerWords words_from_rows(const Rows& rows, const CornerWords& held, std::uint32_t mask,
+                            double sample_rate_hz) {
+  CornerWords out = held;
+  for (std::size_t si = 0; si < 6; ++si) {
+    if (rows[si].type == SectionType::kOff || row_held(si, mask)) continue;
+    out[si] = words_from_param(rows[si], held[si], si, sample_rate_hz);
   }
   return out;
 }
 
+CornerWords words_from_rows(const Rows& rows, double sample_rate_hz) {
+  return words_from_rows(rows, identity_words(), kAllFree, sample_rate_hz);
+}
+
 double rows_rms_db(const Rows& rows, std::span<const double> target, const Grid& g) {
   Scratch s;
-  return std::sqrt(std::max(cost_of(rows, target, g, s, kSr), 0.0));
+  return std::sqrt(std::max(cost_of(rows, identity_words(), kAllFree, target, g, s), 0.0));
 }
 
 Rows seed_rows_from_target(std::span<const double> target, const Grid& g) {
@@ -94,13 +110,14 @@ Rows seed_rows_from_target(std::span<const double> target, const Grid& g) {
 }
 
 std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows seed,
+                                        const CornerWords& held, std::uint32_t mask,
                                         const RowsFitOptions& opts, const Grid& g,
                                         const std::function<bool()>& stop_requested,
                                         const std::function<void(const RowsStep&)>& on_step) {
   if (target.size() != kNpts) return std::nullopt;
   Scratch s;
   Rows rows = seed;
-  double best = cost_of(rows, target, g, s, kSr);
+  double best = cost_of(rows, held, mask, target, g, s);
   bool stopped = false;
 
   const auto try_values = [&](std::size_t si, auto&& set, const std::vector<double>& values) {
@@ -108,7 +125,7 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
     for (const double v : values) {
       Rows trial = rows;
       set(trial[si], v);
-      const double c = cost_of(trial, target, g, s, kSr);
+      const double c = cost_of(trial, held, mask, target, g, s);
       if (c < best - 1e-9) {
         best = c;
         rows = trial;
@@ -126,7 +143,7 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
         stopped = true;
         break;
       }
-      if (!row_live(rows[si])) continue;
+      if (rows[si].type == SectionType::kOff || row_held(si, mask)) continue;
       bool moved = false;
       {
         std::vector<double> v;
@@ -162,7 +179,8 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
         moved |= try_values(si, [](SectionParam& p, double x) { p.gain_db = x; }, v);
       }
       if (moved && on_step) {
-        on_step(RowsStep{si, rows, words_from_rows(rows, kSr), std::sqrt(std::max(best, 0.0))});
+        on_step(RowsStep{si, rows, words_from_rows(rows, held, mask, kSr),
+                         std::sqrt(std::max(best, 0.0))});
       }
       changed |= moved;
     }
@@ -171,7 +189,7 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
 
   RowsFit fit;
   fit.rows = rows;
-  fit.words = words_from_rows(rows, kSr);
+  fit.words = words_from_rows(rows, held, mask, kSr);
   fit.rms_db = std::sqrt(std::max(best, 0.0));
   fit.stopped = stopped;
   return fit;

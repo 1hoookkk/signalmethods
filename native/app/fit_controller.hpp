@@ -1,6 +1,7 @@
 #pragma once
 
 #include "trench/core/p2k.hpp"
+#include "trench/core/rows_fit.hpp"
 
 #include <QList>
 #include <QObject>
@@ -23,6 +24,9 @@ class FitController final : public QObject {
   void start(std::vector<double> target, trench::core::p2k::CornerWords seed,
              std::uint32_t mask, trench::core::p2k::Grid grid,
              trench::core::p2k::RoleIntent intent, bool inherited_seed = false);
+  void startRows(std::vector<double> target, trench::core::p2k::Rows seed,
+                 trench::core::p2k::CornerWords held, trench::core::p2k::PackedCorner baseline,
+                 std::uint32_t mask, trench::core::p2k::Grid grid);
   void setMask(std::uint32_t mask);
   void requestStop();
   void abandon();
