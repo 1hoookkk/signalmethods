@@ -372,6 +372,7 @@ void MainWindow::selectSection(std::size_t section) {
   for (auto* strip : strips_) {
     strip->setSelected(strip->section() == section);
   }
+  response_plot_->setSelectedSection(section);
 }
 
 void MainWindow::setSourceModel(trench::core::measure::Source source) {

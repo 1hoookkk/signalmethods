@@ -302,6 +302,7 @@ class MainWindowTest final : public QObject {
     auto* plot = window.responsePlot();
 
     QCOMPARE(window.body().words[0][5][1], trench::core::p2k::kS6ZeroRsqWord);
+    window.selectSection(5);
     const auto token = find_token(plot, 5, ResponsePlotWidget::Lane::kZero);
     QVERIFY(token.has_value());
     QVERIFY(token->live);
@@ -329,10 +330,16 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
 
     const auto tokens = window.responsePlot()->tokens();
-    QCOMPARE(tokens.size(), trench::core::kLegacySectionCount * 2);
+    std::size_t zeros = 0;
     for (const auto& token : tokens) {
       QVERIFY(token.section < trench::core::kLegacySectionCount);
+      if (token.lane == ResponsePlotWidget::Lane::kZero) {
+        QCOMPARE(token.section, std::size_t{0});
+        ++zeros;
+      }
     }
+    QCOMPARE(zeros, std::size_t{1});
+    QVERIFY(tokens.size() <= trench::core::kLegacySectionCount + 1);
   }
 
   void degeneratePairRendersInert() {
@@ -350,14 +357,9 @@ class MainWindowTest final : public QObject {
     window.applySection(3, degenerate);
     QTest::qWait(20);
 
-    const auto pole = find_token(plot, 3, ResponsePlotWidget::Lane::kPole);
-    const auto zero = find_token(plot, 3, ResponsePlotWidget::Lane::kZero);
-    QVERIFY(pole.has_value());
-    QVERIFY(zero.has_value());
-    QVERIFY(!pole->live);
-    QVERIFY(!zero->live);
-
-    drag(plot, pole->position, pole->position + QPointF{90.0, -40.0}, 6);
+    window.selectSection(3);
+    QVERIFY(!find_token(plot, 3, ResponsePlotWidget::Lane::kPole).has_value());
+    QVERIFY(!find_token(plot, 3, ResponsePlotWidget::Lane::kZero).has_value());
 
     QCOMPARE(window.body().words[0][3], degenerate);
     QCOMPARE(window.body().words[4][3], degenerate);
@@ -622,6 +624,7 @@ class MainWindowTest final : public QObject {
     const auto untouched = window.body();
     window.setCorner(2);
     auto* plot = window.responsePlot();
+    window.selectSection(1);
     const auto token = find_token(plot, 1, ResponsePlotWidget::Lane::kZero);
     QVERIFY(token.has_value());
     drag(plot, token->position, token->position + QPointF{60.0, -18.0}, 5);

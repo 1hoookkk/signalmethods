@@ -46,6 +46,7 @@ class ResponsePlotWidget final : public QWidget {
   void setFreedomMask(std::uint32_t mask);
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
+  void setSelectedSection(std::size_t section);
   void flashLane(std::size_t section);
   void refresh();
 
@@ -76,6 +77,7 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] trench::core::Cascade viewCascade() const;
   [[nodiscard]] std::pair<double, double> dbRange() const;
   [[nodiscard]] double contributionAt(std::size_t section, double hz) const;
+  [[nodiscard]] double responseDbAtHz(double hz) const;
   [[nodiscard]] std::optional<TokenInfo> hit(const QPointF& at) const;
   void moveTo(const QPointF& at);
   void refuse(double frequency_hz);
@@ -91,6 +93,7 @@ class ResponsePlotWidget final : public QWidget {
   double sample_rate_hz_{trench::core::kP2kDatumHz};
   trench::core::p2k::PerceptualSpace space_{};
   std::uint32_t freedom_mask_{0xFFFFFFFFU};
+  std::size_t selected_section_{};
   std::vector<double> frequencies_hz_;
   std::vector<double> response_db_;
   std::array<double, trench::core::kLegacySectionCount> running_peak_db_{};

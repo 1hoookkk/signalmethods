@@ -36,7 +36,6 @@ constexpr qint64 kFlashHoldMs = 200;
 const QColor kTarget{72, 82, 88};
 const QColor kResidual{156, 130, 224};
 
-constexpr double kLevelLanePx = 40.0;
 constexpr double kResidualBandPx = 34.0;
 
 double erb_rate(double frequency_hz) {
@@ -167,6 +166,23 @@ trench::core::Cascade ResponsePlotWidget::viewCascade() const {
 void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
   freedom_mask_ = mask;
   update();
+}
+
+void ResponsePlotWidget::setSelectedSection(std::size_t section) {
+  selected_section_ = section;
+  update();
+}
+
+double ResponsePlotWidget::responseDbAtHz(double hz) const {
+  if (response_db_.empty() || response_db_.size() != frequencies_hz_.size()) return 0.0;
+  const auto upper_it = std::lower_bound(frequencies_hz_.begin(), frequencies_hz_.end(), hz);
+  if (upper_it == frequencies_hz_.begin()) return response_db_.front();
+  if (upper_it == frequencies_hz_.end()) return response_db_.back();
+  const auto upper = static_cast<std::size_t>(upper_it - frequencies_hz_.begin());
+  const auto lower = upper - 1;
+  const auto span = frequencies_hz_[upper] - frequencies_hz_[lower];
+  const auto blend = span > 0.0 ? (hz - frequencies_hz_[lower]) / span : 0.0;
+  return response_db_[lower] * (1.0 - blend) + response_db_[upper] * blend;
 }
 
 void ResponsePlotWidget::setTarget(const std::vector<double>* target) {
@@ -391,7 +407,7 @@ bool ResponsePlotWidget::refusalVisible() const noexcept {
 
 QRectF ResponsePlotWidget::plotRect() const {
   const auto band = target_db_.empty() ? 0.0 : kResidualBandPx;
-  return QRectF(rect()).adjusted(54.0, 28.0, -(18.0 + kLevelLanePx), -(36.0 + band));
+  return QRectF(rect()).adjusted(54.0, 28.0, -18.0, -(36.0 + band));
 }
 
 std::pair<double, double> ResponsePlotWidget::dbRange() const {
@@ -420,10 +436,11 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
     const auto geometry = trench::core::geometry_from_words(
         body_->words[corner_][section], trench::core::kP2kDatumHz);
     for (const auto lane : {Lane::kPole, Lane::kZero}) {
+      if (lane == Lane::kZero && section != selected_section_) continue;
       const auto& pair = lane == Lane::kPole ? geometry.pole : geometry.zero;
       double hz = low_hz;
       double radius = 0.0;
-      const auto live = root_placement(pair, low_hz, high_hz, hz, radius);
+      if (!root_placement(pair, low_hz, high_hz, hz, radius)) continue;
       const auto bit = lane == Lane::kPole ? trench::core::p2k::pole_bit(section)
                                            : trench::core::p2k::zero_bit(section);
       const auto [low_db, high_db] = latched_db_.value_or(dbRange());
@@ -433,8 +450,8 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
       token.position = QPointF{
           std::clamp(x_for_frequency(hz, low_hz, high_hz, plot),
                      plot.left() + kTokenRadiusPx, plot.right() - kTokenRadiusPx),
-          y_for_contribution(contributionAt(section, hz), low_db, high_db, plot)};
-      token.live = live;
+          y_for_contribution(responseDbAtHz(hz), low_db, high_db, plot)};
+      token.live = true;
       token.pinned = (freedom_mask_ & bit) == 0U;
       out.push_back(token);
     }
@@ -618,34 +635,6 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     painter.setPen(QPen(kGrid, 1.0));
   }
 
-  const QRectF lane{plot.right() + 8.0, plot.top(), kLevelLanePx - 14.0, plot.height()};
-  painter.setPen(QPen(kGrid, 1.0));
-  painter.drawLine(QPointF{lane.left() - 4.0, lane.top()},
-                   QPointF{lane.left() - 4.0, lane.bottom()});
-  QPainterPath level_path;
-  for (std::size_t section = 0; section < running_peak_db_.size(); ++section) {
-    const auto x = lane.left() + (static_cast<double>(section) + 0.5) * lane.width() /
-                                     static_cast<double>(running_peak_db_.size());
-    const auto y = y_for_contribution(running_peak_db_[section], low_db, high_db, plot);
-    if (section == 0) {
-      level_path.moveTo(x, y);
-    } else {
-      level_path.lineTo(x, y);
-    }
-  }
-  painter.setPen(QPen(kTarget, 1.0));
-  painter.setBrush(Qt::NoBrush);
-  painter.drawPath(level_path);
-  for (std::size_t section = 0; section < running_peak_db_.size(); ++section) {
-    const auto x = lane.left() + (static_cast<double>(section) + 0.5) * lane.width() /
-                                     static_cast<double>(running_peak_db_.size());
-    const auto y = y_for_contribution(running_peak_db_[section], low_db, high_db, plot);
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(section_color(section));
-    painter.drawEllipse(QPointF{x, y}, 2.5, 2.5);
-  }
-  painter.setBrush(Qt::NoBrush);
-
   if (!residual_db_.empty() && residual_db_.size() == frequencies_hz_.size()) {
     const QRectF band{plot.left(), plot.bottom() + 6.0, plot.width(),
                       kResidualBandPx - 12.0};
@@ -710,37 +699,27 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     painter.drawLine(QPointF{x, y - 11.0}, QPointF{x, y - 6.0});
   }
 
-  const auto glyph = QFont(QStringLiteral("Segoe UI"), 7, QFont::DemiBold);
   const auto flashing = flash_section_ && flash_age_.isValid() &&
                         flash_age_.elapsed() <= kFlashHoldMs;
   for (const auto& token : tokens()) {
-    auto ink = token.live ? section_color(token.section) : kGrid;
+    auto ink = section_color(token.section);
     if (flashing && token.section == *flash_section_) ink = ink.lighter(160);
-    const auto arm = kTokenRadiusPx * 0.62;
-    painter.setPen(QPen(ink, token.pinned ? 2.6 : 1.5));
-    painter.setBrush(Qt::NoBrush);
+    const auto selected = token.section == selected_section_;
+    const auto radius = kTokenRadiusPx * (selected ? 0.8 : 0.6);
     if (token.lane == Lane::kPole) {
-      painter.drawLine(QPointF{token.position.x() - arm, token.position.y() - arm},
-                       QPointF{token.position.x() + arm, token.position.y() + arm});
-      painter.drawLine(QPointF{token.position.x() - arm, token.position.y() + arm},
-                       QPointF{token.position.x() + arm, token.position.y() - arm});
+      painter.setPen(QPen(kBackground, 1.5));
+      painter.setBrush(token.pinned ? QBrush(kBackground) : QBrush(ink));
+      painter.drawEllipse(token.position, radius, radius);
+      if (token.pinned) {
+        painter.setPen(QPen(ink, 2.0));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(token.position, radius - 1.0, radius - 1.0);
+      }
     } else {
-      painter.drawEllipse(token.position, arm, arm);
+      painter.setPen(QPen(ink, token.pinned ? 2.4 : 1.4));
+      painter.setBrush(QBrush(kBackground));
+      painter.drawEllipse(token.position, radius, radius);
     }
-    if (token.pinned) {
-      painter.setBrush(QBrush(ink));
-      painter.drawEllipse(token.position, 2.0, 2.0);
-      painter.setBrush(Qt::NoBrush);
-    }
-    if (!token.live) {
-      const auto d = kTokenRadiusPx;
-      painter.drawLine(QPointF{token.position.x() - d, token.position.y() + d},
-                       QPointF{token.position.x() + d, token.position.y() - d});
-    }
-    painter.setFont(glyph);
-    painter.setPen(ink);
-    painter.drawText(QPointF{token.position.x() + arm + 2.0, token.position.y() - arm},
-                     QString::number(token.section + 1));
   }
   painter.setClipping(false);
 }
