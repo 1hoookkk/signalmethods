@@ -9,6 +9,7 @@
 #include <QPointF>
 #include <QWidget>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -47,6 +48,9 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] std::size_t responsePointCount() const noexcept;
   [[nodiscard]] double frequencyAt(std::size_t index) const;
   [[nodiscard]] double responseDbAt(std::size_t index) const;
+  [[nodiscard]] double runningPeakDb(std::size_t section) const;
+  [[nodiscard]] std::size_t residualPointCount() const noexcept;
+  [[nodiscard]] double residualDbAt(std::size_t index) const;
   [[nodiscard]] std::vector<TokenInfo> tokens() const;
   [[nodiscard]] bool refusalVisible() const noexcept;
 
@@ -55,6 +59,7 @@ class ResponsePlotWidget final : public QWidget {
   void gestureFinished(std::size_t section);
   void sectionEdited(std::size_t section, const trench::core::PackedSection& words);
   void pinToggled(std::size_t section, ResponsePlotWidget::Lane lane);
+  void tokenSelected(std::size_t section, ResponsePlotWidget::Lane lane);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -71,12 +76,16 @@ class ResponsePlotWidget final : public QWidget {
   void refuse(double frequency_hz);
   void ensureTrace(const QRectF& plot, double low_db, double high_db);
   void strokeTrace(QPainter& painter, const QColor& colour);
+  void rebuildResidual();
 
   const trench::core::PackedBody* body_{};
   double sample_rate_hz_{trench::core::kP2kDatumHz};
   std::uint32_t freedom_mask_{0xFFFFFFFFU};
   std::vector<double> frequencies_hz_;
   std::vector<double> response_db_;
+  std::array<double, trench::core::kLegacySectionCount> running_peak_db_{};
+  std::vector<double> residual_db_;
+  double residual_span_db_{1.0};
   QString source_label_;
 
   std::vector<std::vector<double>> contributions_;

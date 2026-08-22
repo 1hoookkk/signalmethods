@@ -12,6 +12,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <optional>
+#include <utility>
 
 class QAction;
 class ChassisBar;
@@ -32,15 +34,20 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] std::uint32_t freedomMask() const noexcept;
   [[nodiscard]] bool fitRunning() const noexcept;
 
+  [[nodiscard]] double dcDriftDb() const noexcept;
+  [[nodiscard]] QString readoutText() const;
+
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   bool loadTarget(const std::filesystem::path& path);
   void startFit();
   void stopAndKeep();
   void discardFit();
+  void renormalizeDc();
 
  private:
   void chooseTarget();
   void updateVerbs();
+  void updateProbes();
   void endRun();
 
   BodyDocument* document_{};
@@ -48,6 +55,8 @@ class MainWindow final : public QMainWindow {
   trench::core::PackedSection before_words_{};
   BodyDocument::CornerSnapshot pre_fit_{};
   bool fit_active_{};
+  double dc_drift_db_{};
+  std::optional<std::pair<std::size_t, ResponsePlotWidget::Lane>> selected_;
   ResponsePlotWidget* response_plot_{};
   ChassisBar* chassis_bar_{};
   QAction* undo_action_{};

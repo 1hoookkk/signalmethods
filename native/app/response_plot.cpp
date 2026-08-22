@@ -33,6 +33,10 @@ constexpr double kTokenRadiusPx = 8.0;
 constexpr qint64 kRefusalHoldMs = 600;
 constexpr qint64 kFlashHoldMs = 200;
 const QColor kTarget{72, 82, 88};
+const QColor kResidual{156, 130, 224};
+
+constexpr double kLevelLanePx = 40.0;
+constexpr double kResidualBandPx = 34.0;
 
 double x_for_frequency(double frequency_hz, double low_hz, double high_hz,
                        const QRectF& plot) {
@@ -124,6 +128,7 @@ void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
 
 void ResponsePlotWidget::setTarget(const std::vector<double>* target) {
   target_db_ = target == nullptr ? std::vector<double>{} : *target;
+  rebuildResidual();
   update();
 }
 
@@ -152,8 +157,40 @@ void ResponsePlotWidget::refresh() {
   }
   contributions_ = trench::core::marginal_contributions_db(cascade, frequencies_hz_,
                                                            sample_rate_hz_);
+  std::vector<double> cumulative(frequencies_hz_.size(), 0.0);
+  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+    double peak = -1.0e9;
+    for (std::size_t index = 0; index < frequencies_hz_.size(); ++index) {
+      cumulative[index] += trench::core::section_response_db(
+          cascade[section], frequencies_hz_[index], sample_rate_hz_);
+      peak = std::max(peak, cumulative[index]);
+    }
+    running_peak_db_[section] = peak;
+  }
+  rebuildResidual();
   ++body_revision_;
   update();
+}
+
+void ResponsePlotWidget::rebuildResidual() {
+  residual_db_.clear();
+  residual_span_db_ = 1.0;
+  if (target_db_.size() != response_db_.size() || response_db_.empty()) return;
+  const auto& weight = trench::core::p2k::grid().weight;
+  if (weight.size() != response_db_.size()) return;
+  double mean = 0.0;
+  for (std::size_t index = 0; index < response_db_.size(); ++index) {
+    mean += weight[index] * (target_db_[index] - response_db_[index]);
+  }
+  mean /= trench::core::p2k::grid().weight_sum;
+  residual_db_.reserve(response_db_.size());
+  double largest = 0.0;
+  for (std::size_t index = 0; index < response_db_.size(); ++index) {
+    const auto value = target_db_[index] - response_db_[index] - mean;
+    residual_db_.push_back(value);
+    largest = std::max(largest, std::abs(value));
+  }
+  residual_span_db_ = std::max(1.0, std::ceil(largest));
 }
 
 double ResponsePlotWidget::contributionAt(std::size_t section, double hz) const {
@@ -294,13 +331,26 @@ double ResponsePlotWidget::responseDbAt(std::size_t index) const {
   return response_db_.at(index);
 }
 
+double ResponsePlotWidget::runningPeakDb(std::size_t section) const {
+  return running_peak_db_.at(section);
+}
+
+std::size_t ResponsePlotWidget::residualPointCount() const noexcept {
+  return residual_db_.size();
+}
+
+double ResponsePlotWidget::residualDbAt(std::size_t index) const {
+  return residual_db_.at(index);
+}
+
 bool ResponsePlotWidget::refusalVisible() const noexcept {
   return refusal_active_ && refusal_age_.isValid() &&
          refusal_age_.elapsed() <= kRefusalHoldMs;
 }
 
 QRectF ResponsePlotWidget::plotRect() const {
-  return QRectF(rect()).adjusted(54.0, 28.0, -18.0, -36.0);
+  const auto band = target_db_.empty() ? 0.0 : kResidualBandPx;
+  return QRectF(rect()).adjusted(54.0, 28.0, -(18.0 + kLevelLanePx), -(36.0 + band));
 }
 
 std::pair<double, double> ResponsePlotWidget::dbRange() const {
@@ -438,6 +488,7 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   } else {
     press_radius_ = 0.0;
   }
+  emit tokenSelected(token->section, token->lane);
   event->accept();
 }
 
@@ -512,7 +563,7 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     const auto label = frequency >= 1000.0
                            ? QString::number(frequency / 1000.0, 'g', 2) + QStringLiteral(" kHz")
                            : QString::number(frequency, 'f', 0) + QStringLiteral(" Hz");
-    painter.drawText(QRectF{x - 32.0, plot.bottom() + 7.0, 64.0, 18.0},
+    painter.drawText(QRectF{x - 32.0, height() - 29.0, 64.0, 18.0},
                      Qt::AlignHCenter | Qt::AlignTop, label);
     painter.setPen(QPen(kGrid, 1.0));
   }
@@ -524,6 +575,61 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     painter.drawText(QRectF{2.0, y - 9.0, 46.0, 18.0}, Qt::AlignRight | Qt::AlignVCenter,
                      QString::number(db, 'f', 0) + QStringLiteral(" dB"));
     painter.setPen(QPen(kGrid, 1.0));
+  }
+
+  const QRectF lane{plot.right() + 8.0, plot.top(), kLevelLanePx - 14.0, plot.height()};
+  painter.setPen(QPen(kGrid, 1.0));
+  painter.drawLine(QPointF{lane.left() - 4.0, lane.top()},
+                   QPointF{lane.left() - 4.0, lane.bottom()});
+  QPainterPath level_path;
+  for (std::size_t section = 0; section < running_peak_db_.size(); ++section) {
+    const auto x = lane.left() + (static_cast<double>(section) + 0.5) * lane.width() /
+                                     static_cast<double>(running_peak_db_.size());
+    const auto y = y_for_contribution(running_peak_db_[section], low_db, high_db, plot);
+    if (section == 0) {
+      level_path.moveTo(x, y);
+    } else {
+      level_path.lineTo(x, y);
+    }
+  }
+  painter.setPen(QPen(kTarget, 1.0));
+  painter.setBrush(Qt::NoBrush);
+  painter.drawPath(level_path);
+  for (std::size_t section = 0; section < running_peak_db_.size(); ++section) {
+    const auto x = lane.left() + (static_cast<double>(section) + 0.5) * lane.width() /
+                                     static_cast<double>(running_peak_db_.size());
+    const auto y = y_for_contribution(running_peak_db_[section], low_db, high_db, plot);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(section_color(section));
+    painter.drawEllipse(QPointF{x, y}, 2.5, 2.5);
+  }
+  painter.setBrush(Qt::NoBrush);
+
+  if (!residual_db_.empty() && residual_db_.size() == frequencies_hz_.size()) {
+    const QRectF band{plot.left(), plot.bottom() + 6.0, plot.width(),
+                      kResidualBandPx - 12.0};
+    const auto middle = band.center().y();
+    painter.setPen(QPen(kGrid, 1.0));
+    painter.drawLine(QPointF{band.left(), middle}, QPointF{band.right(), middle});
+    painter.setPen(kText);
+    painter.drawText(QRectF{2.0, middle - 9.0, 46.0, 18.0},
+                     Qt::AlignRight | Qt::AlignVCenter,
+                     QStringLiteral("±%1 dB").arg(residual_span_db_, 0, 'f', 0));
+    QPainterPath residual_path;
+    for (std::size_t index = 0; index < residual_db_.size(); ++index) {
+      const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
+      const auto y = middle - residual_db_[index] / residual_span_db_ * band.height() * 0.5;
+      if (index == 0) {
+        residual_path.moveTo(x, y);
+      } else {
+        residual_path.lineTo(x, y);
+      }
+    }
+    painter.save();
+    painter.setClipRect(band.adjusted(0.0, -2.0, 0.0, 2.0));
+    painter.setPen(QPen(kResidual, kTraceWidthPx));
+    painter.drawPath(residual_path);
+    painter.restore();
   }
 
   ensureTrace(plot, low_db, high_db);

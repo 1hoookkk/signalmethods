@@ -78,6 +78,16 @@ double pair_radius_of(std::uint16_t word_mag, std::uint16_t word_rsq) {
   return trench::core::p2k::pair_radius(p, q);
 }
 
+trench::core::p2k::PackedCorner flatten_first_corner(const trench::core::PackedBody& body) {
+  trench::core::p2k::PackedCorner out{};
+  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
+    for (std::size_t word = 0; word < trench::core::p2k::kWordCount; ++word) {
+      out[section * trench::core::p2k::kWordCount + word] = body.words[0][section][word];
+    }
+  }
+  return out;
+}
+
 }  // namespace
 
 class MainWindowTest final : public QObject {
@@ -305,6 +315,133 @@ class MainWindowTest final : public QObject {
     QVERIFY(trench::core::p2k::is_legal(p, q, true));
     QVERIFY(pair_radius_of(after[2], after[3]) <= trench::core::p2k::pole_radius_ceiling());
     QCOMPARE(window.body().words[4][0], after);
+  }
+
+  void runningLevelLaneIsTheCascadePrefixPeak() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+
+    const auto body = trench::core::PackedBody::from_legacy_bytes(read_fixture(fixture_path()));
+    const auto cascade = body.interpolate_biquads(0.0F, 0.0F, 0.0F);
+    std::vector<double> cumulative(plot->responsePointCount(), 0.0);
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      double expected = -1.0e9;
+      for (std::size_t index = 0; index < cumulative.size(); ++index) {
+        cumulative[index] += trench::core::section_response_db(
+            cascade[section], plot->frequencyAt(index), trench::core::kP2kDatumHz);
+        expected = std::max(expected, cumulative[index]);
+      }
+      QVERIFY(std::abs(plot->runningPeakDb(section) - expected) < 1.0e-9);
+    }
+
+    double full_peak = -1.0e9;
+    for (std::size_t index = 0; index < plot->responsePointCount(); ++index) {
+      full_peak = std::max(full_peak, plot->responseDbAt(index));
+    }
+    QVERIFY(std::abs(plot->runningPeakDb(trench::core::kLegacySectionCount - 1) -
+                     full_peak) < 1.0e-6);
+  }
+
+  void residualStripIsMeanRemovedTargetMinusCurrent() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    QCOMPARE(plot->residualPointCount(), 0U);
+
+    const auto target_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                             "ref/presets/P2k_002_early_rizer.bin";
+    QVERIFY(window.loadTarget(target_body));
+    QCOMPARE(plot->residualPointCount(), trench::core::p2k::kNpts);
+
+    const auto target = trench::core::p2k::corner_response_db(
+        trench::core::p2k::rom_corner_words(read_fixture(target_body), 0));
+    const auto& grid = trench::core::p2k::grid();
+    double mean = 0.0;
+    for (std::size_t index = 0; index < target.size(); ++index) {
+      mean += grid.weight[index] * (target[index] - plot->responseDbAt(index));
+    }
+    mean /= grid.weight_sum;
+    double weighted_sum = 0.0;
+    for (std::size_t index = 0; index < target.size(); ++index) {
+      const auto expected = target[index] - plot->responseDbAt(index) - mean;
+      QVERIFY(std::abs(plot->residualDbAt(index) - expected) < 1.0e-9);
+      weighted_sum += grid.weight[index] * plot->residualDbAt(index);
+    }
+    QVERIFY(std::abs(weighted_sum) < 1.0e-6);
+  }
+
+  void pressPublishesSelectedTokenReadout() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+
+    QVERIFY(window.readoutText().isEmpty());
+    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    press(plot, token->position);
+    release(plot, token->position);
+
+    const auto mag = window.body().words[0][0][2];
+    const auto rsq = window.body().words[0][0][3];
+    const auto text = window.readoutText();
+    QVERIFY(text.contains(QString::number(mag, 16).toUpper().rightJustified(4, '0')));
+    QVERIFY(text.contains(QString::number(rsq, 16).toUpper().rightJustified(4, '0')));
+    QVERIFY(text.contains(
+        QStringLiteral("#%1").arg(trench::core::p2k::nearest_lattice_word(mag))));
+    const auto geometry = trench::core::geometry_from_words(window.body().words[0][0],
+                                                            trench::core::kP2kDatumHz);
+    const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+    QVERIFY(conjugate != nullptr);
+    QVERIFY(text.contains(QString::number(conjugate->radius, 'f', 5)));
+
+    press(plot, token->position);
+    release(plot, token->position);
+    QCOMPARE(window.freedomMask() & trench::core::p2k::pole_bit(0),
+             trench::core::p2k::pole_bit(0));
+
+    drag(plot, token->position, token->position + QPointF{-70.0, 22.0}, 5);
+    const auto moved_mag = window.body().words[0][0][2];
+    QVERIFY(moved_mag != mag);
+    QVERIFY(window.readoutText().contains(
+        QString::number(moved_mag, 16).toUpper().rightJustified(4, '0')));
+  }
+
+  void unityVerbRenormalizesDcAsOneUndo() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+
+    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    drag(plot, token->position, token->position + QPointF{-70.0, 22.0}, 5);
+    QCOMPARE(window.undoStack()->count(), 1);
+
+    const auto drifted = flatten_first_corner(window.body());
+    QVERIFY(std::abs(window.dcDriftDb() - trench::core::p2k::dc_gain_db(drifted)) <
+            1.0e-12);
+
+    const auto before_bytes = window.body().native_bytes();
+    const auto before_words = window.body().words[0];
+    window.renormalizeDc();
+
+    QCOMPARE(window.undoStack()->count(), 2);
+    QVERIFY(std::abs(window.dcDriftDb()) < 0.05);
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      for (std::size_t word = 0; word < 4; ++word) {
+        QCOMPARE(window.body().words[0][section][word], before_words[section][word]);
+      }
+      QCOMPARE(window.body().words[4][section], window.body().words[0][section]);
+    }
+
+    window.undoStack()->undo();
+    QVERIFY(window.body().native_bytes() == before_bytes);
   }
 
   void fitRequiresATarget() {

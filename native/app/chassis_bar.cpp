@@ -4,6 +4,8 @@
 #include <QMouseEvent>
 #include <QPainter>
 
+#include <cmath>
+
 namespace {
 
 const QColor kChassis{26, 31, 35};
@@ -21,13 +23,16 @@ constexpr double kPadPaddingX = 10.0;
 constexpr double kPadGap = 8.0;
 constexpr double kPadRadius = 2.0;
 
+constexpr double kDcDeadbandDb = 0.05;
+
 struct VerbLook {
   ChassisBar::Verb verb;
   const char* label;
   const QColor* ink;
 };
 
-const std::array<VerbLook, 4> kVerbs{{
+const std::array<VerbLook, 5> kVerbs{{
+    {ChassisBar::Verb::kUnity, "", &kIdentity},
     {ChassisBar::Verb::kTarget, "TARGET", &kIdentity},
     {ChassisBar::Verb::kFit, "FIT", &kFit},
     {ChassisBar::Verb::kKeep, "STOP & KEEP", &kKeep},
@@ -35,6 +40,10 @@ const std::array<VerbLook, 4> kVerbs{{
 }};
 
 QFont pad_font() { return QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold); }
+
+QColor section_color(std::size_t section) {
+  return QColor::fromHsvF(static_cast<double>(section) / 7.0, 0.58, 1.0);
+}
 
 }  // namespace
 
@@ -59,18 +68,48 @@ void ChassisBar::setState(bool has_target, bool running) {
   update();
 }
 
+void ChassisBar::setDcDriftDb(double db) {
+  dc_drift_db_ = db;
+  update();
+}
+
+void ChassisBar::setReadout(const std::optional<Readout>& readout) {
+  readout_ = readout;
+  update();
+}
+
+QString ChassisBar::readoutText() const {
+  return readout_ ? readout_->text : QString();
+}
+
+QString ChassisBar::labelFor(Verb verb) const {
+  if (verb == Verb::kUnity) {
+    if (std::abs(dc_drift_db_) <= kDcDeadbandDb) return QStringLiteral("DC 0.0 dB");
+    return QStringLiteral("DC %1%2 dB")
+        .arg(dc_drift_db_ < 0.0 ? QStringLiteral("-") : QStringLiteral("+"))
+        .arg(std::abs(dc_drift_db_), 0, 'f', 1);
+  }
+  for (const auto& look : kVerbs) {
+    if (look.verb == verb) return QString::fromLatin1(look.label);
+  }
+  return {};
+}
+
 std::vector<ChassisBar::Pad> ChassisBar::pads() const {
   const QFontMetricsF metrics(pad_font());
   std::vector<Pad> out;
   auto right = width() - 10.0;
   const auto top = (kBarHeight - kPadHeight) * 0.5;
   for (auto it = kVerbs.rbegin(); it != kVerbs.rend(); ++it) {
-    const auto text_width = metrics.horizontalAdvance(QString::fromLatin1(it->label));
+    const auto text_width = metrics.horizontalAdvance(labelFor(it->verb));
     const auto pad_width = text_width + 2.0 * kPadPaddingX;
     Pad pad;
     pad.verb = it->verb;
     pad.rect = QRectF(right - pad_width, top, pad_width, kPadHeight);
     switch (it->verb) {
+      case Verb::kUnity:
+        pad.available = !running_ && std::abs(dc_drift_db_) > kDcDeadbandDb;
+        break;
       case Verb::kTarget:
         pad.available = !running_;
         break;
@@ -124,6 +163,23 @@ void ChassisBar::paintEvent(QPaintEvent*) {
     painter.setPen(kIdentityDim);
     const auto text = metrics.elidedText(target_name_, Qt::ElideMiddle, pads_left - x - 12.0);
     painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
+    x += metrics.horizontalAdvance(text) + 14.0;
+  }
+  if (readout_ && x < pads_left - 60.0) {
+    const auto ink = section_color(readout_->section);
+    const auto mark_y = kBarHeight * 0.5;
+    painter.setPen(QPen(ink, 1.4));
+    painter.setBrush(Qt::NoBrush);
+    if (readout_->pole) {
+      painter.drawLine(QPointF{x, mark_y - 3.5}, QPointF{x + 7.0, mark_y + 3.5});
+      painter.drawLine(QPointF{x, mark_y + 3.5}, QPointF{x + 7.0, mark_y - 3.5});
+    } else {
+      painter.drawEllipse(QPointF{x + 3.5, mark_y}, 3.5, 3.5);
+    }
+    x += 12.0;
+    painter.setPen(ink);
+    const auto text = metrics.elidedText(readout_->text, Qt::ElideRight, pads_left - x - 12.0);
+    painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
   }
 
   for (const auto& pad : laid) {
@@ -152,7 +208,7 @@ void ChassisBar::paintEvent(QPaintEvent*) {
                               kPadRadius);
       painter.setPen(ink);
     }
-    painter.drawText(pad.rect, Qt::AlignCenter, QString::fromLatin1(look->label));
+    painter.drawText(pad.rect, Qt::AlignCenter, labelFor(pad.verb));
   }
 }
 

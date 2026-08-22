@@ -16,6 +16,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -50,6 +51,20 @@ trench::core::p2k::CornerWords unflatten(const QList<quint16>& words) {
     }
   }
   return out;
+}
+
+trench::core::p2k::PackedCorner flatten_corner(const BodyDocument::CornerSnapshot& corner) {
+  trench::core::p2k::PackedCorner out{};
+  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
+    for (std::size_t word = 0; word < trench::core::p2k::kWordCount; ++word) {
+      out[section * trench::core::p2k::kWordCount + word] = corner[section][word];
+    }
+  }
+  return out;
+}
+
+QString hex_word(std::uint16_t word) {
+  return QString::number(word, 16).toUpper().rightJustified(4, QLatin1Char('0'));
 }
 
 trench::core::p2k::StoredCorner unflatten_stored(const QList<quint16>& words) {
@@ -110,9 +125,16 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](std::size_t section, ResponsePlotWidget::Lane lane) {
             document_->toggleLane(section, lane == ResponsePlotWidget::Lane::kPole);
           });
+  connect(response_plot_, &ResponsePlotWidget::tokenSelected, this,
+          [this](std::size_t section, ResponsePlotWidget::Lane lane) {
+            selected_ = std::make_pair(section, lane);
+            updateProbes();
+          });
 
-  connect(document_, &BodyDocument::bodyChanged, this,
-          [this] { response_plot_->refresh(); });
+  connect(document_, &BodyDocument::bodyChanged, this, [this] {
+    response_plot_->refresh();
+    updateProbes();
+  });
   connect(document_, &BodyDocument::freedomMaskChanged, this,
           [this](std::uint32_t mask) {
             response_plot_->setFreedomMask(mask);
@@ -143,6 +165,9 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
 
   connect(chassis_bar_, &ChassisBar::verbClicked, this, [this](ChassisBar::Verb verb) {
     switch (verb) {
+      case ChassisBar::Verb::kUnity:
+        renormalizeDc();
+        break;
       case ChassisBar::Verb::kTarget:
         chooseTarget();
         break;
@@ -171,6 +196,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   addAction(redo_action_);
 
   updateVerbs();
+  updateProbes();
 }
 
 ResponsePlotWidget* MainWindow::responsePlot() const noexcept { return response_plot_; }
@@ -190,6 +216,10 @@ std::uint32_t MainWindow::freedomMask() const noexcept {
 }
 
 bool MainWindow::fitRunning() const noexcept { return fit_active_; }
+
+double MainWindow::dcDriftDb() const noexcept { return dc_drift_db_; }
+
+QString MainWindow::readoutText() const { return chassis_bar_->readoutText(); }
 
 void MainWindow::applySection(std::size_t section,
                               const trench::core::PackedSection& words) {
@@ -245,6 +275,51 @@ void MainWindow::discardFit() {
   fit_controller_->abandon();
   document_->applyCorner(pre_fit_);
   endRun();
+}
+
+void MainWindow::renormalizeDc() {
+  namespace p2k = trench::core::p2k;
+  if (fit_active_) return;
+  const auto before = document_->cornerSnapshot();
+  const auto corner = p2k::Corner::from_words(document_->seedWords());
+  const auto scales = p2k::stage_gain_pass_held(corner, document_->freedomMask(),
+                                                flatten_corner(before));
+  const auto packed = p2k::pack_corner(corner, scales);
+  auto after = before;
+  for (std::size_t section = 0; section < p2k::kStageCount; ++section) {
+    after[section][4] = packed[section * p2k::kWordCount + 4];
+  }
+  if (after == before) return;
+  document_->applyCorner(after);
+  document_->commitFit(before);
+}
+
+void MainWindow::updateProbes() {
+  namespace p2k = trench::core::p2k;
+  dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
+  chassis_bar_->setDcDriftDb(dc_drift_db_);
+  if (!selected_) {
+    chassis_bar_->setReadout(std::nullopt);
+    return;
+  }
+  const auto [section, lane] = *selected_;
+  const auto pole = lane == ResponsePlotWidget::Lane::kPole;
+  const auto& words = document_->body().words[0][section];
+  const auto mag = words[pole ? 2 : 0];
+  const auto rsq = words[pole ? 3 : 1];
+  const auto geometry =
+      trench::core::geometry_from_words(words, trench::core::kP2kDatumHz);
+  const auto& pair = pole ? geometry.pole : geometry.zero;
+  auto text = QString::number(section + 1);
+  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
+    text += QStringLiteral("  %1 Hz  r %2")
+                .arg(conjugate->hz, 0, 'f', conjugate->hz < 100.0 ? 1 : 0)
+                .arg(conjugate->radius, 0, 'f', 5);
+  }
+  text += QStringLiteral("  %1·%2  #%3")
+              .arg(hex_word(mag), hex_word(rsq))
+              .arg(p2k::nearest_lattice_word(mag));
+  chassis_bar_->setReadout(ChassisBar::Readout{section, pole, text});
 }
 
 void MainWindow::endRun() {
