@@ -245,12 +245,24 @@ BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot() const {
   return out;
 }
 
-trench::core::p2k::CornerWords BodyDocument::seedWords() const {
-  bool identity = true;
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    identity = identity && body_.words[corner_][section] == trench::core::kIdentitySection;
+std::size_t BodyDocument::seedSource() const {
+  const auto is_identity = [this](std::size_t corner) {
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      if (body_.words[corner][section] != trench::core::kIdentitySection) return false;
+    }
+    return true;
+  };
+  if (!is_identity(corner_)) return corner_;
+  for (const std::size_t candidate : {corner_ ^ 1U, corner_ ^ 2U, std::size_t{0}}) {
+    if (!is_identity(candidate)) return candidate;
   }
-  const std::size_t source = identity ? 0 : corner_;
+  return corner_;
+}
+
+bool BodyDocument::seedIsInherited() const { return seedSource() != corner_; }
+
+trench::core::p2k::CornerWords BodyDocument::seedWords() const {
+  const std::size_t source = seedSource();
   trench::core::p2k::CornerWords out{};
   for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
     for (std::size_t word = 0; word < out[section].size(); ++word) {

@@ -36,6 +36,7 @@ class BodyDocument final : public QObject {
   [[nodiscard]] const std::optional<std::vector<double>>& target() const noexcept;
   [[nodiscard]] CornerSnapshot cornerSnapshot() const;
   [[nodiscard]] trench::core::p2k::CornerWords seedWords() const;
+  [[nodiscard]] bool seedIsInherited() const;
 
   [[nodiscard]] const trench::core::p2k::PerceptualSpace& space() const noexcept;
   [[nodiscard]] const trench::core::p2k::Grid& grid() const noexcept;
@@ -78,6 +79,8 @@ class BodyDocument final : public QObject {
   void viewChanged();
 
  private:
+  [[nodiscard]] std::size_t seedSource() const;
+
   trench::core::PackedBody body_;
   std::size_t corner_{};
   double sample_rate_hz_{};

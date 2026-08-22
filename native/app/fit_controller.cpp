@@ -3,6 +3,7 @@
 #include <QMetaType>
 
 #include <array>
+#include <vector>
 #include <optional>
 #include <utility>
 
@@ -50,7 +51,8 @@ void FitController::join() {
 }
 
 void FitController::start(std::vector<double> target, p2k::CornerWords seed,
-                          std::uint32_t mask, p2k::Grid grid, p2k::RoleIntent intent) {
+                          std::uint32_t mask, p2k::Grid grid, p2k::RoleIntent intent,
+                          bool inherited_seed) {
   join();
   stop_.store(false);
   mask_.store(mask);
@@ -58,8 +60,10 @@ void FitController::start(std::vector<double> target, p2k::CornerWords seed,
   running_.store(true);
 
   worker_ = std::thread([this, stamp, target = std::move(target), seed,
-                         grid = std::move(grid), intent]() mutable {
-    const std::array<p2k::Seed, 3> seeds{seed, p2k::SeedPeel{}, p2k::SeedContinuous{}};
+                         grid = std::move(grid), intent, inherited_seed]() mutable {
+    const std::vector<p2k::Seed> seeds =
+        inherited_seed ? std::vector<p2k::Seed>{seed}
+                       : std::vector<p2k::Seed>{seed, p2k::SeedPeel{}, p2k::SeedContinuous{}};
     p2k::FitOptions options;
     options.allow_continuous = true;
     options.grid = &grid;

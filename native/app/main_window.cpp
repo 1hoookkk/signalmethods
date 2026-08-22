@@ -414,7 +414,7 @@ void MainWindow::startFit() {
   updateVerbs();
   fit_controller_->start(*document_->target(), document_->seedWords(),
                          document_->freedomMask(), document_->grid(),
-                         document_->intent());
+                         document_->intent(), document_->seedIsInherited());
 }
 
 void MainWindow::stopAndKeep() {

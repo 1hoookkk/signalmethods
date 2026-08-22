@@ -665,6 +665,23 @@ class MainWindowTest final : public QObject {
     QVERIFY(window.body().words == before.words);
   }
 
+  void anIdentityCornerSeedsFromItsFittedNeighbourFirst() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    BodyDocument::CornerSnapshot identity{};
+    identity.fill(trench::core::kIdentitySection);
+    window.document()->applyCorner(3, identity);
+    window.setCorner(3);
+    QVERIFY(window.document()->seedIsInherited());
+    const auto seed = window.document()->seedWords();
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      for (std::size_t word = 0; word < seed[section].size(); ++word) {
+        QCOMPARE(seed[section][word], window.body().words[2][section][word]);
+      }
+    }
+    window.setCorner(0);
+    QVERIFY(!window.document()->seedIsInherited());
+  }
+
   void anIdentityCornerSeedsItsFitFromCornerZero() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     BodyDocument::CornerSnapshot identity{};
