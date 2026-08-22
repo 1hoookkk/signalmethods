@@ -1,3 +1,4 @@
+#include "fit_controller.hpp"
 #include "main_window.hpp"
 
 #include <QApplication>
@@ -37,12 +38,23 @@ int main(int argc, char* argv[]) {
                                    QStringLiteral("path"));
   QCommandLineOption fit_option(QStringLiteral("fit"),
                                 QStringLiteral("Start FIT after showing."));
+  QCommandLineOption corner_option(QStringLiteral("corner"),
+                                   QStringLiteral("Select a corner 0-3 on startup."),
+                                   QStringLiteral("index"), QStringLiteral("0"));
+  QCommandLineOption save_option(QStringLiteral("save"),
+                                 QStringLiteral("Save the body here after FIT ends (or at once) and quit."),
+                                 QStringLiteral("path"));
   parser.addOption(body_option);
   parser.addOption(sample_rate_option);
   parser.addOption(shot_option);
   parser.addOption(shot_after_option);
   parser.addOption(target_option);
   parser.addOption(fit_option);
+  parser.addOption(corner_option);
+  QCommandLineOption saw_option(QStringLiteral("saw"),
+                                QStringLiteral("Measure audio targets as a sawtooth source."));
+  parser.addOption(saw_option);
+  parser.addOption(save_option);
   parser.process(application);
 
   const auto default_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
@@ -63,8 +75,27 @@ int main(int argc, char* argv[]) {
       window.loadTarget(
           std::filesystem::path(parser.value(target_option).toStdWString()));
     }
+    window.setCorner(static_cast<std::size_t>(parser.value(corner_option).toUInt()));
+    if (parser.isSet(saw_option)) {
+      window.setSourceModel(trench::core::measure::Source::kSawtooth);
+    }
+    const auto save_path = parser.isSet(save_option)
+                               ? std::filesystem::path(parser.value(save_option).toStdWString())
+                               : std::filesystem::path();
+    auto save_and_quit = [&window, save_path] {
+      const auto ok = window.saveBody(save_path);
+      QCoreApplication::exit(ok ? 0 : 3);
+    };
     if (parser.isSet(fit_option)) {
+      if (!save_path.empty()) {
+        QObject::connect(window.fitController(), &FitController::finished, &window,
+                         [save_and_quit](quint64, bool, const QList<quint16>&) {
+                           QTimer::singleShot(0, save_and_quit);
+                         });
+      }
       QTimer::singleShot(0, &window, [&window] { window.startFit(); });
+    } else if (!save_path.empty()) {
+      QTimer::singleShot(0, &window, save_and_quit);
     }
     if (parser.isSet(shot_option)) {
       const auto shot_path = parser.value(shot_option);
