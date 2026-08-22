@@ -1,8 +1,0 @@
-[package]
-name = "author"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-trench-core = { path = "../trench-core" }
-serde_json = "1"
