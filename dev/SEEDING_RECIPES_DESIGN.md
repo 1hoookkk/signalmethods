@@ -162,6 +162,75 @@ Until something beats it, `GenericRecipe` should be today's peak-picking seeder:
 rank spectral maxima, place poles on them, sweep how many bells start as cuts.
 The domain knowledge in "poles go on peaks" is load-bearing, not a shortcut.
 
+## PCA: valid over responses, invalid over geometry
+
+Measured, not asserted (`dev/pca_probe.py`, `dev/pca_check.py`).
+
+**Responses are genuinely low-dimensional.** Cumulative explained variance, one
+corner per body so correlated corners cannot inflate it, per-curve level and
+family mean removed first:
+
+| family | n bodies | PC1 | PC2 | PC3 |
+|---|---|---|---|---|
+| STANDARD | 26 | **97.0%** | 98.7% | 99.6% |
+| COMPLEX | 81 | **93.1%** | 97.2% | 98.2% |
+| FLANGERS | 21 | 87.0% | 90.6% | 93.9% |
+| DIPTHONGS | 23 | 77.0% | 90.7% | 94.2% |
+
+The structure survives dropping from 184 corners to 23 bodies, so it is real and
+not an artefact of counting eight correlated corners per filter. Caveat kept
+honest: with n in the 20s against 256 frequency bins, PCA is rank-limited to n,
+so the multi-component figures flatter themselves. PC1 alone is the trustworthy
+number, and COMPLEX at n=81 is the most trustworthy row. Dipthongs is the least
+compressible family, which is what one would expect of vowels.
+
+**Section index is not correspondence across bodies.** Pole frequency at a fixed
+section index, corner 0, geometric spread:
+
+| family | geometric sd at fixed section index |
+|---|---|
+| DIPTHONGS | 1.39 - 3.16 octaves |
+| FLANGERS | 1.56 - 2.22 octaves |
+| STANDARD | 1.15 - 3.33 octaves |
+| COMPLEX | 1.97 - 2.86 octaves |
+
+Section 7 of the dipthongs spans 22 Hz to 16148 Hz — nine and a half octaves.
+Section index carries essentially no frequency meaning from one body to the
+next.
+
+**So PCA over geometry is not available.** Averaging word vectors, root
+coordinates, or per-section parameters across bodies would blend section 3 of
+one filter with section 3 of an unrelated one. This is the correspondence
+invariant in `native/CLAUDE.md` — "PCA may provide a corpus prototype and
+deviation coordinates; it does not assign sections or override packed
+correspondence" — and it is now measured rather than assumed. PCA over
+*responses* is unaffected, because a cascade response is a product and does not
+care what order the sections are in.
+
+**Where it does fit this architecture.** PCA yields curves, not geometry, so it
+cannot be a seeding recipe by itself. The usable route is one step removed:
+
+1. Take a family's mean response, or a low-PC reconstruction of it.
+2. Fit it **once, offline**, with generous effort.
+3. Store the resulting single concrete cascade as that family's prototype.
+4. `VowelRecipe` / `FlangerRecipe` / etc. seed from that stored cascade,
+   optionally shifted to the target's dominant frequency.
+
+Step 3 is what keeps this legal: the stored artefact is one real fitted cascade,
+not an average of geometry, so no cross-body correspondence is ever assumed. And
+it fits `SeedRecipe` exactly — the recipe stays pure and deterministic, and the
+solver still cannot tell which recipe ran.
+
+Note this makes PCA a **seed** source, not a target source. The workstation
+brief caps targets at two (a pasted reference curve, and the push). Introducing
+a PCA-derived target would be a third and would amend the brief; introducing a
+PCA-derived seed does not, because seeds were never enumerated. That is the
+clean way in, and it is worth preferring for that reason alone.
+
+Untested, and the obvious first experiment: whether a family-prototype seed
+actually beats the peak picker on in-family targets. Given that matching pursuit
+lost badly to the peak picker, this should be measured before it is believed.
+
 ## What the evidence already says each recipe will need
 
 From `DVTD_VOWEL_FIT.md` §7, measured over the decoded bodies — recorded here so
