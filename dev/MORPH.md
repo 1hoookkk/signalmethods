@@ -86,6 +86,36 @@ the envelope's "0.000 s" attack has a finite minimum segment time, so the
 source of the step is itself a few-ms slope. A step from a MIDI CC would
 settle this; it is not a product question.
 
+**Engine chain, headless, at the real input level** (dry −12 dBFS, Morph 0,
+Q 0.5, against `hedznoenv.wav`; X3's output peaks at −1.1 dBFS):
+
+| engine chain | X3 − engine level | null, gain-matched | shape rms |
+|---|---|---|---|
+| filter only | **+4.14 dB** | −80.4 dB | 0.15 |
+| + AGC / + saturation / + section nonlinearity | +4.14 | −80.4 | 0.15 |
+| + DC blocker | +4.15 | −24.5 | 0.15 |
+| full chain, shipping defaults | +4.15 | −24.5 | 0.15 |
+| full chain + preamp 0.5 (Mackie input) | −5.08 | −0.4 | 6.66 |
+| full chain + grit 0.5 | +3.62 | −20.8 | 1.23 |
+
+Three facts:
+1. **X3 is +4.14 dB louder than the filter math, constant.** Same +4.13 dB the
+   2026‑08‑13 diagnostic found and could not place. It is EmulatorX's voice /
+   preset output staging (the unread `voice+0x48` / preset volume), not the
+   filter. At equal fader settings TRENCH is 4 dB quieter than X3 on the same
+   preset — enough to hear as "less resonant, narrower sweep".
+2. **AGC, saturation and section nonlinearity are transparent** at this level
+   (−80 dB). The DC blocker is the one default that moves the null (−24.5 dB)
+   — a phase/level change on a 49 Hz fundamental, shape unchanged; audible
+   only as a touch less sub.
+3. **PREAMP is a different instrument.** 0.5 on the Mackie input mode changes
+   the spectrum by 6.7 dB rms and the level by 9 dB. If PREAMP (or GRIT) is
+   up in an A/B, that is the whole difference by itself.
+
+Not rendered here (JUCE wrapper, outside the DLL): SLAM limiter, MIX, the
+preamp taper, the MOVE renderer. SLAM at default is a safety ceiling and
+X3's −1.1 dBFS peaks sit below it.
+
 **Conclusion for the product.** Corner (−80 dB), interior (< 1 dB), slow
 travel (< 1 dB) and fast step (−33/−65 dB beyond 20 ms) all match X3 with
 the engine's filter alone. Whatever makes TRENCH sound different from X3
