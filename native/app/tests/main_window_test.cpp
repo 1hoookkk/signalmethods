@@ -1124,6 +1124,26 @@ class MainWindowTest final : public QObject {
     QVERIFY(!window.document()->target().has_value());
   }
 
+  void aCornerFileRoundTripsIntoAnotherSlotAsOneUndo() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    const auto path = std::filesystem::temp_directory_path() / "trench_test_corner.corner";
+    window.setCorner(2);
+    QVERIFY(window.saveCorner(path));
+    QCOMPARE(std::filesystem::file_size(path), std::uintmax_t{60});
+    const auto source = window.body().words[2];
+    window.setCorner(0);
+    const auto before = window.body().native_bytes();
+    QVERIFY(window.loadCorner(path));
+    QCOMPARE(window.undoStack()->count(), 1);
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      QCOMPARE(window.body().words[0][section], source[section]);
+      QCOMPARE(window.body().words[4][section], source[section]);
+    }
+    window.undoStack()->undo();
+    QCOMPARE(window.body().native_bytes(), before);
+    std::filesystem::remove(path);
+  }
+
   void aVowelWritesTypedRowsAsOneUndoEntry() {
     namespace p2k = trench::core::p2k;
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);

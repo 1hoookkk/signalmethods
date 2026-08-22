@@ -136,6 +136,10 @@ int main(int argc, char* argv[]) {
                                      QStringLiteral("Open the gate, sweep Morph 0-1-0 over this many seconds, then quit."),
                                      QStringLiteral("seconds"));
   parser.addOption(audition_option);
+  QCommandLineOption load_corner_option(QStringLiteral("load-corner"),
+                                        QStringLiteral("Load a .corner file into a slot, \"N=path\" with N in 1-4; repeatable."),
+                                        QStringLiteral("spec"));
+  parser.addOption(load_corner_option);
   QCommandLineOption saw_option(QStringLiteral("saw"),
                                 QStringLiteral("Measure audio targets as a sawtooth source."));
   QCommandLineOption intent_option(
@@ -209,6 +213,14 @@ int main(int argc, char* argv[]) {
     } else if (!save_path.empty()) {
       QTimer::singleShot(0, &window, save_and_quit);
     }
+    for (const auto& spec : parser.values(load_corner_option)) {
+      const auto eq = spec.indexOf(QLatin1Char('='));
+      if (eq <= 0) return 4;
+      const auto slot = spec.left(eq).toUInt();
+      if (slot < 1 || slot > trench::core::kLegacyCornerCount) return 4;
+      window.setCorner(slot - 1);
+      if (!window.loadCorner(std::filesystem::path(spec.mid(eq + 1).toStdWString()))) return 4;
+    }
     if (parser.isSet(audition_option)) {
       const auto seconds = std::max(parser.value(audition_option).toDouble(), 0.5);
       auto* sweep = new QTimer(&window);
@@ -227,7 +239,7 @@ int main(int argc, char* argv[]) {
       });
       QTimer::singleShot(0, &window, [&window, sweep, clock] {
         window.setAuditionGate(true);
-        std::fprintf(stderr, "audition %s\n", window.auditionOpen() ? "open" : "no device");
+        std::fprintf(stderr, "audition %s\n", window.auditionOpen() ? "open" : "no device");
         if (!window.auditionOpen()) QCoreApplication::exit(2);
         clock->start();
         sweep->start(10);

@@ -54,6 +54,8 @@ class MainWindow final : public QMainWindow {
   void selectSection(std::size_t section);
   void setCorner(std::size_t corner);
   bool saveBody(const std::filesystem::path& path);
+  bool saveCorner(const std::filesystem::path& path);
+  bool loadCorner(const std::filesystem::path& path);
   bool loadTarget(const std::filesystem::path& path);
   void setSourceModel(trench::core::measure::Source source);
   [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
@@ -80,6 +82,8 @@ class MainWindow final : public QMainWindow {
   void refreshFitRoom();
   void updateAudition();
   void saveBodyAs();
+  void saveCornerAs();
+  void chooseCorner();
   void updateVerbs();
   void updateProbes();
   void updateInterior();

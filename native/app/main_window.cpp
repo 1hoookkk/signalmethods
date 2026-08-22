@@ -281,6 +281,15 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   connect(save_as_action, &QAction::triggered, this, &MainWindow::saveBodyAs);
   addAction(save_as_action);
 
+  auto* save_corner_action = new QAction(this);
+  save_corner_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+K")));
+  connect(save_corner_action, &QAction::triggered, this, &MainWindow::saveCornerAs);
+  addAction(save_corner_action);
+  auto* load_corner_action = new QAction(this);
+  load_corner_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+L")));
+  connect(load_corner_action, &QAction::triggered, this, &MainWindow::chooseCorner);
+  addAction(load_corner_action);
+
   for (std::size_t corner = 0; corner < trench::core::kLegacyCornerCount; ++corner) {
     auto* corner_action = new QAction(this);
     corner_action->setShortcut(QKeySequence(QString::number(corner + 1)));
@@ -334,6 +343,65 @@ bool MainWindow::saveBody(const std::filesystem::path& path) {
   chassis_bar_->setBodyName(QString::fromStdString(path.filename().string()));
   setWindowTitle(QStringLiteral("TRENCH — %1").arg(QString::fromStdString(path.stem().string())));
   return true;
+}
+
+bool MainWindow::saveCorner(const std::filesystem::path& path) {
+  if (fit_active_) return false;
+  const auto snapshot = document_->cornerSnapshot();
+  std::ofstream stream(path, std::ios::binary | std::ios::trunc);
+  if (!stream) return false;
+  for (const auto& section : snapshot) {
+    for (const auto word : section) {
+      const unsigned char bytes[2] = {static_cast<unsigned char>(word & 0xFFU),
+                                      static_cast<unsigned char>(word >> 8U)};
+      stream.write(reinterpret_cast<const char*>(bytes), 2);
+    }
+  }
+  return static_cast<bool>(stream);
+}
+
+bool MainWindow::loadCorner(const std::filesystem::path& path) {
+  if (fit_active_) return false;
+  std::vector<std::uint8_t> bytes;
+  try {
+    bytes = read_bytes(path);
+  } catch (const std::exception&) {
+    return false;
+  }
+  constexpr std::size_t kCornerBytes =
+      trench::core::kLegacySectionCount * trench::core::p2k::kWordCount * 2;
+  if (bytes.size() != kCornerBytes) return false;
+  const auto before = document_->cornerSnapshot();
+  auto after = before;
+  std::size_t at = 0;
+  for (auto& section : after) {
+    for (auto& word : section) {
+      word = static_cast<std::uint16_t>(bytes[at] | (bytes[at + 1] << 8U));
+      at += 2;
+    }
+  }
+  if (after == before) return true;
+  document_->applyCorner(after);
+  document_->commitFit(document_->corner(), before);
+  return true;
+}
+
+void MainWindow::saveCornerAs() {
+  const auto chosen = QFileDialog::getSaveFileName(
+      this, QStringLiteral("SAVE CORNER"),
+      QString::fromStdWString((body_path_.parent_path() / body_path_.stem()).wstring()) +
+          QStringLiteral("_c%1.corner").arg(document_->corner() + 1),
+      QStringLiteral("Corner (*.corner)"));
+  if (chosen.isEmpty()) return;
+  saveCorner(std::filesystem::path(chosen.toStdWString()));
+}
+
+void MainWindow::chooseCorner() {
+  const auto chosen = QFileDialog::getOpenFileName(
+      this, QStringLiteral("LOAD CORNER"), QString::fromStdWString(body_path_.parent_path().wstring()),
+      QStringLiteral("Corner (*.corner)"));
+  if (chosen.isEmpty()) return;
+  loadCorner(std::filesystem::path(chosen.toStdWString()));
 }
 
 void MainWindow::saveBodyAs() {
