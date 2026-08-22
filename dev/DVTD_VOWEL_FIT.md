@@ -74,6 +74,71 @@ The manual also publishes the paravowel resonance frequencies: A at 800, 1150,
 3500, 4950; U at 325, 700, 2530, 3500, 4950. Five bells, leaving one bell and
 the lowpass spare in a seven-section cascade.
 
+## 3a. The zeros are being wasted
+
+Across all 44 fits, 238 bell sections have both roots conjugate. Of those:
+
+- **218 (92%) act as a boost** — the zero sits further from the unit circle than
+  its pole, so it only shapes the skirt of a resonance.
+- **20 (8%) act as a cut.**
+
+And on every single mouth, the largest signed error is the fit sitting *above*
+the measurement: `s1-05-bude-tense-u` by 13.3 dB at 4807 Hz,
+`s1-16-bett-lax-ae` by 8.9 dB at 3968 Hz, and so on down. Those are
+antiresonances in the measured tract that the fit never cut.
+
+The first reading was that the zero freedom is simply being wasted. The family
+census in section 7 says something more interesting: **E-mu's own DIPTHONGS
+filters use zeros in exactly the same proportion — 92% boost, 8% cut.** Our fit
+independently landed on the factory's vowel practice.
+
+The manual explains why, and says it is deliberate:
+
+> ...the resonances do not have the traditional overall lowpass effect that a
+> true vocal resonance would have... the response at high frequencies is
+> essentially flat to allow high frequencies of the samples to get through.
+
+A paravowel is intentionally *not* a vocal tract. It has no tract rolloff and no
+deep antiresonances, so that the sample's own top end survives the filter.
+
+Our target is the opposite: a real measured tract, nulls and all. So the fit is
+behaving like a paravowel while chasing a real vowel, which is precisely why the
+worst error on every mouth is an uncut antiresonance. The fix is a seeding
+change — start some bells as cuts on the residual's minima — not a change of
+topology or resolution. It matches the Kerkhoff/Boves rule already cited in
+`native/CLAUDE.md`: poles track formants, zeros shape the global spectrum.
+
+## 3b. E-mu pairs a zero with the *next* row's pole
+
+Dumping `F022 AEParaVowel` corner 0 at the Morpheus datum:
+
+| row | pole | zero |
+|---|---|---|
+| 1 | 1009 Hz r .98871 | degenerate |
+| 2 | degenerate | 16148 Hz r .99561 |
+| 3 | 16148 Hz r .99561 | 3952 Hz r .68563 |
+| 4 | 4290 Hz r .97730 | 2972 Hz r .86624 |
+| 5 | 3057 Hz r .99066 | 2465 Hz r .99362 |
+| 6 | 2449 Hz r .99872 | 688 Hz r .99634 |
+| 7 | 688 Hz r .99884 | degenerate |
+
+Row 2's zero words are `FD8E 91F4`; row 3's pole words are `FD8E 91F4`. Byte
+identical — they cancel exactly in the cascade product. Row 6's zero is 688 Hz
+at r .99634 and row 7's pole is 688 Hz at r .99884: same frequency, different
+radius, which is a +10 dB bell **formed across the row boundary**. Row 5's zero
+(2465, .99362) against row 6's pole (2449, .99872) is another, at +14 dB.
+
+So a paravowel bell is not a pole and zero sharing a row, the way our fit builds
+them. It is the zero of row N against the pole of row N+1. Because the cascade
+is a product, both arrangements give the same response at a corner — but the
+words interpolate per row, so the row assignment changes the entire morph
+interior. This is an authoring decision with no effect at the corners and a
+large effect between them, which is worth knowing before any four-corner vowel
+body is assembled.
+
+This confirms the earlier "cross-boundary pole/zero bells" observation and puts
+byte-level evidence under it.
+
 ## 4. Correction: `.4` is about corners, not sections
 
 Printed page 178, first paragraph:
@@ -96,6 +161,23 @@ from the identity row `DFFF FFFF DFFF FFFF DFFF` in any corner):
 **`.4` filters carry seven sections, the same as cubes.** The minority with
 fewer live sections is a per-filter authoring choice and occurs at nearly the
 same rate in both groups, so it does not track the suffix.
+
+Byte-difference is the weaker test, so it was repeated by measuring each
+section's own response range at the Morpheus datum through the packed law, at a
+0.5 dB threshold (`scratchpad/section_census.py`). The two tests agree: 47 of 58
+`.4` and 83 of 95 cubes have all seven sections contributing, and only 3 bodies
+of 153 contain a row that differs from identity while doing nothing.
+
+The seventh section is not a pad. Its own response range, taken as the maximum
+over the eight corners, has a median of 60.2 dB on `.4` filters and 66.0 dB on
+cubes; only 6 of 58 `.4` filters have a seventh below 0.5 dB.
+
+Genuine six-section filters do exist, and one is directly relevant:
+**`F021 AEParLPVow` has an exactly-identity seventh row** (`DFFF FFFF DFFF FFFF
+DFFF`). Its six live rows are one broad shaping section that cuts (pole 439 Hz
+r .729 against zero 616 Hz r .942, net −13.4 dB), four boosting bells at
++25 to +30 dB, and one bare pole. That is the manual's "paravowel with a low
+pass filter" and it is close to the shape we fitted.
 
 Do not confuse this with the six-section container. Six sections x four corners
 x five words = 240 bytes is the later P2K family. The UltraProteus/Morpheus
@@ -127,6 +209,59 @@ Read, not modified:
 Reference PDF: the UltraProteus manual is at `manuals.plus`, hash
 `af4931b18363da4d60ad9d50856379fe840b2d58c61e6c743c2f3d32ae9001f4`. Text extracts
 cleanly with `pypdf`; the fetch tool's own summariser cannot read it.
+
+## 7. What each documented family is actually made of
+
+The manual groups the 153 filters into five families and states each one's
+construction in a header paragraph. Measuring the decoded bodies per family
+(all 8 corners, conjugate roots only; a zero is "paired" when some pole sits
+within a 1.35x frequency ratio of it, regardless of row) gives the recipe:
+
+| family | F range | poles/corner | zeros/corner | median pole r | median zero r | paired zeros acting as cut |
+|---|---|---|---|---|---|---|
+| FLANGERS | 000-020 | 5.10 | 4.27 | 0.9683 | 0.9926 | **69%** |
+| DIPTHONGS | 021-043 | 5.03 | 3.15 | 0.9793 | 0.9439 | 8% |
+| STANDARD | 044-069 | 4.74 | 1.96 | **0.7071** | 0.9939 | 24% |
+| EQUALIZATION | 070-075 | 4.77 | 3.77 | 0.9478 | 0.9922 | 28% |
+| COMPLEX | 076-156 | 5.20 | 3.71 | 0.9813 | 0.9907 | 30% |
+
+Read against the manual's own words for each family:
+
+**FLANGERS** — "a series of notches with various depths, widths and
+frequencies." Confirmed and inverted relative to vowels: 69% of paired zeros
+cut, and 58.5% of all zeros sit at r > .99, i.e. hard on the unit circle where
+they make deep narrow nulls. The poles are the *shallower* root here
+(median .968). This family is zero-led.
+
+**DIPTHONGS** — "parametric equalizer subsections." Confirmed: the only family
+where zeros are pulled well inside the circle (median r .944, only 18.5% above
+.99) and the only one that is overwhelmingly boost. Pole-led, zeros shaping
+shoulders.
+
+**STANDARD** — "variations on traditional 2 and 4-pole filter models." The
+median pole radius is 0.7071, which is 1/sqrt(2) — the Butterworth pole radius.
+Fewest zeros of any family (1.96/corner), sitting at r .994, i.e. parked at DC
+or Nyquist to make the lowpass/highpass rolloff. Textbook, and it shows.
+
+**EQUALIZATION** — "variations of traditional parametric EQ filters." Matched
+pole/zero pairs with gain of *either* sign (28% cut / 72% boost) and zeros
+distributed across the whole radius range. This is the family that uses the
+pole-and-zero-at-one-frequency device most symmetrically.
+
+**COMPLEX** — "Many of these filters have never existed for musical applications
+before!" Statistically the union of the others; no single recipe. Treat
+individually.
+
+So the family-to-recipe map, stated as authoring rules:
+
+- notch/sweep families (flanger, phaser): zeros on the circle, poles inside,
+  frequencies in a series; sweep by moving the zero set together.
+- vowel families: poles on the formants, zeros inside as shoulders, no tract
+  rolloff unless a lowpass section is explicitly added.
+- traditional filters: poles at r ~ .707 in a Butterworth arrangement, zeros
+  parked at DC or Nyquist.
+- EQ families: one pole and one zero per band at a shared frequency, sign of the
+  gain set by which root is nearer the circle.
 
 ## 6. Open
 
