@@ -21,7 +21,7 @@ and they have nothing to do with each other. Keep them apart.
 
 ---
 
-# §0 Measured 2026-08-22: the interior matches X3; the knob does not
+# §0 Measured 2026-08-22: corner, interior and a slow travel all match X3
 
 Two EmulatorX3 renders of Talking Hedz playing the same dry sawtooth
 (`Downloads/trench_capture/dry_saw_49hz_-12dBFS.wav`, root key, insert at
@@ -43,18 +43,24 @@ interpolation domain and law are the X3's — the "decode-then-lerp" theory
 in §1 below is dead, as the DLL read in `plugin/X3_MOVEMENT_SPEC.md` §2 had
 already said. Interior parity at the response level is **done**.
 
-**Static** (`hedznoenv.wav`: cord off, panel Frequency 50, Q 50):
+**Static** (`hedznoenv.wav`: cord off, panel Frequency 0, Q 50):
 
-    best match: engine morph 0.00, q 0.50 — 0.16 dB rms
-    engine (0.5, 0.5): 15.45 dB rms; morph 0.05 already 3.7 dB
+    engine morph 0.00, q 0.50 — 0.16 dB rms   (morph 0.05 is already 3.7 dB,
+    so the match is sharp, not a flat landscape)
 
-Panel "Frequency 50" is **morph 0**, not morph 0.5. The X3's knob → morph
-mapping is not the identity the plugin uses. That is the parity gap that
-remains, and it is a *mapping*, not the filter: at the same *morph* the two
-agree to 0.16 dB; at the same *knob reading* they are 15 dB apart.
+(An earlier draft of this section read the panel as 50 and inferred a knob
+mapping; Tyson confirmed the panel was at 0. No knob finding.)
 
-Open: the knob law itself — needs static captures at several Frequency
-readouts (0, 64, 128, 192, 255 or the UI's scale) to map reading → morph.
+So at a corner, across the interior, and along a 4 s linear travel, the
+engine and X3 agree to < 1 dB. What these two captures do **not** test is
+how X3 *smooths* a control that moves abruptly — its one-pole and block
+ramp only show on steps and fast modulation, and a 4 s envelope is far too
+slow to excite them. That, plus level staging outside the filter, is where
+"doesn't sound the same" must now live.
+
+Next capture: a step. Filter Env → Filter Frequency +100, Attack 1 = 2.0 s
+at level 0, Attack 2 = 0.000 s at level 100 — morph jumps 0 → 1 at 2.0 s.
+The settling shape after the step is X3's movement law, directly.
 
 # §1 Parity: plugin vs EmulatorX3, same preset (superseded in part by §0)
 
