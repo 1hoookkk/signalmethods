@@ -48,9 +48,10 @@ struct WatchedRun {
 WatchedRun watched_polish(const CornerWords& words, std::span<const double> target,
                           std::size_t max_passes, const FreedomFn& freedom,
                           const std::function<bool()>& stop_requested, const StepFn& on_step,
-                          const LossFn* loss) {
-  WatchedRun run{Corner::from_words(words), 0.0, false};
+                          const LossFn* loss, const Grid& g, const RoleIntent& intent) {
+  WatchedRun run{Corner::from_words(words, g), 0.0, false};
   Corner& c = run.corner;
+  c.intent = intent;
   Scratch s;
   double best = corner_cost(c, target, Cost::kWeightedVar, s, loss);
 
@@ -146,6 +147,7 @@ std::optional<WatchedFit> fit_corner_watched(std::span<const double> target,
     return std::nullopt;
   }
   const LossFn* loss = opts.loss ? &opts.loss : nullptr;
+  const Grid& g = opts.grid ? *opts.grid : grid();
   const auto scales_held = [&](std::uint32_t mask) {
     for (std::size_t si = 0; si < kStageCount; ++si) {
       if (!scale_free(mask, si)) {
@@ -169,21 +171,21 @@ std::optional<WatchedFit> fit_corner_watched(std::span<const double> target,
       if (!opts.allow_continuous) {
         continue;
       }
-      const auto cont = continuous_best(target);
+      const auto cont = continuous_best(target, g);
       if (!cont) {
         continue;
       }
       words = words_from_continuous(std::get<1>(*cont));
       label = "continuous";
     } else if (std::holds_alternative<SeedPeel>(seed)) {
-      words = peel_seed(target);
+      words = peel_seed(target, g);
       label = "peel";
     } else {
       words = std::get<CornerWords>(seed);
       label = "rom";
     }
     auto run = watched_polish(enter(words), target, opts.max_passes, freedom, stop_requested,
-                              on_step, loss);
+                              on_step, loss, g, opts.intent);
     const double rms = std::sqrt(run.var);
     if (!best || rms < std::get<1>(*best)) {
       best.emplace(std::move(run.corner), rms, label, run.stopped);

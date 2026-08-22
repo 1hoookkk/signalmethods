@@ -39,13 +39,20 @@ double psum(std::span<const double> a) {
 }
 
 const Grid& grid() {
-  static const Grid g = [] {
-    Grid out;
-    const double ratio = kHiHz / kLoHz;
+  static const Grid g = make_grid(PerceptualSpace{});
+  return g;
+}
+
+Grid make_grid(const PerceptualSpace& space) {
+  Grid out;
+  {
+    const double lo = std::clamp(space.lo_hz, 1.0, kSr * 0.499);
+    const double hi = std::clamp(space.hi_hz, lo * 1.0001, kSr * 0.499);
+    const double ratio = hi / lo;
     out.hz.reserve(kNpts);
     for (std::size_t i = 0; i < kNpts; ++i) {
-      out.hz.push_back(kLoHz * std::pow(ratio, static_cast<double>(i) /
-                                                   static_cast<double>(kNpts - 1)));
+      out.hz.push_back(lo * std::pow(ratio, static_cast<double>(i) /
+                                               static_cast<double>(kNpts - 1)));
     }
     out.z1r.reserve(kNpts);
     out.z1i.reserve(kNpts);
@@ -63,7 +70,13 @@ const Grid& grid() {
     std::vector<double> raw;
     raw.reserve(kNpts);
     for (const double f : out.hz) {
-      raw.push_back(f / erb_hz(f));
+      double w = space.weight == PerceptualSpace::Weight::kErb ? f / erb_hz(f) : 1.0;
+      for (const auto& band : space.emphasis) {
+        if (f >= band.lo_hz && f <= band.hi_hz) {
+          w *= band.gain;
+        }
+      }
+      raw.push_back(w);
     }
     const double total = psum(raw);
     out.weight.reserve(kNpts);
@@ -71,10 +84,37 @@ const Grid& grid() {
       out.weight.push_back(w * (static_cast<double>(kNpts) / total));
     }
     out.weight_sum = psum(out.weight);
-    return out;
-  }();
-  return g;
+    const double octaves = std::log2(out.hz.back() / out.hz.front());
+    const double bins_per_octave = static_cast<double>(kNpts - 1) / octaves;
+    out.smooth_bins = space.smooth_octaves > 0.0
+                          ? static_cast<std::size_t>(std::lround(space.smooth_octaves * bins_per_octave))
+                          : 0;
+  }
+  return out;
 }
+
+namespace {
+
+void box_smooth(std::span<const double> in, std::span<double> out, std::size_t half) {
+  double acc = 0.0;
+  std::size_t lo = 0;
+  std::size_t hi = 0;
+  for (std::size_t i = 0; i < kNpts; ++i) {
+    const std::size_t want_lo = i > half ? i - half : 0;
+    const std::size_t want_hi = std::min(i + half + 1, kNpts);
+    while (hi < want_hi) {
+      acc += in[hi];
+      ++hi;
+    }
+    while (lo < want_lo) {
+      acc -= in[lo];
+      ++lo;
+    }
+    out[i] = acc / static_cast<double>(hi - lo);
+  }
+}
+
+}  // namespace
 
 void Grid::factor_db(double p, double q, std::span<double> out) const {
   for (std::size_t i = 0; i < kNpts; ++i) {
@@ -84,7 +124,13 @@ void Grid::factor_db(double p, double q, std::span<double> out) const {
   }
 }
 
-double Grid::weighted_var(std::span<const double> resid, std::span<double> scratch) const {
+double Grid::weighted_var(std::span<const double> resid_in, std::span<double> scratch) const {
+  thread_local std::vector<double> smoothed(kNpts, 0.0);
+  std::span<const double> resid = resid_in;
+  if (smooth_bins > 0) {
+    box_smooth(resid_in, smoothed, smooth_bins / 2);
+    resid = smoothed;
+  }
   for (std::size_t i = 0; i < kNpts; ++i) {
     scratch[i] = weight[i] * resid[i];
   }

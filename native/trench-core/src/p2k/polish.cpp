@@ -21,6 +21,14 @@ void load_base(Scratch& s, const Corner& c, std::size_t si) {
 
 }  // namespace
 
+bool intent_admits(const RoleIntent& intent, std::size_t si, const StageWords& candidate) {
+  if (!intent[si]) {
+    return true;
+  }
+  const PackedSection words{candidate[0], candidate[1], candidate[2], candidate[3], 0};
+  return within_envelope(*intent[si], words, kSr);
+}
+
 double residual_var(std::span<const double> target, std::span<const double> model, Scratch& s) {
   for (std::size_t i = 0; i < kNpts; ++i) {
     s.resid[i] = target[i] - model[i];
@@ -41,7 +49,7 @@ double corner_cost(const Corner& c, std::span<const double> target, Cost cost, S
   for (std::size_t i = 0; i < kNpts; ++i) {
     s.resid[i] = target[i] - s.total[i];
   }
-  return grid().score(s.resid, cost, s.tmp);
+  return c.grid().score(s.resid, cost, s.tmp);
 }
 
 std::pair<double, bool> sweep_axis(Corner& c, std::span<const double> target, std::size_t si,
@@ -52,7 +60,7 @@ std::pair<double, bool> sweep_axis(Corner& c, std::span<const double> target, st
 std::pair<double, bool> sweep_axis_cost(Corner& c, std::span<const double> target, std::size_t si,
                                         std::size_t wi, double best, Cost cost, Scratch& s,
                                         const LossFn* loss) {
-  const Grid& g = grid();
+  const Grid& g = c.grid();
   load_base(s, c, si);
   const bool sweep_is_mag = wi % 2 == 0;
   const bool is_pole = wi >= 2;
@@ -70,6 +78,13 @@ std::pair<double, bool> sweep_axis_cost(Corner& c, std::span<const double> targe
     }
     if (!is_legal(p, q, is_pole)) {
       continue;
+    }
+    if (c.intent[si]) {
+      StageWords trial = c.w[si];
+      trial[wi] = lattice_words()[k];
+      if (!intent_admits(c.intent, si, trial)) {
+        continue;
+      }
     }
     g.factor_db(p, q, s.bank);
     const auto n = c.num(si);
@@ -109,7 +124,7 @@ std::pair<double, bool> sweep_radius(Corner& c, std::span<const double> target, 
 std::pair<double, bool> sweep_radius_cost(Corner& c, std::span<const double> target, std::size_t si,
                                           std::size_t root, double best, Cost cost, Scratch& s,
                                           const LossFn* loss) {
-  const Grid& g = grid();
+  const Grid& g = c.grid();
   const std::size_t wm = root == 0 ? 0 : 2;
   const std::size_t wr = root == 0 ? 1 : 3;
   const auto [p0, q0] = pq(c.w[si][wm], c.w[si][wr]);
@@ -140,6 +155,14 @@ std::pair<double, bool> sweep_radius_cost(Corner& c, std::span<const double> tar
     const double p_q = 4.0 * lat[mag_byte] + d_rsq - 2.0;
     if (!is_legal(p_q, q, root == 1)) {
       continue;
+    }
+    if (c.intent[si]) {
+      StageWords trial = c.w[si];
+      trial[wm] = lattice_words()[mag_byte];
+      trial[wr] = si == 5 && wr == 1 ? kS6ZeroRsqWord : lattice_words()[k];
+      if (!intent_admits(c.intent, si, trial)) {
+        continue;
+      }
     }
     g.factor_db(p_q, q, s.bank);
     const auto n = c.num(si);
@@ -236,7 +259,7 @@ std::pair<double, bool> sweep_axis_fine(Corner& c, std::span<const double> targe
 std::pair<double, bool> sweep_axis_fine_cost(Corner& c, std::span<const double> target,
                                              std::size_t si, std::size_t wi, double best, Cost cost,
                                              Scratch& s, const LossFn* loss) {
-  const Grid& g = grid();
+  const Grid& g = c.grid();
   load_base(s, c, si);
   const bool is_pole = wi >= 2;
   const double d_partner = decode_word(c.w[si][wi ^ 1U]);
@@ -256,6 +279,13 @@ std::pair<double, bool> sweep_axis_fine_cost(Corner& c, std::span<const double> 
     const double q = sweep_is_mag ? 1.0 - d_partner : 1.0 - d;
     if (!is_legal(p, q, is_pole)) {
       continue;
+    }
+    if (c.intent[si]) {
+      StageWords trial = c.w[si];
+      trial[wi] = word;
+      if (!intent_admits(c.intent, si, trial)) {
+        continue;
+      }
     }
     g.factor_db(p, q, s.bank);
     const auto n = c.num(si);

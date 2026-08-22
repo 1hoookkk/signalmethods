@@ -20,6 +20,6 @@ struct Push {
 };
 
 Push compute_push(const StoredCorner& corner, std::uint32_t freedom_mask,
-                  std::size_t max_directions = 4);
+                  std::size_t max_directions = 4, const Grid& g = grid());
 
 }  // namespace trench::core::p2k

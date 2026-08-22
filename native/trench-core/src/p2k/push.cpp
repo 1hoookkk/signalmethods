@@ -56,14 +56,13 @@ std::vector<Candidate> enumerate_candidates(const StoredCorner& corner,
 }  // namespace
 
 Push compute_push(const StoredCorner& corner, std::uint32_t freedom_mask,
-                  std::size_t max_directions) {
+                  std::size_t max_directions, const Grid& g) {
   Push push;
   const auto candidates = enumerate_candidates(corner, freedom_mask);
   push.candidate_count = candidates.size();
   if (candidates.empty()) return push;
 
-  const auto& g = grid();
-  const auto base = corner_response_db(corner);
+  const auto base = corner_response_db(corner, g);
 
   Eigen::MatrixXd rows(static_cast<Eigen::Index>(candidates.size()),
                        static_cast<Eigen::Index>(kNpts));
@@ -73,7 +72,7 @@ Push compute_push(const StoredCorner& corner, std::uint32_t freedom_mask,
   for (std::size_t ci = 0; ci < candidates.size(); ++ci) {
     auto varied = corner;
     varied[candidates[ci].section][candidates[ci].word] = candidates[ci].value;
-    const auto response = corner_response_db(varied);
+    const auto response = corner_response_db(varied, g);
     double weighted_mean = 0.0;
     for (std::size_t k = 0; k < kNpts; ++k) {
       weighted_mean += g.weight[k] * (response[k] - base[k]);

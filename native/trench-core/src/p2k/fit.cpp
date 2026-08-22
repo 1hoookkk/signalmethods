@@ -12,8 +12,8 @@ namespace trench::core::p2k {
 
 std::pair<Corner, double> polish_from_words(const CornerWords& words,
                                             std::span<const double> target,
-                                            std::size_t max_passes) {
-  Corner c = Corner::from_words(words);
+                                            std::size_t max_passes, const Grid& g) {
+  Corner c = Corner::from_words(words, g);
   Scratch s;
   const double var = polish(c, target, max_passes, s);
   return {std::move(c), std::sqrt(var)};
@@ -21,8 +21,8 @@ std::pair<Corner, double> polish_from_words(const CornerWords& words,
 
 std::pair<Corner, double> polish_from_words_fine(const CornerWords& words,
                                                  std::span<const double> target,
-                                                 std::size_t max_passes) {
-  Corner c = Corner::from_words(words);
+                                                 std::size_t max_passes, const Grid& g) {
+  Corner c = Corner::from_words(words, g);
   Scratch s;
   polish(c, target, max_passes, s);
   const double var = polish_fine(c, target, max_passes, s);
@@ -35,6 +35,7 @@ std::optional<P2kFit> fit_corner(std::span<const double> target, std::span<const
     throw std::invalid_argument("a P2K target is 512 log-spaced dB points");
   }
   std::optional<std::tuple<Corner, double, std::string_view>> best;
+  const Grid& g = opts.grid ? *opts.grid : grid();
 
   for (const auto& seed : seeds) {
     CornerWords words{};
@@ -43,20 +44,20 @@ std::optional<P2kFit> fit_corner(std::span<const double> target, std::span<const
       if (!opts.allow_continuous) {
         continue;
       }
-      const auto cont = continuous_best(target);
+      const auto cont = continuous_best(target, g);
       if (!cont) {
         continue;
       }
       words = words_from_continuous(std::get<1>(*cont));
       label = "continuous";
     } else if (std::holds_alternative<SeedPeel>(seed)) {
-      words = peel_seed(target);
+      words = peel_seed(target, g);
       label = "peel";
     } else {
       words = std::get<CornerWords>(seed);
       label = "rom";
     }
-    auto [c, rms] = polish_from_words_fine(enter(words), target, opts.max_passes);
+    auto [c, rms] = polish_from_words_fine(enter(words), target, opts.max_passes, g);
     if (!best || rms < std::get<1>(*best)) {
       best.emplace(std::move(c), rms, label);
     }
@@ -92,8 +93,7 @@ double stage_db(const std::array<double, 5>& biquad, double hz) {
   return 20.0 * std::log10(std::max(n / d, 1e-12));
 }
 
-std::vector<double> corner_response_db(const StoredCorner& words) {
-  const Grid& g = grid();
+std::vector<double> corner_response_db(const StoredCorner& words, const Grid& g) {
   std::array<std::array<double, 5>, kStageCount> biquads{};
   for (std::size_t si = 0; si < kStageCount; ++si) {
     biquads[si] = section_words_to_biquad(words[si]);

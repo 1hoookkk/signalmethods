@@ -86,9 +86,8 @@ ContinuousCorner unpack(const Vars& x) {
   return out;
 }
 
-void stage_curve(const ContinuousStage& s, std::span<double> num, std::span<double> den,
-                 std::span<double> out) {
-  const Grid& g = grid();
+void stage_curve(const Grid& g, const ContinuousStage& s, std::span<double> num,
+                 std::span<double> den, std::span<double> out) {
   const double wz = 2.0 * std::numbers::pi * s.zero_hz / kSr;
   const double wp = 2.0 * std::numbers::pi * s.pole_hz / kSr;
   g.factor_db(-2.0 * s.zero_r * std::cos(wz), s.zero_r * s.zero_r, num);
@@ -99,12 +98,14 @@ void stage_curve(const ContinuousStage& s, std::span<double> num, std::span<doub
 }
 
 struct Model {
+  const Grid* g{};
   std::array<std::vector<double>, kStageCount> stages;
   std::vector<double> num;
   std::vector<double> den;
   std::vector<double> total;
 
-  Model() : num(kNpts, 0.0), den(kNpts, 0.0), total(kNpts, 0.0) {
+  explicit Model(const Grid& grid_in)
+      : g(&grid_in), num(kNpts, 0.0), den(kNpts, 0.0), total(kNpts, 0.0) {
     for (auto& s : stages) {
       s.assign(kNpts, 0.0);
     }
@@ -112,13 +113,13 @@ struct Model {
 
   void rebuild(const ContinuousCorner& params) {
     for (std::size_t si = 0; si < kStageCount; ++si) {
-      stage_curve(params[si], num, den, stages[si]);
+      stage_curve(*g, params[si], num, den, stages[si]);
     }
     sum();
   }
 
   void rebuild_stage(std::size_t si, const ContinuousStage& s) {
-    stage_curve(s, num, den, stages[si]);
+    stage_curve(*g, s, num, den, stages[si]);
     sum();
   }
 
@@ -132,9 +133,8 @@ struct Model {
   }
 };
 
-double residuals(std::span<const double> target, std::span<const double> model,
+double residuals(const Grid& g, std::span<const double> target, std::span<const double> model,
                  std::span<const double> sw, std::span<double> out, std::span<double> tmp) {
-  const Grid& g = grid();
   for (std::size_t i = 0; i < kNpts; ++i) {
     out[i] = target[i] - model[i];
   }
@@ -202,7 +202,7 @@ std::size_t var_stage(std::size_t k) {
   }
 }
 
-std::pair<Vars, double> refine(Vars x0, std::span<const double> target,
+std::pair<Vars, double> refine(const Grid& g, Vars x0, std::span<const double> target,
                                std::span<const double> sw) {
   const auto [lo, hi] = bounds();
   Vars x = x0;
@@ -210,17 +210,17 @@ std::pair<Vars, double> refine(Vars x0, std::span<const double> target,
     x[k] = std::clamp(x[k], lo[k] + 1e-9, hi[k] - 1e-9);
   }
 
-  Model model;
+  Model model(g);
   model.rebuild(unpack(x));
 
   std::vector<double> resid(kNpts, 0.0);
   std::vector<double> tmp(kNpts, 0.0);
   std::vector<double> trial_resid(kNpts, 0.0);
-  double cost = residuals(target, model.total, sw, resid, tmp);
+  double cost = residuals(g, target, model.total, sw, resid, tmp);
 
   std::vector<double> jac(kNpts * kNvar, 0.0);
   double lambda = 1e-2;
-  Model probe;
+  Model probe(g);
   std::size_t stalled = 0;
 
   for (std::size_t iter = 0; iter < kMaxIters; ++iter) {
@@ -239,7 +239,7 @@ std::pair<Vars, double> refine(Vars x0, std::span<const double> target,
       probe.stages = model.stages;
       const ContinuousCorner pp = unpack(xp);
       probe.rebuild_stage(si, pp[si]);
-      residuals(target, probe.total, sw, trial_resid, tmp);
+      residuals(g, target, probe.total, sw, trial_resid, tmp);
       for (std::size_t i = 0; i < kNpts; ++i) {
         jac[i * kNvar + k] = (trial_resid[i] - resid[i]) / step;
       }
@@ -283,7 +283,7 @@ std::pair<Vars, double> refine(Vars x0, std::span<const double> target,
       xt[k] = std::clamp(x[k] + (*delta)[k], lo[k], hi[k]);
     }
     probe.rebuild(unpack(xt));
-    const double trial_cost = residuals(target, probe.total, sw, trial_resid, tmp);
+    const double trial_cost = residuals(g, target, probe.total, sw, trial_resid, tmp);
 
     if (trial_cost < cost) {
       stalled = cost - trial_cost < 1e-12 * std::max(cost, 1e-12) ? stalled + 1 : 0;
@@ -308,8 +308,7 @@ std::pair<Vars, double> refine(Vars x0, std::span<const double> target,
   return {x, cost};
 }
 
-std::vector<double> sqrt_weights() {
-  const Grid& g = grid();
+std::vector<double> sqrt_weights(const Grid& g) {
   const double w_mean = psum(g.weight) / static_cast<double>(kNpts);
   std::vector<double> sw;
   sw.reserve(kNpts);
@@ -342,8 +341,9 @@ Vars random_start(Rng& rng) {
 }  // namespace
 
 std::pair<ContinuousCorner, double> continuous_from(std::span<const double> target,
-                                                    const ContinuousCorner& start) {
-  const auto sw = sqrt_weights();
+                                                    const ContinuousCorner& start,
+                                                    const Grid& g) {
+  const auto sw = sqrt_weights(g);
   Vars x0{};
   std::size_t k = 0;
   for (std::size_t i = 0; i < kStageCount; ++i) {
@@ -358,16 +358,16 @@ std::pair<ContinuousCorner, double> continuous_from(std::span<const double> targ
       ++k;
     }
   }
-  const auto [x, cost] = refine(x0, target, sw);
+  const auto [x, cost] = refine(g, x0, target, sw);
   return {unpack(x), std::sqrt(std::max(cost, 0.0))};
 }
 
 std::optional<std::pair<ContinuousCorner, double>> continuous_capacity(
-    std::span<const double> target, Rng& rng, std::size_t starts) {
-  const auto sw = sqrt_weights();
+    std::span<const double> target, Rng& rng, std::size_t starts, const Grid& g) {
+  const auto sw = sqrt_weights(g);
   std::optional<std::pair<Vars, double>> best;
   for (std::size_t i = 0; i < starts; ++i) {
-    const auto [x, cost] = refine(random_start(rng), target, sw);
+    const auto [x, cost] = refine(g, random_start(rng), target, sw);
     if (!best || cost < best->second) {
       best.emplace(x, cost);
     }
@@ -379,11 +379,11 @@ std::optional<std::pair<ContinuousCorner, double>> continuous_capacity(
 }
 
 std::optional<ContinuousCorner> continuous_seed(std::span<const double> target, Rng& rng,
-                                                std::size_t starts) {
-  const auto sw = sqrt_weights();
+                                                std::size_t starts, const Grid& g) {
+  const auto sw = sqrt_weights(g);
   std::optional<std::pair<Vars, double>> best;
   for (std::size_t i = 0; i < starts; ++i) {
-    const auto [x, cost] = refine(random_start(rng), target, sw);
+    const auto [x, cost] = refine(g, random_start(rng), target, sw);
     if (!best || cost < best->second) {
       best.emplace(x, cost);
     }
@@ -451,8 +451,8 @@ double spread(double lo, double hi, std::size_t i) {
   return lo * std::pow(hi / lo, static_cast<double>(i) / static_cast<double>(kStageCount - 1));
 }
 
-std::vector<std::pair<double, double>> peaks_of(std::span<const double> target, bool want_max) {
-  const Grid& g = grid();
+std::vector<std::pair<double, double>> peaks_of(const Grid& g, std::span<const double> target,
+                                                bool want_max) {
   std::vector<std::pair<double, double>> found;
   for (std::size_t i = 2; i < kNpts - 2; ++i) {
     const double v = target[i];
@@ -474,7 +474,7 @@ std::vector<std::pair<double, double>> peaks_of(std::span<const double> target, 
 }  // namespace
 
 std::vector<std::pair<std::string_view, ContinuousCorner>> topological_seeds(
-    std::span<const double> target) {
+    std::span<const double> target, const Grid& g) {
   const double r496 = s6_zero_radius();
   std::vector<std::pair<std::string_view, ContinuousCorner>> out;
 
@@ -521,8 +521,8 @@ std::vector<std::pair<std::string_view, ContinuousCorner>> topological_seeds(
     out.emplace_back("descending tilt", c);
   }
 
-  const auto hi = peaks_of(target, true);
-  const auto lo = peaks_of(target, false);
+  const auto hi = peaks_of(g, target, true);
+  const auto lo = peaks_of(g, target, false);
   if (!hi.empty()) {
     {
       ContinuousCorner c{};
@@ -551,10 +551,10 @@ std::vector<std::pair<std::string_view, ContinuousCorner>> topological_seeds(
 }
 
 std::optional<std::tuple<std::string_view, ContinuousCorner, double>> continuous_best(
-    std::span<const double> target) {
+    std::span<const double> target, const Grid& g) {
   std::optional<std::tuple<std::string_view, ContinuousCorner, double>> best;
-  for (const auto& [name, start] : topological_seeds(target)) {
-    const auto [refined, rms] = continuous_from(target, start);
+  for (const auto& [name, start] : topological_seeds(target, g)) {
+    const auto [refined, rms] = continuous_from(target, start, g);
     if (!best || rms < std::get<2>(*best)) {
       best.emplace(name, refined, rms);
     }
@@ -572,13 +572,12 @@ CornerWords identity_words() {
   return w;
 }
 
-CornerWords peel_seed(std::span<const double> target) {
-  return peel_seed_by(target, Cost::kWeightedVar);
+CornerWords peel_seed(std::span<const double> target, const Grid& g) {
+  return peel_seed_by(target, Cost::kWeightedVar, g);
 }
 
-CornerWords peel_seed_by(std::span<const double> target, Cost cost) {
-  const Grid& g = grid();
-  Corner c = Corner::from_words(identity_words());
+CornerWords peel_seed_by(std::span<const double> target, Cost cost, const Grid& g) {
+  Corner c = Corner::from_words(identity_words(), g);
   Scratch s;
   std::vector<double> total(kNpts, 0.0);
 

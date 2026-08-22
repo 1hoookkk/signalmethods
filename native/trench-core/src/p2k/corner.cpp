@@ -4,19 +4,20 @@
 
 namespace trench::core::p2k {
 
-Corner Corner::identity(std::size_t seed_byte, std::size_t rsq_byte) {
+Corner Corner::identity(std::size_t seed_byte, std::size_t rsq_byte, const Grid& g) {
   const std::uint16_t a = word_of(seed_byte);
   const std::uint16_t b = word_of(rsq_byte);
   CornerWords w;
   w.fill({a, b, a, b});
   w[5][1] = kS6ZeroRsqWord;
   w[5][3] = kS6ZeroRsqWord;
-  return from_words(w);
+  return from_words(w, g);
 }
 
-Corner Corner::from_words(const CornerWords& w) {
+Corner Corner::from_words(const CornerWords& w, const Grid& g) {
   Corner c;
   c.w = w;
+  c.grid_ = &g;
   c.num_.assign(kStageCount * kNpts, 0.0);
   c.den_.assign(kStageCount * kNpts, 0.0);
   for (std::size_t si = 0; si < kStageCount; ++si) {
@@ -26,7 +27,7 @@ Corner Corner::from_words(const CornerWords& w) {
 }
 
 void Corner::refresh(std::size_t si) {
-  const Grid& g = grid();
+  const Grid& g = *grid_;
   const auto [zp, zq] = pq(w[si][0], w[si][1]);
   const auto [pp, ppq] = pq(w[si][2], w[si][3]);
   g.factor_db(zp, zq, std::span<double>(num_).subspan(si * kNpts, kNpts));

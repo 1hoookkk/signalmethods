@@ -12,6 +12,8 @@
 #include <variant>
 #include <vector>
 
+#include "trench/core/role.hpp"
+
 namespace trench::core::p2k {
 
 inline constexpr double kSr = 44'100.0;
@@ -44,6 +46,7 @@ const std::vector<std::uint16_t>& lattice_words();
 const std::vector<double>& lattice_decoded();
 std::size_t lattice_len();
 bool magnitude_admissible(std::size_t index, bool is_pole);
+bool intent_admits(const RoleIntent& intent, std::size_t si, const StageWords& candidate);
 std::size_t nearest_lattice(double value);
 std::size_t nearest_lattice_word(std::uint16_t word);
 std::pair<double, double> pq(std::uint16_t w_mag, std::uint16_t w_rsq);
@@ -63,11 +66,27 @@ double psum(std::span<const double> values);
 
 enum class Cost { kWeightedVar, kVariation, kUnweighted };
 
+struct PerceptualSpace {
+  enum class Weight { kErb, kFlat };
+  struct Band {
+    double lo_hz{};
+    double hi_hz{};
+    double gain{1.0};
+  };
+  double lo_hz{kLoHz};
+  double hi_hz{kHiHz};
+  Weight weight{Weight::kErb};
+  std::vector<Band> emphasis;
+  double smooth_octaves{0.0};
+  bool operator==(const PerceptualSpace&) const = default;
+};
+
 struct Grid {
   std::vector<double> hz;
   std::vector<double> weight;
   double weight_sum{};
   std::vector<double> z1r, z1i, z2r, z2i;
+  std::size_t smooth_bins{};
 
   void factor_db(double p, double q, std::span<double> out) const;
   double weighted_var(std::span<const double> resid, std::span<double> scratch) const;
@@ -79,6 +98,7 @@ struct Grid {
 };
 
 const Grid& grid();
+Grid make_grid(const PerceptualSpace& space);
 
 struct AbsoluteError {
   double max_db{};
@@ -93,9 +113,11 @@ AbsoluteError absolute_error(std::span<const double> target, std::span<const dou
 
 class Corner {
  public:
-  static Corner identity(std::size_t seed_byte, std::size_t rsq_byte);
-  static Corner from_words(const CornerWords& w);
+  static Corner identity(std::size_t seed_byte, std::size_t rsq_byte,
+                         const Grid& g = trench::core::p2k::grid());
+  static Corner from_words(const CornerWords& w, const Grid& g = trench::core::p2k::grid());
 
+  [[nodiscard]] const Grid& grid() const noexcept { return *grid_; }
   void refresh(std::size_t si);
   [[nodiscard]] std::span<const double> num(std::size_t si) const;
   [[nodiscard]] std::span<const double> den(std::size_t si) const;
@@ -104,9 +126,11 @@ class Corner {
   [[nodiscard]] std::vector<double> total() const;
 
   CornerWords w{};
+  RoleIntent intent{};
 
  private:
   Corner() = default;
+  const Grid* grid_{};
   std::vector<double> num_;
   std::vector<double> den_;
 };
@@ -186,18 +210,19 @@ StoredCorner rom_corner_words(std::span<const std::uint8_t> body, std::size_t co
 CornerWords rom_seed(const StoredCorner& words);
 bool pole_is_legal(const StageWords& w);
 CornerWords identity_words();
-CornerWords peel_seed(std::span<const double> target);
-CornerWords peel_seed_by(std::span<const double> target, Cost cost);
+CornerWords peel_seed(std::span<const double> target, const Grid& g = grid());
+CornerWords peel_seed_by(std::span<const double> target, Cost cost, const Grid& g = grid());
 std::vector<std::pair<std::string_view, ContinuousCorner>> topological_seeds(
-    std::span<const double> target);
+    std::span<const double> target, const Grid& g = grid());
 std::pair<ContinuousCorner, double> continuous_from(std::span<const double> target,
-                                                    const ContinuousCorner& start);
+                                                    const ContinuousCorner& start,
+                                                    const Grid& g = grid());
 std::optional<std::pair<ContinuousCorner, double>> continuous_capacity(
-    std::span<const double> target, Rng& rng, std::size_t starts);
+    std::span<const double> target, Rng& rng, std::size_t starts, const Grid& g = grid());
 std::optional<ContinuousCorner> continuous_seed(std::span<const double> target, Rng& rng,
-                                                std::size_t starts);
+                                                std::size_t starts, const Grid& g = grid());
 std::optional<std::tuple<std::string_view, ContinuousCorner, double>> continuous_best(
-    std::span<const double> target);
+    std::span<const double> target, const Grid& g = grid());
 CornerWords words_from_continuous(const ContinuousCorner& seed);
 
 struct SeedContinuous {};
@@ -211,6 +236,8 @@ struct FitOptions {
   bool allow_continuous = false;
   LossFn loss;
   std::optional<PackedCorner> baseline;
+  const Grid* grid = nullptr;
+  RoleIntent intent{};
 };
 
 StageScales stage_gain_pass_held(const Corner& c, std::uint32_t mask,
@@ -226,10 +253,11 @@ struct P2kFit {
 
 std::pair<Corner, double> polish_from_words(const CornerWords& words,
                                             std::span<const double> target,
-                                            std::size_t max_passes);
+                                            std::size_t max_passes, const Grid& g = grid());
 std::pair<Corner, double> polish_from_words_fine(const CornerWords& words,
                                                  std::span<const double> target,
-                                                 std::size_t max_passes);
+                                                 std::size_t max_passes,
+                                                 const Grid& g = grid());
 std::optional<P2kFit> fit_corner(std::span<const double> target, std::span<const Seed> seeds,
                                  const FitOptions& opts);
 
@@ -274,7 +302,7 @@ std::optional<WatchedFit> fit_corner_watched(std::span<const double> target,
                                              const StepFn& on_step);
 
 double stage_db(const std::array<double, 5>& biquad, double hz);
-std::vector<double> corner_response_db(const StoredCorner& words);
+std::vector<double> corner_response_db(const StoredCorner& words, const Grid& g = grid());
 StoredCorner interpolate_plane(const std::array<StoredCorner, 4>& corners, float morph, float q);
 std::array<StoredCorner, 4> body_corners(std::span<const std::uint8_t> body);
 StoredCorner interpolate_body(std::span<const std::uint8_t> body, float morph, float q);
