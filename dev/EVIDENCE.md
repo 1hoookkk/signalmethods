@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The S3/S6 scale cuts are not a headroom rule.** With every stage at unity scale, the
+peak of the partial cascade S1..S3 is higher where a cut exists (median 76.6 dB vs 32.1 dB
+without), but the cut does not follow the peak: cuts of -12 and -18 dB sit on corners whose
+partial peak is 15 dB, cruz_pusher c3 has the highest no-cut peak in the bank (105.8 dB)
+while its c0/c2 carry -6 dB, and within a body the cut is constant across corners while
+the partial peak ranges 15-138 dB. The cut is a per-body level choice, not a computed
+function of the signal at the block boundary. Order matters to the chip's fixed-point
+partial products and to lane identity, not to the frequency response, which commutes.
+(2026-08-23)
+
 **Section vocabulary and slot roles, measured.** k-means over the 777 conjugate-pole
 sections of the 33 bodies in (log2 pole Hz, pole width oct, zero offset oct, zero width
 oct), standardised: silhouette peaks at k=4 (0.41, moderate structure, not crisp types).
