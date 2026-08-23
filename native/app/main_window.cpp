@@ -176,6 +176,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
       document_->commitGesture(section, before_words_);
     });
     connect(strip, &SectionStrip::paramEdited, this, &MainWindow::applyParam);
+    connect(strip, &SectionStrip::shapeEdited, this, &MainWindow::applyShape);
     connect(strip, &SectionStrip::hoverChanged, this,
             [this](std::size_t section, bool inside) {
               response_plot_->setHighlightedSection(
@@ -467,6 +468,19 @@ void MainWindow::applyParam(std::size_t section, trench::core::p2k::SectionEdit 
   }
 }
 
+void MainWindow::applyShape(std::size_t section,
+                            const trench::core::p2k::ShapeParam& param) {
+  if (section >= trench::core::kLegacySectionCount) return;
+  const auto before = document_->body().words[document_->corner()][section];
+  const auto candidate = trench::core::p2k::words_from_shape(param, before, section,
+                                                             trench::core::kP2kDatumHz);
+  if (candidate == before) return;
+  document_->applySection(section, candidate);
+  if (!strip_gesture_) {
+    document_->commitGesture(section, before);
+  }
+}
+
 void MainWindow::selectSection(std::size_t section) {
   if (section >= strips_.size()) return;
   for (auto* strip : strips_) {
@@ -674,7 +688,7 @@ void MainWindow::updateProbes() {
 
 void MainWindow::updateStrips() {
   for (auto* strip : strips_) {
-    strip->setParam(trench::core::p2k::param_of(
+    strip->setParam(trench::core::p2k::shape_of(
         document_->body().words[document_->corner()][strip->section()],
         trench::core::kP2kDatumHz));
   }

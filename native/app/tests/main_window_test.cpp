@@ -7,6 +7,7 @@
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
+#include "trench/core/rbj.hpp"
 #include "trench/core/section_param.hpp"
 
 #include <QTest>
@@ -786,7 +787,74 @@ class MainWindowTest final : public QObject {
     QVERIFY(std::log2(low.trench_hz / low.fc_hz) >= p2k::kTrenchMinOct - 1e-9);
   }
 
-  void theGainFaderWritesLatticeWordsAsOneUndoStep() {
+  void oneStripEditIsOneUndoEntryAndUndoRestoresTheBytes() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto row = first_eq_row(window);
+    QVERIFY(row >= 0);
+    const auto section = static_cast<std::size_t>(row);
+    auto* strip = window.sectionStrip(section);
+    QVERIFY(strip != nullptr);
+    auto* fc = strip->findChild<QDoubleSpinBox*>(QStringLiteral("fcControl"));
+    QVERIFY(fc != nullptr);
+
+    const auto before_bytes = window.body().native_bytes();
+    const auto before = window.body().words[0][section];
+    fc->setValue(1500.0);
+
+    const auto after = window.body().words[0][section];
+    QVERIFY(after != before);
+    QCOMPARE(window.body().words[4][section], after);
+    QCOMPARE(window.undoStack()->count(), 1);
+
+    window.undoStack()->undo();
+    QVERIFY(window.body().native_bytes() == before_bytes);
+  }
+
+  void aTypedPeakLandsOnTheAnalyserReading() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto row = first_eq_row(window);
+    QVERIFY(row >= 0);
+    const auto section = static_cast<std::size_t>(row);
+    auto* strip = window.sectionStrip(section);
+    auto* type = strip->findChild<QComboBox*>(QStringLiteral("typeCombo"));
+    auto* fc = strip->findChild<QDoubleSpinBox*>(QStringLiteral("fcControl"));
+    auto* q = strip->findChild<QDoubleSpinBox*>(QStringLiteral("qControl"));
+    auto* fader = strip->findChild<QSlider*>(QStringLiteral("gainFader"));
+    QVERIFY(type != nullptr && fc != nullptr && q != nullptr && fader != nullptr);
+
+    type->setCurrentIndex(SectionStrip::typeIndex(p2k::Shape::kPeak));
+    fc->setValue(1000.0);
+    q->setValue(4.0);
+    fader->setValue(90);
+
+    const auto biquad =
+        trench::core::section_words_to_biquad(window.body().words[0][section]);
+    double peak_db = -1000.0;
+    double peak_hz = 0.0;
+    for (double hz = 500.0; hz <= 2000.0; hz *= 1.001) {
+      const auto db =
+          trench::core::section_response_db(biquad, hz, trench::core::kP2kDatumHz);
+      if (db > peak_db) {
+        peak_db = db;
+        peak_hz = hz;
+      }
+    }
+    const auto dc_db =
+        trench::core::section_response_db(biquad, 20.0, trench::core::kP2kDatumHz);
+    QVERIFY2(std::abs(peak_db - 9.0) < 0.5, qPrintable(QString::number(peak_db)));
+    QVERIFY2(std::abs(peak_hz - 1000.0) < 50.0, qPrintable(QString::number(peak_hz)));
+    QVERIFY2(std::abs(dc_db) < 0.5, qPrintable(QString::number(dc_db)));
+  }
+
+  void theWidthReadsAsQAndAsOctaves() {
+    namespace rbj = trench::core::rbj;
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
@@ -794,29 +862,19 @@ class MainWindowTest final : public QObject {
     const auto row = first_eq_row(window);
     QVERIFY(row >= 0);
     auto* strip = window.sectionStrip(static_cast<std::size_t>(row));
-    QVERIFY(strip != nullptr);
-    auto* fader = strip->findChild<QSlider*>(QStringLiteral("gainFader"));
-    QVERIFY(fader != nullptr);
+    auto* type = strip->findChild<QComboBox*>(QStringLiteral("typeCombo"));
+    auto* q = strip->findChild<QDoubleSpinBox*>(QStringLiteral("qControl"));
+    auto* bw = strip->findChild<QDoubleSpinBox*>(QStringLiteral("bwControl"));
+    QVERIFY(type != nullptr && q != nullptr && bw != nullptr);
+    type->setCurrentIndex(SectionStrip::typeIndex(trench::core::p2k::Shape::kPeak));
 
-    const auto before = window.body().words[0][static_cast<std::size_t>(row)];
-    const auto start =
-        trench::core::p2k::param_of(before, trench::core::kP2kDatumHz).gain_db;
-    fader->setSliderDown(true);
-    for (int step = 1; step <= 12; ++step) {
-      fader->setValue(fader->value() + 5);
-    }
-    fader->setSliderDown(false);
+    q->setValue(4.0);
+    QVERIFY2(std::abs(q->value() - 4.0) < 0.1, qPrintable(QString::number(q->value())));
+    QVERIFY(std::abs(bw->value() - rbj::bandwidth_oct_from_q(q->value())) < 0.01);
 
-    const auto after = window.body().words[0][static_cast<std::size_t>(row)];
-    QVERIFY(after != before);
-    QVERIFY(is_lattice_word(after[0]));
-    QVERIFY(is_lattice_word(after[1]));
-    QCOMPARE(after[2], before[2]);
-    QCOMPARE(after[3], before[3]);
-    QCOMPARE(after[4], before[4]);
-    QVERIFY(trench::core::p2k::param_of(after, trench::core::kP2kDatumHz).gain_db > start);
-    QCOMPARE(window.body().words[4][static_cast<std::size_t>(row)], after);
-    QCOMPARE(window.undoStack()->count(), 1);
+    bw->setValue(1.0);
+    QVERIFY2(std::abs(bw->value() - 1.0) < 0.05, qPrintable(QString::number(bw->value())));
+    QVERIFY(std::abs(q->value() - rbj::q_from_bandwidth_oct(bw->value())) < 0.02);
   }
 
   void pressingAPlotMarkerSelectsThatStripsBandwidth() {
@@ -903,7 +961,8 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.undoStack()->count(), 1);
   }
 
-  void choosingLowPassPutsTheZeroTwoOctavesAboveFc() {
+  void aLowSectionKeepsItsTrenchControl() {
+    namespace p2k = trench::core::p2k;
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
@@ -911,25 +970,26 @@ class MainWindowTest final : public QObject {
     const auto row = first_eq_row(window);
     QVERIFY(row >= 0);
     const auto section = static_cast<std::size_t>(row);
-    auto* type = window.sectionStrip(section)->findChild<QComboBox*>(
-        QStringLiteral("typeCombo"));
-    QVERIFY(type != nullptr);
+    auto* strip = window.sectionStrip(section);
+    auto* type = strip->findChild<QComboBox*>(QStringLiteral("typeCombo"));
+    auto* fader = strip->findChild<QSlider*>(QStringLiteral("gainFader"));
+    QVERIFY(type != nullptr && fader != nullptr);
 
-    const auto fc = trench::core::p2k::param_of(window.body().words[0][section],
-                                                trench::core::kP2kDatumHz)
-                        .fc_hz;
-    type->setCurrentIndex(
-        SectionStrip::typeIndex(trench::core::p2k::SectionType::kLowPass));
+    type->setCurrentIndex(SectionStrip::typeIndex(p2k::Shape::kLow));
+    const auto chosen =
+        p2k::shape_of(window.body().words[0][section], trench::core::kP2kDatumHz);
+    QCOMPARE(chosen.shape, p2k::Shape::kLow);
 
-    const auto geometry = trench::core::geometry_from_words(
-        window.body().words[0][section], trench::core::kP2kDatumHz);
-    const auto& zero = std::get<trench::core::ConjugatePair>(geometry.zero);
-    QVERIFY(std::log2(zero.hz / fc) >= 2.0);
-    QCOMPARE(trench::core::p2k::param_of(window.body().words[0][section],
-                                         trench::core::kP2kDatumHz)
-                 .type,
-             trench::core::p2k::SectionType::kLowPass);
-    QCOMPARE(window.undoStack()->count(), 1);
+    fader->setSliderDown(true);
+    fader->setValue(fader->value() - 200);
+    fader->setSliderDown(false);
+
+    const auto moved =
+        p2k::shape_of(window.body().words[0][section], trench::core::kP2kDatumHz);
+    QCOMPARE(moved.shape, p2k::Shape::kLow);
+    QVERIFY(moved.trench_hz < chosen.trench_hz);
+    QVERIFY(std::log2(moved.trench_hz / moved.fc_hz) >= p2k::kTrenchMinOct - 1.0e-9);
+    QCOMPARE(window.undoStack()->count(), 2);
   }
 
   void thePlotBandFollowsTheSpace() {

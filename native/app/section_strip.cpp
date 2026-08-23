@@ -2,9 +2,12 @@
 
 #include "section_color.hpp"
 
+#include "trench/core/rbj.hpp"
+
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QEnterEvent>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
@@ -17,6 +20,7 @@
 namespace {
 
 namespace p2k = trench::core::p2k;
+namespace rbj = trench::core::rbj;
 
 const QColor kChassis{26, 31, 35};
 const QColor kInk{174, 186, 190};
@@ -30,7 +34,11 @@ constexpr int kBandPx = 3;
 constexpr int kBandHighlightPx = 5;
 constexpr int kSelectedTintAlpha = 28;
 constexpr double kSeedFcHz = 1000.0;
-constexpr double kSeedBwOct = 0.5;
+constexpr double kSeedQ = 2.0;
+constexpr int kShapeCount = 6;
+
+const QString kSpinStyle = QStringLiteral(
+    "QDoubleSpinBox { background: #111416; color: %1; border: 1px solid #373f43; }");
 
 QFont strip_font() { return QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold); }
 
@@ -50,6 +58,23 @@ QLabel* make_label(QWidget* parent, const char* name, const QColor& ink) {
   return label;
 }
 
+QDoubleSpinBox* make_spin(QWidget* parent, const char* name, double low, double high,
+                          double step, int decimals) {
+  auto* spin = new QDoubleSpinBox(parent);
+  spin->setObjectName(QString::fromLatin1(name));
+  spin->setFont(strip_font());
+  spin->setRange(low, high);
+  spin->setSingleStep(step);
+  spin->setDecimals(decimals);
+  spin->setKeyboardTracking(false);
+  spin->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  spin->setAlignment(Qt::AlignHCenter);
+  spin->setFixedHeight(kRowHeight);
+  spin->setStyleSheet(kSpinStyle.arg(kInk.name()));
+  retain_space(spin);
+  return spin;
+}
+
 }  // namespace
 
 SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
@@ -63,7 +88,7 @@ SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
   type_ = new QComboBox(this);
   type_->setObjectName(QStringLiteral("typeCombo"));
   type_->setFont(strip_font());
-  for (int index = 0; index < 3; ++index) {
+  for (int index = 0; index < kShapeCount; ++index) {
     type_->addItem(typeName(typeFromIndex(index)));
   }
   type_->setFixedHeight(kRowHeight);
@@ -92,32 +117,48 @@ SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
   gain_value_ = make_label(this, "gainValue", kInk);
   column->addWidget(gain_value_);
 
-  bw_ = new QDoubleSpinBox(this);
-  bw_->setObjectName(QStringLiteral("bwControl"));
-  bw_->setFont(strip_font());
-  bw_->setRange(0.02, 4.0);
-  bw_->setSingleStep(0.02);
-  bw_->setDecimals(2);
-  bw_->setButtonSymbols(QAbstractSpinBox::NoButtons);
-  bw_->setAlignment(Qt::AlignHCenter);
-  bw_->setFixedHeight(kRowHeight);
-  bw_->setStyleSheet(QStringLiteral(
-      "QDoubleSpinBox { background: #111416; color: #aebabe; border: 1px solid #373f43; }"));
-  retain_space(bw_);
-  column->addWidget(bw_);
+  q_ = make_spin(this, "qControl", p2k::kShapeQMin, p2k::kShapeQMax, 0.1, 2);
+  bw_ = make_spin(this, "bwControl", rbj::bandwidth_oct_from_q(p2k::kShapeQMax),
+                  rbj::bandwidth_oct_from_q(p2k::kShapeQMin), 0.02, 2);
+  auto* width = new QHBoxLayout;
+  width->setContentsMargins(0, 0, 0, 0);
+  width->setSpacing(3);
+  width->addWidget(q_);
+  width->addWidget(bw_);
+  column->addLayout(width);
 
-  fc_ = make_label(this, "fcValue", kDim);
+  fc_ = make_spin(this, "fcControl", 20.0, 20000.0, 10.0, 0);
   column->addWidget(fc_);
 
-  connect(type_, &QComboBox::currentIndexChanged, this, [this](int) {
+  connect(type_, &QComboBox::currentIndexChanged, this, [this](int index) {
     if (updating_) return;
     emit selectRequested(section_);
-    relay(p2k::SectionEdit::kType);
+    const auto shape = typeFromIndex(index);
+    if (shape == param_.shape) return;
+    relay(shape);
   });
-  connect(bw_, &QDoubleSpinBox::valueChanged, this, [this](double) {
-    if (updating_) return;
+  connect(fc_, &QDoubleSpinBox::valueChanged, this, [this](double) {
+    if (updating_ || param_.shape == p2k::Shape::kOff) return;
     emit selectRequested(section_);
-    relay(p2k::SectionEdit::kBw);
+    relay(param_.shape);
+  });
+  connect(q_, &QDoubleSpinBox::valueChanged, this, [this](double value) {
+    if (updating_) return;
+    updating_ = true;
+    bw_->setValue(rbj::bandwidth_oct_from_q(value));
+    updating_ = false;
+    if (param_.shape == p2k::Shape::kOff) return;
+    emit selectRequested(section_);
+    relay(param_.shape);
+  });
+  connect(bw_, &QDoubleSpinBox::valueChanged, this, [this](double value) {
+    if (updating_) return;
+    updating_ = true;
+    q_->setValue(rbj::q_from_bandwidth_oct(value));
+    updating_ = false;
+    if (param_.shape == p2k::Shape::kOff) return;
+    emit selectRequested(section_);
+    relay(param_.shape);
   });
   connect(gain_, &QSlider::sliderPressed, this, [this] {
     emit selectRequested(section_);
@@ -127,7 +168,17 @@ SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
           [this] { emit gestureFinished(section_); });
   connect(gain_, &QSlider::valueChanged, this, [this](int) {
     if (updating_) return;
-    relay(p2k::SectionEdit::kGain);
+    if (param_.shape == p2k::Shape::kLow) {
+      p2k::SectionParam trench;
+      trench.type = p2k::SectionType::kLowPass;
+      trench.fc_hz = param_.fc_hz;
+      trench.bw_oct = rbj::bandwidth_oct_from_q(q_->value());
+      trench.trench_hz = trenchHzOfFader(param_.fc_hz);
+      emit paramEdited(section_, p2k::SectionEdit::kGain, trench);
+      return;
+    }
+    if (param_.shape == p2k::Shape::kOff || param_.shape == p2k::Shape::kHigh) return;
+    relay(param_.shape);
   });
 
   setSelected(false);
@@ -137,7 +188,7 @@ std::size_t SectionStrip::section() const noexcept { return section_; }
 
 bool SectionStrip::selected() const noexcept { return selected_; }
 
-int SectionStrip::trenchFaderValue(const p2k::SectionParam& param) const {
+int SectionStrip::trenchFaderValue(const p2k::ShapeParam& param) const {
   const double oct = std::log2(std::max(param.trench_hz, 1.0) / std::max(param.fc_hz, 1.0));
   const double unit = (oct - p2k::kTrenchMinOct) / (p2k::kTrenchMaxOct - p2k::kTrenchMinOct);
   return static_cast<int>(std::lround((unit * 2.0 - 1.0) * kGainSpanDb * kGainSteps));
@@ -153,59 +204,74 @@ double SectionStrip::faderDb() const {
   return static_cast<double>(gain_->value()) / kGainSteps;
 }
 
-QString SectionStrip::typeName(p2k::SectionType type) {
-  switch (type) {
-    case p2k::SectionType::kOff: return QStringLiteral("off");
-    case p2k::SectionType::kLowPass: return QStringLiteral("LP");
-    case p2k::SectionType::kEq: return QStringLiteral("EQ");
+QString SectionStrip::typeName(p2k::Shape shape) {
+  switch (shape) {
+    case p2k::Shape::kOff: return QStringLiteral("off");
+    case p2k::Shape::kLow: return QStringLiteral("low");
+    case p2k::Shape::kHigh: return QStringLiteral("high");
+    case p2k::Shape::kPeak: return QStringLiteral("peak");
+    case p2k::Shape::kLowShelf: return QStringLiteral("low shelf");
+    case p2k::Shape::kHighShelf: return QStringLiteral("high shelf");
   }
   return {};
 }
 
-p2k::SectionType SectionStrip::typeFromIndex(int index) {
+p2k::Shape SectionStrip::typeFromIndex(int index) {
   switch (index) {
-    case 1: return p2k::SectionType::kLowPass;
-    case 2: return p2k::SectionType::kEq;
-    default: return p2k::SectionType::kOff;
+    case 1: return p2k::Shape::kLow;
+    case 2: return p2k::Shape::kHigh;
+    case 3: return p2k::Shape::kPeak;
+    case 4: return p2k::Shape::kLowShelf;
+    case 5: return p2k::Shape::kHighShelf;
+    default: return p2k::Shape::kOff;
   }
 }
 
-int SectionStrip::typeIndex(p2k::SectionType type) {
-  switch (type) {
-    case p2k::SectionType::kLowPass: return 1;
-    case p2k::SectionType::kEq: return 2;
-    case p2k::SectionType::kOff: return 0;
+int SectionStrip::typeIndex(p2k::Shape shape) {
+  switch (shape) {
+    case p2k::Shape::kLow: return 1;
+    case p2k::Shape::kHigh: return 2;
+    case p2k::Shape::kPeak: return 3;
+    case p2k::Shape::kLowShelf: return 4;
+    case p2k::Shape::kHighShelf: return 5;
+    case p2k::Shape::kOff: return 0;
   }
   return 0;
 }
 
-void SectionStrip::setParam(const p2k::SectionParam& param) {
+void SectionStrip::setParam(const p2k::ShapeParam& param) {
   param_ = param;
-  const bool live = param.type != p2k::SectionType::kOff;
+  const bool live = param.shape != p2k::Shape::kOff;
+  const bool trench = param.shape == p2k::Shape::kLow;
+  const bool levelless = param.shape == p2k::Shape::kHigh;
   updating_ = true;
-  type_->setCurrentIndex(typeIndex(param.type));
-  const bool trench = param.type == p2k::SectionType::kLowPass;
+  type_->setCurrentIndex(typeIndex(param.shape));
   if (!gain_->isSliderDown()) {
     gain_->setValue(trench ? trenchFaderValue(param)
                            : static_cast<int>(std::lround(param.gain_db * kGainSteps)));
   }
-  gain_->setEnabled(live);
-  bw_->setValue(live ? param.bw_oct : bw_->minimum());
+  gain_->setEnabled(live && !levelless);
+  q_->setValue(live ? std::clamp(param.q, q_->minimum(), q_->maximum()) : q_->minimum());
+  bw_->setValue(live ? std::clamp(rbj::bandwidth_oct_from_q(q_->value()), bw_->minimum(),
+                                  bw_->maximum())
+                     : bw_->minimum());
+  fc_->setValue(live ? std::clamp(param.fc_hz, fc_->minimum(), fc_->maximum())
+                     : fc_->minimum());
+  q_->setEnabled(live);
   bw_->setEnabled(live);
+  fc_->setEnabled(live);
   updating_ = false;
-  gain_value_->setText(!live    ? QStringLiteral("—")
-                       : trench ? QString::number(param.trench_hz, 'f', 0)
-                                : QString::number(param.gain_db, 'f', 1));
-  fc_->setText(live ? QString::number(param.fc_hz, 'f', param.fc_hz < 100.0 ? 1 : 0)
-                    : QStringLiteral("—"));
-  fc_->setStyleSheet(QStringLiteral("color: %1;")
-                         .arg((live ? section_color(section_) : kDim).name()));
+  gain_value_->setText(!live || levelless ? QStringLiteral("—")
+                       : trench           ? QString::number(param.trench_hz, 'f', 0)
+                                          : QString::number(param.gain_db, 'f', 1));
+  fc_->setStyleSheet(kSpinStyle.arg((live ? section_color(section_) : kDim).name()));
   update();
 }
 
 void SectionStrip::setSelected(bool selected) {
   selected_ = selected;
   type_->setVisible(selected);
+  q_->setVisible(selected);
   bw_->setVisible(selected);
   update();
 }
@@ -216,28 +282,22 @@ void SectionStrip::setHighlighted(bool highlighted) {
   update();
 }
 
-void SectionStrip::relay(p2k::SectionEdit edit) {
+p2k::ShapeParam SectionStrip::typed(p2k::Shape shape) const {
   auto param = param_;
-  if (edit == p2k::SectionEdit::kType) {
-    const auto type = typeFromIndex(type_->currentIndex());
-    if (type == param.type) return;
-    if (param.type == p2k::SectionType::kOff) {
-      param.fc_hz = param.fc_hz > 0.0 ? std::min(param.fc_hz, 8000.0) : kSeedFcHz;
-      param.bw_oct = kSeedBwOct;
-      param.gain_db = 0.0;
-    }
-    param.type = type;
-  } else if (edit == p2k::SectionEdit::kBw) {
-    param.bw_oct = bw_->value();
-  } else if (edit == p2k::SectionEdit::kGain) {
-    if (param.type == p2k::SectionType::kLowPass) {
-      param.trench_hz = trenchHzOfFader(param.fc_hz);
-    } else {
-      param.gain_db = faderDb();
-    }
+  param.shape = shape;
+  if (param_.shape == p2k::Shape::kOff) {
+    param.fc_hz = param_.fc_hz > 0.0 ? std::min(param_.fc_hz, 8000.0) : kSeedFcHz;
+    param.q = kSeedQ;
+    param.gain_db = 0.0;
+    return param;
   }
-  emit paramEdited(section_, edit, param);
+  param.fc_hz = fc_->value();
+  param.q = q_->value();
+  param.gain_db = faderDb();
+  return param;
 }
+
+void SectionStrip::relay(p2k::Shape shape) { emit shapeEdited(section_, typed(shape)); }
 
 void SectionStrip::mousePressEvent(QMouseEvent* event) {
   emit selectRequested(section_);
