@@ -101,6 +101,43 @@ PASS, lifecycle PASS; `dev/modulation_envelope_2019.txt` is the re-measured moti
 (worst +65.7 dB over frozen, was +70.1; nothing diverges). Installed to Program Files
 17:57. Not done: the app and fitter still author on the packed words.
 
+## Late evening — what landed and what the bank turned out to be
+
+Landed (all verified here, `verify.ps1 ui` 105/105, `dsp`/`wrapper` green, VST3 installed
+19:55 with the 2019 morph law and the 50 ms body-switch crossfade):
+
+| commit | what |
+| --- | --- |
+| `2ca3dfd` `cc94483` | interior = US 10,514,883 in the float engine and the plugin |
+| `2773d25` | float engine: per-section DC flag, 1e-6 margin, log floors; RBJ generators |
+| `7948ced` | LPC envelope + formant candidates as a FIT overlay; DVTD refit at 6 sections |
+| `9b80946` `b7dcb6f` | DC readout removed; the RBJ strip (type, Fc, Q/Bw, Gain) |
+| `19cbc29` | plugin body switch crossfades (transient 356 → 0.53) |
+| `8e65c04` `943201d` | the adversary and its per-lane attribution; 40 worst bodies in `dev/adversary` |
+| `42ca7c0` | tune-in no longer resets on Morph/Q (undo and plot-shake not reproducible; tests kept) |
+| `93e7ea2` `2045113` | `ref/sections.tsv` — every section of 50 skins x 4 variants and 289 cubes, with the manual's type/order |
+
+The bank, measured (all in `dev/EVIDENCE.md`): Hz-authored, per-rate compiled (4 DAT
+variants = 44.1/48/96/192 k), not Morpheus at any datum, by words or by response; the 33
+are exactly the manual's order-12 filters, the other 17 names are computed classes; one
+dark frame (-7.7 dB/oct); four section words, slots bookkeeping except S4 (bell) and S6
+(trench); the acoustic unit is the pole/zero pair across sections (54% cross-section);
+corner-to-corner moves are full-rank — no verbs; zeros pair, park or notch; Q = radii to
+the ceiling on vocal bodies, a second posture elsewhere; S3/S6 cuts are per-body level.
+
+Our verbs (eight, each one gesture): Place, Slide, Frame, Push, Transpose, Re-voice, Fit,
+Copy. Built: Place, Copy, half of Slide, Fit. Specified, waiting on Tyson's bisection:
+Push (character). One executor each: Frame, Transpose, Re-voice, Slide's offset/depth.
+
+Open, in order: (1) Tyson listens to `dev/adversary` worst bodies and rules on the gate;
+(2) the audition runner's divergence (1e34 on hostile sweeps — state ceiling or travel
+bound); (3) the CVT-MAP-Elites explorer — RBJ-drawn centroids, perceptual ceiling as a
+hard gate, factory moves as an emitter — dispatches only on Tyson's word; (4) the app
+document onto `native::Body`; (5) the 17 computed classes stay out.
+
+Agent rule learned the hard way: no worktrees for anything that needs the Qt build (a
+fresh worktree rebuilds Qt from source); one app agent at a time, in this tree.
+
 ## The three questions, answered
 
 1. **Recipe into a fit** — no new machinery. A recipe writes six rows as one undo;
