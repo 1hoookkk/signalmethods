@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Pole moves and zero moves are separately full-rank, and zeros do not follow poles.**
+Delta-PCA with the blocks isolated: pole block (dlog f, dwidth x 6) PC1 27% on Morph /
+20% on Q; zero block (doffset, dwidth x 6) 24% / 19%; zero block in absolute frequency
+21% / 25%. Pole frequency alone is the most coordinated thing in the bank: PC1 46% on
+Morph (two dimensions carry half of it) - a loose tendency for poles to shift together.
+Across a move, the zero rides its pole (offset held within 0.25 oct while the pole moves
+more than 0.5 oct) in only 9% of lanes on Morph and 4% on Q; it stays put while the pole
+leaves in 19%. Per-lane pole/zero frequency correlation is +0.80 (S3) and +0.68 (S4) on
+Morph - the bell slots - and near zero elsewhere. (2026-08-23)
+
 **The zeros, censused.** 753 conjugate, 39 real-axis. Radius median 0.952 (quartiles
 0.871-0.987): most zeros are soft shaping zeros, 30% below 0.9, 18% at the S6 floor class
 (>= 0.999). The S6 zero radius is one value in all 132 corners, 0.9999980. 42% of zeros sit
