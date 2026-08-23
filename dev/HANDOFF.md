@@ -101,6 +101,19 @@ PASS, lifecycle PASS; `dev/modulation_envelope_2019.txt` is the re-measured moti
 (worst +65.7 dB over frozen, was +70.1; nothing diverges). Installed to Program Files
 17:57. Not done: the app and fitter still author on the packed words.
 
+## Night — the instrument is skeleton and mask
+
+Ruled (`CLAUDE.md`, "The instrument"): one pole shape placed where/how sharp; zeros are
+the preset; the app opens empty; the strip edits the mask. Landed: `ab0d248` the posture
+chooser (nine bank skeletons + eight compiled vowels, grouped by the Mo'Phatt codes, poles
+only); `544d609` empty start and resonances placed on the plot; `dd5de21` the zero-only
+strip (offset, depth; pole readouts). Recovered: E-mu's two compiled vowel classes
+(`ref/x3_vocal_classes.json`). Measured: the bank reuses nine pole postures across
+bodies at 0 cents; 121/132 corners use all six zeros (41% paired, 35% parked high, 13%
+free notch); pole bandwidth is authored in Hz; the skeleton alone falls -58 dB/oct at
+the top and the mask lifts it +51. Next: ring gestures on the plot (pair / park / notch)
+and a default mask of six zeros parked high for a fresh skeleton.
+
 ## Late evening — what landed and what the bank turned out to be
 
 Landed (all verified here, `verify.ps1 ui` 105/105, `dsp`/`wrapper` green, VST3 installed
