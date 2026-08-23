@@ -1,0 +1,480 @@
+posture 1: 20 cubes, 41 corners, poles 2089 4170 6270 Hz
+   BriteFlng.4 c2
+   BriteFlng.4 c3
+   BriteFlng.4 c4
+   BriteFlng.4 c5
+   Flng>Flng3 c3
+   Flng>Flng4 c5
+   Flng>Flng6 c2
+   Flng>Flng6 c3
+   Flng>Flng6 c4
+   Flng>FlngC c2
+   Flng>FlngC c4
+   Vocal Cube c7
+   Ntches2Oct.4 c3
+   Clr>Oboe c3
+   500up.4 c6
+   500up.4 c7
+   C1Harmonic c3
+   Odd>Even c2
+   Odd>Even c3
+   Odd>Even c7
+   0>Shp1 c2
+   0>Shp1 c3
+   HarmSweep.4 c3
+   HarmSweep.4 c7
+   Mph+Trns1 c6
+   Mph+Trns1 c7
+   Comb Voices c6
+   Comb Voices c7
+   OddHrm+Rez c2
+   OddHrm+Rez c3
+   Expander c2
+   Expander c3
+   Expander c6
+   Expander c7
+   FrmntShaper c0
+   FrmntShaper c2
+   FrmntShaper c3
+   FrmntShaper c7
+   ElGuit Pick c7
+   Breather 1 c6
+   Breather 1 c7
+posture 2: 12 cubes, 18 corners, poles 2065 4146 Hz
+   Flng>Flng3 c7
+   Vocal Cube c3
+   HOTwell.4 c3
+   Bell Wah A c3
+   Bell Wah B c3
+   0>Bell- c3
+   C1Harmonic c7
+   0>Shp3 c7
+   StrongShimr c2
+   StrongShimr c3
+   StrongShimr c7
+   Acc.Vel-1 c2
+   Acc.Vel-1 c3
+   Acc.Vel-1 c7
+   Piano LP.4 c2
+   Piano LP.4 c3
+   Symphony c2
+   Symphony c3
+posture 3: 9 cubes, 16 corners, poles 4183 6308 Hz
+   BriteFlng.4 c6
+   BriteFlng.4 c7
+   Flng>Flng1 c6
+   Flng>Flng1 c7
+   LP>Flng2 c6
+   LP>Flng2 c7
+   Flng>Flng4 c6
+   Flng>Flng5 c4
+   Flng>Flng6 c6
+   Flng>Flng6 c7
+   Flng>FlngT c2
+   Flng>FlngT c3
+   Flng>FlngT c7
+   Flng>FlngC c3
+   Flng>FlngC c6
+   Harmo c3
+posture 4: 8 cubes, 11 corners, poles 64 130 193 259 324 388 Hz
+   0>Muter c0
+   0>Muter c4
+   0>Muter c5
+   HOTwell.4 c1
+   Bell Wah A c1
+   0>Bell- c1
+   Odd>Even c0
+   Odd>Even c1
+   0>Shp1 c0
+   HarmSweep.4 c5
+   Mph+Trns1 c0
+posture 5: 7 cubes, 11 corners, poles 2093 6267 Hz
+   Ntches2Oct.4 c2
+   BrassRez.4 c2
+   BrassRez.4 c3
+   Clr>Oboe c7
+   C1Harmonic c2
+   0>Shp3 c3
+   OddCuts.4 c0
+   OddCuts.4 c2
+   OddCuts.4 c3
+   OddCuts.4 c7
+   ElGuit Pick c3
+posture 6: 6 cubes, 10 corners, poles 446 777 2789 3459 4847 Hz
+   AEParaVowel c4
+   AEParaVowel c5
+   AOLpParaVow c4
+   AUParaVow.4 c5
+   AUParaVow.4 c6
+   UOParaVow.4 c5
+   UOParaVow.4 c6
+   SftEOVowl.4 c4
+   SoftEOAE c3
+   SoftEOAE c7
+posture 7: 6 cubes, 9 corners, poles 64 130 194 261 326 390 456 Hz
+   BriteFlng.4 c0
+   BriteFlng.4 c1
+   Flng>Flng1 c1
+   Flng>Flng3 c1
+   Flng>Flng6 c1
+   Vocal Cube c5
+   500up.4 c1
+   500up.4 c4
+   500up.4 c5
+posture 8: 6 cubes, 8 corners, poles 777 1135 2781 3451 4839 Hz
+   AEParLPVow c0
+   AEParaVowel c0
+   AOLpParaVow c0
+   AOParaVowel c1
+   AOParaVowel c4
+   SftEOVowl.4 c2
+   SoftEOAE c2
+   SoftEOAE c6
+posture 9: 5 cubes, 9 corners, poles 388 1566 2669 3260 4839 Hz
+   CO>FlngT c5
+   CO>FlngT c6
+   AEParLPVow c4
+   AEParLPVow c5
+   UOParaVow.4 c1
+   UOParaVow.4 c4
+   SftEOVowl.4 c0
+   SftEOVowl.4 c6
+   Chiffin.4 c0
+posture 10: 5 cubes, 8 corners, poles 1869 3794 5682 7589 Hz
+   HOTwell.4 c2
+   Bell Wah A c6
+   Bell Wah A c7
+   Bell Wah B c2
+   0>Bell- c6
+   0>Bell- c7
+   0>Bell+ c6
+   0>Bell+ c7
+posture 11: 5 cubes, 8 corners, poles 2279 4634 6940 Hz
+   HOTwell.4 c6
+   HOTwell.4 c7
+   Bell Wah A c2
+   Bell Wah B c6
+   Bell Wah B c7
+   0>Bell- c2
+   0>Bell+ c2
+   0>Bell+ c3
+posture 12: 5 cubes, 6 corners, poles 58 58 Hz
+   HiQ 2PoleLP c0
+   MdQ 4PoleLP c0
+   2 PoleLoQ.4 c1
+   2 PoleLoQ.4 c5
+   4 PoleLoQ.4 c1
+   Band-aid c0
+posture 13: 4 cubes, 7 corners, poles 1566 6357 Hz
+   AEParLPVow c6
+   AEParLPVow c7
+   UOParaVow.4 c0
+   UOParaVow.4 c3
+   Vow>Vow2 c3
+   Chiffin.4 c2
+   Chiffin.4 c3
+posture 14: 4 cubes, 7 corners, poles 1770 3173 Hz
+   AOLpParaVow c6
+   AOLpParaVow c7
+   AUParaVow.4 c2
+   AUParaVow.4 c7
+   UOParaVow.4 c2
+   UOParaVow.4 c7
+   YahYahs.4 c7
+posture 15: 4 cubes, 6 corners, poles 54 119 175 238 292 350 Hz
+   HOTwell.4 c0
+   Bell Wah B c0
+   0>Bell- c4
+   0>Bell- c5
+   0>Bell+ c4
+   0>Bell+ c5
+posture 16: 4 cubes, 5 corners, poles 1754 6955 Hz
+   Be-Ye.4 c3
+   Ee-Yi.4 c7
+   Feedback c6
+   Feedback c7
+   AllPoleDist c6
+posture 17: 4 cubes, 5 corners, poles 73 142 217 284 357 434 Hz
+   HOTwell.4 c4
+   Bell Wah B c4
+   Bell Wah B c5
+   0>Bell- c0
+   0>Bell+ c0
+posture 18: 3 cubes, 6 corners, poles 3152 4538 Hz
+   AEParLPVow c2
+   AEParLPVow c3
+   AOLpParaVow c2
+   AOLpParaVow c3
+   AOParaVowel c0
+   AOParaVowel c3
+posture 19: 3 cubes, 4 corners, poles 3117 5185 7265 Hz
+   Flng>Flng3 c0
+   Comb Voices c3
+   Odd-Ev Hrm c2
+   Odd-Ev Hrm c3
+posture 20: 3 cubes, 4 corners, poles 85 151 Hz
+   Flng>Flng3 c4
+   TubeSust.4 c0
+   0>Shp3 c0
+   0>Shp3 c4
+posture 21: 3 cubes, 4 corners, poles 64 78 131 194 262 329 388 Hz
+   Flng>FlngC c1
+   Mph+Trns1 c1
+   Expander c0
+   Expander c1
+posture 22: 3 cubes, 4 corners, poles 21 21 21 21 Hz
+   2 Poles c1
+   4 Poles A c1
+   4 Poles B c1
+   4 Poles B c5
+posture 23: 3 cubes, 3 corners, poles 182 367 744 1478 Hz
+   LPFlange.4 c5
+   Chrs>Flng2 c1
+   Ev/OdNtch.4 c6
+posture 24: 3 cubes, 3 corners, poles 2726 3559 Hz
+   Flange5 c7
+   Flange6.4 c7
+   APass.4 c1
+posture 25: 3 cubes, 3 corners, poles 66 66 Hz
+   HiQ 2PoleLP c1
+   MdQ 4PoleLP c1
+   4 PoleMidQ.4 c0
+posture 26: 3 cubes, 3 corners, poles 64 129 258 518 1030 2063 Hz
+   StrongShimr c0
+   Acc.Vel-1 c5
+   Phaser c4
+posture 27: 3 cubes, 3 corners, poles 0 1621 Hz
+   1BndPrmtrcD c3
+   MltiMetricA c3
+   MltiMetricB c3
+posture 28: 2 cubes, 16 corners, poles 4957 7856 Hz
+   KitchenSink c0
+   KitchenSink c1
+   KitchenSink c2
+   KitchenSink c3
+   KitchenSink c4
+   KitchenSink c5
+   KitchenSink c6
+   KitchenSink c7
+   Head Pan 1 c0
+   Head Pan 1 c1
+   Head Pan 1 c2
+   Head Pan 1 c3
+   Head Pan 1 c4
+   Head Pan 1 c5
+   Head Pan 1 c6
+   Head Pan 1 c7
+posture 29: 2 cubes, 7 corners, poles 3955 5425 6183 7491 7878 Hz
+   ResoHose.4 c0
+   ResoHose.4 c1
+   ResoHose.4 c4
+   ResoHose.4 c5
+   HeeghCube c0
+   HeeghCube c4
+   HeeghCube c5
+posture 30: 2 cubes, 6 corners, poles 4863 6254 7207 7856 Hz
+   HPSweep.4 c0
+   HPSweep.4 c2
+   HPSweep.4 c3
+   HPSweep.4 c7
+   HiSwept1.4 c0
+   HiSwept1.4 c3
+posture 31: 2 cubes, 6 corners, poles 993 1983 2962 3972 4925 5923 Hz
+   Wah4Vib.4 c0
+   Wah4Vib.4 c3
+   Swingshift c1
+   Swingshift c4
+   Swingshift c5
+   Swingshift c6
+posture 32: 2 cubes, 5 corners, poles 643 1030 2669 3356 3966 4672 Hz
+   Omni Metric c2
+   Omni Metric c3
+   Omni Metric c6
+   Omni Metric c7
+   Blow Cube c2
+posture 33: 2 cubes, 4 corners, poles 1296 2774 Hz
+   AOParaVowel c2
+   AOParaVowel c7
+   AUParaVow.4 c0
+   AUParaVow.4 c3
+posture 34: 2 cubes, 4 corners, poles 322 686 2478 3442 4900 Hz
+   AOParaVowel c5
+   AOParaVowel c6
+   AUParaVow.4 c1
+   AUParaVow.4 c4
+posture 35: 2 cubes, 4 corners, poles 49 225 Hz
+   BassEQ 1.4 c1
+   BassEQ 1.4 c4
+   B BOOST.4 c1
+   B BOOST.4 c4
+posture 36: 2 cubes, 4 corners, poles 53 225 Hz
+   BassEQ 1.4 c5
+   BassEQ 1.4 c6
+   B BOOST.4 c5
+   B BOOST.4 c6
+posture 37: 2 cubes, 4 corners, poles 266 532 1068 2136 4271 Hz
+   GentleRez.4 c2
+   GentleRez.4 c3
+   Bendup/Swap c4
+   Bendup/Swap c5
+posture 38: 2 cubes, 4 corners, poles 63 110 126 222 Hz
+   StrongShimr c1
+   StrongShimr c5
+   Acc.Vel-1 c0
+   Acc.Vel-1 c1
+posture 39: 2 cubes, 4 corners, poles 64 103 266 336 388 467 Hz
+   Omni Metric c0
+   Omni Metric c4
+   Blow Cube c0
+   Blow Cube c4
+posture 40: 2 cubes, 4 corners, poles 22 64 103 266 336 388 467 Hz
+   Omni Metric c1
+   Omni Metric c5
+   HarmncPeaks c1
+   HarmncPeaks c5
+posture 41: 2 cubes, 4 corners, poles 64 97 131 138 206 284 Hz
+   Strike Cube c4
+   Strike Cube c5
+   Skrtch Cube c4
+   Skrtch Cube c5
+posture 42: 2 cubes, 4 corners, poles 2936 4367 5691 6044 Hz
+   Strike Cube c6
+   Strike Cube c7
+   Skrtch Cube c6
+   Skrtch Cube c7
+posture 43: 2 cubes, 3 corners, poles 21 21 21 21 21 21 Hz
+   Hi Accent.4 c1
+   Hi Accent.4 c5
+   4 Poles C c1
+posture 44: 2 cubes, 3 corners, poles 1745 3438 5211 6940 Hz
+   More Peaks c6
+   More Peaks c7
+   MltiMetricA c6
+posture 45: 2 cubes, 3 corners, poles 21 75 Hz
+   HP Brass c0
+   HP Brass c1
+   Brass Swell c1
+posture 46: 2 cubes, 3 corners, poles 777 992 1168 1745 2412 Hz
+   Cym c6
+   Tam c2
+   Tam c7
+posture 47: 2 cubes, 3 corners, poles 3998 6470 Hz
+   Odd/EvnNtch c2
+   Odd/EvnNtch c7
+   MildPolSwap c7
+posture 48: 2 cubes, 3 corners, poles 0 0 Hz
+   Shp>Shp1 c2
+   Skrtch Cube c2
+   Skrtch Cube c3
+posture 49: 2 cubes, 3 corners, poles 24 97 161 228 292 357 Hz
+   EvenCuts.4 c5
+   OddCuts.4 c1
+   OddCuts.4 c4
+posture 50: 2 cubes, 3 corners, poles 388 5427 6203 7474 7856 Hz
+   HeeghCube c1
+   HeavyFilt.4 c0
+   HeavyFilt.4 c4
+posture 51: 2 cubes, 3 corners, poles 24 24 Hz
+   Poles 1-7 c0
+   Poles 1-7 c4
+   MultiPole c5
+posture 52: 2 cubes, 3 corners, poles 0 1745 3438 6915 Hz
+   1BndPrmtrcD c7
+   MltiMetricB c6
+   MltiMetricB c7
+posture 53: 2 cubes, 3 corners, poles 248 1287 1401 4348 5338 Hz
+   Pluck.4 c2
+   Pluck.4 c3
+   Pick It c2
+posture 54: 2 cubes, 3 corners, poles 64 131 194 262 329 648 Hz
+   ElGuit Pick c5
+   Breather 1 c2
+   Breather 1 c3
+posture 55: 2 cubes, 3 corners, poles 0 2107 3120 4201 5173 6305 Hz
+   Breather 2 c3
+   Breather 2 c7
+   WindNoise 1 c3
+posture 56: 2 cubes, 2 corners, poles 45 79 91 182 367 744 1478 Hz
+   Null Cube c1
+   LPFlange.4 c1
+posture 57: 2 cubes, 2 corners, poles 235 472 930 1850 3756 Hz
+   Flange2.4 c5
+   Flange3.4 c5
+posture 58: 2 cubes, 2 corners, poles 45 97 274 891 1935 Hz
+   Flange5 c1
+   Flange6.4 c1
+posture 59: 2 cubes, 2 corners, poles 182 388 1096 3566 Hz
+   Flange5 c3
+   Flange6.4 c3
+posture 60: 2 cubes, 2 corners, poles 91 388 744 1173 1478 1926 Hz
+   Flange5 c5
+   Flange6.4 c5
+posture 61: 2 cubes, 2 corners, poles 347 1659 2360 3642 4824 Hz
+   SoftEOAE c4
+   YahYahs.4 c1
+posture 62: 2 cubes, 2 corners, poles 61 113 241 Hz
+   Voce.4 c1
+   0>Odds c0
+posture 63: 2 cubes, 2 corners, poles 257 528 Hz
+   Voce.4 c7
+   PianoSndBrd c4
+posture 64: 2 cubes, 2 corners, poles 434 1802 2688 2955 3279 Hz
+   Be-Ye.4 c1
+   Ee-Yi.4 c5
+posture 65: 2 cubes, 2 corners, poles 801 1135 2745 3470 4843 Hz
+   Be-Ye.4 c5
+   Ee-Yi.4 c1
+posture 66: 2 cubes, 2 corners, poles 398 1621 2365 2784 3070 Hz
+   Uhrrrah.4 c1
+   Vow>Vow2 c1
+posture 67: 2 cubes, 2 corners, poles 1959 1964 Hz
+   HiQ 2PoleLP c4
+   MdQ 4PoleLP c4
+posture 68: 2 cubes, 2 corners, poles 64 129 151 194 260 329 386 Hz
+   Ntches2Oct.4 c1
+   C1Harmonic c1
+posture 69: 2 cubes, 2 corners, poles 31 194 238 284 343 412 496 Hz
+   BrsSwell2.4 c1
+   Cym c1
+posture 70: 2 cubes, 2 corners, poles 365 777 953 1135 1382 1659 1954 Hz
+   BrsSwell2.4 c5
+   Cym c3
+posture 71: 2 cubes, 2 corners, poles 163 231 930 Hz
+   AcGtrRs.4 c1
+   Swirly c5
+posture 72: 2 cubes, 2 corners, poles 2059 3070 4119 Hz
+   Bel>Crs>Bel c2
+   Chrs>Flng1 c2
+posture 73: 2 cubes, 2 corners, poles 167 2059 3089 Hz
+   Bel>Crs>Bel c3
+   Chrs>Flng1 c3
+posture 74: 2 cubes, 2 corners, poles 290 582 1173 2317 4710 Hz
+   Chrs>Flng2 c5
+   Ev/OdNtch.4 c2
+posture 75: 2 cubes, 2 corners, poles 248 496 992 1993 3947 7780 Hz
+   GentleRez.4 c0
+   Bendup/Swap c0
+posture 76: 2 cubes, 2 corners, poles 80 138 191 243 299 357 411 Hz
+   Comb Voices c1
+   Odd-Ev Hrm c1
+posture 77: 2 cubes, 2 corners, poles 54 108 164 217 275 329 383 Hz
+   Comb Voices c5
+   OddHrm+Rez c1
+posture 78: 2 cubes, 2 corners, poles 21 21 21 24 Hz
+   2 Poles c0
+   4 Poles B c0
+posture 79: 2 cubes, 2 corners, poles 0 0 0 0 Hz
+   HarmShiftr2 c0
+   Skrtch Cube c0
+posture 80: 2 cubes, 2 corners, poles 299 2288 3146 4138 5071 5949 Hz
+   New Boost c2
+   VowelSpace2 c2
+posture 81: 2 cubes, 2 corners, poles 64 261 524 868 1049 Hz
+   Pluck.4 c0
+   Pick It c0
+posture 82: 2 cubes, 2 corners, poles 6273 7321 Hz
+   ElGuit Pick c2
+   HeavyFilt.4 c5
+posture 83: 2 cubes, 2 corners, poles 0 228 261 292 325 357 Hz
+   Breather 2 c4
+   WindNoise 1 c4

@@ -489,3 +489,37 @@ grid steps ~40 cents and KlangKling S1 (21 Hz bandwidth) reads 46.5 dB instead o
   a 0–127 integer, so snapping may be forced by the encoding.
 - Seven un-extracted writer tables (`c5d60` / `c5e40` / `c5f10` / `c6020` profile banks)
   remain in the DLL.
+
+**One skeleton, any mask: a proof by synthesis.** Talking Hedz corner 0, six poles held, zeros
+replaced (`native/trench-core/tools/mask_proof.cpp`, `dev/e2e/mask_proof/`): bare skeleton
+-131 dB at 10.5 kHz; a bell zero on each pole (+0.15 oct, 4x width) lifts that to -1.8 dB and
+the 2.65 kHz formant from -19.8 to +10.5 dB; notches between poles give a third vowel; a zero
+dropped exactly on a pole removes that resonance (-189 dB) with the pole lane untouched; a
+shallow zero parked at 16 kHz does nothing (-163 dB) - a park must be deep to lift the top.
+Creative zeros move loudness by tens of dB (one variant +46 dB at 2.6 kHz); one gain per
+corner absorbs it but the app must show level when a ring moves. (2026-08-23)
+
+**The zero layer has one axis and no library.** 753 conjugate zeros over the 33 bodies: per
+zero, PC1 of (log2 hz, log(1-r)) is 89% of variance and points along depth (0.10, -0.995).
+Per corner, the 12-number mask needs six components for 89%: masks are drawn per body. Of
+311 in-band sharp zeros the own-section pole is the nearest pole 26% of the time (median
+offset to own pole 1181 c, to nearest pole 220 c): zeros are placed against the whole
+skeleton, the storing section is bookkeeping. (`dev/zero_pca.py`, 2026-08-23)
+
+**E-mu's Q100 corners re-posture, they do not sharpen.** Per lane, audible poles (< 8 kHz,
+bw < 1500 Hz, 227 lanes) Q0 -> Q100: 86% move more than 20 c, median 806 c; widths narrow
+202 -> 97 Hz median in 143/227. Nearest Q100 pole in any slot is within 20 c for 17%, median
+220 c. The CHARACTER dial (same poles, narrower) is our instrument, not a reproduction.
+(`dev/zero_pca.py`, 2026-08-23)
+
+**The 289 cubes share the bank's tuning grid, not its frames.** 13,196 poles, 9,304 zeros
+(`dev/cube_poles_plot.py`, `dev/cube_cascade_plot.py`, `dev/cube_skeleton_library.py`,
+`dev/cube_primitives.py`). Audible cube poles sit within 20 c of a bank pole 57%, within
+50 c 78%, median 16 c; frame-for-frame (20 c and width within 2x) only 83/459 cube primitives
+exist in the bank and 125/465 bank poles in the cubes. 1,980 non-empty corners: poles only,
+the 8-16 kHz octave is -132 dB median re 100 Hz; with zeros -6 dB. Whole skeletons shared
+across cubes (audible poles within 50 c): 83 postures over 397 corners, 637 one-offs, in
+families - octave ladders (2089/4170/6270 Hz, 20 cubes), harmonic combs (64..388 Hz at the
+r 0.999 ceiling), vowel sets (777/2059/3451/4838), bell tops (5682, 6940). There is no small
+primitive set the cubes are made of; the cube corpus is taste evidence, not a parts list.
+(2026-08-23)

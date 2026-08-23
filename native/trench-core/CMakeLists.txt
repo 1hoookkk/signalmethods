@@ -89,3 +89,6 @@ if(BUILD_TESTING)
   include(GoogleTest)
   gtest_discover_tests(trench_native_core_tests)
 endif()
+
+add_executable(trench_mask_proof tools/mask_proof.cpp)
+target_link_libraries(trench_mask_proof PRIVATE trench_native_core)
