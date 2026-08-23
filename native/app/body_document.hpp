@@ -36,6 +36,7 @@ class BodyDocument final : public QObject {
   [[nodiscard]] std::uint32_t freedomMask() const noexcept;
   [[nodiscard]] const std::optional<std::vector<double>>& target() const noexcept;
   [[nodiscard]] CornerSnapshot cornerSnapshot() const;
+  [[nodiscard]] CornerSnapshot cornerSnapshot(std::size_t corner) const;
   [[nodiscard]] trench::core::p2k::CornerWords seedWords() const;
   [[nodiscard]] bool seedIsInherited() const;
 
@@ -71,6 +72,9 @@ class BodyDocument final : public QObject {
   void applyFitStep(std::size_t corner, const trench::core::p2k::CornerWords& words);
   void applyFitResult(std::size_t corner, const trench::core::p2k::StoredCorner& words);
   void commitFit(std::size_t corner, const CornerSnapshot& before);
+
+  void applyCharacter(double amount);
+  void commitCharacter(const CornerSnapshot& before_low, const CornerSnapshot& before_high);
 
  signals:
   void bodyChanged();

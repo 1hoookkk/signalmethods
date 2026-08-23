@@ -225,6 +225,15 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](float morph, float q) { document_->setView(morph, q); });
   connect(morph_strip_, &MorphStrip::transposeEdited, this,
           [this](int semitones) { document_->setTranspose(semitones); });
+  connect(morph_strip_, &MorphStrip::characterGestureStarted, this, [this] {
+    character_before_ = {document_->cornerSnapshot(2), document_->cornerSnapshot(3)};
+    character_gesture_ = true;
+  });
+  connect(morph_strip_, &MorphStrip::characterGestureFinished, this, [this] {
+    character_gesture_ = false;
+    document_->commitCharacter(character_before_[0], character_before_[1]);
+  });
+  connect(morph_strip_, &MorphStrip::characterEdited, this, &MainWindow::applyCharacter);
   connect(document_, &BodyDocument::spaceChanged, this, [this] {
     response_plot_->setSpace(document_->space());
     updateProbes();
@@ -664,6 +673,17 @@ void MainWindow::applyVowel(const QString& symbol) {
   if (after == before) return;
   document_->applyCorner(after);
   document_->commitFit(document_->corner(), before);
+}
+
+void MainWindow::applyCharacter(double amount) {
+  if (fit_active_) return;
+  if (!character_gesture_) {
+    character_before_ = {document_->cornerSnapshot(2), document_->cornerSnapshot(3)};
+  }
+  document_->applyCharacter(amount);
+  if (!character_gesture_) {
+    document_->commitCharacter(character_before_[0], character_before_[1]);
+  }
 }
 
 void MainWindow::chooseTarget() {

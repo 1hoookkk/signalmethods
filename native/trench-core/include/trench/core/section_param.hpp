@@ -38,6 +38,7 @@ inline constexpr double kMaskOffsetMinOct = -3.0;
 inline constexpr double kMaskOffsetMaxOct = 6.0;
 inline constexpr double kMaskWidthMaxHz = 2000.0;
 inline constexpr double kPlacedPoleBwHz = 120.0;
+inline constexpr double kNarrowestPoleBwHz = 13.7;
 
 constexpr double mask_offset_min_oct(std::size_t section) {
   return section == 5 ? kTrenchMinOct : kMaskOffsetMinOct;
@@ -61,6 +62,9 @@ std::array<std::uint16_t, 4> words_from_pole(double hz, double bw_hz,
                                              const std::array<std::uint16_t, 4>& current,
                                              std::size_t section,
                                              double sample_rate_hz = kP2kDatumHz);
+
+PackedSection section_narrowed_toward_ceiling(const PackedSection& words, double amount,
+                                              double sample_rate_hz = kP2kDatumHz);
 
 std::array<std::uint16_t, 4> words_with_parked_zero(
     const std::array<std::uint16_t, 4>& current, std::size_t section,

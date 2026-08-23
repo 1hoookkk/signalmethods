@@ -61,6 +61,7 @@ class MainWindow final : public QMainWindow {
   void startFit();
   void openFitRoom();
   void applyVowel(const QString& symbol);
+  void applyCharacter(double amount);
   [[nodiscard]] FitRoom* fitRoom() const noexcept;
   [[nodiscard]] int overlayCount() const noexcept;
   void selectOverlay(int index);
@@ -98,6 +99,8 @@ class MainWindow final : public QMainWindow {
   bool fit_active_{};
   trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
   bool strip_gesture_{};
+  bool character_gesture_{};
+  std::array<BodyDocument::CornerSnapshot, 2> character_before_{};
   ResponsePlotWidget* response_plot_{};
   MorphStrip* morph_strip_{};
   std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};

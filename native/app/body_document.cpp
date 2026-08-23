@@ -4,6 +4,7 @@
 
 #include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
+#include "trench/core/section_param.hpp"
 
 #include <QUndoCommand>
 
@@ -270,6 +271,14 @@ BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot() const {
   return out;
 }
 
+BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot(std::size_t corner) const {
+  CornerSnapshot out{};
+  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+    out[section] = body_.words[corner][section];
+  }
+  return out;
+}
+
 std::size_t BodyDocument::seedSource() const {
   const auto is_identity = [this](std::size_t corner) {
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
@@ -330,6 +339,32 @@ void BodyDocument::applyFitResult(std::size_t corner,
     write_section(body_, corner, section, packed);
   }
   emit bodyChanged();
+}
+
+void BodyDocument::applyCharacter(double amount) {
+  for (std::size_t corner = 0; corner < 2; ++corner) {
+    CornerSnapshot narrowed{};
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      narrowed[section] = trench::core::p2k::section_narrowed_toward_ceiling(
+          body_.words[corner][section], amount, sample_rate_hz_);
+    }
+    applyCorner(corner + 2, narrowed);
+  }
+}
+
+void BodyDocument::commitCharacter(const CornerSnapshot& before_low,
+                                   const CornerSnapshot& before_high) {
+  const auto after_low = cornerSnapshot(2);
+  const auto after_high = cornerSnapshot(3);
+  if (after_low == before_low && after_high == before_high) return;
+  undo_stack_.beginMacro(QString());
+  if (after_low != before_low) {
+    undo_stack_.push(new CornerEditCommand(this, 2, before_low, after_low));
+  }
+  if (after_high != before_high) {
+    undo_stack_.push(new CornerEditCommand(this, 3, before_high, after_high));
+  }
+  undo_stack_.endMacro();
 }
 
 void BodyDocument::commitFit(std::size_t corner, const CornerSnapshot& before) {

@@ -38,6 +38,7 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   row->setSpacing(18);
   morph_ = make_slider(this, "morphSlider");
   q_ = make_slider(this, "qSlider");
+  character_ = make_slider(this, "characterSlider");
   transpose_ = make_slider(this, "transposeSlider");
   transpose_->setRange(-24, 24);
   transpose_->setPageStep(12);
@@ -45,6 +46,7 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   transpose_->setValue(0);
   row->addWidget(morph_, 3);
   row->addWidget(q_, 1);
+  row->addWidget(character_, 1);
   row->addWidget(transpose_, 1);
   row->addSpacing(72);
   const auto relay = [this] {
@@ -56,6 +58,13 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   connect(transpose_, &QSlider::valueChanged, this, [this](int value) {
     if (!updating_) emit transposeEdited(value);
   });
+  connect(character_, &QSlider::sliderPressed, this,
+          [this] { emit characterGestureStarted(); });
+  connect(character_, &QSlider::sliderReleased, this,
+          [this] { emit characterGestureFinished(); });
+  connect(character_, &QSlider::valueChanged, this, [this] {
+    if (!updating_) emit characterEdited(character());
+  });
 }
 
 void MorphStrip::setTranspose(int semitones) {
@@ -66,6 +75,10 @@ void MorphStrip::setTranspose(int semitones) {
 }
 
 int MorphStrip::transpose() const { return transpose_->value(); }
+
+double MorphStrip::character() const {
+  return static_cast<double>(character_->value()) / static_cast<double>(kSteps);
+}
 
 void MorphStrip::setView(float morph, float q) {
   updating_ = true;

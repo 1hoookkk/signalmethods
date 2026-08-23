@@ -401,6 +401,47 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.undoStack()->count(), 1);
   }
 
+  void theCharacterDialNarrowsTheQCornersFromTheQ0Corners() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* dial = window.morphStrip()->findChild<QSlider*>(QStringLiteral("characterSlider"));
+    QVERIFY(dial != nullptr);
+    const auto source = window.body().words[0];
+    const auto before_q = window.body().words[2];
+
+    dial->setValue(dial->maximum() / 2);
+    QTest::qWait(20);
+    QCOMPARE(window.undoStack()->count(), 1);
+
+    const auto narrowed = window.body().words[2];
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      QCOMPARE(narrowed[section][0], source[section][0]);
+      QCOMPARE(narrowed[section][1], source[section][1]);
+      QCOMPARE(narrowed[section][4], source[section][4]);
+      const auto before =
+          trench::core::geometry_from_words(source[section], trench::core::kP2kDatumHz);
+      const auto* pole = std::get_if<trench::core::ConjugatePair>(&before.pole);
+      if (pole == nullptr) {
+        QCOMPARE(narrowed[section], source[section]);
+        continue;
+      }
+      const auto bw_hz =
+          -std::log(pole->radius) * trench::core::kP2kDatumHz / std::numbers::pi;
+      const auto want = std::exp(0.5 * std::log(bw_hz) +
+                                 0.5 * std::log(p2k::kNarrowestPoleBwHz));
+      const auto [mag, rsq] = p2k::words_from_root(
+          pole->hz, std::exp(-std::numbers::pi * want / trench::core::kP2kDatumHz));
+      QCOMPARE(narrowed[section][2], mag);
+      QCOMPARE(narrowed[section][3], rsq);
+    }
+
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[2], before_q);
+  }
+
   void windowOwnsAndReleasesQtObjects() {
     const auto fixture = std::filesystem::path(TRENCH_SOURCE_ROOT) /
                          "ref/presets/P2k_013_talking_hedz.bin";

@@ -292,6 +292,25 @@ std::array<std::uint16_t, 4> words_from_pole(double hz, double bw_hz,
   return words_with_parked_zero(out, section, sample_rate_hz);
 }
 
+PackedSection section_narrowed_toward_ceiling(const PackedSection& words, double amount,
+                                              double sample_rate_hz) {
+  if (words == kIdentitySection) return words;
+  const auto geometry = geometry_from_words(words, sample_rate_hz);
+  const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
+  if (pole == nullptr) return words;
+  const double bw_hz =
+      -std::log(std::max(pole->radius, 1e-9)) * sample_rate_hz / std::numbers::pi;
+  if (bw_hz <= 0.0) return words;
+  const double blend = std::clamp(amount, 0.0, 1.0);
+  const double narrowed = std::exp((1.0 - blend) * std::log(bw_hz) +
+                                   blend * std::log(kNarrowestPoleBwHz));
+  const double radius = std::clamp(
+      std::exp(-std::numbers::pi * narrowed / sample_rate_hz), kPoleRMin, kPoleRMax);
+  const auto [mag, rsq] = words_from_root(pole->hz, radius);
+  if (!root_admissible(mag, rsq, true)) return words;
+  return {words[0], words[1], mag, rsq, words[4]};
+}
+
 std::array<std::uint16_t, 4> words_with_parked_zero(
     const std::array<std::uint16_t, 4>& current, std::size_t section,
     double sample_rate_hz) {
