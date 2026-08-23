@@ -49,6 +49,7 @@ struct Posture {
 };
 
 std::span<const Posture> postures();
+std::span<const Posture> templates();
 const Posture* posture(std::string_view name);
 
 struct PosturePole {

@@ -32,6 +32,9 @@ const Posture* posture(std::string_view name) {
   for (const auto& p : kPostures) {
     if (p.name == name) return &p;
   }
+  for (const auto& p : templates()) {
+    if (p.name == name) return &p;
+  }
   return nullptr;
 }
 

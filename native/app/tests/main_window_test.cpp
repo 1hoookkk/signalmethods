@@ -1470,6 +1470,52 @@ class MainWindowTest final : public QObject {
     QVERIFY(list->matched() != name);
   }
 
+  void aMouthTemplateWritesSixAscendingPoleRowsWithParkedZeros() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* list = window.postureList();
+    const auto name = QStringLiteral("s1 bahn a");
+    const auto row = list->rowOf(name);
+    QVERIFY(row >= 0);
+    const auto* skeleton = p2k::posture("s1 bahn a");
+    QVERIFY(skeleton != nullptr);
+    QCOMPARE(skeleton->pole_count, std::size_t{6});
+    QCOMPARE(skeleton->type, std::string_view{"MOUTHS S1"});
+    list->scrollToItem(list->item(row));
+    const auto before = window.body().words[0];
+    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
+                      list->visualItemRect(list->item(row)).center());
+    QCOMPARE(window.undoStack()->count(), 1);
+    const auto after = window.body().words[0];
+    const std::array<std::size_t, 6> rows{1, 2, 3, 4, 0, 5};
+    double previous_hz = 0.0;
+    for (std::size_t index = 0; index < rows.size(); ++index) {
+      const auto section = rows[index];
+      const auto geometry =
+          trench::core::geometry_from_words(after[section], trench::core::kP2kDatumHz);
+      const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+      QVERIFY(pole != nullptr);
+      QVERIFY(std::abs(pole->hz - skeleton->poles[index].hz) <= 0.02 * skeleton->poles[index].hz);
+      QVERIFY(pole->hz > previous_hz);
+      previous_hz = pole->hz;
+      QVERIFY(std::holds_alternative<trench::core::ConjugatePair>(geometry.zero));
+      const std::array<std::uint16_t, 4> roots{after[section][0], after[section][1],
+                                               after[section][2], after[section][3]};
+      const auto parked =
+          p2k::words_with_parked_zero(roots, section, trench::core::kP2kDatumHz);
+      QCOMPARE(parked, roots);
+    }
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      QCOMPARE(after[section][4], before[section][4]);
+    }
+    QCOMPARE(list->matched(), name);
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[0], before);
+  }
+
   void tuneInSurvivesMorphAndCornerMoves() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);

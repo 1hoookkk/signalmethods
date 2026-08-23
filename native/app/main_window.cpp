@@ -326,6 +326,12 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
         QString::fromUtf8(recipe.name.data(), static_cast<int>(recipe.name.size())));
   }
   groups.push_back(recipes);
+  for (const auto& skeleton : trench::core::p2k::templates()) {
+    const auto type = QString::fromUtf8(skeleton.type.data(), static_cast<int>(skeleton.type.size()));
+    if (groups.isEmpty() || groups.back().type != type) groups.push_back({type, {}});
+    groups.back().names.push_back(
+        QString::fromUtf8(skeleton.name.data(), static_cast<int>(skeleton.name.size())));
+  }
   posture_list_->setGroups(groups);
   connect(posture_list_, &PostureList::postureChosen, this, &MainWindow::applyVowel);
   connect(fit_room_, &FitRoom::overlaySelected, this, &MainWindow::selectOverlay);
