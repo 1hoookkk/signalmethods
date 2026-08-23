@@ -1516,6 +1516,59 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.body().words[0], before);
   }
 
+  void aCubeTemplateWritesAscendingPoleRowsWithParkedZeros() {
+    namespace p2k = trench::core::p2k;
+    const p2k::Posture* skeleton = nullptr;
+    for (const auto& candidate : p2k::templates()) {
+      if (candidate.type == std::string_view{"CUBES"}) {
+        skeleton = &candidate;
+        break;
+      }
+    }
+    QVERIFY(skeleton != nullptr);
+    QVERIFY(skeleton->pole_count >= 2);
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* list = window.postureList();
+    const auto name = QString::fromUtf8(skeleton->name.data(),
+                                        static_cast<int>(skeleton->name.size()));
+    const auto row = list->rowOf(name);
+    QVERIFY(row >= 0);
+    list->scrollToItem(list->item(row));
+    const auto before = window.body().words[0];
+    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
+                      list->visualItemRect(list->item(row)).center());
+    QCOMPARE(window.undoStack()->count(), 1);
+    const auto after = window.body().words[0];
+    const auto poles = p2k::pole_words_from_posture(*skeleton);
+    QCOMPARE(poles.size(), skeleton->pole_count);
+    double previous_hz = 0.0;
+    for (std::size_t index = 0; index < poles.size(); ++index) {
+      const auto section = poles[index].row;
+      const auto geometry =
+          trench::core::geometry_from_words(after[section], trench::core::kP2kDatumHz);
+      const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+      QVERIFY(pole != nullptr);
+      QVERIFY(std::abs(pole->hz - skeleton->poles[index].hz) <= 0.02 * skeleton->poles[index].hz);
+      QVERIFY(pole->hz > previous_hz);
+      previous_hz = pole->hz;
+      QVERIFY(std::holds_alternative<trench::core::ConjugatePair>(geometry.zero));
+      const std::array<std::uint16_t, 4> roots{after[section][0], after[section][1],
+                                               after[section][2], after[section][3]};
+      const auto parked =
+          p2k::words_with_parked_zero(roots, section, trench::core::kP2kDatumHz);
+      QCOMPARE(parked, roots);
+    }
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      QCOMPARE(after[section][4], before[section][4]);
+    }
+    QCOMPARE(list->matched(), name);
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[0], before);
+  }
+
   void tuneInSurvivesMorphAndCornerMoves() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);

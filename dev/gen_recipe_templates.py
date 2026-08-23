@@ -1,5 +1,8 @@
-import glob, json, os
+import collections, glob, json, os, sys
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cube_skeleton_library as csl
 
 SR = 44100.0
 OUT = 'native/trench-core/src/p2k/templates.cpp'
@@ -66,7 +69,17 @@ for p in sorted(glob.glob('recipes/tfs/*.tf.json')):
         group, name = 'OBJECTS', stem.replace('_', ' ')
     rows.append((group, name, peaks(d['freqs_hz'], d['mag_db'])))
 
-order = ['VOWELS', 'POSES', 'MOUTHS S1', 'MOUTHS S2', 'BODIES', 'OBJECTS']
+cube_corners = csl.load_corners()
+cube_post, _ = csl.postures(cube_corners, min_cubes=3)
+for group in cube_post:
+    poles = csl.mean_poles(cube_corners, group)
+    if all(hz < 40.0 for hz, _ in poles) or any(hz <= 0.0 for hz, _ in poles):
+        continue
+    poles = sorted(sorted(poles, key=lambda p: p[1])[:6])
+    names = collections.Counter(cube_corners[i]['name'] for i in group)
+    rows.append(('CUBES', '%s +%d' % (names.most_common(1)[0][0], len(names) - 1), poles))
+
+order = ['VOWELS', 'POSES', 'MOUTHS S1', 'MOUTHS S2', 'BODIES', 'OBJECTS', 'CUBES']
 rows = [r for key in order for r in rows if r[0] == key]
 rows = [(g, n, sorted(p, key=lambda x: -x[1])[:6]) for g, n, p in rows]
 rows = [(g, n, sorted(p)) for g, n, p in rows if p]
