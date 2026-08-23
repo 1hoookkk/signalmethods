@@ -40,6 +40,12 @@ target_link_libraries(trench_corpus_contribution PRIVATE trench_native_core)
 add_executable(trench_fit_target tools/fit_target.cpp)
 target_link_libraries(trench_fit_target PRIVATE trench_native_core)
 
+add_executable(trench_interior_envelope tools/interior_envelope.cpp)
+target_link_libraries(trench_interior_envelope PRIVATE trench_native_core)
+target_compile_definitions(trench_interior_envelope PRIVATE
+  TRENCH_SOURCE_ROOT="${PROJECT_SOURCE_DIR}"
+)
+
 if(BUILD_TESTING)
   find_package(GTest CONFIG REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
