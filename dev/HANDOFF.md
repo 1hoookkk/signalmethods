@@ -47,7 +47,36 @@ Failing, all in `native/trench-core/tests/p2k_section_param_test.cpp`:
 3. `TheFourControlsCarryAFifthOfTheBankSEqRowsWithinThreeDecibels` — line 242,
    562 vs pin 465: same census growth as (1).
 
-`n## The three questions, answered
+`n## Evening: the direction is ruled, the envelope exists
+
+Ruled: drop byte preservation, keep the architecture (`CLAUDE.md` at `5297990`;
+reasoning in `dev/SECOND_OPINION.md` and the chat-brief exchange it came from).
+
+Built on the *current* engine, before anything changes, so the replacement can be
+proven not to move them:
+
+| file | what it is |
+| --- | --- |
+| `dev/interior_envelope.txt` | 33 bodies × (step, excursion up/down vs corners, bilinear deviation, detour, pink loudness swing/beyond, prefix headroom/floor) on a 33×33 grid. `trench_interior_envelope.exe` regenerates it. |
+| `dev/modulation_envelope.txt` | plugin engine, cascade linear: moving peak vs loudest frozen point, tails, non-finite and muted-stage counts. `cargo test --test modulation_stress -- --nocapture`. |
+
+Three facts from them, each now a pinned test:
+
+1. **No factory body stays between its corners.** Median excursion below the corner
+   floor 81 dB; median bilinear deviation 17 dB. Acceptance is the factory distribution,
+   never "stay between the corners".
+2. **Motion is not covered by the frozen-stability proof.** Linear, 22/33 bodies pump
+   >6 dB above any frozen point (ace_of_bass +76); nothing diverges. The section
+   nonlinearity bounds it to +15 dB — it is load-bearing and the float engine keeps it
+   or an equivalent.
+3. **The word lerp breaks unity DC in the interior** by up to 4.6 dB (corners hold to
+   0.02 dB). Blending real coefficients with unity at the corners fixes this exactly;
+   it is the one place imported bodies will differ from the P2K runtime mid-morph.
+
+Next: float representation + import of the 33 bodies, nulled against their decoded
+responses and against these two tables.
+
+## The three questions, answered
 
 1. **Recipe into a fit** — no new machinery. A recipe writes six rows as one undo;
    `startFit` already seeds from the corner's typed rows, so recipe → FIT = FIT

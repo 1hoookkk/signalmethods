@@ -9,6 +9,7 @@
 
 #include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
+#include "trench/core/packed_body.hpp"
 
 namespace p2k = trench::core::p2k;
 
@@ -77,4 +78,49 @@ TEST(P2kMorph, TalkingHedzInteriorEnvelopeIsTheMeasuredOne) {
     }
   }
   EXPECT_GE(audit.prefix_headroom_db, loudest);
+}
+
+TEST(P2kMorph, TheWordLerpLetsInteriorDcDriftUpToFiveDecibelsOffTheCorners) {
+  const std::filesystem::path dir = std::string(TRENCH_SOURCE_ROOT) + "/ref/presets";
+  std::size_t bodies = 0;
+  double worst_db = 0.0;
+  std::string worst_body;
+  for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+    if (entry.path().extension() != ".bin") continue;
+    std::ifstream in(entry.path(), std::ios::binary);
+    const std::vector<std::uint8_t> body((std::istreambuf_iterator<char>(in)),
+                                         std::istreambuf_iterator<char>());
+    ++bodies;
+    const auto corners = p2k::body_corners(body);
+    const auto dc_of = [](const p2k::StoredCorner& words) {
+      double dc = 0.0;
+      for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
+        dc += p2k::stage_db(trench::core::section_words_to_biquad(words[si]), 0.0);
+      }
+      return dc;
+    };
+    double corner_lo = 1e9;
+    double corner_hi = -1e9;
+    for (const auto& corner : corners) {
+      corner_lo = std::min(corner_lo, dc_of(corner));
+      corner_hi = std::max(corner_hi, dc_of(corner));
+    }
+    double lo = 1e9;
+    double hi = -1e9;
+    for (std::size_t qi = 0; qi < 33; ++qi) {
+      for (std::size_t mi = 0; mi < 33; ++mi) {
+        const double dc = dc_of(p2k::interpolate_plane(corners, mi / 32.0F, qi / 32.0F));
+        lo = std::min(lo, dc);
+        hi = std::max(hi, dc);
+      }
+    }
+    const double beyond = std::max(corner_lo - lo, hi - corner_hi);
+    if (beyond > worst_db) {
+      worst_db = beyond;
+      worst_body = entry.path().stem().string();
+    }
+  }
+  EXPECT_EQ(bodies, 33U);
+  EXPECT_GT(worst_db, 4.0) << worst_body;
+  EXPECT_LT(worst_db, 5.0) << worst_body;
 }
