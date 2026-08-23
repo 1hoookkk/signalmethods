@@ -212,3 +212,30 @@ The VST3 in `C:\Program Files\Common Files\VST3\` is still the 22:26 build from
 yesterday. The current one (DIVISION, live BITE, Rossum law) is at
 `plugin/build-juce9/TRENCH_artefacts/Release/VST3/`. Close FL Studio, copy it in,
 restart FL.
+
+## 2026-08-24 early — the night the zeros became the workflow
+
+Proven by synthesis then built (all verified, `verify.ps1 ui` 106/106, Qt 62/62):
+one skeleton under seven zero sets is seven presets (`mask_proof.cpp`); the zero
+layer has one axis (depth) and no library; E-mu's Q100 and M100 corners re-posture
+rather than sharpen (0/106 audible poles held lane-wise M0->M100 — transposition,
+tweak, or re-deal); zero sets belong to a register, not a skeleton. All numbers in
+dev/EVIDENCE.md.
+
+| commit | what |
+| --- | --- |
+| `7185ffe` | zero rings on the plot — drag by ear, snap to a pole on release, fresh skeletons parked |
+| `821f613` | CHARACTER dial — Q corners = Q0 corners narrowed toward 13.7 Hz; ours, not E-mu's |
+| `84175fb` | sliders named morph / q / character / transpose |
+| `25c375b` | template list beside the plot, one click writes poles, row lights while held |
+| `46c5da9` `c0cbab1` | 116 templates: bank 9, E-mu vowels 8, vowels 10, poses 8, mouths 44, bodies 7, objects 4, cube postures 26 (`dev/gen_recipe_templates.py` -> `templates.cpp`) |
+| `d8e4e3f` `9cbd33d` `8301365` | the evidence commits |
+
+Rulings: every TRENCH parameter calibrated by Martens bisection (straight line
+first, listen after); "mask"/"skeleton" never on screen; making a body = pick a
+template per corner, draw rings, character to taste.
+
+Next: level-match during a ring drag (drags are judged by loudness otherwise —
+up to +46 dB); strips' pole readouts stale after corner switch (pre-existing);
+Tyson's ears on the adversary worst bodies, then the dial bisection, then 44
+mouths vs 22 morph pairs; runner divergence bound; document onto native::Body.
