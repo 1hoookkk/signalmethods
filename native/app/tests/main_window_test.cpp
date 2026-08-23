@@ -103,16 +103,6 @@ double pair_radius_of(std::uint16_t word_mag, std::uint16_t word_rsq) {
   return trench::core::p2k::pair_radius(p, q);
 }
 
-trench::core::p2k::PackedCorner flatten_first_corner(const trench::core::PackedBody& body) {
-  trench::core::p2k::PackedCorner out{};
-  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
-    for (std::size_t word = 0; word < trench::core::p2k::kWordCount; ++word) {
-      out[section * trench::core::p2k::kWordCount + word] = body.words[0][section][word];
-    }
-  }
-  return out;
-}
-
 void put32(std::ofstream& out, std::uint32_t v) { out.write(reinterpret_cast<const char*>(&v), 4); }
 void put16(std::ofstream& out, std::uint16_t v) { out.write(reinterpret_cast<const char*>(&v), 2); }
 
@@ -482,39 +472,6 @@ class MainWindowTest final : public QObject {
         words, trench::core::kP2kDatumHz, hz, weight, target);
     QVERIFY2(report.rms_db < 0.5, qPrintable(QString::number(report.rms_db)));
     std::filesystem::remove(wav);
-  }
-
-  void unityVerbRenormalizesDcAsOneUndo() {
-    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    window.resize(960, 540);
-    window.show();
-    QTest::qWait(20);
-    auto* plot = window.responsePlot();
-
-    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
-    QVERIFY(token.has_value());
-    drag(plot, token->position, token->position + QPointF{-70.0, 22.0}, 5);
-    QCOMPARE(window.undoStack()->count(), 1);
-
-    const auto drifted = flatten_first_corner(window.body());
-    QVERIFY(std::abs(window.dcDriftDb() - trench::core::p2k::dc_gain_db(drifted)) <
-            1.0e-12);
-
-    const auto before_bytes = window.body().native_bytes();
-    const auto before_words = window.body().words[0];
-    window.renormalizeDc();
-
-    QCOMPARE(window.undoStack()->count(), 2);
-    QVERIFY(std::abs(window.dcDriftDb()) < 0.05);
-    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-      for (std::size_t word = 0; word < 4; ++word) {
-        QCOMPARE(window.body().words[0][section][word], before_words[section][word]);
-      }
-      QCOMPARE(window.body().words[4][section], window.body().words[0][section]);
-    }
-
-    window.undoStack()->undo();
-    QVERIFY(window.body().native_bytes() == before_bytes);
   }
 
   void fitRequiresATarget() {

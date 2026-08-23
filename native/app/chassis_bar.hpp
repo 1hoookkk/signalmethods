@@ -13,14 +13,13 @@ class ChassisBar final : public QWidget {
   Q_OBJECT
 
  public:
-  enum class Verb { kUnity, kSource, kTarget, kFit, kKeep, kDiscard };
+  enum class Verb { kSource, kTarget, kFit, kKeep, kDiscard };
 
   explicit ChassisBar(QWidget* parent = nullptr);
 
   void setBodyName(const QString& name);
   void setTargetName(const QString& name);
   void setState(bool has_target, bool running);
-  void setDcDriftDb(double db);
   void setSourceSawtooth(bool sawtooth);
   void setScoreDb(double db);
   [[nodiscard]] double scoreDb() const noexcept;
@@ -50,7 +49,6 @@ class ChassisBar final : public QWidget {
   QString target_name_;
   bool has_target_{};
   bool running_{};
-  double dc_drift_db_{};
   bool source_sawtooth_{};
   double score_db_{std::numeric_limits<double>::quiet_NaN()};
   std::optional<Verb> hover_;

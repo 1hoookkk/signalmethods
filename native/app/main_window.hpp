@@ -46,8 +46,6 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] std::uint32_t freedomMask() const noexcept;
   [[nodiscard]] bool fitRunning() const noexcept;
 
-  [[nodiscard]] double dcDriftDb() const noexcept;
-
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   void applyParam(std::size_t section, trench::core::p2k::SectionEdit edit,
                   const trench::core::p2k::SectionParam& param);
@@ -68,7 +66,6 @@ class MainWindow final : public QMainWindow {
   void removeOverlay(int index);
   void stopAndKeep();
   void discardFit();
-  void renormalizeDc();
   void setAuditionGate(bool open);
   [[nodiscard]] bool auditionOpen() const noexcept;
 
@@ -98,7 +95,6 @@ class MainWindow final : public QMainWindow {
   BodyDocument::CornerSnapshot pre_fit_{};
   std::size_t fit_corner_{};
   bool fit_active_{};
-  double dc_drift_db_{};
   trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
   bool strip_gesture_{};
   ResponsePlotWidget* response_plot_{};

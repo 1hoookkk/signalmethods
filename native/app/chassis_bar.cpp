@@ -24,16 +24,13 @@ constexpr double kPadGap = 8.0;
 constexpr double kPadRadius = 2.0;
 constexpr double kTextLeft = 12.0;
 
-constexpr double kDcDeadbandDb = 0.05;
-
 struct VerbLook {
   ChassisBar::Verb verb;
   const char* label;
   const QColor* ink;
 };
 
-const std::array<VerbLook, 6> kVerbs{{
-    {ChassisBar::Verb::kUnity, "", &kIdentity},
+const std::array<VerbLook, 5> kVerbs{{
     {ChassisBar::Verb::kSource, "", &kIdentityDim},
     {ChassisBar::Verb::kTarget, "TARGET", &kIdentity},
     {ChassisBar::Verb::kFit, "FIT", &kFit},
@@ -66,11 +63,6 @@ void ChassisBar::setState(bool has_target, bool running) {
   update();
 }
 
-void ChassisBar::setDcDriftDb(double db) {
-  dc_drift_db_ = db;
-  update();
-}
-
 void ChassisBar::setSourceSawtooth(bool sawtooth) {
   source_sawtooth_ = sawtooth;
   update();
@@ -84,12 +76,6 @@ void ChassisBar::setScoreDb(double db) {
 double ChassisBar::scoreDb() const noexcept { return score_db_; }
 
 QString ChassisBar::labelFor(Verb verb) const {
-  if (verb == Verb::kUnity) {
-    if (std::abs(dc_drift_db_) <= kDcDeadbandDb) return QStringLiteral("DC 0.0 dB");
-    return QStringLiteral("DC %1%2 dB")
-        .arg(dc_drift_db_ < 0.0 ? QStringLiteral("-") : QStringLiteral("+"))
-        .arg(std::abs(dc_drift_db_), 0, 'f', 1);
-  }
   if (verb == Verb::kSource) {
     return source_sawtooth_ ? QStringLiteral("SAW") : QStringLiteral("FLAT");
   }
@@ -111,9 +97,6 @@ std::vector<ChassisBar::Pad> ChassisBar::pads() const {
     pad.verb = it->verb;
     pad.rect = QRectF(right - pad_width, top, pad_width, kPadHeight);
     switch (it->verb) {
-      case Verb::kUnity:
-        pad.available = !running_ && std::abs(dc_drift_db_) > kDcDeadbandDb;
-        break;
       case Verb::kSource:
       case Verb::kTarget:
         pad.available = !running_;

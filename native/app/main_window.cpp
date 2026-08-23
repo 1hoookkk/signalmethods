@@ -244,9 +244,6 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
 
   connect(chassis_bar_, &ChassisBar::verbClicked, this, [this](ChassisBar::Verb verb) {
     switch (verb) {
-      case ChassisBar::Verb::kUnity:
-        renormalizeDc();
-        break;
       case ChassisBar::Verb::kSource:
         setSourceModel(source_model_ == trench::core::measure::Source::kFlat
                            ? trench::core::measure::Source::kSawtooth
@@ -447,8 +444,6 @@ std::uint32_t MainWindow::freedomMask() const noexcept {
 
 bool MainWindow::fitRunning() const noexcept { return fit_active_; }
 
-double MainWindow::dcDriftDb() const noexcept { return dc_drift_db_; }
-
 void MainWindow::applySection(std::size_t section,
                               const trench::core::PackedSection& words) {
   document_->applySection(section, words);
@@ -632,23 +627,6 @@ void MainWindow::discardFit() {
   endRun();
 }
 
-void MainWindow::renormalizeDc() {
-  namespace p2k = trench::core::p2k;
-  if (fit_active_) return;
-  const auto before = document_->cornerSnapshot();
-  const auto corner = p2k::Corner::from_words(document_->seedWords());
-  const auto scales = p2k::stage_gain_pass_held(corner, document_->freedomMask(),
-                                                flatten_corner(before));
-  const auto packed = p2k::pack_corner(corner, scales);
-  auto after = before;
-  for (std::size_t section = 0; section < p2k::kStageCount; ++section) {
-    after[section][4] = packed[section * p2k::kWordCount + 4];
-  }
-  if (after == before) return;
-  document_->applyCorner(after);
-  document_->commitFit(document_->corner(), before);
-}
-
 void MainWindow::setAuditionGate(bool open) {
   if (open && !audition_) {
     audition_ = std::make_unique<trench::audio::Audition>();
@@ -689,9 +667,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void MainWindow::updateProbes() {
-  namespace p2k = trench::core::p2k;
-  dc_drift_db_ = p2k::dc_gain_db(flatten_corner(document_->cornerSnapshot()));
-  chassis_bar_->setDcDriftDb(dc_drift_db_);
   chassis_bar_->setScoreDb(document_->targetScoreDb());
   refreshFitRoom();
   updateAudition();
