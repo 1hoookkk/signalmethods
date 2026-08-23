@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The pole layer and the zero layer, over all 132 corners.** Each layer alone is more
+one-dimensional than the whole: poles-only PC1 81.6% (a resonant-lowpass slope family,
+two clusters, silhouette 0.52), zeros-only PC1 88.0% (a rising correction, two clusters,
+0.58), the full cascade PC1 72.7%. The layers are built against each other: corner rms
+of the pole layer correlates +0.55 with rms of the zero layer (a steeper all-pole top
+gets a steeper zero correction). Between corners, zero layers are closer to one another
+(median nearest-neighbour 3.7 dB) than pole layers (6.1 dB) or whole corners (6.7 dB):
+the zeros are the shared correction, the poles carry more of what differs from corner
+to corner. dB additivity of the split verified to 1e-13. (2026-08-23)
+
 **E-mu's own compilers couple radius to frequency by one affine law.** From
 `trench-x3-clean/ref/ghidra_extracts/runtime_hacks.md`: the X3 three-row writer
 (`FUN_1802c59b0`, fed by the four morph classes) sets `v = slope*byte + base` per rate and
