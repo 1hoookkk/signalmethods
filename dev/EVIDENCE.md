@@ -219,6 +219,14 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Poles-only and zeros-only, Talking Hedz.** With every zero removed the body is a
+Klatt cascade: five resonators in slot order (S2 1.0 k, S3 1.8 k, S4 2.7 k, S5 5.2 k,
+S1 10.5 kHz) over S6's 225 Hz lowpass, each falling -12 dB/oct above its peak so the
+all-pole top collapses past 3 kHz. With every pole removed the body is the correction:
+rising shelves from S1-S3 (+40 to +60 dB by 20 kHz) and three notches (S4 3.4 k, S5 8 k,
+S6 7 kHz at -42 dB). The zeros are Fant's higher-pole correction plus the trench; the
+poles are the vowel. `dev/pca/*_poles_zeros.png`, `*_inverted.png`. (2026-08-23)
+
 **Slot order is frequency order in the vowel bodies, a five-times-chance habit elsewhere.**
 Over the 117 corners with six conjugate poles: S2<S3<S4<S5 ascending in 22% (chance 4%),
 descending 12%; S1 the highest pole 36%, S6 the lowest 31%, both 18%. Two bodies keep
