@@ -219,6 +219,15 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The 12th-order vowel bodies were not built from the compiled vowel classes.** Matching
+each vocal body's corner (strong poles, r > 0.95, 150-9000 Hz) against the eight compiled
+corners: mean distance from each compiled formant to the nearest body pole is 150-280
+cents for the six vocal bodies (deep_bouche c0/c2 the closest at 81-89 cents), against
+418 cents for non-vocal bodies. Same neighbourhood, not the same numbers: a copied table
+would sit under 30 cents. The classes and the bodies are two separate drawings of the
+same vowels - the minimal three-formant statement and the six-section one with frame and
+zeros. (2026-08-23)
+
 **E-mu's two compiled vowel classes are three-formant all-pole cascades — recovered.**
 `FUN_1802c57f0` (CPhantomVocal1, AahAyEeh) and `FUN_1802c58d0` (CPhantomVocal2,
 Ooh-To-Aah) copy a table of 3 rows x 4 corners x 5 packed words per sample-rate family
