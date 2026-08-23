@@ -523,3 +523,14 @@ families - octave ladders (2089/4170/6270 Hz, 20 cubes), harmonic combs (64..388
 r 0.999 ceiling), vowel sets (777/2059/3451/4838), bell tops (5682, 6940). There is no small
 primitive set the cubes are made of; the cube corpus is taste evidence, not a parts list.
 (2026-08-23)
+
+**M100 is a different frame, not a tweak.** Lane by lane, of the 106 audible poles at M0 across
+the 33 bodies, 0 are held at M100 (within 50 c and width within 2x); 32/33 bodies move every
+resonance. Three kinds of move: transposition (Fuzzi Face +1160..+1315 c on all six; Tooth
+Comb, Acid Ravage +1400..+2800), tweak (Deep Bouche +60..+250 c; TB or not TB +-400..800),
+re-deal (Ooh-to-Eee / Eeh-to-Aah swap between two shelf postures in opposite directions;
+Hedz and Ubu trade poles between slots). Separately, M0 corners share 5 postures (13 bodies),
+M100 corners share 4 (8 bodies). A zero set transfers across skeletons in the same register
+(Hedz zeros under Dead Ringer, Klub Klassik, a measured mouth: same 7.2 kHz notch, top at
+-22..-33 dB) and is nonsense outside it (DJ Alkaline's high poles +114 dB, the cello's low
+poles -300 dB). (`dev/skeleton_library_m0_m100.py`, `dev/skeleton_swap.py`, 2026-08-24)
