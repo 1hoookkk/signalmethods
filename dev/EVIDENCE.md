@@ -219,6 +219,15 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The packed bank is exactly the manual's 33 twelfth-order filters.** The Mo'Phatt
+manual's filter table (pp. 133-135, `ref/mophatt_filter_types.json`) gives every filter
+an Order: 33 are order 12 and map one-to-one onto `ref/presets`; the other 17 (Smooth 02,
+Classic 04, Steeper 06, Shallow, Deeper, Band-pass1/2, ContraBand, Swept1-3>1oct,
+AahAyEeh, Ooh-To-Aah, PhazeShift1/2, FlangerLite, BlissBatz) are 2nd/4th/6th order —
+computed classes, not packed bodies — which is why their table slots decode to unit-circle
+roots and zero scales. The only borrowing the manual admits is BlissBatz, "Bat phaser
+from the Emulator 4", a 6th-order class. (2026-08-23)
+
 **The P2K bodies are authored in Hz and compiled per sample rate — not a 39,062.5 Hz
 port.** Each skin has four DAT variants in `EmulatorX.dll`; read at 44,100 / 48,000 /
 96,000 / 192,000 Hz respectively, every pole lands on the same frequency to 0.1 Hz and the

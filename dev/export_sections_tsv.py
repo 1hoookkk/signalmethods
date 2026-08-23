@@ -1,3 +1,4 @@
+import json
 import math
 import pathlib
 import struct
@@ -54,13 +55,16 @@ MORPHEUS_FAMILIES = ((0, 20, "flangers"), (21, 43, "dipthongs"), (44, 69, "stand
                      (70, 75, "equalization"), (76, 156, "complex"))
 
 
+MANUAL = {f["p2k"]: f for f in json.load(open(ROOT / "ref" / "mophatt_filter_types.json"))["filters"] if "p2k" in f}
+
+
 def p2k_family(body):
+    if body in MANUAL:
+        f = MANUAL[body]
+        return f"{f['type']} order {f['order']}", "Mo'Phatt manual filter table"
     tail = body.rsplit("_", 1)[-1]
     if tail in P2K_SUFFIX:
-        return P2K_SUFFIX[tail], "name suffix (SysEx table)"
-    for family, keys in P2K_KEYWORDS.items():
-        if any(k in body for k in keys):
-            return family, "name keyword"
+        return f"{P2K_SUFFIX[tail]} (computed class, not a packed body)", "name suffix; order < 12 in the manual"
     return "other", "name keyword"
 
 
