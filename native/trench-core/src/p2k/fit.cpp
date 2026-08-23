@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <tuple>
 
+#include "trench/core/morph.hpp"
 #include "trench/core/packed_body.hpp"
 
 namespace trench::core::p2k {
@@ -94,20 +95,11 @@ double stage_db(const std::array<double, 5>& biquad, double hz) {
 }
 
 std::vector<double> corner_response_db(const StoredCorner& words, const Grid& g) {
-  std::array<std::array<double, 5>, kStageCount> biquads{};
+  SectionBiquads biquads{};
   for (std::size_t si = 0; si < kStageCount; ++si) {
     biquads[si] = section_words_to_biquad(words[si]);
   }
-  std::vector<double> out;
-  out.reserve(kNpts);
-  for (const double hz : g.hz) {
-    double acc = 0.0;
-    for (const auto& b : biquads) {
-      acc += stage_db(b, hz);
-    }
-    out.push_back(acc);
-  }
-  return out;
+  return response_db(biquads, g);
 }
 
 StoredCorner interpolate_plane(const std::array<StoredCorner, 4>& corners, float morph, float q) {

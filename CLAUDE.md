@@ -71,8 +71,9 @@ conjugate regions of a second-order section are convex in coefficient space, so 
 of stable corners is stable and any blend of conjugate pairs stays conjugate. Author
 corners; ride and audit the resulting interior; do not invent a separate morph model.
 
-DC gain is unity by a closed form on the geometry. Never peak-normalise. No per-stage
-gain cuts.
+The geometry's DC gain is unity by a closed form. Level is one authored gain per corner,
+blended in dB (Morpheus stores it that way; P2K spread it across its stage scales — the
+factory corners sit up to 42 dB from unity). Never peak-normalise. No per-stage gain cuts.
 
 Section identity is ordered and persists across corners. Lanes are coefficient ancestry,
 not resonance identity: sections may cross in frequency; never sort or re-pair
@@ -92,8 +93,10 @@ the corners and the blend law; it is never measured to judge a body. The tables 
 `dev/interior_envelope.txt` and `dev/modulation_envelope.txt` are regression fixtures for
 the engine: rerun them when the engine changes and prove the factory bodies did not move.
 
-Until the float engine lands, the existing packed-word engine and its parity tests remain
-the engine of record. Do not break them while building the replacement.
+The float engine is `native/trench-core/include/trench/core/native_body.hpp`; the 33
+imported bodies null against their decoded responses there. The packed-word engine and
+its parity tests remain the engine of record for the app and the plugin until they are
+moved onto it. Do not break them while moving.
 
 ## Acceptance evidence
 

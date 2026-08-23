@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "trench/core/morph.hpp"
+#include "trench/core/native_body.hpp"
 #include "trench/core/p2k.hpp"
 
 namespace fs = std::filesystem;
@@ -77,7 +78,8 @@ void print_row(const std::string& name, const std::array<double, kColumns>& cell
 
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
+  const bool floated = argc > 1 && std::string(argv[1]) == "float";
   const fs::path root{TRENCH_SOURCE_ROOT};
   const auto bodies = bank(root / "ref" / "presets");
   if (bodies.empty()) {
@@ -94,7 +96,10 @@ int main() {
   std::vector<std::array<double, kColumns>> rows;
   rows.reserve(bodies.size());
   for (const auto& [name, body] : bodies) {
-    const auto cells = row_of(p2k::interior_audit(body, p2k::grid(), 33, 33));
+    const auto audit = floated
+        ? p2k::interior_audit(trench::core::native::import_p2k(body), p2k::grid(), 33, 33)
+        : p2k::interior_audit(body, p2k::grid(), 33, 33);
+    const auto cells = row_of(audit);
     print_row(name, cells);
     rows.push_back(cells);
   }

@@ -73,8 +73,26 @@ Three facts from them, each now a pinned test:
    0.02 dB). Blending real coefficients with unity at the corners fixes this exactly;
    it is the one place imported bodies will differ from the P2K runtime mid-morph.
 
-Next: float representation + import of the 33 bodies, nulled against their decoded
-responses and against these two tables.
+## The float engine (evening, after the ruling)
+
+`native_body.hpp`: a body is 4 corners x 6 sections of SR-free roots (`Resonant{hz, bw_hz}`
+or `RealRoots` as signed decay Hz) plus one `gain_db` per corner. `design(corner, sr)`
+makes coefficients at the host rate; `blend(body, m, q, sr)` is the bilinear coefficient
+blend; `cascade(design, gain_db)` applies the unity-DC closed form per section and the
+corner gain once. `import_p2k` decodes the 240-byte bodies at the 44.1 k datum.
+
+Proven (`native_body_test.cpp`, all 33 bodies): every corner nulls against
+`corner_response_db` to < 1e-9 dB in shape *and* level; the interior is stable,
+conjugate-preserving and unity-DC on a 17x17 grid at 44.1 k and 48 k; motion through the
+blend (sq20, sin5, 512-sample blocks, 48 k) is finite, worst +73.8 dB over frozen
+(early_rizer; the packed plugin table's worst was +76). The interior audit now takes any
+cascade-at-(m,q) callback; `trench_interior_envelope.exe float` writes
+`dev/interior_envelope_float.txt`.
+
+One finding changed the invariant: the factory corners are *not* unity-DC (worst 42 dB,
+radio_craze corner 3; 739/792 sections > 1 dB) — the 0.02 dB figure was drift relative to
+the corners. The evidence file already said gain is one number per corner; the float body
+carries it. Not done: the app, fitter and plugin still run on the packed engine.
 
 ## The three questions, answered
 

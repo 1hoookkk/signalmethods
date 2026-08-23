@@ -13,6 +13,7 @@ if (-not $vsRoot) {
 
 $devShell = Join-Path $vsRoot 'Common7\Tools\VsDevCmd.bat'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$env:PATH = "$(Split-Path -Parent $env:TRENCH_CMAKE);$(Split-Path -Parent $vswhere);C:\Windows\System32;C:\Windows;C:\Program Files\PowerShell\7;C:\Program Files\Git\cmd;$env:USERPROFILE\AppData\Local\Programs\Python\Python313"
 $command = '"{0}" -arch=x64 -host_arch=x64 && "{1}" --build --preset windows-msvc-release --parallel 2' -f $devShell, $env:TRENCH_CMAKE
 
 Push-Location $repoRoot

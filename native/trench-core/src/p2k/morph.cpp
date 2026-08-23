@@ -5,6 +5,7 @@
 #include <cmath>
 #include <limits>
 
+#include "trench/core/native_body.hpp"
 #include "trench/core/packed_body.hpp"
 
 namespace trench::core::p2k {
@@ -37,16 +38,57 @@ std::vector<double> morph_response_db(std::span<const std::uint8_t> body, float 
   return corner_response_db(interpolate_body(body, morph, q), g);
 }
 
+std::vector<double> response_db(const SectionBiquads& biquads, const Grid& g) {
+  std::vector<double> out;
+  out.reserve(g.hz.size());
+  for (const double hz : g.hz) {
+    double acc = 0.0;
+    for (const auto& b : biquads) {
+      acc += stage_db(b, hz);
+    }
+    out.push_back(acc);
+  }
+  return out;
+}
+
 InteriorAudit interior_audit(std::span<const std::uint8_t> body, const Grid& g,
                              std::size_t morph_steps, std::size_t q_steps) {
-  InteriorAudit out;
   const auto corners = body_corners(body);
+  return interior_audit(
+      [&](float m, float q) {
+        const auto words = interpolate_plane(corners, m, q);
+        SectionBiquads out{};
+        for (std::size_t si = 0; si < kStageCount; ++si) {
+          out[si] = section_words_to_biquad(words[si]);
+        }
+        return out;
+      },
+      g, morph_steps, q_steps);
+}
+
+InteriorAudit interior_audit(const native::Body& body, const Grid& g, std::size_t morph_steps,
+                             std::size_t q_steps) {
+  return interior_audit(
+      [&](float m, float q) {
+        const auto cascade =
+            native::cascade(native::blend(body, m, q, kSr), native::blend_gain_db(body, m, q));
+        SectionBiquads out{};
+        std::copy_n(cascade.begin(), kStageCount, out.begin());
+        return out;
+      },
+      g, morph_steps, q_steps);
+}
+
+InteriorAudit interior_audit(const CascadeAt& at, const Grid& g, std::size_t morph_steps,
+                             std::size_t q_steps) {
+  InteriorAudit out;
   const std::size_t npts = g.hz.size();
   std::vector<double> scratch(npts, 0.0);
 
+  const float coords[4][2] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};
   std::array<std::vector<double>, 4> corner_db{};
   for (std::size_t ci = 0; ci < 4; ++ci) {
-    corner_db[ci] = corner_response_db(corners[ci], g);
+    corner_db[ci] = response_db(at(coords[ci][0], coords[ci][1]), g);
   }
   std::vector<double> corner_ceiling(npts, 0.0);
   std::vector<double> corner_floor(npts, 0.0);
@@ -88,8 +130,8 @@ InteriorAudit interior_audit(std::span<const std::uint8_t> body, const Grid& g,
     for (std::size_t mi = 0; mi < morph_steps; ++mi) {
       const float m =
           morph_steps > 1 ? static_cast<float>(mi) / static_cast<float>(morph_steps - 1) : 0.0F;
-      const auto words = interpolate_plane(corners, m, qq);
-      auto current = corner_response_db(words, g);
+      const auto biquads = at(m, qq);
+      auto current = response_db(biquads, g);
       bool finite = true;
       for (const double v : current) {
         finite = finite && std::isfinite(v);
@@ -129,8 +171,7 @@ InteriorAudit interior_audit(std::span<const std::uint8_t> body, const Grid& g,
       power_lo = std::min(power_lo, power);
 
       std::fill(prefix.begin(), prefix.end(), 0.0);
-      for (std::size_t si = 0; si < kStageCount; ++si) {
-        const auto biquad = section_words_to_biquad(words[si]);
+      for (const auto& biquad : biquads) {
         for (std::size_t i = 0; i < npts; ++i) {
           prefix[i] += stage_db(biquad, g.hz[i]);
           prefix_hi = std::max(prefix_hi, prefix[i]);
