@@ -108,7 +108,8 @@ std::size_t BodyDocument::corner() const noexcept { return corner_; }
 
 void BodyDocument::setCorner(std::size_t corner) {
   if (corner >= trench::core::kLegacyCornerCount) return;
-  const View wanted{(corner & 1U) != 0U ? 1.0F : 0.0F, (corner & 2U) != 0U ? 1.0F : 0.0F};
+  const View wanted{(corner & 1U) != 0U ? 1.0F : 0.0F, (corner & 2U) != 0U ? 1.0F : 0.0F,
+                    view_.semitones};
   if (wanted.morph != view_.morph || wanted.q != view_.q) {
     view_ = wanted;
     emit viewChanged();
@@ -199,7 +200,8 @@ void BodyDocument::applyIntent(std::size_t section,
 BodyDocument::View BodyDocument::view() const noexcept { return view_; }
 
 void BodyDocument::setView(float morph, float q) {
-  const View wanted{std::clamp(morph, 0.0F, 1.0F), std::clamp(q, 0.0F, 1.0F)};
+  const View wanted{std::clamp(morph, 0.0F, 1.0F), std::clamp(q, 0.0F, 1.0F),
+                    view_.semitones};
   if (wanted.morph != view_.morph || wanted.q != view_.q) {
     view_ = wanted;
     emit viewChanged();

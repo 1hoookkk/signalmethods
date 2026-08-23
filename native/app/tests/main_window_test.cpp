@@ -46,6 +46,19 @@ std::filesystem::path fixture_path() {
   return std::filesystem::path(TRENCH_SOURCE_ROOT) / "ref/presets/P2k_013_talking_hedz.bin";
 }
 
+double peak_hz_below(const std::vector<double>& response_db,
+                     const std::vector<double>& hz, double limit_hz) {
+  double best_hz = 0.0;
+  double best_db = -1.0e9;
+  for (std::size_t index = 0; index < response_db.size() && hz[index] <= limit_hz; ++index) {
+    if (response_db[index] > best_db) {
+      best_db = response_db[index];
+      best_hz = hz[index];
+    }
+  }
+  return best_hz;
+}
+
 void send_mouse(QWidget* widget, QEvent::Type type, const QPointF& position,
                 Qt::MouseButton button, Qt::MouseButtons buttons) {
   QMouseEvent event(type, position, widget->mapToGlobal(position), button, buttons,
@@ -1248,6 +1261,36 @@ class MainWindowTest final : public QObject {
       QVERIFY(param.gain_db < -12.0);
     }
     QCOMPARE(window.fitRoom()->vowelBox()->findText(QStringLiteral("para A")) >= 0, true);
+  }
+
+  void tuneInSurvivesMorphAndCornerMoves() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* strip = window.morphStrip();
+    auto* transpose = strip->findChild<QSlider*>(QStringLiteral("transposeSlider"));
+    auto* morph = strip->findChild<QSlider*>(QStringLiteral("morphSlider"));
+    auto* q = strip->findChild<QSlider*>(QStringLiteral("qSlider"));
+    QVERIFY(transpose != nullptr && morph != nullptr && q != nullptr);
+    transpose->setValue(7);
+    QCOMPARE(window.document()->view().semitones, 7);
+    morph->setValue(500);
+    QCOMPARE(transpose->value(), 7);
+    QCOMPARE(window.document()->view().semitones, 7);
+    q->setValue(500);
+    QCOMPARE(transpose->value(), 7);
+    QCOMPARE(window.document()->view().semitones, 7);
+    window.setCorner(2);
+    QCOMPARE(transpose->value(), 7);
+    QCOMPARE(window.document()->view().semitones, 7);
+    const auto shifted = peak_hz_below(window.document()->viewResponseDb(),
+                                       window.document()->grid().hz, 6000.0);
+    transpose->setValue(0);
+    QCOMPARE(window.document()->view().semitones, 0);
+    const auto plain = peak_hz_below(window.document()->viewResponseDb(),
+                                     window.document()->grid().hz, 4000.0);
+    QVERIFY(std::abs(std::log2(shifted / plain) - 7.0 / 12.0) < 0.08);
   }
 };
 
