@@ -1,21 +1,14 @@
 # Handoff — 2026-08-23, session close
 
 Branch `codex/native-arx-authoring`, worktree `C:\Users\hooki\trench-native`.
-Head is `453ec33`. **The working tree is dirty and red — read "Stop here first".**
+Head is `ca57b79`. Tree clean, `verify.ps1 ui` green (106/106, Qt 50/50).
 
-## Stop here first
+## Since the handoff (2026-08-23, afternoon)
 
-The uncommitted diff is one change: **fold HP into EQ** ("2p2z" — every section is
-the same object, so a row whose zero sits below its pole is an EQ with that offset,
-not a third type). It is half done and 3 core tests fail.
-
-Two honest options:
-
-* **Revert and re-do deliberately.** `git checkout -- native/` returns to `453ec33`,
-  which was verified: core suites green, Qt 48/48. (Full `verify.ps1 ui` was last
-  green at `742ff8f`; at `453ec33` I ran the core tests and the Qt slots, not the
-  whole layer.)
-* **Finish it.** What is left is listed under "The HP fold, unfinished" below.
+| commit | what |
+| --- | --- |
+| `376761c` | **HP folded into EQ.** `SectionType = {Off, LowPass, Eq}`. Census pinned: 562 EQ rows = 465 old EQ + 62 conjugate-zero ≥2 oct below + 35 real-axis-zero — exactly the old HP population, nothing else moved. Fc edits hold radius words (`mag_word_for`); real-axis-zero rows take Fc/Bw on the pole, ignore Gain. |
+| `ca57b79` | **Strips own their markers** — one six-hue palette (`section_color.hpp`) clear of trace/residual/refusal; Fc readout in its hue; selected strip tinted + disc halo; hover links both ways. **Manual recipes** in the FIT room chooser next to the Klatt vowels: para A/E/O/U, comb 8ve, comb 1.61, one peak, wah. Proof `dev/e2e/app_strips_own_markers.png`. |
 
 ## What shipped this session (all committed, all gated when noted)
 
@@ -54,28 +47,23 @@ Failing, all in `native/trench-core/tests/p2k_section_param_test.cpp`:
 3. `TheFourControlsCarryAFifthOfTheBankSEqRowsWithinThreeDecibels` — line 242,
    562 vs pin 465: same census growth as (1).
 
-`native/app/tests/main_window_test.cpp` was edited so `first_eq_row` prefers a row
-under 4 kHz (the old "first EQ" is now the air row at 10.5 kHz).
+`n## The three questions, answered
 
-## Open questions from Tyson, unanswered
+1. **Recipe into a fit** — no new machinery. A recipe writes six rows as one undo;
+   `startFit` already seeds from the corner's typed rows, so recipe → FIT = FIT
+   refines the recipe. Only the recipe *set* was missing.
+2. **Do the manuals give recipes?** Only the Morpheus manual, and only ~10 with
+   numbers (paravowel peak tables, the two comb laws, One Peak, PZ Notch, BassEQ,
+   Wah, VowelSpace). The Mo'Phatt table is names + one line — a type list, not
+   seeds. The numeric ones are now in `formants.cpp::kManualRecipes`; widths and
+   gains are ours (manual states none).
+3. **Colours/sections disconnected** — diagnosis: rainbow `index/7` hues collided
+   with the trace (section 4) and the residual (section 6); strip order is section
+   order while the plot is frequency order, so colour has to carry the link and it
+   was a 2 px band and a small dot; selection was a 1 px edge; no hover. Fixed as
+   above. Strip order stays section order (identity is ordered, never re-sorted).
 
-Three arrived while I was mid-build and I never replied. They are the next session's
-opening material:
-
-1. **"What would a pre-determined recipe into a fit look like?"** — i.e. seed the six
-   rows from a named recipe (vowel, comb, wah…) and let FIT only refine it, rather
-   than seeding from peak-picking. The machinery exists: `rows_from_formants` is one
-   such recipe, `fit_rows_watched` takes any seed. What is missing is the *set* of
-   recipes and how one is chosen/typed in the FIT room.
-2. **"Do the manuals give us recipes?"** — not yet checked this session. The
-   Mo'Phatt / UltraProteus filter tables give a name + one-line description per
-   filter (LPF/PHA/HPF/FLG/BPF/VOW/EQ+/EQ−/REZ/WAH/DST/SFX) and the Morpheus manual
-   describes individual cubes in prose ("this Pole/Zero filter is a notch that
-   ranges from 80 Hz…"). That is the closest thing to a recipe list in a primary
-   source, and reading those descriptions **as** recipes is the obvious next move.
-3. **"The colors and sections as well as the overall UX seem slightly disconnected."**
-   Nothing done. Standing hypothesis, needs a verdict before code: strip colour, the
-   plot disc, and the FIT room's overlay are three separate colour vocabularies, and
+our vocabularies, and
    the strips do not visually own their marker (no hover link, no shared highlight on
    selection). Ask before rebuilding.
 
@@ -96,8 +84,8 @@ Also still open (from `METHODS.md` / `current.md`, read this session):
   filter bank before scoring; our objective ERB-weights the grid but does not blur
   the candidate identically.
 * **Real-axis rows (LP1/HP1)** — 46 of 132 factory corners carry them; we hold them
-  verbatim but cannot author one. Needs a word law for real pairs. This is now
-  entangled with the HP fold (see failure 2).
+  verbatim but cannot author one. Needs a word law for real pairs. After the fold
+  they read as EQ rows whose Gain edit is a no-op.
 * Gain cuts (S3/S6): rule never recovered, we write none, 105/132 factory corners
   write none either. Leave it.
 
