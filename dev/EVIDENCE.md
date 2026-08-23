@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The zeros, censused.** 753 conjugate, 39 real-axis. Radius median 0.952 (quartiles
+0.871-0.987): most zeros are soft shaping zeros, 30% below 0.9, 18% at the S6 floor class
+(>= 0.999). The S6 zero radius is one value in all 132 corners, 0.9999980. 42% of zeros sit
+above 10 kHz and 21% above 15 kHz (parked as tilt). Measured against any pole in the
+corner, 70% of zeros sit within 0.36 oct of a pole (median 0.16 oct) - pairing partners,
+mostly in another section; 24% have no pole within half an octave, and 70 of those are
+deep (r > 0.99): free notches. The own-section offset histogram peaks at 0 (+/-0.5 oct,
+271 of 753) with a long positive tail out to +5 oct (the shelf and trench idioms) and a
+thin negative tail. Three jobs: pair, park, notch. (2026-08-23)
+
 **The acoustic unit is the pole/zero pair, not the section.** Over all 132 corners, a
 conjugate pole's nearest zero within half an octave sits in its own section for 20% of
 poles, in another section for 54%, and nowhere for 26%. The most common cross pairings:
