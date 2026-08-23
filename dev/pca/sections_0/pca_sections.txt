@@ -1,0 +1,8 @@
+corners 0: 33 curves per section, per-curve mean removed
+
+S1: PC1  87.9%  PC2   7.1%  PC3   2.2%  3 PCs  97.2%   PC1 +0.09 @ 19993 Hz, -0.05 @ 66 Hz   prototype span 15.5 dB
+S2: PC1  70.4%  PC2  19.7%  PC3   4.6%  3 PCs  94.6%   PC1 +0.04 @ 402 Hz, -0.11 @ 19993 Hz   prototype span 20.0 dB
+S3: PC1  78.4%  PC2   9.0%  PC3   4.0%  3 PCs  91.4%   PC1 +0.04 @ 650 Hz, -0.10 @ 11877 Hz   prototype span 26.1 dB
+S4: PC1  77.7%  PC2   8.1%  PC3   5.8%  3 PCs  91.6%   PC1 +0.06 @ 425 Hz, -0.10 @ 17195 Hz   prototype span 8.6 dB
+S5: PC1  71.5%  PC2  12.6%  PC3   6.9%  3 PCs  91.0%   PC1 +0.05 @ 361 Hz, -0.10 @ 17673 Hz   prototype span 20.5 dB
+S6: PC1  69.5%  PC2  19.6%  PC3   3.5%  3 PCs  92.5%   PC1 +0.04 @ 252 Hz, -0.12 @ 20269 Hz   prototype span 25.3 dB
