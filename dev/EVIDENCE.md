@@ -562,3 +562,14 @@ radius varies across a body's own Q corners, not across bodies sharing a corner.
 that one verbatim pair. The exact-copy network: klub/acid/tooth c0 (3-way), dead_ringer c1/
 ooh c0/eeh c1 (3-way), hedz c0/ubu c1, fuzzi/cruz c0, boland c0/lucifer c0, boland c1/
 bass_tracer c1, ooh c1/eeh c0, klub c1/acid c1, millennium/meaty c0+c1. (2026-08-24)
+
+**The Q0 library, five fingerprints, no clustering.** c0/c1 only (66 corners,
+`dev/library_q0_analysis.py`): pole-half duplicates = the same 10 groups / 22 corners as the
+all-corner run (Q100 contributes nothing). Exact full lanes (all 5 words) recur across
+bodies in only 12 cases and 10 of them are the Millennium=MeatyGizmo verbatim body - lane-
+level copying essentially does not exist outside whole-corner copying. Partial lanes (pole
+half only) recur 61 ways over 157 lane-slots - the real library is the pole half of a lane.
+Morph-pair reuse: only Millennium=MeatyGizmo and KlubKlassik=AcidRavage ship the same c0+c1
+pair; and 4 cross-role reuses exist where one body's c0 is another's c1 verbatim
+(ooh c0 = dead_ringer c1 = eeh c1; hedz c0 = ubu c1; eeh c0 = ooh c1) - E-mu pointed the
+same pose in opposite morph directions. (2026-08-24)
