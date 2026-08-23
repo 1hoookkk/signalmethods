@@ -17,6 +17,7 @@
 #include <QEnterEvent>
 #include <QListWidget>
 #include <QMouseEvent>
+#include <QAction>
 #include <QSignalSpy>
 #include <QPointer>
 #include <QSlider>
@@ -1291,6 +1292,31 @@ class MainWindowTest final : public QObject {
     const auto plain = peak_hz_below(window.document()->viewResponseDb(),
                                      window.document()->grid().hz, 4000.0);
     QVERIFY(std::abs(std::log2(shifted / plain) - 7.0 / 12.0) < 0.08);
+  }
+
+  void undoRestoresAStripEdit() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* strip = window.sectionStrip(1);
+    QVERIFY(strip != nullptr);
+    auto* fc = strip->findChild<QDoubleSpinBox*>(QStringLiteral("fcControl"));
+    QVERIFY(fc != nullptr);
+    const auto before = window.body().native_bytes();
+    const auto before_fc = fc->value();
+    fc->setValue(before_fc + 400.0);
+    QVERIFY(window.body().native_bytes() != before);
+    QCOMPARE(window.undoStack()->count(), 1);
+    QAction* undo_action = nullptr;
+    for (auto* action : window.findChildren<QAction*>()) {
+      if (action->shortcut() == QKeySequence(QKeySequence::Undo)) undo_action = action;
+    }
+    QVERIFY(undo_action != nullptr);
+    QVERIFY(undo_action->isEnabled());
+    window.undoStack()->undo();
+    QCOMPARE(window.body().native_bytes(), before);
+    QCOMPARE(fc->value(), before_fc);
   }
 };
 
