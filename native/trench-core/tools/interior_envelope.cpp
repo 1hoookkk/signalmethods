@@ -100,6 +100,7 @@ int main() {
   }
 
   std::array<double, kColumns> medians{};
+  std::array<double, kColumns> minima{};
   std::array<double, kColumns> maxima{};
   for (std::size_t ci = 0; ci < kColumns; ++ci) {
     std::vector<double> column;
@@ -108,9 +109,11 @@ int main() {
       column.push_back(row[ci]);
     }
     medians[ci] = median_of(column);
+    minima[ci] = *std::min_element(column.begin(), column.end());
     maxima[ci] = *std::max_element(column.begin(), column.end());
   }
   print_row("median", medians);
+  print_row("min", minima);
   print_row("max", maxima);
   return 0;
 }

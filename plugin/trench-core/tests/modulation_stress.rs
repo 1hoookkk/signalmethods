@@ -24,7 +24,7 @@ const HOST_BLOCK: usize = 512;
 const IMPULSE_AT: usize = 14_400;
 const WINDOW: usize = 4_800;
 const TRAJECTORIES: [&str; 7] = ["sq2", "sq20", "sq200", "sin.5", "sin5", "sin50", "step"];
-const FROZEN: [f64; 5] = [0.0, 0.25, 0.5, 0.75, 1.0];
+const FROZEN_STEPS: usize = 17;
 const QS: [f64; 2] = [0.0, 1.0];
 
 enum Morph<'a> {
@@ -175,8 +175,6 @@ fn modulation_envelope_over_the_factory_bank() {
     let mut frozens = Vec::new();
     let mut motions = Vec::new();
     let mut tails = Vec::new();
-    let mut nan_total = 0usize;
-    let mut unst_total = 0usize;
 
     for (name, body) in bodies() {
         let mut nan = 0usize;
@@ -201,7 +199,8 @@ fn modulation_envelope_over_the_factory_bank() {
                         tail = tail.max(tail_ratio_db(&out));
                     }
                 }
-                for &m in &FROZEN {
+                for k in 0..FROZEN_STEPS {
+                    let m = k as f64 / (FROZEN_STEPS - 1) as f64;
                     let (out, unstable) = render(&body, signal, q, Morph::Held(m));
                     nan += nonfinite(&out);
                     unst += usize::from(unstable);
@@ -223,8 +222,6 @@ fn modulation_envelope_over_the_factory_bank() {
         frozens.push(frozen_db);
         motions.push(motion_db);
         tails.push(tail);
-        nan_total += nan;
-        unst_total += unst;
     }
 
     println!(
@@ -240,8 +237,8 @@ fn modulation_envelope_over_the_factory_bank() {
     println!(
         "{:<24}{:>5}{:>6}{:>10.2}{:>11.2}{:>11.2}{:>10.2}",
         "max",
-        nan_total,
-        unst_total,
+        "-",
+        "-",
         peaks.iter().cloned().fold(f64::NEG_INFINITY, f64::max),
         frozens.iter().cloned().fold(f64::NEG_INFINITY, f64::max),
         motions.iter().cloned().fold(f64::NEG_INFINITY, f64::max),

@@ -205,7 +205,7 @@ TEST(P2kSectionParam, AGainEditKeepsThePoleAndTheAuthoredZeroOffset) {
         const auto edited = geometry(kept);
         const double authored = offset(geometry(current));
         const auto* zero = std::get_if<trench::core::ConjugatePair>(&edited.zero);
-        if (zero == nullptr) continue;
+        ASSERT_NE(zero, nullptr);
         if (zero->radius >= 0.9) {
           worst_resolved = std::max(worst_resolved, std::abs(offset(edited) - authored));
         }

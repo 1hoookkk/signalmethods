@@ -63,7 +63,7 @@ SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
   type_ = new QComboBox(this);
   type_->setObjectName(QStringLiteral("typeCombo"));
   type_->setFont(strip_font());
-  for (int index = 0; index < 4; ++index) {
+  for (int index = 0; index < 3; ++index) {
     type_->addItem(typeName(typeFromIndex(index)));
   }
   type_->setFixedHeight(kRowHeight);
@@ -165,7 +165,7 @@ QString SectionStrip::typeName(p2k::SectionType type) {
 p2k::SectionType SectionStrip::typeFromIndex(int index) {
   switch (index) {
     case 1: return p2k::SectionType::kLowPass;
-    case 3: return p2k::SectionType::kEq;
+    case 2: return p2k::SectionType::kEq;
     default: return p2k::SectionType::kOff;
   }
 }
@@ -173,7 +173,7 @@ p2k::SectionType SectionStrip::typeFromIndex(int index) {
 int SectionStrip::typeIndex(p2k::SectionType type) {
   switch (type) {
     case p2k::SectionType::kLowPass: return 1;
-    case p2k::SectionType::kEq: return 3;
+    case p2k::SectionType::kEq: return 2;
     case p2k::SectionType::kOff: return 0;
   }
   return 0;

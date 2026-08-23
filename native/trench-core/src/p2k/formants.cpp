@@ -32,7 +32,9 @@ constexpr SectionParam kParked{SectionType::kOff, 18000.0, 1.0, 0.0};
 
 constexpr SectionParam peak(double hz) { return {SectionType::kEq, hz, 0.2, 12.0}; }
 constexpr SectionParam notch(double hz) { return {SectionType::kEq, hz, 0.25, -30.0}; }
-constexpr SectionParam low(double hz) { return {SectionType::kLowPass, hz, 0.8, 0.0, hz * 32.0}; }
+constexpr SectionParam low(double hz, double trench_hz) {
+  return {SectionType::kLowPass, hz, 0.8, 0.0, trench_hz};
+}
 
 constexpr FormantRecipe paravowel(double f1, double f2, double f3, double f4, double f5) {
   return {{peak(f1), peak(f2), peak(f3), peak(f4), peak(f5), kParked}};
@@ -55,8 +57,8 @@ constexpr std::array<NamedRecipe, 8> kManualRecipes{{
     {"para U", paravowel(325, 700, 2530, 3500, 4950)},
     {"comb 8ve", comb(50.0, 2.0)},
     {"comb 1.61", comb(40.0, 1.61)},
-    {"one peak", {{peak(220), kParked, kParked, kParked, kParked, low(650)}}},
-    {"wah", {{peak(590), kParked, kParked, kParked, kParked, low(1200)}}},
+    {"one peak", {{peak(220), kParked, kParked, kParked, kParked, low(650, 5200)}}},
+    {"wah", {{peak(590), kParked, kParked, kParked, kParked, low(1200, 9600)}}},
 }};
 
 }  // namespace
@@ -70,11 +72,9 @@ const VowelFormants* klatt_vowel(std::string_view symbol) {
   return nullptr;
 }
 
-FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_lo_hz,
-                                 double tilt_hi_hz) {
+FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_lo_hz) {
   FormantRecipe out;
-  out.rows[0] = {SectionType::kOff, tilt_hi_hz, 1.0, 0.0};
-  std::size_t row = 1;
+  std::size_t row = 0;
   for (std::size_t i = 0; i < formants.size() && row < 5; ++i, ++row) {
     const auto& f = formants[i];
     const double bw_oct = bw_oct_of(f.hz, f.bw_hz);

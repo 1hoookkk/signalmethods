@@ -15,12 +15,12 @@ TEST(P2kFormants, KlattTableIIIsPresentAndAVowelRoundTripsThroughRows) {
   ASSERT_NE(iy, nullptr);
   const auto recipe = p2k::rows_from_formants(iy->f);
   const auto words = p2k::words_from_recipe(recipe);
-  for (std::size_t row = 1; row <= 3; ++row) {
+  for (std::size_t row = 0; row < 3; ++row) {
     const trench::core::PackedSection packed{words[row][0], words[row][1], words[row][2],
                                              words[row][3], 0};
     const auto param = p2k::param_of(packed, p2k::kSr);
     EXPECT_EQ(param.type, p2k::SectionType::kEq) << "row " << row;
-    EXPECT_NEAR(param.fc_hz, iy->f[row - 1].hz, iy->f[row - 1].hz * 0.05) << "row " << row;
+    EXPECT_NEAR(param.fc_hz, iy->f[row].hz, iy->f[row].hz * 0.05) << "row " << row;
   }
   const trench::core::PackedSection lp{words[5][0], words[5][1], words[5][2], words[5][3], 0};
   EXPECT_EQ(p2k::param_of(lp, p2k::kSr).type, p2k::SectionType::kLowPass);

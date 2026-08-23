@@ -28,8 +28,7 @@ struct FormantRecipe {
   std::array<SectionParam, 6> rows;
 };
 
-FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_lo_hz = 225.0,
-                                 double tilt_hi_hz = 10500.0);
+FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_lo_hz = 225.0);
 
 std::array<std::array<std::uint16_t, 4>, 6> words_from_recipe(const FormantRecipe& recipe,
                                                              double sample_rate_hz = kP2kDatumHz);

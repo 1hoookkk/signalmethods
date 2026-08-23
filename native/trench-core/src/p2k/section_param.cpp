@@ -192,7 +192,7 @@ std::array<std::uint16_t, 4> words_from_param_keeping_offset(
       if (!root_admissible(pole_mag, pole_rsq, true)) return current;
       return {current[0], current[1], pole_mag, pole_rsq};
     }
-    return current;
+    return words_from_param(param, current, section, sample_rate_hz);
   }
 
   double pole_hz = pole->hz;

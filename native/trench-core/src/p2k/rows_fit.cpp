@@ -97,10 +97,10 @@ Rows seed_rows_from_target(std::span<const double> target, const Grid& g) {
     if ((a.prominence > 0.0) != (b.prominence > 0.0)) return a.prominence > 0.0;
     return std::abs(a.prominence) > std::abs(b.prominence);
   });
-  if (features.size() > 4) features.resize(4);
+  if (features.size() > 5) features.resize(5);
   std::sort(features.begin(), features.end(),
             [](const Feature& a, const Feature& b) { return a.hz < b.hz; });
-  std::size_t row = 1;
+  std::size_t row = 0;
   for (const auto& f : features) {
     rows[row++] = {SectionType::kEq, clamp_fc(f.hz), f.bw_oct, f.prominence < 0.0 ? -12.0 : 12.0};
   }

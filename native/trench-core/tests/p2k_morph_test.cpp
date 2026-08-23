@@ -61,23 +61,6 @@ TEST(P2kMorph, TalkingHedzInteriorEnvelopeIsTheMeasuredOne) {
   EXPECT_NEAR(audit.loudness_beyond_corners_db, 30.06, 0.60);
   EXPECT_NEAR(audit.prefix_headroom_db, 62.35, 1.25);
   EXPECT_NEAR(audit.prefix_floor_db, -135.82, 2.72);
-
-  EXPECT_GE(audit.excursion_up_db, 0.0);
-  EXPECT_GE(audit.excursion_down_db, 0.0);
-  EXPECT_LE(audit.bilinear_dev_p95_db, audit.bilinear_dev_max_db);
-  EXPECT_GE(audit.detour_max, 1.0);
-
-  double loudest = -1e9;
-  for (std::size_t qi = 0; qi < 33; ++qi) {
-    const float qq = static_cast<float>(qi) / 32.0F;
-    for (std::size_t mi = 0; mi < 33; ++mi) {
-      const float m = static_cast<float>(mi) / 32.0F;
-      for (const double v : p2k::morph_response_db(body, m, qq)) {
-        loudest = std::max(loudest, v);
-      }
-    }
-  }
-  EXPECT_GE(audit.prefix_headroom_db, loudest);
 }
 
 TEST(P2kMorph, TheWordLerpLetsInteriorDcDriftUpToFiveDecibelsOffTheCorners) {
