@@ -41,6 +41,9 @@ target_link_libraries(trench_corpus_contribution PRIVATE trench_native_core)
 add_executable(trench_fit_target tools/fit_target.cpp)
 target_link_libraries(trench_fit_target PRIVATE trench_native_core)
 
+add_executable(trench_audition_morph tools/audition_morph.cpp)
+target_link_libraries(trench_audition_morph PRIVATE trench_native_core)
+
 add_executable(trench_interior_envelope tools/interior_envelope.cpp)
 target_link_libraries(trench_interior_envelope PRIVATE trench_native_core)
 target_compile_definitions(trench_interior_envelope PRIVATE
