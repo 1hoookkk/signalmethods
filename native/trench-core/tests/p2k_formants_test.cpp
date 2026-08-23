@@ -47,6 +47,42 @@ TEST(P2kFormants, TheVowelCascadePeaksAtItsFormants) {
   }
 }
 
+TEST(P2kFormants, TheManualParavowelsPeakWhereTheManualSaysAndTheCombsNotchAtOctaves) {
+  ASSERT_EQ(p2k::manual_recipes().size(), 8U);
+  const auto response_of = [](const p2k::FormantRecipe& recipe) {
+    const auto words = p2k::words_from_recipe(recipe);
+    p2k::StoredCorner corner{};
+    for (std::size_t si = 0; si < 6; ++si) {
+      for (std::size_t wi = 0; wi < 4; ++wi) corner[si][wi] = words[si][wi];
+      corner[si][4] = p2k::nearest_gain_word(0.25);
+    }
+    return p2k::corner_response_db(corner);
+  };
+  const auto& hz = p2k::grid().hz;
+  const auto* a = p2k::manual_recipe("para A");
+  ASSERT_NE(a, nullptr);
+  const auto peaks = p2k::peaks_of_envelope(hz, response_of(a->recipe), 6);
+  for (const double f : {800.0, 1150.0, 2800.0, 3500.0, 4950.0}) {
+    bool hit = false;
+    for (const auto& p : peaks) hit = hit || std::abs(std::log2(p.hz / f)) < 0.12;
+    EXPECT_TRUE(hit) << "no peak near " << f;
+  }
+  const auto* comb = p2k::manual_recipe("comb 8ve");
+  ASSERT_NE(comb, nullptr);
+  const auto response = response_of(comb->recipe);
+  const auto db_at = [&](double f) {
+    std::size_t best = 0;
+    for (std::size_t i = 1; i < hz.size(); ++i) {
+      if (std::abs(std::log(hz[i] / f)) < std::abs(std::log(hz[best] / f))) best = i;
+    }
+    return response[best];
+  };
+  for (const double f : {100.0, 200.0, 400.0, 800.0, 1600.0}) {
+    EXPECT_LT(db_at(f), db_at(f * std::sqrt(2.0)) - 12.0) << "no notch at " << f;
+  }
+  EXPECT_EQ(p2k::manual_recipe("nope"), nullptr);
+}
+
 TEST(P2kFormants, PeaksOfAnEnvelopeAreSortedByFrequencyAndCapped) {
   std::vector<double> hz;
   std::vector<double> db;

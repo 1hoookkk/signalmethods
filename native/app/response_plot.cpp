@@ -128,7 +128,7 @@ trench::core::Cascade corner_cascade(const trench::core::PackedBody& body,
 ResponsePlotWidget::ResponsePlotWidget(QWidget* parent) : QWidget(parent) {
   setMinimumSize(480, 280);
   setAutoFillBackground(false);
-  setMouseTracking(false);
+  setMouseTracking(true);
 }
 
 void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
@@ -174,6 +174,12 @@ void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
 
 void ResponsePlotWidget::setSelectedSection(std::size_t section) {
   selected_section_ = section;
+  update();
+}
+
+void ResponsePlotWidget::setHighlightedSection(std::optional<std::size_t> section) {
+  if (highlight_section_ == section) return;
+  highlight_section_ = section;
   update();
 }
 
@@ -409,6 +415,10 @@ bool ResponsePlotWidget::refusalVisible() const noexcept {
          refusal_age_.elapsed() <= kRefusalHoldMs;
 }
 
+std::optional<std::size_t> ResponsePlotWidget::highlightedSection() const noexcept {
+  return highlight_section_;
+}
+
 QRectF ResponsePlotWidget::plotRect() const {
   const auto band = target_db_.empty() ? 0.0 : kResidualBandPx;
   return QRectF(rect()).adjusted(54.0, 28.0, -18.0, -(36.0 + band));
@@ -556,6 +566,13 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
 
 void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
   if (!pressed_) {
+    const auto token = hit(event->position());
+    const auto hovered =
+        token ? std::optional<std::size_t>{token->section} : std::nullopt;
+    if (hovered != last_hover_section_) {
+      last_hover_section_ = hovered;
+      emit tokenHovered(hovered);
+    }
     QWidget::mouseMoveEvent(event);
     return;
   }
@@ -578,6 +595,14 @@ void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
   }
   moveTo(at);
   event->accept();
+}
+
+void ResponsePlotWidget::leaveEvent(QEvent* event) {
+  if (last_hover_section_) {
+    last_hover_section_.reset();
+    emit tokenHovered(std::nullopt);
+  }
+  QWidget::leaveEvent(event);
 }
 
 void ResponsePlotWidget::mouseReleaseEvent(QMouseEvent* event) {
@@ -707,9 +732,12 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
                         flash_age_.elapsed() <= kFlashHoldMs;
   for (const auto& token : tokens()) {
     auto ink = section_color(token.section);
-    if (flashing && token.section == *flash_section_) ink = ink.lighter(160);
+    const auto highlighted = highlight_section_ && token.section == *highlight_section_;
+    if ((flashing && token.section == *flash_section_) || highlighted) {
+      ink = ink.lighter(160);
+    }
     const auto selected = token.section == selected_section_;
-    const auto radius = kTokenRadiusPx * (selected ? 0.8 : 0.6);
+    const auto radius = kTokenRadiusPx * (selected || highlighted ? 0.8 : 0.6);
     if (token.lane == Lane::kPole) {
       painter.setPen(QPen(kBackground, 1.5));
       painter.setBrush(token.pinned ? QBrush(kBackground) : QBrush(ink));
@@ -718,6 +746,11 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
         painter.setPen(QPen(ink, 2.0));
         painter.setBrush(Qt::NoBrush);
         painter.drawEllipse(token.position, radius - 1.0, radius - 1.0);
+      }
+      if (selected) {
+        painter.setPen(QPen(ink, 1.2));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(token.position, radius + 3.5, radius + 3.5);
       }
     } else {
       painter.setPen(QPen(ink, token.pinned ? 2.4 : 1.4));

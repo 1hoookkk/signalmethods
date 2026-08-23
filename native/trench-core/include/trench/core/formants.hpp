@@ -34,6 +34,14 @@ FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_
 std::array<std::array<std::uint16_t, 4>, 6> words_from_recipe(const FormantRecipe& recipe,
                                                              double sample_rate_hz = kP2kDatumHz);
 
+struct NamedRecipe {
+  std::string_view name;
+  FormantRecipe recipe;
+};
+
+std::span<const NamedRecipe> manual_recipes();
+const NamedRecipe* manual_recipe(std::string_view name);
+
 struct SpectralPeak {
   double hz{};
   double db{};

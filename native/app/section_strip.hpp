@@ -20,6 +20,7 @@ class SectionStrip final : public QWidget {
 
   void setParam(const trench::core::p2k::SectionParam& param);
   void setSelected(bool selected);
+  void setHighlighted(bool highlighted);
   [[nodiscard]] std::size_t section() const noexcept;
   [[nodiscard]] bool selected() const noexcept;
   [[nodiscard]] double faderDb() const;
@@ -36,16 +37,20 @@ class SectionStrip final : public QWidget {
   void gestureFinished(std::size_t section);
   void paramEdited(std::size_t section, trench::core::p2k::SectionEdit edit,
                    const trench::core::p2k::SectionParam& param);
+  void hoverChanged(std::size_t section, bool inside);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
+  void enterEvent(QEnterEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
  private:
   void relay(trench::core::p2k::SectionEdit edit);
 
   std::size_t section_{};
   bool selected_{};
+  bool highlighted_{};
   bool updating_{};
   trench::core::p2k::SectionParam param_{};
   QComboBox* type_{};

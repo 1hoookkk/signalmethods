@@ -13,6 +13,7 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDoubleSpinBox>
+#include <QEnterEvent>
 #include <QListWidget>
 #include <QMouseEvent>
 #include <QSignalSpy>
@@ -1184,6 +1185,22 @@ class MainWindowTest final : public QObject {
     QVERIFY(!plot->tokens().empty());
   }
 
+  void hoveringAStripHighlightsItsTokens() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* strip = window.sectionStrip(1);
+    QVERIFY(strip != nullptr);
+    const QPointF at{4.0, 4.0};
+    QEnterEvent enter(at, at, strip->mapToGlobal(at));
+    QCoreApplication::sendEvent(strip, &enter);
+    QCOMPARE(window.responsePlot()->highlightedSection(), std::optional<std::size_t>{1});
+    QEvent leave(QEvent::Leave);
+    QCoreApplication::sendEvent(strip, &leave);
+    QCOMPARE(window.responsePlot()->highlightedSection(), std::optional<std::size_t>{});
+  }
+
   void aVowelWritesTypedRowsAsOneUndoEntry() {
     namespace p2k = trench::core::p2k;
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
@@ -1199,6 +1216,21 @@ class MainWindowTest final : public QObject {
     QCOMPARE(eq, std::size_t{3});
     window.undoStack()->undo();
     QCOMPARE(window.body().native_bytes(), before);
+  }
+
+  void aManualRecipeWritesItsRowsThroughTheSameChooser() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    const auto before = window.body().native_bytes();
+    window.applyVowel(QStringLiteral("comb 8ve"));
+    QVERIFY(window.body().native_bytes() != before);
+    QCOMPARE(window.undoStack()->count(), 1);
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      const auto param = p2k::param_of(window.body().words[0][section], trench::core::kP2kDatumHz);
+      QCOMPARE(param.type, p2k::SectionType::kEq);
+      QVERIFY(param.gain_db < -12.0);
+    }
+    QCOMPARE(window.fitRoom()->vowelBox()->findText(QStringLiteral("para A")) >= 0, true);
   }
 };
 

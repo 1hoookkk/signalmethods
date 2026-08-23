@@ -23,6 +23,7 @@
 
 #include <cctype>
 #include <fstream>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -158,6 +159,12 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](std::size_t section, ResponsePlotWidget::Lane) {
             selectSection(section);
           });
+  connect(response_plot_, &ResponsePlotWidget::tokenHovered, this,
+          [this](std::optional<std::size_t> section) {
+            for (auto* strip : strips_) {
+              strip->setHighlighted(section && *section == strip->section());
+            }
+          });
   for (auto* strip : strips_) {
     connect(strip, &SectionStrip::selectRequested, this, &MainWindow::selectSection);
     connect(strip, &SectionStrip::gestureStarted, this, [this](std::size_t section) {
@@ -169,6 +176,11 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
       document_->commitGesture(section, before_words_);
     });
     connect(strip, &SectionStrip::paramEdited, this, &MainWindow::applyParam);
+    connect(strip, &SectionStrip::hoverChanged, this,
+            [this](std::size_t section, bool inside) {
+              response_plot_->setHighlightedSection(
+                  inside ? std::optional<std::size_t>{section} : std::nullopt);
+            });
   }
   connect(document_, &BodyDocument::bodyChanged, this, [this] {
     response_plot_->refresh();
@@ -260,6 +272,9 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   QStringList vowels;
   for (const auto& vowel : trench::core::p2k::klatt_vowels()) {
     vowels.push_back(QString::fromUtf8(vowel.symbol.data(), static_cast<int>(vowel.symbol.size())));
+  }
+  for (const auto& recipe : trench::core::p2k::manual_recipes()) {
+    vowels.push_back(QString::fromUtf8(recipe.name.data(), static_cast<int>(recipe.name.size())));
   }
   fit_room_->setVowels(vowels);
   connect(fit_room_, &FitRoom::overlaySelected, this, &MainWindow::selectOverlay);
@@ -558,8 +573,10 @@ void MainWindow::applyVowel(const QString& symbol) {
   namespace p2k = trench::core::p2k;
   if (fit_active_) return;
   const auto* vowel = p2k::klatt_vowel(symbol.toStdString());
-  if (vowel == nullptr) return;
-  const auto words = p2k::words_from_recipe(p2k::rows_from_formants(vowel->f));
+  const auto* manual = p2k::manual_recipe(symbol.toStdString());
+  if (vowel == nullptr && manual == nullptr) return;
+  const auto words = p2k::words_from_recipe(vowel != nullptr ? p2k::rows_from_formants(vowel->f)
+                                                             : manual->recipe);
   const auto before = document_->cornerSnapshot();
   auto after = before;
   for (std::size_t section = 0; section < p2k::kStageCount; ++section) {

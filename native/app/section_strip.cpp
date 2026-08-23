@@ -4,6 +4,7 @@
 
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QEnterEvent>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
@@ -25,6 +26,9 @@ const QColor kLine{55, 63, 67};
 constexpr int kGainSteps = 10;
 constexpr int kGainSpanDb = 72;
 constexpr int kRowHeight = 18;
+constexpr int kBandPx = 3;
+constexpr int kBandHighlightPx = 5;
+constexpr int kSelectedTintAlpha = 28;
 constexpr double kSeedFcHz = 1000.0;
 constexpr double kSeedBwOct = 0.5;
 
@@ -194,6 +198,8 @@ void SectionStrip::setParam(const p2k::SectionParam& param) {
                                 : QString::number(param.gain_db, 'f', 1));
   fc_->setText(live ? QString::number(param.fc_hz, 'f', param.fc_hz < 100.0 ? 1 : 0)
                     : QStringLiteral("—"));
+  fc_->setStyleSheet(QStringLiteral("color: %1;")
+                         .arg((live ? section_color(section_) : kDim).name()));
   update();
 }
 
@@ -201,6 +207,12 @@ void SectionStrip::setSelected(bool selected) {
   selected_ = selected;
   type_->setVisible(selected);
   bw_->setVisible(selected);
+  update();
+}
+
+void SectionStrip::setHighlighted(bool highlighted) {
+  if (highlighted_ == highlighted) return;
+  highlighted_ = highlighted;
   update();
 }
 
@@ -232,11 +244,27 @@ void SectionStrip::mousePressEvent(QMouseEvent* event) {
   event->accept();
 }
 
+void SectionStrip::enterEvent(QEnterEvent* event) {
+  emit hoverChanged(section_, true);
+  QWidget::enterEvent(event);
+}
+
+void SectionStrip::leaveEvent(QEvent* event) {
+  emit hoverChanged(section_, false);
+  QWidget::leaveEvent(event);
+}
+
 void SectionStrip::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.fillRect(rect(), kChassis);
   const auto hue = section_color(section_);
-  painter.fillRect(QRectF(0.0, 0.0, width(), 2.0), hue);
+  if (selected_) {
+    auto tint = hue;
+    tint.setAlpha(kSelectedTintAlpha);
+    painter.fillRect(rect(), tint);
+  }
+  const auto band = highlighted_ ? kBandHighlightPx : kBandPx;
+  painter.fillRect(QRectF(0.0, 0.0, width(), band), hue);
   painter.setPen(selected_ ? hue : kLine);
-  painter.drawLine(width() - 1, 2, width() - 1, height());
+  painter.drawLine(width() - 1, band, width() - 1, height());
 }

@@ -28,6 +28,37 @@ double bw_oct_of(double fc_hz, double bw_hz) {
   return 2.0 * std::asinh(bw_hz / (2.0 * fc_hz)) / std::log(2.0);
 }
 
+constexpr SectionParam kParked{SectionType::kOff, 18000.0, 1.0, 0.0};
+
+constexpr SectionParam peak(double hz) { return {SectionType::kEq, hz, 0.2, 12.0}; }
+constexpr SectionParam notch(double hz) { return {SectionType::kEq, hz, 0.25, -30.0}; }
+constexpr SectionParam low(double hz) { return {SectionType::kLowPass, hz, 0.8, 0.0, hz * 32.0}; }
+
+constexpr FormantRecipe paravowel(double f1, double f2, double f3, double f4, double f5) {
+  return {{peak(f1), peak(f2), peak(f3), peak(f4), peak(f5), kParked}};
+}
+
+constexpr FormantRecipe comb(double base_hz, double ratio) {
+  FormantRecipe out{};
+  double hz = base_hz;
+  for (auto& row : out.rows) {
+    row = notch(hz);
+    hz *= ratio;
+  }
+  return out;
+}
+
+constexpr std::array<NamedRecipe, 8> kManualRecipes{{
+    {"para A", paravowel(800, 1150, 2800, 3500, 4950)},
+    {"para E", paravowel(400, 1600, 2700, 3300, 4900)},
+    {"para O", paravowel(450, 800, 2830, 3500, 4950)},
+    {"para U", paravowel(325, 700, 2530, 3500, 4950)},
+    {"comb 8ve", comb(50.0, 2.0)},
+    {"comb 1.61", comb(40.0, 1.61)},
+    {"one peak", {{peak(220), kParked, kParked, kParked, kParked, low(650)}}},
+    {"wah", {{peak(590), kParked, kParked, kParked, kParked, low(1200)}}},
+}};
+
 }  // namespace
 
 std::span<const VowelFormants> klatt_vowels() { return kKlattTableII; }
@@ -64,6 +95,15 @@ std::array<std::array<std::uint16_t, 4>, 6> words_from_recipe(const FormantRecip
     out[si] = words_from_param(recipe.rows[si], identity[si], si, sample_rate_hz);
   }
   return out;
+}
+
+std::span<const NamedRecipe> manual_recipes() { return kManualRecipes; }
+
+const NamedRecipe* manual_recipe(std::string_view name) {
+  for (const auto& r : kManualRecipes) {
+    if (r.name == name) return &r;
+  }
+  return nullptr;
 }
 
 std::vector<SpectralPeak> peaks_of_envelope(std::span<const double> hz, std::span<const double> db,

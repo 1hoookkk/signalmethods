@@ -47,6 +47,7 @@ class ResponsePlotWidget final : public QWidget {
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
   void setSelectedSection(std::size_t section);
+  void setHighlightedSection(std::optional<std::size_t> section);
   void flashLane(std::size_t section);
   void refresh();
 
@@ -58,6 +59,7 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] double residualDbAt(std::size_t index) const;
   [[nodiscard]] std::vector<TokenInfo> tokens() const;
   [[nodiscard]] bool refusalVisible() const noexcept;
+  [[nodiscard]] std::optional<std::size_t> highlightedSection() const noexcept;
 
  signals:
   void gestureStarted(std::size_t section);
@@ -65,12 +67,14 @@ class ResponsePlotWidget final : public QWidget {
   void sectionEdited(std::size_t section, const trench::core::PackedSection& words);
   void pinToggled(std::size_t section, ResponsePlotWidget::Lane lane);
   void tokenSelected(std::size_t section, ResponsePlotWidget::Lane lane);
+  void tokenHovered(std::optional<std::size_t> section);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
  private:
   [[nodiscard]] QRectF plotRect() const;
@@ -95,6 +99,8 @@ class ResponsePlotWidget final : public QWidget {
   trench::core::p2k::PerceptualSpace space_{};
   std::uint32_t freedom_mask_{0xFFFFFFFFU};
   std::size_t selected_section_{};
+  std::optional<std::size_t> highlight_section_;
+  std::optional<std::size_t> last_hover_section_;
   std::vector<double> frequencies_hz_;
   std::vector<double> response_db_;
   std::array<double, trench::core::kLegacySectionCount> running_peak_db_{};
