@@ -22,11 +22,14 @@ def group_of(name):
 
 
 def main():
-    out = ROOT / "dev" / "pca"
-    out.mkdir(exist_ok=True)
+    corners = sys.argv[1] if len(sys.argv) > 1 else "0123"
+    out = ROOT / "dev" / "pca" / f"corners_{corners}"
+    out.mkdir(parents=True, exist_ok=True)
     hz = np.array(core.erb_grid_hz())
     curves, labels = [], []
     for path in sorted((ROOT / "ref" / "transfer").glob("P2k_0*_c?.txt")):
+        if path.stem[-1] not in corners:
+            continue
         db = np.loadtxt(path)
         curves.append(db - db.mean())
         labels.append(path.stem)
@@ -82,7 +85,10 @@ def main():
     for body in sorted({l[:-3] for l in labels}):
         idx = [i for i, l in enumerate(labels) if l.startswith(body)]
         pts = scores[idx, :2]
-        ax.plot(pts[[0, 1, 3, 2, 0], 0], pts[[0, 1, 3, 2, 0], 1], "-", color=colors[group_of(body)], alpha=0.5, lw=0.8)
+        if len(pts) == 4:
+            ax.plot(pts[[0, 1, 3, 2, 0], 0], pts[[0, 1, 3, 2, 0], 1], "-", color=colors[group_of(body)], alpha=0.5, lw=0.8)
+        elif len(pts) > 1:
+            ax.plot(pts[:, 0], pts[:, 1], "-", color=colors[group_of(body)], alpha=0.5, lw=0.8)
         ax.scatter(pts[:, 0], pts[:, 1], s=14, color=colors[group_of(body)])
         ax.annotate(body[4:7], pts[0], fontsize=6, alpha=0.7)
     ax.set_xlabel("PC1")

@@ -1,0 +1,48 @@
+33 corners, 512 points, per-curve mean removed (level is the corner gain)
+variance explained: PC1 84.0% PC2 9.3% PC3 2.5% PC4 1.2% PC5 0.7% PC6 0.5% PC7 0.4% PC8 0.4%
+cumulative 3 PCs 95.8%  5 PCs 97.7%  8 PCs 98.9%
+
+PC1: +0.09 at 12375 Hz, -0.05 at 402 Hz
+PC2: +0.18 at 20269 Hz, -0.10 at 4249 Hz
+PC3: +0.07 at 3459 Hz, -0.12 at 12375 Hz
+PC4: +0.12 at 7251 Hz, -0.11 at 2027 Hz
+
+corner                             group       PC1      PC2      PC3
+P2k_000_ace_of_bass_c0             bass      -61.8   -229.9    137.1
+P2k_001_megasweepz_c0              sweep     230.5   -135.7    -48.5
+P2k_002_early_rizer_c0             sweep      56.3   -209.1      5.4
+P2k_003_millennium_c0              other    -238.7    155.7    250.0
+P2k_004_meaty_gizmo_c0             other    -238.7    155.7    250.0
+P2k_005_klub_klassik_c0            other     189.2    237.1   -102.8
+P2k_006_bassbox_303_c0             bass      111.4    270.9    -25.9
+P2k_007_fuzzi_face_c0              other   -2043.3   -159.5    -38.5
+P2k_008_dead_ringer_c0             other     487.4    137.0    141.9
+P2k_009_tb_or_not_tb_c0            bass      162.0    111.2   -129.3
+P2k_010_ooh_to_eee_c0              vocal      56.8   -269.6    -15.4
+P2k_011_boland_bass_c0             bass     -297.0    287.6    -18.8
+P2k_012_multi_q_vox_c0             vocal     243.7     -2.3    122.9
+P2k_013_talking_hedz_c0            vocal     186.3     57.2    -31.0
+P2k_014_zoom_peaks_c0              other    -574.4    137.9    120.3
+P2k_015_dj_alkaline_c0             other     394.3   -193.6    -43.3
+P2k_016_bass_tracer_c0             bass      321.6    158.9   -103.4
+P2k_017_rogue_hertz_c0             sweep     366.5     89.8    -14.6
+P2k_018_razor_blades_c0            other     319.0     14.4    -98.2
+P2k_019_radio_craze_c0             other     385.3    -82.2     25.2
+P2k_020_eeh_to_aah_c0              vocal     402.4     75.9     76.1
+P2k_021_ubu_orator_c0              vocal     149.2   -215.6    -38.0
+P2k_022_deep_bouche_c0             vocal     158.1   -243.9     76.5
+P2k_023_freak_shifta_c0            other     406.1    -99.9   -113.5
+P2k_024_cruz_pusher_c0             other   -1973.7    -67.8    -87.9
+P2k_025_angelz_hairz_c0            other     156.9   -211.7    -64.0
+P2k_026_dream_weava_c0             sweep     388.1   -170.2    -11.1
+P2k_027_acid_ravage_c0             sweep      73.0    244.3   -111.9
+P2k_028_bass_o_matic_c0            bass      177.0    205.9    -38.1
+P2k_029_lucifer_s_q_c0             other    -303.4    295.0    -22.3
+P2k_030_tooth_comb_c0              other     -57.5    130.4    -58.2
+P2k_031_ear_bender_c0              other     114.1   -112.0    -29.3
+P2k_032_klang_kling_c0             other     253.1   -362.0     38.7
+
+bass   n=  6 mean PC1   68.9 PC2  134.1 PC3  -29.7  sd 198.7 173.7 85.0
+vocal  n=  6 mean PC1  199.4 PC2  -99.7 PC3   31.8  sd 106.4 146.1 62.3
+sweep  n=  5 mean PC1  222.9 PC2  -36.2 PC3  -36.2  sd 140.1 174.5 41.7
+other  n= 16 mean PC1 -170.3 PC2   -1.6 PC3   10.5  sd 753.8 180.2 115.4
