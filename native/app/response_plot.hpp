@@ -53,6 +53,7 @@ class ResponsePlotWidget final : public QWidget {
 
   [[nodiscard]] std::size_t responsePointCount() const noexcept;
   [[nodiscard]] double frequencyAt(std::size_t index) const;
+  [[nodiscard]] double xForFrequency(double frequency_hz) const;
   [[nodiscard]] double responseDbAt(std::size_t index) const;
   [[nodiscard]] double runningPeakDb(std::size_t section) const;
   [[nodiscard]] std::size_t residualPointCount() const noexcept;
@@ -68,12 +69,15 @@ class ResponsePlotWidget final : public QWidget {
   void pinToggled(std::size_t section, ResponsePlotWidget::Lane lane);
   void tokenSelected(std::size_t section, ResponsePlotWidget::Lane lane);
   void tokenHovered(std::optional<std::size_t> section);
+  void resonanceRequested(double frequency_hz);
+  void sectionCleared(std::size_t section);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
   void leaveEvent(QEvent* event) override;
 
  private:
@@ -113,6 +117,7 @@ class ResponsePlotWidget final : public QWidget {
   bool pressed_{};
   bool moved_{};
   bool dragging_{};
+  bool pin_emitted_{};
   std::size_t press_section_{};
   Lane press_lane_{Lane::kPole};
   QPointF press_position_;

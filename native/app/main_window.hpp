@@ -47,9 +47,9 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] bool fitRunning() const noexcept;
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
-  void applyParam(std::size_t section, trench::core::p2k::SectionEdit edit,
-                  const trench::core::p2k::SectionParam& param);
-  void applyShape(std::size_t section, const trench::core::p2k::ShapeParam& param);
+  void applyMask(std::size_t section, const trench::core::p2k::MaskParam& mask);
+  void addResonance(double frequency_hz);
+  void clearSection(std::size_t section);
   void selectSection(std::size_t section);
   void setCorner(std::size_t corner);
   bool saveBody(const std::filesystem::path& path);

@@ -94,6 +94,12 @@ trench::core::p2k::StoredCorner unflatten_stored(const QList<quint16>& words) {
   return out;
 }
 
+trench::core::PackedBody empty_body() {
+  trench::core::PackedBody body;
+  for (auto& corner : body.words) corner.fill(trench::core::kIdentitySection);
+  return body;
+}
+
 }  // namespace
 
 MainWindow::MainWindow(const std::filesystem::path& body_path,
@@ -101,7 +107,8 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
                        QWidget* parent)
     : QMainWindow(parent), body_path_(body_path) {
   document_ = new BodyDocument(
-      trench::core::PackedBody::from_body_bytes(read_bytes(body_path)),
+      body_path.empty() ? empty_body()
+                        : trench::core::PackedBody::from_body_bytes(read_bytes(body_path)),
       sample_rate_hz, this);
   fit_controller_ = new FitController(this);
 
@@ -139,7 +146,10 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   column->addWidget(chassis_bar_, 0);
 
   setCentralWidget(central);
-  setWindowTitle(QStringLiteral("TRENCH — %1").arg(QString::fromStdString(body_path.stem().string())));
+  setWindowTitle(body_path.empty()
+                     ? QStringLiteral("TRENCH")
+                     : QStringLiteral("TRENCH — %1")
+                           .arg(QString::fromStdString(body_path.stem().string())));
   resize(960, 540);
 
   connect(response_plot_, &ResponsePlotWidget::gestureStarted, this,
@@ -162,6 +172,10 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](std::size_t section, ResponsePlotWidget::Lane) {
             selectSection(section);
           });
+  connect(response_plot_, &ResponsePlotWidget::resonanceRequested, this,
+          &MainWindow::addResonance);
+  connect(response_plot_, &ResponsePlotWidget::sectionCleared, this,
+          &MainWindow::clearSection);
   connect(response_plot_, &ResponsePlotWidget::tokenHovered, this,
           [this](std::optional<std::size_t> section) {
             for (auto* strip : strips_) {
@@ -178,8 +192,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
       strip_gesture_ = false;
       document_->commitGesture(section, before_words_);
     });
-    connect(strip, &SectionStrip::paramEdited, this, &MainWindow::applyParam);
-    connect(strip, &SectionStrip::shapeEdited, this, &MainWindow::applyShape);
+    connect(strip, &SectionStrip::maskEdited, this, &MainWindow::applyMask);
     connect(strip, &SectionStrip::hoverChanged, this,
             [this](std::size_t section, bool inside) {
               response_plot_->setHighlightedSection(
@@ -468,13 +481,13 @@ void MainWindow::applySection(std::size_t section,
   document_->applySection(section, words);
 }
 
-void MainWindow::applyParam(std::size_t section, trench::core::p2k::SectionEdit edit,
-                            const trench::core::p2k::SectionParam& param) {
+void MainWindow::applyMask(std::size_t section,
+                           const trench::core::p2k::MaskParam& mask) {
   if (section >= trench::core::kLegacySectionCount) return;
   const auto before = document_->body().words[document_->corner()][section];
   const std::array<std::uint16_t, 4> current{before[0], before[1], before[2], before[3]};
-  const auto roots = trench::core::p2k::words_from_param_keeping_offset(
-      param, edit, current, section, trench::core::kP2kDatumHz);
+  const auto roots = trench::core::p2k::words_from_mask(mask, current, section,
+                                                        trench::core::kP2kDatumHz);
   auto candidate = before;
   for (std::size_t word = 0; word < roots.size(); ++word) {
     candidate[word] = roots[word];
@@ -486,17 +499,37 @@ void MainWindow::applyParam(std::size_t section, trench::core::p2k::SectionEdit 
   }
 }
 
-void MainWindow::applyShape(std::size_t section,
-                            const trench::core::p2k::ShapeParam& param) {
-  if (section >= trench::core::kLegacySectionCount) return;
-  const auto before = document_->body().words[document_->corner()][section];
-  const auto candidate = trench::core::p2k::words_from_shape(param, before, section,
-                                                             trench::core::kP2kDatumHz);
-  if (candidate == before) return;
-  document_->applySection(section, candidate);
-  if (!strip_gesture_) {
+void MainWindow::addResonance(double frequency_hz) {
+  namespace p2k = trench::core::p2k;
+  if (fit_active_) return;
+  const auto& corner = document_->body().words[document_->corner()];
+  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+    if (p2k::param_of(corner[section], trench::core::kP2kDatumHz).type !=
+        p2k::SectionType::kOff) {
+      continue;
+    }
+    const auto before = corner[section];
+    const std::array<std::uint16_t, 4> current{before[0], before[1], before[2], before[3]};
+    const auto roots = p2k::words_from_pole(frequency_hz, p2k::kPlacedPoleBwHz, current,
+                                            section, trench::core::kP2kDatumHz);
+    auto candidate = before;
+    for (std::size_t word = 0; word < roots.size(); ++word) {
+      candidate[word] = roots[word];
+    }
+    if (candidate == before) return;
+    document_->applySection(section, candidate);
     document_->commitGesture(section, before);
+    selectSection(section);
+    return;
   }
+}
+
+void MainWindow::clearSection(std::size_t section) {
+  if (section >= trench::core::kLegacySectionCount || fit_active_) return;
+  const auto before = document_->body().words[document_->corner()][section];
+  if (before == trench::core::kIdentitySection) return;
+  document_->applySection(section, trench::core::kIdentitySection);
+  document_->commitGesture(section, before);
 }
 
 void MainWindow::selectSection(std::size_t section) {
@@ -715,9 +748,10 @@ void MainWindow::updateProbes() {
 
 void MainWindow::updateStrips() {
   for (auto* strip : strips_) {
-    strip->setParam(trench::core::p2k::shape_of(
-        document_->body().words[document_->corner()][strip->section()],
-        trench::core::kP2kDatumHz));
+    const auto& words = document_->body().words[document_->corner()][strip->section()];
+    strip->setReading(
+        trench::core::p2k::pole_of(words, trench::core::kP2kDatumHz),
+        trench::core::p2k::mask_of(words, strip->section(), trench::core::kP2kDatumHz));
   }
 }
 

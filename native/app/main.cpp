@@ -161,11 +161,9 @@ int main(int argc, char* argv[]) {
   parser.addOption(save_option);
   parser.process(application);
 
-  const auto default_body = std::filesystem::path(TRENCH_SOURCE_ROOT) /
-                            "ref/presets/P2k_013_talking_hedz.bin";
   const auto body_path = parser.isSet(body_option)
                              ? std::filesystem::path(parser.value(body_option).toStdWString())
-                             : default_body;
+                             : std::filesystem::path();
   bool sample_rate_ok = false;
   const auto sample_rate_hz = parser.value(sample_rate_option).toDouble(&sample_rate_ok);
   if (!sample_rate_ok || sample_rate_hz <= 0.0) {

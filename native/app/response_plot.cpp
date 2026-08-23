@@ -30,6 +30,7 @@ constexpr double kTraceWidthPx = 1.1;
 constexpr float kTraceFlatPx = 0.15F;
 
 constexpr double kRadiusWarpMax = 60.0;
+constexpr double kWidthSpanOct = 6.0;
 constexpr double kHitRadiusPx = 11.0;
 constexpr double kTokenRadiusPx = 8.0;
 constexpr qint64 kRefusalHoldMs = 600;
@@ -438,6 +439,13 @@ std::pair<double, double> ResponsePlotWidget::dbRange() const {
   return {low_db, high_db};
 }
 
+double ResponsePlotWidget::xForFrequency(double frequency_hz) const {
+  const auto plot = plotRect();
+  if (frequencies_hz_.empty() || plot.width() <= 0.0) return 0.0;
+  return x_for_frequency(frequency_hz, frequencies_hz_.front(), frequencies_hz_.back(),
+                         plot);
+}
+
 std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
   std::vector<TokenInfo> out;
   if (body_ == nullptr || !at_corner_ || frequencies_hz_.empty()) return out;
@@ -508,12 +516,20 @@ void ResponsePlotWidget::moveTo(const QPointF& at) {
 
   const auto hz = std::clamp(frequency_for_x(at.x(), low_hz, high_hz, plot), 20.0,
                              p2k::kRootHiHz);
-  const auto warp_delta =
-      (press_position_.y() - at.y()) / plot.height() * kRadiusWarpMax;
-  double radius = s6_zero ? p2k::s6_zero_radius()
-                          : radius_of_warp(warp_of_radius(press_radius_) + warp_delta);
-  radius = is_pole ? std::clamp(radius, 0.0, p2k::kPoleRMax)
-                   : std::clamp(radius, 0.0, 1.0);
+  const auto rise = (press_position_.y() - at.y()) / plot.height();
+  double radius = 0.0;
+  if (is_pole) {
+    const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
+                          trench::core::kP2kDatumHz / std::numbers::pi;
+    const auto bw = press_bw * std::pow(2.0, -rise * kWidthSpanOct);
+    radius = std::clamp(
+        std::exp(-std::numbers::pi * bw / trench::core::kP2kDatumHz), 0.0, p2k::kPoleRMax);
+  } else {
+    radius = s6_zero ? p2k::s6_zero_radius()
+                     : std::clamp(radius_of_warp(warp_of_radius(press_radius_) +
+                                                 rise * kRadiusWarpMax),
+                                  0.0, 1.0);
+  }
 
   const auto [word_mag, snapped_rsq] = p2k::words_from_root(hz, radius);
   const auto word_rsq = s6_zero ? p2k::kS6ZeroRsqWord : snapped_rsq;
@@ -548,6 +564,7 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   pressed_ = true;
   moved_ = false;
   dragging_ = false;
+  pin_emitted_ = false;
   press_section_ = token->section;
   press_lane_ = token->lane;
   press_position_ = event->position();
@@ -619,12 +636,42 @@ void ResponsePlotWidget::mouseReleaseEvent(QMouseEvent* event) {
   dragging_ = false;
   latched_db_.reset();
   refusal_active_ = false;
+  pin_emitted_ = !dragged && !moved;
   if (dragged) {
     emit gestureFinished(section);
-  } else if (!moved) {
+  } else if (pin_emitted_) {
     emit pinToggled(section, lane);
   }
   update();
+  event->accept();
+}
+
+void ResponsePlotWidget::mouseDoubleClickEvent(QMouseEvent* event) {
+  if (event->button() != Qt::LeftButton || body_ == nullptr || !at_corner_ ||
+      fit_running_ || frequencies_hz_.empty()) {
+    QWidget::mouseDoubleClickEvent(event);
+    return;
+  }
+  const auto token = hit(event->position());
+  if (token && token->lane == Lane::kPole) {
+    if (pin_emitted_) emit pinToggled(token->section, token->lane);
+    emit sectionCleared(token->section);
+    event->accept();
+    return;
+  }
+  if (token) {
+    QWidget::mouseDoubleClickEvent(event);
+    return;
+  }
+  const auto plot = plotRect();
+  if (plot.width() <= 0.0) {
+    QWidget::mouseDoubleClickEvent(event);
+    return;
+  }
+  emit resonanceRequested(std::clamp(
+      frequency_for_x(event->position().x(), frequencies_hz_.front(),
+                      frequencies_hz_.back(), plot),
+      20.0, trench::core::p2k::kRootHiHz));
   event->accept();
 }
 
