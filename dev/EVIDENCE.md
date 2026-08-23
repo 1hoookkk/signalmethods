@@ -219,6 +219,20 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**E-mu's own compilers couple radius to frequency by one affine law.** From
+`trench-x3-clean/ref/ghidra_extracts/runtime_hacks.md`: the X3 three-row writer
+(`FUN_1802c59b0`, fed by the four morph classes) sets `v = slope*byte + base` per rate and
+`rad = (v >> 1) + 0x6400` - radius an affine function of frequency - and Morph Designer
+uses the same law with different constants ("two independently written compilers, one
+law"); neither carries a per-section volume term. That is the shelf<->bell line the
+per-section PCA found in the 33 packed bodies (PC1 in every lane: pole down <-> wider
+<-> zero further away): the coupling is built into E-mu's tooling, not just the hand.
+The same note established the four-rate pre-warp of the 33 (bank ratios 0.91878 /
+0.45939 / 0.22969, 31/31) and that the 17 primitives are closed-form compiled classes
+with distinct designs per rate. The vowel classes `CPhantomVocal1` (`FUN_1802c57f0`) and
+`CPhantomVocal2` (`FUN_1802c58d0`) are named there but their tables are not written up;
+decompiling them needs Ghidra open on EmulatorX.dll. (2026-08-23)
+
 **Poles-only and zeros-only, Talking Hedz.** With every zero removed the body is a
 Klatt cascade: five resonators in slot order (S2 1.0 k, S3 1.8 k, S4 2.7 k, S5 5.2 k,
 S1 10.5 kHz) over S6's 225 Hz lowpass, each falling -12 dB/oct above its peak so the
