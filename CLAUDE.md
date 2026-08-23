@@ -87,8 +87,10 @@ one number the user tunes to stays one number.
 
 Direct manipulation and FIT are two ways of changing the same authored state.
 
-A body is accepted when its interior metrics sit inside the factory envelope
-(`dev/interior_envelope.txt`) and it passes listening.
+A body is accepted by listening. The morph interior is a mathematical consequence of
+the corners and the blend law; it is never measured to judge a body. The tables in
+`dev/interior_envelope.txt` and `dev/modulation_envelope.txt` are regression fixtures for
+the engine: rerun them when the engine changes and prove the factory bodies did not move.
 
 Until the float engine lands, the existing packed-word engine and its parity tests remain
 the engine of record. Do not break them while building the replacement.
