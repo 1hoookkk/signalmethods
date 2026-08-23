@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -42,6 +43,9 @@ TEST(Adversary, TheLatticeInvariantsHoldOnItsOwnWorstCases) {
     EXPECT_EQ(grade.refused, 0U) << name;
     EXPECT_EQ(grade.non_finite, 0U) << name;
     EXPECT_EQ(grade.pole_over_ceiling, 0U) << name;
+    if (name.rfind("motion_", 0) == 0) {
+      EXPECT_LT(grade.motion_reduced_peak_db, 20.0 * std::log10(grade.moving_peak)) << name;
+    }
     worst_peak = std::max(worst_peak, grade.moving_peak);
     if (grade.motion_db > worst_motion) {
       worst_motion = grade.motion_db;

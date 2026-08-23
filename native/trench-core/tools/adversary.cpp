@@ -144,6 +144,7 @@ Proposal propose(p2k::Rng& rng, std::size_t index) {
   }
 
   std::array<p2k::PackedCorner, 4> packed{};
+  std::size_t snap_corner = 0;
   for (std::size_t ci = 0; ci < 4; ++ci) {
     const auto& corner = body.corners[ci];
     const auto plan = nb::design(corner, kSr);
@@ -174,11 +175,14 @@ Proposal propose(p2k::Rng& rng, std::size_t index) {
     if (worst > out.snap_max_db) {
       out.snap_max_db = worst;
       out.snap_rms_db = corner_rms;
+      snap_corner = ci;
     }
   }
 
   out.bytes = p2k::pack_body(packed);
   out.grade = trench::adversary::grade_bytes(out.bytes);
+  trench::adversary::attribute_snap(body.corners[snap_corner], packed[snap_corner], snap_corner,
+                                    out.grade);
   out.step_gap_db = out.grade.max_step_db - p2k::interior_audit(body).max_step_db;
   return out;
 }
@@ -196,6 +200,21 @@ void write_row(std::ostream& os, const Proposal& p, std::uint64_t seed) {
   }
   os << std::setw(7) << p.grade.refused << std::setw(7) << p.grade.non_finite << std::setw(7)
      << p.grade.pole_over_ceiling << std::setw(7) << p.grade.off_lattice << '\n';
+}
+
+void write_attribution(std::ostream& os, const Proposal& p) {
+  const auto& g = p.grade;
+  os << std::right << std::setw(5) << p.index << "  culprit s" << g.motion_culprit << "  corners "
+     << g.motion_corners[0] << '>' << g.motion_corners[1] << std::fixed;
+  for (const auto& root : g.motion_roots) {
+    os << "  (" << std::setprecision(1) << std::setw(8) << root.hz << " Hz r "
+       << std::setprecision(6) << root.r << " bw " << std::setprecision(3) << std::setw(7)
+       << root.bw_oct << " oct)";
+  }
+  os << "  reduced" << std::setprecision(3) << std::setw(9) << g.motion_reduced_peak_db
+     << " dB  snap c" << g.snap_corner << " s" << g.snap_culprit;
+  for (const double v : g.snap_loss_db) os << std::setw(9) << v;
+  os << "  dc s" << g.dc_culprit << '\n';
 }
 
 void write_header(std::ostream& os) {
@@ -221,6 +240,7 @@ void report(std::ostream& os, const std::vector<Proposal>& all, std::uint64_t se
   const std::size_t n = std::min<std::size_t>(10, sorted.size());
   for (std::size_t rank = 0; rank < n; ++rank) {
     write_row(os, *sorted[rank], seed);
+    write_attribution(os, *sorted[rank]);
     std::ostringstream name;
     name << label << '_' << rank << '_' << seed << '_' << sorted[rank]->index << ".bin";
     std::ofstream out(dir / name.str(), std::ios::binary);
