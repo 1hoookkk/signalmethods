@@ -4,7 +4,7 @@ namespace trench::core::p2k {
 
 namespace {
 
-constexpr std::array<Posture, 17> kPostures{{
+constexpr std::array<Posture, 9> kPostures{{
     {"REZ dead_ringer c1", "REZ", 6, {{{610.8723, 279.5006}, {958.4377, 82.6959}, {2431.8298, 236.8344}, {3207.4280, 159.3626}, {4089.0711, 86.1645}, {4935.6641, 180.4291}}}},
     {"VOW ooh_to_eee c1", "VOW", 4, {{{254.0146, 89.6348}, {2017.8929, 18.0054}, {3271.9299, 180.4291}, {5478.6571, 438.2005}}}},
     {"EQ+ tb_or_not_tb c1", "EQ+", 3, {{{502.5800, 423.6240}, {1305.2560, 690.5701}, {2317.9601, 540.9187}}}},
@@ -14,6 +14,9 @@ constexpr std::array<Posture, 17> kPostures{{
     {"VOW talking_hedz c0", "VOW", 4, {{{225.1485, 124.3916}, {1005.5893, 293.7805}, {1771.9903, 322.4278}, {2650.8358, 42.9500}}}},
     {"EQ+ dj_alkaline c0", "EQ+", 3, {{{2025.8299, 145.3533}, {3564.3664, 145.3533}, {6176.7406, 145.3533}}}},
     {"PHA cruz_pusher c1", "PHA", 4, {{{1226.5038, 131.3719}, {2065.9332, 20.5828}, {3483.3136, 481.9403}, {3511.0329, 180.4291}}}},
+}};
+
+constexpr std::array<Posture, 8> kCompiledVowels{{
     {"VOW AahAyEeh M0Q0", "VOW", 3, {{{502.8000, 29.2000}, {878.5000, 29.2000}, {2066.5000, 29.2000}}}},
     {"VOW AahAyEeh M100Q0", "VOW", 3, {{{257.0000, 29.2000}, {2416.6000, 29.2000}, {3770.0000, 29.2000}}}},
     {"VOW AahAyEeh M0Q100", "VOW", 3, {{{982.3000, 29.2000}, {1732.9000, 29.2000}, {4080.7000, 29.2000}}}},
@@ -30,6 +33,9 @@ std::span<const Posture> postures() { return kPostures; }
 
 const Posture* posture(std::string_view name) {
   for (const auto& p : kPostures) {
+    if (p.name == name) return &p;
+  }
+  for (const auto& p : kCompiledVowels) {
     if (p.name == name) return &p;
   }
   for (const auto& p : templates()) {

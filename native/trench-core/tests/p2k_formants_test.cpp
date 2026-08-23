@@ -104,7 +104,7 @@ TEST(P2kFormants, PeaksOfAnEnvelopeAreSortedByFrequencyAndCapped) {
 
 TEST(P2kFormants, ThePostureTableIsTypedAndItsPolesAreAudible) {
   const auto table = p2k::postures();
-  ASSERT_EQ(table.size(), 17U);
+  ASSERT_EQ(table.size(), 9U);
   const std::vector<std::string_view> allowed{"LPF", "HPF", "BPF", "EQ+", "EQ-", "VOW",
                                               "PHA", "FLG", "REZ", "WAH", "DST", "SFX"};
   for (const auto& posture : table) {
@@ -117,5 +117,7 @@ TEST(P2kFormants, ThePostureTableIsTypedAndItsPolesAreAudible) {
       EXPECT_LE(posture.poles[i].hz, 9000.0) << posture.name;
     }
   }
+  EXPECT_NE(p2k::posture("VOW AahAyEeh M0Q0"), nullptr);
+  EXPECT_NE(p2k::posture("VOW OohToAah M100Q100"), nullptr);
   EXPECT_EQ(p2k::posture("nope"), nullptr);
 }

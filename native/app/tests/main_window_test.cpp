@@ -1412,7 +1412,6 @@ class MainWindowTest final : public QObject {
       QCOMPARE(param.type, p2k::SectionType::kEq);
       QVERIFY(param.gain_db < -12.0);
     }
-    QCOMPARE(window.postureList()->rowOf(QStringLiteral("para A")) >= 0, true);
   }
 
   void aPostureWritesOnlyThePoleHalfOfItsRows() {
@@ -1473,21 +1472,13 @@ class MainWindowTest final : public QObject {
   void aMouthTemplateWritesSixAscendingPoleRowsWithParkedZeros() {
     namespace p2k = trench::core::p2k;
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    window.resize(960, 540);
-    window.show();
-    QTest::qWait(20);
-    auto* list = window.postureList();
     const auto name = QStringLiteral("s1 bahn a");
-    const auto row = list->rowOf(name);
-    QVERIFY(row >= 0);
     const auto* skeleton = p2k::posture("s1 bahn a");
     QVERIFY(skeleton != nullptr);
     QCOMPARE(skeleton->pole_count, std::size_t{6});
     QCOMPARE(skeleton->type, std::string_view{"MOUTHS S1"});
-    list->scrollToItem(list->item(row));
     const auto before = window.body().words[0];
-    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
-                      list->visualItemRect(list->item(row)).center());
+    window.applyVowel(name);
     QCOMPARE(window.undoStack()->count(), 1);
     const auto after = window.body().words[0];
     const std::array<std::size_t, 6> rows{1, 2, 3, 4, 0, 5};
@@ -1511,7 +1502,6 @@ class MainWindowTest final : public QObject {
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
       QCOMPARE(after[section][4], before[section][4]);
     }
-    QCOMPARE(list->matched(), name);
     window.undoStack()->undo();
     QCOMPARE(window.body().words[0], before);
   }
@@ -1528,18 +1518,10 @@ class MainWindowTest final : public QObject {
     QVERIFY(skeleton != nullptr);
     QVERIFY(skeleton->pole_count >= 2);
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    window.resize(960, 540);
-    window.show();
-    QTest::qWait(20);
-    auto* list = window.postureList();
     const auto name = QString::fromUtf8(skeleton->name.data(),
                                         static_cast<int>(skeleton->name.size()));
-    const auto row = list->rowOf(name);
-    QVERIFY(row >= 0);
-    list->scrollToItem(list->item(row));
     const auto before = window.body().words[0];
-    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
-                      list->visualItemRect(list->item(row)).center());
+    window.applyVowel(name);
     QCOMPARE(window.undoStack()->count(), 1);
     const auto after = window.body().words[0];
     const auto poles = p2k::pole_words_from_posture(*skeleton);
@@ -1564,9 +1546,37 @@ class MainWindowTest final : public QObject {
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
       QCOMPARE(after[section][4], before[section][4]);
     }
-    QCOMPARE(list->matched(), name);
     window.undoStack()->undo();
     QCOMPARE(window.body().words[0], before);
+  }
+
+  void theListIsTheNineBankPostures() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    auto* list = window.postureList();
+    QVERIFY(list != nullptr);
+    QStringList rows;
+    for (int row = 0; row < list->count(); ++row) {
+      const auto name = list->item(row)->data(Qt::UserRole).toString();
+      rows.push_back(name.isEmpty() ? QStringLiteral("[") + list->item(row)->text() +
+                                          QStringLiteral("]")
+                                    : name);
+    }
+    const QStringList expected{QStringLiteral("[LPF]"),
+                               QStringLiteral("LPF millennium c1"),
+                               QStringLiteral("LPF klub_klassik c2"),
+                               QStringLiteral("[EQ+]"),
+                               QStringLiteral("EQ+ tb_or_not_tb c1"),
+                               QStringLiteral("EQ+ dj_alkaline c0"),
+                               QStringLiteral("[VOW]"),
+                               QStringLiteral("VOW ooh_to_eee c1"),
+                               QStringLiteral("VOW talking_hedz c0"),
+                               QStringLiteral("[PHA]"),
+                               QStringLiteral("PHA cruz_pusher c1"),
+                               QStringLiteral("[REZ]"),
+                               QStringLiteral("REZ dead_ringer c1"),
+                               QStringLiteral("[DST]"),
+                               QStringLiteral("DST fuzzi_face c0")};
+    QCOMPARE(rows, expected);
   }
 
   void tuneInSurvivesMorphAndCornerMoves() {
