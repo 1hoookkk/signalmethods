@@ -55,37 +55,49 @@ Preserve strange behavior when it is verified. Do not “clean it up” merely b
 
 ## Hard project invariants
 
-A native body is a serial cascade of 7 second-order stages over 8 corners.
+Ruled 2026-08-23: the E-mu Z-plane lineage is the reference taste and the proof the
+idea works, not the format we preserve. The 33 P2K bodies and the 289 Morpheus cubes are
+imported content and evidence. Byte-level parity with P2K hardware is no longer a goal.
 
-Section identity is ordered and persists across corners. Sections may cross in frequency. Never sort or re-pair established lanes merely to make their trajectories look cleaner.
+A native body is a serial cascade of six second-order pole/zero sections over four
+authored corners. Log magnitudes add; the complete cascade is the comparator.
 
-A section is root geometry plus scale. Do not infer or attach downstream filter types where the packed representation does not contain them.
+A section is (Fc, bandwidth in octaves, gain, zero offset in octaves, depth) in float,
+designed in Hz at the host sample rate. No word lattice, no byte caps, no fixed datum.
+Pole radius is bounded by a stability margin, not a chip ceiling.
 
-Corners use the established runtime indexing and packed-word interpolation law. Runtime interpolation is part of the target machine, not an authoring degree of freedom.
+The interior is a blend of section coefficients, never of roots. The stable and the
+conjugate regions of a second-order section are convex in coefficient space, so any blend
+of stable corners is stable and any blend of conjugate pairs stays conjugate. Author
+corners; ride and audit the resulting interior; do not invent a separate morph model.
 
-The P2K authoring datum is 44,100 Hz.
+DC gain is unity by a closed form on the geometry. Never peak-normalise. No per-stage
+gain cuts.
 
-Morpheus data uses its established 39,062.5 Hz datum.
+Section identity is ordered and persists across corners. Lanes are coefficient ancestry,
+not resonance identity: sections may cross in frequency; never sort or re-pair
+established lanes. New corners inherit lanes from an existing corner. Permutation search
+is a repair tool for imported corners or outlier bodies, never the default.
 
-Do not substitute one lineage's datum, encoding assumptions, or runtime behavior for another.
+Zeros are free. No placement prior, follow rule or interval constraint in the fitter.
+Offset and depth are authored controls.
 
-The complete serial cascade is the response comparator. Fit and judge the complete response, not isolated sections.
-
-Preserve established lane correspondence. Existing owned/held lanes must not be silently reassigned.
-
-Free or empty lanes may be seeded or populated automatically when necessary to produce an initial solution. Automation may propose ownership; it must not silently destroy ownership that has already been established.
-
-Generators and analysis tools produce targets or candidate geometry. They do not create universal per-section rules unless such a rule is independently established.
+Target and candidate pass through the same auditory representation before scoring. The
+one number the user tunes to stays one number.
 
 Direct manipulation and FIT are two ways of changing the same authored state.
 
-The interior is produced by the real encoded corner interpolation. Author corners and correspondence; ride and audit the resulting interior rather than inventing a separate hidden morph model.
+A body is accepted when its interior metrics sit inside the factory envelope
+(`dev/interior_envelope.txt`) and it passes listening.
+
+Until the float engine lands, the existing packed-word engine and its parity tests remain
+the engine of record. Do not break them while building the replacement.
 
 ## Acceptance evidence
 
 Treat existing null, bit-exact round-trip, parity, packing, and canonical regression tests as load-bearing.
 
-Before changing an encoding, representation, import/export path, sample-rate interpretation, packed-word path, or interpolation path, identify and preserve the relevant acceptance test.
+Before changing a representation, import/export path, sample-rate interpretation or interpolation path, identify the relevant acceptance test. Retire a packed-word parity test only when its float replacement exists and the 33 imported bodies null against their decoded responses.
 
 A change that produces cleaner code but breaks verified round-trip or factory behavior is a regression unless the task explicitly establishes that the old behavior was wrong.
 
