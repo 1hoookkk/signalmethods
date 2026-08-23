@@ -3,6 +3,7 @@ add_library(trench_native_core STATIC
   src/packed_body.cpp
   src/response.cpp
   src/native_body.cpp
+  src/rbj.cpp
   src/p2k/container.cpp
   src/p2k/corner.cpp
   src/p2k/fit.cpp
@@ -66,6 +67,7 @@ if(BUILD_TESTING)
     tests/p2k_section_param_test.cpp
     tests/p2k_morph_test.cpp
     tests/native_body_test.cpp
+    tests/rbj_test.cpp
     tests/audition_test.cpp
     tests/transpose_test.cpp
     tests/p2k_formants_test.cpp

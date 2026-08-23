@@ -11,18 +11,19 @@ namespace {
 
 constexpr double kTau = 2.0 * std::numbers::pi;
 constexpr double kInf = std::numeric_limits<double>::infinity();
+constexpr double kDcZeroEpsilon = 1.0e-9;
 
 double real_decay_hz(double root, double sample_rate_hz) {
   if (root == 0.0) {
     return kInf;
   }
-  const double decay = -std::log(std::abs(root)) * sample_rate_hz / kTau;
+  const double decay = std::abs(std::log(std::abs(root))) * sample_rate_hz / kTau;
   return root < 0.0 ? -decay : decay;
 }
 
 double real_root(double decay_hz, double sample_rate_hz) {
   const double magnitude = std::exp(-kTau * std::abs(decay_hz) / sample_rate_hz);
-  return decay_hz < 0.0 ? -magnitude : magnitude;
+  return std::signbit(decay_hz) ? -magnitude : magnitude;
 }
 
 std::pair<double, double> pole_coefficients(const Roots& roots, double sample_rate_hz) {
@@ -66,7 +67,7 @@ std::pair<double, double> coefficients_of(const Roots& roots, double sample_rate
 Coefficients design(const Section& section, double sample_rate_hz) {
   const auto [b1, b2] = coefficients_of(section.zero, sample_rate_hz);
   const auto [a1, a2] = pole_coefficients(section.pole, sample_rate_hz);
-  return {b1, b2, a1, a2};
+  return {b1, b2, a1, a2, section.dc_stabilised};
 }
 
 Design design(const Corner& corner, double sample_rate_hz) {
@@ -89,6 +90,8 @@ std::array<double, kCorners> corner_weights(double morph, double q) {
 constexpr double kAngleZeroHz = 20.0;
 constexpr double kAnglePiHz = 20'000.0;
 constexpr double kDecayCapHz = 1.0e9;
+constexpr double kBwFloorHz = 1.0e-9;
+const double kPackedScaleFloor = 4.0 * decode_word(1);
 
 double capped(double decay_hz) { return std::min(std::abs(decay_hz), kDecayCapHz); }
 
@@ -97,7 +100,7 @@ Resonant as_resonant(const Roots& roots) {
     return *res;
   }
   const auto& real = std::get<RealRoots>(roots);
-  return {real.a_hz + real.b_hz < 0.0 ? kAnglePiHz : kAngleZeroHz,
+  return {std::signbit(real.a_hz) ? kAnglePiHz : kAngleZeroHz,
           capped(real.a_hz) + capped(real.b_hz)};
 }
 
@@ -121,20 +124,20 @@ Roots blend_roots(const std::array<const Roots*, kCorners>& corner,
       const auto& real = std::get<RealRoots>(*corner[ci]);
       const double a = capped(real.a_hz);
       const double b = capped(real.b_hz);
-      lo += weight[ci] * std::log(std::min(a, b));
-      hi += weight[ci] * std::log(std::max(a, b));
+      lo += weight[ci] * std::log(std::max(std::min(a, b), kBwFloorHz));
+      hi += weight[ci] * std::log(std::max(std::max(a, b), kBwFloorHz));
     }
     const auto& sign_of = std::get<RealRoots>(*corner[nearest]);
-    const double sa = std::min(sign_of.a_hz, sign_of.b_hz) < 0.0 ? -1.0 : 1.0;
-    const double sb = std::max(sign_of.a_hz, sign_of.b_hz) < 0.0 ? -1.0 : 1.0;
+    const double sa = std::signbit(std::min(sign_of.a_hz, sign_of.b_hz)) ? -1.0 : 1.0;
+    const double sb = std::signbit(std::max(sign_of.a_hz, sign_of.b_hz)) ? -1.0 : 1.0;
     return RealRoots{sa * std::exp(lo), sb * std::exp(hi)};
   }
   double log_hz = 0.0;
   double log_bw = 0.0;
   for (std::size_t ci = 0; ci < kCorners; ++ci) {
     const Resonant res = as_resonant(*corner[ci]);
-    log_hz += weight[ci] * std::log(res.hz);
-    log_bw += weight[ci] * std::log(res.bw_hz);
+    log_hz += weight[ci] * std::log(std::max(res.hz, kAngleZeroHz));
+    log_bw += weight[ci] * std::log(std::max(res.bw_hz, kBwFloorHz));
   }
   return Resonant{std::exp(log_hz), std::exp(log_bw)};
 }
@@ -151,7 +154,11 @@ Design blend(const Body& body, double morph, double q, double sample_rate_hz) {
       poles[ci] = &body.corners[ci].sections[si].pole;
       zeros[ci] = &body.corners[ci].sections[si].zero;
     }
-    out[si] = design(Section{blend_roots(poles, weight), blend_roots(zeros, weight)},
+    bool stabilised = true;
+    for (std::size_t ci = 0; ci < kCorners; ++ci) {
+      stabilised = stabilised && body.corners[ci].sections[si].dc_stabilised;
+    }
+    out[si] = design(Section{blend_roots(poles, weight), blend_roots(zeros, weight), stabilised},
                      sample_rate_hz);
   }
   return out;
@@ -166,7 +173,9 @@ double blend_gain_db(const Body& body, double morph, double q) {
   return acc;
 }
 
-double dc_scale(const Coefficients& c) { return (1.0 + c.a1 + c.a2) / (1.0 + c.b1 + c.b2); }
+double dc_scale(const Coefficients& c) {
+  return c.dc_stabilised ? (1.0 + c.a1 + c.a2) / (1.0 + c.b1 + c.b2) : 1.0;
+}
 
 Biquad biquad(const Coefficients& c) {
   const double g = dc_scale(c);
@@ -194,22 +203,20 @@ bool is_stable(const Coefficients& c) {
 
 bool pole_is_conjugate(const Coefficients& c) { return c.a1 * c.a1 < 4.0 * c.a2; }
 
+bool pole_is_marginal(const Coefficients& c) {
+  const double limit = 1.0 - kPoleStabilityMargin;
+  return std::abs(c.a2) >= limit * limit * (1.0 - 1.0e-12);
+}
+
 Section import_section(const PackedSection& words, double datum_hz) {
   const auto pair = [&](std::size_t mag, std::size_t rsq) {
     const double d_mag = decode_word(words[mag]);
     const double d_rsq = decode_word(words[rsq]);
     return roots_from_coefficients(4.0 * d_mag + d_rsq - 2.0, 1.0 - d_rsq, datum_hz);
   };
-  return {pair(2, 3), pair(0, 1)};
-}
-
-double packed_corner_gain_db(std::span<const PackedSection> words) {
-  double h = 1.0;
-  for (const auto& section : words) {
-    const auto b = section_words_to_biquad(section);
-    h *= (b[0] + b[1] + b[2]) / (1.0 + b[3] + b[4]);
-  }
-  return 20.0 * std::log10(std::abs(h));
+  const auto b = section_words_to_biquad(words);
+  const bool zero_at_dc = std::abs(b[0] + b[1] + b[2]) < kDcZeroEpsilon * std::abs(b[0]);
+  return {pair(2, 3), pair(0, 1), !zero_at_dc};
 }
 
 Body import_p2k(std::span<const std::uint8_t> body, double datum_hz) {
@@ -219,8 +226,25 @@ Body import_p2k(std::span<const std::uint8_t> body, double datum_hz) {
     for (std::size_t si = 0; si < kSections; ++si) {
       out.corners[ci].sections[si] = import_section(packed.words[ci][si], datum_hz);
     }
-    out.corners[ci].gain_db = packed_corner_gain_db(
-        std::span<const PackedSection>(packed.words[ci]).first(kSections));
+  }
+  for (std::size_t si = 0; si < kSections; ++si) {
+    bool stabilised = true;
+    for (const auto& corner : out.corners) {
+      stabilised = stabilised && corner.sections[si].dc_stabilised;
+    }
+    for (auto& corner : out.corners) {
+      corner.sections[si].dc_stabilised = stabilised;
+    }
+  }
+  for (std::size_t ci = 0; ci < kCorners; ++ci) {
+    double gain_db = 0.0;
+    for (std::size_t si = 0; si < kSections; ++si) {
+      const auto b = section_words_to_biquad(packed.words[ci][si]);
+      const double k = dc_scale(design(out.corners[ci].sections[si], datum_hz));
+      gain_db += 20.0 * (std::log10(std::max(std::abs(b[0]), kPackedScaleFloor)) -
+                         std::log10(std::abs(k)));
+    }
+    out.corners[ci].gain_db = gain_db;
   }
   return out;
 }
