@@ -1,6 +1,7 @@
 #include "morph_strip.hpp"
 
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QPainter>
 #include <QSlider>
 
@@ -44,10 +45,16 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   transpose_->setPageStep(12);
   transpose_->setTickInterval(12);
   transpose_->setValue(0);
-  row->addWidget(morph_, 3);
-  row->addWidget(q_, 1);
-  row->addWidget(character_, 1);
-  row->addWidget(transpose_, 1);
+  const auto labelled = [&](QSlider* slider, const char* text, int stretch) {
+    auto* label = new QLabel(QString::fromLatin1(text), this);
+    label->setStyleSheet(QStringLiteral("color: #7d888c; font-size: 10px; letter-spacing: 1px;"));
+    row->addWidget(label, 0);
+    row->addWidget(slider, stretch);
+  };
+  labelled(morph_, "MORPH", 3);
+  labelled(q_, "Q", 1);
+  labelled(character_, "CHARACTER", 1);
+  labelled(transpose_, "TRANSPOSE", 1);
   row->addSpacing(72);
   const auto relay = [this] {
     if (updating_) return;
