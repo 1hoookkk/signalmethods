@@ -259,7 +259,7 @@ pub(crate) fn saturate(x: f32) -> f32 {
 /// correct ones for this sample too.
 #[derive(Clone, Copy, PartialEq, Eq)]
 struct CoeffStamp {
-    words: [crate::minifloat::PackedStage; NUM_STAGES],
+    rows: [[u64; NUM_COEFFS]; NUM_STAGES],
     boost_bits: u64,
     key_snap: i32,
     ratio_bits: u64,
@@ -749,15 +749,7 @@ impl FilterEngine {
     /// Decoded words -> transformed biquad corner + boost: the shared middle of
     /// both movement paths (KEY snap, TRACK/listener/anchor transposition, the
     /// AMOUNT blend). Pure — installation is the caller's.
-    fn transformed_corner(
-        &self,
-        words: &[crate::minifloat::PackedStage; NUM_STAGES],
-        raw_boost: f64,
-    ) -> (CornerData, f32) {
-        let mut corner: CornerData = [[0.0; NUM_COEFFS]; NUM_STAGES];
-        for (row, w) in corner.iter_mut().zip(words.iter()) {
-            *row = crate::minifloat::stage_words_to_biquad(*w);
-        }
+    fn transformed_corner(&self, corner: CornerData, raw_boost: f64) -> (CornerData, f32) {
         let mut boost = raw_boost as f32;
         let corner = if self.key_snap != 0 {
             let mut snapped = corner;
@@ -828,9 +820,9 @@ impl FilterEngine {
         (corner, boost)
     }
     /// Rebuilds and installs the cascade coefficients for one sample's wheel
-    /// position. The packed u16 words are interpolated Morph-first then Q
-    /// (the one packed law, minifloat.rs), decoded, transformed (KEY is an
-    /// explicit post-decode transform), and installed WHOLE — the complete
+    /// position. The corners are interpolated by US 10,514,883's law
+    /// (minifloat.rs interpolate_biquad), transformed (KEY is an explicit
+    /// post-decode transform), and installed WHOLE — the complete
     /// delta is consumed on this sample, never divided over a ramp. DF-II
     /// delay states are preserved by the install (Cascade::snap_targets).
     fn rebuild_coefficients(&mut self, morph: f64, q: f64) {
@@ -838,13 +830,13 @@ impl FilterEngine {
             Some(c) => c,
             None => return,
         };
-        let words = cart
+        let rows = cart
             .packed
-            .interpolate_words(morph as f32, q as f32, self.third_axis as f32);
+            .interpolate_biquad(morph as f32, q as f32, self.third_axis as f32);
         let raw_boost = cart.interpolate_boost(morph, q, self.third_axis);
         let ratio = self.pitch_ratio * self.listener.ratio() * self.anchor.ratio();
         let stamp = CoeffStamp {
-            words,
+            rows: rows.map(|row| row.map(f64::to_bits)),
             boost_bits: raw_boost.to_bits(),
             key_snap: self.key_snap,
             ratio_bits: ratio.to_bits(),
@@ -856,7 +848,7 @@ impl FilterEngine {
         if !self.snap_next_targets && self.coeff_stamp == Some(stamp) {
             return;
         }
-        let (corner, boost) = self.transformed_corner(&words, raw_boost);
+        let (corner, boost) = self.transformed_corner(rows, raw_boost);
         // Install WHOLE, this sample. snap_targets zeroes the coefficient
         // deltas and leaves the DF-II delay states (w1/w2) untouched — the
         // filter keeps ringing, only its coefficients move. boost is SCALE,
@@ -867,7 +859,7 @@ impl FilterEngine {
         self.output_gain = boost;
         self.coeff_stamp = Some(stamp);
     }
-    /// X3 movement parity rebuild: once per control block. Words are
+    /// X3 movement parity rebuild: once per control block. Rows are
     /// interpolated at the block's smoothed morph (FUN_1802c3d40), transformed
     /// like the shipping path, converted to kernel rows and RAMPED over the
     /// block (FUN_1802c41a0 / FUN_1802c1550). On the X3's change-test skip the
@@ -880,13 +872,13 @@ impl FilterEngine {
             Some(c) => c,
             None => return,
         };
-        let words = cart
+        let rows = cart
             .packed
-            .interpolate_words(morph as f32, q as f32, self.third_axis as f32);
+            .interpolate_biquad(morph as f32, q as f32, self.third_axis as f32);
         let raw_boost = cart.interpolate_boost(morph, q, self.third_axis);
         let ratio = self.pitch_ratio * self.listener.ratio() * self.anchor.ratio();
         let stamp = CoeffStamp {
-            words,
+            rows: rows.map(|row| row.map(f64::to_bits)),
             boost_bits: raw_boost.to_bits(),
             key_snap: self.key_snap,
             ratio_bits: ratio.to_bits(),
@@ -899,7 +891,7 @@ impl FilterEngine {
             self.output_gain_delta = 0.0;
             return;
         }
-        let (corner, boost) = self.transformed_corner(&words, raw_boost);
+        let (corner, boost) = self.transformed_corner(rows, raw_boost);
         let mut kernels: CornerData = [[0.0; NUM_COEFFS]; NUM_STAGES];
         for (k, row) in kernels.iter_mut().zip(corner.iter()) {
             *k = crate::minifloat::biquad_to_kernel(*row);

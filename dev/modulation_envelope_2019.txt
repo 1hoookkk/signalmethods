@@ -1,0 +1,37 @@
+body                      nan  unst   peak_db  frozen_db  motion_db   tail_db  worst_case
+P2k_000_ace_of_bass         0     0     74.69       9.01      65.68   -300.00  q1/sq20/noise
+P2k_001_megasweepz          0     0     30.06       9.26      20.80   -300.00  q1/sq200/noise
+P2k_002_early_rizer         0     0      9.33     -10.27      19.60   -300.00  q1/sq20/noise
+P2k_003_millennium          0     0     22.05      -3.91      25.97   -300.00  q0/sq20/noise
+P2k_004_meaty_gizmo         0     0     22.05      12.09       9.96   -300.00  q0/sq20/noise
+P2k_005_klub_klassik        0     0      6.28       6.81      -0.53   -300.00  q0/sq20/noise
+P2k_006_bassbox_303         0     0     21.76      20.20       1.56   -300.00  q1/sq200/noise
+P2k_007_fuzzi_face          0     0     33.10      15.30      17.80   -300.00  q0/sq20/noise
+P2k_008_dead_ringer         0     0     10.91       2.00       8.91   -300.00  q1/sin50/noise
+P2k_009_tb_or_not_tb        0     0     55.58      42.42      13.17   -300.00  q1/sin50/noise
+P2k_010_ooh_to_eee          0     0      6.68       1.67       5.01   -207.67  q1/sq2/noise
+P2k_011_boland_bass         0     0     20.91       6.20      14.71   -300.00  q0/sq20/noise
+P2k_012_multi_q_vox         0     0      4.67       3.62       1.05   -241.22  q1/sin5/noise
+P2k_013_talking_hedz        0     0     22.02       9.91      12.11   -162.14  q1/sin5/noise
+P2k_014_zoom_peaks          0     0     41.61       3.22      38.39    -73.64  q0/sq200/noise
+P2k_015_dj_alkaline         0     0     13.25      12.39       0.86   -300.00  q1/sq20/noise
+P2k_016_bass_tracer         0     0     34.60      29.45       5.15   -239.62  q1/sq20/noise
+P2k_017_rogue_hertz         0     0     18.73      16.91       1.83   -300.00  q1/sin5/noise
+P2k_018_razor_blades        0     0     14.27      -0.04      14.31   -300.00  q0/sq200/noise
+P2k_019_radio_craze         0     0     10.73      11.54      -0.81   -300.00  q0/sq200/noise
+P2k_020_eeh_to_aah          0     0     11.51       1.73       9.78   -215.03  q1/sq20/noise
+P2k_021_ubu_orator          0     0     13.11       4.74       8.37   -300.00  q1/sq200/noise
+P2k_022_deep_bouche         0     0      4.19      -4.03       8.22   -300.00  q1/sq200/noise
+P2k_023_freak_shifta        0     0     15.13      13.53       1.61   -280.90  q0/sq20/noise
+P2k_024_cruz_pusher         0     0     24.75       5.07      19.69   -259.02  q0/sq20/noise
+P2k_025_angelz_hairz        0     0     -2.72      -3.51       0.79   -300.00  q0/sq200/noise
+P2k_026_dream_weava         0     0      8.00       2.09       5.91   -300.00  q1/step/noise
+P2k_027_acid_ravage         0     0     10.57      11.81      -1.23   -300.00  q1/sin.5/noise
+P2k_028_bass_o_matic        0     0     26.48      21.80       4.68   -300.00  q0/sin50/noise
+P2k_029_lucifer_s_q         0     0     43.58      13.01      30.57   -300.00  q1/sq20/noise
+P2k_030_tooth_comb          0     0     11.50       9.94       1.57   -251.56  q1/sq200/noise
+P2k_031_ear_bender          0     0     33.96       6.25      27.71   -300.00  q1/sq20/noise
+P2k_032_klang_kling         0     0     18.07      18.59      -0.52   -300.00  q0/sq2/noise
+median                      -     -     18.07       9.01       8.37   -300.00
+max                         -     -     74.69      42.42      65.68    -73.64
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 143.39s

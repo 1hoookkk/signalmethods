@@ -94,7 +94,12 @@ the ruling text that asked for it was wrong. CLAUDE.md now cites the patent.
 Two findings: the factory corners are not unity-DC (worst 42 dB; the 0.02 dB figure was
 drift relative to corners), hence one gain per corner; and the bank holds 54 real-axis
 pairs in 35 mixed lanes, which the patent's representation does not have — the rule for
-them is in CLAUDE.md. Not done: the app, fitter and plugin still run on the packed engine.
+them is in CLAUDE.md. The plugin now runs the same law: `minifloat.rs::interpolate_biquad` interpolates each
+root's log angle and log(-ln r) and the stage scale in log, decoded after; corners exact;
+the engine's two rebuild paths and the null gate's Python oracle follow. 185 tests, gate
+PASS, lifecycle PASS; `dev/modulation_envelope_2019.txt` is the re-measured motion table
+(worst +65.7 dB over frozen, was +70.1; nothing diverges). Installed to Program Files
+17:57. Not done: the app and fitter still author on the packed words.
 
 ## The three questions, answered
 

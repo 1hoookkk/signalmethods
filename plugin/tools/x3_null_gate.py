@@ -34,18 +34,52 @@ def lerp_u16(a, b, fraction):
     return (int(a) + delta) % 65536
 
 
+ANGLE_FLOOR = 2.0 * np.pi * 20.0 / 44100.0
+DECAY_FLOOR = 1.0e-12
+DECAY_CAP = 50.0
+
+
+def encoded(p, q):
+    disc = p * p - 4.0 * q
+    if disc < 0.0:
+        r = np.sqrt(q)
+        theta = np.arccos(min(1.0, max(-1.0, -p / (2.0 * r))))
+    else:
+        theta = 0.0 if -p >= 0.0 else np.pi
+        r = np.sqrt(abs(q))
+    decay = min(max(-np.log(r), DECAY_FLOOR), DECAY_CAP) if r > 0.0 else DECAY_CAP
+    return np.log(max(theta, ANGLE_FLOOR)), np.log(decay)
+
+
+def decoded(angle, decay):
+    theta = np.exp(angle)
+    r = np.exp(-np.exp(decay))
+    return -2.0 * r * np.cos(theta), r * r
+
+
 def rows_for(words, active_stages, morph, q):
     corners = np.asarray(words, dtype=np.uint16).reshape(4, active_stages, 5)
+    weights = [(1 - morph) * (1 - q), morph * (1 - q), (1 - morph) * q, morph * q]
     rows = []
     for stage in range(active_stages):
-        packed = []
-        for column in range(5):
-            q0 = lerp_u16(corners[0, stage, column], corners[1, stage, column], morph)
-            q1 = lerp_u16(corners[2, stage, column], corners[3, stage, column], morph)
-            packed.append(lerp_u16(q0, q1, q))
-        d0, d1, d2, d3, d4 = map(decode, packed)
-        k0, k1, k2, k3, k4 = 4 * d0 + d1, d1, 4 * d2 + d3, d3, 4 * d4
-        rows.append((k4, (k0 - 2) * k4, (1 - k1) * k4, k2 - 2, 1 - k3))
+        exact = [ci for ci, w in enumerate(weights) if w == 1.0]
+        if exact:
+            d0, d1, d2, d3, d4 = map(decode, corners[exact[0], stage])
+            k0, k1, k2, k3, k4 = 4 * d0 + d1, d1, 4 * d2 + d3, d3, 4 * d4
+            rows.append((k4, (k0 - 2) * k4, (1 - k1) * k4, k2 - 2, 1 - k3))
+            continue
+        zero = np.zeros(2)
+        pole = np.zeros(2)
+        log_scale = 0.0
+        for ci, w in enumerate(weights):
+            d0, d1, d2, d3, d4 = map(decode, corners[ci, stage])
+            zero += w * np.array(encoded(4 * d0 + d1 - 2, 1 - d1))
+            pole += w * np.array(encoded(4 * d2 + d3 - 2, 1 - d3))
+            log_scale += w * np.log(max(4 * d4, 1.0e-9))
+        b1, b2 = decoded(*zero)
+        a1, a2 = decoded(*pole)
+        k = np.exp(log_scale)
+        rows.append((k, k * b1, k * b2, a1, a2))
     return rows
 
 

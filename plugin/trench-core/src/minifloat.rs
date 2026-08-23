@@ -304,20 +304,98 @@ impl PackedCorners {
         result
     }
     pub fn interpolate(&self, morph: f32, q: f32, z: f32) -> CornerData {
-        let words = self.interpolate_words(morph, q, z);
+        let rows = self.interpolate_biquad(morph, q, z);
         let mut result = [[0.0f64; NUM_COEFFS]; NUM_STAGES];
         for si in 0..NUM_STAGES {
-            result[si] = stage_words_to_kernel(words[si]);
+            result[si] = biquad_to_kernel(rows[si]);
         }
         result
     }
+    /// US 10,514,883 blocks 704-744: each pole and each zero is interpolated
+    /// as encoded angle (log) and encoded resonance (log of -ln r), decoded
+    /// after; the stage scale interpolates in log. On a corner the decoded
+    /// corner words are returned exactly, real-axis pairs included.
     pub fn interpolate_biquad(&self, morph: f32, q: f32, z: f32) -> CornerData {
-        let kernel = self.interpolate(morph, q, z);
+        let m = (morph as f64).clamp(0.0, 1.0);
+        let qq = (q as f64).clamp(0.0, 1.0);
+        let zz = (z as f64).clamp(0.0, 1.0);
+        let mut weight = [0.0f64; NUM_CORNERS];
+        for (ci, w) in weight.iter_mut().enumerate() {
+            let wm = if ci & 1 == 0 { 1.0 - m } else { m };
+            let wq = if ci & 2 == 0 { 1.0 - qq } else { qq };
+            let wz = if ci < LEGACY_CORNERS { 1.0 - zz } else { zz };
+            *w = wm * wq * wz;
+        }
         let mut result = [[0.0f64; NUM_COEFFS]; NUM_STAGES];
+        if let Some(ci) = weight.iter().position(|w| *w == 1.0) {
+            for si in 0..NUM_STAGES {
+                result[si] = stage_words_to_biquad(self.words[ci][si]);
+            }
+            return result;
+        }
         for si in 0..NUM_STAGES {
-            result[si] = kernel_to_biquad(kernel[si]);
+            let mut zero = Encoded::default();
+            let mut pole = Encoded::default();
+            let mut log_scale = 0.0;
+            for ci in 0..NUM_CORNERS {
+                let w = self.words[ci][si];
+                let ez = Encoded::of(
+                    COMBINE_K * decode(w[0]) + decode(w[1]) - 2.0,
+                    1.0 - decode(w[1]),
+                );
+                let ep = Encoded::of(
+                    COMBINE_K * decode(w[2]) + decode(w[3]) - 2.0,
+                    1.0 - decode(w[3]),
+                );
+                zero.angle += weight[ci] * ez.angle;
+                zero.decay += weight[ci] * ez.decay;
+                pole.angle += weight[ci] * ep.angle;
+                pole.decay += weight[ci] * ep.decay;
+                log_scale += weight[ci] * (COMBINE_K * decode(w[4])).max(SCALE_FLOOR).ln();
+            }
+            let (b1, b2) = zero.decoded();
+            let (a1, a2) = pole.decoded();
+            let k = log_scale.exp();
+            result[si] = [k, k * b1, k * b2, a1, a2];
         }
         result
+    }
+}
+/// Encoded angle floor: 20 Hz at 44.1 kHz. A real root on the positive axis
+/// is the patent's angle 0, on the negative axis angle pi.
+const ANGLE_FLOOR: f64 = core::f64::consts::TAU * 20.0 / 44_100.0;
+const DECAY_FLOOR: f64 = 1.0e-12;
+const DECAY_CAP: f64 = 50.0;
+const SCALE_FLOOR: f64 = 1.0e-9;
+#[derive(Clone, Copy, Default)]
+struct Encoded {
+    angle: f64,
+    decay: f64,
+}
+impl Encoded {
+    fn of(p: f64, q: f64) -> Self {
+        let disc = p * p - 4.0 * q;
+        let (theta, r) = if disc < 0.0 {
+            let r = q.sqrt();
+            ((-p / (2.0 * r)).clamp(-1.0, 1.0).acos(), r)
+        } else {
+            let theta = if -p >= 0.0 { 0.0 } else { core::f64::consts::PI };
+            (theta, q.abs().sqrt())
+        };
+        let decay = if r > 0.0 {
+            (-r.ln()).max(DECAY_FLOOR).min(DECAY_CAP)
+        } else {
+            DECAY_CAP
+        };
+        Encoded {
+            angle: theta.max(ANGLE_FLOOR).ln(),
+            decay: decay.ln(),
+        }
+    }
+    fn decoded(&self) -> (f64, f64) {
+        let theta = self.angle.exp();
+        let r = (-self.decay.exp()).exp();
+        (-2.0 * r * theta.cos(), r * r)
     }
 }
 pub fn pole_radius(a1: f64, a2: f64) -> f64 {
@@ -682,16 +760,34 @@ mod x3_groundtruth {
         println!("wrote {dst}");
     }
     #[test]
-    fn interpolate_words_is_the_exact_source_of_decoded_interpolation() {
+    fn corners_are_exact_and_the_interior_is_the_log_midpoint() {
         let mut bytes = [0u8; BODY_BYTES];
         for (index, pair) in bytes.chunks_exact_mut(2).enumerate() {
             pair.copy_from_slice(&(0x2710u16.wrapping_add(index as u16 * 97)).to_le_bytes());
         }
         let packed = PackedCorners::from_body_bytes(&bytes).unwrap();
-        let words = packed.interpolate_words(0.37, 0.64, 0.0);
-        let decoded = packed.interpolate(0.37, 0.64, 0.0);
-        for stage in 0..NUM_STAGES {
-            assert_eq!(stage_words_to_kernel(words[stage]), decoded[stage]);
+        for (ci, (m, q, z)) in [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (1.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+            .into_iter()
+            .enumerate()
+        {
+            let corner = if ci == 4 { LEGACY_CORNERS } else { ci };
+            let rows = packed.interpolate_biquad(m, q, z);
+            for si in 0..NUM_STAGES {
+                assert_eq!(rows[si], stage_words_to_biquad(packed.words[corner][si]));
+            }
+        }
+        let hz_of = |row: [f64; NUM_COEFFS]| {
+            let r = row[4].sqrt();
+            (-row[3] / (2.0 * r)).clamp(-1.0, 1.0).acos()
+        };
+        let a = packed.interpolate_biquad(0.0, 0.0, 0.0);
+        let b = packed.interpolate_biquad(1.0, 0.0, 0.0);
+        let mid = packed.interpolate_biquad(0.5, 0.0, 0.0);
+        for si in 0..NUM_STAGES {
+            if a[si][3] * a[si][3] < 4.0 * a[si][4] && b[si][3] * b[si][3] < 4.0 * b[si][4] {
+                let expected = (hz_of(a[si]) * hz_of(b[si])).sqrt();
+                assert!((hz_of(mid[si]) - expected).abs() < 1e-9, "stage {si}");
+            }
         }
     }
 }
