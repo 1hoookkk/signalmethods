@@ -219,6 +219,17 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**No P2K corner is a Morpheus corner, by response.** Every one of the 132 P2K corners
+against all 2,312 Morpheus corners (289 cubes x 8), ERB grid, level removed, both with
+the cube designed at 39,062.5 Hz and with its words played untransposed at 44,100 Hz:
+nearest-corner distance min 3.4 dB rms, median 7.3-7.6 dB — no closer than the median
+nearest corner of an unrelated P2K body (7.7 dB). The closest pairs are generic lowpass
+shapes (klub_klassik c3 vs BrickWaLP2 c6, 3.7 dB). A port would sit near 0 dB.
+
+**Millennium and MeatyGizmo share their Q0 corners byte-for-byte** (c0 and c1 identical);
+only their Q100 corners differ. E-mu reused a Morph pair and authored the Q corners as
+the second shape. (2026-08-23)
+
 **The packed bank is exactly the manual's 33 twelfth-order filters.** The Mo'Phatt
 manual's filter table (pp. 133-135, `ref/mophatt_filter_types.json`) gives every filter
 an Order: 33 are order 12 and map one-to-one onto `ref/presets`; the other 17 (Smooth 02,
