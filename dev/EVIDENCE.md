@@ -219,6 +219,14 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The zeros are intentional, by filter type.** Zero jobs (paired within 0.5 oct of any
+pole / parked >= 10 kHz / free notch / real-axis step / none) by the manual's type: VOW
+73% paired; EQ+ 47% parked; EQ- 25% notch with the deepest zeros (median r 0.984); REZ
+51% paired; DST 83% none (a skeleton with one trench); SFX 75% parked; PHA 42% none; FLG
+50% parked, 0% notch. Five different uses of the same six zeros, matching the panel's
+word for the filter. Q, on the bank's Q axis, is pole width: every lane narrows on
+median with frequency held; on vocal and REZ bodies to the ceiling word. (2026-08-23)
+
 **Pole bandwidth is set in Hz, not octaves, and per pole.** Over 608 live conjugate poles
 (r > 0.9, 100-15000 Hz): bandwidth in Hz is nearly flat across four decades (medians 97 /
 145 / 121 / 191 Hz for 100-300 / 300-1k / 1-3k / 3-15k Hz) while bandwidth in octaves
