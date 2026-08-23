@@ -552,3 +552,13 @@ skeleton only inside the vocal family: postures 1 and 2 share 3-4 zero words acr
 members ((45564,49404) etc., the vowel cavity made exact); elsewhere shared skeleton has
 each body's own mask. Millennium and Meaty Gizmo c1 are one corner copied verbatim, every
 word. The bank was authored copy-corner-then-edit at the word level. (2026-08-24)
+
+**Exact duplicate corners, fingerprinted without clustering.** Every corner hashed in packed-
+word space at three levels (`dev/corner_fingerprints.py`): Level 1 (sorted pole frequency
+words) 10 duplicate groups, 22/132 corners, all cross-body. Level 2 (frequency+radius) the
+SAME 10 groups - when a frequency skeleton is copied exactly, its radius words come with it;
+radius varies across a body's own Q corners, not across bodies sharing a corner. Level 3
+(every packed word) only Millennium c0=MeatyGizmo c0 and c1=c1 - masks always differ except
+that one verbatim pair. The exact-copy network: klub/acid/tooth c0 (3-way), dead_ringer c1/
+ooh c0/eeh c1 (3-way), hedz c0/ubu c1, fuzzi/cruz c0, boland c0/lucifer c0, boland c1/
+bass_tracer c1, ooh c1/eeh c0, klub c1/acid c1, millennium/meaty c0+c1. (2026-08-24)
