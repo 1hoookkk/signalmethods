@@ -540,3 +540,15 @@ per step on a log grid (`dev/morph_step_uniformity.py`): Dead Ringer x1.3 max/mi
 Ooh-to-Eee x3.0, BassBox 303 x5.4 with the travel crammed into 60-75% of the dial. Rossum's
 law evens the re-deal bodies; transposition bodies still bunch. Debugging signal for the
 bisection sessions, not acceptance. (2026-08-24)
+
+**The postures recur at the byte level.** Across the 9 shared postures (41 aligned lanes,
+packed domain, `dev/posture_packed_audit.py`, plot `posture_packed_words.png`): 27/41 lanes
+have IDENTICAL pole frequency words across every member body; the rest differ by one or two
+minifloat steps (256/512 units, 11-28 c), except one loose match in posture 3 and a
+lane-shift artifact in posture 5. Radius words do not follow: within a posture they move
+with the corner (DJ Alkaline c0->c2: every mag word held, every rsq word 42236->28668) -
+E-mu's Q is "keep the frequency word, swap the radius word". Zeros recur conditional on the
+skeleton only inside the vocal family: postures 1 and 2 share 3-4 zero words across all
+members ((45564,49404) etc., the vowel cavity made exact); elsewhere shared skeleton has
+each body's own mask. Millennium and Meaty Gizmo c1 are one corner copied verbatim, every
+word. The bank was authored copy-corner-then-edit at the word level. (2026-08-24)
