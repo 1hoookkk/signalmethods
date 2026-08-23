@@ -2,6 +2,7 @@
 
 #include "section_color.hpp"
 #include "trench/core/p2k.hpp"
+#include "trench/core/section_param.hpp"
 #include "trench/core/transpose.hpp"
 
 #include <QApplication>
@@ -29,8 +30,9 @@ constexpr int kTraceMinimumBins = 192;
 constexpr double kTraceWidthPx = 1.1;
 constexpr float kTraceFlatPx = 0.15F;
 
-constexpr double kRadiusWarpMax = 60.0;
 constexpr double kWidthSpanOct = 6.0;
+constexpr double kPairSnapOct = 0.1;
+constexpr int kFaintRingAlpha = 96;
 constexpr double kHitRadiusPx = 11.0;
 constexpr double kTokenRadiusPx = 8.0;
 constexpr qint64 kRefusalHoldMs = 600;
@@ -66,16 +68,6 @@ double frequency_for_x(double x, double low_hz, double high_hz, const QRectF& pl
 
 double y_for_db(double db, double low_db, double high_db, const QRectF& plot) {
   return plot.bottom() - (db - low_db) / (high_db - low_db) * plot.height();
-}
-
-double warp_of_radius(double radius) {
-  if (radius <= 0.0) return 0.0;
-  if (radius >= 1.0) return kRadiusWarpMax;
-  return std::clamp(20.0 * std::log10(1.0 / (1.0 - radius)), 0.0, kRadiusWarpMax);
-}
-
-double radius_of_warp(double warp) {
-  return 1.0 - std::pow(10.0, -std::max(warp, 0.0) / 20.0);
 }
 
 constexpr double kOverflowBandPx = 30.0;
@@ -454,11 +446,11 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
   const auto low_hz = frequencies_hz_.front();
   const auto high_hz = frequencies_hz_.back();
 
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    const auto geometry = trench::core::geometry_from_words(
-        body_->words[corner_][section], trench::core::kP2kDatumHz);
-    for (const auto lane : {Lane::kPole, Lane::kZero}) {
-      if (lane == Lane::kZero && section != selected_section_) continue;
+  for (const auto lane : {Lane::kPole, Lane::kZero}) {
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      const auto geometry = trench::core::geometry_from_words(
+          body_->words[corner_][section], trench::core::kP2kDatumHz);
+      if (!std::holds_alternative<trench::core::ConjugatePair>(geometry.pole)) continue;
       const auto& pair = lane == Lane::kPole ? geometry.pole : geometry.zero;
       double hz = low_hz;
       double radius = 0.0;
@@ -466,6 +458,8 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
       const auto bit = lane == Lane::kPole ? trench::core::p2k::pole_bit(section)
                                            : trench::core::p2k::zero_bit(section);
       const auto [low_db, high_db] = latched_db_.value_or(dbRange());
+      const auto lit = section == selected_section_ ||
+                       (highlight_section_ && section == *highlight_section_);
       TokenInfo token;
       token.section = section;
       token.lane = lane;
@@ -473,6 +467,8 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
           std::clamp(x_for_frequency(hz, low_hz, high_hz, plot),
                      plot.left() + kTokenRadiusPx, plot.right() - kTokenRadiusPx),
           y_for_contribution(responseDbAtHz(hz), low_db, high_db, plot)};
+      token.radius = lane == Lane::kPole ? kTokenRadiusPx * (lit ? 0.8 : 0.6)
+                                         : kTokenRadiusPx * (lit ? 1.15 : 0.95);
       token.live = true;
       token.pinned = (freedom_mask_ & bit) == 0U;
       out.push_back(token);
@@ -484,17 +480,70 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
 std::optional<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::hit(
     const QPointF& at) const {
   std::optional<TokenInfo> best;
-  double best_distance = kHitRadiusPx;
+  double best_score = kHitRadiusPx;
   for (const auto& token : tokens()) {
     const auto dx = token.position.x() - at.x();
     const auto dy = token.position.y() - at.y();
     const auto distance = std::hypot(dx, dy);
-    if (distance < best_distance) {
-      best_distance = distance;
+    const auto score = token.lane == Lane::kPole ? distance
+                                                 : std::abs(distance - token.radius);
+    if (score < best_score) {
+      best_score = score;
       best = token;
     }
   }
   return best;
+}
+
+double ResponsePlotWidget::snapToPole(double frequency_hz) const {
+  double best_hz = frequency_hz;
+  double best_octaves = kPairSnapOct;
+  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+    const auto geometry = trench::core::geometry_from_words(
+        body_->words[corner_][section], trench::core::kP2kDatumHz);
+    const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+    if (pole == nullptr) continue;
+    const auto octaves = std::abs(std::log2(frequency_hz / pole->hz));
+    if (octaves <= best_octaves) {
+      best_octaves = octaves;
+      best_hz = pole->hz;
+    }
+  }
+  return best_hz;
+}
+
+std::optional<trench::core::PackedSection> ResponsePlotWidget::zeroCandidate(
+    const QPointF& at, bool snap) const {
+  namespace p2k = trench::core::p2k;
+  const auto plot = plotRect();
+  if (plot.width() <= 0.0 || plot.height() <= 0.0 || frequencies_hz_.empty()) {
+    return std::nullopt;
+  }
+  const auto geometry =
+      trench::core::geometry_from_words(origin_words_, trench::core::kP2kDatumHz);
+  const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+  if (pole == nullptr) return std::nullopt;
+  const auto floor_hz = p2k::mask_width_floor_hz(trench::core::kP2kDatumHz);
+  p2k::MaskParam mask{p2k::mask_offset_max_oct(press_section_), floor_hz};
+  if (at.x() <= plot.right()) {
+    auto hz = std::clamp(frequency_for_x(at.x(), frequencies_hz_.front(),
+                                         frequencies_hz_.back(), plot),
+                         20.0, p2k::kRootHiHz);
+    if (snap) hz = snapToPole(hz);
+    const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
+                          trench::core::kP2kDatumHz / std::numbers::pi;
+    const auto rise = (press_position_.y() - at.y()) / plot.height();
+    mask.offset_oct = std::log2(hz / pole->hz);
+    mask.zero_bw_hz = std::clamp(press_bw * std::pow(2.0, -rise * kWidthSpanOct), floor_hz,
+                                 p2k::kMaskWidthMaxHz);
+  }
+  const std::array<std::uint16_t, 4> current{origin_words_[0], origin_words_[1],
+                                             origin_words_[2], origin_words_[3]};
+  const auto roots =
+      p2k::words_from_mask(mask, current, press_section_, trench::core::kP2kDatumHz);
+  auto candidate = origin_words_;
+  for (std::size_t word = 0; word < roots.size(); ++word) candidate[word] = roots[word];
+  return candidate;
 }
 
 void ResponsePlotWidget::refuse(double frequency_hz) {
@@ -511,38 +560,39 @@ void ResponsePlotWidget::moveTo(const QPointF& at) {
   if (plot.width() <= 0.0 || plot.height() <= 0.0 || frequencies_hz_.empty()) return;
   const auto low_hz = frequencies_hz_.front();
   const auto high_hz = frequencies_hz_.back();
-  const auto is_pole = press_lane_ == Lane::kPole;
-  const auto s6_zero = press_section_ == 5 && !is_pole;
+  if (press_lane_ == Lane::kZero) {
+    const auto masked = zeroCandidate(at, false);
+    if (!masked) return;
+    refusal_active_ = false;
+    if (*masked == body_->words[corner_][press_section_]) {
+      update();
+      return;
+    }
+    emit sectionEdited(press_section_, *masked);
+    return;
+  }
 
   const auto hz = std::clamp(frequency_for_x(at.x(), low_hz, high_hz, plot), 20.0,
                              p2k::kRootHiHz);
   const auto rise = (press_position_.y() - at.y()) / plot.height();
-  double radius = 0.0;
-  if (is_pole) {
-    const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
-                          trench::core::kP2kDatumHz / std::numbers::pi;
-    const auto bw = press_bw * std::pow(2.0, -rise * kWidthSpanOct);
-    radius = std::clamp(
-        std::exp(-std::numbers::pi * bw / trench::core::kP2kDatumHz), 0.0, p2k::kPoleRMax);
-  } else {
-    radius = s6_zero ? p2k::s6_zero_radius()
-                     : std::clamp(radius_of_warp(warp_of_radius(press_radius_) +
-                                                 rise * kRadiusWarpMax),
-                                  0.0, 1.0);
-  }
+  const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
+                        trench::core::kP2kDatumHz / std::numbers::pi;
+  const auto radius =
+      std::clamp(std::exp(-std::numbers::pi * press_bw * std::pow(2.0, -rise * kWidthSpanOct) /
+                          trench::core::kP2kDatumHz),
+                 0.0, p2k::kPoleRMax);
 
-  const auto [word_mag, snapped_rsq] = p2k::words_from_root(hz, radius);
-  const auto word_rsq = s6_zero ? p2k::kS6ZeroRsqWord : snapped_rsq;
+  const auto [word_mag, word_rsq] = p2k::words_from_root(hz, radius);
   const auto [p, q] = p2k::pq(word_mag, word_rsq);
-  if (!p2k::is_legal(p, q, is_pole) ||
-      !p2k::magnitude_admissible(p2k::nearest_lattice_word(word_mag), is_pole)) {
+  if (!p2k::is_legal(p, q, true) ||
+      !p2k::magnitude_admissible(p2k::nearest_lattice_word(word_mag), true)) {
     refuse(hz);
     return;
   }
 
   auto candidate = origin_words_;
-  candidate[is_pole ? 2 : 0] = word_mag;
-  candidate[is_pole ? 3 : 1] = word_rsq;
+  candidate[2] = word_mag;
+  candidate[3] = word_rsq;
   refusal_active_ = false;
   if (candidate == body_->words[corner_][press_section_]) {
     update();
@@ -638,6 +688,12 @@ void ResponsePlotWidget::mouseReleaseEvent(QMouseEvent* event) {
   refusal_active_ = false;
   pin_emitted_ = !dragged && !moved;
   if (dragged) {
+    if (lane == Lane::kZero) {
+      const auto dropped = zeroCandidate(event->position(), true);
+      if (dropped && *dropped != body_->words[corner_][section]) {
+        emit sectionEdited(section, *dropped);
+      }
+    }
     emit gestureFinished(section);
   } else if (pin_emitted_) {
     emit pinToggled(section, lane);
@@ -784,7 +840,7 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
       ink = ink.lighter(160);
     }
     const auto selected = token.section == selected_section_;
-    const auto radius = kTokenRadiusPx * (selected || highlighted ? 0.8 : 0.6);
+    const auto radius = token.radius;
     if (token.lane == Lane::kPole) {
       painter.setPen(QPen(kBackground, 1.5));
       painter.setBrush(token.pinned ? QBrush(kBackground) : QBrush(ink));
@@ -800,8 +856,10 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
         painter.drawEllipse(token.position, radius + 3.5, radius + 3.5);
       }
     } else {
-      painter.setPen(QPen(ink, token.pinned ? 2.4 : 1.4));
-      painter.setBrush(QBrush(kBackground));
+      auto ring = ink;
+      if (!selected) ring.setAlpha(kFaintRingAlpha);
+      painter.setPen(QPen(ring, token.pinned ? 2.4 : 1.4));
+      painter.setBrush(Qt::NoBrush);
       painter.drawEllipse(token.position, radius, radius);
     }
   }

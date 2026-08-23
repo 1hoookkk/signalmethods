@@ -62,6 +62,10 @@ std::array<std::uint16_t, 4> words_from_pole(double hz, double bw_hz,
                                              std::size_t section,
                                              double sample_rate_hz = kP2kDatumHz);
 
+std::array<std::uint16_t, 4> words_with_parked_zero(
+    const std::array<std::uint16_t, 4>& current, std::size_t section,
+    double sample_rate_hz = kP2kDatumHz);
+
 std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,
                                              const std::array<std::uint16_t, 4>& current,
                                              std::size_t section,

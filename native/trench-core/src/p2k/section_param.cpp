@@ -288,16 +288,19 @@ std::array<std::uint16_t, 4> words_from_pole(double hz, double bw_hz,
       kPoleRMax);
   const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, radius);
   if (!root_admissible(pole_mag, pole_rsq, true)) return current;
-  std::array<std::uint16_t, 4> out{current[0], current[1], pole_mag, pole_rsq};
-  if (section == 5) {
-    const double zero_hz = std::min(pole_hz * std::pow(2.0, kTrenchMaxOct), kRootHiHz);
-    const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, s6_zero_radius());
-    if (root_admissible(zero_mag, kS6ZeroRsqWord, false)) {
-      out[0] = zero_mag;
-      out[1] = kS6ZeroRsqWord;
-    }
-  }
-  return out;
+  const std::array<std::uint16_t, 4> out{current[0], current[1], pole_mag, pole_rsq};
+  return words_with_parked_zero(out, section, sample_rate_hz);
+}
+
+std::array<std::uint16_t, 4> words_with_parked_zero(
+    const std::array<std::uint16_t, 4>& current, std::size_t section,
+    double sample_rate_hz) {
+  const auto zero_pair =
+      geometry_from_words({current[0], current[1], 0, 0, 0}, sample_rate_hz).zero;
+  if (std::holds_alternative<ConjugatePair>(zero_pair)) return current;
+  return words_from_mask(
+      {mask_offset_max_oct(section), mask_width_floor_hz(sample_rate_hz)}, current,
+      section, sample_rate_hz);
 }
 
 std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,

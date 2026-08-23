@@ -32,6 +32,7 @@ class ResponsePlotWidget final : public QWidget {
     std::size_t section{};
     Lane lane{Lane::kPole};
     QPointF position;
+    double radius{};
     bool live{};
     bool pinned{};
   };
@@ -87,6 +88,9 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] double contributionAt(std::size_t section, double hz) const;
   [[nodiscard]] double responseDbAtHz(double hz) const;
   [[nodiscard]] std::optional<TokenInfo> hit(const QPointF& at) const;
+  [[nodiscard]] double snapToPole(double frequency_hz) const;
+  [[nodiscard]] std::optional<trench::core::PackedSection> zeroCandidate(
+      const QPointF& at, bool snap) const;
   void moveTo(const QPointF& at);
   void refuse(double frequency_hz);
   void ensureTrace(const QRectF& plot, double low_db, double high_db);

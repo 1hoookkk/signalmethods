@@ -223,8 +223,6 @@ class MainWindowTest final : public QObject {
     QVERIFY(pole.has_value());
     QVERIFY2(std::abs(pole->hz - 1000.0) <= 10.0, qPrintable(QString::number(pole->hz)));
     QVERIFY2(std::abs(pole->bw_hz - 120.0) <= 12.0, qPrintable(QString::number(pole->bw_hz)));
-    QCOMPARE(window.body().words[0][0][0], before[0]);
-    QCOMPARE(window.body().words[0][0][1], before[1]);
     QCOMPARE(window.body().words[0][0][4], before[4]);
     QCOMPARE(window.body().words[4][0], window.body().words[0][0]);
     QCOMPARE(window.undoStack()->count(), 1);
@@ -290,6 +288,117 @@ class MainWindowTest final : public QObject {
     QVERIFY2(std::abs(readout->text().toDouble() - 1.0) < 0.05,
              qPrintable(readout->text()));
     QCOMPARE(window.undoStack()->count(), 2);
+  }
+
+  void aFreshSkeletonGetsAParkedMask() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    double_click(plot, QPointF{plot->xForFrequency(1000.0), plot->height() * 0.5});
+    QTest::qWait(20);
+
+    const auto words = window.body().words[0][0];
+    QVERIFY(words[0] != trench::core::kIdentitySection[0] ||
+            words[1] != trench::core::kIdentitySection[1]);
+    const auto zero = std::get<trench::core::ConjugatePair>(
+        trench::core::geometry_from_words(words, trench::core::kP2kDatumHz).zero);
+    QVERIFY2(zero.hz >= 10'000.0, qPrintable(QString::number(zero.hz)));
+    QCOMPARE(p2k::mask_of(words, 0, trench::core::kP2kDatumHz).zero_bw_hz,
+             p2k::mask_width_floor_hz(trench::core::kP2kDatumHz));
+
+    const auto masked = trench::core::section_words_to_biquad(words);
+    auto bare = masked;
+    bare[1] = 0.0;
+    bare[2] = 0.0;
+    const auto shape = [](const trench::core::Biquad& section, double hz) {
+      return trench::core::section_response_db(section, hz, trench::core::kP2kDatumHz) -
+             trench::core::section_response_db(section, 0.0, trench::core::kP2kDatumHz);
+    };
+    for (const auto& probe : {std::pair{1'000.0, 0.1}, std::pair{5'000.0, 1.2}}) {
+      const auto delta = std::abs(shape(masked, probe.first) - shape(bare, probe.first));
+      QVERIFY2(delta < probe.second,
+               qPrintable(QStringLiteral("%1 Hz %2 dB").arg(probe.first).arg(delta)));
+    }
+    QCOMPARE(window.body().words[4][0], words);
+    QCOMPARE(window.undoStack()->count(), 1);
+
+    window.clearSection(0);
+    QCOMPARE(window.body().words[0][0], trench::core::kIdentitySection);
+    QCOMPARE(window.undoStack()->count(), 2);
+  }
+
+  void aRingDroppedOnAPolePairsWithIt() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    double_click(plot, QPointF{plot->xForFrequency(300.0), plot->height() * 0.5});
+    QTest::qWait(20);
+    double_click(plot, QPointF{plot->xForFrequency(3000.0), plot->height() * 0.5});
+    QTest::qWait(20);
+    window.selectSection(0);
+    QTest::qWait(20);
+
+    const auto target = p2k::pole_of(window.body().words[0][1], trench::core::kP2kDatumHz);
+    QVERIFY(target.has_value());
+    const auto before = window.body().words[0][0];
+    const auto ring = find_token(plot, 0, ResponsePlotWidget::Lane::kZero);
+    QVERIFY(ring.has_value());
+
+    drag(plot, ring->position,
+         QPointF{plot->xForFrequency(target->hz), ring->position.y()}, 8);
+    QTest::qWait(20);
+
+    const auto after = window.body().words[0][0];
+    QCOMPARE(after[2], before[2]);
+    QCOMPARE(after[3], before[3]);
+    QCOMPARE(after[4], before[4]);
+    const auto zero = std::get<trench::core::ConjugatePair>(
+        trench::core::geometry_from_words(after, trench::core::kP2kDatumHz).zero);
+    QVERIFY2(std::abs(zero.hz / target->hz - 1.0) <= 0.01,
+             qPrintable(QStringLiteral("%1 %2").arg(zero.hz).arg(target->hz)));
+  }
+
+  void aVerticalRingDragNarrowsTheZeroAsOneUndo() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    const auto floor_hz = p2k::mask_width_floor_hz(trench::core::kP2kDatumHz);
+    std::size_t chosen = trench::core::kLegacySectionCount;
+    for (std::size_t section = 0; section + 1 < trench::core::kLegacySectionCount; ++section) {
+      const auto mask = p2k::mask_of(window.body().words[0][section], section,
+                                     trench::core::kP2kDatumHz);
+      if (mask.zero_bw_hz > floor_hz * 1.5) {
+        chosen = section;
+        break;
+      }
+    }
+    QVERIFY(chosen < trench::core::kLegacySectionCount);
+    window.selectSection(chosen);
+    QTest::qWait(20);
+
+    const auto before = p2k::mask_of(window.body().words[0][chosen], chosen,
+                                     trench::core::kP2kDatumHz);
+    const auto pole = window.body().words[0][chosen][2];
+    const auto ring = find_token(plot, chosen, ResponsePlotWidget::Lane::kZero);
+    QVERIFY(ring.has_value());
+    drag(plot, ring->position, ring->position + QPointF{0.0, -50.0}, 6);
+    QTest::qWait(20);
+
+    const auto after = p2k::mask_of(window.body().words[0][chosen], chosen,
+                                    trench::core::kP2kDatumHz);
+    QVERIFY2(after.zero_bw_hz < before.zero_bw_hz,
+             qPrintable(QStringLiteral("%1 %2").arg(before.zero_bw_hz).arg(after.zero_bw_hz)));
+    QCOMPARE(window.body().words[0][chosen][2], pole);
+    QCOMPARE(window.undoStack()->count(), 1);
   }
 
   void windowOwnsAndReleasesQtObjects() {
@@ -461,16 +570,20 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
 
     const auto tokens = window.responsePlot()->tokens();
+    std::size_t poles = 0;
     std::size_t zeros = 0;
     for (const auto& token : tokens) {
       QVERIFY(token.section < trench::core::kLegacySectionCount);
+      QVERIFY(window.body().words[0][token.section] != trench::core::kIdentitySection);
       if (token.lane == ResponsePlotWidget::Lane::kZero) {
-        QCOMPARE(token.section, std::size_t{0});
         ++zeros;
+      } else {
+        ++poles;
       }
     }
-    QCOMPARE(zeros, std::size_t{1});
-    QVERIFY(tokens.size() <= trench::core::kLegacySectionCount + 1);
+    QVERIFY(poles <= trench::core::kLegacySectionCount);
+    QVERIFY(zeros <= poles);
+    QVERIFY2(zeros > 1, qPrintable(QString::number(zeros)));
   }
 
   void degeneratePairRendersInert() {

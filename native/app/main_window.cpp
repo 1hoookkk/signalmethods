@@ -649,8 +649,10 @@ void MainWindow::applyVowel(const QString& symbol) {
   auto after = before;
   if (skeleton != nullptr) {
     for (const auto& pole : p2k::pole_words_from_posture(*skeleton)) {
-      after[pole.row][2] = pole.mag;
-      after[pole.row][3] = pole.rsq;
+      auto& row = after[pole.row];
+      const auto roots = p2k::words_with_parked_zero({row[0], row[1], pole.mag, pole.rsq},
+                                                     pole.row, trench::core::kP2kDatumHz);
+      for (std::size_t word = 0; word < roots.size(); ++word) row[word] = roots[word];
     }
   } else {
     const auto words = p2k::words_from_recipe(vowel != nullptr ? p2k::rows_from_formants(vowel->f)
