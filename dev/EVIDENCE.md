@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Coupled shapes do not survive a corner move.** Pairing each pole with its nearest zero
+from any section (within 0.5 oct) gives 575 coupled shapes across the 132 corners, 27%
+own-section. Following a pole lane to its partner corner: it keeps the same partner zero
+in 25% of cases, takes a different section's zero in 36%, loses its partner in 11%,
+gains one in 12%, and is unpaired at both ends in 15%. The coupled shapes themselves
+cluster only as "bell" at two heights (k=2, silhouette 0.43: a 10 kHz pair, width 0.10,
+zero on the pole, n=316; a 3.1 kHz pair, offset +0.15, n=209). Within a corner the roots
+form bells from whichever sections are handy; across corners the pairing is re-formed.
+The only thing conserved across corners is the lane index. (2026-08-23)
+
 **Pole moves and zero moves are separately full-rank, and zeros do not follow poles.**
 Delta-PCA with the blocks isolated: pole block (dlog f, dwidth x 6) PC1 27% on Morph /
 20% on Q; zero block (doffset, dwidth x 6) 24% / 19%; zero block in absolute frequency
