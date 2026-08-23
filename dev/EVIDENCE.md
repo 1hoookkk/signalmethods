@@ -219,6 +219,19 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**E-mu's two compiled vowel classes are three-formant all-pole cascades — recovered.**
+`FUN_1802c57f0` (CPhantomVocal1, AahAyEeh) and `FUN_1802c58d0` (CPhantomVocal2,
+Ooh-To-Aah) copy a table of 3 rows x 4 corners x 5 packed words per sample-rate family
+(RVA 0x1806d6fe0 and 0x1806d71c0, 480 bytes each) into the corner banks and set the row
+count to 3. Decoded at 44.1 kHz: the zeros are absent (S2/S3 zero radius 0.016; S1 a mild
+real zero at +0.47), every pole shares one radius per rate (0.9979 at 44.1 k in Vocal1;
+frequencies identical across the four rates to 0.1 Hz), and one scale per corner rises
+0.02 -> 0.17 along the corners. Formants (Hz, sorted): Vocal1 M0Q0 503/879/2067,
+M100Q0 257/2417/3770, M0Q100 982/1733/4081, M100Q100 503/4823/7607; Vocal2 M0Q0
+251/640/2803 (ooh), M100Q0 640/1621/2255 (aah), M0Q100 490/1244/5574, M100Q100
+1243/3203/4479. Poles only, Klatt-style, formant tables in the open.
+`ref/x3_vocal_classes.json`, `ref/x3_vocal_classes.bin`. (2026-08-23)
+
 **The pole layer and the zero layer, over all 132 corners.** Each layer alone is more
 one-dimensional than the whole: poles-only PC1 81.6% (a resonant-lowpass slope family,
 two clusters, silhouette 0.52), zeros-only PC1 88.0% (a rising correction, two clusters,
