@@ -142,6 +142,7 @@ impl GuardBiquad {
         self.w2 = 0.0;
     }
 }
+const TRANSITION_MS: f64 = 50.0;
 pub const AGC_DRIVE: f32 = 1.0;
 // No fixed broadband trim lives here. SCALE owns the body's authored level and
 // the AGC may reduce only genuinely hot signal. A former -6.5 dB reference-match
@@ -268,10 +269,10 @@ struct CoeffStamp {
 pub struct FilterEngine {
     cascade_l: Cascade,
     cascade_r: Cascade,
-    // X3 PRESET SWITCH (Tyson 2026-08-15): a hard cut. The new body's words
-    // snap in whole and the DF-II states keep ringing through them — the
-    // machine's frozen/static install on a running voice. The 100 ms
-    // outgoing-voice crossfade this replaced was ours, not the X3's.
+    outgoing_l: Cascade,
+    outgoing_r: Cascade,
+    transition_pos: u32,
+    transition_len: u32,
     // Per-voice AGC stays, like the hardware: the incoming body's AGC
     // starts fresh (FUN_1802d1600 runs AGC inside the voice loop).
     snap_next_targets: bool,
@@ -382,6 +383,10 @@ impl FilterEngine {
         Self {
             cascade_l: Cascade::new(),
             cascade_r: Cascade::new(),
+            outgoing_l: Cascade::new(),
+            outgoing_r: Cascade::new(),
+            transition_pos: 0,
+            transition_len: 0,
             snap_next_targets: false,
             coeff_stamp: None,
             current_morph: 0.0,
@@ -456,6 +461,10 @@ impl FilterEngine {
         self.width_dry_r.reserve(WIDTH_GUARD_MAX_BLOCK);
         self.cascade_l.reset();
         self.cascade_r.reset();
+        self.outgoing_l.reset();
+        self.outgoing_r.reset();
+        self.transition_len = 0;
+        self.transition_pos = 0;
         self.coeff_stamp = None;
         self.width_hp_l = GuardBiquad::high_pass(WIDTH_GUARD_LO_HZ, sample_rate);
         self.width_hp_r = GuardBiquad::high_pass(WIDTH_GUARD_LO_HZ, sample_rate);
@@ -512,18 +521,20 @@ impl FilterEngine {
             // (FUN_1802d1600 calls FUN_1802c04e0 inside the voice loop), so a new
             // sound NEVER inherits the previous sound's gain cut.
             self.agc_gain = 1.0;
-            // X3 PRESET SWITCH (Tyson 2026-08-15 "make preset switching the
-            // same as x3"): a HARD CUT. The 100 ms outgoing-voice crossfade
-            // was ours, not the machine's — retired. The new body's words
-            // SNAP in whole (never ramping through in-between filter shapes,
-            // which is what fired the switch transient that slammed the AGC)
-            // and the DF-II delay states keep ringing through them, exactly
-            // the X3's frozen/static install on a running voice.
+            if self.cartridge.is_some() {
+                self.outgoing_l.clone_from(&self.cascade_l);
+                self.outgoing_r.clone_from(&self.cascade_r);
+                self.cascade_l.reset();
+                self.cascade_r.reset();
+                self.transition_len =
+                    (TRANSITION_MS / 1000.0 * self.sample_rate).round().max(1.0) as u32;
+                self.transition_pos = 0;
+            }
             self.snap_next_targets = true;
         }
         // Reload (new_voice=false): just swap corner words. Filter states,
-        // AGC gain, and outgoing crossfade are left untouched — the body glide
-        // travels smoothly without 60 Hz state-clearing transients.
+        // AGC gain, and an outgoing transition are left untouched — the body
+        // glide travels smoothly without 60 Hz state-clearing transients.
         self.coeff_stamp = None; // new corner words: the cached decode is stale
         self.cartridge.replace(cart)
     }
@@ -932,14 +943,24 @@ impl FilterEngine {
         self.preamp_drive += self.delta_preamp_drive;
         sl *= self.pre_drive_gain;
         sr *= self.pre_drive_gain;
-        // NO CROSSFADE (Tyson 2026-08-15 "make preset switching the same as
-        // x3"): the 100 ms outgoing-voice blend was ours, not the machine's.
-        // On the X3 a program change on a running voice swaps the coefficient
-        // words and keeps the delay lines — the frozen/static install path —
-        // so a body switch here is a hard cut: snap_targets installs the new
-        // words whole, the DF-II states keep ringing through them.
+        let fading = self.transition_len > 0;
+        let (ol, or_) = if fading {
+            (self.outgoing_l.tick(sl), self.outgoing_r.tick(sr))
+        } else {
+            (0.0, 0.0)
+        };
         sl = self.cascade_l.tick(sl);
         sr = self.cascade_r.tick(sr);
+        if fading {
+            let t = self.transition_pos as f32 / self.transition_len as f32;
+            sl = ol + (sl - ol) * t;
+            sr = or_ + (sr - or_) * t;
+            self.transition_pos += 1;
+            if self.transition_pos >= self.transition_len {
+                self.transition_len = 0;
+                self.transition_pos = 0;
+            }
+        }
         if self.debug.agc_enabled {
             if self.debug.agc_bypass {
                 let mk = self.debug.agc_makeup_gain;

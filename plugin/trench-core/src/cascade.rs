@@ -165,6 +165,7 @@ impl BiquadState {
     }
 }
 
+#[derive(Clone)]
 pub struct Cascade {
     stages: [BiquadState; NUM_STAGES],
     boost: f64,
