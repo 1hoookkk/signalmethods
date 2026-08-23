@@ -534,3 +534,9 @@ M100 corners share 4 (8 bodies). A zero set transfers across skeletons in the sa
 (Hedz zeros under Dead Ringer, Klub Klassik, a measured mouth: same 7.2 kHz notch, top at
 -22..-33 dB) and is nonsense outside it (DJ Alkaline's high poles +114 dB, the cello's low
 poles -300 dB). (`dev/skeleton_library_m0_m100.py`, `dev/skeleton_swap.py`, 2026-08-24)
+
+**Equal Morph steps are not equal changes.** 24 equal steps of the 2019 law, spectral change
+per step on a log grid (`dev/morph_step_uniformity.py`): Dead Ringer x1.3 max/min, Hedz x2.1,
+Ooh-to-Eee x3.0, BassBox 303 x5.4 with the travel crammed into 60-75% of the dial. Rossum's
+law evens the re-deal bodies; transposition bodies still bunch. Debugging signal for the
+bisection sessions, not acceptance. (2026-08-24)
