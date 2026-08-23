@@ -47,6 +47,17 @@ std::filesystem::path fixture_path() {
   return std::filesystem::path(TRENCH_SOURCE_ROOT) / "ref/presets/P2k_013_talking_hedz.bin";
 }
 
+class PaintCounter final : public QObject {
+ public:
+  int count{};
+
+ protected:
+  bool eventFilter(QObject*, QEvent* event) override {
+    if (event->type() == QEvent::Paint) ++count;
+    return false;
+  }
+};
+
 double peak_hz_below(const std::vector<double>& response_db,
                      const std::vector<double>& hz, double limit_hz) {
   double best_hz = 0.0;
@@ -1318,6 +1329,23 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.body().native_bytes(), before);
     QCOMPARE(fc->value(), before_fc);
   }
+
+  void theResponsePlotIsStillAtRest() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(120);
+    auto* plot = window.responsePlot();
+    const auto first = plot->grab().toImage();
+    PaintCounter counter;
+    plot->installEventFilter(&counter);
+    QTest::qWait(300);
+    plot->removeEventFilter(&counter);
+    QCOMPARE(counter.count, 0);
+    const auto second = plot->grab().toImage();
+    QVERIFY(first == second);
+  }
+
 };
 
 QTEST_MAIN(MainWindowTest)
