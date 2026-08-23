@@ -171,17 +171,17 @@ TEST(NativeBody, TheInteriorIsStableConjugateAndUnityAtDc) {
 TEST(NativeBody, TalkingHedzFloatInteriorEnvelope) {
   const auto audit = p2k::interior_audit(nb::import_p2k(hedz()), p2k::grid(), 33, 33);
   EXPECT_EQ(audit.refused, 0U);
-  EXPECT_NEAR(audit.max_step_db, 7.44, 0.15);
-  EXPECT_NEAR(audit.mean_step_db, 2.86, 0.06);
-  EXPECT_NEAR(audit.excursion_up_db, 76.15, 1.52);
-  EXPECT_NEAR(audit.excursion_down_db, 91.90, 1.84);
-  EXPECT_NEAR(audit.bilinear_dev_max_db, 14.19, 0.28);
-  EXPECT_NEAR(audit.bilinear_dev_p95_db, 13.00, 0.26);
+  EXPECT_NEAR(audit.max_step_db, 5.28, 0.11);
+  EXPECT_NEAR(audit.mean_step_db, 3.08, 0.07);
+  EXPECT_NEAR(audit.excursion_up_db, 69.43, 1.39);
+  EXPECT_NEAR(audit.excursion_down_db, 93.25, 1.87);
+  EXPECT_NEAR(audit.bilinear_dev_max_db, 14.45, 0.29);
+  EXPECT_NEAR(audit.bilinear_dev_p95_db, 12.81, 0.26);
   EXPECT_NEAR(audit.detour_max, 6.70, 0.14);
-  EXPECT_NEAR(audit.loudness_swing_db, 44.06, 0.88);
-  EXPECT_NEAR(audit.loudness_beyond_corners_db, 35.19, 0.70);
-  EXPECT_NEAR(audit.prefix_headroom_db, 102.72, 2.05);
-  EXPECT_NEAR(audit.prefix_floor_db, -123.96, 2.48);
+  EXPECT_NEAR(audit.loudness_swing_db, 39.46, 0.79);
+  EXPECT_NEAR(audit.loudness_beyond_corners_db, 30.59, 0.61);
+  EXPECT_NEAR(audit.prefix_headroom_db, 107.60, 2.15);
+  EXPECT_NEAR(audit.prefix_floor_db, -144.90, 2.90);
 }
 
 TEST(NativeBody, MotionThroughTheBlendStaysFinite) {

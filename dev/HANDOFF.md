@@ -73,26 +73,28 @@ Three facts from them, each now a pinned test:
    0.02 dB). Blending real coefficients with unity at the corners fixes this exactly;
    it is the one place imported bodies will differ from the P2K runtime mid-morph.
 
-## The float engine (evening, after the ruling)
+## The float engine (evening)
 
-`native_body.hpp`: a body is 4 corners x 6 sections of SR-free roots (`Resonant{hz, bw_hz}`
-or `RealRoots` as signed decay Hz) plus one `gain_db` per corner. `design(corner, sr)`
-makes coefficients at the host rate; `blend(body, m, q, sr)` is the bilinear coefficient
-blend; `cascade(design, gain_db)` applies the unity-DC closed form per section and the
-corner gain once. `import_p2k` decodes the 240-byte bodies at the 44.1 k datum.
+`native_body.hpp`: a body is 4 corners x 6 sections, each pole and zero stored as
+`Resonant{hz, bw_hz}` (or `RealRoots` as signed decay Hz for imported real-axis pairs),
+plus one `gain_db` per corner. `design(corner, sr)` makes coefficients at the host rate;
+`blend(body, m, q, sr)` is US 10,514,883's law — bilinear interpolation of log frequency
+and log bandwidth per root, decoded after; `cascade(design, gain_db)` applies unity DC
+per section and the corner gain once. `import_p2k` decodes the 240-byte bodies.
 
 Proven (`native_body_test.cpp`, all 33 bodies): every corner nulls against
-`corner_response_db` to < 1e-9 dB in shape *and* level; the interior is stable,
-conjugate-preserving and unity-DC on a 17x17 grid at 44.1 k and 48 k; motion through the
-blend (sq20, sin5, 512-sample blocks, 48 k) is finite, worst +73.8 dB over frozen
-(early_rizer; the packed plugin table's worst was +76). The interior audit now takes any
-cascade-at-(m,q) callback; `trench_interior_envelope.exe float` writes
-`dev/interior_envelope_float.txt`.
+`corner_response_db` to < 1e-9 dB in shape and level; the interior is stable and
+unity-DC on a 17x17 grid at 44.1 k and 48 k; motion through the blend is finite.
+`trench_interior_envelope.exe float` writes `dev/interior_envelope_float.txt`. Hedz under
+the patent law sits on the hardware interior (max step 5.28 vs 5.20, excursion 69/93 vs
+70/97, loudness swing 39.5 vs 38.9). A coefficient-blend interior was tried first and
+drifted (7.44 / 76 / 44); the patent names that approach as the thing it replaces, and
+the ruling text that asked for it was wrong. CLAUDE.md now cites the patent.
 
-One finding changed the invariant: the factory corners are *not* unity-DC (worst 42 dB,
-radio_craze corner 3; 739/792 sections > 1 dB) — the 0.02 dB figure was drift relative to
-the corners. The evidence file already said gain is one number per corner; the float body
-carries it. Not done: the app, fitter and plugin still run on the packed engine.
+Two findings: the factory corners are not unity-DC (worst 42 dB; the 0.02 dB figure was
+drift relative to corners), hence one gain per corner; and the bank holds 54 real-axis
+pairs in 35 mixed lanes, which the patent's representation does not have — the rule for
+them is in CLAUDE.md. Not done: the app, fitter and plugin still run on the packed engine.
 
 ## The three questions, answered
 

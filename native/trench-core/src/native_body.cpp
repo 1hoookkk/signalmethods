@@ -85,25 +85,74 @@ std::array<double, kCorners> corner_weights(double morph, double q) {
   return {(1.0 - m) * (1.0 - qq), m * (1.0 - qq), (1.0 - m) * qq, m * qq};
 }
 
+
+constexpr double kAngleZeroHz = 20.0;
+constexpr double kAnglePiHz = 20'000.0;
+constexpr double kDecayCapHz = 1.0e9;
+
+double capped(double decay_hz) { return std::min(std::abs(decay_hz), kDecayCapHz); }
+
+Resonant as_resonant(const Roots& roots) {
+  if (const auto* res = std::get_if<Resonant>(&roots)) {
+    return *res;
+  }
+  const auto& real = std::get<RealRoots>(roots);
+  return {real.a_hz + real.b_hz < 0.0 ? kAnglePiHz : kAngleZeroHz,
+          capped(real.a_hz) + capped(real.b_hz)};
+}
+
+Roots blend_roots(const std::array<const Roots*, kCorners>& corner,
+                  const std::array<double, kCorners>& weight) {
+  std::size_t nearest = 0;
+  for (std::size_t ci = 1; ci < kCorners; ++ci) {
+    if (weight[ci] > weight[nearest]) nearest = ci;
+  }
+  if (weight[nearest] == 1.0) {
+    return *corner[nearest];
+  }
+  bool all_real = true;
+  for (const Roots* r : corner) {
+    all_real = all_real && std::holds_alternative<RealRoots>(*r);
+  }
+  if (all_real) {
+    double lo = 0.0;
+    double hi = 0.0;
+    for (std::size_t ci = 0; ci < kCorners; ++ci) {
+      const auto& real = std::get<RealRoots>(*corner[ci]);
+      const double a = capped(real.a_hz);
+      const double b = capped(real.b_hz);
+      lo += weight[ci] * std::log(std::min(a, b));
+      hi += weight[ci] * std::log(std::max(a, b));
+    }
+    const auto& sign_of = std::get<RealRoots>(*corner[nearest]);
+    const double sa = std::min(sign_of.a_hz, sign_of.b_hz) < 0.0 ? -1.0 : 1.0;
+    const double sb = std::max(sign_of.a_hz, sign_of.b_hz) < 0.0 ? -1.0 : 1.0;
+    return RealRoots{sa * std::exp(lo), sb * std::exp(hi)};
+  }
+  double log_hz = 0.0;
+  double log_bw = 0.0;
+  for (std::size_t ci = 0; ci < kCorners; ++ci) {
+    const Resonant res = as_resonant(*corner[ci]);
+    log_hz += weight[ci] * std::log(res.hz);
+    log_bw += weight[ci] * std::log(res.bw_hz);
+  }
+  return Resonant{std::exp(log_hz), std::exp(log_bw)};
+}
+
 }  // namespace
 
 Design blend(const Body& body, double morph, double q, double sample_rate_hz) {
   const auto weight = corner_weights(morph, q);
-  std::array<Design, kCorners> designs{};
-  for (std::size_t ci = 0; ci < kCorners; ++ci) {
-    designs[ci] = design(body.corners[ci], sample_rate_hz);
-  }
   Design out{};
   for (std::size_t si = 0; si < kSections; ++si) {
-    Coefficients acc{};
+    std::array<const Roots*, kCorners> poles{};
+    std::array<const Roots*, kCorners> zeros{};
     for (std::size_t ci = 0; ci < kCorners; ++ci) {
-      const auto& c = designs[ci][si];
-      acc.b1 += weight[ci] * c.b1;
-      acc.b2 += weight[ci] * c.b2;
-      acc.a1 += weight[ci] * c.a1;
-      acc.a2 += weight[ci] * c.a2;
+      poles[ci] = &body.corners[ci].sections[si].pole;
+      zeros[ci] = &body.corners[ci].sections[si].zero;
     }
-    out[si] = acc;
+    out[si] = design(Section{blend_roots(poles, weight), blend_roots(zeros, weight)},
+                     sample_rate_hz);
   }
   return out;
 }

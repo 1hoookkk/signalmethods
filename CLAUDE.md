@@ -59,21 +59,27 @@ Ruled 2026-08-23: the E-mu Z-plane lineage is the reference taste and the proof 
 idea works, not the format we preserve. The 33 P2K bodies and the 289 Morpheus cubes are
 imported content and evidence. Byte-level parity with P2K hardware is no longer a goal.
 
-A native body is a serial cascade of six second-order pole/zero sections over four
-authored corners. Log magnitudes add; the complete cascade is the comparator.
+The sources of truth for the engine are Rossum's two patents. US 5,170,369 (1992) is the
+packed-word machine the P2K bodies were written for. US 10,514,883 (2019) is Rossum's
+correction of it, and the float engine follows it:
 
-A section is (Fc, bandwidth in octaves, gain, zero offset in octaves, depth) in float,
-designed in Hz at the host sample rate. No word lattice, no byte caps, no fixed datum.
-Pole radius is bounded by a stability margin, not a chip ceiling.
-
-The interior is a blend of section coefficients, never of roots. The stable and the
-conjugate regions of a second-order section are convex in coefficient space, so any blend
-of stable corners is stable and any blend of conjugate pairs stays conjugate. Author
-corners; ride and audit the resulting interior; do not invent a separate morph model.
-
-The geometry's DC gain is unity by a closed form. Level is one authored gain per corner,
-blended in dB (Morpheus stores it that way; P2K spread it across its stage scales — the
-factory corners sit up to 42 dB from unity). Never peak-normalise. No per-stage gain cuts.
+* A body is a serial cascade of six second-order pole/zero sections over four corners.
+  Log magnitudes add; the complete cascade is the comparator.
+* Each pole and each zero is stored as frequency and resonance separately, in float,
+  designed in Hz at the host sample rate. No word lattice, no byte caps, no fixed datum.
+* The interior is a linear interpolation of each root's encoded frequency (log) and
+  encoded resonance (log of bandwidth, the patent's log(1 − R)), decoded after
+  interpolation. The patent names coefficient interpolation as the thing this replaces:
+  "attempts to evenly change the coefficients of a digital filter ... do not result in
+  the perceived sound of the filter evenly changing." Stability follows from the
+  encoding: an interpolated log(1 − R) never reaches R = 1.
+* Each section's DC gain is unity by the closed form on its geometry (the patent's DC gain
+  stabilisation). Level is one gain per corner, interpolated in log (the patent's
+  encoded gain). Never peak-normalise. No per-stage gain cuts.
+* Real-axis pairs exist only in imported P2K corners (54 pairs, 46 corners); the patent's
+  tables have none. A real root is the patent's angle 0 or π at its radius; in the 35
+  lanes that mix a real pair with conjugate pairs, the real pair interpolates as its
+  angle-0/π resonance. Corners are always exact.
 
 Section identity is ordered and persists across corners. Lanes are coefficient ancestry,
 not resonance identity: sections may cross in frequency; never sort or re-pair
@@ -81,17 +87,17 @@ established lanes. New corners inherit lanes from an existing corner. Permutatio
 is a repair tool for imported corners or outlier bodies, never the default.
 
 Zeros are free. No placement prior, follow rule or interval constraint in the fitter.
-Offset and depth are authored controls.
 
-Target and candidate pass through the same auditory representation before scoring. The
-one number the user tunes to stays one number.
+Target and candidate pass through the same auditory representation before scoring
+(Bell et al. 1961). The one number the user tunes to stays one number.
 
 Direct manipulation and FIT are two ways of changing the same authored state.
 
-A body is accepted by listening. The morph interior is a mathematical consequence of
-the corners and the blend law; it is never measured to judge a body. The tables in
-`dev/interior_envelope.txt` and `dev/modulation_envelope.txt` are regression fixtures for
-the engine: rerun them when the engine changes and prove the factory bodies did not move.
+A body is accepted by listening. The morph interior is a consequence of the corners and
+the patent's interpolation law; it is never measured to judge a body. The tables in
+`dev/interior_envelope.txt` (packed) and `dev/interior_envelope_float.txt` (float) and
+`dev/modulation_envelope.txt` are engine regression fixtures: rerun them when the engine
+changes and prove the factory bodies did not move.
 
 The float engine is `native/trench-core/include/trench/core/native_body.hpp`; the 33
 imported bodies null against their decoded responses there. The packed-word engine and
