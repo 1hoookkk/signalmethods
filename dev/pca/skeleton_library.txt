@@ -1,0 +1,35 @@
+posture 1: poles 611 958 2432 3207 4089 4936 Hz
+   008_dead_ringer c1
+   010_ooh_to_eee c0
+   010_ooh_to_eee c2
+   020_eeh_to_aah c1
+   020_eeh_to_aah c3
+   021_ubu_orator c0
+posture 2: poles 254 2018 3272 5479 Hz
+   010_ooh_to_eee c1
+   010_ooh_to_eee c3
+   012_multi_q_vox c0
+   020_eeh_to_aah c0
+   020_eeh_to_aah c2
+posture 3: poles 503 1305 2318 Hz
+   009_tb_or_not_tb c1
+   011_boland_bass c2
+   016_bass_tracer c2
+posture 4: poles 515 983 2669 3936 5796 Hz
+   003_millennium c1
+   004_meaty_gizmo c1
+posture 5: poles 983 1762 2652 5143 Hz
+   005_klub_klassik c2
+   030_tooth_comb c2
+posture 6: poles 363 425 619 655 677 4556 Hz
+   007_fuzzi_face c0
+   024_cruz_pusher c0
+posture 7: poles 225 1006 1772 2651 Hz
+   013_talking_hedz c0
+   021_ubu_orator c1
+posture 8: poles 2026 3564 6177 Hz
+   015_dj_alkaline c0
+   015_dj_alkaline c2
+posture 9: poles 1227 2066 3483 3511 Hz
+   024_cruz_pusher c1
+   024_cruz_pusher c3
