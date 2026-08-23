@@ -24,6 +24,7 @@
 class QAction;
 class ChassisBar;
 class MorphStrip;
+class PostureList;
 class SectionStrip;
 
 class MainWindow final : public QMainWindow {
@@ -63,6 +64,7 @@ class MainWindow final : public QMainWindow {
   void applyVowel(const QString& symbol);
   void applyCharacter(double amount);
   [[nodiscard]] FitRoom* fitRoom() const noexcept;
+  [[nodiscard]] PostureList* postureList() const noexcept;
   [[nodiscard]] int overlayCount() const noexcept;
   void selectOverlay(int index);
   void removeOverlay(int index);
@@ -88,6 +90,10 @@ class MainWindow final : public QMainWindow {
   void updateProbes();
   void updateInterior();
   void updateStrips();
+  void updatePostureMatch();
+  [[nodiscard]] std::optional<BodyDocument::CornerSnapshot> cornerWithPosture(
+      const QString& symbol) const;
+  [[nodiscard]] bool posturePolesHeld(const QString& symbol) const;
   void endRun();
 
   BodyDocument* document_{};
@@ -103,6 +109,7 @@ class MainWindow final : public QMainWindow {
   std::array<BodyDocument::CornerSnapshot, 2> character_before_{};
   ResponsePlotWidget* response_plot_{};
   MorphStrip* morph_strip_{};
+  PostureList* posture_list_{};
   std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};
   ChassisBar* chassis_bar_{};
   FitRoom* fit_room_{};

@@ -2,6 +2,7 @@
 #include "fit_room.hpp"
 #include "main_window.hpp"
 #include "morph_strip.hpp"
+#include "posture_list.hpp"
 #include "response_plot.hpp"
 #include "section_strip.hpp"
 #include "trench/core/formants.hpp"
@@ -1250,14 +1251,16 @@ class MainWindowTest final : public QObject {
     QCOMPARE(room.differenceDbAt(2), 6.0);
   }
 
-  void fitRoomVowelChoiceEmitsTheSymbol() {
-    FitRoom room;
-    room.setVowels({{QStringLiteral("VOW"), {QStringLiteral("aa"), QStringLiteral("iy")}}});
-    QCOMPARE(room.vowelBox()->count(), 3);
-    QCOMPARE(room.vowelBox()->itemText(0), QStringLiteral("VOW"));
-    QSignalSpy spy(&room, &FitRoom::vowelRequested);
-    room.vowelBox()->setCurrentIndex(2);
-    emit room.vowelBox()->activated(2);
+  void postureRowEmitsItsNameAndTheHeaderDoesNot() {
+    PostureList list;
+    list.setGroups({{QStringLiteral("VOW"), {QStringLiteral("aa"), QStringLiteral("iy")}}});
+    QCOMPARE(list.count(), 3);
+    QCOMPARE(list.item(0)->text(), QStringLiteral("VOW"));
+    QCOMPARE(list.focusPolicy(), Qt::NoFocus);
+    QSignalSpy spy(&list, &PostureList::postureChosen);
+    emit list.itemClicked(list.item(0));
+    QCOMPARE(spy.count(), 0);
+    emit list.itemClicked(list.item(2));
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0).toString(), QStringLiteral("iy"));
   }
@@ -1277,8 +1280,6 @@ class MainWindowTest final : public QObject {
     room.setGridHz(hz);
     room.setResponse(response);
     room.setOverlays({{QStringLiteral("vowel aa"), overlay}}, 0);
-    room.setVowels({{QStringLiteral("VOW"),
-                     {QStringLiteral("aa"), QStringLiteral("iy"), QStringLiteral("uw")}}});
     room.setScoreDb(2.1);
     room.resize(640, 460);
     room.show();
@@ -1411,7 +1412,7 @@ class MainWindowTest final : public QObject {
       QCOMPARE(param.type, p2k::SectionType::kEq);
       QVERIFY(param.gain_db < -12.0);
     }
-    QCOMPARE(window.fitRoom()->vowelBox()->findText(QStringLiteral("para A")) >= 0, true);
+    QCOMPARE(window.postureList()->rowOf(QStringLiteral("para A")) >= 0, true);
   }
 
   void aPostureWritesOnlyThePoleHalfOfItsRows() {
@@ -1439,6 +1440,34 @@ class MainWindowTest final : public QObject {
     }
     window.undoStack()->undo();
     QCOMPARE(window.body().words[0], before);
+  }
+
+  void clickingAPostureRowWritesPoleWordsAndMarksTheRow() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* list = window.postureList();
+    QVERIFY(list != nullptr);
+    const auto name = QStringLiteral("LPF klub_klassik c2");
+    const auto row = list->rowOf(name);
+    QVERIFY(row >= 0);
+    list->scrollToItem(list->item(row));
+    const auto before = window.body().words[0];
+    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
+                      list->visualItemRect(list->item(row)).center());
+    const auto after = window.body().words[0];
+    QVERIFY(after != before);
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      QCOMPARE(after[section][0], before[section][0]);
+      QCOMPARE(after[section][1], before[section][1]);
+      QCOMPARE(after[section][4], before[section][4]);
+    }
+    QCOMPARE(list->matched(), name);
+    QVERIFY(!list->hasFocus());
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[0], before);
+    QVERIFY(list->matched() != name);
   }
 
   void tuneInSurvivesMorphAndCornerMoves() {

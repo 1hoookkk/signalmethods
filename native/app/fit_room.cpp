@@ -1,6 +1,5 @@
 #include "fit_room.hpp"
 
-#include <QComboBox>
 #include <QEvent>
 #include <QFont>
 #include <QHBoxLayout>
@@ -9,7 +8,6 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPushButton>
-#include <QStandardItemModel>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -52,7 +50,7 @@ FitRoom::FitRoom(QWidget* parent) : QWidget(parent) {
   setMinimumSize(520, 360);
   setAutoFillBackground(false);
   setStyleSheet(QStringLiteral(
-      "QListWidget, QComboBox, QPushButton { background: #1a1f23; color: #aebabe; "
+      "QListWidget, QPushButton { background: #1a1f23; color: #aebabe; "
       "border: 1px solid #373f43; border-radius: 2px; padding: 0 4px; }"));
 
   auto* column = new QVBoxLayout(this);
@@ -69,12 +67,8 @@ FitRoom::FitRoom(QWidget* parent) : QWidget(parent) {
   load_ = new QPushButton(QStringLiteral("LOAD"), this);
   load_->setObjectName(QStringLiteral("loadOverlay"));
   load_->setFixedWidth(72);
-  vowels_ = new QComboBox(this);
-  vowels_->setObjectName(QStringLiteral("vowelBox"));
-  vowels_->setFixedWidth(84);
   row->addWidget(list_, 1);
   row->addWidget(load_);
-  row->addWidget(vowels_);
   column->addLayout(row);
 
   connect(list_, &QListWidget::currentRowChanged, this, [this](int index) {
@@ -84,10 +78,6 @@ FitRoom::FitRoom(QWidget* parent) : QWidget(parent) {
     emit overlaySelected(index);
   });
   connect(load_, &QPushButton::clicked, this, [this] { emit loadRequested(); });
-  connect(vowels_, &QComboBox::activated, this, [this](int index) {
-    if (index < 0 || index >= vowels_->count()) return;
-    emit vowelRequested(vowels_->itemText(index));
-  });
 }
 
 void FitRoom::setGridHz(std::vector<double> hz) {
@@ -115,23 +105,6 @@ void FitRoom::setOverlays(QList<Overlay> overlays, int selected) {
 
 void FitRoom::setScoreDb(double rms_db) {
   score_db_ = rms_db;
-  update();
-}
-
-void FitRoom::setVowels(QList<VowelGroup> groups) {
-  vowels_->clear();
-  auto* model = qobject_cast<QStandardItemModel*>(vowels_->model());
-  int first_choice = -1;
-  for (const auto& group : groups) {
-    if (group.names.isEmpty()) continue;
-    vowels_->addItem(group.type);
-    if (model != nullptr) model->item(vowels_->count() - 1)->setEnabled(false);
-    for (const auto& name : group.names) {
-      if (first_choice < 0) first_choice = vowels_->count();
-      vowels_->addItem(name);
-    }
-  }
-  vowels_->setCurrentIndex(first_choice);
   update();
 }
 
@@ -165,10 +138,6 @@ double FitRoom::scoreDb() const noexcept {
 
 QListWidget* FitRoom::overlayList() const noexcept {
   return list_;
-}
-
-QComboBox* FitRoom::vowelBox() const noexcept {
-  return vowels_;
 }
 
 QPushButton* FitRoom::loadButton() const noexcept {

@@ -4,6 +4,7 @@
 #include "chassis_bar.hpp"
 #include "fit_controller.hpp"
 #include "morph_strip.hpp"
+#include "posture_list.hpp"
 #include "response_plot.hpp"
 #include "section_strip.hpp"
 #include "trench/audio/audio_boundary.hpp"
@@ -123,7 +124,16 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
                           body_path.filename().string());
   response_plot_->setFreedomMask(document_->freedomMask());
   response_plot_->setSpace(document_->space());
-  column->addWidget(response_plot_, 1);
+
+  auto* plot_row = new QWidget(central);
+  auto* plot_layout = new QHBoxLayout(plot_row);
+  plot_layout->setContentsMargins(0, 0, 0, 0);
+  plot_layout->setSpacing(0);
+  response_plot_->setParent(plot_row);
+  plot_layout->addWidget(response_plot_, 1);
+  posture_list_ = new PostureList(plot_row);
+  plot_layout->addWidget(posture_list_, 0);
+  column->addWidget(plot_row, 1);
 
   morph_strip_ = new MorphStrip(central);
   morph_strip_->setObjectName(QStringLiteral("morphStrip"));
@@ -204,6 +214,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     updateStrips();
     updateProbes();
     updateInterior();
+    updatePostureMatch();
   });
   connect(document_, &BodyDocument::cornerChanged, this, [this](std::size_t corner) {
     response_plot_->setCorner(corner);
@@ -212,6 +223,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     response_plot_->setView(view.morph, view.q, view.semitones);
     morph_strip_->setTranspose(view.semitones);
     updateProbes();
+    updatePostureMatch();
   });
   connect(document_, &BodyDocument::viewChanged, this, [this] {
     const auto view = document_->view();
@@ -292,9 +304,9 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   });
 
   fit_room_ = new FitRoom(this);
-  QList<FitRoom::VowelGroup> groups;
+  QList<PostureList::Group> groups;
   for (const auto* type : kFilterTypes) {
-    FitRoom::VowelGroup group{QString::fromLatin1(type), {}};
+    PostureList::Group group{QString::fromLatin1(type), {}};
     for (const auto& skeleton : trench::core::p2k::postures()) {
       if (skeleton.type != type) continue;
       group.names.push_back(
@@ -308,17 +320,17 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     }
     groups.push_back(group);
   }
-  FitRoom::VowelGroup recipes{QStringLiteral("RECIPE"), {}};
+  PostureList::Group recipes{QStringLiteral("RECIPE"), {}};
   for (const auto& recipe : trench::core::p2k::manual_recipes()) {
     recipes.names.push_back(
         QString::fromUtf8(recipe.name.data(), static_cast<int>(recipe.name.size())));
   }
   groups.push_back(recipes);
-  fit_room_->setVowels(groups);
+  posture_list_->setGroups(groups);
+  connect(posture_list_, &PostureList::postureChosen, this, &MainWindow::applyVowel);
   connect(fit_room_, &FitRoom::overlaySelected, this, &MainWindow::selectOverlay);
   connect(fit_room_, &FitRoom::overlayRemoved, this, &MainWindow::removeOverlay);
   connect(fit_room_, &FitRoom::loadRequested, this, &MainWindow::chooseTarget);
-  connect(fit_room_, &FitRoom::vowelRequested, this, &MainWindow::applyVowel);
   auto* fit_room_action = new QAction(this);
   fit_room_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+F")));
   connect(fit_room_action, &QAction::triggered, this, &MainWindow::openFitRoom);
@@ -364,6 +376,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
 
   selectSection(0);
   updateStrips();
+  updatePostureMatch();
   updateVerbs();
   updateProbes();
   updateInterior();
@@ -374,6 +387,8 @@ ResponsePlotWidget* MainWindow::responsePlot() const noexcept { return response_
 ChassisBar* MainWindow::chassisBar() const noexcept { return chassis_bar_; }
 
 MorphStrip* MainWindow::morphStrip() const noexcept { return morph_strip_; }
+
+PostureList* MainWindow::postureList() const noexcept { return posture_list_; }
 
 SectionStrip* MainWindow::sectionStrip(std::size_t section) const noexcept {
   return section < strips_.size() ? strips_[section] : nullptr;
@@ -646,16 +661,15 @@ void MainWindow::refreshFitRoom() {
   fit_room_->setFitRunning(fit_active_);
 }
 
-void MainWindow::applyVowel(const QString& symbol) {
+std::optional<BodyDocument::CornerSnapshot> MainWindow::cornerWithPosture(
+    const QString& symbol) const {
   namespace p2k = trench::core::p2k;
-  if (fit_active_) return;
   const auto name = symbol.toStdString();
   const auto* skeleton = p2k::posture(name);
   const auto* vowel = p2k::klatt_vowel(name);
   const auto* manual = p2k::manual_recipe(name);
-  if (skeleton == nullptr && vowel == nullptr && manual == nullptr) return;
-  const auto before = document_->cornerSnapshot();
-  auto after = before;
+  if (skeleton == nullptr && vowel == nullptr && manual == nullptr) return std::nullopt;
+  auto after = document_->cornerSnapshot();
   if (skeleton != nullptr) {
     for (const auto& pole : p2k::pole_words_from_posture(*skeleton)) {
       auto& row = after[pole.row];
@@ -670,9 +684,49 @@ void MainWindow::applyVowel(const QString& symbol) {
       for (std::size_t word = 0; word < 4; ++word) after[section][word] = words[section][word];
     }
   }
-  if (after == before) return;
-  document_->applyCorner(after);
+  return after;
+}
+
+bool MainWindow::posturePolesHeld(const QString& symbol) const {
+  namespace p2k = trench::core::p2k;
+  const auto* skeleton = p2k::posture(symbol.toStdString());
+  const auto current = document_->cornerSnapshot();
+  if (skeleton != nullptr) {
+    for (const auto& pole : p2k::pole_words_from_posture(*skeleton)) {
+      if (current[pole.row][2] != pole.mag || current[pole.row][3] != pole.rsq) return false;
+    }
+    return true;
+  }
+  const auto after = cornerWithPosture(symbol);
+  return after && *after == current;
+}
+
+void MainWindow::updatePostureMatch() {
+  if (posture_list_ == nullptr) return;
+  QString matched;
+  for (int row = 0; row < posture_list_->count(); ++row) {
+    const auto name = posture_list_->item(row)->data(Qt::UserRole).toString();
+    if (name.isEmpty()) continue;
+    if (posturePolesHeld(name)) {
+      matched = name;
+      break;
+    }
+  }
+  posture_list_->setMatched(matched);
+}
+
+void MainWindow::applyVowel(const QString& symbol) {
+  if (fit_active_) return;
+  const auto after = cornerWithPosture(symbol);
+  if (!after) return;
+  const auto before = document_->cornerSnapshot();
+  if (*after == before) {
+    updatePostureMatch();
+    return;
+  }
+  document_->applyCorner(*after);
   document_->commitFit(document_->corner(), before);
+  updatePostureMatch();
 }
 
 void MainWindow::applyCharacter(double amount) {

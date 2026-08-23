@@ -3,14 +3,12 @@
 #include <QList>
 #include <QRectF>
 #include <QString>
-#include <QStringList>
 #include <QWidget>
 
 #include <cstddef>
 #include <utility>
 #include <vector>
 
-class QComboBox;
 class QListWidget;
 class QPushButton;
 
@@ -18,11 +16,6 @@ class FitRoom final : public QWidget {
   Q_OBJECT
 
  public:
-  struct VowelGroup {
-    QString type;
-    QStringList names;
-  };
-
   struct Overlay {
     QString name;
     std::vector<double> db;
@@ -35,7 +28,6 @@ class FitRoom final : public QWidget {
   void setResponse(std::vector<double> db);
   void setOverlays(QList<Overlay> overlays, int selected);
   void setScoreDb(double rms_db);
-  void setVowels(QList<VowelGroup> groups);
   void setFitRunning(bool running);
 
   [[nodiscard]] int overlayCount() const;
@@ -44,14 +36,12 @@ class FitRoom final : public QWidget {
   [[nodiscard]] double differenceDbAt(std::size_t index) const;
   [[nodiscard]] double scoreDb() const noexcept;
   [[nodiscard]] QListWidget* overlayList() const noexcept;
-  [[nodiscard]] QComboBox* vowelBox() const noexcept;
   [[nodiscard]] QPushButton* loadButton() const noexcept;
 
  signals:
   void overlaySelected(int index);
   void overlayRemoved(int index);
   void loadRequested();
-  void vowelRequested(const QString& symbol);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -70,6 +60,5 @@ class FitRoom final : public QWidget {
   bool fit_running_{false};
   bool populating_{false};
   QListWidget* list_{};
-  QComboBox* vowels_{};
   QPushButton* load_{};
 };

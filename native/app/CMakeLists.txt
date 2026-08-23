@@ -15,6 +15,8 @@ add_library(trench_native_ui STATIC
   main_window.hpp
   morph_strip.cpp
   morph_strip.hpp
+  posture_list.cpp
+  posture_list.hpp
   response_plot.cpp
   response_plot.hpp
   section_color.hpp
