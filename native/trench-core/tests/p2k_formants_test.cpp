@@ -24,8 +24,6 @@ TEST(P2kFormants, KlattTableIIIsPresentAndAVowelRoundTripsThroughRows) {
   }
   const trench::core::PackedSection lp{words[5][0], words[5][1], words[5][2], words[5][3], 0};
   EXPECT_EQ(p2k::param_of(lp, p2k::kSr).type, p2k::SectionType::kLowPass);
-  const trench::core::PackedSection hp{words[0][0], words[0][1], words[0][2], words[0][3], 0};
-  EXPECT_EQ(p2k::param_of(hp, p2k::kSr).type, p2k::SectionType::kHighPass);
 }
 
 TEST(P2kFormants, TheVowelCascadePeaksAtItsFormants) {

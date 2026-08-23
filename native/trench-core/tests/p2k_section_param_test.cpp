@@ -74,23 +74,33 @@ TEST(P2kSectionParam, EveryFactoryRowReadsAsAFiniteParamAndAllTypesAreUsed) {
   ASSERT_EQ(bank().size(), 33U);
   std::map<p2k::SectionType, std::size_t> histogram;
   std::size_t rows = 0;
+  std::size_t zero_far_below = 0;
+  std::size_t real_axis_zero = 0;
   for (const auto& body : bank()) {
     for (std::size_t ci = 0; ci < 4; ++ci) {
       const auto corner = p2k::rom_corner_words(body, ci);
       for (std::size_t si = 0; si < 6; ++si) {
-        const auto param = p2k::param_of(section(corner, si));
+        const auto words = section(corner, si);
+        const auto param = p2k::param_of(words);
         ASSERT_TRUE(std::isfinite(param.fc_hz));
         ASSERT_TRUE(std::isfinite(param.bw_oct));
         ASSERT_TRUE(std::isfinite(param.gain_db));
         ++histogram[param.type];
         ++rows;
+        if (param.type != p2k::SectionType::kEq) continue;
+        const auto geometry = trench::core::geometry_from_words(words);
+        const auto* p = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+        const auto* z = std::get_if<trench::core::ConjugatePair>(&geometry.zero);
+        if (p != nullptr && z != nullptr && std::log2(z->hz / p->hz) <= -2.0) ++zero_far_below;
+        if (z == nullptr) ++real_axis_zero;
       }
     }
   }
   EXPECT_EQ(rows, 792U);
   EXPECT_GT(histogram[p2k::SectionType::kLowPass], 0U);
-  EXPECT_GT(histogram[p2k::SectionType::kHighPass], 0U);
-  EXPECT_GT(histogram[p2k::SectionType::kEq], 0U);
+  EXPECT_EQ(histogram[p2k::SectionType::kEq], 562U);
+  EXPECT_EQ(zero_far_below, 62U);
+  EXPECT_EQ(real_axis_zero, 35U);
 }
 
 TEST(P2kSectionParam, AFactoryEqRowReEncodedFromItsOwnParamKeepsTheCornerResponse) {
@@ -157,8 +167,8 @@ TEST(P2kSectionParam, AnFcEditSlidesTheWholeBandAndReturnsToItsOwnBytes) {
       }
     }
   }
-  EXPECT_EQ(rows, 415U);
-  EXPECT_EQ(identical, 373U);
+  EXPECT_EQ(rows, 487U);
+  EXPECT_EQ(identical, 445U);
 }
 
 TEST(P2kSectionParam, AGainEditKeepsThePoleAndTheAuthoredZeroOffset) {
@@ -195,7 +205,7 @@ TEST(P2kSectionParam, AGainEditKeepsThePoleAndTheAuthoredZeroOffset) {
         const auto edited = geometry(kept);
         const double authored = offset(geometry(current));
         const auto* zero = std::get_if<trench::core::ConjugatePair>(&edited.zero);
-        ASSERT_NE(zero, nullptr);
+        if (zero == nullptr) continue;
         if (zero->radius >= 0.9) {
           worst_resolved = std::max(worst_resolved, std::abs(offset(edited) - authored));
         }
@@ -206,9 +216,9 @@ TEST(P2kSectionParam, AGainEditKeepsThePoleAndTheAuthoredZeroOffset) {
       }
     }
   }
-  EXPECT_EQ(rows, 465U);
-  EXPECT_EQ(offset_rows, 314U);
-  EXPECT_EQ(kept_offset, 308U);
+  EXPECT_EQ(rows, 562U);
+  EXPECT_EQ(offset_rows, 376U);
+  EXPECT_EQ(kept_offset, 370U);
   EXPECT_EQ(snapped_offset, 18U);
   EXPECT_LT(worst_resolved, 0.05);
 }
@@ -240,8 +250,8 @@ TEST(P2kSectionParam, TheFourControlsCarryAFifthOfTheBankSEqRowsWithinThreeDecib
       }
     }
   }
-  EXPECT_EQ(eq_rows, 465U);
-  EXPECT_EQ(within, 94U);
+  EXPECT_EQ(eq_rows, 562U);
+  EXPECT_EQ(within, 95U);
 }
 
 TEST(P2kSectionParam, TheLowSectionsThirdControlIsTheTrenchAtTheFloorDepth) {

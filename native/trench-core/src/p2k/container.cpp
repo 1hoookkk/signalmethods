@@ -106,6 +106,13 @@ std::pair<std::uint16_t, std::uint16_t> words_from_root(double hz, double r) {
   return {words[i_mag], words[i_rsq]};
 }
 
+std::uint16_t mag_word_for(double hz, std::uint16_t rsq_word) {
+  const double d_rsq = decode_word(rsq_word);
+  const double p = -2.0 * std::sqrt(std::max(1.0 - d_rsq, 0.0)) *
+                   std::cos(2.0 * std::numbers::pi * hz / kSr);
+  return lattice_words()[nearest_lattice((p + 2.0 - d_rsq) / 4.0)];
+}
+
 std::uint16_t nearest_gain_word(double scale) {
   const double want = std::max(scale, 0.0) / 4.0;
   std::uint16_t best = 0;

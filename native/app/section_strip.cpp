@@ -153,7 +153,6 @@ QString SectionStrip::typeName(p2k::SectionType type) {
   switch (type) {
     case p2k::SectionType::kOff: return QStringLiteral("off");
     case p2k::SectionType::kLowPass: return QStringLiteral("LP");
-    case p2k::SectionType::kHighPass: return QStringLiteral("HP");
     case p2k::SectionType::kEq: return QStringLiteral("EQ");
   }
   return {};
@@ -162,7 +161,6 @@ QString SectionStrip::typeName(p2k::SectionType type) {
 p2k::SectionType SectionStrip::typeFromIndex(int index) {
   switch (index) {
     case 1: return p2k::SectionType::kLowPass;
-    case 2: return p2k::SectionType::kHighPass;
     case 3: return p2k::SectionType::kEq;
     default: return p2k::SectionType::kOff;
   }
@@ -171,7 +169,6 @@ p2k::SectionType SectionStrip::typeFromIndex(int index) {
 int SectionStrip::typeIndex(p2k::SectionType type) {
   switch (type) {
     case p2k::SectionType::kLowPass: return 1;
-    case p2k::SectionType::kHighPass: return 2;
     case p2k::SectionType::kEq: return 3;
     case p2k::SectionType::kOff: return 0;
   }

@@ -30,10 +30,7 @@ double root_hz(const RootPair& pair, double fallback_hz, double high_hz) {
   return fallback_hz;
 }
 
-double far_hz(SectionType type, double fc_hz, double sample_rate_hz) {
-  if (type == SectionType::kHighPass) {
-    return std::max(fc_hz / kFarRatio, 20.0);
-  }
+double far_hz(SectionType, double fc_hz, double sample_rate_hz) {
   return std::min(fc_hz * kFarRatio, 0.45 * sample_rate_hz);
 }
 
@@ -100,9 +97,7 @@ SectionParam param_of(const PackedSection& words, double sample_rate_hz) {
       -std::log(std::max(pole->radius, 1e-9)) * sample_rate_hz / std::numbers::pi;
   out.bw_oct = 2.0 * std::asinh(bw_hz / (2.0 * out.fc_hz)) / std::numbers::ln2;
   const double octaves = std::log2(std::max(zero_hz, 1.0) / std::max(pole->hz, 1.0));
-  out.type = octaves >= kTypeOffsetOct    ? SectionType::kLowPass
-             : octaves <= -kTypeOffsetOct ? SectionType::kHighPass
-                                          : SectionType::kEq;
+  out.type = octaves >= kTypeOffsetOct ? SectionType::kLowPass : SectionType::kEq;
   if (out.type == SectionType::kLowPass) {
     out.trench_hz = zero_hz;
     return out;
@@ -131,9 +126,7 @@ std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
   if (param.type != SectionType::kOff) {
     pole_hz = std::clamp(param.fc_hz, 20.0, kRootHiHz);
     pole_r = pole_radius_of(pole_hz, param.bw_oct, sample_rate_hz);
-    zero_hz = param.type == SectionType::kEq        ? pole_hz
-              : param.type == SectionType::kLowPass ? trench_of(param, pole_hz)
-                                                    : std::max(pole_hz / kFarRatio, 20.0);
+    zero_hz = param.type == SectionType::kLowPass ? trench_of(param, pole_hz) : pole_hz;
   }
   const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, pole_r);
   if (!root_admissible(pole_mag, pole_rsq, true)) {
@@ -183,8 +176,23 @@ std::array<std::uint16_t, 4> words_from_param_keeping_offset(
   const auto geometry = geometry_from_words(words, sample_rate_hz);
   const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
   const auto* zero = std::get_if<ConjugatePair>(&geometry.zero);
-  if (pole == nullptr || zero == nullptr) {
+  if (pole == nullptr) {
     return words_from_param(param, current, section, sample_rate_hz);
+  }
+  if (zero == nullptr) {
+    if (edit == SectionEdit::kFc) {
+      const double target = std::clamp(param.fc_hz, 20.0, kRootHiHz);
+      const std::uint16_t pole_mag = mag_word_for(target, current[3]);
+      if (!root_admissible(pole_mag, current[3], true)) return current;
+      return {current[0], current[1], pole_mag, current[3]};
+    }
+    if (edit == SectionEdit::kBw) {
+      const auto [pole_mag, pole_rsq] =
+          words_from_root(pole->hz, pole_radius_of(pole->hz, param.bw_oct, sample_rate_hz));
+      if (!root_admissible(pole_mag, pole_rsq, true)) return current;
+      return {current[0], current[1], pole_mag, pole_rsq};
+    }
+    return current;
   }
 
   double pole_hz = pole->hz;
@@ -200,7 +208,13 @@ std::array<std::uint16_t, 4> words_from_param_keeping_offset(
     const double target = std::clamp(param.fc_hz, 20.0, kRootHiHz);
     const auto realized = realized_hz(target, pole_r, sample_rate_hz);
     zero_hz = std::clamp(zero_hz * realized / std::max(pole_hz, 1.0), 20.0, kRootHiHz);
-    pole_hz = target;
+    const std::uint16_t pole_mag = mag_word_for(target, current[3]);
+    const std::uint16_t zero_mag = mag_word_for(zero_hz, current[1]);
+    if (!root_admissible(pole_mag, current[3], true) ||
+        !root_admissible(zero_mag, current[1], false)) {
+      return current;
+    }
+    return {zero_mag, current[1], pole_mag, current[3]};
   } else if (edit == SectionEdit::kBw) {
     pole_r = pole_radius_of(pole_hz, param.bw_oct, sample_rate_hz);
   }

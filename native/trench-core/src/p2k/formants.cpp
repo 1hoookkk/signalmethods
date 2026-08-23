@@ -42,7 +42,7 @@ const VowelFormants* klatt_vowel(std::string_view symbol) {
 FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_lo_hz,
                                  double tilt_hi_hz) {
   FormantRecipe out;
-  out.rows[0] = {SectionType::kHighPass, tilt_hi_hz, 0.05, 0.0};
+  out.rows[0] = {SectionType::kOff, tilt_hi_hz, 1.0, 0.0};
   std::size_t row = 1;
   for (std::size_t i = 0; i < formants.size() && row < 5; ++i, ++row) {
     const auto& f = formants[i];

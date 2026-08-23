@@ -104,7 +104,6 @@ Rows seed_rows_from_target(std::span<const double> target, const Grid& g) {
   for (const auto& f : features) {
     rows[row++] = {SectionType::kEq, clamp_fc(f.hz), f.bw_oct, f.prominence < 0.0 ? -12.0 : 12.0};
   }
-  rows[0] = {SectionType::kHighPass, 10500.0, 0.05, 0.0};
   double trench_hz = 225.0 * 32.0;
   double trench_db = 1e9;
   for (std::size_t i = 2; i + 2 < n; ++i) {

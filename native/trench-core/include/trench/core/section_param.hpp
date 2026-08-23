@@ -8,7 +8,7 @@
 
 namespace trench::core::p2k {
 
-enum class SectionType { kOff, kLowPass, kHighPass, kEq };
+enum class SectionType { kOff, kLowPass, kEq };
 
 enum class SectionEdit { kType, kFc, kBw, kGain };
 

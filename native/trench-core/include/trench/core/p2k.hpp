@@ -54,6 +54,7 @@ double pair_radius(double p, double q);
 double pole_radius_ceiling();
 bool is_legal(double p, double q, bool is_pole);
 std::pair<std::uint16_t, std::uint16_t> words_from_root(double hz, double r);
+std::uint16_t mag_word_for(double hz, std::uint16_t rsq_word);
 std::uint16_t nearest_gain_word(double scale);
 CornerWords enter(const CornerWords& words);
 

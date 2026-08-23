@@ -76,7 +76,9 @@ int first_eq_row(const MainWindow& window) {
   for (std::size_t section = 0; section + 1 < trench::core::kLegacySectionCount; ++section) {
     const auto param = trench::core::p2k::param_of(window.body().words[0][section],
                                                    trench::core::kP2kDatumHz);
-    if (param.type == trench::core::p2k::SectionType::kEq) return static_cast<int>(section);
+    if (param.type == trench::core::p2k::SectionType::kEq && param.fc_hz <= 4000.0) {
+      return static_cast<int>(section);
+    }
   }
   return -1;
 }
@@ -865,7 +867,7 @@ class MainWindowTest final : public QObject {
     window.show();
     QTest::qWait(20);
     const auto row = first_eq_row(window);
-    QVERIFY(row >= 1);
+    QVERIFY(row >= 0);
     const auto section = static_cast<std::size_t>(row);
 
     auto* plot = window.responsePlot();
