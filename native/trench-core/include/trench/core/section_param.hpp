@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 
 #include "trench/core/packed_body.hpp"
 
@@ -20,29 +21,51 @@ struct SectionParam {
   double trench_hz{};
 };
 
-enum class Shape { kOff, kLow, kHigh, kPeak, kLowShelf, kHighShelf };
-
-struct ShapeParam {
-  Shape shape{Shape::kOff};
-  double fc_hz{};
-  double q{};
-  double gain_db{};
-  double trench_hz{};
+struct PoleReading {
+  double hz{};
+  double bw_hz{};
 };
 
-inline constexpr double kShapeQMin = 0.1;
-inline constexpr double kShapeQMax = 40.0;
+struct MaskParam {
+  double offset_oct{};
+  double zero_bw_hz{};
+};
 
 inline constexpr double kTrenchMinOct = 2.0;
 inline constexpr double kTrenchMaxOct = 7.0;
 
+inline constexpr double kMaskOffsetMinOct = -3.0;
+inline constexpr double kMaskOffsetMaxOct = 6.0;
+inline constexpr double kMaskWidthMaxHz = 2000.0;
+inline constexpr double kPlacedPoleBwHz = 120.0;
+
+constexpr double mask_offset_min_oct(std::size_t section) {
+  return section == 5 ? kTrenchMinOct : kMaskOffsetMinOct;
+}
+
+constexpr double mask_offset_max_oct(std::size_t section) {
+  return section == 5 ? kTrenchMaxOct : kMaskOffsetMaxOct;
+}
+
 double trench_floor_radius();
 
-ShapeParam shape_of(const PackedSection& words, double sample_rate_hz = kP2kDatumHz);
+double mask_width_floor_hz(double sample_rate_hz = kP2kDatumHz);
 
-PackedSection words_from_shape(const ShapeParam& param, const PackedSection& current,
-                               std::size_t section,
-                               double sample_rate_hz = kP2kDatumHz);
+std::optional<PoleReading> pole_of(const PackedSection& words,
+                                   double sample_rate_hz = kP2kDatumHz);
+
+MaskParam mask_of(const PackedSection& words, std::size_t section,
+                  double sample_rate_hz = kP2kDatumHz);
+
+std::array<std::uint16_t, 4> words_from_pole(double hz, double bw_hz,
+                                             const std::array<std::uint16_t, 4>& current,
+                                             std::size_t section,
+                                             double sample_rate_hz = kP2kDatumHz);
+
+std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,
+                                             const std::array<std::uint16_t, 4>& current,
+                                             std::size_t section,
+                                             double sample_rate_hz = kP2kDatumHz);
 
 SectionParam param_of(const PackedSection& words, double sample_rate_hz = kP2kDatumHz);
 

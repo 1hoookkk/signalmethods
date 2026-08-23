@@ -7,7 +7,6 @@
 #include <variant>
 
 #include "trench/core/p2k.hpp"
-#include "trench/core/rbj.hpp"
 
 namespace trench::core::p2k {
 
@@ -250,112 +249,78 @@ std::array<std::uint16_t, 4> words_from_param_keeping_offset(
   return best;
 }
 
-namespace {
-
-constexpr double kPeakOct = 0.5;
-
-double real_root_z(double decay_hz, double sample_rate_hz) {
-  const double magnitude =
-      std::exp(-2.0 * std::numbers::pi * std::abs(decay_hz) / sample_rate_hz);
-  return std::signbit(decay_hz) ? -magnitude : magnitude;
+double mask_width_floor_hz(double sample_rate_hz) {
+  return -std::log(s6_zero_radius()) * sample_rate_hz / std::numbers::pi;
 }
 
-RootPair pair_of(const native::Roots& roots, double sample_rate_hz) {
-  if (const auto* resonant = std::get_if<native::Resonant>(&roots)) {
-    return ConjugatePair{resonant->hz,
-                         std::exp(-std::numbers::pi * resonant->bw_hz / sample_rate_hz)};
-  }
-  const auto& real = std::get<native::RealRoots>(roots);
-  return RealPair{real_root_z(real.a_hz, sample_rate_hz),
-                  real_root_z(real.b_hz, sample_rate_hz)};
-}
-
-native::Section design_of(const ShapeParam& param, double sample_rate_hz) {
-  switch (param.shape) {
-    case Shape::kLow:
-      return rbj::lowpass(param.fc_hz, param.q, sample_rate_hz);
-    case Shape::kHigh:
-      return rbj::highpass(param.fc_hz, param.q, sample_rate_hz);
-    case Shape::kLowShelf:
-      return rbj::low_shelf(param.fc_hz, param.q, param.gain_db, sample_rate_hz);
-    case Shape::kHighShelf:
-      return rbj::high_shelf(param.fc_hz, param.q, param.gain_db, sample_rate_hz);
-    default:
-      return rbj::peaking(param.fc_hz, param.q, param.gain_db, sample_rate_hz);
-  }
-}
-
-double alpha_of(double radius) {
-  const double r2 = radius * radius;
-  return std::max((1.0 - r2) / (1.0 + r2), 1.0e-12);
-}
-
-double unity_scale(Shape shape, const std::pair<double, double>& zero,
-                   const std::pair<double, double>& pole) {
-  if (shape == Shape::kHigh || shape == Shape::kLowShelf) {
-    return (1.0 - pole.first + pole.second) / (1.0 - zero.first + zero.second);
-  }
-  return (1.0 + pole.first + pole.second) / (1.0 + zero.first + zero.second);
-}
-
-}  // namespace
-
-ShapeParam shape_of(const PackedSection& words, double sample_rate_hz) {
-  const auto param = param_of(words, sample_rate_hz);
-  ShapeParam out;
-  out.fc_hz = param.fc_hz;
-  out.gain_db = param.gain_db;
-  out.trench_hz = param.trench_hz;
-  if (param.type == SectionType::kOff) {
-    return out;
-  }
-  out.q = rbj::q_from_bandwidth_oct(param.bw_oct);
+std::optional<PoleReading> pole_of(const PackedSection& words, double sample_rate_hz) {
   const auto geometry = geometry_from_words(words, sample_rate_hz);
   const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
-  if (pole == nullptr) {
-    return out;
-  }
-  if (const auto* real = std::get_if<RealPair>(&geometry.zero)) {
-    out.shape = real->root_a + real->root_b >= 0.0 ? Shape::kHigh : Shape::kLow;
-    out.q = std::sin(2.0 * std::numbers::pi * pole->hz / sample_rate_hz) /
-            (2.0 * alpha_of(pole->radius));
-    return out;
-  }
+  if (pole == nullptr) return std::nullopt;
+  if (pole->hz > kParkedHz) return std::nullopt;
+  return PoleReading{pole->hz,
+                     -std::log(std::max(pole->radius, 1e-9)) * sample_rate_hz /
+                         std::numbers::pi};
+}
+
+MaskParam mask_of(const PackedSection& words, std::size_t section,
+                  double sample_rate_hz) {
+  const MaskParam parked{mask_offset_max_oct(section), mask_width_floor_hz(sample_rate_hz)};
+  const auto geometry = geometry_from_words(words, sample_rate_hz);
+  const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
   const auto* zero = std::get_if<ConjugatePair>(&geometry.zero);
-  const double octaves =
-      zero == nullptr ? 0.0 : std::log2(std::max(zero->hz, 1.0) / std::max(pole->hz, 1.0));
-  out.shape = octaves >= kTypeOffsetOct     ? Shape::kLow
-              : std::abs(octaves) <= kPeakOct ? Shape::kPeak
-              : octaves > 0.0               ? Shape::kLowShelf
-                                            : Shape::kHighShelf;
-  if (out.shape == Shape::kPeak && zero != nullptr) {
-    const double pole_alpha = alpha_of(pole->radius);
-    const double zero_alpha = alpha_of(zero->radius);
-    const double sine = std::sin(2.0 * std::numbers::pi * pole->hz / sample_rate_hz);
-    out.q = sine / (2.0 * std::sqrt(pole_alpha * zero_alpha));
-    out.gain_db = 40.0 * std::log10(std::sqrt(zero_alpha / pole_alpha));
+  if (pole == nullptr || zero == nullptr) return parked;
+  MaskParam out;
+  out.offset_oct = std::clamp(std::log2(std::max(zero->hz, 1.0) / std::max(pole->hz, 1.0)),
+                              mask_offset_min_oct(section), mask_offset_max_oct(section));
+  out.zero_bw_hz =
+      std::clamp(-std::log(std::max(zero->radius, 1e-9)) * sample_rate_hz / std::numbers::pi,
+                 parked.zero_bw_hz, kMaskWidthMaxHz);
+  return out;
+}
+
+std::array<std::uint16_t, 4> words_from_pole(double hz, double bw_hz,
+                                             const std::array<std::uint16_t, 4>& current,
+                                             std::size_t section, double sample_rate_hz) {
+  const double pole_hz = std::clamp(hz, 20.0, kRootHiHz);
+  const double radius = std::clamp(
+      std::exp(-std::numbers::pi * std::max(bw_hz, 0.0) / sample_rate_hz), kPoleRMin,
+      kPoleRMax);
+  const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, radius);
+  if (!root_admissible(pole_mag, pole_rsq, true)) return current;
+  std::array<std::uint16_t, 4> out{current[0], current[1], pole_mag, pole_rsq};
+  if (section == 5) {
+    const double zero_hz = std::min(pole_hz * std::pow(2.0, kTrenchMaxOct), kRootHiHz);
+    const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, s6_zero_radius());
+    if (root_admissible(zero_mag, kS6ZeroRsqWord, false)) {
+      out[0] = zero_mag;
+      out[1] = kS6ZeroRsqWord;
+    }
   }
   return out;
 }
 
-PackedSection words_from_shape(const ShapeParam& param, const PackedSection& current,
-                               std::size_t section, double sample_rate_hz) {
-  if (param.shape == Shape::kOff) {
-    const auto roots = words_from_param({SectionType::kOff, param.fc_hz, 0.0, 0.0, 0.0},
-                                        {current[0], current[1], current[2], current[3]},
-                                        section, sample_rate_hz);
-    return {roots[0], roots[1], roots[2], roots[3], current[4]};
-  }
-  ShapeParam bounded = param;
-  bounded.fc_hz = std::clamp(param.fc_hz, 20.0, 0.45 * sample_rate_hz);
-  bounded.q = std::clamp(param.q, kShapeQMin, kShapeQMax);
-  const auto designed = design_of(bounded, sample_rate_hz);
-  const auto zero = native::coefficients_of(designed.zero, sample_rate_hz);
-  const auto pole = native::coefficients_of(designed.pole, sample_rate_hz);
-  const double scale = std::clamp(unity_scale(bounded.shape, zero, pole), 0.0, 4.0);
-  return words_from_geometry({pair_of(designed.pole, sample_rate_hz),
-                              pair_of(designed.zero, sample_rate_hz), scale},
-                             sample_rate_hz);
+std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,
+                                             const std::array<std::uint16_t, 4>& current,
+                                             std::size_t section, double sample_rate_hz) {
+  const PackedSection words{current[0], current[1], current[2], current[3],
+                            kProbeScaleWord};
+  const auto geometry = geometry_from_words(words, sample_rate_hz);
+  const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
+  if (pole == nullptr) return current;
+  const double offset = std::clamp(mask.offset_oct, mask_offset_min_oct(section),
+                                   mask_offset_max_oct(section));
+  const double zero_hz = std::clamp(pole->hz * std::pow(2.0, offset), 20.0, kRootHiHz);
+  const double radius =
+      section == 5 ? s6_zero_radius()
+                   : std::clamp(std::exp(-std::numbers::pi *
+                                         std::clamp(mask.zero_bw_hz, 0.0, kMaskWidthMaxHz) /
+                                         sample_rate_hz),
+                                0.0, s6_zero_radius());
+  const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, radius);
+  const std::uint16_t rsq = section == 5 ? kS6ZeroRsqWord : zero_rsq;
+  if (!root_admissible(zero_mag, rsq, false)) return current;
+  return {zero_mag, rsq, current[2], current[3]};
 }
 
 }  // namespace trench::core::p2k
