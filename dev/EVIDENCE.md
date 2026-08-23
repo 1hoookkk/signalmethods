@@ -219,6 +219,21 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Poles only: no P2K corner comes from a cube, a .4, or a compiled class; the vowel
+bodies come from each other.** Symmetric mean-cents distance between strong pole sets
+(r > 0.95, 150-9000 Hz). Against the 2,312 Morpheus corners at 39,062.5 Hz: 1 of 132
+P2K corners under 50 cents (rogue_hertz c2 vs PWMTrans.4 c6, 24 cents, a 2-3 pole set),
+17 under 100, median 193; played untransposed at 44.1 k: 3 / 13 / median 199. Against the
+8 compiled vowel corners: none under 150, median 462. Against other P2K bodies: 22
+corners under 50 cents, 28 pairs in all, most at 0 cents. E-mu reused pole postures
+across bodies: Ooh-to-Eee c0 = Eeh-to-Aah c1 = Dead Ringer c1 (0 cents, 6 poles), within
+20 cents of Ubu Orator c0; Ooh-to-Eee c1 = MultiQVox c0 = Eeh-to-Aah c0 (0 cents);
+Talking Hedz c0 = Ubu Orator c1 (0 cents); Fuzzi Face c0 = Cruz Pusher c0 (0 cents, 6
+poles); Millennium c1 = Meaty Gizmo c1; TB-or-not c1 = Boland Bass c2; Klub Klassik c2 =
+Tooth Comb c2 (3 cents). A small library of pole postures - four or five vowels, a 303
+posture, a fuzz posture - with the zeros, frame and corner assignment drawn per body.
+(2026-08-23)
+
 **The 12th-order vowel bodies were not built from the compiled vowel classes.** Matching
 each vocal body's corner (strong poles, r > 0.95, 150-9000 Hz) against the eight compiled
 corners: mean distance from each compiled formant to the nearest body pole is 150-280
