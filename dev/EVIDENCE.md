@@ -219,6 +219,15 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The acoustic unit is the pole/zero pair, not the section.** Over all 132 corners, a
+conjugate pole's nearest zero within half an octave sits in its own section for 20% of
+poles, in another section for 54%, and nowhere for 26%. The most common cross pairings:
+S1 pole with S5 zero (38), S5 pole with S3 zero (37), S4 pole with S3 zero (35), S3 pole
+with S2 zero (35), S4 with S5 (31). 67 of 132 corners stack two or more poles inside one
+ERB (52 pairs, 20 triples, 4 quads) for steeper or taller peaks. Corners carry five or
+six strong resonances (r > 0.97) in 58 of 132 cases, three in 23, none in 16. The six
+slots are bookkeeping for 24 roots that pair across them. (2026-08-23)
+
 **The corner-to-corner move is full-rank: E-mu had no verbs.** Per body, the per-lane
 change (dlog2 f, dwidth, dzero offset, dzero width x 6 lanes = 24 numbers) from M0 to
 M100 and from Q0 to Q100, stacked over the bank: PC1 explains 22% of the Morph move and
