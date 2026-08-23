@@ -30,6 +30,9 @@
 
 namespace {
 
+constexpr std::array<const char*, 12> kFilterTypes{"LPF", "HPF", "BPF", "EQ+", "EQ-", "VOW",
+                                                   "PHA", "FLG", "REZ", "WAH", "DST", "SFX"};
+
 std::vector<std::uint8_t> read_bytes(const std::filesystem::path& path) {
   std::ifstream stream(path, std::ios::binary | std::ios::ate);
   if (!stream) throw std::runtime_error("cannot open body: " + path.string());
@@ -267,14 +270,29 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   });
 
   fit_room_ = new FitRoom(this);
-  QStringList vowels;
-  for (const auto& vowel : trench::core::p2k::klatt_vowels()) {
-    vowels.push_back(QString::fromUtf8(vowel.symbol.data(), static_cast<int>(vowel.symbol.size())));
+  QList<FitRoom::VowelGroup> groups;
+  for (const auto* type : kFilterTypes) {
+    FitRoom::VowelGroup group{QString::fromLatin1(type), {}};
+    for (const auto& skeleton : trench::core::p2k::postures()) {
+      if (skeleton.type != type) continue;
+      group.names.push_back(
+          QString::fromUtf8(skeleton.name.data(), static_cast<int>(skeleton.name.size())));
+    }
+    if (group.type == QLatin1String("VOW")) {
+      for (const auto& vowel : trench::core::p2k::klatt_vowels()) {
+        group.names.push_back(
+            QString::fromUtf8(vowel.symbol.data(), static_cast<int>(vowel.symbol.size())));
+      }
+    }
+    groups.push_back(group);
   }
+  FitRoom::VowelGroup recipes{QStringLiteral("RECIPE"), {}};
   for (const auto& recipe : trench::core::p2k::manual_recipes()) {
-    vowels.push_back(QString::fromUtf8(recipe.name.data(), static_cast<int>(recipe.name.size())));
+    recipes.names.push_back(
+        QString::fromUtf8(recipe.name.data(), static_cast<int>(recipe.name.size())));
   }
-  fit_room_->setVowels(vowels);
+  groups.push_back(recipes);
+  fit_room_->setVowels(groups);
   connect(fit_room_, &FitRoom::overlaySelected, this, &MainWindow::selectOverlay);
   connect(fit_room_, &FitRoom::overlayRemoved, this, &MainWindow::removeOverlay);
   connect(fit_room_, &FitRoom::loadRequested, this, &MainWindow::chooseTarget);
@@ -589,15 +607,24 @@ void MainWindow::refreshFitRoom() {
 void MainWindow::applyVowel(const QString& symbol) {
   namespace p2k = trench::core::p2k;
   if (fit_active_) return;
-  const auto* vowel = p2k::klatt_vowel(symbol.toStdString());
-  const auto* manual = p2k::manual_recipe(symbol.toStdString());
-  if (vowel == nullptr && manual == nullptr) return;
-  const auto words = p2k::words_from_recipe(vowel != nullptr ? p2k::rows_from_formants(vowel->f)
-                                                             : manual->recipe);
+  const auto name = symbol.toStdString();
+  const auto* skeleton = p2k::posture(name);
+  const auto* vowel = p2k::klatt_vowel(name);
+  const auto* manual = p2k::manual_recipe(name);
+  if (skeleton == nullptr && vowel == nullptr && manual == nullptr) return;
   const auto before = document_->cornerSnapshot();
   auto after = before;
-  for (std::size_t section = 0; section < p2k::kStageCount; ++section) {
-    for (std::size_t word = 0; word < 4; ++word) after[section][word] = words[section][word];
+  if (skeleton != nullptr) {
+    for (const auto& pole : p2k::pole_words_from_posture(*skeleton)) {
+      after[pole.row][2] = pole.mag;
+      after[pole.row][3] = pole.rsq;
+    }
+  } else {
+    const auto words = p2k::words_from_recipe(vowel != nullptr ? p2k::rows_from_formants(vowel->f)
+                                                               : manual->recipe);
+    for (std::size_t section = 0; section < p2k::kStageCount; ++section) {
+      for (std::size_t word = 0; word < 4; ++word) after[section][word] = words[section][word];
+    }
   }
   if (after == before) return;
   document_->applyCorner(after);

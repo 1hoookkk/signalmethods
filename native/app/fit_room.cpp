@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPushButton>
+#include <QStandardItemModel>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -117,9 +118,20 @@ void FitRoom::setScoreDb(double rms_db) {
   update();
 }
 
-void FitRoom::setVowels(QStringList symbols) {
+void FitRoom::setVowels(QList<VowelGroup> groups) {
   vowels_->clear();
-  vowels_->addItems(symbols);
+  auto* model = qobject_cast<QStandardItemModel*>(vowels_->model());
+  int first_choice = -1;
+  for (const auto& group : groups) {
+    if (group.names.isEmpty()) continue;
+    vowels_->addItem(group.type);
+    if (model != nullptr) model->item(vowels_->count() - 1)->setEnabled(false);
+    for (const auto& name : group.names) {
+      if (first_choice < 0) first_choice = vowels_->count();
+      vowels_->addItem(name);
+    }
+  }
+  vowels_->setCurrentIndex(first_choice);
   update();
 }
 

@@ -41,6 +41,24 @@ struct NamedRecipe {
 std::span<const NamedRecipe> manual_recipes();
 const NamedRecipe* manual_recipe(std::string_view name);
 
+struct Posture {
+  std::string_view name;
+  std::string_view type;
+  std::size_t pole_count;
+  std::array<Formant, 6> poles;
+};
+
+std::span<const Posture> postures();
+const Posture* posture(std::string_view name);
+
+struct PosturePole {
+  std::size_t row{};
+  std::uint16_t mag{};
+  std::uint16_t rsq{};
+};
+
+std::vector<PosturePole> pole_words_from_posture(const Posture& posture);
+
 struct SpectralPeak {
   double hz{};
   double db{};

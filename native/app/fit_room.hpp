@@ -18,6 +18,11 @@ class FitRoom final : public QWidget {
   Q_OBJECT
 
  public:
+  struct VowelGroup {
+    QString type;
+    QStringList names;
+  };
+
   struct Overlay {
     QString name;
     std::vector<double> db;
@@ -30,7 +35,7 @@ class FitRoom final : public QWidget {
   void setResponse(std::vector<double> db);
   void setOverlays(QList<Overlay> overlays, int selected);
   void setScoreDb(double rms_db);
-  void setVowels(QStringList symbols);
+  void setVowels(QList<VowelGroup> groups);
   void setFitRunning(bool running);
 
   [[nodiscard]] int overlayCount() const;

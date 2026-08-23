@@ -4,6 +4,7 @@
 #include "morph_strip.hpp"
 #include "response_plot.hpp"
 #include "section_strip.hpp"
+#include "trench/core/formants.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
@@ -1115,11 +1116,12 @@ class MainWindowTest final : public QObject {
 
   void fitRoomVowelChoiceEmitsTheSymbol() {
     FitRoom room;
-    room.setVowels({QStringLiteral("aa"), QStringLiteral("iy")});
-    QCOMPARE(room.vowelBox()->count(), 2);
+    room.setVowels({{QStringLiteral("VOW"), {QStringLiteral("aa"), QStringLiteral("iy")}}});
+    QCOMPARE(room.vowelBox()->count(), 3);
+    QCOMPARE(room.vowelBox()->itemText(0), QStringLiteral("VOW"));
     QSignalSpy spy(&room, &FitRoom::vowelRequested);
-    room.vowelBox()->setCurrentIndex(1);
-    emit room.vowelBox()->activated(1);
+    room.vowelBox()->setCurrentIndex(2);
+    emit room.vowelBox()->activated(2);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0).toString(), QStringLiteral("iy"));
   }
@@ -1139,7 +1141,8 @@ class MainWindowTest final : public QObject {
     room.setGridHz(hz);
     room.setResponse(response);
     room.setOverlays({{QStringLiteral("vowel aa"), overlay}}, 0);
-    room.setVowels({QStringLiteral("aa"), QStringLiteral("iy"), QStringLiteral("uw")});
+    room.setVowels({{QStringLiteral("VOW"),
+                     {QStringLiteral("aa"), QStringLiteral("iy"), QStringLiteral("uw")}}});
     room.setScoreDb(2.1);
     room.resize(640, 460);
     room.show();
@@ -1273,6 +1276,33 @@ class MainWindowTest final : public QObject {
       QVERIFY(param.gain_db < -12.0);
     }
     QCOMPARE(window.fitRoom()->vowelBox()->findText(QStringLiteral("para A")) >= 0, true);
+  }
+
+  void aPostureWritesOnlyThePoleHalfOfItsRows() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    const auto* skeleton = p2k::posture("VOW ooh_to_eee c1");
+    QVERIFY(skeleton != nullptr);
+    const auto before = window.body().words[0];
+    window.applyVowel(QStringLiteral("VOW ooh_to_eee c1"));
+    QCOMPARE(window.undoStack()->count(), 1);
+    const auto after = window.body().words[0];
+    const std::array<std::size_t, 4> rows{1, 2, 3, 4};
+    for (std::size_t index = 0; index < skeleton->pole_count; ++index) {
+      const auto geometry =
+          trench::core::geometry_from_words(after[rows[index]], trench::core::kP2kDatumHz);
+      const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+      QVERIFY(pole != nullptr);
+      QVERIFY(std::abs(pole->hz - skeleton->poles[index].hz) <=
+              0.01 * skeleton->poles[index].hz);
+    }
+    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+      QCOMPARE(after[section][0], before[section][0]);
+      QCOMPARE(after[section][1], before[section][1]);
+      QCOMPARE(after[section][4], before[section][4]);
+    }
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[0], before);
   }
 
   void tuneInSurvivesMorphAndCornerMoves() {

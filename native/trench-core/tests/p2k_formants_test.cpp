@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cmath>
+#include <string_view>
 #include <vector>
 
 #include "trench/core/formants.hpp"
@@ -98,4 +100,22 @@ TEST(P2kFormants, PeaksOfAnEnvelopeAreSortedByFrequencyAndCapped) {
   const auto peaks = p2k::peaks_of_envelope(hz, db, 2);
   ASSERT_EQ(peaks.size(), 2U);
   EXPECT_LT(peaks[0].hz, peaks[1].hz);
+}
+
+TEST(P2kFormants, ThePostureTableIsTypedAndItsPolesAreAudible) {
+  const auto table = p2k::postures();
+  ASSERT_EQ(table.size(), 17U);
+  const std::vector<std::string_view> allowed{"LPF", "HPF", "BPF", "EQ+", "EQ-", "VOW",
+                                              "PHA", "FLG", "REZ", "WAH", "DST", "SFX"};
+  for (const auto& posture : table) {
+    EXPECT_NE(std::find(allowed.begin(), allowed.end(), posture.type), allowed.end())
+        << posture.name;
+    ASSERT_GT(posture.pole_count, 0U);
+    ASSERT_LE(posture.pole_count, 6U);
+    for (std::size_t i = 0; i < posture.pole_count; ++i) {
+      EXPECT_GE(posture.poles[i].hz, 150.0) << posture.name;
+      EXPECT_LE(posture.poles[i].hz, 9000.0) << posture.name;
+    }
+  }
+  EXPECT_EQ(p2k::posture("nope"), nullptr);
 }

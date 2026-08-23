@@ -14,6 +14,7 @@ add_library(trench_native_core STATIC
   src/p2k/role.cpp
   src/p2k/morph.cpp
   src/p2k/formants.cpp
+  src/p2k/postures.cpp
   src/p2k/rows_fit.cpp
   src/audition.cpp
   src/transpose.cpp
