@@ -219,6 +219,11 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The zero layer is not an anti-skeleton.** Matching each corner's in-band sharp zero
+set (>= 3 zeros, r > 0.9) against every other body's pole posture: 1 of 59 under 50
+cents (a three-zero set), 3 under 100, median 187 cents. The zeros do not trace another
+body's poles; they are placed against their own skeleton, freely. (2026-08-23)
+
 **The zeros are intentional, by filter type.** Zero jobs (paired within 0.5 oct of any
 pole / parked >= 10 kHz / free notch / real-axis step / none) by the manual's type: VOW
 73% paired; EQ+ 47% parked; EQ- 25% notch with the deepest zeros (median r 0.984); REZ
