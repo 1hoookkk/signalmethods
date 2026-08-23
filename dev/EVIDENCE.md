@@ -219,6 +219,13 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Slot order is frequency order in the vowel bodies, a five-times-chance habit elsewhere.**
+Over the 117 corners with six conjugate poles: S2<S3<S4<S5 ascending in 22% (chance 4%),
+descending 12%; S1 the highest pole 36%, S6 the lowest 31%, both 18%. Two bodies keep
+S2..S5 ascending in all four corners: Talking Hedz and Ooh-to-Eee - the vowels, with
+S2..S5 as F1..F4 and S1/S6 as the frame. The most common full order (18 corners) is
+S2 S3 S5 S6 S1 S4 low to high. (2026-08-23)
+
 **Coupled shapes do not survive a corner move.** Pairing each pole with its nearest zero
 from any section (within 0.5 oct) gives 575 coupled shapes across the 132 corners, 27%
 own-section. Following a pole lane to its partner corner: it keeps the same partner zero
