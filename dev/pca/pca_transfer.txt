@@ -1,0 +1,147 @@
+132 corners, 512 points, per-curve mean removed (level is the corner gain)
+variance explained: PC1 72.7% PC2 14.0% PC3 4.5% PC4 2.4% PC5 1.4% PC6 1.0% PC7 0.9% PC8 0.5%
+cumulative 3 PCs 91.2%  5 PCs 95.0%  8 PCs 97.4%
+
+PC1: +0.10 at 18926 Hz, -0.04 at 425 Hz
+PC2: +0.10 at 3556 Hz, -0.13 at 20269 Hz
+PC3: +0.12 at 20269 Hz, -0.05 at 5078 Hz
+PC4: +0.22 at 20269 Hz, -0.09 at 10790 Hz
+
+corner                             group       PC1      PC2      PC3
+P2k_000_ace_of_bass_c0             bass     -153.9     80.9   -191.9
+P2k_000_ace_of_bass_c1             bass      267.8   -116.0     54.6
+P2k_000_ace_of_bass_c2             bass     -281.6   -175.7   -215.5
+P2k_000_ace_of_bass_c3             bass      274.7     35.2     26.6
+P2k_001_megasweepz_c0              sweep     147.4     45.9     20.7
+P2k_001_megasweepz_c1              sweep     -20.8   -103.4   -216.7
+P2k_001_megasweepz_c2              sweep     281.1     40.2     90.3
+P2k_001_megasweepz_c3              sweep      78.1    -28.4   -214.8
+P2k_002_early_rizer_c0             sweep     -31.8     82.0    -65.4
+P2k_002_early_rizer_c1             sweep    -340.0     -6.2     31.6
+P2k_002_early_rizer_c2             sweep    -210.6    -15.5   -130.4
+P2k_002_early_rizer_c3             sweep    -414.2     10.9     81.2
+P2k_003_millennium_c0              other    -277.9   -290.2   -181.3
+P2k_003_millennium_c1              other     121.0      4.0     32.2
+P2k_003_millennium_c2              other     299.9    -54.5    116.8
+P2k_003_millennium_c3              other     254.4    -56.1   -100.3
+P2k_004_meaty_gizmo_c0             other    -277.9   -290.2   -181.3
+P2k_004_meaty_gizmo_c1             other     121.0      4.0     32.2
+P2k_004_meaty_gizmo_c2             other     410.3     95.8     45.3
+P2k_004_meaty_gizmo_c3             other     194.0    -48.7    -43.6
+P2k_005_klub_klassik_c0            other     176.0   -351.8     -0.8
+P2k_005_klub_klassik_c1            other     249.0    -16.4     94.5
+P2k_005_klub_klassik_c2            other    -217.6    -21.1    136.9
+P2k_005_klub_klassik_c3            other     192.3     53.6     76.0
+P2k_006_bassbox_303_c0             bass       96.2   -373.8     -1.0
+P2k_006_bassbox_303_c1             bass        1.6    102.2   -129.6
+P2k_006_bassbox_303_c2             bass      -14.8    -44.6     76.1
+P2k_006_bassbox_303_c3             bass      364.8   -150.6    150.0
+P2k_007_fuzzi_face_c0              other   -2079.5   -307.2    -38.0
+P2k_007_fuzzi_face_c1              other   -1681.0    -43.9    424.3
+P2k_007_fuzzi_face_c2              other    -901.2    572.2     69.3
+P2k_007_fuzzi_face_c3              other    -156.0    577.8   -140.0
+P2k_008_dead_ringer_c0             other     451.2   -176.1   -126.4
+P2k_008_dead_ringer_c1             other     -24.4     27.7     79.6
+P2k_008_dead_ringer_c2             other     313.6   -188.2    -93.0
+P2k_008_dead_ringer_c3             other     -30.6     95.9      0.6
+P2k_009_tb_or_not_tb_c0            bass      121.8   -209.7    104.4
+P2k_009_tb_or_not_tb_c1            bass      130.6    121.3     17.3
+P2k_009_tb_or_not_tb_c2            bass       42.2    -62.5     43.9
+P2k_009_tb_or_not_tb_c3            bass      266.9    -13.6     57.8
+P2k_010_ooh_to_eee_c0              vocal     -33.5    136.5    -18.6
+P2k_010_ooh_to_eee_c1              vocal     180.5     18.5   -183.8
+P2k_010_ooh_to_eee_c2              vocal     -44.7    152.3      0.7
+P2k_010_ooh_to_eee_c3              vocal     165.1     46.5   -213.7
+P2k_011_boland_bass_c0             bass     -301.6   -456.7      1.5
+P2k_011_boland_bass_c1             bass      220.3    -50.3     72.0
+P2k_011_boland_bass_c2             bass      -34.8   -152.5    131.5
+P2k_011_boland_bass_c3             bass      329.6    -59.6    113.3
+P2k_012_multi_q_vox_c0             vocal     185.2    -70.5   -102.5
+P2k_012_multi_q_vox_c1             vocal     201.3   -150.7     18.2
+P2k_012_multi_q_vox_c2             vocal     133.0     10.1     -0.1
+P2k_012_multi_q_vox_c3             vocal     304.5     64.8    -38.1
+P2k_013_talking_hedz_c0            vocal     133.3   -144.9     30.8
+P2k_013_talking_hedz_c1            vocal     169.9     27.8   -190.7
+P2k_013_talking_hedz_c2            vocal     110.4   -158.0     40.8
+P2k_013_talking_hedz_c3            vocal     145.6     14.7   -181.8
+P2k_014_zoom_peaks_c0              other    -612.8   -327.7    -81.6
+P2k_014_zoom_peaks_c1              other     307.5    222.3     47.7
+P2k_014_zoom_peaks_c2              other     270.7    187.4     -3.2
+P2k_014_zoom_peaks_c3              other     569.0     53.8    220.5
+P2k_015_dj_alkaline_c0             other     297.3    136.6     55.3
+P2k_015_dj_alkaline_c1             other     306.3   -220.8    103.8
+P2k_015_dj_alkaline_c2             other     258.8    184.6     40.6
+P2k_015_dj_alkaline_c3             other     198.6   -137.9      6.5
+P2k_016_bass_tracer_c0             bass      286.4   -228.6     84.8
+P2k_016_bass_tracer_c1             bass      121.9     79.9    -25.5
+P2k_016_bass_tracer_c2             bass       35.2    112.4     58.5
+P2k_016_bass_tracer_c3             bass      309.1    -77.5    120.9
+P2k_017_rogue_hertz_c0             sweep     311.5   -140.0     56.3
+P2k_017_rogue_hertz_c1             sweep     318.0    -80.2    126.7
+P2k_017_rogue_hertz_c2             sweep     199.2    -72.6    -18.4
+P2k_017_rogue_hertz_c3             sweep     236.2     74.3     88.8
+P2k_018_razor_blades_c0            other     264.3    -84.5     94.2
+P2k_018_razor_blades_c1            other     -69.8     72.2   -228.3
+P2k_018_razor_blades_c2            other     274.6    -30.8     36.5
+P2k_018_razor_blades_c3            other    -175.9     53.5   -117.6
+P2k_019_radio_craze_c0             other     311.0     21.5    -50.8
+P2k_019_radio_craze_c1             other      87.3    321.2     90.9
+P2k_019_radio_craze_c2             other     406.9    233.1    -72.2
+P2k_019_radio_craze_c3             other     419.8    487.5    284.1
+P2k_020_eeh_to_aah_c0              vocal     355.2   -134.3   -121.1
+P2k_020_eeh_to_aah_c1              vocal      48.0     85.4    -18.1
+P2k_020_eeh_to_aah_c2              vocal     306.9   -113.0   -129.0
+P2k_020_eeh_to_aah_c3              vocal      26.9     95.5      1.4
+P2k_021_ubu_orator_c0              vocal      64.9     96.2    -16.5
+P2k_021_ubu_orator_c1              vocal     175.8   -176.5     33.7
+P2k_021_ubu_orator_c2              vocal     -93.7    -37.1   -188.1
+P2k_021_ubu_orator_c3              vocal    -153.1   -163.7     20.7
+P2k_022_deep_bouche_c0             vocal      59.5    148.3    -82.4
+P2k_022_deep_bouche_c1             vocal     215.5    118.5      3.3
+P2k_022_deep_bouche_c2             vocal     -94.2     80.0    182.9
+P2k_022_deep_bouche_c3             vocal     -37.2     58.5   -124.8
+P2k_023_freak_shifta_c0            other     328.5     41.3    119.5
+P2k_023_freak_shifta_c1            other     259.7     18.0      8.8
+P2k_023_freak_shifta_c2            other     282.5    137.5    -36.3
+P2k_023_freak_shifta_c3            other     191.5    -37.2    135.6
+P2k_024_cruz_pusher_c0             other   -1996.8   -392.2     10.7
+P2k_024_cruz_pusher_c1             other   -1058.7    471.5    -52.5
+P2k_024_cruz_pusher_c2             other   -1970.7   -145.0    275.4
+P2k_024_cruz_pusher_c3             other   -1070.0    480.1    -56.4
+P2k_025_angelz_hairz_c0            other      75.0     80.0    -57.8
+P2k_025_angelz_hairz_c1            other     113.1    111.9     89.0
+P2k_025_angelz_hairz_c2            other    -303.8    121.4     51.2
+P2k_025_angelz_hairz_c3            other      77.5     65.8     18.4
+P2k_026_dream_weava_c0             sweep     303.3     98.3      1.2
+P2k_026_dream_weava_c1             sweep    -370.3    279.5    -20.4
+P2k_026_dream_weava_c2             sweep   -1032.9    367.2   -123.5
+P2k_026_dream_weava_c3             sweep    -507.8    220.8   -157.2
+P2k_027_acid_ravage_c0             sweep      52.2   -358.5     53.8
+P2k_027_acid_ravage_c1             sweep     225.0     39.2     42.3
+P2k_027_acid_ravage_c2             sweep     -78.6   -418.2     24.8
+P2k_027_acid_ravage_c3             sweep     164.6     -2.1     34.9
+P2k_028_bass_o_matic_c0            bass      145.8   -297.1     23.3
+P2k_028_bass_o_matic_c1            bass      -60.8    -29.0      2.1
+P2k_028_bass_o_matic_c2            bass       40.3     90.4     88.4
+P2k_028_bass_o_matic_c3            bass      424.8    121.4    143.3
+P2k_029_lucifer_s_q_c0             other    -307.3   -464.9      7.9
+P2k_029_lucifer_s_q_c1             other     238.0    -59.8     38.6
+P2k_029_lucifer_s_q_c2             other     207.7    119.3   -101.5
+P2k_029_lucifer_s_q_c3             other     489.2     65.9    221.8
+P2k_030_tooth_comb_c0              other     -96.4   -255.4     52.0
+P2k_030_tooth_comb_c1              other     214.3     54.6     46.1
+P2k_030_tooth_comb_c2              other     -65.0   -445.2    -43.0
+P2k_030_tooth_comb_c3              other     173.6     49.4     55.5
+P2k_031_ear_bender_c0              other      39.1      0.1    -14.2
+P2k_031_ear_bender_c1              other     189.5    -50.9    -18.8
+P2k_031_ear_bender_c2              other    -325.2   -173.3   -287.8
+P2k_031_ear_bender_c3              other     135.8    -57.0   -158.2
+P2k_032_klang_kling_c0             other     143.6    259.7    -83.2
+P2k_032_klang_kling_c1             other      60.6    135.5     43.1
+P2k_032_klang_kling_c2             other    -806.7    534.8     -6.0
+P2k_032_klang_kling_c3             other      64.1    291.6   -123.4
+
+bass   n= 24 mean PC1  109.7 PC2  -73.1 PC3   33.6  sd 189.2 156.6 93.9
+vocal  n= 24 mean PC1  105.2 PC2    0.2 PC3  -53.2  sd 131.3 109.0 95.9
+sweep  n= 20 mean PC1  -34.5 PC2    1.7 PC3  -14.7  sd 342.8 178.3 100.1
+other  n= 64 mean PC1  -69.8 PC2   26.8 PC3   11.9  sd 591.5 234.4 120.9
