@@ -219,6 +219,15 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The corner-to-corner move is full-rank: E-mu had no verbs.** Per body, the per-lane
+change (dlog2 f, dwidth, dzero offset, dzero width x 6 lanes = 24 numbers) from M0 to
+M100 and from Q0 to Q100, stacked over the bank: PC1 explains 22% of the Morph move and
+16% of the Q move; eight components reach 76% of either. All six lanes move the same way
+in frequency in only 19-23% of moves. Mean tendencies are small (Q: S1-S3 up ~0.5 oct,
+widths narrow ~0.2 oct; Morph: S1 up 0.8 oct, S6 down 0.4). Each corner was drawn
+independently per lane; only lane identity carries across corners. The authoring verbs
+are ours to define. (2026-08-23)
+
 **The S3/S6 scale cuts are not a headroom rule.** With every stage at unity scale, the
 peak of the partial cascade S1..S3 is higher where a cut exists (median 76.6 dB vs 32.1 dB
 without), but the cut does not follow the peak: cuts of -12 and -18 dB sit on corners whose
