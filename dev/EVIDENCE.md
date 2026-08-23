@@ -219,6 +219,15 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**The P2K bodies are authored in Hz and compiled per sample rate — not a 39,062.5 Hz
+port.** Each skin has four DAT variants in `EmulatorX.dll`; read at 44,100 / 48,000 /
+96,000 / 192,000 Hz respectively, every pole lands on the same frequency to 0.1 Hz and the
+radius scales as a fixed bandwidth in Hz (Hedz S2: 1005.6 Hz in all four). Variant 0 is
+the 44.1 kHz compile; no variant is 39,062.5. 792 live P2K sections share zero exact words
+with any section of the 289 Morpheus cubes; the closest geometric relative shares 6 poles
+of 24 and is `257_Overblow`. The capture null alone only proved playback at the host rate.
+(2026-08-23, `ref/sections.tsv`, `trench-x3-clean/ref/p2k_variants`.)
+
 **The P2K datum is 44,100 Hz — confirmed against captured audio.** Four TalkingHedz corner
 captures were deconvolved against the bypassed pink-noise excitation
 (`trench-s6-slot-law/ref/inputs/bypassed-pinknoise.wav`) and compared to the decoded
