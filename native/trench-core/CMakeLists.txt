@@ -45,6 +45,12 @@ target_link_libraries(trench_fit_target PRIVATE trench_native_core)
 add_executable(trench_audition_morph tools/audition_morph.cpp)
 target_link_libraries(trench_audition_morph PRIVATE trench_native_core)
 
+add_executable(trench_adversary tools/adversary.cpp)
+target_link_libraries(trench_adversary PRIVATE trench_native_core)
+target_compile_definitions(trench_adversary PRIVATE
+  TRENCH_SOURCE_ROOT="${PROJECT_SOURCE_DIR}"
+)
+
 add_executable(trench_interior_envelope tools/interior_envelope.cpp)
 target_link_libraries(trench_interior_envelope PRIVATE trench_native_core)
 target_compile_definitions(trench_interior_envelope PRIVATE
@@ -67,6 +73,7 @@ if(BUILD_TESTING)
     tests/p2k_section_param_test.cpp
     tests/p2k_morph_test.cpp
     tests/native_body_test.cpp
+    tests/adversary_test.cpp
     tests/rbj_test.cpp
     tests/audition_test.cpp
     tests/transpose_test.cpp
