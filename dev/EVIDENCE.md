@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Pole bandwidth is set in Hz, not octaves, and per pole.** Over 608 live conjugate poles
+(r > 0.9, 100-15000 Hz): bandwidth in Hz is nearly flat across four decades (medians 97 /
+145 / 121 / 191 Hz for 100-300 / 300-1k / 1-3k / 3-15k Hz) while bandwidth in octaves
+falls 0.70 -> 0.29 -> 0.11 -> 0.045; correlation of log bandwidth-Hz with log frequency
++0.17. Klatt's convention. 114 distinct pole radius words, median 15 per body, no body
+on a single word: bandwidth was tuned per pole. One word dominates: 0x6FFC, r 0.9990,
+13.7 Hz, 55 uses from 198 Hz to 13 kHz - the ceiling class, the "radii to the ceiling"
+Q100 move. The compiled vowel classes use one radius per rate (29 Hz at 44.1 k) for all
+three formants. (2026-08-23)
+
 **Poles-only PCA over 140 corners (132 bank + 8 compiled vowels).** PC1 81.2%, PC2
 11.6%, PC3 2.0%: the pole layer is one slope family plus one axis of resonance placement.
 Clustering is weak beyond two groups (k=2 silhouette 0.50, k=5 0.29); at k=5 the
