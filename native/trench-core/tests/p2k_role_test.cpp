@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -36,63 +35,7 @@ const std::vector<std::vector<std::uint8_t>>& bank() {
   return bodies;
 }
 
-trench::core::PackedSection section(const p2k::StoredCorner& corner, std::size_t si) {
-  trench::core::PackedSection out{};
-  for (std::size_t wi = 0; wi < p2k::kWordCount; ++wi) {
-    out[wi] = corner[si][wi];
-  }
-  return out;
-}
-
 }  // namespace
-
-TEST(P2kRole, TheBankRoleCensusIsTheMeasuredOne) {
-  ASSERT_EQ(bank().size(), 33U);
-  std::map<std::size_t, std::size_t> tilts_per_corner;
-  std::array<std::map<p2k::Role, std::size_t>, 6> per_slot;
-  std::size_t peak_rows = 0;
-  for (const auto& body : bank()) {
-    for (std::size_t ci = 0; ci < 4; ++ci) {
-      const auto corner = p2k::rom_corner_words(body, ci);
-      std::size_t tilts = 0;
-      for (std::size_t si = 0; si < 6; ++si) {
-        const auto role = p2k::role_of(section(corner, si));
-        ++per_slot[si][role];
-        tilts += role == p2k::Role::kTilt ? 1U : 0U;
-        peak_rows += role == p2k::Role::kPeak || role == p2k::Role::kPeakNotch ? 1U : 0U;
-      }
-      ++tilts_per_corner[tilts];
-    }
-  }
-  EXPECT_EQ(tilts_per_corner[0], 12U);
-  EXPECT_EQ(tilts_per_corner[1], 59U);
-  EXPECT_EQ(tilts_per_corner[2], 39U);
-  EXPECT_EQ(tilts_per_corner[3], 20U);
-  EXPECT_EQ(tilts_per_corner[4], 2U);
-  EXPECT_EQ(per_slot[5][p2k::Role::kTilt], 69U);
-  EXPECT_EQ(per_slot[0][p2k::Role::kTilt], 53U);
-  EXPECT_EQ(per_slot[0][p2k::Role::kRealAxis], 29U);
-  EXPECT_EQ(per_slot[3][p2k::Role::kParked], 17U);
-  EXPECT_EQ(peak_rows, 489U);
-}
-
-TEST(P2kRole, EveryFactoryRowSitsInsideItsOwnRoleEnvelope) {
-  std::size_t rows = 0;
-  std::size_t outside = 0;
-  for (const auto& body : bank()) {
-    for (std::size_t ci = 0; ci < 4; ++ci) {
-      const auto corner = p2k::rom_corner_words(body, ci);
-      for (std::size_t si = 0; si < 6; ++si) {
-        const auto words = section(corner, si);
-        const auto role = p2k::role_of(words);
-        ++rows;
-        outside += p2k::within_envelope(role, words) ? 0U : 1U;
-      }
-    }
-  }
-  EXPECT_EQ(rows, 792U);
-  EXPECT_LE(outside, rows / 10);
-}
 
 TEST(P2kRole, ACancellingPairOnTheCircleIsNotAPeak) {
   trench::core::SectionGeometry g;

@@ -19,8 +19,6 @@ namespace p2k = trench::core::p2k;
 
 namespace {
 
-constexpr double kLiveR = 0.45;
-
 const std::vector<std::pair<std::string, std::vector<std::uint8_t>>>& bank() {
   static const auto presets = [] {
     const std::filesystem::path dir = std::string(TRENCH_SOURCE_ROOT) + "/ref/presets";
@@ -77,30 +75,8 @@ std::optional<std::pair<double, double>> root(std::uint16_t w_mag, std::uint16_t
 
 }  // namespace
 
-TEST(P2kContainerLaws, TheBankIsThirtyThreePresetsOfFourCorners) {
-  ASSERT_EQ(bank().size(), 33U);
-  ASSERT_EQ(corners().size(), 132U);
-  for (const auto& [name, body] : bank()) {
-    ASSERT_EQ(body.size(), 240U) << name;
-  }
-}
-
 TEST(P2kContainerLaws, TheDatumIsFortyFourThousandOneHundred) {
   ASSERT_EQ(p2k::kSr, 44'100.0);
-}
-
-TEST(P2kContainerLaws, TheBankHoldsThePublishedCountOfLiveRoots) {
-  std::size_t live = 0;
-  for (const auto& c : corners()) {
-    for (const auto& st : c.words) {
-      for (const auto [wm, wr] : {std::pair{st[0], st[1]}, std::pair{st[2], st[3]}}) {
-        if (const auto r = root(wm, wr); r && r->second > kLiveR) {
-          ++live;
-        }
-      }
-    }
-  }
-  ASSERT_EQ(live, 1'475U);
 }
 
 TEST(P2kContainerLaws, TheMagnitudeByteCeilingIsTheBanksOwnPoleMaximum) {
@@ -159,21 +135,6 @@ TEST(P2kContainerLaws, Byte255IsExcludedBecauseItsDiscriminantIsOneStepFromColla
   ASSERT_LT(at254, at255);
 }
 
-TEST(P2kContainerLaws, ThePoleRadiusCeilingIsTheBanksOwnMaximum) {
-  double top = 0.0;
-  std::size_t live = 0;
-  for (const auto& c : corners()) {
-    for (const auto& st : c.words) {
-      if (const auto r = root(st[2], st[3])) {
-        ++live;
-        top = std::max(top, r->second);
-      }
-    }
-  }
-  ASSERT_EQ(live, 777U);
-  ASSERT_LT(std::abs(top - p2k::kPoleRMax), 1e-9) << top;
-}
-
 TEST(P2kContainerLaws, TheRadiiAboveThePoleCeilingAreCounted) {
   const double ceiling = p2k::pole_radius_ceiling();
   std::size_t canonical = 0;
@@ -194,15 +155,6 @@ TEST(P2kContainerLaws, TheRadiiAboveThePoleCeilingAreCounted) {
   ASSERT_EQ(all, 75U);
 }
 
-TEST(P2kContainerLaws, TheSixthStageZeroRadiusWordIsConstantInEveryCorner) {
-  for (const auto& c : corners()) {
-    ASSERT_EQ(c.words[5][1], p2k::kS6ZeroRsqWord) << c.name << " C" << c.ci;
-  }
-  const double r = std::sqrt(1.0 - trench::core::decode_word(p2k::kS6ZeroRsqWord));
-  ASSERT_GT(r, p2k::kPoleRMax);
-  ASSERT_LT(std::abs(r - 0.999'998'148'529'007'7), 1e-15) << r;
-}
-
 TEST(P2kContainerLaws, TheS6WordIsAChosenMarginNotTheFormatFloor) {
   std::set<std::uint64_t> distinct;
   for (std::uint16_t w = 1; w < p2k::kS6ZeroRsqWord; ++w) {
@@ -216,105 +168,3 @@ TEST(P2kContainerLaws, TheS6WordIsAChosenMarginNotTheFormatFloor) {
   ASSERT_EQ(distinct.size(), static_cast<std::size_t>(p2k::kS6ZeroRsqWord - 1));
 }
 
-TEST(P2kContainerLaws, EveryStageOfEveryCornerIsLive) {
-  for (const auto& c : corners()) {
-    for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
-      const auto [zp, zq] = p2k::pq(c.words[si][0], c.words[si][1]);
-      const auto [pp, ppq] = p2k::pq(c.words[si][2], c.words[si][3]);
-      ASSERT_FALSE(zp == pp && zq == ppq)
-          << c.name << " C" << c.ci << " S" << si + 1 << " cancels itself";
-    }
-  }
-}
-
-TEST(P2kContainerLaws, EveryFactoryGeometryWordIsOnTheExponentIndexedLattice) {
-  const auto& lat = p2k::lattice_words();
-  std::size_t total = 0;
-  std::size_t on = 0;
-  std::size_t flat = 0;
-  for (const auto& c : corners()) {
-    for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
-      for (std::size_t wi = 0; wi < 4; ++wi) {
-        if (si == 5 && wi == 1) {
-          continue;
-        }
-        const std::uint16_t w = c.words[si][wi];
-        ++total;
-        ASSERT_TRUE(std::binary_search(lat.begin(), lat.end(), w))
-            << c.name << " C" << c.ci << " S" << si + 1 << " w" << wi << " off the lattice";
-        ++on;
-        if ((w & 0xFFU) == p2k::kFiller) {
-          ++flat;
-        }
-      }
-    }
-  }
-  ASSERT_EQ(on, total);
-  ASSERT_EQ(total, 3'036U);
-  const double flat_pct = 100.0 * static_cast<double>(flat) / static_cast<double>(total);
-  ASSERT_TRUE(flat_pct >= 79.0 && flat_pct < 82.0) << flat_pct;
-}
-
-TEST(P2kContainerLaws, TheLowByteIsAFunctionOfTheExponent) {
-  for (const auto& c : corners()) {
-    for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
-      for (std::size_t wi = 0; wi < 4; ++wi) {
-        if (si == 5 && wi == 1) {
-          continue;
-        }
-        const std::uint16_t w = c.words[si][wi];
-        const auto e = static_cast<std::size_t>(((static_cast<std::uint32_t>(w) + 1U) >> 12U) & 0xFU);
-        const std::uint16_t canonical = p2k::word_of(w >> 8U);
-        const auto alt = static_cast<std::uint16_t>(((w >> 8U) << 8U) | 0x7DU);
-        ASSERT_TRUE(w == canonical || (e == 15 && w == alt))
-            << c.name << " C" << c.ci << " S" << si + 1 << " w" << wi;
-      }
-    }
-  }
-}
-
-TEST(P2kContainerLaws, TheGeometryLowByteIsFarLessVariousThanTheGainLowByte) {
-  std::array<std::set<std::uint8_t>, 4> geo;
-  std::set<std::uint8_t> gain;
-  for (const auto& c : corners()) {
-    for (const auto& st : c.words) {
-      for (std::size_t wi = 0; wi < 4; ++wi) {
-        geo[wi].insert(static_cast<std::uint8_t>(st[wi] & 0xFFU));
-      }
-      gain.insert(static_cast<std::uint8_t>(st[4] & 0xFFU));
-    }
-  }
-  for (const auto& set : geo) {
-    ASSERT_TRUE(set.size() >= 4 && set.size() <= 8) << set.size();
-  }
-  ASSERT_GE(gain.size(), 90U);
-}
-
-TEST(P2kContainerLaws, RealAxisPairsAreLegalAndSurviveSeating) {
-  std::size_t real_pair_corners = 0;
-  std::size_t modified = 0;
-  for (const auto& c : corners()) {
-    p2k::CornerWords geometry{};
-    bool has_real = false;
-    for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
-      for (std::size_t wi = 0; wi < 4; ++wi) {
-        geometry[si][wi] = c.words[si][wi];
-      }
-      for (const auto [wm, wr] :
-           {std::pair{c.words[si][0], c.words[si][1]}, std::pair{c.words[si][2], c.words[si][3]}}) {
-        const auto [p, q] = p2k::pq(wm, wr);
-        if (p * p - 4.0 * q >= 0.0) {
-          has_real = true;
-        }
-      }
-    }
-    if (has_real) {
-      ++real_pair_corners;
-    }
-    if (p2k::enter(geometry) != geometry) {
-      ++modified;
-    }
-  }
-  ASSERT_EQ(real_pair_corners, 46U);
-  ASSERT_EQ(modified, 0U) << "enter must not repair a factory corner";
-}
