@@ -104,6 +104,29 @@ imported bodies null against their decoded responses there. The packed-word engi
 its parity tests remain the engine of record for the app and the plugin until they are
 moved onto it. Do not break them while moving.
 
+## The instrument, ruled 2026-08-23 late
+
+Measured over the 33 P2K bodies and E-mu's two compiled vowel classes (`dev/EVIDENCE.md`):
+the pole layer is one shape — a resonance with −12 dB/oct skirts — placed three to six
+times, at a frequency in Hz with a width in Hz; the bank reuses a small library of such
+pole postures across bodies at 0 cents; everything else a body does is its zeros. Zeros
+are the preset.
+
+Therefore:
+
+* A corner is a **skeleton** (where each resonance sits, how sharp) plus a **mask** (a zero
+  per section — offset and depth — and the frame's tilt and trench).
+* The app opens empty. Resonances are added on the plot (where, how sharp) or picked
+  whole from the chooser, which lists the library by the Mo'Phatt type codes and writes
+  poles only. Poles are not first-class editable controls; width is in Hz.
+* The strip edits the mask. A pole pair has no gain of its own; level is one gain per
+  corner.
+* Four such corners; Morph and Q between them under US 10,514,883. Nothing is authored
+  in the interior.
+
+Anything in the tree that treats a section as (type, Fc, Bw, Gain) is scaffolding from
+before this ruling and is to be replaced, not extended.
+
 ## Acceptance evidence
 
 Treat existing null, bit-exact round-trip, parity, packing, and canonical regression tests as load-bearing.
