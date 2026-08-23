@@ -14,6 +14,7 @@ add_library(trench_native_core STATIC
   src/p2k/formants.cpp
   src/p2k/rows_fit.cpp
   src/audition.cpp
+  src/transpose.cpp
   src/p2k/section_param.cpp
   src/p2k/seed.cpp
   src/p2k/watched.cpp
@@ -55,6 +56,7 @@ if(BUILD_TESTING)
     tests/p2k_section_param_test.cpp
     tests/p2k_morph_test.cpp
     tests/audition_test.cpp
+    tests/transpose_test.cpp
     tests/p2k_formants_test.cpp
     tests/p2k_rows_fit_test.cpp
   )

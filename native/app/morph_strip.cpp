@@ -38,8 +38,14 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   row->setSpacing(18);
   morph_ = make_slider(this, "morphSlider");
   q_ = make_slider(this, "qSlider");
+  transpose_ = make_slider(this, "transposeSlider");
+  transpose_->setRange(-24, 24);
+  transpose_->setPageStep(12);
+  transpose_->setTickInterval(12);
+  transpose_->setValue(0);
   row->addWidget(morph_, 3);
   row->addWidget(q_, 1);
+  row->addWidget(transpose_, 1);
   row->addSpacing(72);
   const auto relay = [this] {
     if (updating_) return;
@@ -47,7 +53,19 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   };
   connect(morph_, &QSlider::valueChanged, this, relay);
   connect(q_, &QSlider::valueChanged, this, relay);
+  connect(transpose_, &QSlider::valueChanged, this, [this](int value) {
+    if (!updating_) emit transposeEdited(value);
+  });
 }
+
+void MorphStrip::setTranspose(int semitones) {
+  updating_ = true;
+  transpose_->setValue(semitones);
+  updating_ = false;
+  update();
+}
+
+int MorphStrip::transpose() const { return transpose_->value(); }
 
 void MorphStrip::setView(float morph, float q) {
   updating_ = true;

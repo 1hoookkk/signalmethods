@@ -1,5 +1,7 @@
 #include "body_document.hpp"
 
+#include "trench/core/transpose.hpp"
+
 #include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
 
@@ -211,7 +213,28 @@ bool BodyDocument::atCorner() const noexcept {
          (view_.q == 0.0F || view_.q == 1.0F);
 }
 
+void BodyDocument::setTranspose(int semitones) {
+  if (semitones == view_.semitones) return;
+  view_.semitones = semitones;
+  emit viewChanged();
+}
+
+trench::core::Cascade BodyDocument::viewCascade() const {
+  const auto cascade = body_.interpolate_biquads(view_.morph, view_.q, 0.0F);
+  return trench::core::transpose_cascade(
+      cascade, trench::core::ratio_of_semitones(view_.semitones), sample_rate_hz_);
+}
+
 std::vector<double> BodyDocument::viewResponseDb() const {
+  if (view_.semitones != 0) {
+    const auto cascade = viewCascade();
+    std::vector<double> out;
+    out.reserve(grid_.hz.size());
+    for (const auto hz : grid_.hz) {
+      out.push_back(trench::core::cascade_response_db(cascade, hz, sample_rate_hz_));
+    }
+    return out;
+  }
   if (atCorner()) {
     trench::core::p2k::StoredCorner words{};
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {

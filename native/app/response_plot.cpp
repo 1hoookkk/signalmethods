@@ -2,6 +2,7 @@
 
 #include "section_color.hpp"
 #include "trench/core/p2k.hpp"
+#include "trench/core/transpose.hpp"
 
 #include <QApplication>
 #include <QFontMetrics>
@@ -151,16 +152,19 @@ void ResponsePlotWidget::setCorner(std::size_t corner) {
   refresh();
 }
 
-void ResponsePlotWidget::setView(float morph, float q) {
+void ResponsePlotWidget::setView(float morph, float q, int semitones) {
   view_morph_ = morph;
   view_q_ = q;
-  at_corner_ = (morph == 0.0F || morph == 1.0F) && (q == 0.0F || q == 1.0F);
+  view_semitones_ = semitones;
+  at_corner_ = (morph == 0.0F || morph == 1.0F) && (q == 0.0F || q == 1.0F) && semitones == 0;
   refresh();
 }
 
 trench::core::Cascade ResponsePlotWidget::viewCascade() const {
   if (at_corner_) return corner_cascade(*body_, corner_);
-  return body_->interpolate_biquads(view_morph_, view_q_, 0.0F);
+  return trench::core::transpose_cascade(
+      body_->interpolate_biquads(view_morph_, view_q_, 0.0F),
+      trench::core::ratio_of_semitones(view_semitones_), sample_rate_hz_);
 }
 
 void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {

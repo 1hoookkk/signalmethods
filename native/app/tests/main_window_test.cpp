@@ -1144,6 +1144,43 @@ class MainWindowTest final : public QObject {
     std::filesystem::remove(path);
   }
 
+  void tuneInMovesTheViewNotTheBody() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    const auto bytes = window.body().native_bytes();
+    auto* plot = window.responsePlot();
+    double peak_hz = 0.0;
+    double peak_db = -1e9;
+    for (std::size_t i = 0; i < plot->responsePointCount(); ++i) {
+      if (plot->frequencyAt(i) > 3000.0) break;
+      if (plot->responseDbAt(i) > peak_db) {
+        peak_db = plot->responseDbAt(i);
+        peak_hz = plot->frequencyAt(i);
+      }
+    }
+    auto* transpose = window.morphStrip()->findChild<QSlider*>(QStringLiteral("transposeSlider"));
+    QVERIFY(transpose != nullptr);
+    transpose->setValue(12);
+    QCOMPARE(window.document()->view().semitones, 12);
+    QVERIFY(plot->tokens().empty());
+    double up_hz = 0.0;
+    double up_db = -1e9;
+    for (std::size_t i = 0; i < plot->responsePointCount(); ++i) {
+      if (plot->frequencyAt(i) > 6000.0) break;
+      if (plot->responseDbAt(i) > up_db) {
+        up_db = plot->responseDbAt(i);
+        up_hz = plot->frequencyAt(i);
+      }
+    }
+    QVERIFY(std::abs(std::log2(up_hz / peak_hz) - 1.0) < 0.08);
+    QCOMPARE(window.body().native_bytes(), bytes);
+    QCOMPARE(window.undoStack()->count(), 0);
+    transpose->setValue(0);
+    QVERIFY(!plot->tokens().empty());
+  }
+
   void aVowelWritesTypedRowsAsOneUndoEntry() {
     namespace p2k = trench::core::p2k;
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);

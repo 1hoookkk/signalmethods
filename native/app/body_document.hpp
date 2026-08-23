@@ -23,6 +23,7 @@ class BodyDocument final : public QObject {
   struct View {
     float morph{0};
     float q{0};
+    int semitones{0};
   };
 
   BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
@@ -53,6 +54,8 @@ class BodyDocument final : public QObject {
   void setSpace(const trench::core::p2k::PerceptualSpace& space);
   void setIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
   void setView(float morph, float q);
+  void setTranspose(int semitones);
+  [[nodiscard]] trench::core::Cascade viewCascade() const;
 
   void applySpace(const trench::core::p2k::PerceptualSpace& space);
   void applyIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);

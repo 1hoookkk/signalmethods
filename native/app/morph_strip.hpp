@@ -13,11 +13,14 @@ class MorphStrip final : public QWidget {
   void setView(float morph, float q);
   [[nodiscard]] float morph() const;
   [[nodiscard]] float q() const;
+  void setTranspose(int semitones);
+  [[nodiscard]] int transpose() const;
   void setWorstStepDb(double db);
   [[nodiscard]] double worstStepDb() const;
 
  signals:
   void viewEdited(float morph, float q);
+  void transposeEdited(int semitones);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -25,6 +28,7 @@ class MorphStrip final : public QWidget {
  private:
   QSlider* morph_{};
   QSlider* q_{};
+  QSlider* transpose_{};
   double worst_step_db_{};
   bool updating_{};
 };

@@ -42,7 +42,7 @@ class ResponsePlotWidget final : public QWidget {
                std::string source_label);
   void setCorner(std::size_t corner);
   void setSpace(const trench::core::p2k::PerceptualSpace& space);
-  void setView(float morph, float q);
+  void setView(float morph, float q, int semitones = 0);
   void setFreedomMask(std::uint32_t mask);
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
@@ -89,6 +89,7 @@ class ResponsePlotWidget final : public QWidget {
   std::size_t corner_{};
   float view_morph_{0.0F};
   float view_q_{0.0F};
+  int view_semitones_{0};
   bool at_corner_{true};
   double sample_rate_hz_{trench::core::kP2kDatumHz};
   trench::core::p2k::PerceptualSpace space_{};

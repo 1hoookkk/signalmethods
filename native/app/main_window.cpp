@@ -180,18 +180,22 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     response_plot_->setCorner(corner);
     const auto view = document_->view();
     morph_strip_->setView(view.morph, view.q);
-    response_plot_->setView(view.morph, view.q);
+    response_plot_->setView(view.morph, view.q, view.semitones);
+    morph_strip_->setTranspose(view.semitones);
     updateProbes();
   });
   connect(document_, &BodyDocument::viewChanged, this, [this] {
     const auto view = document_->view();
     morph_strip_->setView(view.morph, view.q);
-    response_plot_->setView(view.morph, view.q);
+    response_plot_->setView(view.morph, view.q, view.semitones);
+    morph_strip_->setTranspose(view.semitones);
     updateStrips();
     updateProbes();
   });
   connect(morph_strip_, &MorphStrip::viewEdited, this,
           [this](float morph, float q) { document_->setView(morph, q); });
+  connect(morph_strip_, &MorphStrip::transposeEdited, this,
+          [this](int semitones) { document_->setTranspose(semitones); });
   connect(document_, &BodyDocument::spaceChanged, this, [this] {
     response_plot_->setSpace(document_->space());
     updateProbes();
@@ -638,8 +642,7 @@ bool MainWindow::auditionOpen() const noexcept { return audition_open_; }
 
 void MainWindow::updateAudition() {
   if (!audition_) return;
-  const auto view = document_->view();
-  audition_->setCascade(document_->body().interpolate_biquads(view.morph, view.q, 0.0F));
+  audition_->setCascade(document_->viewCascade());
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
