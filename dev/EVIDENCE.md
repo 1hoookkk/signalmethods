@@ -219,6 +219,16 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Poles-only PCA over 140 corners (132 bank + 8 compiled vowels).** PC1 81.2%, PC2
+11.6%, PC3 2.0%: the pole layer is one slope family plus one axis of resonance placement.
+Clustering is weak beyond two groups (k=2 silhouette 0.50, k=5 0.29); at k=5 the
+families are: a low posture (peaks 220-950 Hz, n=47: the 303/bass bodies and most vocal
+corners), a mid posture (500-2200 Hz, n=25, where one compiled corner of each vowel
+class lands), a high posture (2-10 kHz, n=13: sweeps and klang_kling), a frame-only
+posture (n=22: poles at the 64 Hz floor and 14-15 kHz, the bodies whose corners are
+pure slope), and a vowel posture (250-1700 Hz, n=33: MultiQVox all four corners, six of
+the eight compiled vowel corners). `dev/pca/poles_only_families.png`. (2026-08-23)
+
 **Poles only: no P2K corner comes from a cube, a .4, or a compiled class; the vowel
 bodies come from each other.** Symmetric mean-cents distance between strong pole sets
 (r > 0.95, 150-9000 Hz). Against the 2,312 Morpheus corners at 39,062.5 Hz: 1 of 132
