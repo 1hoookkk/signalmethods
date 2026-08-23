@@ -1,3 +1,4 @@
+#include "bisect_room.hpp"
 #include "body_document.hpp"
 #include "fit_controller.hpp"
 #include "main_window.hpp"
@@ -158,7 +159,11 @@ int main(int argc, char* argv[]) {
   parser.addOption(intent_option);
   parser.addOption(space_option);
   parser.addOption(view_option);
+  QCommandLineOption bisect_option(QStringLiteral("bisect"),
+                                   QStringLiteral("Eyes-closed bisection session on morph|q|character."),
+                                   QStringLiteral("axis"));
   parser.addOption(save_option);
+  parser.addOption(bisect_option);
   parser.process(application);
 
   const auto body_path = parser.isSet(body_option)
@@ -172,6 +177,21 @@ int main(int argc, char* argv[]) {
 
   try {
     MainWindow window(body_path, sample_rate_hz);
+    if (parser.isSet(bisect_option)) {
+      const auto axis = BisectRoom::axisFromName(parser.value(bisect_option).trimmed().toLower());
+      if (!axis || body_path.empty()) parser.showHelp(2);
+      auto* room = new BisectRoom(&window, *axis, body_path);
+      room->show();
+      room->setFocus();
+      if (parser.isSet(shot_option)) {
+        const auto shot_path = parser.value(shot_option);
+        QTimer::singleShot(parser.value(shot_after_option).toInt(), room, [room, shot_path] {
+          room->grab().save(shot_path);
+          QCoreApplication::quit();
+        });
+      }
+      return application.exec();
+    }
     window.show();
     window.setCorner(static_cast<std::size_t>(parser.value(corner_option).toUInt()));
     if (parser.isSet(saw_option)) {

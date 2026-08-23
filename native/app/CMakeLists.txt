@@ -3,6 +3,8 @@ find_package(Qt6 6.11.2 EXACT REQUIRED COMPONENTS Test Widgets)
 qt_standard_project_setup()
 
 add_library(trench_native_ui STATIC
+  bisect_room.cpp
+  bisect_room.hpp
   body_document.cpp
   body_document.hpp
   chassis_bar.cpp

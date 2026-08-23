@@ -22,6 +22,7 @@ add_library(trench_native_core STATIC
   src/p2k/section_param.cpp
   src/p2k/seed.cpp
   src/p2k/watched.cpp
+  src/bisection.cpp
 )
 
 find_package(Eigen3 5.0.1 EXACT CONFIG REQUIRED)
@@ -81,6 +82,7 @@ if(BUILD_TESTING)
     tests/transpose_test.cpp
     tests/p2k_formants_test.cpp
     tests/p2k_rows_fit_test.cpp
+    tests/bisection_test.cpp
   )
   target_link_libraries(trench_native_core_tests PRIVATE trench_native_core GTest::gtest_main
     nlohmann_json::nlohmann_json)
