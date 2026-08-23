@@ -494,14 +494,21 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     const auto clip = trench::audio::decode_mono(path);
     if (!clip) return false;
     std::vector<double> target;
+    std::vector<double> lpc_target;
+    std::vector<double> marks;
     try {
       const auto envelope = trench::core::measure::harmonic_envelope(
           clip->samples, clip->sample_rate_hz, source_model_);
       target = trench::core::measure::target_on_grid(envelope, document_->grid().hz);
+      const auto lpc = trench::core::measure::lpc_envelope(clip->samples, clip->sample_rate_hz);
+      lpc_target = trench::core::measure::target_on_grid(lpc, document_->grid().hz);
+      for (const auto& formant : lpc.formants) marks.push_back(formant.hz);
     } catch (const std::exception&) {
       return false;
     }
-    addOverlay(QString::fromStdString(path.filename().string()), std::move(target));
+    const auto name = QString::fromStdString(path.filename().string());
+    addOverlay(name + QStringLiteral(" LPC"), std::move(lpc_target), std::move(marks));
+    addOverlay(name, std::move(target));
     audition_clip_ = *clip;
     if (audition_) audition_->setClip(*clip);
     return true;
@@ -526,8 +533,9 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
   return true;
 }
 
-void MainWindow::addOverlay(const QString& name, std::vector<double> curve) {
-  overlays_.push_back(FitRoom::Overlay{name, std::move(curve)});
+void MainWindow::addOverlay(const QString& name, std::vector<double> curve,
+                            std::vector<double> marks_hz) {
+  overlays_.push_back(FitRoom::Overlay{name, std::move(curve), std::move(marks_hz)});
   selectOverlay(static_cast<int>(overlays_.size()) - 1);
 }
 

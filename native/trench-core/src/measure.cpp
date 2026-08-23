@@ -2,6 +2,7 @@
 
 #include "trench/core/packed_body.hpp"
 
+#include <Eigen/Eigenvalues>
 #include <pocketfft_hdronly.h>
 
 #include <algorithm>
@@ -152,6 +153,87 @@ std::vector<double> target_on_grid(const HarmonicEnvelope& envelope,
     smooth[i] = sum / static_cast<double>(hi - lo);
   }
   return smooth;
+}
+
+LpcEnvelope lpc_envelope(std::span<const float> mono, double sample_rate_hz,
+                         const LpcOptions& options) {
+  if (mono.size() < 64 || !(sample_rate_hz > 0.0)) {
+    throw std::invalid_argument("lpc_envelope needs samples and a rate");
+  }
+  const std::size_t order =
+      options.order > 0 ? options.order
+                        : static_cast<std::size_t>(std::lround(2.0 + sample_rate_hz / 1000.0));
+  const std::size_t length = std::min(options.frame, mono.size());
+  const std::size_t start = mono.size() > length ? (mono.size() - length) / 4 : 0;
+  std::vector<double> frame(length);
+  for (std::size_t i = 0; i < length; ++i) {
+    const double x = mono[start + i];
+    const double previous = i > 0 ? mono[start + i - 1] : 0.0;
+    const double window =
+        0.5 - 0.5 * std::cos(2.0 * std::numbers::pi * static_cast<double>(i) /
+                             static_cast<double>(length - 1));
+    frame[i] = (x - options.pre_emphasis * previous) * window;
+  }
+  std::vector<double> r(order + 1, 0.0);
+  for (std::size_t lag = 0; lag <= order; ++lag) {
+    double acc = 0.0;
+    for (std::size_t i = lag; i < length; ++i) acc += frame[i] * frame[i - lag];
+    r[lag] = acc;
+  }
+  if (!(r[0] > 0.0)) throw std::invalid_argument("lpc_envelope needs a non-silent clip");
+
+  std::vector<double> a(order + 1, 0.0);
+  std::vector<double> previous(order + 1, 0.0);
+  a[0] = 1.0;
+  double error = r[0];
+  for (std::size_t i = 1; i <= order; ++i) {
+    double acc = r[i];
+    for (std::size_t j = 1; j < i; ++j) acc += a[j] * r[i - j];
+    const double k = -acc / error;
+    previous = a;
+    for (std::size_t j = 1; j < i; ++j) a[j] = previous[j] + k * previous[i - j];
+    a[i] = k;
+    error *= 1.0 - k * k;
+    if (!(error > 0.0)) break;
+  }
+
+  LpcEnvelope out;
+  out.gain = std::sqrt(std::max(error, 1e-30) / static_cast<double>(length));
+  out.a = a;
+  out.sample_rate_hz = sample_rate_hz;
+
+  Eigen::MatrixXd companion = Eigen::MatrixXd::Zero(static_cast<Eigen::Index>(order),
+                                                    static_cast<Eigen::Index>(order));
+  for (std::size_t i = 0; i < order; ++i) {
+    companion(0, static_cast<Eigen::Index>(i)) = -a[i + 1];
+    if (i + 1 < order) companion(static_cast<Eigen::Index>(i + 1), static_cast<Eigen::Index>(i)) = 1.0;
+  }
+  const Eigen::EigenSolver<Eigen::MatrixXd> solver(companion, false);
+  for (Eigen::Index i = 0; i < solver.eigenvalues().size(); ++i) {
+    const std::complex<double> root = solver.eigenvalues()[i];
+    if (root.imag() <= 0.0) continue;
+    const double hz = std::arg(root) * sample_rate_hz / (2.0 * std::numbers::pi);
+    const double bw = -std::log(std::abs(root)) * sample_rate_hz / std::numbers::pi;
+    if (hz < options.low_hz || hz > 0.49 * sample_rate_hz || bw > options.max_bw_hz) continue;
+    out.formants.push_back({hz, bw});
+  }
+  std::sort(out.formants.begin(), out.formants.end(),
+            [](const Formant& lhs, const Formant& rhs) { return lhs.hz < rhs.hz; });
+  return out;
+}
+
+std::vector<double> target_on_grid(const LpcEnvelope& envelope, std::span<const double> grid_hz) {
+  std::vector<double> out;
+  out.reserve(grid_hz.size());
+  for (const double hz : grid_hz) {
+    const double w = 2.0 * std::numbers::pi * hz / envelope.sample_rate_hz;
+    std::complex<double> denominator{0.0, 0.0};
+    for (std::size_t k = 0; k < envelope.a.size(); ++k) {
+      denominator += envelope.a[k] * std::polar(1.0, -w * static_cast<double>(k));
+    }
+    out.push_back(20.0 * std::log10(envelope.gain / std::max(std::abs(denominator), 1e-12)));
+  }
+  return out;
 }
 
 ErrorReport weighted_error(std::span<const double> target_db, std::span<const double> model_db,

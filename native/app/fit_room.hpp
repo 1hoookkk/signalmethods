@@ -21,6 +21,7 @@ class FitRoom final : public QWidget {
   struct Overlay {
     QString name;
     std::vector<double> db;
+    std::vector<double> marks_hz;
   };
 
   explicit FitRoom(QWidget* parent = nullptr);

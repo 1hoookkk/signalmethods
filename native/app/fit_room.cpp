@@ -242,6 +242,12 @@ void FitRoom::paintEvent(QPaintEvent*) {
       const auto y = y_for_db(overlay[index], low_db, high_db, plot);
       painter.drawEllipse(QPointF{x, y}, kPointRadiusPx, kPointRadiusPx);
     }
+    painter.setPen(QPen(kTarget.lighter(160), 1.0, Qt::DashLine));
+    for (const double hz : overlays_[selected_].marks_hz) {
+      if (hz < low_hz || hz > high_hz) continue;
+      const auto x = x_for_frequency(hz, low_hz, high_hz, plot);
+      painter.drawLine(QPointF{x, plot.top()}, QPointF{x, plot.bottom()});
+    }
   }
 
   if (response_db_.size() == hz_.size()) {

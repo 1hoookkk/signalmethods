@@ -276,12 +276,16 @@ def fit_mouth(path, sample_rate_hz, verbose=True):
 
 
 def main():
+    global SECTIONS, BELLS
     parser = argparse.ArgumentParser()
     parser.add_argument("--mouth", default="s1-01-bahn-tense-a")
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--sample-rate", type=float, default=44100.0)
     parser.add_argument("--out", default=None)
+    parser.add_argument("--sections", type=int, default=SECTIONS)
     args = parser.parse_args()
+    SECTIONS = args.sections
+    BELLS = SECTIONS - 1
 
     paths = sorted(DVTD.glob("subject-*/*/*-vvtf-measured.txt"))
     if not args.all:

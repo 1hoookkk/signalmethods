@@ -78,7 +78,8 @@ class MainWindow final : public QMainWindow {
 
  private:
   void chooseTarget();
-  void addOverlay(const QString& name, std::vector<double> curve);
+  void addOverlay(const QString& name, std::vector<double> curve,
+                  std::vector<double> marks_hz = {});
   void refreshFitRoom();
   void updateAudition();
   void saveBodyAs();

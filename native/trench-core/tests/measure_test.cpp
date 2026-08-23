@@ -97,6 +97,56 @@ TEST(Measure, FilteredSawtoothScoresAgainstItsOwnWordsUnderHalfADecibel) {
   EXPECT_GT(wrong.rms_db, 3.0);
 }
 
+TEST(Measure, LpcRecoversTwoFormantsFromAPulsedVowel) {
+  const std::vector<std::pair<double, double>> formants{{700.0, 80.0}, {1200.0, 100.0}};
+  const auto count = static_cast<std::size_t>(0.5 * kRate);
+  std::vector<float> out(count, 0.0f);
+  std::vector<double> signal(count, 0.0);
+  const auto period = static_cast<std::size_t>(kRate / 120.0);
+  for (std::size_t i = 0; i < count; i += period) signal[i] = 1.0;
+  for (int pass = 0; pass < 2; ++pass) {
+    double y = 0.0;
+    for (auto& x : signal) {
+      y = x + 0.98 * y;
+      x = y;
+    }
+  }
+  for (const auto& [hz, bw] : formants) {
+    const double r = std::exp(-std::numbers::pi * bw / kRate);
+    const double a1 = -2.0 * r * std::cos(2.0 * std::numbers::pi * hz / kRate);
+    const double a2 = r * r;
+    double y1 = 0.0;
+    double y2 = 0.0;
+    for (auto& x : signal) {
+      const double y = x - a1 * y1 - a2 * y2;
+      y2 = y1;
+      y1 = y;
+      x = y;
+    }
+  }
+  double prev = 0.0;
+  for (std::size_t i = 0; i < count; ++i) {
+    const double radiated = signal[i] - 0.97 * prev;
+    prev = signal[i];
+    out[i] = static_cast<float>(0.1 * radiated);
+  }
+  const auto envelope = measure::lpc_envelope(out, kRate, {.order = 8});
+  ASSERT_GE(envelope.formants.size(), 2U);
+  EXPECT_NEAR(envelope.formants[0].hz, 700.0, 20.0);
+  EXPECT_NEAR(envelope.formants[1].hz, 1200.0, 30.0);
+  EXPECT_LT(envelope.formants[0].bw_hz, 200.0);
+  const auto& grid = p2k::grid();
+  const auto target = measure::target_on_grid(envelope, grid.hz);
+  ASSERT_EQ(target.size(), grid.hz.size());
+  std::size_t at_700 = 0;
+  std::size_t at_950 = 0;
+  for (std::size_t i = 0; i < grid.hz.size(); ++i) {
+    if (std::abs(grid.hz[i] - 700.0) < std::abs(grid.hz[at_700] - 700.0)) at_700 = i;
+    if (std::abs(grid.hz[i] - 950.0) < std::abs(grid.hz[at_950] - 950.0)) at_950 = i;
+  }
+  EXPECT_GT(target[at_700] - target[at_950], 6.0);
+}
+
 TEST(Measure, WeightedErrorRemovesTheOffsetAndIgnoresZeroWeightPoints) {
   const std::vector<double> target{10.0, 12.0, 14.0, 100.0};
   const std::vector<double> model{0.0, 2.0, 4.0, 0.0};

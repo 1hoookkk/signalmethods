@@ -34,6 +34,31 @@ HarmonicEnvelope harmonic_envelope(std::span<const float> mono, double sample_ra
 std::vector<double> target_on_grid(const HarmonicEnvelope& envelope,
                                    std::span<const double> grid_hz);
 
+struct Formant {
+  double hz{};
+  double bw_hz{};
+};
+
+struct LpcOptions {
+  std::size_t order{0};
+  double pre_emphasis{0.97};
+  double max_bw_hz{500.0};
+  double low_hz{90.0};
+  std::size_t frame{32768};
+};
+
+struct LpcEnvelope {
+  double gain{};
+  std::vector<double> a;
+  double sample_rate_hz{};
+  std::vector<Formant> formants;
+};
+
+LpcEnvelope lpc_envelope(std::span<const float> mono, double sample_rate_hz,
+                         const LpcOptions& options = {});
+
+std::vector<double> target_on_grid(const LpcEnvelope& envelope, std::span<const double> grid_hz);
+
 ErrorReport weighted_error(std::span<const double> target_db, std::span<const double> model_db,
                            std::span<const double> weight);
 
