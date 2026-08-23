@@ -219,6 +219,18 @@ six-word or three-word profiles.
 scale within 0.001 dB. Axes Morph→M, Freq→Q, Transform2→Z; per-corner gain spread evenly
 across active sections.
 
+**Section vocabulary and slot roles, measured.** k-means over the 777 conjugate-pole
+sections of the 33 bodies in (log2 pole Hz, pole width oct, zero offset oct, zero width
+oct), standardised: silhouette peaks at k=4 (0.41, moderate structure, not crisp types).
+The four recurring words: a low bell with its zero 2.8 oct above (736 Hz, n=175); a
+narrow high bell with the zero on the pole (6.9 kHz, width 0.16, n=461 — 58% of all
+sections); a very wide low section (width 3.8 oct, n=36); a mid pole with a wide zero
+1.8 oct below (n=105). Slot index explains 13% of a section's type (mutual information
+0.197 of 1.53 bits; chi-square p=2e-34, so the dependence is real but small); corner
+explains 1% (0.016 bits). Two slot tendencies exist: S4 is the bell slot (88% type 1)
+and S6 never carries a zero below its pole and its zero width never varies (the trench
+floor). Otherwise the slots are bookkeeping. (2026-08-23, `dev/section_vocabulary.py`)
+
 **No P2K corner is a Morpheus corner, by response.** Every one of the 132 P2K corners
 against all 2,312 Morpheus corners (289 cubes x 8), ERB grid, level removed, both with
 the cube designed at 39,062.5 Hz and with its words played untransposed at 44,100 Hz:
