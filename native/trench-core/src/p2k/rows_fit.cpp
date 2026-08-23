@@ -105,7 +105,16 @@ Rows seed_rows_from_target(std::span<const double> target, const Grid& g) {
     rows[row++] = {SectionType::kEq, clamp_fc(f.hz), f.bw_oct, f.prominence < 0.0 ? -12.0 : 12.0};
   }
   rows[0] = {SectionType::kHighPass, 10500.0, 0.05, 0.0};
-  rows[5] = {SectionType::kLowPass, 225.0, 0.8, 0.0};
+  double trench_hz = 225.0 * 32.0;
+  double trench_db = 1e9;
+  for (std::size_t i = 2; i + 2 < n; ++i) {
+    if (g.hz[i] < 900.0 || g.hz[i] > kRootHiHz) continue;
+    if (extremum_at(i, -1) && target[i] < trench_db) {
+      trench_db = target[i];
+      trench_hz = g.hz[i];
+    }
+  }
+  rows[5] = {SectionType::kLowPass, 225.0, 0.8, 0.0, trench_hz};
   return rows;
 }
 
@@ -167,6 +176,19 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
           v.push_back(std::exp(std::clamp(t, lo, hi)));
         }
         moved |= try_values(si, [](SectionParam& p, double x) { p.bw_oct = x; }, v);
+      }
+      if (rows[si].type == SectionType::kLowPass) {
+        std::vector<double> v;
+        const double lo = std::log2(rows[si].fc_hz) + kTrenchMinOct;
+        const double hi = std::log2(std::min(rows[si].fc_hz * std::pow(2.0, kTrenchMaxOct), kRootHiHz));
+        const double centre = std::log2(std::clamp(rows[si].trench_hz, std::pow(2.0, lo), std::pow(2.0, hi)));
+        const double span = (hi - lo) * 0.5 * shrink;
+        for (std::size_t k = 0; k < opts.steps; ++k) {
+          const double t = centre - span + 2.0 * span * static_cast<double>(k) /
+                                               static_cast<double>(opts.steps - 1);
+          v.push_back(std::pow(2.0, std::clamp(t, lo, hi)));
+        }
+        moved |= try_values(si, [](SectionParam& p, double x) { p.trench_hz = x; }, v);
       }
       if (rows[si].type == SectionType::kEq) {
         std::vector<double> v;

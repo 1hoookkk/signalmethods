@@ -17,7 +17,13 @@ struct SectionParam {
   double fc_hz{};
   double bw_oct{};
   double gain_db{};
+  double trench_hz{};
 };
+
+inline constexpr double kTrenchMinOct = 2.0;
+inline constexpr double kTrenchMaxOct = 7.0;
+
+double trench_floor_radius();
 
 SectionParam param_of(const PackedSection& words, double sample_rate_hz = kP2kDatumHz);
 

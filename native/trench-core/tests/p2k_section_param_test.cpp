@@ -243,3 +243,45 @@ TEST(P2kSectionParam, TheFourControlsCarryAFifthOfTheBankSEqRowsWithinThreeDecib
   EXPECT_EQ(eq_rows, 465U);
   EXPECT_EQ(within, 94U);
 }
+
+TEST(P2kSectionParam, TheLowSectionsThirdControlIsTheTrenchAtTheFloorDepth) {
+  p2k::SectionParam low{p2k::SectionType::kLowPass, 225.0, 0.8, 0.0, 7200.0};
+  const auto words = p2k::words_from_param(low, p2k::identity_words()[2], 2, trench::core::kP2kDatumHz);
+  const auto geometry = trench::core::geometry_from_words({words[0], words[1], words[2], words[3], 0},
+                                                          trench::core::kP2kDatumHz);
+  const auto* zero = std::get_if<trench::core::ConjugatePair>(&geometry.zero);
+  ASSERT_NE(zero, nullptr);
+  EXPECT_NEAR(std::log2(zero->hz / 7200.0), 0.0, 0.05);
+  EXPECT_NEAR(zero->radius, p2k::trench_floor_radius(), 1e-4);
+  const auto back = p2k::param_of({words[0], words[1], words[2], words[3], 0}, trench::core::kP2kDatumHz);
+  EXPECT_EQ(back.type, p2k::SectionType::kLowPass);
+  EXPECT_NEAR(std::log2(back.trench_hz / 7200.0), 0.0, 0.05);
+  low.trench_hz = 1800.0;
+  const auto moved = p2k::words_from_param_keeping_offset(low, p2k::SectionEdit::kGain, words, 2,
+                                                          trench::core::kP2kDatumHz);
+  EXPECT_EQ(moved[2], words[2]);
+  EXPECT_NE(moved[0], words[0]);
+}
+
+TEST(P2kSectionParam, EveryFactoryLowSectionReadsItsTrenchFromItsZero) {
+  const std::filesystem::path dir = std::string(TRENCH_SOURCE_ROOT) + "/ref/presets";
+  std::size_t low = 0;
+  for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+    if (entry.path().extension() != ".bin") continue;
+    std::ifstream in(entry.path(), std::ios::binary);
+    const std::vector<std::uint8_t> body((std::istreambuf_iterator<char>(in)),
+                                         std::istreambuf_iterator<char>());
+    if (body.size() != trench::core::kLegacyBodyBytes) continue;
+    for (std::size_t corner = 0; corner < 4; ++corner) {
+      const auto words = p2k::rom_corner_words(body, corner);
+      for (std::size_t si = 0; si < 6; ++si) {
+        const auto param = p2k::param_of({words[si][0], words[si][1], words[si][2], words[si][3], 0},
+                                         trench::core::kP2kDatumHz);
+        if (param.type != p2k::SectionType::kLowPass) continue;
+        ++low;
+        EXPECT_GE(std::log2(param.trench_hz / param.fc_hz), p2k::kTrenchMinOct - 1e-9);
+      }
+    }
+  }
+  EXPECT_GT(low, 100U);
+}

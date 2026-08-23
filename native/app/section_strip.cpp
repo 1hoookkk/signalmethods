@@ -133,6 +133,18 @@ std::size_t SectionStrip::section() const noexcept { return section_; }
 
 bool SectionStrip::selected() const noexcept { return selected_; }
 
+int SectionStrip::trenchFaderValue(const p2k::SectionParam& param) const {
+  const double oct = std::log2(std::max(param.trench_hz, 1.0) / std::max(param.fc_hz, 1.0));
+  const double unit = (oct - p2k::kTrenchMinOct) / (p2k::kTrenchMaxOct - p2k::kTrenchMinOct);
+  return static_cast<int>(std::lround((unit * 2.0 - 1.0) * kGainSpanDb * kGainSteps));
+}
+
+double SectionStrip::trenchHzOfFader(double fc_hz) const {
+  const double unit = (static_cast<double>(gain_->value()) / (kGainSpanDb * kGainSteps) + 1.0) * 0.5;
+  const double oct = p2k::kTrenchMinOct + unit * (p2k::kTrenchMaxOct - p2k::kTrenchMinOct);
+  return fc_hz * std::pow(2.0, oct);
+}
+
 double SectionStrip::faderDb() const {
   return static_cast<double>(gain_->value()) / kGainSteps;
 }
@@ -171,15 +183,18 @@ void SectionStrip::setParam(const p2k::SectionParam& param) {
   const bool live = param.type != p2k::SectionType::kOff;
   updating_ = true;
   type_->setCurrentIndex(typeIndex(param.type));
+  const bool trench = param.type == p2k::SectionType::kLowPass;
   if (!gain_->isSliderDown()) {
-    gain_->setValue(static_cast<int>(std::lround(param.gain_db * kGainSteps)));
+    gain_->setValue(trench ? trenchFaderValue(param)
+                           : static_cast<int>(std::lround(param.gain_db * kGainSteps)));
   }
   gain_->setEnabled(live);
   bw_->setValue(live ? param.bw_oct : bw_->minimum());
   bw_->setEnabled(live);
   updating_ = false;
-  gain_value_->setText(live ? QString::number(param.gain_db, 'f', 1)
-                            : QStringLiteral("—"));
+  gain_value_->setText(!live    ? QStringLiteral("—")
+                       : trench ? QString::number(param.trench_hz, 'f', 0)
+                                : QString::number(param.gain_db, 'f', 1));
   fc_->setText(live ? QString::number(param.fc_hz, 'f', param.fc_hz < 100.0 ? 1 : 0)
                     : QStringLiteral("—"));
   update();
@@ -206,7 +221,11 @@ void SectionStrip::relay(p2k::SectionEdit edit) {
   } else if (edit == p2k::SectionEdit::kBw) {
     param.bw_oct = bw_->value();
   } else if (edit == p2k::SectionEdit::kGain) {
-    param.gain_db = faderDb();
+    if (param.type == p2k::SectionType::kLowPass) {
+      param.trench_hz = trenchHzOfFader(param.fc_hz);
+    } else {
+      param.gain_db = faderDb();
+    }
   }
   emit paramEdited(section_, edit, param);
 }

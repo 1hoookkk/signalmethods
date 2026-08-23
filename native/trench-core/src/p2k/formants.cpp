@@ -52,7 +52,7 @@ FormantRecipe rows_from_formants(std::span<const Formant> formants, double tilt_
   for (; row < 5; ++row) {
     out.rows[row] = {SectionType::kOff, 18000.0, 1.0, 0.0};
   }
-  out.rows[5] = {SectionType::kLowPass, tilt_lo_hz, 0.8, 0.0};
+  out.rows[5] = {SectionType::kLowPass, tilt_lo_hz, 0.8, 0.0, tilt_lo_hz * 32.0};
   return out;
 }
 

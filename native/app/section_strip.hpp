@@ -23,6 +23,8 @@ class SectionStrip final : public QWidget {
   [[nodiscard]] std::size_t section() const noexcept;
   [[nodiscard]] bool selected() const noexcept;
   [[nodiscard]] double faderDb() const;
+  [[nodiscard]] int trenchFaderValue(const trench::core::p2k::SectionParam& param) const;
+  [[nodiscard]] double trenchHzOfFader(double fc_hz) const;
 
   static QString typeName(trench::core::p2k::SectionType type);
   static trench::core::p2k::SectionType typeFromIndex(int index);

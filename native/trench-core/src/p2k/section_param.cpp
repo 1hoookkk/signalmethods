@@ -82,6 +82,8 @@ std::array<std::uint16_t, 4> roots_from(double pole_hz, double pole_r, double ze
 
 }  // namespace
 
+double trench_floor_radius() { return s6_zero_radius(); }
+
 SectionParam param_of(const PackedSection& words, double sample_rate_hz) {
   const auto geometry = geometry_from_words(words, sample_rate_hz);
   const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
@@ -101,9 +103,24 @@ SectionParam param_of(const PackedSection& words, double sample_rate_hz) {
   out.type = octaves >= kTypeOffsetOct    ? SectionType::kLowPass
              : octaves <= -kTypeOffsetOct ? SectionType::kHighPass
                                           : SectionType::kEq;
+  if (out.type == SectionType::kLowPass) {
+    out.trench_hz = zero_hz;
+    return out;
+  }
   out.gain_db = gain_of(words, out.type, out.fc_hz, sample_rate_hz);
   return out;
 }
+
+namespace {
+
+double trench_of(const SectionParam& param, double pole_hz) {
+  const double lo = pole_hz * std::pow(2.0, kTrenchMinOct);
+  const double hi = std::min(pole_hz * std::pow(2.0, kTrenchMaxOct), kRootHiHz);
+  const double wanted = param.trench_hz > 0.0 ? param.trench_hz : pole_hz * 32.0;
+  return std::clamp(wanted, std::min(lo, hi), hi);
+}
+
+}  // namespace
 
 std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
                                               const std::array<std::uint16_t, 4>& current,
@@ -115,7 +132,7 @@ std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
     pole_hz = std::clamp(param.fc_hz, 20.0, kRootHiHz);
     pole_r = pole_radius_of(pole_hz, param.bw_oct, sample_rate_hz);
     zero_hz = param.type == SectionType::kEq        ? pole_hz
-              : param.type == SectionType::kLowPass ? std::min(pole_hz * kFarRatio, kRootHiHz)
+              : param.type == SectionType::kLowPass ? trench_of(param, pole_hz)
                                                     : std::max(pole_hz / kFarRatio, 20.0);
   }
   const auto [pole_mag, pole_rsq] = words_from_root(pole_hz, pole_r);
@@ -124,8 +141,9 @@ std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
   }
 
   const bool forced = section == 5;
-  if (forced || param.type == SectionType::kOff) {
-    const double radius = forced ? s6_zero_radius() : kParkedRootR;
+  const bool trench = param.type == SectionType::kLowPass;
+  if (forced || trench || param.type == SectionType::kOff) {
+    const double radius = forced || trench ? s6_zero_radius() : kParkedRootR;
     const auto [zero_mag, zero_rsq] = words_from_root(zero_hz, radius);
     const std::uint16_t rsq = forced ? kS6ZeroRsqWord : zero_rsq;
     if (!root_admissible(zero_mag, rsq, false)) {
@@ -174,6 +192,10 @@ std::array<std::uint16_t, 4> words_from_param_keeping_offset(
   double zero_hz = zero->hz;
   const double zero_r = section == 5 ? s6_zero_radius() : zero->radius;
 
+  if (param.type == SectionType::kLowPass && edit == SectionEdit::kGain) {
+    return roots_from(pole_hz, pole_r, trench_of(param, pole_hz), s6_zero_radius(), section,
+                      current);
+  }
   if (edit == SectionEdit::kFc) {
     const double target = std::clamp(param.fc_hz, 20.0, kRootHiHz);
     const auto realized = realized_hz(target, pole_r, sample_rate_hz);

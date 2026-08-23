@@ -821,8 +821,9 @@ class MainWindowTest final : public QObject {
     QTRY_VERIFY_WITH_TIMEOUT(window.body().native_bytes() != before, 60000);
     QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 60000);
 
-    QVERIFY(p2k::within_envelope(p2k::Role::kTilt, window.body().words[0][5],
-                                 trench::core::kP2kDatumHz));
+    const auto low = p2k::param_of(window.body().words[0][5], trench::core::kP2kDatumHz);
+    QCOMPARE(low.type, p2k::SectionType::kLowPass);
+    QVERIFY(std::log2(low.trench_hz / low.fc_hz) >= p2k::kTrenchMinOct - 1e-9);
   }
 
   void theGainFaderWritesLatticeWordsAsOneUndoStep() {
