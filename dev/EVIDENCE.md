@@ -583,3 +583,12 @@ to 0.31, mantissa piecewise-linearity). Same design decision as interpolate-in-e
 domain, seen twice: shifts and adds on packed words replace exp/sqrt at runtime. The lattice
 is a number system engineered so the DSP's operations are integer arithmetic on the encoding.
 (2026-08-24)
+
+**Correction (same day): the shift-bias sqrt is only regionally true.** Full-lattice check
+(`v` in 2..0x7FFE): decode((v>>1)+0x6400) tracks 0.306*sqrt(decode(v)) with median error
+1.4% but p95 32% and up to x26 off in the denormal band (e=0 words); no exact closed form
+(sqrt/8, sqrt(x/2)/4, sqrt*2^-1.25) fits; and it is 0/1584 as a relation between stored
+corpus mag/rsq words. The formula is real EOS code but its meaning needs the surrounding
+function: v's domain decides whether this is a sqrt approximation over a guaranteed range
+or something else entirely. The "lattice as number system" reading is downgraded to
+hypothesis pending that context. (2026-08-24)
