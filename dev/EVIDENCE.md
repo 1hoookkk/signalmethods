@@ -612,3 +612,13 @@ What is downgraded to hypothesis: the reading of the secondary residue families 
 mod 256) as shift-and-bias derivation; they may be a second generator or compiler rounding.
 Rule reaffirmed: model-suggested constants and formulas enter the evidence only after being
 found at an address. (2026-08-24)
+
+**Final disposition: the rad formula is a phantom.** Traced end to end (2026-08-24): it
+originated in an AI-to-AI context handoff ("Constraint Laws: pole radii locked to an affine
+function of center frequency"), was never read from any binary, and its host claim is
+directly falsified by the corpus: DJ Alkaline holds identical pole frequency words across
+Q corners while every radius word changes; radii vary independently of frequency throughout
+the bank. The formula is retired from evidence entirely; nothing in any engine or tool was
+ever built on it. Standing rule, hardened: a constant or formula from ANY model - including
+this one - enters evidence only with a binary address, file offset, or page number attached.
+The 8-bit design grid finding is unaffected (measured from bytes alone). (2026-08-24)
