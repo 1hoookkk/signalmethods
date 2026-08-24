@@ -18,6 +18,7 @@
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
 #include "parameters/CurveMap.h"
+#include "trench/core/bisection.hpp"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <atomic>
 #include <cmath>
@@ -475,6 +476,32 @@ void testCurveMap()
     check (identical, "every shipping table is bit-identical until a session measures it");
 }
 
+// 7. THE BISECTION PLAN, ANSWERED HEADLESS. 21 trials (3 levels x 7 points
+// answered 3 times) must fill the plan and write the seven points the room
+// hands the curve generator.
+void testBisectionSessionWritesSevenPoints()
+{
+    trench::core::bisect::Session session (7);
+    int trials = 0;
+    while (! session.finished() && trials < 64)
+    {
+        session.accept (session.midpoint());
+        ++trials;
+    }
+    check (trials == 21, "the bisection plan is 21 trials");
+    const auto points = session.medians();
+    check (session.monotone(), "answering every midpoint gives a monotone curve");
+    const auto json = trench::core::bisect::curve_json ("follow", "identity", points,
+                                                        session.repeats(), session.monotone());
+    check (json.find ("\"axis\":\"follow\"") != std::string::npos, "curve json names its axis");
+    int knobs = 0;
+    for (std::size_t at = json.find ("\"knob\""); at != std::string::npos;
+         at = json.find ("\"knob\"", at + 1))
+        ++knobs;
+    check (knobs == (int) trench::core::bisect::kPointCount, "curve json carries seven points");
+    check (points[0] > 0.0 && points[6] < 1.0, "the seven points sit inside the anchors");
+}
+
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
@@ -488,6 +515,7 @@ int main()
     testEveryRosterBodyLoads();
     testDivisionSetsTheStepPeriod();
     testCurveMap();
+    testBisectionSessionWritesSevenPoints();
     std::printf ("\n%s (%d failure%s)\n", failures == 0 ? "PASS" : "FAIL",
                  failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;

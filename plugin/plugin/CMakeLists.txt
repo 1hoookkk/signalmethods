@@ -247,9 +247,34 @@ target_link_libraries(TRENCH_RenderNull PRIVATE
     juce::juce_recommended_warning_flags)
 add_dependencies(TRENCH_RenderNull trench_core_build)
 
+# THE EYES-CLOSED ROOM against the shipping engine: a clip loops through the
+# real PluginProcessor while the bisection plan is answered by ear. A dev host,
+# built beside the plug-in and never inside it. source/dev/bisection.{hpp,cpp}
+# are verbatim copies of native/trench-core's; that core needs Eigen and
+# pocketfft, which this build has no reason to carry.
+juce_add_console_app(TRENCH_Bisect PRODUCT_NAME "TRENCH_Bisect")
+target_sources(TRENCH_Bisect PRIVATE tools/Bisect.cpp source/dev/bisection.cpp)
+target_include_directories(TRENCH_Bisect PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/source"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/dev")
+target_compile_definitions(TRENCH_Bisect PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1   # this tool pumps the message loop; the plugin never does
+    TRENCH_BISECT_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/../..")
+target_link_libraries(TRENCH_Bisect PRIVATE
+    TRENCHPluginCommon
+    "${TRENCH_CORE_LIB}"
+    ${TRENCH_WINDOWS_LIBS}
+    juce::juce_audio_formats
+    juce::juce_audio_utils
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+add_dependencies(TRENCH_Bisect trench_core_build)
+
 juce_add_console_app(TRENCH_LifecycleTests PRODUCT_NAME "TRENCH Lifecycle Tests")
-target_sources(TRENCH_LifecycleTests PRIVATE tools/LifecycleTests.cpp)
-target_include_directories(TRENCH_LifecycleTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_sources(TRENCH_LifecycleTests PRIVATE tools/LifecycleTests.cpp source/dev/bisection.cpp)
+target_include_directories(TRENCH_LifecycleTests PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/source"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/dev")
 target_compile_definitions(TRENCH_LifecycleTests PRIVATE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_LifecycleTests PRIVATE
     TRENCHPluginCommon
