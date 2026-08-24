@@ -223,6 +223,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
       document_->commitGesture(section, before_words_);
     });
     connect(strip, &SectionStrip::maskEdited, this, &MainWindow::applyMask);
+    connect(strip, &SectionStrip::poleHzEdited, this, &MainWindow::applyPoleHz);
     connect(strip, &SectionStrip::hoverChanged, this,
             [this](std::size_t section, bool inside) {
               response_plot_->setHighlightedSection(
@@ -519,6 +520,24 @@ void MainWindow::applyMask(std::size_t section,
   if (!strip_gesture_) {
     document_->commitGesture(section, before);
   }
+}
+
+void MainWindow::applyPoleHz(std::size_t section, double frequency_hz) {
+  namespace p2k = trench::core::p2k;
+  if (section >= trench::core::kLegacySectionCount || fit_active_) return;
+  const auto before = document_->body().words[document_->corner()][section];
+  const auto reading = p2k::pole_of(before, trench::core::kP2kDatumHz);
+  if (!reading) return;
+  const std::array<std::uint16_t, 4> current{before[0], before[1], before[2], before[3]};
+  const auto roots = p2k::words_from_pole(frequency_hz, reading->bw_hz, current, section,
+                                          trench::core::kP2kDatumHz);
+  auto candidate = before;
+  for (std::size_t word = 0; word < roots.size(); ++word) {
+    candidate[word] = roots[word];
+  }
+  if (candidate == before) return;
+  document_->applySection(section, candidate);
+  document_->commitGesture(section, before);
 }
 
 void MainWindow::addResonance(double frequency_hz) {

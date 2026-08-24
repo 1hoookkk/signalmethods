@@ -576,8 +576,6 @@ void ResponsePlotWidget::moveTo(const QPointF& at) {
   namespace p2k = trench::core::p2k;
   const auto plot = plotRect();
   if (plot.width() <= 0.0 || plot.height() <= 0.0 || frequencies_hz_.empty()) return;
-  const auto low_hz = frequencies_hz_.front();
-  const auto high_hz = frequencies_hz_.back();
   if (press_lane_ == Lane::kZero) {
     const auto masked = zeroCandidate(at, false);
     if (!masked) return;
@@ -590,8 +588,7 @@ void ResponsePlotWidget::moveTo(const QPointF& at) {
     return;
   }
 
-  const auto hz = std::clamp(frequency_for_x(at.x(), low_hz, high_hz, plot), 20.0,
-                             p2k::kRootHiHz);
+  const auto hz = std::clamp(press_hz_, 20.0, p2k::kRootHiHz);
   const auto rise = (press_position_.y() - at.y()) / plot.height();
   const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
                         trench::core::kP2kDatumHz / std::numbers::pi;
@@ -642,8 +639,10 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   const auto& pair = token->lane == Lane::kPole ? geometry.pole : geometry.zero;
   if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
     press_radius_ = conjugate->radius;
+    press_hz_ = conjugate->hz;
   } else {
     press_radius_ = 0.0;
+    press_hz_ = 0.0;
   }
   emit tokenSelected(token->section, token->lane);
   event->accept();

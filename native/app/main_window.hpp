@@ -52,6 +52,7 @@ class MainWindow final : public QMainWindow {
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   void applyMask(std::size_t section, const trench::core::p2k::MaskParam& mask);
+  void applyPoleHz(std::size_t section, double frequency_hz);
   void addResonance(double frequency_hz);
   void clearSection(std::size_t section);
   void selectSection(std::size_t section);

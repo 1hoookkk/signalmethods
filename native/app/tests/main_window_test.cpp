@@ -18,6 +18,7 @@
 #include <QDoubleSpinBox>
 #include <QEnterEvent>
 #include <QLabel>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QMouseEvent>
 #include <QAction>
@@ -257,6 +258,67 @@ class MainWindowTest final : public QObject {
     QVERIFY2(std::abs(std::log2(moved->hz / placed->hz)) < 0.014,
              qPrintable(QString::number(moved->hz)));
     QCOMPARE(window.undoStack()->count(), 2);
+  }
+
+  void aPoleDragChangesOnlyWidth() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+
+    const auto before = p2k::pole_of(window.body().words[0][0], trench::core::kP2kDatumHz);
+    QVERIFY(before.has_value());
+    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+
+    drag(plot, token->position, token->position + QPointF{-160.0, 24.0}, 6);
+
+    const auto after = p2k::pole_of(window.body().words[0][0], trench::core::kP2kDatumHz);
+    QVERIFY(after.has_value());
+    QVERIFY2(std::abs(std::log2(after->hz / before->hz)) < 0.015,
+             qPrintable(QStringLiteral("%1 %2").arg(before->hz).arg(after->hz)));
+    QVERIFY2(after->bw_hz > before->bw_hz * 1.05,
+             qPrintable(QStringLiteral("%1 %2").arg(before->bw_hz).arg(after->bw_hz)));
+    QCOMPARE(window.undoStack()->count(), 1);
+  }
+
+  void aTypedHzMovesThePole() {
+    namespace p2k = trench::core::p2k;
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+
+    const auto before = p2k::pole_of(window.body().words[0][0], trench::core::kP2kDatumHz);
+    QVERIFY(before.has_value());
+    const auto before_words = window.body().words[0][0];
+
+    auto* field = window.sectionStrip(0)->findChild<QLineEdit*>(
+        QStringLiteral("poleReadout"));
+    QVERIFY(field != nullptr);
+    QCOMPARE(field->text(), QStringLiteral("%1 / %2")
+                                .arg(before->hz, 0, 'f', 0)
+                                .arg(before->bw_hz, 0, 'f', 0));
+
+    field->setFocus(Qt::MouseFocusReason);
+    QTest::qWait(20);
+    QCOMPARE(field->text(), QString::number(before->hz, 'f', 0));
+    field->setText(QStringLiteral("2000"));
+    QTest::keyClick(field, Qt::Key_Return);
+    QTest::qWait(20);
+
+    const auto after = p2k::pole_of(window.body().words[0][0], trench::core::kP2kDatumHz);
+    QVERIFY(after.has_value());
+    QVERIFY2(std::abs(std::log2(after->hz / 2000.0)) < 0.015,
+             qPrintable(QString::number(after->hz)));
+    QVERIFY2(std::abs(after->bw_hz / before->bw_hz - 1.0) < 0.05,
+             qPrintable(QStringLiteral("%1 %2").arg(before->bw_hz).arg(after->bw_hz)));
+    QCOMPARE(window.undoStack()->count(), 1);
+
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[0][0], before_words);
   }
 
   void theOffsetFaderMovesOnlyTheZeroWords() {

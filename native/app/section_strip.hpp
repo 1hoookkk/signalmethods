@@ -9,6 +9,7 @@
 
 class QDoubleSpinBox;
 class QLabel;
+class QLineEdit;
 class QSlider;
 
 class SectionStrip final : public QWidget {
@@ -30,6 +31,7 @@ class SectionStrip final : public QWidget {
   void gestureStarted(std::size_t section);
   void gestureFinished(std::size_t section);
   void maskEdited(std::size_t section, const trench::core::p2k::MaskParam& mask);
+  void poleHzEdited(std::size_t section, double frequency_hz);
   void hoverChanged(std::size_t section, bool inside);
 
  protected:
@@ -37,16 +39,22 @@ class SectionStrip final : public QWidget {
   void mousePressEvent(QMouseEvent* event) override;
   void enterEvent(QEnterEvent* event) override;
   void leaveEvent(QEvent* event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
   void relay();
+  void showPoleReading();
+  void commitPoleHz();
 
   std::size_t section_{};
   bool selected_{};
   bool highlighted_{};
   bool updating_{};
   bool live_{};
-  QLabel* pole_{};
+  QLineEdit* pole_{};
+  double pole_hz_{};
+  double pole_bw_hz_{};
+  bool editing_pole_{};
   QSlider* offset_{};
   QLabel* offset_value_{};
   QDoubleSpinBox* width_{};

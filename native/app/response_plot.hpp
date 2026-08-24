@@ -118,6 +118,7 @@ class ResponsePlotWidget final : public QWidget {
 
   std::vector<std::vector<double>> contributions_;
   double press_radius_{};
+  double press_hz_{};
   bool pressed_{};
   bool moved_{};
   bool dragging_{};

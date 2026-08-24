@@ -2,9 +2,13 @@
 
 #include "section_color.hpp"
 
+#include "trench/core/p2k.hpp"
+
 #include <QDoubleSpinBox>
 #include <QEnterEvent>
+#include <QKeyEvent>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSlider>
@@ -31,6 +35,10 @@ constexpr int kSelectedTintAlpha = 28;
 const QString kSpinStyle = QStringLiteral(
     "QDoubleSpinBox { background: #111416; color: %1; border: 1px solid #373f43; }");
 
+const QString kPoleStyle = QStringLiteral(
+    "QLineEdit { background: transparent; color: %1; border: none; padding: 0; }"
+    "QLineEdit:focus { background: #111416; border: 1px solid #373f43; }");
+
 QFont strip_font() { return QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold); }
 
 QLabel* make_label(QWidget* parent, const char* name, const QColor& ink) {
@@ -53,7 +61,14 @@ SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
   column->setContentsMargins(5, 6, 5, 4);
   column->setSpacing(3);
 
-  pole_ = make_label(this, "poleReadout", kInk);
+  pole_ = new QLineEdit(this);
+  pole_->setObjectName(QStringLiteral("poleReadout"));
+  pole_->setFont(strip_font());
+  pole_->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  pole_->setFixedHeight(13);
+  pole_->setFrame(false);
+  pole_->setStyleSheet(kPoleStyle.arg(kInk.name()));
+  pole_->installEventFilter(this);
   column->addWidget(pole_);
 
   offset_ = new QSlider(Qt::Vertical, this);
@@ -107,6 +122,7 @@ SectionStrip::SectionStrip(std::size_t section, QWidget* parent)
     emit selectRequested(section_);
     relay();
   });
+  connect(pole_, &QLineEdit::editingFinished, this, [this] { commitPoleHz(); });
 
   setSelected(false);
 }
@@ -134,12 +150,12 @@ void SectionStrip::setReading(const std::optional<p2k::PoleReading>& pole,
   updating_ = false;
   offset_->setEnabled(live_);
   width_->setEnabled(live_ && section_ != 5);
-  pole_->setText(live_ ? QStringLiteral("%1 / %2")
-                             .arg(pole->hz, 0, 'f', 0)
-                             .arg(pole->bw_hz, 0, 'f', 0)
-                       : QStringLiteral("—"));
+  pole_hz_ = live_ ? pole->hz : 0.0;
+  pole_bw_hz_ = live_ ? pole->bw_hz : 0.0;
+  pole_->setReadOnly(!live_);
+  if (!editing_pole_) showPoleReading();
   pole_->setStyleSheet(
-      QStringLiteral("color: %1;").arg((live_ ? section_color(section_) : kDim).name()));
+      kPoleStyle.arg((live_ ? section_color(section_) : kDim).name()));
   offset_value_->setText(live_ ? QString::number(offsetOct(), 'f', 2)
                                : QStringLiteral("—"));
   update();
@@ -155,6 +171,45 @@ void SectionStrip::setHighlighted(bool highlighted) {
   if (highlighted_ == highlighted) return;
   highlighted_ = highlighted;
   update();
+}
+
+void SectionStrip::showPoleReading() {
+  pole_->setText(live_ ? QStringLiteral("%1 / %2")
+                             .arg(pole_hz_, 0, 'f', 0)
+                             .arg(pole_bw_hz_, 0, 'f', 0)
+                       : QStringLiteral("—"));
+}
+
+void SectionStrip::commitPoleHz() {
+  if (!editing_pole_) return;
+  editing_pole_ = false;
+  const auto text = pole_->text();
+  showPoleReading();
+  if (!live_) return;
+  bool ok = false;
+  const auto typed = text.toDouble(&ok);
+  if (!ok) return;
+  const auto hz = std::clamp(typed, 20.0, p2k::kRootHiHz);
+  if (std::abs(hz - pole_hz_) < 0.5) return;
+  emit selectRequested(section_);
+  emit poleHzEdited(section_, hz);
+}
+
+bool SectionStrip::eventFilter(QObject* watched, QEvent* event) {
+  if (watched == pole_) {
+    if (event->type() == QEvent::FocusIn && live_) {
+      editing_pole_ = true;
+      pole_->setText(QString::number(pole_hz_, 'f', 0));
+      pole_->selectAll();
+    } else if (event->type() == QEvent::KeyPress &&
+               static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape) {
+      editing_pole_ = false;
+      showPoleReading();
+      pole_->clearFocus();
+      return true;
+    }
+  }
+  return QWidget::eventFilter(watched, event);
 }
 
 void SectionStrip::mousePressEvent(QMouseEvent* event) {
