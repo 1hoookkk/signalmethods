@@ -114,6 +114,8 @@ set(TRENCH_PLUGIN_SOURCES
     source/UiLayout.h
     source/parameters/TrenchParameters.h
     source/parameters/TrenchParameters.cpp
+    source/parameters/Curves.h
+    source/parameters/CurveMap.h
     presets/PresetRoster.inc
     source/dsp/KeyDetector.h
     source/dsp/KeyDetector.cpp

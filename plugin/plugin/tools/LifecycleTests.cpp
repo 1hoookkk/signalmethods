@@ -17,12 +17,14 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
+#include "parameters/CurveMap.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <atomic>
 #include <cmath>
 #include <cstdio>
 #include <memory>
 #include <thread>
+#include <string>
 #include <vector>
 
 namespace
@@ -438,6 +440,41 @@ void testEveryRosterBodyLoads()
     check (bodies > 0 && failed == 0, "every baked 240-byte body in the roster installs");
 }
 
+// 6. THE CURVE SPINE. A macro reads through its table; a measured table must
+// land its endpoints exactly, its midpoint where it was put, and never fold.
+void testCurveMap()
+{
+    trench::curves::Table table {};
+    for (std::size_t i = 0; i < trench::curves::kTableSize; ++i)
+    {
+        const auto x = (double) i / (double) (trench::curves::kTableSize - 1);
+        table[i] = (float) (x * x);
+    }
+    using trench::curves::curveMap;
+    check (std::abs (curveMap (table, 0.0f) - 0.0f) < 1.0e-6f, "curve table maps 0 to 0");
+    check (std::abs (curveMap (table, 0.5f) - 0.25f) < 1.0e-4f, "curve table maps 0.5 to its measured value");
+    check (std::abs (curveMap (table, 1.0f) - 1.0f) < 1.0e-6f, "curve table maps 1 to 1");
+    bool monotone = true;
+    float last = -1.0f;
+    for (int i = 0; i <= 1000; ++i)
+    {
+        const auto v = curveMap (table, (float) i / 1000.0f);
+        if (v < last)
+            monotone = false;
+        last = v;
+    }
+    check (monotone, "curve table lookup is monotone across the throw");
+    bool identical = true;
+    for (int i = 0; i <= 1000000; ++i)
+    {
+        const auto x = (float) i * 1.0e-6f;
+        for (std::size_t a = 0; a < (std::size_t) trench::curves::Axis::count; ++a)
+            if (curveMap ((trench::curves::Axis) a, x) != x)
+                identical = false;
+    }
+    check (identical, "every shipping table is bit-identical until a session measures it");
+}
+
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
@@ -450,6 +487,7 @@ int main()
     testAutoKeyWorkerLifecycle();
     testEveryRosterBodyLoads();
     testDivisionSetsTheStepPeriod();
+    testCurveMap();
     std::printf ("\n%s (%d failure%s)\n", failures == 0 ? "PASS" : "FAIL",
                  failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;

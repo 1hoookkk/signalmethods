@@ -2,6 +2,7 @@
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
 #include "dsp/SlamStage.h"
+#include "parameters/CurveMap.h"
 #include "BinaryData.h"
 #include <cmath>
 #include <cstring>
@@ -314,14 +315,18 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
 {
     const int numSamples = buffer.getNumSamples();
     // 3. Every parameter, read once from the cached atomics.
-    const float baseMorph = juce::jlimit (0.0f, 1.0f, pMorph->load());
-    const float q         = juce::jlimit (0.0f, 1.0f, pQ->load());
-    const float chew      = juce::jlimit (0.0f, 1.0f, pChew->load());
-    const float mix       = juce::jlimit (0.0f, 1.0f, pMix->load());
-    const float slam      = pSlam->load();
-    const float preamp    = juce::jlimit (0.0f, 1.0f, pPreamp->load());
-    const float follow    = juce::jlimit (0.0f, 1.0f, pFollow->load());
-    const float track     = juce::jlimit (0.0f, 1.0f, pTrack->load());
+    // EVERY MACRO READS THROUGH ITS TABLE (plugin/tools/gen_curves.py). The
+    // tables are identity until a bisection session has measured that axis.
+    using trench::curves::Axis;
+    using trench::curves::curveMap;
+    const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
+    const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
+    const float chew      = curveMap (Axis::bite,   juce::jlimit (0.0f, 1.0f, pChew->load()));
+    const float mix       = curveMap (Axis::mix,    juce::jlimit (0.0f, 1.0f, pMix->load()));
+    const float slam      = curveMap (Axis::slam,   pSlam->load());
+    const float preamp    = curveMap (Axis::preamp, juce::jlimit (0.0f, 1.0f, pPreamp->load()));
+    const float follow    = curveMap (Axis::follow, juce::jlimit (0.0f, 1.0f, pFollow->load()));
+    const float track     = curveMap (Axis::track,  juce::jlimit (0.0f, 1.0f, pTrack->load()));
     const int movePreset  = (int) pMovePreset->load();
     const int moveDivision = (int) pMoveDivision->load();
     const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
