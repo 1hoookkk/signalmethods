@@ -602,3 +602,13 @@ formula's family - so a minority of words were derived from sibling words by shi
 bias ops rather than set directly. Scale words are off-grid (separate dB path). This
 upgrades the corrected shift-bias finding to its right altitude: Tyson's hypothesis that
 the presets were MADE via that method is supported by the data's own alignment. (2026-08-24)
+
+**Provenance correction: the rad formula was LLM-suggested, not read from a binary.** Tyson
+reports `rad = (v >> 1) + 0x6400` came from Gemini, which volunteered it - that is not
+evidence of anything until located in an actual EOS/X3/vulcan binary (all of which we hold
+and can search). What stands: the 8-bit design grid (w = 256k - 4; 62% of all root words,
+94% of pole radii) - measured directly from the shipped bytes, independent of any formula.
+What is downgraded to hypothesis: the reading of the secondary residue families (253, 125
+mod 256) as shift-and-bias derivation; they may be a second generator or compiler rounding.
+Rule reaffirmed: model-suggested constants and formulas enter the evidence only after being
+found at an address. (2026-08-24)
