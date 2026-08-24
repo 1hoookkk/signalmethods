@@ -592,3 +592,13 @@ corpus mag/rsq words. The formula is real EOS code but its meaning needs the sur
 function: v's domain decides whether this is a sqrt approximation over a guaranteed range
 or something else entirely. The "lattice as number system" reading is downgraded to
 hypothesis pending that context. (2026-08-24)
+
+**The presets carry the compiler's fingerprint: an 8-bit design grid.** Across all 3,960
+stored root words of the 33 bodies: 62% sit exactly on w = 256k - 4 (residue 252 mod 256);
+pole-rsq words 94% (771/792). The design parameters were 8-bit values compiled by
+(param << 8) - 4. Secondary residue families (253 and 125 mod 256) are exactly the
+half-grid outputs of (v >> 1) + bias arithmetic applied to grid words - the EOS rad
+formula's family - so a minority of words were derived from sibling words by shift-and-
+bias ops rather than set directly. Scale words are off-grid (separate dB path). This
+upgrades the corrected shift-bias finding to its right altitude: Tyson's hypothesis that
+the presets were MADE via that method is supported by the data's own alignment. (2026-08-24)
