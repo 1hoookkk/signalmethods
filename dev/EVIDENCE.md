@@ -573,3 +573,13 @@ Morph-pair reuse: only Millennium=MeatyGizmo and KlubKlassik=AcidRavage ship the
 pair; and 4 cross-role reuses exist where one body's c0 is another's c1 verbatim
 (ooh c0 = dead_ringer c1 = eeh c1; hedz c0 = ubu c1; eeh c0 = ooh c1) - E-mu pointed the
 same pose in opposite morph directions. (2026-08-24)
+
+**The words were the computation domain, not just storage.** From EOS firmware analysis
+(Tyson, 2026-08-24): the engine derives radius from the stored rsq word entirely in packed
+space — `rad = (v >> 1) + 0x6400`. In the 4.12 minifloat the exponent occupies the top bits,
+so a right-shift halves the exponent (a square root) and 0x6400 is the rebias; verified
+against corpus words, the decoded output tracks ~0.3*sqrt(decoded v) across the range (0.29
+to 0.31, mantissa piecewise-linearity). Same design decision as interpolate-in-encoded-
+domain, seen twice: shifts and adds on packed words replace exp/sqrt at runtime. The lattice
+is a number system engineered so the DSP's operations are integer arithmetic on the encoding.
+(2026-08-24)
