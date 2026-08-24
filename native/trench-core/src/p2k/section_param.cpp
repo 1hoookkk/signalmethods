@@ -263,19 +263,26 @@ std::optional<PoleReading> pole_of(const PackedSection& words, double sample_rat
                          std::numbers::pi};
 }
 
+MaskParam parked_mask(double pole_hz, std::size_t section) {
+  const double offset = section == 5 ? mask_offset_max_oct(section)
+                                     : std::log2(kParkedZeroHz / std::max(pole_hz, 1.0));
+  return {std::clamp(offset, mask_offset_min_oct(section), mask_offset_max_oct(section)),
+          kParkedWidthHz};
+}
+
 MaskParam mask_of(const PackedSection& words, std::size_t section,
                   double sample_rate_hz) {
-  const MaskParam parked{mask_offset_max_oct(section), mask_width_floor_hz(sample_rate_hz)};
   const auto geometry = geometry_from_words(words, sample_rate_hz);
   const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
   const auto* zero = std::get_if<ConjugatePair>(&geometry.zero);
-  if (pole == nullptr || zero == nullptr) return parked;
+  if (pole == nullptr) return {mask_offset_max_oct(section), kParkedWidthHz};
+  if (zero == nullptr) return parked_mask(pole->hz, section);
   MaskParam out;
   out.offset_oct = std::clamp(std::log2(std::max(zero->hz, 1.0) / std::max(pole->hz, 1.0)),
                               mask_offset_min_oct(section), mask_offset_max_oct(section));
   out.zero_bw_hz =
       std::clamp(-std::log(std::max(zero->radius, 1e-9)) * sample_rate_hz / std::numbers::pi,
-                 parked.zero_bw_hz, kMaskWidthMaxHz);
+                 mask_width_floor_hz(sample_rate_hz), kMaskWidthMaxHz);
   return out;
 }
 
@@ -314,12 +321,12 @@ PackedSection section_narrowed_toward_ceiling(const PackedSection& words, double
 std::array<std::uint16_t, 4> words_with_parked_zero(
     const std::array<std::uint16_t, 4>& current, std::size_t section,
     double sample_rate_hz) {
-  const auto zero_pair =
-      geometry_from_words({current[0], current[1], 0, 0, 0}, sample_rate_hz).zero;
-  if (std::holds_alternative<ConjugatePair>(zero_pair)) return current;
-  return words_from_mask(
-      {mask_offset_max_oct(section), mask_width_floor_hz(sample_rate_hz)}, current,
-      section, sample_rate_hz);
+  const auto geometry = geometry_from_words(
+      {current[0], current[1], current[2], current[3], 0}, sample_rate_hz);
+  if (std::holds_alternative<ConjugatePair>(geometry.zero)) return current;
+  const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
+  if (pole == nullptr) return current;
+  return words_from_mask(parked_mask(pole->hz, section), current, section, sample_rate_hz);
 }
 
 std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,

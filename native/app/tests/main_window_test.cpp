@@ -309,9 +309,12 @@ class MainWindowTest final : public QObject {
             words[1] != trench::core::kIdentitySection[1]);
     const auto zero = std::get<trench::core::ConjugatePair>(
         trench::core::geometry_from_words(words, trench::core::kP2kDatumHz).zero);
-    QVERIFY2(zero.hz >= 10'000.0, qPrintable(QString::number(zero.hz)));
-    QCOMPARE(p2k::mask_of(words, 0, trench::core::kP2kDatumHz).zero_bw_hz,
-             p2k::mask_width_floor_hz(trench::core::kP2kDatumHz));
+    QVERIFY2(std::abs(zero.hz - p2k::kParkedZeroHz) < 20.0,
+             qPrintable(QString::number(zero.hz)));
+    QVERIFY2(std::abs(p2k::mask_of(words, 0, trench::core::kP2kDatumHz).zero_bw_hz -
+                      p2k::kParkedWidthHz) < 60.0,
+             qPrintable(QString::number(
+                 p2k::mask_of(words, 0, trench::core::kP2kDatumHz).zero_bw_hz)));
 
     const auto masked = trench::core::section_words_to_biquad(words);
     auto bare = masked;
@@ -321,17 +324,44 @@ class MainWindowTest final : public QObject {
       return trench::core::section_response_db(section, hz, trench::core::kP2kDatumHz) -
              trench::core::section_response_db(section, 0.0, trench::core::kP2kDatumHz);
     };
-    for (const auto& probe : {std::pair{1'000.0, 0.1}, std::pair{5'000.0, 1.2}}) {
-      const auto delta = std::abs(shape(masked, probe.first) - shape(bare, probe.first));
-      QVERIFY2(delta < probe.second,
-               qPrintable(QStringLiteral("%1 Hz %2 dB").arg(probe.first).arg(delta)));
-    }
+    const auto rise = [&](double hz) { return shape(masked, hz) - shape(bare, hz); };
+    QVERIFY2(std::abs(rise(300.0)) < 1.0, qPrintable(QString::number(rise(300.0))));
+    QVERIFY2(rise(16'000.0) > 40.0, qPrintable(QString::number(rise(16'000.0))));
     QCOMPARE(window.body().words[4][0], words);
     QCOMPARE(window.undoStack()->count(), 1);
 
     window.clearSection(0);
     QCOMPARE(window.body().words[0][0], trench::core::kIdentitySection);
     QCOMPARE(window.undoStack()->count(), 2);
+  }
+
+  void theAxisHoldsTheAudibleBandWhenAPostureIsApplied() {
+    MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    const auto [low_db, high_db] = plot->dbRange();
+    double band_low = 1.0e9;
+    double band_high = -1.0e9;
+    for (std::size_t index = 0; index < plot->responsePointCount(); ++index) {
+      const auto hz = plot->frequencyAt(index);
+      if (hz < 100.0 || hz > 16'000.0) continue;
+      band_low = std::min(band_low, plot->responseDbAt(index));
+      band_high = std::max(band_high, plot->responseDbAt(index));
+    }
+    const auto shown = QStringLiteral("%1 .. %2 for %3 .. %4")
+                           .arg(low_db)
+                           .arg(high_db)
+                           .arg(band_low)
+                           .arg(band_high);
+    QVERIFY2(high_db - low_db <= 144.0, qPrintable(shown));
+    QVERIFY2(high_db >= band_high + 3.0 && high_db < band_high + 15.0, qPrintable(shown));
+    QVERIFY2(low_db <= band_low || high_db - low_db == 144.0, qPrintable(shown));
+    QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
+                               "/dev/e2e/app_parked_fixed.png"));
   }
 
   void aRingDroppedOnAPolePairsWithIt() {

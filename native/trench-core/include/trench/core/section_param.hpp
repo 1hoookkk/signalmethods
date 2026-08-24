@@ -34,9 +34,11 @@ struct MaskParam {
 inline constexpr double kTrenchMinOct = 2.0;
 inline constexpr double kTrenchMaxOct = 7.0;
 
-inline constexpr double kMaskOffsetMinOct = -3.0;
+inline constexpr double kMaskOffsetMinOct = -8.0;
 inline constexpr double kMaskOffsetMaxOct = 6.0;
 inline constexpr double kMaskWidthMaxHz = 2000.0;
+inline constexpr double kParkedZeroHz = 90.0;
+inline constexpr double kParkedWidthHz = 1700.0;
 inline constexpr double kPlacedPoleBwHz = 120.0;
 inline constexpr double kNarrowestPoleBwHz = 13.7;
 
@@ -54,6 +56,8 @@ double mask_width_floor_hz(double sample_rate_hz = kP2kDatumHz);
 
 std::optional<PoleReading> pole_of(const PackedSection& words,
                                    double sample_rate_hz = kP2kDatumHz);
+
+MaskParam parked_mask(double pole_hz, std::size_t section);
 
 MaskParam mask_of(const PackedSection& words, std::size_t section,
                   double sample_rate_hz = kP2kDatumHz);

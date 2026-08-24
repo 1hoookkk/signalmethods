@@ -55,6 +55,7 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] std::size_t responsePointCount() const noexcept;
   [[nodiscard]] double frequencyAt(std::size_t index) const;
   [[nodiscard]] double xForFrequency(double frequency_hz) const;
+  [[nodiscard]] std::pair<double, double> dbRange() const;
   [[nodiscard]] double responseDbAt(std::size_t index) const;
   [[nodiscard]] double runningPeakDb(std::size_t section) const;
   [[nodiscard]] std::size_t residualPointCount() const noexcept;
@@ -84,7 +85,6 @@ class ResponsePlotWidget final : public QWidget {
  private:
   [[nodiscard]] QRectF plotRect() const;
   [[nodiscard]] trench::core::Cascade viewCascade() const;
-  [[nodiscard]] std::pair<double, double> dbRange() const;
   [[nodiscard]] double contributionAt(std::size_t section, double hz) const;
   [[nodiscard]] double responseDbAtHz(double hz) const;
   [[nodiscard]] std::optional<TokenInfo> hit(const QPointF& at) const;

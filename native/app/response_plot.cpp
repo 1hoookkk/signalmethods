@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <numbers>
 #include <stdexcept>
 
@@ -41,6 +42,10 @@ const QColor kTarget{72, 82, 88};
 const QColor kResidual{156, 130, 224};
 
 constexpr double kResidualBandPx = 34.0;
+
+constexpr double kAxisLowHz = 100.0;
+constexpr double kAxisHighHz = 16'000.0;
+constexpr double kAxisMaxSpanDb = 144.0;
 
 double erb_rate(double frequency_hz) {
   return 21.4 * std::log10(1.0 + 0.00437 * frequency_hz);
@@ -418,16 +423,27 @@ QRectF ResponsePlotWidget::plotRect() const {
 }
 
 std::pair<double, double> ResponsePlotWidget::dbRange() const {
-  if (response_db_.empty()) return {-48.0, 0.0};
-  const auto [minimum, maximum] =
-      std::minmax_element(response_db_.begin(), response_db_.end());
-  double low_db = std::floor((*minimum - 3.0) / 12.0) * 12.0;
-  double high_db = std::ceil((*maximum + 3.0) / 12.0) * 12.0;
+  if (response_db_.empty() || response_db_.size() != frequencies_hz_.size()) {
+    return {-48.0, 0.0};
+  }
+  auto minimum = std::numeric_limits<double>::infinity();
+  auto maximum = -std::numeric_limits<double>::infinity();
+  for (std::size_t index = 0; index < response_db_.size(); ++index) {
+    if (frequencies_hz_[index] < kAxisLowHz || frequencies_hz_[index] > kAxisHighHz) {
+      continue;
+    }
+    minimum = std::min(minimum, response_db_[index]);
+    maximum = std::max(maximum, response_db_[index]);
+  }
+  if (minimum > maximum) return {-48.0, 0.0};
+  double low_db = std::floor((minimum - 3.0) / 12.0) * 12.0;
+  double high_db = std::ceil((maximum + 3.0) / 12.0) * 12.0;
   if (high_db - low_db < 48.0) {
     const auto middle = (high_db + low_db) * 0.5;
     low_db = std::floor((middle - 24.0) / 12.0) * 12.0;
     high_db = low_db + 48.0;
   }
+  if (high_db - low_db > kAxisMaxSpanDb) low_db = high_db - kAxisMaxSpanDb;
   return {low_db, high_db};
 }
 
@@ -480,15 +496,17 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
 std::optional<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::hit(
     const QPointF& at) const {
   std::optional<TokenInfo> best;
-  double best_score = kHitRadiusPx;
+  std::pair<int, double> best_key{2, kHitRadiusPx};
   for (const auto& token : tokens()) {
     const auto dx = token.position.x() - at.x();
     const auto dy = token.position.y() - at.y();
     const auto distance = std::hypot(dx, dy);
     const auto score = token.lane == Lane::kPole ? distance
                                                  : std::abs(distance - token.radius);
-    if (score < best_score) {
-      best_score = score;
+    if (score >= kHitRadiusPx) continue;
+    const std::pair<int, double> key{token.section == selected_section_ ? 0 : 1, score};
+    if (!best || key < best_key) {
+      best_key = key;
       best = token;
     }
   }
@@ -524,7 +542,7 @@ std::optional<trench::core::PackedSection> ResponsePlotWidget::zeroCandidate(
   const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
   if (pole == nullptr) return std::nullopt;
   const auto floor_hz = p2k::mask_width_floor_hz(trench::core::kP2kDatumHz);
-  p2k::MaskParam mask{p2k::mask_offset_max_oct(press_section_), floor_hz};
+  auto mask = p2k::parked_mask(pole->hz, press_section_);
   if (at.x() <= plot.right()) {
     auto hz = std::clamp(frequency_for_x(at.x(), frequencies_hz_.front(),
                                          frequencies_hz_.back(), plot),
