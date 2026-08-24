@@ -3,6 +3,8 @@
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 
+#include "trench/core/formants.hpp"
+
 #include <QColor>
 #include <QElapsedTimer>
 #include <QImage>
@@ -19,7 +21,9 @@
 #include <utility>
 #include <vector>
 
+class QMenu;
 class QPainter;
+class QToolButton;
 
 class ResponsePlotWidget final : public QWidget {
   Q_OBJECT
@@ -48,6 +52,7 @@ class ResponsePlotWidget final : public QWidget {
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
   void setSelectedSection(std::size_t section);
+  bool setOverlay(const QString& name);
   void setHighlightedSection(std::optional<std::size_t> section);
   void flashLane(std::size_t section);
   void refresh();
@@ -63,6 +68,10 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] std::vector<TokenInfo> tokens() const;
   [[nodiscard]] bool refusalVisible() const noexcept;
   [[nodiscard]] std::optional<std::size_t> highlightedSection() const noexcept;
+  [[nodiscard]] QMenu* overlayMenu() const noexcept;
+  [[nodiscard]] QToolButton* overlayPicker() const noexcept;
+  [[nodiscard]] QString overlay() const;
+  [[nodiscard]] std::size_t overlayGhostCount() const noexcept;
 
  signals:
   void gestureStarted(std::size_t section);
@@ -76,6 +85,7 @@ class ResponsePlotWidget final : public QWidget {
 
  protected:
   void paintEvent(QPaintEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
   void mouseReleaseEvent(QMouseEvent* event) override;
@@ -96,6 +106,10 @@ class ResponsePlotWidget final : public QWidget {
   void ensureTrace(const QRectF& plot, double low_db, double high_db);
   void strokeTrace(QPainter& painter, const QColor& colour);
   void rebuildResidual();
+  void buildOverlayPicker();
+  void placeOverlayPicker();
+  void paintOverlay(QPainter& painter, const QRectF& plot, double low_db,
+                    double high_db) const;
 
   const trench::core::PackedBody* body_{};
   std::size_t corner_{};
@@ -137,6 +151,11 @@ class ResponsePlotWidget final : public QWidget {
   bool fit_running_{};
   std::optional<std::size_t> flash_section_;
   QElapsedTimer flash_age_;
+
+  QMenu* overlay_menu_{};
+  QToolButton* overlay_button_{};
+  QString overlay_name_;
+  std::vector<trench::core::p2k::Formant> overlay_poles_;
 
   std::uint64_t body_revision_{};
   QPainterPath trace_path_;

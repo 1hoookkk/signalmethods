@@ -152,12 +152,16 @@ int main(int argc, char* argv[]) {
       QStringLiteral("space"),
       QStringLiteral("Perceptual space, \"lo,hi[,erb|flat[,smooth_oct]]\"."),
       QStringLiteral("spec"));
+  QCommandLineOption overlay_option(QStringLiteral("overlay"),
+                                    QStringLiteral("Draw a formant template as ghost bells."),
+                                    QStringLiteral("name"));
   QCommandLineOption view_option(QStringLiteral("view"),
                                  QStringLiteral("Interior view \"morph,q\" after showing."),
                                  QStringLiteral("spec"));
   parser.addOption(saw_option);
   parser.addOption(intent_option);
   parser.addOption(space_option);
+  parser.addOption(overlay_option);
   parser.addOption(view_option);
   QCommandLineOption bisect_option(QStringLiteral("bisect"),
                                    QStringLiteral("Eyes-closed bisection session on morph|q|character."),
@@ -208,6 +212,10 @@ int main(int argc, char* argv[]) {
     if (parser.isSet(target_option)) {
       window.loadTarget(
           std::filesystem::path(parser.value(target_option).toStdWString()));
+    }
+    if (parser.isSet(overlay_option) &&
+        !window.responsePlot()->setOverlay(parser.value(overlay_option))) {
+      parser.showHelp(2);
     }
     if (parser.isSet(view_option) &&
         !apply_view(window.document(), parser.value(view_option))) {

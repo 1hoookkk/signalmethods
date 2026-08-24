@@ -7,10 +7,13 @@
 
 #include <QApplication>
 #include <QFontMetrics>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
+#include <QResizeEvent>
 #include <QTimer>
+#include <QToolButton>
 
 #include <algorithm>
 #include <cmath>
@@ -39,9 +42,13 @@ constexpr double kTokenRadiusPx = 8.0;
 constexpr qint64 kRefusalHoldMs = 600;
 constexpr qint64 kFlashHoldMs = 200;
 const QColor kTarget{72, 82, 88};
+const QColor kGhost{196, 170, 132, 84};
 const QColor kResidual{156, 130, 224};
 
 constexpr double kResidualBandPx = 34.0;
+
+constexpr double kGhostWidthPx = 0.9;
+constexpr int kGhostBins = 320;
 
 constexpr double kAxisLowHz = 100.0;
 constexpr double kAxisHighHz = 16'000.0;
@@ -127,6 +134,125 @@ ResponsePlotWidget::ResponsePlotWidget(QWidget* parent) : QWidget(parent) {
   setMinimumSize(480, 280);
   setAutoFillBackground(false);
   setMouseTracking(true);
+  buildOverlayPicker();
+}
+
+void ResponsePlotWidget::buildOverlayPicker() {
+  overlay_menu_ = new QMenu(this);
+  overlay_menu_->setFont(QFont(QStringLiteral("Segoe UI"), 8));
+  overlay_menu_->setStyleSheet(QStringLiteral(
+      "QMenu { background: #1a1f23; color: #aebabe; border: 1px solid #373f43; }"
+      "QMenu::item { padding: 2px 16px 2px 12px; }"
+      "QMenu::item:selected { background: #373f43; }"));
+  connect(overlay_menu_->addAction(QStringLiteral("none")), &QAction::triggered, this,
+          [this] { setOverlay(QString()); });
+
+  QMenu* group = nullptr;
+  QString type;
+  for (const auto& skeleton : trench::core::p2k::templates()) {
+    const auto skeleton_type = QString::fromUtf8(skeleton.type.data(),
+                                                 static_cast<int>(skeleton.type.size()));
+    if (group == nullptr || skeleton_type != type) {
+      type = skeleton_type;
+      group = overlay_menu_->addMenu(type);
+      group->setFont(overlay_menu_->font());
+      group->setStyleSheet(overlay_menu_->styleSheet());
+    }
+    const auto name = QString::fromUtf8(skeleton.name.data(),
+                                        static_cast<int>(skeleton.name.size()));
+    connect(group->addAction(name), &QAction::triggered, this,
+            [this, name] { setOverlay(name); });
+  }
+
+  overlay_button_ = new QToolButton(this);
+  overlay_button_->setObjectName(QStringLiteral("overlayPicker"));
+  overlay_button_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
+  overlay_button_->setFocusPolicy(Qt::NoFocus);
+  overlay_button_->setPopupMode(QToolButton::InstantPopup);
+  overlay_button_->setMenu(overlay_menu_);
+  overlay_button_->setStyleSheet(QStringLiteral(
+      "QToolButton { background: #1a1f23; color: #767f83; border: 1px solid #373f43; "
+      "border-radius: 2px; padding: 1px 8px; }"
+      "QToolButton:hover { color: #aebabe; }"
+      "QToolButton::menu-indicator { image: none; }"));
+  overlay_button_->setText(QStringLiteral("OVERLAY"));
+  placeOverlayPicker();
+}
+
+void ResponsePlotWidget::placeOverlayPicker() {
+  if (overlay_button_ == nullptr) return;
+  overlay_button_->adjustSize();
+  overlay_button_->move(width() - 18 - overlay_button_->width(), 5);
+}
+
+bool ResponsePlotWidget::setOverlay(const QString& name) {
+  overlay_poles_.clear();
+  overlay_name_.clear();
+  bool found = name.isEmpty();
+  if (!name.isEmpty()) {
+    if (const auto* skeleton = trench::core::p2k::posture(name.toStdString())) {
+      overlay_name_ = name;
+      for (std::size_t index = 0; index < skeleton->pole_count; ++index) {
+        overlay_poles_.push_back(skeleton->poles[index]);
+      }
+      found = true;
+    }
+  }
+  overlay_button_->setText(overlay_name_.isEmpty() ? QStringLiteral("OVERLAY")
+                                                   : overlay_name_);
+  placeOverlayPicker();
+  update();
+  return found;
+}
+
+QMenu* ResponsePlotWidget::overlayMenu() const noexcept { return overlay_menu_; }
+
+QToolButton* ResponsePlotWidget::overlayPicker() const noexcept { return overlay_button_; }
+
+QString ResponsePlotWidget::overlay() const { return overlay_name_; }
+
+std::size_t ResponsePlotWidget::overlayGhostCount() const noexcept {
+  return overlay_poles_.size();
+}
+
+void ResponsePlotWidget::resizeEvent(QResizeEvent* event) {
+  placeOverlayPicker();
+  QWidget::resizeEvent(event);
+}
+
+void ResponsePlotWidget::paintOverlay(QPainter& painter, const QRectF& plot, double low_db,
+                                      double high_db) const {
+  if (overlay_poles_.empty() || frequencies_hz_.empty()) return;
+  const auto low_hz = frequencies_hz_.front();
+  const auto high_hz = frequencies_hz_.back();
+  painter.setPen(QPen(kGhost, kGhostWidthPx));
+  painter.setBrush(Qt::NoBrush);
+  for (const auto& pole : overlay_poles_) {
+    const auto radius = std::clamp(
+        std::exp(-std::numbers::pi * pole.bw_hz / sample_rate_hz_), 0.0, 0.99999);
+    const auto theta = 2.0 * std::numbers::pi * pole.hz / sample_rate_hz_;
+    const auto a1 = -2.0 * radius * std::cos(theta);
+    const auto a2 = radius * radius;
+    const auto dc = std::abs(1.0 + a1 + a2);
+    QPainterPath path;
+    for (int bin = 0; bin <= kGhostBins; ++bin) {
+      const auto fraction = static_cast<double>(bin) / static_cast<double>(kGhostBins);
+      const auto hz = frequency_for_fraction(fraction, low_hz, high_hz);
+      const auto omega = 2.0 * std::numbers::pi * hz / sample_rate_hz_;
+      const auto real = 1.0 + a1 * std::cos(omega) + a2 * std::cos(2.0 * omega);
+      const auto imaginary = -(a1 * std::sin(omega) + a2 * std::sin(2.0 * omega));
+      const auto magnitude = dc / std::max(std::hypot(real, imaginary), 1e-12);
+      const auto db = 20.0 * std::log10(std::max(magnitude, 1e-9));
+      const auto x = plot.left() + fraction * plot.width();
+      const auto y = y_for_db(db, low_db, high_db, plot);
+      if (bin == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    painter.drawPath(path);
+  }
 }
 
 void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
@@ -813,6 +939,8 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
 
   ensureTrace(plot, low_db, high_db);
   painter.setClipRect(plot);
+
+  paintOverlay(painter, plot, low_db, high_db);
 
   if (target_db_.size() == frequencies_hz_.size()) {
     QPainterPath target_path;

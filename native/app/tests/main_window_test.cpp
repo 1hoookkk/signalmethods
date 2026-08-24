@@ -20,6 +20,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QMenu>
+#include <QToolButton>
 #include <QMouseEvent>
 #include <QAction>
 #include <QSignalSpy>
@@ -51,6 +53,19 @@ std::vector<std::uint8_t> read_fixture(const std::filesystem::path& path) {
 
 std::filesystem::path fixture_path() {
   return std::filesystem::path(TRENCH_SOURCE_ROOT) / "ref/presets/P2k_013_talking_hedz.bin";
+}
+
+QAction* overlay_action(QMenu* menu, const QString& name) {
+  for (auto* action : menu->actions()) {
+    if (action->menu() == nullptr) {
+      if (action->text() == name) return action;
+      continue;
+    }
+    for (auto* leaf : action->menu()->actions()) {
+      if (leaf->text() == name) return leaf;
+    }
+  }
+  return nullptr;
 }
 
 class PaintCounter final : public QObject {
@@ -1840,6 +1855,84 @@ class MainWindowTest final : public QObject {
     QCOMPARE(counter.count, 0);
     const auto second = plot->grab().toImage();
     QVERIFY(first == second);
+  }
+
+  void anOverlayLeavesTheDocumentAlone() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    const auto before = window.body();
+    const auto undo_before = window.undoStack()->count();
+    const auto* skeleton = trench::core::p2k::posture("s1 bahn a");
+    QVERIFY(skeleton != nullptr);
+
+    auto* action = overlay_action(plot->overlayMenu(), QStringLiteral("s1 bahn a"));
+    QVERIFY(action != nullptr);
+    action->trigger();
+    QTest::qWait(20);
+
+    QCOMPARE(plot->overlay(), QStringLiteral("s1 bahn a"));
+    QCOMPARE(plot->overlayGhostCount(), skeleton->pole_count);
+    for (std::size_t corner = 0; corner < trench::core::kLegacyCornerCount; ++corner) {
+      QCOMPARE(window.body().words[corner], before.words[corner]);
+    }
+    QCOMPARE(window.undoStack()->count(), undo_before);
+
+    auto* none = overlay_action(plot->overlayMenu(), QStringLiteral("none"));
+    QVERIFY(none != nullptr);
+    none->trigger();
+    QTest::qWait(20);
+    QCOMPARE(plot->overlayGhostCount(), std::size_t{0});
+    QVERIFY(plot->overlay().isEmpty());
+    QCOMPARE(window.undoStack()->count(), undo_before);
+  }
+
+  void theAxisWindowIgnoresTheOverlay() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    const auto before = plot->dbRange();
+
+    auto* action = overlay_action(plot->overlayMenu(), QStringLiteral("s2 bahn a"));
+    QVERIFY(action != nullptr);
+    action->trigger();
+    QTest::qWait(20);
+
+    QVERIFY(plot->overlayGhostCount() > 0);
+    const auto after = plot->dbRange();
+    QCOMPARE(after.first, before.first);
+    QCOMPARE(after.second, before.second);
+  }
+
+  void theOverlayPickerListsNoneAndEveryTemplateGroup() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* plot = window.responsePlot();
+    QVERIFY(plot->overlayPicker() != nullptr);
+    const auto actions = plot->overlayMenu()->actions();
+    QVERIFY(!actions.isEmpty());
+    QCOMPARE(actions.front()->text(), QStringLiteral("none"));
+    QCOMPARE(actions.front()->menu(), nullptr);
+
+    QStringList groups;
+    for (const auto& skeleton : trench::core::p2k::templates()) {
+      const auto type = QString::fromUtf8(skeleton.type.data(),
+                                          static_cast<int>(skeleton.type.size()));
+      if (groups.isEmpty() || groups.back() != type) groups.push_back(type);
+    }
+    QCOMPARE(actions.size(), groups.size() + 1);
+    for (int index = 0; index < groups.size(); ++index) {
+      auto* entry = actions.at(index + 1);
+      QVERIFY(entry->menu() != nullptr);
+      QCOMPARE(entry->text(), groups.at(index));
+      QVERIFY(!entry->menu()->actions().isEmpty());
+    }
   }
 
 };
