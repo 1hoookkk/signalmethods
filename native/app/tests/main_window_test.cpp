@@ -5,6 +5,7 @@
 #include "posture_list.hpp"
 #include "response_plot.hpp"
 #include "section_strip.hpp"
+#include "user_postures.hpp"
 #include "trench/core/formants.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
@@ -22,6 +23,8 @@
 #include <QAction>
 #include <QSignalSpy>
 #include <QPointer>
+#include <QAbstractButton>
+#include <QDir>
 #include <QSlider>
 #include <QUndoStack>
 
@@ -1632,6 +1635,103 @@ class MainWindowTest final : public QObject {
     window.undoStack()->undo();
     QCOMPARE(window.body().native_bytes(), before);
     QCOMPARE(offset->value(), before_offset);
+  }
+
+  void keepingACornerAddsALitMineRowThatPersists() {
+    namespace p2k = trench::core::p2k;
+    const auto previous = UserPostures::baseDir();
+    const auto temp = QDir::tempPath() + QStringLiteral("/trench_user_postures_keep");
+    QDir(temp).removeRecursively();
+    UserPostures::setBaseDir(temp);
+
+    std::vector<UserPostures::Pole> kept;
+    {
+      MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+      window.resize(960, 540);
+      window.show();
+      QTest::qWait(20);
+      auto* keep = window.findChild<QAbstractButton*>(QStringLiteral("keepPosture"));
+      QVERIFY(keep != nullptr);
+      QVERIFY(keep->isEnabled());
+      const auto undo_before = window.undoStack()->count();
+      keep->click();
+      QCOMPARE(window.undoStack()->count(), undo_before);
+
+      auto* list = window.postureList();
+      QCOMPARE(list->item(0)->text(), QStringLiteral("MINE"));
+      QCOMPARE(list->item(1)->data(Qt::UserRole).toString(), QStringLiteral("mine 1"));
+      QCOMPARE(list->matched(), QStringLiteral("mine 1"));
+
+      const auto corner = window.body().words[0];
+      for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+        if (!p2k::pole_of(corner[section], trench::core::kP2kDatumHz)) continue;
+        kept.push_back({section, corner[section][2], corner[section][3]});
+      }
+      QVERIFY(!kept.empty());
+    }
+
+    UserPostures store;
+    const auto* entry = store.find(QStringLiteral("mine 1"));
+    QVERIFY(entry != nullptr);
+    QCOMPARE(entry->poles.size(), kept.size());
+    for (std::size_t index = 0; index < kept.size(); ++index) {
+      QCOMPARE(entry->poles[index].row, kept[index].row);
+      QCOMPARE(entry->poles[index].mag, kept[index].mag);
+      QCOMPARE(entry->poles[index].rsq, kept[index].rsq);
+    }
+
+    MainWindow reopened(fixture_path(), trench::core::kP2kDatumHz);
+    QCOMPARE(reopened.postureList()->item(1)->data(Qt::UserRole).toString(),
+             QStringLiteral("mine 1"));
+
+    QDir(temp).removeRecursively();
+    UserPostures::setBaseDir(previous);
+  }
+
+  void aMineRowWritesItsPoleWordsWithParkedZeros() {
+    namespace p2k = trench::core::p2k;
+    const auto previous = UserPostures::baseDir();
+    const auto temp = QDir::tempPath() + QStringLiteral("/trench_user_postures_apply");
+    QDir(temp).removeRecursively();
+    UserPostures::setBaseDir(temp);
+    {
+      MainWindow keeper(fixture_path(), trench::core::kP2kDatumHz);
+      auto* keep = keeper.findChild<QAbstractButton*>(QStringLiteral("keepPosture"));
+      QVERIFY(keep != nullptr);
+      keep->click();
+    }
+    UserPostures store;
+    const auto* entry = store.find(QStringLiteral("mine 1"));
+    QVERIFY(entry != nullptr);
+
+    MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* list = window.postureList();
+    const auto row = list->rowOf(QStringLiteral("mine 1"));
+    QVERIFY(row >= 0);
+    const auto before = window.body().words[0];
+    list->scrollToItem(list->item(row));
+    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
+                      list->visualItemRect(list->item(row)).center());
+    const auto after = window.body().words[0];
+    QCOMPARE(window.undoStack()->count(), 1);
+    QCOMPARE(list->matched(), QStringLiteral("mine 1"));
+    for (const auto& pole : entry->poles) {
+      const auto expected = p2k::words_with_parked_zero(
+          {before[pole.row][0], before[pole.row][1], pole.mag, pole.rsq}, pole.row,
+          trench::core::kP2kDatumHz);
+      for (std::size_t word = 0; word < expected.size(); ++word) {
+        QCOMPARE(after[pole.row][word], expected[word]);
+      }
+      QCOMPARE(after[pole.row][4], before[pole.row][4]);
+    }
+    window.undoStack()->undo();
+    QCOMPARE(window.body().words[0], before);
+
+    QDir(temp).removeRecursively();
+    UserPostures::setBaseDir(previous);
   }
 
   void theResponsePlotIsStillAtRest() {

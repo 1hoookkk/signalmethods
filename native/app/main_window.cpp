@@ -19,6 +19,7 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QKeySequence>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -131,8 +132,27 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   plot_layout->setSpacing(0);
   response_plot_->setParent(plot_row);
   plot_layout->addWidget(response_plot_, 1);
-  posture_list_ = new PostureList(plot_row);
-  plot_layout->addWidget(posture_list_, 0);
+  auto* posture_column = new QWidget(plot_row);
+  auto* posture_layout = new QVBoxLayout(posture_column);
+  posture_layout->setContentsMargins(0, 0, 0, 0);
+  posture_layout->setSpacing(0);
+  keep_posture_ = new QPushButton(QStringLiteral("KEEP"), posture_column);
+  keep_posture_->setObjectName(QStringLiteral("keepPosture"));
+  keep_posture_->setFocusPolicy(Qt::NoFocus);
+  keep_posture_->setCursor(Qt::PointingHandCursor);
+  keep_posture_->setFixedHeight(20);
+  keep_posture_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
+  keep_posture_->setStyleSheet(QStringLiteral(
+      "QPushButton { background: #1a1f23; color: #e8c14a; border: none; "
+      "border-left: 1px solid #373f43; border-bottom: 1px solid #373f43; text-align: left; "
+      "padding-left: 6px; }"
+      "QPushButton:disabled { color: #4a5257; }"
+      "QPushButton:pressed { background: #232a2f; }"));
+  posture_layout->addWidget(keep_posture_, 0);
+  posture_list_ = new PostureList(posture_column);
+  posture_layout->addWidget(posture_list_, 1);
+  plot_layout->addWidget(posture_column, 0);
+  connect(keep_posture_, &QPushButton::clicked, this, &MainWindow::keepPosture);
   column->addWidget(plot_row, 1);
 
   morph_strip_ = new MorphStrip(central);
@@ -304,17 +324,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   });
 
   fit_room_ = new FitRoom(this);
-  QList<PostureList::Group> groups;
-  for (const auto* type : kFilterTypes) {
-    PostureList::Group group{QString::fromLatin1(type), {}};
-    for (const auto& skeleton : trench::core::p2k::postures()) {
-      if (skeleton.type != type) continue;
-      group.names.push_back(
-          QString::fromUtf8(skeleton.name.data(), static_cast<int>(skeleton.name.size())));
-    }
-    groups.push_back(group);
-  }
-  posture_list_->setGroups(groups);
+  rebuildPostureGroups();
   connect(posture_list_, &PostureList::postureChosen, this, &MainWindow::applyVowel);
   connect(fit_room_, &FitRoom::overlaySelected, this, &MainWindow::selectOverlay);
   connect(fit_room_, &FitRoom::overlayRemoved, this, &MainWindow::removeOverlay);
@@ -649,9 +659,54 @@ void MainWindow::refreshFitRoom() {
   fit_room_->setFitRunning(fit_active_);
 }
 
+void MainWindow::rebuildPostureGroups() {
+  QList<PostureList::Group> groups;
+  PostureList::Group mine{QStringLiteral("MINE"), {}};
+  for (const auto& entry : user_postures_.entries()) mine.names.push_back(entry.name);
+  groups.push_back(mine);
+  for (const auto* type : kFilterTypes) {
+    PostureList::Group group{QString::fromLatin1(type), {}};
+    for (const auto& skeleton : trench::core::p2k::postures()) {
+      if (skeleton.type != type) continue;
+      group.names.push_back(
+          QString::fromUtf8(skeleton.name.data(), static_cast<int>(skeleton.name.size())));
+    }
+    groups.push_back(group);
+  }
+  posture_list_->setGroups(groups);
+}
+
+std::vector<UserPostures::Pole> MainWindow::currentPolePosture() const {
+  std::vector<UserPostures::Pole> poles;
+  const auto current = document_->cornerSnapshot();
+  for (std::size_t section = 0; section < current.size(); ++section) {
+    if (!trench::core::p2k::pole_of(current[section], trench::core::kP2kDatumHz)) continue;
+    poles.push_back({section, current[section][2], current[section][3]});
+  }
+  return poles;
+}
+
+void MainWindow::keepPosture() {
+  if (fit_active_) return;
+  const auto name = user_postures_.keep(currentPolePosture());
+  if (name.isEmpty()) return;
+  rebuildPostureGroups();
+  updatePostureMatch();
+}
+
 std::optional<BodyDocument::CornerSnapshot> MainWindow::cornerWithPosture(
     const QString& symbol) const {
   namespace p2k = trench::core::p2k;
+  if (const auto* mine = user_postures_.find(symbol)) {
+    auto after = document_->cornerSnapshot();
+    for (const auto& pole : mine->poles) {
+      auto& row = after[pole.row];
+      const auto roots = p2k::words_with_parked_zero({row[0], row[1], pole.mag, pole.rsq},
+                                                     pole.row, trench::core::kP2kDatumHz);
+      for (std::size_t word = 0; word < roots.size(); ++word) row[word] = roots[word];
+    }
+    return after;
+  }
   const auto name = symbol.toStdString();
   const auto* skeleton = p2k::posture(name);
   const auto* vowel = p2k::klatt_vowel(name);
@@ -677,8 +732,14 @@ std::optional<BodyDocument::CornerSnapshot> MainWindow::cornerWithPosture(
 
 bool MainWindow::posturePolesHeld(const QString& symbol) const {
   namespace p2k = trench::core::p2k;
-  const auto* skeleton = p2k::posture(symbol.toStdString());
   const auto current = document_->cornerSnapshot();
+  if (const auto* mine = user_postures_.find(symbol)) {
+    for (const auto& pole : mine->poles) {
+      if (current[pole.row][2] != pole.mag || current[pole.row][3] != pole.rsq) return false;
+    }
+    return true;
+  }
+  const auto* skeleton = p2k::posture(symbol.toStdString());
   if (skeleton != nullptr) {
     for (const auto& pole : p2k::pole_words_from_posture(*skeleton)) {
       if (current[pole.row][2] != pole.mag || current[pole.row][3] != pole.rsq) return false;
@@ -690,6 +751,9 @@ bool MainWindow::posturePolesHeld(const QString& symbol) const {
 }
 
 void MainWindow::updatePostureMatch() {
+  if (keep_posture_ != nullptr) {
+    keep_posture_->setEnabled(!fit_active_ && !currentPolePosture().empty());
+  }
   if (posture_list_ == nullptr) return;
   QString matched;
   for (int row = 0; row < posture_list_->count(); ++row) {

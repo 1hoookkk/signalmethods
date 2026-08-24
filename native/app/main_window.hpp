@@ -4,6 +4,7 @@
 #include "fit_controller.hpp"
 #include "fit_room.hpp"
 #include "response_plot.hpp"
+#include "user_postures.hpp"
 #include "trench/audio/audition.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/packed_body.hpp"
@@ -20,8 +21,10 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
 
 class QAction;
+class QAbstractButton;
 class ChassisBar;
 class MorphStrip;
 class PostureList;
@@ -91,6 +94,9 @@ class MainWindow final : public QMainWindow {
   void updateInterior();
   void updateStrips();
   void updatePostureMatch();
+  void rebuildPostureGroups();
+  void keepPosture();
+  [[nodiscard]] std::vector<UserPostures::Pole> currentPolePosture() const;
   [[nodiscard]] std::optional<BodyDocument::CornerSnapshot> cornerWithPosture(
       const QString& symbol) const;
   [[nodiscard]] bool posturePolesHeld(const QString& symbol) const;
@@ -110,6 +116,8 @@ class MainWindow final : public QMainWindow {
   ResponsePlotWidget* response_plot_{};
   MorphStrip* morph_strip_{};
   PostureList* posture_list_{};
+  QAbstractButton* keep_posture_{};
+  UserPostures user_postures_;
   std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};
   ChassisBar* chassis_bar_{};
   FitRoom* fit_room_{};
