@@ -62,7 +62,7 @@ double mean_of(const std::vector<double>& v) {
 }  // namespace
 
 TEST(NativeBody, RootsSurviveAnyRateRoundTrip) {
-  for (const double sr : {44'100.0, 48'000.0, 96'000.0}) {
+  for (const double sr : {44'100.0, 48'000.0, 96'000.0, 192'000.0}) {
     const nb::Roots cases[] = {nb::Resonant{1'234.5, 80.0}, nb::RealRoots{300.0, -5'000.0},
                                nb::RealRoots{std::numeric_limits<double>::infinity(),
                                              std::numeric_limits<double>::infinity()}};
