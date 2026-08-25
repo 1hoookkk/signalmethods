@@ -20,6 +20,10 @@ venv/
 /out/
 /renders/
 /scratch/
+/tmp/
+/plugin/build-juce8/
+/plugin/build-juce9/
+/recipes/circuit/chowdsp_wdf/
 *.log
 
 # Editors and OS
@@ -47,4 +51,5 @@ Thumbs.db
 .env.*
 !.env.example
 *.local.toml
+/opencode.json
 

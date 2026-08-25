@@ -1,0 +1,555 @@
+{
+  "format": "trench-recipe-catalogue-v1",
+  "description": "Every transfer function available for morph-position assignment. Browse by family, listen, pick M0 and M100. Feeds directly into recipe_pipeline.py.",
+  "families": {
+    "vocal-formant": {
+      "profile": "profiles/vocal-formant.trenchprofile.json",
+      "morph_semantic": "vowel_interpolation",
+      "q_semantic": "vocal_tract_width",
+      "description": "Fixed vowel formant tables (F1-F3), asymmetric Q-axes, tight morph corridors. Human voice and talkbox character filters."
+    },
+    "acid-resonant": {
+      "profile": "profiles/acid-resonant.trenchprofile.json",
+      "morph_semantic": "cutoff_sweep_or_bass_character",
+      "q_semantic": "resonance_intensity",
+      "description": "TB-303 style resonant lowpass + bass processor filters. High-radius pole clusters (0.98+), 24 dB/octave cascading, aggressive frequency sweeps."
+    },
+    "notch-zplane": {
+      "profile": "profiles/notch-zplane.trenchprofile.json",
+      "morph_semantic": "notch_sweep",
+      "q_semantic": "notch_depth_and_count",
+      "description": "Complex zero trajectories dragging across the spectrum. Phaser, dual-morph, and z-plane lattice filters with moving notches."
+    },
+    "eq-shaper": {
+      "profile": "profiles/eq-shaper.trenchprofile.json",
+      "morph_semantic": "eq_curve_morph",
+      "q_semantic": "bandwidth",
+      "description": "Static or dynamically swept multi-band bell filters with flat Q attitudes. Graphic and parametric EQ curve emulations."
+    },
+    "cab-comb": {
+      "profile": "profiles/cab-comb.trenchprofile.json",
+      "morph_semantic": "cabinet_blend",
+      "q_semantic": "room_depth",
+      "description": "Narrow, closely-spaced resonant peaks mimicking physical acoustic spaces. Speaker cabinet and room comb-filter responses."
+    }
+  },
+  "sources": [
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "ee (beet)",
+      "ipa": "iy",
+      "intent_spec": "vocal/ee",
+      "frequencies_hz": [270, 2290, 3010],
+      "bandwidths_hz": [55, 90, 120],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Tense bright vowel — high F2, far from F1"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "ih (bit)",
+      "ipa": "ɪ",
+      "intent_spec": "vocal/ih",
+      "frequencies_hz": [390, 1990, 2550],
+      "bandwidths_hz": [60, 95, 130],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Lax bright vowel — slightly lower F2 than ee"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "eh (bet)",
+      "ipa": "ɛ",
+      "intent_spec": "vocal/eh",
+      "frequencies_hz": [530, 1840, 2480],
+      "bandwidths_hz": [65, 100, 140],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Mid open vowel — F1 rising, F2 falling"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "ae (bat)",
+      "ipa": "æ",
+      "intent_spec": "vocal/ae",
+      "frequencies_hz": [660, 1720, 2410],
+      "bandwidths_hz": [70, 105, 150],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Bright open vowel — high F1, wide mouth"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "ah (father)",
+      "ipa": "ɑ",
+      "intent_spec": "vocal/ah",
+      "frequencies_hz": [730, 1090, 2440],
+      "bandwidths_hz": [80, 90, 160],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Open back vowel — F1 and F2 close together"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "aw (bought)",
+      "ipa": "ɔ",
+      "intent_spec": "vocal/aw",
+      "frequencies_hz": [570, 840, 2410],
+      "bandwidths_hz": [70, 80, 160],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Rounded low back — two low bumps close together"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "uh (but)",
+      "ipa": "ʌ",
+      "intent_spec": "vocal/uh",
+      "frequencies_hz": [640, 1190, 2390],
+      "bandwidths_hz": [80, 90, 150],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Neutral schwa-ish — low-mid pair"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "oo (boot)",
+      "ipa": "u",
+      "intent_spec": "vocal/oo",
+      "frequencies_hz": [300, 870, 2240],
+      "bandwidths_hz": [55, 75, 140],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Rounded high back — dark, low F1+F2"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "uu (book)",
+      "ipa": "ʊ",
+      "intent_spec": "vocal/uu",
+      "frequencies_hz": [440, 1020, 2240],
+      "bandwidths_hz": [65, 85, 140],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Lax rounded — slightly open oo"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "vowel_formant",
+      "name": "er (bird)",
+      "ipa": "ɝ",
+      "intent_spec": "vocal/er",
+      "frequencies_hz": [490, 1350, 1690],
+      "bandwidths_hz": [65, 95, 120],
+      "source": "Peterson & Barney 1952, adult-male averages",
+      "description": "Rhotic 'r' colour — F2 and F3 pulled close together"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "klatt_formant",
+      "name": "a (bard) — Klatt",
+      "ipa": "a",
+      "intent_spec": "klatt/a",
+      "frequencies_hz": [700, 1220, 2600, 3300],
+      "bandwidths_hz": [130, 70, 160],
+      "source": "Klatt 1980, adult-male",
+      "description": "Klatt /a/ — F4 held constant at 3300"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "klatt_formant",
+      "name": "e (bed) — Klatt",
+      "ipa": "e",
+      "intent_spec": "klatt/e",
+      "frequencies_hz": [490, 1720, 2520, 3300],
+      "bandwidths_hz": [70, 90, 200],
+      "source": "Klatt 1980, adult-male",
+      "description": "Klatt /e/ with offglide — bright mid vowel"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "klatt_formant",
+      "name": "o (bought) — Klatt",
+      "ipa": "o",
+      "intent_spec": "klatt/o",
+      "frequencies_hz": [540, 1100, 2300, 3300],
+      "bandwidths_hz": [90, 80, 150],
+      "source": "Klatt 1980, adult-male",
+      "description": "Klatt /o/ with offglide — rounded mid-back"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "klatt_formant",
+      "name": "u (boot) — Klatt",
+      "ipa": "u",
+      "intent_spec": "klatt/u",
+      "frequencies_hz": [350, 1250, 2200, 3300],
+      "bandwidths_hz": [72, 105, 110],
+      "source": "Klatt 1980, adult-male",
+      "description": "Klatt /u/ — dark rounded, higher F2 than P&B"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "talking_pair",
+      "name": "oo → ee glide",
+      "morph_pair": ["vocal/oo", "vocal/ee"],
+      "motion": "F2 flies from 870 up to 2290 — the classic 'oo-ee' glide",
+      "source": "vowel_formants.json talking_pairs"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "talking_pair",
+      "name": "ah → ee glide",
+      "morph_pair": ["vocal/ah", "vocal/ee"],
+      "motion": "F1 drops and F2 leaps up — open to bright",
+      "source": "vowel_formants.json talking_pairs"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "talking_pair",
+      "name": "oo → ah glide",
+      "morph_pair": ["vocal/oo", "vocal/ah"],
+      "motion": "F1 opens up, F2 rises a little — closed to open",
+      "source": "vowel_formants.json talking_pairs"
+    },
+    {
+      "family": "vocal-formant",
+      "category": "talking_pair",
+      "name": "ee → ah glide",
+      "morph_pair": ["vocal/ee", "vocal/ah"],
+      "motion": "F2 collapses down, F1 opens — bright to open",
+      "source": "vowel_formants.json talking_pairs"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "circuit_model",
+      "name": "BassBox-303 sub engine",
+      "reference_dossier": "P2k_006_BassBox-303",
+      "frequencies_hz": [79, 479, 1356, 4170, 6444],
+      "description": "Sub anchor at 79 Hz + harmonic ladder at M100. Near-harmonic spacing (479/1356/4170/6444). KEY-track it.",
+      "source": "P2K ROM dossier, decoded corner words"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "circuit_model",
+      "name": "TB-OrNot-TB bassline cluster",
+      "reference_dossier": "P2k_009_TB-OrNot-TB",
+      "frequencies_hz": [357, 479, 1356, 1934, 4169],
+      "description": "Dense low-mid cluster 357-1934 Hz + one air pole. Zeros interleaved INSIDE cluster. S1 register-jumper +49 st.",
+      "source": "P2K ROM dossier, decoded corner words"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "circuit_model",
+      "name": "BolandBass vocabulary",
+      "reference_dossier": "P2k_011_BolandBass",
+      "frequencies_hz": [79, 479, 13367, 17683],
+      "description": "The shared bass vocabulary: 79 Hz sub + 479 Hz mouth + air. Reused across BolandBass, LucifersQ, BassTracer, BassBox-303.",
+      "source": "P2K ROM dossier, decoded corner words"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "circuit_model",
+      "name": "Ace of Bass polarity ride",
+      "reference_dossier": "P2k_000_Ace of Bass",
+      "frequencies_hz": [3516, 10259, 13647, 15731, 16269],
+      "description": "M0 = anti-bass (poles parked high, DC real pole). M100 = boost (poles respread 800-16700 at r=0.85-0.87).",
+      "source": "P2K ROM dossier, decoded corner words"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "analytic_skeleton",
+      "name": "Butterworth 12-pole sweep (220→3520 Hz)",
+      "intent_spec": "skeletons/butterworth",
+      "frequencies_hz": [220, 3520],
+      "description": "Maximally flat 12th-order LPF. M0 = 220 Hz, M100 = 3520 Hz. 4 octave sweep. Reference: exact_skeletons.json.",
+      "source": "scipy.signal.butter, bilinear transform, fs=39062.5"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "analytic_skeleton",
+      "name": "Chebyshev 12-pole sweep (220→3520 Hz, 3 dB ripple)",
+      "intent_spec": "skeletons/chebyshev",
+      "frequencies_hz": [220, 3520],
+      "description": "3 dB passband ripple, steeper rolloff than Butterworth. Reference: exact_skeletons.json.",
+      "source": "scipy.signal.cheby2, bilinear transform, fs=39062.5"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "x3f_workhorse",
+      "name": "2-Pole Lowpass",
+      "intent_spec": "x3f/2_pole_lowpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 14.9,
+      "max_pole_r": 0.999,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "x3f_workhorse",
+      "name": "4-Pole Lowpass",
+      "intent_spec": "x3f/4_pole_lowpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 29.9,
+      "max_pole_r": 0.999,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "x3f_workhorse",
+      "name": "6-Pole Lowpass",
+      "intent_spec": "x3f/6_pole_lowpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 44.8,
+      "max_pole_r": 0.999,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "cab-comb",
+      "category": "measured_ir",
+      "name": "General Guitar Cab",
+      "frequencies_hz": [100, 250],
+      "description": "Main acoustic energy centered 100-250 Hz. Natural -3 dB rolloff at 100 Hz.",
+      "source": "BASS_FUNDAMENTALS.md §1, parsed IR analysis"
+    },
+    {
+      "family": "cab-comb",
+      "category": "measured_ir",
+      "name": "Tube Color IR",
+      "frequencies_hz": [30, 165],
+      "description": "Extended low-end, -3 dB band 30-165 Hz. Heavy-cabinet resonance profile.",
+      "source": "BASS_FUNDAMENTALS.md §1"
+    },
+    {
+      "family": "cab-comb",
+      "category": "measured_ir",
+      "name": "Solid State Color IR",
+      "frequencies_hz": [105, 23000],
+      "description": "Nearly flat full-range, -3 dB band 105-23000 Hz. Transparent linear transfer.",
+      "source": "BASS_FUNDAMENTALS.md §1"
+    },
+    {
+      "family": "notch-zplane",
+      "category": "x3f_phaser",
+      "name": "Bat Phaser — dual pole-zero drift",
+      "intent_spec": "x3f/bat_phaser",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 29.0,
+      "max_pole_r": 1.0,
+      "description": "Two pole-zero pairs, zeros riding poles at r=1.0. Parallel upward sweep 136→6481 Hz. Q pushes both r→0.9999.",
+      "source": "X3F runtime preset, decoded SOS breakdown"
+    },
+    {
+      "family": "notch-zplane",
+      "category": "x3f_phaser",
+      "name": "Phaser 2 — pole-riding-zero",
+      "intent_spec": "x3f/phaser_2",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 31.6,
+      "max_pole_r": 0.996,
+      "description": "Two moving notches, zeros above poles. Deeper notches than Bat Phaser.",
+      "source": "X3F runtime preset, decoded SOS breakdown"
+    },
+    {
+      "family": "notch-zplane",
+      "category": "x3f_flanger",
+      "name": "Flanger Lite — three notches",
+      "intent_spec": "x3f/flanger_lite",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 22.8,
+      "max_pole_r": 0.999,
+      "description": "Three distinct designed stages. Genuinely different per corner.",
+      "source": "X3F runtime preset, decoded SOS breakdown"
+    },
+    {
+      "family": "notch-zplane",
+      "category": "x3f_vocal",
+      "name": "Vocal Ah-Ay-Ee — formant stack",
+      "intent_spec": "x3f/vocal_ah_ay_ee",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 33.9,
+      "max_pole_r": 0.998,
+      "description": "3-stage formant stack: 2 formants + carrier. Ah→Ay→Ee vowel morph.",
+      "source": "X3F runtime preset, decoded SOS breakdown"
+    },
+    {
+      "family": "notch-zplane",
+      "category": "x3f_vocal",
+      "name": "Vocal Oo-Ah — formant stack",
+      "intent_spec": "x3f/vocal_oo_ah",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 37.4,
+      "max_pole_r": 1.0,
+      "description": "3-stage formant stack. Oo→Ah vowel morph.",
+      "source": "X3F runtime preset, decoded SOS breakdown"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_swept_eq",
+      "name": "Swept EQ 1 Octave",
+      "intent_spec": "x3f/swept_eq_1_octave",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 23.0,
+      "max_pole_r": 0.999,
+      "description": "Parametric filter with 24 dB boost/cut, one octave bandwidth.",
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_swept_eq",
+      "name": "Swept EQ 2→1 Octave",
+      "intent_spec": "x3f/swept_eq_2_1_octave",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 23.0,
+      "max_pole_r": 0.998,
+      "description": "Bandwidth narrows from 2 to 1 octave across spectrum.",
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_swept_eq",
+      "name": "Swept EQ 3→1 Octave",
+      "intent_spec": "x3f/swept_eq_3_1_octave",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 23.0,
+      "max_pole_r": 0.995,
+      "description": "Bandwidth narrows from 3 to 1 octave across spectrum.",
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_bandpass",
+      "name": "2-Pole Bandpass",
+      "intent_spec": "x3f/2_pole_bandpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 13.5,
+      "max_pole_r": 1.0,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_bandpass",
+      "name": "4-Pole Bandpass",
+      "intent_spec": "x3f/4_pole_bandpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 27.0,
+      "max_pole_r": 1.0,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_bandpass",
+      "name": "Contrary Bandpass",
+      "intent_spec": "x3f/contrary_bandpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 44.1,
+      "max_pole_r": 1.0,
+      "description": "Non-conjugate stage geometry, preserved verbatim.",
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_highpass",
+      "name": "2-Pole Highpass",
+      "intent_spec": "x3f/2_pole_highpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 11.6,
+      "max_pole_r": 0.999,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "eq-shaper",
+      "category": "x3f_highpass",
+      "name": "4-Pole Highpass",
+      "intent_spec": "x3f/4_pole_highpass",
+      "fundamentals_ref": "fundamentals_manifest.json",
+      "max_peak_db": 23.1,
+      "max_pole_r": 0.999,
+      "source": "X3F runtime preset, verbatim ROM bytes"
+    },
+    {
+      "family": "cab-comb",
+      "category": "cavity_model",
+      "name": "Wine Bottle",
+      "intent_spec": "cavity/wine_bottle",
+      "frequencies_hz": [119, 357, 619, 1072],
+      "description": "Helmholtz 119 Hz (V=0.75L) + closed-pipe body modes. From family_intents.json.",
+      "source": "Physics — Helmholtz resonator + quarter-wave pipe"
+    },
+    {
+      "family": "cab-comb",
+      "category": "cavity_model",
+      "name": "Beer Bottle",
+      "intent_spec": "cavity/beer_bottle",
+      "frequencies_hz": [163, 536, 928, 1608],
+      "description": "Helmholtz 163 Hz (V=0.355L) + closed-pipe body modes.",
+      "source": "Physics — Helmholtz resonator + quarter-wave pipe"
+    },
+    {
+      "family": "cab-comb",
+      "category": "cavity_model",
+      "name": "Tin Can",
+      "intent_spec": "cavity/tin_can",
+      "frequencies_hz": [1591, 2347, 3283, 4594],
+      "description": "Steel shell flexural modes (R=3.5cm, L=11cm, h=0.25mm).",
+      "source": "Physics — Donnell thin-shell equations"
+    },
+    {
+      "family": "cab-comb",
+      "category": "cavity_model",
+      "name": "Bathtub",
+      "intent_spec": "cavity/bathtub",
+      "frequencies_hz": [107, 214, 229, 245],
+      "description": "Room modes in 160×70×50cm rectangular cavity.",
+      "source": "Physics — rectangular cavity eigenmodes"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "resonant_model",
+      "name": "Brass Bell",
+      "intent_spec": "resonant/brass_bell",
+      "frequencies_hz": [280, 1000, 3000, 6000],
+      "description": "Warm brass bell — modal series from family_intents.json.",
+      "source": "Physics — metal shell modes"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "resonant_model",
+      "name": "Iron Ring",
+      "intent_spec": "resonant/iron_ring",
+      "frequencies_hz": [320, 1200, 3500, 7000],
+      "description": "Iron sheet ring — higher, brighter than brass.",
+      "source": "Physics — metal shell modes"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "violence_model",
+      "name": "Chainsaw",
+      "intent_spec": "violence/chainsaw",
+      "frequencies_hz": [200, 900, 1700, 3500, 7500],
+      "description": "Low-buzz body 200 Hz + mid-grit 900/1700 + upper 3.5k.",
+      "source": "family_intents.json"
+    },
+    {
+      "family": "acid-resonant",
+      "category": "violence_model",
+      "name": "Acid 303",
+      "intent_spec": "violence/acid_303",
+      "frequencies_hz": [180, 700, 1400, 3000, 6500],
+      "description": "Low body 180 Hz + sweeping mid 700/1400 + sharp 3k.",
+      "source": "family_intents.json"
+    }
+  ],
+  "pipeline_usage": {
+    "cli_example": "python tools/recipe_pipeline.py my_body vocal/ee vocal/ah --family auto --q-attitude spare-the-air:5:0.04",
+    "workflow": [
+      "1. Browse sources above by family",
+      "2. Click a source to see its transfer function (frequencies + bandwidths)",
+      "3. Listen to the audition render (if available)",
+      "4. Pick M0 source and M100 source",
+      "5. Run recipe_pipeline.py with the two intent specs",
+      "6. The pipeline measures → fits poles → assigns lanes → authors zeros → applies Q → certifies → compiles",
+      "7. Drag the .body240 into TRENCH and use your ears"
+    ]
+  }
+}

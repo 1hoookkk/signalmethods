@@ -1,8 +1,10 @@
 #include "morph_strip.hpp"
 
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
+#include <QPushButton>
 #include <QSlider>
 
 #include <cmath>
@@ -37,11 +39,49 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
   auto* row = new QHBoxLayout(this);
   row->setContentsMargins(12, 4, 12, 4);
   row->setSpacing(18);
+  auto* corner_row = new QHBoxLayout();
+  corner_row->setSpacing(4);
+  for (int corner = 0; corner < 4; ++corner) {
+    auto* pad = new QPushButton(QString::number(corner + 1), this);
+    pad->setObjectName(QStringLiteral("cornerPad%1").arg(corner + 1));
+    pad->setCheckable(true);
+    pad->setFocusPolicy(Qt::NoFocus);
+    pad->setCursor(Qt::PointingHandCursor);
+    pad->setFixedSize(18, 18);
+    pad->setStyleSheet(QStringLiteral(
+        "QPushButton { background: #1a1f23; color: #7d888c; border: 1px solid #373f43; "
+        "border-radius: 2px; font-size: 10px; font-weight: 600; padding: 0; }"
+        "QPushButton:checked { background: #57decd; color: #0d1113; border-color: #57decd; }"));
+    pad->setToolTip(QStringLiteral("edit corner %1 (key %1) — ctrl+click copies the current "
+                                   "corner here — right-click: copy / save / load")
+                        .arg(corner + 1));
+    connect(pad, &QPushButton::clicked, this, [this, corner] {
+      if ((QGuiApplication::keyboardModifiers() & Qt::ControlModifier) != 0) {
+        emit cornerCopyRequested(corner);
+        return;
+      }
+      setCorner(static_cast<std::size_t>(corner));
+      emit cornerPicked(corner);
+    });
+    pad->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(pad, &QWidget::customContextMenuRequested, this, [this, pad, corner](const QPoint& at) {
+      emit cornerMenuRequested(corner, pad->mapToGlobal(at));
+    });
+    corner_row->addWidget(pad, 0);
+    corners_[static_cast<std::size_t>(corner)] = pad;
+  }
+  row->addLayout(corner_row, 0);
+  corners_[0]->setChecked(true);
   morph_ = make_slider(this, "morphSlider");
   q_ = make_slider(this, "qSlider");
   character_ = make_slider(this, "characterSlider");
   transpose_ = make_slider(this, "transposeSlider");
   transpose_->setRange(-24, 24);
+  transpose_->setStyleSheet(QStringLiteral(
+      "QSlider::groove:horizontal { height: 4px; background: #373f43; border-radius: 2px; }"
+      "QSlider::handle:horizontal { width: 12px; margin: -6px 0; background: #aebabe; "
+      "border-radius: 3px; }"
+      "QSlider::sub-page:horizontal { background: #373f43; border-radius: 2px; }"));
   transpose_->setPageStep(12);
   transpose_->setTickInterval(12);
   transpose_->setValue(0);
@@ -75,6 +115,7 @@ MorphStrip::MorphStrip(QWidget* parent) : QWidget(parent) {
 }
 
 void MorphStrip::setTranspose(int semitones) {
+  if (transpose_->isSliderDown()) return;
   updating_ = true;
   transpose_->setValue(semitones);
   updating_ = false;
@@ -85,6 +126,13 @@ int MorphStrip::transpose() const { return transpose_->value(); }
 
 double MorphStrip::character() const {
   return static_cast<double>(character_->value()) / static_cast<double>(kSteps);
+}
+
+void MorphStrip::setCorner(std::size_t corner) {
+  if (corner >= corners_.size()) return;
+  for (std::size_t index = 0; index < corners_.size(); ++index) {
+    corners_[index]->setChecked(index == corner);
+  }
 }
 
 void MorphStrip::setView(float morph, float q) {

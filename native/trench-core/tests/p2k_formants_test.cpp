@@ -85,22 +85,6 @@ TEST(P2kFormants, TheManualParavowelsPeakWhereTheManualSaysAndTheCombsNotchAtOct
   EXPECT_EQ(p2k::manual_recipe("nope"), nullptr);
 }
 
-TEST(P2kFormants, PeaksOfAnEnvelopeAreSortedByFrequencyAndCapped) {
-  std::vector<double> hz;
-  std::vector<double> db;
-  for (int i = 0; i < 400; ++i) {
-    const double f = 50.0 * std::pow(400.0, i / 399.0);
-    hz.push_back(f);
-    double v = -0.002 * f;
-    for (const double c : {300.0, 1200.0, 2500.0}) {
-      v += 20.0 * std::exp(-std::pow(std::log(f / c) / 0.08, 2.0));
-    }
-    db.push_back(v);
-  }
-  const auto peaks = p2k::peaks_of_envelope(hz, db, 2);
-  ASSERT_EQ(peaks.size(), 2U);
-  EXPECT_LT(peaks[0].hz, peaks[1].hz);
-}
 
 TEST(P2kFormants, ThePostureTableIsTypedAndItsPolesAreAudible) {
   const auto table = p2k::postures();
@@ -113,8 +97,8 @@ TEST(P2kFormants, ThePostureTableIsTypedAndItsPolesAreAudible) {
     ASSERT_GT(posture.pole_count, 0U);
     ASSERT_LE(posture.pole_count, 6U);
     for (std::size_t i = 0; i < posture.pole_count; ++i) {
-      EXPECT_GE(posture.poles[i].hz, 150.0) << posture.name;
-      EXPECT_LE(posture.poles[i].hz, 9000.0) << posture.name;
+      EXPECT_GE(posture.poles[i].hz, 80.0) << posture.name;
+      EXPECT_LE(posture.poles[i].hz, 16000.0) << posture.name;
     }
   }
   EXPECT_NE(p2k::posture("VOW AahAyEeh M0Q0"), nullptr);

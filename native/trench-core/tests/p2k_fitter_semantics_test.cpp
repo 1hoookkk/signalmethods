@@ -157,6 +157,26 @@ TEST(P2kFitterSemantics, ALossCallbackReproducesTheDefaultObjectiveExactly) {
   ASSERT_EQ(via_loss->shape_rms_db, plain->shape_rms_db);
 }
 
+TEST(P2kFitterSemantics, WritingDcUnityScalesSettlesTheCornerAtUnity) {
+  const auto& c0 = fixture()["corners"][0];
+  const auto packed_words = c0["packed_words"].get<std::vector<std::uint16_t>>();
+  p2k::StoredCorner rows{};
+  for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
+    for (std::size_t wi = 0; wi < p2k::kWordCount; ++wi) {
+      rows[si][wi] = packed_words[si * p2k::kWordCount + wi];
+    }
+  }
+  rows[0][4] = p2k::nearest_gain_word(8.0);
+  p2k::write_dc_unity_scales(rows);
+  p2k::PackedCorner packed{};
+  for (std::size_t si = 0; si < p2k::kStageCount; ++si) {
+    for (std::size_t wi = 0; wi < p2k::kWordCount; ++wi) {
+      packed[si * p2k::kWordCount + wi] = rows[si][wi];
+    }
+  }
+  ASSERT_LT(std::abs(p2k::dc_gain_db(packed)), 0.1);
+}
+
 TEST(P2kFitterSemantics, AHeldScaleWordIsWrittenBackVerbatim) {
   const auto& c0 = fixture()["corners"][0];
   const auto kase = cross_case();

@@ -80,6 +80,8 @@ double section_response_db(const Biquad& section, double frequency_hz,
 double cascade_response_db(std::span<const Biquad> sections, double frequency_hz,
                            double sample_rate_hz);
 
+Cascade unity_dc(const Cascade& cascade);
+
 // This deliberately evaluates the full cascade and the leave-one-out cascade.
 // It remains correct if the displayed response path later adds column reduction.
 std::vector<double> marginal_contribution_db(

@@ -139,6 +139,7 @@ class Corner {
 
 std::pair<double, double> dc_terms(const StageWords& w);
 StageScales stage_gain_pass(const Corner& c);
+void write_dc_unity_scales(StoredCorner& rows);
 PackedCorner pack_corner(const Corner& c, const StageScales& scales);
 std::array<std::uint8_t, 240> pack_body(const std::array<PackedCorner, 4>& corners);
 double dc_gain_db(const PackedCorner& corner);
@@ -279,6 +280,35 @@ constexpr bool scale_free(std::uint32_t mask, std::size_t si) {
 constexpr std::uint32_t pole_bit(std::size_t si) { return 1U << (3 * si); }
 constexpr std::uint32_t zero_bit(std::size_t si) { return 1U << (3 * si + 1); }
 constexpr std::uint32_t scale_bit(std::size_t si) { return 1U << (3 * si + 2); }
+
+inline constexpr double kHeldHzTolerance = 0.01;
+
+struct WidthFit {
+  CornerWords words{};
+  StageScales scales{};
+  PackedCorner packed{};
+  double shape_rms_db{};
+  std::array<double, kStageCount> pole_hz{};
+  std::array<double, kStageCount> pole_radius{};
+  std::array<double, kStageCount> pole_bw_hz{};
+  std::array<bool, kStageCount> solved{};
+};
+
+std::optional<WidthFit> fit_pole_widths(std::span<const double> target, const CornerWords& words,
+                                        std::uint32_t live, std::size_t max_passes = 12,
+                                        const Grid& g = grid());
+
+struct ZeroFit {
+  CornerWords words{};
+  StageScales scales{};
+  PackedCorner packed{};
+  double worst_over_db{};
+};
+
+std::optional<ZeroFit> fit_zeros_under(std::span<const double> ceiling_db,
+                                       const CornerWords& start, std::uint32_t live,
+                                       std::size_t max_passes = 8,
+                                       const Grid& g = grid());
 
 struct StepReport {
   std::size_t section{};

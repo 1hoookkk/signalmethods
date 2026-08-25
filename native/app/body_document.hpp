@@ -23,7 +23,7 @@ class BodyDocument final : public QObject {
   struct View {
     float morph{0};
     float q{0};
-    int semitones{0};
+    double semitones{0.0};
   };
 
   BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
@@ -46,8 +46,8 @@ class BodyDocument final : public QObject {
   [[nodiscard]] View view() const noexcept;
   [[nodiscard]] bool atCorner() const noexcept;
   [[nodiscard]] std::vector<double> viewResponseDb() const;
+  [[nodiscard]] double viewPowerDb() const;
   [[nodiscard]] double targetScoreDb() const;
-  [[nodiscard]] trench::core::p2k::Role roleOf(std::size_t section) const;
 
   void setCorner(std::size_t corner);
   void setTarget(std::vector<double> target);
@@ -56,6 +56,7 @@ class BodyDocument final : public QObject {
   void setIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
   void setView(float morph, float q);
   void setTranspose(int semitones);
+  [[nodiscard]] int cornerTranspose(std::size_t corner) const noexcept;
   [[nodiscard]] trench::core::Cascade viewCascade() const;
 
   void applySpace(const trench::core::p2k::PerceptualSpace& space);
@@ -65,12 +66,12 @@ class BodyDocument final : public QObject {
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   void applySection(std::size_t corner, std::size_t section,
                     const trench::core::PackedSection& words);
-  void commitGesture(std::size_t section, const trench::core::PackedSection& before);
+  void editSection(std::size_t section, const trench::core::PackedSection& words);
+  void commitGesture(const CornerSnapshot& before);
 
   void applyCorner(const CornerSnapshot& words);
   void applyCorner(std::size_t corner, const CornerSnapshot& words);
   void applyFitStep(std::size_t corner, const trench::core::p2k::CornerWords& words);
-  void applyFitResult(std::size_t corner, const trench::core::p2k::StoredCorner& words);
   void commitFit(std::size_t corner, const CornerSnapshot& before);
 
   void applyCharacter(double amount);
@@ -82,7 +83,6 @@ class BodyDocument final : public QObject {
   void freedomMaskChanged(std::uint32_t mask);
   void targetChanged();
   void spaceChanged();
-  void intentChanged(std::size_t section);
   void viewChanged();
 
  private:
@@ -90,6 +90,8 @@ class BodyDocument final : public QObject {
 
   trench::core::PackedBody body_;
   std::size_t corner_{};
+  std::array<int, trench::core::kLegacyCornerCount> corner_semitones_{};
+  [[nodiscard]] double effectiveSemitones(float morph, float q) const;
   double sample_rate_hz_{};
   std::uint32_t freedom_mask_{};
   std::optional<std::vector<double>> target_;

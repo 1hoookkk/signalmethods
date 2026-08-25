@@ -23,12 +23,13 @@
 #include <utility>
 #include <vector>
 
+class ArmadilloView;
 class QAction;
 class QAbstractButton;
 class ChassisBar;
 class MorphStrip;
 class PostureList;
-class SectionStrip;
+class SectionReadout;
 
 class MainWindow final : public QMainWindow {
   Q_OBJECT
@@ -39,9 +40,10 @@ class MainWindow final : public QMainWindow {
                       QWidget* parent = nullptr);
 
   [[nodiscard]] ResponsePlotWidget* responsePlot() const noexcept;
+  [[nodiscard]] ArmadilloView* armadilloView() const noexcept;
   [[nodiscard]] ChassisBar* chassisBar() const noexcept;
   [[nodiscard]] MorphStrip* morphStrip() const noexcept;
-  [[nodiscard]] SectionStrip* sectionStrip(std::size_t section) const noexcept;
+  [[nodiscard]] SectionReadout* sectionReadout() const noexcept;
   [[nodiscard]] const std::filesystem::path& bodyPath() const noexcept;
   [[nodiscard]] BodyDocument* document() const noexcept;
   [[nodiscard]] FitController* fitController() const noexcept;
@@ -51,11 +53,10 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] bool fitRunning() const noexcept;
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
-  void applyMask(std::size_t section, const trench::core::p2k::MaskParam& mask);
-  void applyPoleHz(std::size_t section, double frequency_hz);
-  void addResonance(double frequency_hz);
+  void applyPole(std::size_t section, double frequency_hz, double bw_hz);
   void clearSection(std::size_t section);
-  void selectSection(std::size_t section);
+  void selectSection(std::size_t section,
+                     ResponsePlotWidget::Lane lane = ResponsePlotWidget::Lane::kPole);
   void setCorner(std::size_t corner);
   bool saveBody(const std::filesystem::path& path);
   bool saveCorner(const std::filesystem::path& path);
@@ -78,8 +79,7 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] bool auditionOpen() const noexcept;
 
  protected:
-  void keyPressEvent(QKeyEvent* event) override;
-  void keyReleaseEvent(QKeyEvent* event) override;
+  bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
   void chooseTarget();
@@ -90,10 +90,12 @@ class MainWindow final : public QMainWindow {
   void saveBodyAs();
   void saveCornerAs();
   void chooseCorner();
+  void copyCornerFromCurrent(std::size_t to);
+  void placeResonanceAt(double frequency_hz, double radius);
   void updateVerbs();
   void updateProbes();
   void updateInterior();
-  void updateStrips();
+  void updateReadout();
   void updatePostureMatch();
   void rebuildPostureGroups();
   void keepPosture();
@@ -106,20 +108,21 @@ class MainWindow final : public QMainWindow {
   BodyDocument* document_{};
   FitController* fit_controller_{};
   std::filesystem::path body_path_;
-  trench::core::PackedSection before_words_{};
   BodyDocument::CornerSnapshot pre_fit_{};
   std::size_t fit_corner_{};
   bool fit_active_{};
   trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
-  bool strip_gesture_{};
   bool character_gesture_{};
   std::array<BodyDocument::CornerSnapshot, 2> character_before_{};
+  std::size_t selected_section_{};
   ResponsePlotWidget* response_plot_{};
+  ArmadilloView* armadillo_{};
+  BodyDocument::CornerSnapshot armadillo_before_{};
   MorphStrip* morph_strip_{};
   PostureList* posture_list_{};
   QAbstractButton* keep_posture_{};
   UserPostures user_postures_;
-  std::array<SectionStrip*, trench::core::kLegacySectionCount> strips_{};
+  SectionReadout* section_readout_{};
   ChassisBar* chassis_bar_{};
   FitRoom* fit_room_{};
   std::unique_ptr<trench::audio::Audition> audition_;

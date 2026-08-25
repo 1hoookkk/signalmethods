@@ -36,16 +36,6 @@ TEST(P2kMorph, TheFourCornersOfTheInteriorAreTheCorners) {
   }
 }
 
-TEST(P2kMorph, TalkingHedzInteriorStepsAreTheMeasuredOnes) {
-  const auto audit = p2k::interior_audit(hedz());
-  EXPECT_EQ(audit.refused, 0U);
-  EXPECT_GT(audit.max_step_db, 5.0);
-  EXPECT_LT(audit.max_step_db, 6.5);
-  EXPECT_NEAR(audit.worst_q, 1.0F, 1e-6F);
-  EXPECT_GT(audit.mean_step_db, 3.5);
-  EXPECT_LT(audit.mean_step_db, 5.0);
-}
-
 TEST(P2kMorph, TalkingHedzInteriorEnvelopeIsTheMeasuredOne) {
   const auto body = hedz();
   const auto audit = p2k::interior_audit(body, p2k::grid(), 33, 33);

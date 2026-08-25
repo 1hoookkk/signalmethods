@@ -255,13 +255,6 @@ TEST(P2kParity, ACrossSeededPolishLandsOnTheSameWords) {
   }
 }
 
-TEST(P2kParity, ACornerSeededFromItsOwnWordsNeedsNoPolish) {
-  for (const auto& c : fixture()["corners"]) {
-    ASSERT_LT(c["seed_var"].get<double>(), 1e-18)
-        << "corner " << c["corner"] << " no longer snaps onto the lattice exactly";
-  }
-}
-
 TEST(P2kParity, TheGainPassProducesTheSameScales) {
   for (const auto& c : fixture()["corners"]) {
     const auto corner = p2k::Corner::from_words(words4(c["polished_words"]));

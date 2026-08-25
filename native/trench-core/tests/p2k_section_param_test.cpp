@@ -158,7 +158,7 @@ TEST(P2kSectionParam, EveryFactoryLowSectionReadsItsTrenchFromItsZero) {
   EXPECT_GT(low, 100U);
 }
 
-TEST(P2kSectionParam, TheParkedZeroIsALowRiser) {
+TEST(P2kSectionParam, TheParkedZeroIsInert) {
   const double sr = trench::core::kP2kDatumHz;
   auto words = trench::core::kIdentitySection;
   const auto root = p2k::words_from_root(
@@ -167,64 +167,20 @@ TEST(P2kSectionParam, TheParkedZeroIsALowRiser) {
   words[3] = root.second;
   const auto parked =
       p2k::words_with_parked_zero({words[0], words[1], words[2], words[3]}, 0, sr);
+  EXPECT_EQ(parked[0], trench::core::kIdentitySection[0]);
+  EXPECT_EQ(parked[1], trench::core::kIdentitySection[1]);
+  EXPECT_EQ(parked[2], words[2]);
+  EXPECT_EQ(parked[3], words[3]);
   for (std::size_t w = 0; w < 4; ++w) words[w] = parked[w];
-  const auto zero = std::get<trench::core::ConjugatePair>(
-      trench::core::geometry_from_words(words, sr).zero);
-  EXPECT_NEAR(zero.hz, p2k::kParkedZeroHz, 20.0);
-  EXPECT_NEAR(-std::log(zero.radius) * sr / std::numbers::pi, p2k::kParkedWidthHz, 60.0);
 
   const auto with = trench::core::section_words_to_biquad(words);
   auto without = with;
   without[1] = 0.0;
   without[2] = 0.0;
-  const auto rise = [&](double hz) {
-    return trench::core::section_response_db(with, hz, sr) -
-           trench::core::section_response_db(without, hz, sr) -
-           (trench::core::section_response_db(with, 0.0, sr) -
-            trench::core::section_response_db(without, 0.0, sr));
-  };
-  double previous = -1e9;
   for (int i = 0; i <= 600; ++i) {
     const double hz = 20.0 * std::pow(1000.0, i / 600.0);
-    const double value = rise(hz);
-    if (hz <= 300.0) {
-      EXPECT_LT(std::abs(value), 1.0) << hz << " Hz";
-    } else {
-      EXPECT_GT(value, previous - 0.05) << hz << " Hz";
-      previous = value;
-    }
+    const double value = trench::core::section_response_db(with, hz, sr) -
+                         trench::core::section_response_db(without, hz, sr);
+    EXPECT_LT(std::abs(value), 0.6) << hz << " Hz";
   }
-  EXPECT_GT(rise(16'000.0), 40.0);
-
-  const auto* skeleton = p2k::posture("REZ dead_ringer c1");
-  ASSERT_NE(skeleton, nullptr);
-  trench::core::Cascade cascade{};
-  for (std::size_t s = 0; s < trench::core::kSectionCount; ++s) {
-    cascade[s] = trench::core::section_words_to_biquad(trench::core::kIdentitySection);
-  }
-  for (const auto& pole : p2k::pole_words_from_posture(*skeleton)) {
-    auto row = trench::core::kIdentitySection;
-    row[2] = pole.mag;
-    row[3] = pole.rsq;
-    const auto masked = p2k::words_with_parked_zero({row[0], row[1], row[2], row[3]},
-                                                    pole.row, sr);
-    for (std::size_t w = 0; w < 4; ++w) row[w] = masked[w];
-    const auto placed = std::get<trench::core::ConjugatePair>(
-        trench::core::geometry_from_words(row, sr).zero);
-    if (pole.row == 5) {
-      EXPECT_GT(placed.hz, 10'000.0);
-      EXPECT_NEAR(placed.radius, p2k::trench_floor_radius(), 1e-6);
-    } else {
-      EXPECT_NEAR(placed.hz, p2k::kParkedZeroHz, 20.0) << "row " << pole.row;
-    }
-    cascade[pole.row] = trench::core::section_words_to_biquad(row);
-  }
-  const double reference = trench::core::cascade_response_db(cascade, 1000.0, sr);
-  std::vector<double> top;
-  for (int i = 0; i <= 200; ++i) {
-    const double hz = 8000.0 * std::pow(2.0, i / 200.0);
-    top.push_back(trench::core::cascade_response_db(cascade, hz, sr) - reference);
-  }
-  std::sort(top.begin(), top.end());
-  EXPECT_LT(std::abs(top[top.size() / 2]), 12.0);
 }

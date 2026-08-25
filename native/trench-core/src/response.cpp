@@ -30,6 +30,22 @@ double section_response_db(const Biquad& section, double frequency_hz,
   return to_db(evaluate(section, frequency_hz, sample_rate_hz));
 }
 
+Cascade unity_dc(const Cascade& cascade) {
+  Cascade out = cascade;
+  double product = 1.0;
+  for (const auto& section : out) {
+    const double denominator = 1.0 + section[3] + section[4];
+    const double guarded = std::abs(denominator) < 1.0e-15 ? 1.0e-15 : denominator;
+    product *= (section[0] + section[1] + section[2]) / guarded;
+  }
+  if (!std::isfinite(product) || std::abs(product) < 1.0e-15) return out;
+  const double scale = 1.0 / std::abs(product);
+  out.front()[0] *= scale;
+  out.front()[1] *= scale;
+  out.front()[2] *= scale;
+  return out;
+}
+
 double cascade_response_db(std::span<const Biquad> sections, double frequency_hz,
                            double sample_rate_hz) {
   std::complex<double> response{1.0, 0.0};

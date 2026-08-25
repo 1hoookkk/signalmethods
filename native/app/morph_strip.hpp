@@ -2,6 +2,9 @@
 
 #include <QWidget>
 
+#include <array>
+
+class QPushButton;
 class QSlider;
 
 class MorphStrip final : public QWidget {
@@ -10,6 +13,7 @@ class MorphStrip final : public QWidget {
  public:
   explicit MorphStrip(QWidget* parent = nullptr);
 
+  void setCorner(std::size_t corner);
   void setView(float morph, float q);
   [[nodiscard]] float morph() const;
   [[nodiscard]] float q() const;
@@ -20,6 +24,9 @@ class MorphStrip final : public QWidget {
   [[nodiscard]] double worstStepDb() const;
 
  signals:
+  void cornerPicked(int corner);
+  void cornerCopyRequested(int corner);
+  void cornerMenuRequested(int corner, const QPoint& at);
   void viewEdited(float morph, float q);
   void transposeEdited(int semitones);
   void characterEdited(double amount);
@@ -30,6 +37,7 @@ class MorphStrip final : public QWidget {
   void paintEvent(QPaintEvent* event) override;
 
  private:
+  std::array<QPushButton*, 4> corners_{};
   QSlider* morph_{};
   QSlider* q_{};
   QSlider* character_{};

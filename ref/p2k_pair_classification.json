@@ -1,0 +1,303 @@
+[
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.0",
+        0.990746
+      ]
+    ],
+    "name": "P2k_000_ace_of_bass.bin",
+    "real_poles": 1,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_001_megasweepz.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_002_early_rizer.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "3.0",
+        0.106401
+      ]
+    ],
+    "name": "P2k_003_millennium.bin",
+    "real_poles": 1,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_004_meaty_gizmo.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_005_klub_klassik.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.0",
+        0.562027
+      ]
+    ],
+    "name": "P2k_006_bassbox_303.bin",
+    "real_poles": 1,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_007_fuzzi_face.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.2",
+        0.995854
+      ]
+    ],
+    "name": "P2k_008_dead_ringer.bin",
+    "real_poles": 1,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "1.3",
+        0.799728
+      ],
+      [
+        "2.0",
+        0.388514
+      ]
+    ],
+    "name": "P2k_009_tb_or_not_tb.bin",
+    "real_poles": 2,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_010_ooh_to_eee.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.5",
+        0.535248
+      ],
+      [
+        "2.5",
+        0.765436
+      ]
+    ],
+    "name": "P2k_011_boland_bass.bin",
+    "real_poles": 2,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_012_multi_q_vox.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_013_talking_hedz.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_014_zoom_peaks.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_015_dj_alkaline.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "2.1",
+        0.871162
+      ]
+    ],
+    "name": "P2k_016_bass_tracer.bin",
+    "real_poles": 1,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.1",
+        0.982986
+      ],
+      [
+        "2.1",
+        0.997744
+      ]
+    ],
+    "name": "P2k_017_rogue_hertz.bin",
+    "real_poles": 2,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_018_razor_blades.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_019_radio_craze.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_020_eeh_to_aah.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_021_ubu_orator.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_022_deep_bouche.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_023_freak_shifta.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_024_cruz_pusher.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_025_angelz_hairz.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_026_dream_weava.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_027_acid_ravage.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.3",
+        0.388514
+      ],
+      [
+        "1.5",
+        0.760815
+      ],
+      [
+        "2.5",
+        0.781043
+      ]
+    ],
+    "name": "P2k_028_bass_o_matic.bin",
+    "real_poles": 3,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Contains Real Pairs",
+    "hits": [
+      [
+        "0.5",
+        0.535248
+      ]
+    ],
+    "name": "P2k_029_lucifer_s_q.bin",
+    "real_poles": 1,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_030_tooth_comb.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_031_ear_bender.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  },
+  {
+    "category": "Strictly Complex Conjugate",
+    "hits": [],
+    "name": "P2k_032_klang_kling.bin",
+    "real_poles": 0,
+    "trivial_origins": 0
+  }
+]

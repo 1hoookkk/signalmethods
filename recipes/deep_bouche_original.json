@@ -1,0 +1,94 @@
+{
+ "format": "acoustic-source-v1",
+ "rate_hz": 44100.0,
+ "datum_hz": 44100.0,
+ "provenance": "P2k_022 DeepBouche [VOW] 'French vowels, Ou-Est at low Q'. Endpoints selected by BEHAVIOUR, searched over every same-speaker vowel pair in the DVTD: the DeepBouche signature is exactly one lane travelling ~14 st while the rest hold inside ~2.5 st (measured on P2k_022: +13.83 with the rest <=2.52; E-MU's own U->E paravowels: +14.31 with the rest <=3.59). This pair scores +14.26 with the worst other lane at 3.85. Both poses from subject-2, so the morph stays inside one vocal tract.",
+ "objects": [
+  {
+   "object_id": "ou",
+   "note": "M0 pose: F1 336 / F2 869, 0.6 st from E-MU's paravowel U F1 (325)",
+   "source": "recipes/vocal/dvtd/subject-2/s2-05-bude-tense-u",
+   "peaks": [
+    {
+     "freq_hz": 335.5,
+     "bw_hz": 24.8,
+     "level_db": 24.2,
+     "derivation": "DVTD subject-2/s2-05-bude-tense-u: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 869.2,
+     "bw_hz": 44.8,
+     "level_db": 13.5,
+     "derivation": "DVTD subject-2/s2-05-bude-tense-u: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 2731.5,
+     "bw_hz": 42.9,
+     "level_db": 2.8,
+     "derivation": "DVTD subject-2/s2-05-bude-tense-u: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 4671.3,
+     "bw_hz": 94.3,
+     "level_db": 10.6,
+     "derivation": "DVTD subject-2/s2-05-bude-tense-u: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 7237.2,
+     "bw_hz": 113.6,
+     "level_db": -4.5,
+     "derivation": "DVTD subject-2/s2-05-bude-tense-u: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 9306.3,
+     "bw_hz": 188.3,
+     "level_db": 4.5,
+     "derivation": "DVTD subject-2/s2-05-bude-tense-u: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    }
+   ]
+  },
+  {
+   "object_id": "est",
+   "note": "M100 pose: chosen for BEHAVIOUR - one formant fronting +14.26 st with every other lane inside 3.85 st",
+   "source": "recipes/vocal/dvtd/subject-2/s2-17-mit-lax-i",
+   "peaks": [
+    {
+     "freq_hz": 362.9,
+     "bw_hz": 15.5,
+     "level_db": 28.1,
+     "derivation": "DVTD subject-2/s2-17-mit-lax-i: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 1981.4,
+     "bw_hz": 48.9,
+     "level_db": 21.9,
+     "derivation": "DVTD subject-2/s2-17-mit-lax-i: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 2629.2,
+     "bw_hz": 159.2,
+     "level_db": 14.4,
+     "derivation": "DVTD subject-2/s2-17-mit-lax-i: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 3740.3,
+     "bw_hz": 134.7,
+     "level_db": 21.9,
+     "derivation": "DVTD subject-2/s2-17-mit-lax-i: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 6735.5,
+     "bw_hz": 121.0,
+     "level_db": 4.4,
+     "derivation": "DVTD subject-2/s2-17-mit-lax-i: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    },
+    {
+     "freq_hz": 9777.5,
+     "bw_hz": 175.2,
+     "level_db": 10.3,
+     "derivation": "DVTD subject-2/s2-17-mit-lax-i: peak from find_peaks on the log-resampled measured vvtf; bandwidth from its -3 dB width on that same curve. One measurement, both numbers."
+    }
+   ]
+  }
+ ]
+}

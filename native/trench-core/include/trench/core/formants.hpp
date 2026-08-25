@@ -46,19 +46,13 @@ struct Posture {
   std::string_view type;
   std::size_t pole_count;
   std::array<Formant, 6> poles;
+  std::array<std::size_t, 6> rows{1, 2, 3, 4, 0, 5};
 };
 
 std::span<const Posture> postures();
+std::span<const Posture> compiled_vowels();
 std::span<const Posture> templates();
 const Posture* posture(std::string_view name);
-
-struct PosturePole {
-  std::size_t row{};
-  std::uint16_t mag{};
-  std::uint16_t rsq{};
-};
-
-std::vector<PosturePole> pole_words_from_posture(const Posture& posture);
 
 struct SpectralPeak {
   double hz{};
@@ -68,5 +62,15 @@ struct SpectralPeak {
 
 std::vector<SpectralPeak> peaks_of_envelope(std::span<const double> hz, std::span<const double> db,
                                             std::size_t max_peaks = 6);
+
+struct PosturePole {
+  std::size_t row{};
+  std::uint16_t mag{};
+  std::uint16_t rsq{};
+};
+
+std::vector<PosturePole> pole_words_from_posture(const Posture& posture);
+
+
 
 }  // namespace trench::core::p2k

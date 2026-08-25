@@ -38,28 +38,6 @@ class CornerEditCommand final : public QUndoCommand {
   BodyDocument::CornerSnapshot after_;
 };
 
-class SectionEditCommand final : public QUndoCommand {
- public:
-  SectionEditCommand(BodyDocument* document, std::size_t corner, std::size_t section,
-                     trench::core::PackedSection before,
-                     trench::core::PackedSection after)
-      : document_(document),
-        corner_(corner),
-        section_(section),
-        before_(before),
-        after_(after) {}
-
-  void redo() override { document_->applySection(corner_, section_, after_); }
-  void undo() override { document_->applySection(corner_, section_, before_); }
-
- private:
-  BodyDocument* document_;
-  std::size_t corner_;
-  std::size_t section_;
-  trench::core::PackedSection before_;
-  trench::core::PackedSection after_;
-};
-
 class SpaceEditCommand final : public QUndoCommand {
  public:
   SpaceEditCommand(BodyDocument* document, trench::core::p2k::PerceptualSpace before,
@@ -109,9 +87,11 @@ std::size_t BodyDocument::corner() const noexcept { return corner_; }
 
 void BodyDocument::setCorner(std::size_t corner) {
   if (corner >= trench::core::kLegacyCornerCount) return;
-  const View wanted{(corner & 1U) != 0U ? 1.0F : 0.0F, (corner & 2U) != 0U ? 1.0F : 0.0F,
-                    view_.semitones};
-  if (wanted.morph != view_.morph || wanted.q != view_.q) {
+  const auto morph = (corner & 1U) != 0U ? 1.0F : 0.0F;
+  const auto q = (corner & 2U) != 0U ? 1.0F : 0.0F;
+  const View wanted{morph, q, effectiveSemitones(morph, q)};
+  if (wanted.morph != view_.morph || wanted.q != view_.q ||
+      wanted.semitones != view_.semitones) {
     view_ = wanted;
     emit viewChanged();
   }
@@ -144,11 +124,18 @@ void BodyDocument::applySection(std::size_t corner, std::size_t section,
   emit bodyChanged();
 }
 
-void BodyDocument::commitGesture(std::size_t section,
-                                 const trench::core::PackedSection& before) {
-  const auto& after = body_.words[corner_][section];
+void BodyDocument::editSection(std::size_t section,
+                               const trench::core::PackedSection& words) {
+  auto rows = cornerSnapshot();
+  rows[section] = words;
+  trench::core::p2k::write_dc_unity_scales(rows);
+  applyCorner(corner_, rows);
+}
+
+void BodyDocument::commitGesture(const CornerSnapshot& before) {
+  const auto after = cornerSnapshot();
   if (after == before) return;
-  undo_stack_.push(new SectionEditCommand(this, corner_, section, before, after));
+  undo_stack_.push(new CornerEditCommand(this, corner_, before, after));
 }
 
 const std::optional<std::vector<double>>& BodyDocument::target() const noexcept {
@@ -195,15 +182,17 @@ void BodyDocument::setIntent(std::size_t section,
 void BodyDocument::applyIntent(std::size_t section,
                                std::optional<trench::core::p2k::Role> role) {
   intent_[section] = role;
-  emit intentChanged(section);
 }
 
 BodyDocument::View BodyDocument::view() const noexcept { return view_; }
 
 void BodyDocument::setView(float morph, float q) {
-  const View wanted{std::clamp(morph, 0.0F, 1.0F), std::clamp(q, 0.0F, 1.0F),
-                    view_.semitones};
-  if (wanted.morph != view_.morph || wanted.q != view_.q) {
+  const auto morph_clamped = std::clamp(morph, 0.0F, 1.0F);
+  const auto q_clamped = std::clamp(q, 0.0F, 1.0F);
+  const View wanted{morph_clamped, q_clamped,
+                    effectiveSemitones(morph_clamped, q_clamped)};
+  if (wanted.morph != view_.morph || wanted.q != view_.q ||
+      wanted.semitones != view_.semitones) {
     view_ = wanted;
     emit viewChanged();
   }
@@ -217,19 +206,33 @@ bool BodyDocument::atCorner() const noexcept {
 }
 
 void BodyDocument::setTranspose(int semitones) {
-  if (semitones == view_.semitones) return;
-  view_.semitones = semitones;
+  if (corner_semitones_[corner_] == semitones) return;
+  corner_semitones_[corner_] = semitones;
+  view_.semitones = effectiveSemitones(view_.morph, view_.q);
   emit viewChanged();
+}
+
+int BodyDocument::cornerTranspose(std::size_t corner) const noexcept {
+  return corner < corner_semitones_.size() ? corner_semitones_[corner] : 0;
+}
+
+double BodyDocument::effectiveSemitones(float morph, float q) const {
+  const auto m = static_cast<double>(morph);
+  const auto blend = static_cast<double>(q);
+  const auto low = corner_semitones_[0] * (1.0 - m) + corner_semitones_[1] * m;
+  const auto high = corner_semitones_[2] * (1.0 - m) + corner_semitones_[3] * m;
+  return low * (1.0 - blend) + high * blend;
 }
 
 trench::core::Cascade BodyDocument::viewCascade() const {
   const auto cascade = body_.interpolate_biquads(view_.morph, view_.q, 0.0F);
-  return trench::core::transpose_cascade(
-      cascade, trench::core::ratio_of_semitones(view_.semitones), sample_rate_hz_);
+  if (view_.semitones == 0.0 && atCorner()) return cascade;
+  return trench::core::unity_dc(trench::core::transpose_cascade(
+      cascade, trench::core::ratio_of_semitones(view_.semitones), sample_rate_hz_));
 }
 
 std::vector<double> BodyDocument::viewResponseDb() const {
-  if (view_.semitones != 0) {
+  if (view_.semitones != 0.0) {
     const auto cascade = viewCascade();
     std::vector<double> out;
     out.reserve(grid_.hz.size());
@@ -251,16 +254,23 @@ std::vector<double> BodyDocument::viewResponseDb() const {
   return trench::core::p2k::morph_response_db(bytes, view_.morph, view_.q, grid_);
 }
 
+double BodyDocument::viewPowerDb() const {
+  const auto response = viewResponseDb();
+  if (response.size() != grid_.weight.size() || grid_.weight_sum <= 0.0) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  double power = 0.0;
+  for (std::size_t index = 0; index < response.size(); ++index) {
+    power += grid_.weight[index] * std::pow(10.0, response[index] / 10.0);
+  }
+  return 10.0 * std::log10(std::max(power / grid_.weight_sum, 1.0e-30));
+}
+
 double BodyDocument::targetScoreDb() const {
   if (!target_) return std::numeric_limits<double>::quiet_NaN();
   const auto model = viewResponseDb();
   std::vector<double> scratch(model.size(), 0.0);
   return std::sqrt(grid_.residual_var(*target_, model, scratch));
-}
-
-trench::core::p2k::Role BodyDocument::roleOf(std::size_t section) const {
-  return trench::core::p2k::role_of(body_.words[corner_][section],
-                                    trench::core::kP2kDatumHz);
 }
 
 BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot() const {
@@ -319,26 +329,14 @@ void BodyDocument::applyCorner(std::size_t corner, const CornerSnapshot& words) 
 
 void BodyDocument::applyFitStep(std::size_t corner,
                                 const trench::core::p2k::CornerWords& words) {
+  auto rows = cornerSnapshot(corner);
   for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    auto packed = body_.words[corner][section];
     for (std::size_t word = 0; word < words[section].size(); ++word) {
-      packed[word] = words[section][word];
+      rows[section][word] = words[section][word];
     }
-    write_section(body_, corner, section, packed);
   }
-  emit bodyChanged();
-}
-
-void BodyDocument::applyFitResult(std::size_t corner,
-                                  const trench::core::p2k::StoredCorner& words) {
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    trench::core::PackedSection packed{};
-    for (std::size_t word = 0; word < packed.size(); ++word) {
-      packed[word] = words[section][word];
-    }
-    write_section(body_, corner, section, packed);
-  }
-  emit bodyChanged();
+  trench::core::p2k::write_dc_unity_scales(rows);
+  applyCorner(corner, rows);
 }
 
 void BodyDocument::applyCharacter(double amount) {

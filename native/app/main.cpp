@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
       QStringLiteral("Perceptual space, \"lo,hi[,erb|flat[,smooth_oct]]\"."),
       QStringLiteral("spec"));
   QCommandLineOption overlay_option(QStringLiteral("overlay"),
-                                    QStringLiteral("Draw a formant template as ghost bells."),
+                                    QStringLiteral("Draw a formant template as bars."),
                                     QStringLiteral("name"));
   QCommandLineOption view_option(QStringLiteral("view"),
                                  QStringLiteral("Interior view \"morph,q\" after showing."),

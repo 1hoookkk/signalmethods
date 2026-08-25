@@ -1,0 +1,96 @@
+{
+ "format": "acoustic-source-v1",
+ "rate_hz": 44100.0,
+ "datum_hz": 44100.0,
+ "provenance": "pole Hz + bandwidth measured from P2k_022_deep_bouche.bin (sha 3c405fea..) via trench_stage_roots_from_words_at at 44100 Hz; B = -ln(r)*fs/pi. POSITIVE DATUM (Hz-anchored recompile): no packed row copied. Zeros from carve_law(), SCALE from unity-DC, Q from --q-attitude.",
+ "objects": [
+  {
+   "object_id": "ou",
+   "note": "M0 cavity ladder",
+   "peaks": [
+    {
+     "freq_hz": 256.9,
+     "bw_hz": 34.3,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 1763.3,
+     "bw_hz": 75.8,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 2163.7,
+     "bw_hz": 93.1,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 2871.2,
+     "bw_hz": 93.1,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 3339.1,
+     "bw_hz": 236.8,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 3933.0,
+     "bw_hz": 481.9,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    }
+   ]
+  },
+  {
+   "object_id": "est",
+   "note": "M100 cavity ladder",
+   "peaks": [
+    {
+     "freq_hz": 372.0,
+     "bw_hz": 12.4,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 1869.0,
+     "bw_hz": 46.4,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 2502.4,
+     "bw_hz": 96.6,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 3140.4,
+     "bw_hz": 124.4,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 3455.0,
+     "bw_hz": 201.6,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    },
+    {
+     "freq_hz": 8745.5,
+     "bw_hz": 540.9,
+     "level_db": 0.0,
+     "derivation": "pole Hz from trench_stage_roots_from_words_at on P2k_022_deep_bouche.bin at 44100 Hz; bw_hz = -ln(r)*fs/pi"
+    }
+   ]
+  }
+ ],
+ "sort_note": "peaks stored ASCENDING by frequency; --lane-order descending reverses them, so S1 lands on the highest formant and S6 on the throat (the species signature)",
+ "sources": [
+  "ref/presets/P2K_MANIFEST.json"
+ ]
+}

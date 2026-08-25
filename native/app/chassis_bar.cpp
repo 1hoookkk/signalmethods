@@ -3,6 +3,7 @@
 #include <QFontMetricsF>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QToolTip>
 
 #include <cmath>
 
@@ -30,7 +31,8 @@ struct VerbLook {
   const QColor* ink;
 };
 
-const std::array<VerbLook, 5> kVerbs{{
+const std::array<VerbLook, 6> kVerbs{{
+    {ChassisBar::Verb::kSave, "SAVE", &kIdentity},
     {ChassisBar::Verb::kSource, "", &kIdentityDim},
     {ChassisBar::Verb::kTarget, "TARGET", &kIdentity},
     {ChassisBar::Verb::kFit, "FIT", &kFit},
@@ -45,6 +47,41 @@ QFont pad_font() { return QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold);
 ChassisBar::ChassisBar(QWidget* parent) : QWidget(parent) {
   setFixedHeight(static_cast<int>(kBarHeight));
   setMouseTracking(true);
+}
+
+bool ChassisBar::event(QEvent* event) {
+  if (event->type() == QEvent::ToolTip) {
+    const auto* help = static_cast<QHelpEvent*>(event);
+    for (const auto& pad : pads()) {
+      if (!pad.rect.contains(help->pos())) continue;
+      QString tip;
+      switch (pad.verb) {
+        case Verb::kSave:
+          tip = QStringLiteral("save the body (ctrl+S — ctrl+shift+S for a new file)");
+          break;
+        case Verb::kSource:
+          tip = QStringLiteral("measurement source for audio targets: flat or sawtooth");
+          break;
+        case Verb::kTarget:
+          tip = QStringLiteral("load a target to fit against (ctrl+T)");
+          break;
+        case Verb::kFit:
+          tip = QStringLiteral("solve the free zeros under the target; poles stay put");
+          break;
+        case Verb::kKeep:
+          tip = QStringLiteral("stop the fit and keep the result as one undo");
+          break;
+        case Verb::kDiscard:
+          tip = QStringLiteral("stop the fit and restore the pre-fit state");
+          break;
+      }
+      QToolTip::showText(help->globalPos(), tip, this);
+      return true;
+    }
+    QToolTip::hideText();
+    return true;
+  }
+  return QWidget::event(event);
 }
 
 void ChassisBar::setBodyName(const QString& name) {
@@ -67,6 +104,13 @@ void ChassisBar::setSourceSawtooth(bool sawtooth) {
   source_sawtooth_ = sawtooth;
   update();
 }
+
+void ChassisBar::setPowerDb(double db) {
+  power_db_ = db;
+  update();
+}
+
+double ChassisBar::powerDb() const noexcept { return power_db_; }
 
 void ChassisBar::setScoreDb(double db) {
   score_db_ = db;
@@ -97,6 +141,7 @@ std::vector<ChassisBar::Pad> ChassisBar::pads() const {
     pad.verb = it->verb;
     pad.rect = QRectF(right - pad_width, top, pad_width, kPadHeight);
     switch (it->verb) {
+      case Verb::kSave:
       case Verb::kSource:
       case Verb::kTarget:
         pad.available = !running_;
@@ -153,10 +198,16 @@ void ChassisBar::paintEvent(QPaintEvent*) {
     painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
     x += metrics.horizontalAdvance(text) + 14.0;
   }
-  if (std::isfinite(score_db_) && x < pads_left - 40.0) {
+  if (std::isfinite(power_db_) && x < pads_left - 70.0) {
     painter.setPen(kIdentity);
+    const auto text = QStringLiteral("LEVEL %1 dB").arg(power_db_, 0, 'f', 2);
+    painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0}, text);
+    x += metrics.horizontalAdvance(text) + 14.0;
+  }
+  if (std::isfinite(score_db_) && x < pads_left - 60.0) {
+    painter.setPen(kIdentityDim);
     painter.drawText(QPointF{x, kBarHeight * 0.5 + metrics.ascent() * 0.5 - 1.0},
-                     QStringLiteral("%1 dB").arg(score_db_, 0, 'f', 2));
+                     QStringLiteral("ERR %1 dB").arg(score_db_, 0, 'f', 2));
   }
 
   for (const auto& pad : laid) {

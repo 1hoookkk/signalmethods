@@ -27,7 +27,6 @@ const QColor kBackground{17, 20, 22};
 const QColor kGrid{55, 63, 67};
 const QColor kText{174, 186, 190};
 const QColor kTrace{87, 222, 205};
-const QColor kRefusal{226, 78, 74};
 
 constexpr int kTraceOversample = 4;
 constexpr int kTraceMinimumBins = 192;
@@ -39,16 +38,20 @@ constexpr double kPairSnapOct = 0.1;
 constexpr int kFaintRingAlpha = 96;
 constexpr double kHitRadiusPx = 11.0;
 constexpr double kTokenRadiusPx = 8.0;
-constexpr qint64 kRefusalHoldMs = 600;
 constexpr qint64 kFlashHoldMs = 200;
 const QColor kTarget{72, 82, 88};
-const QColor kGhost{196, 170, 132, 84};
+const QColor kOverlayBand{174, 186, 190, 24};
+const QColor kOverlayLine{174, 186, 190, 70};
 const QColor kResidual{156, 130, 224};
+const QColor kPrimitive{174, 186, 190, 60};
+const QColor kExposed{174, 186, 190, 200};
 
 constexpr double kResidualBandPx = 34.0;
 
-constexpr double kGhostWidthPx = 0.9;
-constexpr int kGhostBins = 320;
+constexpr double kOverlayBarWidthPx = 3.0;
+constexpr double kOverlayMinWidthPx = 2.0;
+constexpr double kPrimitiveWidthPx = 1.0;
+constexpr double kExposedWidthPx = 1.4;
 
 constexpr double kAxisLowHz = 100.0;
 constexpr double kAxisHighHz = 16'000.0;
@@ -82,6 +85,11 @@ double y_for_db(double db, double low_db, double high_db, const QRectF& plot) {
   return plot.bottom() - (db - low_db) / (high_db - low_db) * plot.height();
 }
 
+double db_for_y(double y, double low_db, double high_db, const QRectF& plot) {
+  if (plot.height() <= 0.0) return low_db;
+  return low_db + (plot.bottom() - y) / plot.height() * (high_db - low_db);
+}
+
 constexpr double kOverflowBandPx = 30.0;
 constexpr double kOverflowScaleDb = 18.0;
 
@@ -101,10 +109,29 @@ double y_for_contribution(double db, double low_db, double high_db, const QRectF
   return bottom - (db - low_db) / (high_db - low_db) * (bottom - top);
 }
 
+std::vector<double> primitive_db(const trench::core::ConjugatePair& pair, bool pole,
+                                 const std::vector<double>& frequencies_hz,
+                                 double sample_rate_hz) {
+  const auto radius = std::clamp(pair.radius, 0.0, 0.99999);
+  const auto theta = 2.0 * std::numbers::pi * pair.hz / sample_rate_hz;
+  const auto a1 = -2.0 * radius * std::cos(theta);
+  const auto a2 = radius * radius;
+  const auto dc = std::max(std::abs(1.0 + a1 + a2), 1e-12);
+  const trench::core::Biquad section =
+      pole ? trench::core::Biquad{dc, 0.0, 0.0, a1, a2}
+           : trench::core::Biquad{1.0 / dc, a1 / dc, a2 / dc, 0.0, 0.0};
+  std::vector<double> out;
+  out.reserve(frequencies_hz.size());
+  for (const auto frequency_hz : frequencies_hz) {
+    out.push_back(trench::core::section_response_db(section, frequency_hz, sample_rate_hz));
+  }
+  return out;
+}
+
 bool root_placement(const trench::core::RootPair& pair, double low_hz, double high_hz,
                     double& hz, double& radius) {
   if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
-    hz = std::clamp(conjugate->hz, low_hz, high_hz);
+    hz = conjugate->hz;
     radius = conjugate->radius;
     return true;
   }
@@ -131,7 +158,7 @@ trench::core::Cascade corner_cascade(const trench::core::PackedBody& body,
 }  // namespace
 
 ResponsePlotWidget::ResponsePlotWidget(QWidget* parent) : QWidget(parent) {
-  setMinimumSize(480, 280);
+  setMinimumSize(480, 150);
   setAutoFillBackground(false);
   setMouseTracking(true);
   buildOverlayPicker();
@@ -220,39 +247,30 @@ void ResponsePlotWidget::resizeEvent(QResizeEvent* event) {
   QWidget::resizeEvent(event);
 }
 
-void ResponsePlotWidget::paintOverlay(QPainter& painter, const QRectF& plot, double low_db,
-                                      double high_db) const {
+void ResponsePlotWidget::paintOverlay(QPainter& painter, const QRectF& plot) const {
   if (overlay_poles_.empty() || frequencies_hz_.empty()) return;
   const auto low_hz = frequencies_hz_.front();
   const auto high_hz = frequencies_hz_.back();
-  painter.setPen(QPen(kGhost, kGhostWidthPx));
-  painter.setBrush(Qt::NoBrush);
+  painter.setPen(Qt::NoPen);
   for (const auto& pole : overlay_poles_) {
-    const auto radius = std::clamp(
-        std::exp(-std::numbers::pi * pole.bw_hz / sample_rate_hz_), 0.0, 0.99999);
-    const auto theta = 2.0 * std::numbers::pi * pole.hz / sample_rate_hz_;
-    const auto a1 = -2.0 * radius * std::cos(theta);
-    const auto a2 = radius * radius;
-    const auto dc = std::abs(1.0 + a1 + a2);
-    QPainterPath path;
-    for (int bin = 0; bin <= kGhostBins; ++bin) {
-      const auto fraction = static_cast<double>(bin) / static_cast<double>(kGhostBins);
-      const auto hz = frequency_for_fraction(fraction, low_hz, high_hz);
-      const auto omega = 2.0 * std::numbers::pi * hz / sample_rate_hz_;
-      const auto real = 1.0 + a1 * std::cos(omega) + a2 * std::cos(2.0 * omega);
-      const auto imaginary = -(a1 * std::sin(omega) + a2 * std::sin(2.0 * omega));
-      const auto magnitude = dc / std::max(std::hypot(real, imaginary), 1e-12);
-      const auto db = 20.0 * std::log10(std::max(magnitude, 1e-9));
-      const auto x = plot.left() + fraction * plot.width();
-      const auto y = y_for_db(db, low_db, high_db, plot);
-      if (bin == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-    painter.drawPath(path);
+    const auto centre = x_for_frequency(std::clamp(pole.hz, low_hz, high_hz), low_hz,
+                                        high_hz, plot);
+    const auto width =
+        pole.bw_hz > 0.0
+            ? std::max(x_for_frequency(std::clamp(pole.hz + pole.bw_hz * 0.5, low_hz,
+                                                  high_hz),
+                                       low_hz, high_hz, plot) -
+                           x_for_frequency(std::clamp(pole.hz - pole.bw_hz * 0.5, low_hz,
+                                                      high_hz),
+                                           low_hz, high_hz, plot),
+                       kOverlayMinWidthPx)
+            : kOverlayBarWidthPx;
+    painter.setBrush(kOverlayBand);
+    painter.drawRect(QRectF{centre - width * 0.5, plot.top(), width, plot.height()});
+    painter.setBrush(kOverlayLine);
+    painter.drawRect(QRectF{centre - 0.5, plot.top(), 1.0, plot.height()});
   }
+  painter.setBrush(Qt::NoBrush);
 }
 
 void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
@@ -276,19 +294,33 @@ void ResponsePlotWidget::setCorner(std::size_t corner) {
   refresh();
 }
 
-void ResponsePlotWidget::setView(float morph, float q, int semitones) {
+void ResponsePlotWidget::setView(float morph, float q, double semitones) {
   view_morph_ = morph;
   view_q_ = q;
   view_semitones_ = semitones;
-  at_corner_ = (morph == 0.0F || morph == 1.0F) && (q == 0.0F || q == 1.0F) && semitones == 0;
+  at_corner_ = (morph == 0.0F || morph == 1.0F) && (q == 0.0F || q == 1.0F);
   refresh();
 }
 
 trench::core::Cascade ResponsePlotWidget::viewCascade() const {
-  if (at_corner_) return corner_cascade(*body_, corner_);
-  return trench::core::transpose_cascade(
+  if (at_corner_ && view_semitones_ == 0.0) return corner_cascade(*body_, corner_);
+  return trench::core::unity_dc(trench::core::transpose_cascade(
       body_->interpolate_biquads(view_morph_, view_q_, 0.0F),
-      trench::core::ratio_of_semitones(view_semitones_), sample_rate_hz_);
+      trench::core::ratio_of_semitones(view_semitones_), sample_rate_hz_));
+}
+
+double ResponsePlotWidget::viewRatio() const {
+  return trench::core::ratio_of_semitones(view_semitones_);
+}
+
+double ResponsePlotWidget::viewHz(double hz, double radius, bool zero) const {
+  return trench::core::transposed_root_hz(hz, radius, viewRatio(), sample_rate_hz_, zero);
+}
+
+double ResponsePlotWidget::authorHzForX(double x, const QRectF& plot) const {
+  const auto view_hz = frequency_for_x(x, frequencies_hz_.front(), frequencies_hz_.back(),
+                                       plot);
+  return std::clamp(view_hz / viewRatio(), 20.0, trench::core::p2k::kRootHiHz);
 }
 
 void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
@@ -296,8 +328,10 @@ void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
   update();
 }
 
-void ResponsePlotWidget::setSelectedSection(std::size_t section) {
+void ResponsePlotWidget::setSelectedSection(std::size_t section, Lane lane) {
   selected_section_ = section;
+  selected_lane_ = lane;
+  rebuildExposed();
   update();
 }
 
@@ -360,29 +394,60 @@ void ResponsePlotWidget::refresh() {
     running_peak_db_[section] = peak;
   }
   rebuildResidual();
+  rebuildExposed();
   ++body_revision_;
   update();
 }
 
 void ResponsePlotWidget::rebuildResidual() {
   residual_db_.clear();
+  aligned_target_db_.clear();
   residual_span_db_ = 1.0;
   if (target_db_.size() != response_db_.size() || response_db_.empty()) return;
-  const auto& weight = trench::core::p2k::grid().weight;
-  if (weight.size() != response_db_.size()) return;
+  const auto grid = trench::core::p2k::make_grid(space_);
+  if (grid.weight.size() != response_db_.size() || grid.weight_sum <= 0.0) return;
   double mean = 0.0;
   for (std::size_t index = 0; index < response_db_.size(); ++index) {
-    mean += weight[index] * (target_db_[index] - response_db_[index]);
+    mean += grid.weight[index] * (target_db_[index] - response_db_[index]);
   }
-  mean /= trench::core::p2k::grid().weight_sum;
+  mean /= grid.weight_sum;
   residual_db_.reserve(response_db_.size());
+  aligned_target_db_.reserve(response_db_.size());
   double largest = 0.0;
   for (std::size_t index = 0; index < response_db_.size(); ++index) {
-    const auto value = target_db_[index] - response_db_[index] - mean;
+    const auto aligned = target_db_[index] - mean;
+    const auto value = aligned - response_db_[index];
+    aligned_target_db_.push_back(aligned);
     residual_db_.push_back(value);
     largest = std::max(largest, std::abs(value));
   }
   residual_span_db_ = std::max(1.0, std::ceil(largest));
+}
+
+void ResponsePlotWidget::rebuildExposed() {
+  exposed_db_.clear();
+  primitives_.clear();
+  if (body_ == nullptr || !at_corner_ || frequencies_hz_.empty()) return;
+  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
+    const auto geometry = trench::core::geometry_from_words(
+        body_->words[corner_][section], sample_rate_hz_);
+    const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+    if (pole == nullptr) continue;
+    auto viewed = *pole;
+    viewed.hz = viewHz(pole->hz, pole->radius, false);
+    auto curve = primitive_db(viewed, true, frequencies_hz_, sample_rate_hz_);
+    if (section == selected_section_) {
+      if (selected_lane_ == Lane::kPole) {
+        exposed_db_ = curve;
+      } else if (const auto* zero =
+                     std::get_if<trench::core::ConjugatePair>(&geometry.zero)) {
+        auto viewed_zero = *zero;
+        viewed_zero.hz = viewHz(zero->hz, zero->radius, true);
+        exposed_db_ = primitive_db(viewed_zero, false, frequencies_hz_, sample_rate_hz_);
+      }
+    }
+    primitives_.emplace_back(section, std::move(curve));
+  }
 }
 
 double ResponsePlotWidget::contributionAt(std::size_t section, double hz) const {
@@ -534,9 +599,8 @@ double ResponsePlotWidget::residualDbAt(std::size_t index) const {
   return residual_db_.at(index);
 }
 
-bool ResponsePlotWidget::refusalVisible() const noexcept {
-  return refusal_active_ && refusal_age_.isValid() &&
-         refusal_age_.elapsed() <= kRefusalHoldMs;
+double ResponsePlotWidget::alignedTargetDbAt(std::size_t index) const {
+  return aligned_target_db_.at(index);
 }
 
 std::optional<std::size_t> ResponsePlotWidget::highlightedSection() const noexcept {
@@ -573,6 +637,12 @@ std::pair<double, double> ResponsePlotWidget::dbRange() const {
   return {low_db, high_db};
 }
 
+double ResponsePlotWidget::dbForY(double y) const {
+  const auto plot = plotRect();
+  const auto [low_db, high_db] = dbRange();
+  return db_for_y(y, low_db, high_db, plot);
+}
+
 double ResponsePlotWidget::xForFrequency(double frequency_hz) const {
   const auto plot = plotRect();
   if (frequencies_hz_.empty() || plot.width() <= 0.0) return 0.0;
@@ -591,24 +661,45 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
   for (const auto lane : {Lane::kPole, Lane::kZero}) {
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
       const auto geometry = trench::core::geometry_from_words(
-          body_->words[corner_][section], trench::core::kP2kDatumHz);
+          body_->words[corner_][section], sample_rate_hz_);
       if (!std::holds_alternative<trench::core::ConjugatePair>(geometry.pole)) continue;
       const auto& pair = lane == Lane::kPole ? geometry.pole : geometry.zero;
       double hz = low_hz;
       double radius = 0.0;
-      if (!root_placement(pair, low_hz, high_hz, hz, radius)) continue;
+      auto zero_root = lane == Lane::kZero;
+      if (!root_placement(pair, low_hz, high_hz, hz, radius)) {
+        if (lane != Lane::kZero ||
+            !root_placement(geometry.pole, low_hz, high_hz, hz, radius)) {
+          continue;
+        }
+        zero_root = false;
+      } else {
+        hz = viewHz(hz, radius, zero_root);
+      }
       const auto bit = lane == Lane::kPole ? trench::core::p2k::pole_bit(section)
                                            : trench::core::p2k::zero_bit(section);
-      const auto [low_db, high_db] = latched_db_.value_or(dbRange());
+      const auto [low_db, high_db] = dbRange();
       const auto lit = section == selected_section_ ||
                        (highlight_section_ && section == *highlight_section_);
       TokenInfo token;
       token.section = section;
       token.lane = lane;
+      auto y = y_for_contribution(responseDbAtHz(hz), low_db, high_db, plot);
+      if (lane == Lane::kPole) {
+        for (const auto& [owner, curve] : primitives_) {
+          if (owner != section || curve.empty()) continue;
+          const auto position = std::log(hz / low_hz) / std::log(high_hz / low_hz) *
+                                static_cast<double>(curve.size() - 1);
+          const auto index = std::clamp<std::size_t>(
+              static_cast<std::size_t>(std::lround(position)), 0, curve.size() - 1);
+          y = y_for_db(curve[index], low_db, high_db, plot);
+          break;
+        }
+      }
       token.position = QPointF{
-          std::clamp(x_for_frequency(hz, low_hz, high_hz, plot),
+          std::clamp(x_for_frequency(std::clamp(hz, low_hz, high_hz), low_hz, high_hz, plot),
                      plot.left() + kTokenRadiusPx, plot.right() - kTokenRadiusPx),
-          y_for_contribution(responseDbAtHz(hz), low_db, high_db, plot)};
+          y};
       token.radius = lane == Lane::kPole ? kTokenRadiusPx * (lit ? 0.8 : 0.6)
                                          : kTokenRadiusPx * (lit ? 1.15 : 0.95);
       token.live = true;
@@ -617,6 +708,12 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
     }
   }
   return out;
+}
+
+std::vector<double> ResponsePlotWidget::exposedDb() const { return exposed_db_; }
+
+std::size_t ResponsePlotWidget::primitiveCount() const noexcept {
+  return primitives_.size();
 }
 
 std::optional<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::hit(
@@ -639,109 +736,6 @@ std::optional<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::hit(
   return best;
 }
 
-double ResponsePlotWidget::snapToPole(double frequency_hz) const {
-  double best_hz = frequency_hz;
-  double best_octaves = kPairSnapOct;
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    const auto geometry = trench::core::geometry_from_words(
-        body_->words[corner_][section], trench::core::kP2kDatumHz);
-    const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
-    if (pole == nullptr) continue;
-    const auto octaves = std::abs(std::log2(frequency_hz / pole->hz));
-    if (octaves <= best_octaves) {
-      best_octaves = octaves;
-      best_hz = pole->hz;
-    }
-  }
-  return best_hz;
-}
-
-std::optional<trench::core::PackedSection> ResponsePlotWidget::zeroCandidate(
-    const QPointF& at, bool snap) const {
-  namespace p2k = trench::core::p2k;
-  const auto plot = plotRect();
-  if (plot.width() <= 0.0 || plot.height() <= 0.0 || frequencies_hz_.empty()) {
-    return std::nullopt;
-  }
-  const auto geometry =
-      trench::core::geometry_from_words(origin_words_, trench::core::kP2kDatumHz);
-  const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
-  if (pole == nullptr) return std::nullopt;
-  const auto floor_hz = p2k::mask_width_floor_hz(trench::core::kP2kDatumHz);
-  auto mask = p2k::parked_mask(pole->hz, press_section_);
-  if (at.x() <= plot.right()) {
-    auto hz = std::clamp(frequency_for_x(at.x(), frequencies_hz_.front(),
-                                         frequencies_hz_.back(), plot),
-                         20.0, p2k::kRootHiHz);
-    if (snap) hz = snapToPole(hz);
-    const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
-                          trench::core::kP2kDatumHz / std::numbers::pi;
-    const auto rise = (press_position_.y() - at.y()) / plot.height();
-    mask.offset_oct = std::log2(hz / pole->hz);
-    mask.zero_bw_hz = std::clamp(press_bw * std::pow(2.0, -rise * kWidthSpanOct), floor_hz,
-                                 p2k::kMaskWidthMaxHz);
-  }
-  const std::array<std::uint16_t, 4> current{origin_words_[0], origin_words_[1],
-                                             origin_words_[2], origin_words_[3]};
-  const auto roots =
-      p2k::words_from_mask(mask, current, press_section_, trench::core::kP2kDatumHz);
-  auto candidate = origin_words_;
-  for (std::size_t word = 0; word < roots.size(); ++word) candidate[word] = roots[word];
-  return candidate;
-}
-
-void ResponsePlotWidget::refuse(double frequency_hz) {
-  refusal_active_ = true;
-  refusal_hz_ = frequency_hz;
-  refusal_age_.start();
-  QTimer::singleShot(kRefusalHoldMs + 10, this, [this] { update(); });
-  update();
-}
-
-void ResponsePlotWidget::moveTo(const QPointF& at) {
-  namespace p2k = trench::core::p2k;
-  const auto plot = plotRect();
-  if (plot.width() <= 0.0 || plot.height() <= 0.0 || frequencies_hz_.empty()) return;
-  if (press_lane_ == Lane::kZero) {
-    const auto masked = zeroCandidate(at, false);
-    if (!masked) return;
-    refusal_active_ = false;
-    if (*masked == body_->words[corner_][press_section_]) {
-      update();
-      return;
-    }
-    emit sectionEdited(press_section_, *masked);
-    return;
-  }
-
-  const auto hz = std::clamp(press_hz_, 20.0, p2k::kRootHiHz);
-  const auto rise = (press_position_.y() - at.y()) / plot.height();
-  const auto press_bw = -std::log(std::max(press_radius_, 1e-9)) *
-                        trench::core::kP2kDatumHz / std::numbers::pi;
-  const auto radius =
-      std::clamp(std::exp(-std::numbers::pi * press_bw * std::pow(2.0, -rise * kWidthSpanOct) /
-                          trench::core::kP2kDatumHz),
-                 0.0, p2k::kPoleRMax);
-
-  const auto [word_mag, word_rsq] = p2k::words_from_root(hz, radius);
-  const auto [p, q] = p2k::pq(word_mag, word_rsq);
-  if (!p2k::is_legal(p, q, true) ||
-      !p2k::magnitude_admissible(p2k::nearest_lattice_word(word_mag), true)) {
-    refuse(hz);
-    return;
-  }
-
-  auto candidate = origin_words_;
-  candidate[2] = word_mag;
-  candidate[3] = word_rsq;
-  refusal_active_ = false;
-  if (candidate == body_->words[corner_][press_section_]) {
-    update();
-    return;
-  }
-  emit sectionEdited(press_section_, candidate);
-}
-
 void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton || body_ == nullptr) {
     QWidget::mousePressEvent(event);
@@ -754,22 +748,10 @@ void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   }
   pressed_ = true;
   moved_ = false;
-  dragging_ = false;
   pin_emitted_ = false;
   press_section_ = token->section;
   press_lane_ = token->lane;
   press_position_ = event->position();
-  origin_words_ = body_->words[corner_][token->section];
-  const auto geometry = trench::core::geometry_from_words(
-      origin_words_, trench::core::kP2kDatumHz);
-  const auto& pair = token->lane == Lane::kPole ? geometry.pole : geometry.zero;
-  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
-    press_radius_ = conjugate->radius;
-    press_hz_ = conjugate->hz;
-  } else {
-    press_radius_ = 0.0;
-    press_hz_ = 0.0;
-  }
   emit tokenSelected(token->section, token->lane);
   event->accept();
 }
@@ -787,23 +769,8 @@ void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
     return;
   }
   const auto at = event->position();
-  if (!dragging_) {
-    const auto travel = std::hypot(at.x() - press_position_.x(), at.y() - press_position_.y());
-    if (travel < QApplication::startDragDistance()) {
-      event->accept();
-      return;
-    }
-    moved_ = true;
-    const auto token = hit(press_position_);
-    if (fit_running_ || !token || !token->live || token->pinned) {
-      event->accept();
-      return;
-    }
-    dragging_ = true;
-    latched_db_ = dbRange();
-    emit gestureStarted(press_section_);
-  }
-  moveTo(at);
+  const auto travel = std::hypot(at.x() - press_position_.x(), at.y() - press_position_.y());
+  if (travel >= QApplication::startDragDistance()) moved_ = true;
   event->accept();
 }
 
@@ -822,55 +789,12 @@ void ResponsePlotWidget::mouseReleaseEvent(QMouseEvent* event) {
   }
   const auto section = press_section_;
   const auto lane = press_lane_;
-  const auto dragged = dragging_;
   const auto moved = moved_;
   pressed_ = false;
   moved_ = false;
-  dragging_ = false;
-  latched_db_.reset();
-  refusal_active_ = false;
-  pin_emitted_ = !dragged && !moved;
-  if (dragged) {
-    if (lane == Lane::kZero) {
-      const auto dropped = zeroCandidate(event->position(), true);
-      if (dropped && *dropped != body_->words[corner_][section]) {
-        emit sectionEdited(section, *dropped);
-      }
-    }
-    emit gestureFinished(section);
-  } else if (pin_emitted_) {
-    emit pinToggled(section, lane);
-  }
+  pin_emitted_ = !moved;
+  if (pin_emitted_) emit pinToggled(section, lane);
   update();
-  event->accept();
-}
-
-void ResponsePlotWidget::mouseDoubleClickEvent(QMouseEvent* event) {
-  if (event->button() != Qt::LeftButton || body_ == nullptr || !at_corner_ ||
-      fit_running_ || frequencies_hz_.empty()) {
-    QWidget::mouseDoubleClickEvent(event);
-    return;
-  }
-  const auto token = hit(event->position());
-  if (token && token->lane == Lane::kPole) {
-    if (pin_emitted_) emit pinToggled(token->section, token->lane);
-    emit sectionCleared(token->section);
-    event->accept();
-    return;
-  }
-  if (token) {
-    QWidget::mouseDoubleClickEvent(event);
-    return;
-  }
-  const auto plot = plotRect();
-  if (plot.width() <= 0.0) {
-    QWidget::mouseDoubleClickEvent(event);
-    return;
-  }
-  emit resonanceRequested(std::clamp(
-      frequency_for_x(event->position().x(), frequencies_hz_.front(),
-                      frequencies_hz_.back(), plot),
-      20.0, trench::core::p2k::kRootHiHz));
   event->accept();
 }
 
@@ -882,7 +806,7 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   const QRectF plot = plotRect();
   if (plot.width() <= 0.0 || plot.height() <= 0.0 || response_db_.empty()) return;
 
-  const auto [low_db, high_db] = latched_db_.value_or(dbRange());
+  const auto [low_db, high_db] = dbRange();
 
   painter.setFont(QFont(QStringLiteral("Segoe UI"), 8));
   painter.setPen(QPen(kGrid, 1.0));
@@ -940,13 +864,38 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   ensureTrace(plot, low_db, high_db);
   painter.setClipRect(plot);
 
-  paintOverlay(painter, plot, low_db, high_db);
+  paintOverlay(painter, plot);
 
-  if (target_db_.size() == frequencies_hz_.size()) {
-    QPainterPath target_path;
-    for (std::size_t index = 0; index < target_db_.size(); ++index) {
+  const auto stroke_primitive = [&](const std::vector<double>& curve, const QColor& ink,
+                                   double width) {
+    if (curve.size() != frequencies_hz_.size()) return;
+    QPainterPath path;
+    for (std::size_t index = 0; index < curve.size(); ++index) {
       const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
-      const auto y = y_for_db(target_db_[index], low_db, high_db, plot);
+      const auto y = y_for_db(curve[index], low_db, high_db, plot);
+      if (index == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    painter.setPen(QPen(ink, width));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawPath(path);
+  };
+  for (const auto& [section, curve] : primitives_) {
+    const auto pinned =
+        (freedom_mask_ & trench::core::p2k::pole_bit(section)) == 0U;
+    stroke_primitive(curve, pinned ? kExposed : kPrimitive,
+                     pinned ? kExposedWidthPx : kPrimitiveWidthPx);
+  }
+  stroke_primitive(exposed_db_, kExposed, kExposedWidthPx);
+
+  if (aligned_target_db_.size() == frequencies_hz_.size()) {
+    QPainterPath target_path;
+    for (std::size_t index = 0; index < aligned_target_db_.size(); ++index) {
+      const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
+      const auto y = y_for_db(aligned_target_db_[index], low_db, high_db, plot);
       if (index == 0) {
         target_path.moveTo(x, y);
       } else {
@@ -960,25 +909,11 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
 
   strokeTrace(painter, kTrace);
 
-  if (refusalVisible()) {
-    const auto hz = std::clamp(refusal_hz_, low_hz, high_hz);
-    const auto x = x_for_frequency(hz, low_hz, high_hz, plot);
-    const auto fraction = std::log(hz / low_hz) / std::log(high_hz / low_hz);
-    const auto position = fraction * static_cast<double>(response_db_.size() - 1);
-    const auto lower = static_cast<std::size_t>(std::floor(position));
-    const auto upper = std::min(lower + 1, response_db_.size() - 1);
-    const auto blend = position - static_cast<double>(lower);
-    const auto db = response_db_[lower] * (1.0 - blend) + response_db_[upper] * blend;
-    const auto y = y_for_db(db, low_db, high_db, plot);
-    painter.setPen(QPen(kRefusal, 1.6));
-    painter.setBrush(Qt::NoBrush);
-    painter.drawEllipse(QPointF{x, y}, 5.0, 5.0);
-    painter.drawLine(QPointF{x, y - 11.0}, QPointF{x, y - 6.0});
-  }
 
   const auto flashing = flash_section_ && flash_age_.isValid() &&
                         flash_age_.elapsed() <= kFlashHoldMs;
   for (const auto& token : tokens()) {
+    if (token.lane == Lane::kPole) continue;
     auto ink = section_color(token.section);
     const auto highlighted = highlight_section_ && token.section == *highlight_section_;
     if ((flashing && token.section == *flash_section_) || highlighted) {
@@ -986,21 +921,7 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     }
     const auto selected = token.section == selected_section_;
     const auto radius = token.radius;
-    if (token.lane == Lane::kPole) {
-      painter.setPen(QPen(kBackground, 1.5));
-      painter.setBrush(token.pinned ? QBrush(kBackground) : QBrush(ink));
-      painter.drawEllipse(token.position, radius, radius);
-      if (token.pinned) {
-        painter.setPen(QPen(ink, 2.0));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawEllipse(token.position, radius - 1.0, radius - 1.0);
-      }
-      if (selected) {
-        painter.setPen(QPen(ink, 1.2));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawEllipse(token.position, radius + 3.5, radius + 3.5);
-      }
-    } else {
+    {
       auto ring = ink;
       if (!selected) ring.setAlpha(kFaintRingAlpha);
       painter.setPen(QPen(ring, token.pinned ? 2.4 : 1.4));

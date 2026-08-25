@@ -1,0 +1,107 @@
+{
+ "name": "deep_bouche_original",
+ "lane_order": "descending",
+ "q_attitude": "dead",
+ "endpoints": {
+  "M0": {
+   "S1_air": {
+    "pole_hz": 3484,
+    "pole_r": 0.966,
+    "zero_hz": 3319,
+    "zero_r": 0.942,
+    "role": "air",
+    "zero_note": "-0.8 st lower carve (air shelf)"
+   },
+   "S2_c4": {
+    "pole_hz": 2958,
+    "pole_r": 0.983,
+    "zero_hz": 2647,
+    "zero_r": 0.946,
+    "role": "cavity_C4",
+    "zero_note": "-1.9 st lower carve"
+   },
+   "S3_c3": {
+    "pole_hz": 2543,
+    "pole_r": 0.993,
+    "zero_hz": 2316,
+    "zero_r": 0.966,
+    "role": "cavity_C3",
+    "zero_note": "-1.6 st lower carve"
+   },
+   "S4_c2": {
+    "pole_hz": 2164,
+    "pole_r": 0.993,
+    "zero_hz": 1928,
+    "zero_r": 0.97,
+    "role": "cavity_C2",
+    "zero_note": "-2.0 st lower carve"
+   },
+   "S5_c1": {
+    "pole_hz": 1763,
+    "pole_r": 0.994,
+    "zero_hz": 1543,
+    "zero_r": 0.97,
+    "role": "cavity_floor_C1",
+    "zero_note": "-2.3 st lower carve (sub-cavity moat)"
+   },
+   "S6_sub": {
+    "pole_hz": 257,
+    "pole_r": 0.995,
+    "zero_hz": 3858,
+    "zero_r": 1.0,
+    "role": "sub_throat",
+    "zero_note": "terminal unit zero, r=1.000, held both endpoints"
+   }
+  },
+  "M100": {
+   "S1_air": {
+    "pole_hz": 7747,
+    "pole_r": 0.962,
+    "zero_hz": 6526,
+    "zero_r": 0.848,
+    "role": "air",
+    "zero_note": "-0.8 st lower carve (air shelf)"
+   },
+   "S2_c4": {
+    "pole_hz": 3060,
+    "pole_r": 0.986,
+    "zero_hz": 2880,
+    "zero_r": 0.952,
+    "role": "cavity_C4",
+    "zero_note": "-1.9 st lower carve"
+   },
+   "S3_c3": {
+    "pole_hz": 2782,
+    "pole_r": 0.991,
+    "zero_hz": 2420,
+    "zero_r": 0.96,
+    "role": "cavity_C3",
+    "zero_note": "-1.6 st lower carve"
+   },
+   "S4_c2": {
+    "pole_hz": 2296,
+    "pole_r": 0.99,
+    "zero_hz": 2010,
+    "zero_r": 0.965,
+    "role": "cavity_C2",
+    "zero_note": "-2.0 st lower carve"
+   },
+   "S5_c1": {
+    "pole_hz": 1813,
+    "pole_r": 0.992,
+    "zero_hz": 1600,
+    "zero_r": 0.968,
+    "role": "cavity_floor_C1",
+    "zero_note": "-2.3 st lower carve (sub-cavity moat)"
+   },
+   "S6_sub": {
+    "pole_hz": 257,
+    "pole_r": 0.995,
+    "zero_hz": 3858,
+    "zero_r": 1.0,
+    "role": "sub_throat",
+    "zero_note": "terminal unit zero, r=1.000, held both endpoints"
+   }
+  }
+ }
+}

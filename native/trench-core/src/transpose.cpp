@@ -10,6 +10,12 @@ namespace {
 
 constexpr double kTau = 2.0 * std::numbers::pi;
 
+bool root_travels(double hz, double radius, double ratio, double sample_rate_hz,
+                  bool is_zero) {
+  if (!is_zero) return hz >= kSubAnchorHz;
+  return radius < kZeroWallRadius || hz * ratio < kZeroWallCeiling * sample_rate_hz;
+}
+
 double moved_c1(double c1, double c2, double sample_rate_hz, double ratio) {
   const auto hz = conjugate_pair_hz(c1, c2, sample_rate_hz);
   if (!hz) return c1;
@@ -21,8 +27,7 @@ double moved_c1(double c1, double c2, double sample_rate_hz, double ratio) {
 bool lane_travels(double c1, double c2, double sample_rate_hz, double ratio, bool is_zero) {
   const auto hz = conjugate_pair_hz(c1, c2, sample_rate_hz);
   if (!hz) return false;
-  if (!is_zero) return *hz >= kSubAnchorHz;
-  return std::sqrt(c2) < kZeroWallRadius || *hz * ratio < kZeroWallCeiling * sample_rate_hz;
+  return root_travels(*hz, std::sqrt(c2), ratio, sample_rate_hz, is_zero);
 }
 
 }  // namespace
@@ -36,6 +41,13 @@ std::optional<double> conjugate_pair_hz(double c1, double c2, double sample_rate
 }
 
 double ratio_of_semitones(double semitones) { return std::pow(2.0, semitones / 12.0); }
+
+double transposed_root_hz(double hz, double radius, double ratio, double sample_rate_hz,
+                          bool is_zero) {
+  if (ratio == 1.0) return hz;
+  if (!root_travels(hz, radius, ratio, sample_rate_hz, is_zero)) return hz;
+  return std::clamp(hz * ratio, 20.0, 0.49 * sample_rate_hz);
+}
 
 Biquad transpose_section(const Biquad& section, double ratio, double sample_rate_hz) {
   Biquad out = section;

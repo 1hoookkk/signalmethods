@@ -27,6 +27,22 @@ StageScales stage_gain_pass(const Corner& c) {
   return out;
 }
 
+void write_dc_unity_scales(StoredCorner& rows) {
+  double ratio = 1.0;
+  for (const auto& row : rows) {
+    auto [n, d] = dc_terms({row[0], row[1], row[2], row[3]});
+    if (std::abs(n) < 1e-15) {
+      n = std::copysign(1e-15, n == 0.0 ? 1.0 : n);
+    }
+    ratio *= d / n;
+  }
+  const auto scale =
+      std::pow(std::abs(ratio), 1.0 / static_cast<double>(kStageCount));
+  for (auto& row : rows) {
+    row[4] = nearest_gain_word(scale);
+  }
+}
+
 StageScales stage_gain_pass_held(const Corner& c, std::uint32_t mask,
                                  const PackedCorner& baseline) {
   double ratio = 1.0;

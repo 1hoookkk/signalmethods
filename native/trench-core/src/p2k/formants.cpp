@@ -108,16 +108,16 @@ const NamedRecipe* manual_recipe(std::string_view name) {
 }
 
 std::vector<PosturePole> pole_words_from_posture(const Posture& posture) {
-  constexpr std::array<std::size_t, 6> kRowOrder{1, 2, 3, 4, 0, 5};
   std::vector<PosturePole> out;
-  for (std::size_t i = 0; i < std::min(posture.pole_count, kRowOrder.size()); ++i) {
+  for (std::size_t i = 0; i < std::min(posture.pole_count, posture.rows.size()); ++i) {
     const auto& pole = posture.poles[i];
     const double radius = std::exp(-std::numbers::pi * pole.bw_hz / kSr);
     const auto [mag, rsq] = words_from_root(pole.hz, radius);
-    out.push_back({kRowOrder[i], mag, rsq});
+    out.push_back({posture.rows[i], mag, rsq});
   }
   return out;
 }
+
 
 std::vector<SpectralPeak> peaks_of_envelope(std::span<const double> hz, std::span<const double> db,
                                             std::size_t max_peaks) {

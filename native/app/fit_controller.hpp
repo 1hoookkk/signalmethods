@@ -1,8 +1,6 @@
 #pragma once
 
 #include "trench/core/p2k.hpp"
-#include "trench/core/rows_fit.hpp"
-
 #include <QList>
 #include <QObject>
 
@@ -21,18 +19,14 @@ class FitController final : public QObject {
   [[nodiscard]] bool running() const noexcept;
   [[nodiscard]] quint64 generation() const noexcept;
 
-  void start(std::vector<double> target, trench::core::p2k::CornerWords seed,
-             std::uint32_t mask, trench::core::p2k::Grid grid,
-             trench::core::p2k::RoleIntent intent, bool inherited_seed = false);
-  void startRows(std::vector<double> target, trench::core::p2k::Rows seed,
-                 trench::core::p2k::CornerWords held, trench::core::p2k::PackedCorner baseline,
-                 std::uint32_t mask, trench::core::p2k::Grid grid);
+  void startZeros(std::vector<double> ceiling, trench::core::p2k::CornerWords roots,
+                  std::uint32_t mask, trench::core::p2k::Grid grid);
   void setMask(std::uint32_t mask);
   void requestStop();
   void abandon();
 
  signals:
-  void stepReady(quint64 generation, quint64 section, QList<quint16> words);
+  void previewReady(quint64 generation, QList<quint16> words);
   void finished(quint64 generation, bool ok, QList<quint16> words);
 
  private:

@@ -3,20 +3,20 @@ add_library(trench_native_core STATIC
   src/packed_body.cpp
   src/response.cpp
   src/native_body.cpp
-  src/rbj.cpp
   src/p2k/container.cpp
   src/p2k/corner.cpp
   src/p2k/fit.cpp
   src/p2k/gain.cpp
   src/p2k/objective.cpp
   src/p2k/polish.cpp
-  src/p2k/push.cpp
   src/p2k/role.cpp
   src/p2k/morph.cpp
   src/p2k/formants.cpp
   src/p2k/postures.cpp
   src/p2k/templates.cpp
   src/p2k/rows_fit.cpp
+  src/p2k/widths.cpp
+  src/p2k/zeros_fit.cpp
   src/audition.cpp
   src/transpose.cpp
   src/p2k/section_param.cpp
@@ -69,7 +69,6 @@ if(BUILD_TESTING)
     tests/p2k_parity_test.cpp
     tests/p2k_container_laws_test.cpp
     tests/p2k_fitter_semantics_test.cpp
-    tests/p2k_push_test.cpp
     tests/p2k_refit_bank_test.cpp
     tests/p2k_space_test.cpp
     tests/p2k_role_test.cpp
@@ -77,11 +76,12 @@ if(BUILD_TESTING)
     tests/p2k_morph_test.cpp
     tests/native_body_test.cpp
     tests/adversary_test.cpp
-    tests/rbj_test.cpp
     tests/audition_test.cpp
     tests/transpose_test.cpp
     tests/p2k_formants_test.cpp
     tests/p2k_rows_fit_test.cpp
+    tests/p2k_widths_test.cpp
+    tests/p2k_zeros_fit_test.cpp
     tests/bisection_test.cpp
   )
   target_link_libraries(trench_native_core_tests PRIVATE trench_native_core GTest::gtest_main

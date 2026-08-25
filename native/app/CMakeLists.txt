@@ -3,6 +3,8 @@ find_package(Qt6 6.11.2 EXACT REQUIRED COMPONENTS Test Widgets)
 qt_standard_project_setup()
 
 add_library(trench_native_ui STATIC
+  armadillo_view.cpp
+  armadillo_view.hpp
   bisect_room.cpp
   bisect_room.hpp
   body_document.cpp
@@ -22,10 +24,8 @@ add_library(trench_native_ui STATIC
   response_plot.cpp
   response_plot.hpp
   section_color.hpp
-  section_strip.cpp
-  section_strip.hpp
-  space_dock.cpp
-  space_dock.hpp
+  section_readout.cpp
+  section_readout.hpp
   user_postures.cpp
   user_postures.hpp
 )
@@ -46,6 +46,11 @@ if(BUILD_TESTING)
   set_tests_properties(QtShell.CoreToViewSmoke PROPERTIES
     WORKING_DIRECTORY $<TARGET_FILE_DIR:trench_native_qt_tests>
   )
+  if(TARGET Qt6::QOffscreenIntegrationPlugin)
+    set_property(TEST QtShell.CoreToViewSmoke PROPERTY ENVIRONMENT
+      "QT_QPA_PLATFORM_PLUGIN_PATH=$<TARGET_FILE_DIR:Qt6::QOffscreenIntegrationPlugin>"
+      "QT_QPA_FONTDIR=C:/Windows/Fonts")
+  endif()
 endif()
 
 message(STATUS "Resolved Qt ${Qt6_VERSION}")

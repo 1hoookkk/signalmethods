@@ -326,7 +326,7 @@ std::array<std::uint16_t, 4> words_with_parked_zero(
   if (std::holds_alternative<ConjugatePair>(geometry.zero)) return current;
   const auto* pole = std::get_if<ConjugatePair>(&geometry.pole);
   if (pole == nullptr) return current;
-  return words_from_mask(parked_mask(pole->hz, section), current, section, sample_rate_hz);
+  return {kIdentitySection[0], kIdentitySection[1], current[2], current[3]};
 }
 
 std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,
