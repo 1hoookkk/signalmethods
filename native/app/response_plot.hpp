@@ -4,8 +4,6 @@
 #include "trench/core/native_body.hpp"
 #include "trench/core/section_param.hpp"
 
-#include "trench/core/formants.hpp"
-
 #include <QColor>
 #include <QElapsedTimer>
 #include <QImage>
@@ -22,9 +20,7 @@
 #include <utility>
 #include <vector>
 
-class QMenu;
 class QPainter;
-class QToolButton;
 
 class ResponsePlotWidget final : public QWidget {
   Q_OBJECT
@@ -53,7 +49,6 @@ class ResponsePlotWidget final : public QWidget {
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
   void setSelectedSection(std::size_t section, Lane lane = Lane::kPole);
-  bool setOverlay(const QString& name);
   void setHighlightedSection(std::optional<std::size_t> section);
   void flashLane(std::size_t section);
   void refresh();
@@ -72,23 +67,12 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] std::vector<double> exposedDb() const;
   [[nodiscard]] std::size_t primitiveCount() const noexcept;
   [[nodiscard]] std::optional<std::size_t> highlightedSection() const noexcept;
-  [[nodiscard]] QMenu* overlayMenu() const noexcept;
-  [[nodiscard]] QToolButton* overlayPicker() const noexcept;
-  [[nodiscard]] QString overlay() const;
-  [[nodiscard]] std::size_t overlayGhostCount() const noexcept;
-
- signals:
-  void pinToggled(std::size_t section, ResponsePlotWidget::Lane lane);
-  void tokenSelected(std::size_t section, ResponsePlotWidget::Lane lane);
-  void tokenHovered(std::optional<std::size_t> section);
+  [[nodiscard]] QSize sizeHint() const override;
+  [[nodiscard]] QSize minimumSizeHint() const override;
+  [[nodiscard]] int heightForWidth(int width) const override;
 
  protected:
   void paintEvent(QPaintEvent* event) override;
-  void resizeEvent(QResizeEvent* event) override;
-  void mousePressEvent(QMouseEvent* event) override;
-  void mouseMoveEvent(QMouseEvent* event) override;
-  void mouseReleaseEvent(QMouseEvent* event) override;
-  void leaveEvent(QEvent* event) override;
 
  private:
   [[nodiscard]] QRectF plotRect() const;
@@ -96,16 +80,11 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] double viewRatio() const;
   [[nodiscard]] double viewHz(double hz, double radius, bool zero) const;
   [[nodiscard]] double authorHzForX(double x, const QRectF& plot) const;
-  [[nodiscard]] double contributionAt(std::size_t section, double hz) const;
   [[nodiscard]] double responseDbAtHz(double hz) const;
-  [[nodiscard]] std::optional<TokenInfo> hit(const QPointF& at) const;
   void ensureTrace(const QRectF& plot, double low_db, double high_db);
   void strokeTrace(QPainter& painter, const QColor& colour);
   void rebuildResidual();
   void rebuildExposed();
-  void buildOverlayPicker();
-  void placeOverlayPicker();
-  void paintOverlay(QPainter& painter, const QRectF& plot) const;
 
   const trench::core::native::Body* body_{};
   std::size_t corner_{};
@@ -119,7 +98,6 @@ class ResponsePlotWidget final : public QWidget {
   std::size_t selected_section_{};
   Lane selected_lane_{Lane::kPole};
   std::optional<std::size_t> highlight_section_;
-  std::optional<std::size_t> last_hover_section_;
   std::vector<double> frequencies_hz_;
   std::vector<double> response_db_;
   std::array<double, trench::core::kLegacySectionCount> running_peak_db_{};
@@ -131,26 +109,15 @@ class ResponsePlotWidget final : public QWidget {
   QString source_label_;
 
   std::vector<std::vector<double>> contributions_;
-  bool pressed_{};
-  bool moved_{};
-  bool pin_emitted_{};
-  std::size_t press_section_{};
-  Lane press_lane_{Lane::kPole};
-  QPointF press_position_;
-
   std::vector<double> target_db_;
   bool fit_running_{};
   std::optional<std::size_t> flash_section_;
   QElapsedTimer flash_age_;
-
-  QMenu* overlay_menu_{};
-  QToolButton* overlay_button_{};
-  QString overlay_name_;
-  std::vector<trench::core::p2k::Formant> overlay_poles_;
 
   std::uint64_t body_revision_{};
   QPainterPath trace_path_;
   std::optional<std::tuple<double, double, double, double, std::uint64_t>> trace_key_;
   QImage trace_image_;
   QColor trace_image_color_;
+  int trace_image_scale_{};
 };

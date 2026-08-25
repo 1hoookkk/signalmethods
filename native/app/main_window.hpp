@@ -117,7 +117,6 @@ class MainWindow final : public QMainWindow {
   std::size_t selected_section_{};
   ResponsePlotWidget* response_plot_{};
   ArmadilloView* armadillo_{};
-  BodyDocument::CornerSnapshot armadillo_before_{};
   MorphStrip* morph_strip_{};
   PostureList* posture_list_{};
   QAbstractButton* keep_posture_{};

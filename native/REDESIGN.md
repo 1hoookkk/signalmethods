@@ -120,7 +120,8 @@ step as one number.
 
 **Document** owns: `PackedBody`, `corner`, `Target {curve, source path, Source, f0}`,
 `PerceptualSpace`, `RoleIntent[6]`, and `View {morph, q}` (transient, not undoable).
-Editing primitives are unchanged (`applySection/commitGesture/applyCorner/commitFit`).
+All root projections submit native `RootEdit` commands. Bulk corner and FIT changes use
+`applyCorner`/`commitFit`; packed sections exist only at explicit import/export seams.
 New undoable edits: set a row's role intent; set the Space.
 
 **SectionModel** — the six rows, one line each: role glyph, pole Hz, pole r (shown as

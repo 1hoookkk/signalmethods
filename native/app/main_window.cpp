@@ -30,6 +30,7 @@
 #include <cmath>
 #include <cctype>
 #include <fstream>
+#include <numbers>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -90,10 +91,52 @@ bool is_audio(const std::filesystem::path& path) {
   return ext == ".wav" || ext == ".aif" || ext == ".aiff" || ext == ".flac";
 }
 
+double bandwidth_for_radius(double radius, double sample_rate_hz) {
+  return -std::log(std::clamp(radius, 1.0e-12, 0.999999999)) * sample_rate_hz /
+         std::numbers::pi;
+}
+
+bool roots_are_parked(const trench::core::native::Roots& roots) {
+  const auto* real = std::get_if<trench::core::native::RealRoots>(&roots);
+  return real != nullptr && !std::isfinite(real->a_hz) && !std::isfinite(real->b_hz);
+}
+
 trench::core::native::Body empty_body() {
   trench::core::PackedBody body;
   for (auto& corner : body.words) corner.fill(trench::core::kIdentitySection);
   return trench::core::native::import_p2k(body.legacy_bytes());
+}
+
+struct BodyOverlaySource {
+  QString name;
+  trench::core::native::Body body;
+};
+
+const std::vector<BodyOverlaySource>& factory_body_overlays() {
+  static const auto overlays = [] {
+    std::vector<BodyOverlaySource> out;
+    const auto directory = std::filesystem::path(TRENCH_SOURCE_ROOT) / "ref/presets";
+    std::error_code error;
+    std::vector<std::filesystem::path> paths;
+    for (std::filesystem::directory_iterator it(directory, error), end;
+         !error && it != end; it.increment(error)) {
+      if (it->is_regular_file() && it->path().extension() == ".bin") {
+        paths.push_back(it->path());
+      }
+    }
+    std::sort(paths.begin(), paths.end());
+    for (const auto& path : paths) {
+      try {
+        auto name = QString::fromStdString(path.stem().string());
+        name.replace(QLatin1Char('_'), QLatin1Char(' '));
+        out.push_back({name, trench::core::native::import_p2k(read_bytes(path))});
+      } catch (const std::exception&) {
+        // Omit a broken reference body from this read-only workflow library.
+      }
+    }
+    return out;
+  }();
+  return overlays;
 }
 
 }  // namespace
@@ -113,15 +156,15 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   column->setContentsMargins(0, 0, 0, 0);
   column->setSpacing(0);
 
-  response_plot_ = new ResponsePlotWidget(central);
+  response_plot_ = new ResponsePlotWidget;
   response_plot_->setObjectName(QStringLiteral("responsePlot"));
   response_plot_->setBody(&document_->body(), document_->sampleRateHz(),
                           body_path.filename().string());
   response_plot_->setFreedomMask(document_->freedomMask());
   response_plot_->setSpace(document_->space());
   response_plot_->setToolTip(
-      QStringLiteral("the sounding cascade — click a token to pin or free it for FIT — "
-                     "space auditions"));
+      QStringLiteral("read-only cascade magnitude, target, residual, and section traces — "
+                     "press space to audition"));
 
   auto* plot_row = new QWidget(central);
   auto* plot_layout = new QHBoxLayout(plot_row);
@@ -134,23 +177,26 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   armadillo_ = new ArmadilloView(surface_column);
   armadillo_->setObjectName(QStringLiteral("armadilloView"));
   armadillo_->setToolTip(
-      QStringLiteral("the armadillo plane: log frequency across, depth to the rim up — "
-                     "drag a p or z — double-click places a pole pair — drag off the "
-                     "right edge to park it"));
+      QStringLiteral("pole-zero roots: x is log frequency; y is radius/bandwidth — "
+                     "drag a p or z — double-click adds a pole pair — drag past the "
+                     "right edge to remove it"));
   armadillo_->setBody(&document_->body(), document_->sampleRateHz());
-  surface_layout->addWidget(armadillo_, 3);
-  response_plot_->setParent(surface_column);
-  surface_layout->addWidget(response_plot_, 2);
+  for (const auto& overlay : factory_body_overlays()) {
+    armadillo_->addBodyOverlay(overlay.name, overlay.body);
+  }
+  surface_layout->addWidget(armadillo_, 1);
+  surface_layout->addWidget(response_plot_, 1);
   plot_layout->addWidget(surface_column, 1);
   auto* posture_column = new QWidget(plot_row);
+  posture_column->setFixedWidth(176);
   auto* posture_layout = new QVBoxLayout(posture_column);
   posture_layout->setContentsMargins(0, 0, 0, 0);
   posture_layout->setSpacing(0);
-  keep_posture_ = new QPushButton(QStringLiteral("KEEP"), posture_column);
+  keep_posture_ = new QPushButton(QStringLiteral("SAVE POLES"), posture_column);
   keep_posture_->setObjectName(QStringLiteral("keepPosture"));
   keep_posture_->setFocusPolicy(Qt::NoFocus);
   keep_posture_->setCursor(Qt::PointingHandCursor);
-  keep_posture_->setToolTip(QStringLiteral("keep the current pole posture under MINE"));
+  keep_posture_->setToolTip(QStringLiteral("save the current pole roots under USER"));
   keep_posture_->setFixedHeight(20);
   keep_posture_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
   keep_posture_->setStyleSheet(QStringLiteral(
@@ -182,66 +228,40 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
                      ? QStringLiteral("TRENCH")
                      : QStringLiteral("TRENCH — %1")
                            .arg(QString::fromStdString(body_path.stem().string())));
-  resize(960, 540);
+  resize(960, 680);
 
-  connect(response_plot_, &ResponsePlotWidget::pinToggled, this,
-          [this](std::size_t section, ResponsePlotWidget::Lane lane) {
-            document_->toggleLane(section, lane == ResponsePlotWidget::Lane::kPole);
-          });
-  connect(response_plot_, &ResponsePlotWidget::tokenSelected, this,
-          [this](std::size_t section, ResponsePlotWidget::Lane lane) {
-            selectSection(section, lane);
-          });
-  connect(response_plot_, &ResponsePlotWidget::tokenHovered, this,
-          [this](std::optional<std::size_t> section) {
-            response_plot_->setHighlightedSection(section);
-          });
   connect(section_readout_, &SectionReadout::poleEdited, this, &MainWindow::applyPole);
+  connect(section_readout_, &SectionReadout::pinToggled, this,
+          [this](std::size_t section, bool pole) {
+            document_->toggleLane(section, pole);
+          });
   connect(armadillo_, &ArmadilloView::rootPressed, this, [this](std::size_t section, bool zero) {
-    armadillo_before_ = document_->cornerSnapshot();
+    document_->beginRootGesture();
     selectSection(section, zero ? ResponsePlotWidget::Lane::kZero
                                 : ResponsePlotWidget::Lane::kPole);
   });
   connect(armadillo_, &ArmadilloView::rootDragged, this,
           [this](std::size_t section, bool zero, double hz, double radius) {
             if (fit_active_) return;
-            namespace p2k = trench::core::p2k;
-            const auto free_bit = zero ? p2k::zero_bit(section) : p2k::pole_bit(section);
-            if ((document_->freedomMask() & free_bit) == 0U) return;
-            auto words = document_->p2kCornerSnapshot()[section];
-            const auto [mag, rsq] = p2k::words_from_root(
-                std::clamp(hz, 20.0, p2k::kRootHiHz), std::clamp(radius, 0.0, 0.99998));
-            const auto [pw, qw] = p2k::pq(mag, rsq);
-            if (!p2k::is_legal(pw, qw, !zero) ||
-                !p2k::magnitude_admissible(p2k::nearest_lattice_word(mag), !zero)) {
-              return;
-            }
-            if (zero) {
-              words[0] = mag;
-              words[1] = rsq;
-            } else {
-              words[2] = mag;
-              words[3] = rsq;
-            }
-            document_->editP2kSection(section, words);
+            document_->editRoot(
+                {section,
+                 zero ? BodyDocument::RootLane::kZero : BodyDocument::RootLane::kPole,
+                 hz, bandwidth_for_radius(radius, document_->sampleRateHz()), false});
           });
   connect(armadillo_, &ArmadilloView::rootReleased, this, [this] {
-    if (fit_active_) return;
-    document_->commitGesture(armadillo_before_);
+    document_->endRootGesture();
+    updateInterior();
+    updatePostureMatch();
   });
   connect(armadillo_, &ArmadilloView::zeroParked, this, [this](std::size_t section) {
     if (fit_active_) return;
-    if ((document_->freedomMask() & trench::core::p2k::zero_bit(section)) == 0U) return;
-    auto words = document_->p2kCornerSnapshot()[section];
-    words[0] = trench::core::kIdentitySection[0];
-    words[1] = trench::core::kIdentitySection[1];
-    document_->editP2kSection(section, words);
+    document_->editRoot(
+        {section, BodyDocument::RootLane::kZero, 0.0, 0.0, true});
   });
   connect(armadillo_, &ArmadilloView::poleParked, this, [this](std::size_t section) {
     if (fit_active_) return;
-    if ((document_->freedomMask() & trench::core::p2k::pole_bit(section)) == 0U) return;
-    if (document_->p2kCornerSnapshot()[section] == trench::core::kIdentitySection) return;
-    document_->editP2kSection(section, trench::core::kIdentitySection);
+    document_->editRoot(
+        {section, BodyDocument::RootLane::kPole, 0.0, 0.0, true});
   });
   connect(armadillo_, &ArmadilloView::placeRequested, this,
           [this](double hz, double radius) { placeResonanceAt(hz, radius); });
@@ -250,8 +270,10 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     armadillo_->refresh();
     updateReadout();
     updateProbes();
-    updateInterior();
-    updatePostureMatch();
+    if (!document_->rootGestureActive()) {
+      updateInterior();
+      updatePostureMatch();
+    }
   });
   connect(morph_strip_, &MorphStrip::cornerPicked, this, [this](int corner) {
     document_->setCorner(static_cast<std::size_t>(corner));
@@ -320,6 +342,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
           [this](std::uint32_t mask) {
             response_plot_->setFreedomMask(mask);
             fit_controller_->setMask(mask);
+            updateReadout();
           });
   connect(document_, &BodyDocument::targetChanged, this, [this] {
     response_plot_->setTarget(document_->target() ? &*document_->target() : nullptr);
@@ -530,24 +553,15 @@ void MainWindow::chooseCorner() {
 }
 
 void MainWindow::placeResonanceAt(double frequency_hz, double radius) {
-  namespace p2k = trench::core::p2k;
   if (fit_active_) return;
-  const auto before_corner = document_->p2kCornerSnapshot();
-  const auto before_native = document_->cornerSnapshot();
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    if (p2k::param_of(before_corner[section], document_->sampleRateHz()).type !=
-        p2k::SectionType::kOff) {
-      continue;
+  const auto corner = document_->cornerSnapshot();
+  for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+    if (!roots_are_parked(corner.sections[section].pole)) continue;
+    if (document_->editRoot(
+            {section, BodyDocument::RootLane::kPole, frequency_hz,
+             bandwidth_for_radius(radius, document_->sampleRateHz()), false})) {
+      selectSection(section);
     }
-    auto candidate = before_corner[section];
-    const auto [mag, rsq] = p2k::words_from_root(
-        std::clamp(frequency_hz, 20.0, p2k::kRootHiHz), std::clamp(radius, 0.0, 0.99998));
-    candidate[2] = mag;
-    candidate[3] = rsq;
-    if (candidate == before_corner[section]) return;
-    document_->editP2kSection(section, candidate);
-    document_->commitGesture(before_native);
-    selectSection(section);
     return;
   }
 }
@@ -594,29 +608,15 @@ void MainWindow::applySection(std::size_t section,
 }
 
 void MainWindow::applyPole(std::size_t section, double frequency_hz, double bw_hz) {
-  namespace p2k = trench::core::p2k;
-  if (section >= trench::core::kLegacySectionCount || fit_active_) return;
-  const auto before_corner = document_->cornerSnapshot();
-  const auto before = document_->p2kCornerSnapshot()[section];
-  if (!p2k::pole_of(before, document_->sampleRateHz())) return;
-  const std::array<std::uint16_t, 4> current{before[0], before[1], before[2], before[3]};
-  const auto roots = p2k::words_from_pole(frequency_hz, bw_hz, current, section,
-                                          document_->sampleRateHz());
-  auto candidate = before;
-  for (std::size_t word = 0; word < roots.size(); ++word) {
-    candidate[word] = roots[word];
-  }
-  if (candidate == before) return;
-  document_->editP2kSection(section, candidate);
-  document_->commitGesture(before_corner);
+  if (section >= trench::core::native::kSections || fit_active_) return;
+  document_->editRoot(
+      {section, BodyDocument::RootLane::kPole, frequency_hz, bw_hz, false});
 }
 
 void MainWindow::clearSection(std::size_t section) {
-  if (section >= trench::core::kLegacySectionCount || fit_active_) return;
-  const auto before_corner = document_->cornerSnapshot();
-  if (document_->p2kCornerSnapshot()[section] == trench::core::kIdentitySection) return;
-  document_->editP2kSection(section, trench::core::kIdentitySection);
-  document_->commitGesture(before_corner);
+  if (section >= trench::core::native::kSections || fit_active_) return;
+  document_->editRoot(
+      {section, BodyDocument::RootLane::kPole, 0.0, 0.0, true});
 }
 
 void MainWindow::selectSection(std::size_t section, ResponsePlotWidget::Lane lane) {
@@ -726,7 +726,7 @@ void MainWindow::refreshFitRoom() {
 
 void MainWindow::rebuildPostureGroups() {
   QList<PostureList::Group> groups;
-  PostureList::Group mine{QStringLiteral("MINE"), {}};
+  PostureList::Group mine{QStringLiteral("USER"), {}};
   for (const auto& entry : user_postures_.entries()) mine.names.push_back(entry.name);
   groups.push_back(mine);
   for (const auto* type : kFilterTypes) {
@@ -950,13 +950,18 @@ void MainWindow::updateProbes() {
 }
 
 void MainWindow::updateReadout() {
-  const auto words = document_->p2kCornerSnapshot()[selected_section_];
-  const auto geometry =
-      trench::core::geometry_from_words(words, document_->sampleRateHz());
+  const auto& section =
+      document_->body().corners[document_->corner()].sections[selected_section_];
+  const auto* pole = std::get_if<trench::core::native::Resonant>(&section.pole);
+  const auto* zero = std::get_if<trench::core::native::Resonant>(&section.zero);
   section_readout_->setReading(
-      selected_section_, trench::core::p2k::pole_of(words, document_->sampleRateHz()),
-      trench::core::p2k::mask_of(words, selected_section_, document_->sampleRateHz()),
-      std::holds_alternative<trench::core::ConjugatePair>(geometry.zero));
+      selected_section_, pole == nullptr ? std::nullopt
+                                         : std::optional{*pole},
+      zero == nullptr ? std::nullopt : std::optional{*zero});
+  const auto mask = document_->freedomMask();
+  section_readout_->setPins(
+      (mask & trench::core::p2k::pole_bit(selected_section_)) != 0U,
+      (mask & trench::core::p2k::zero_bit(selected_section_)) != 0U);
 }
 
 void MainWindow::updateInterior() {

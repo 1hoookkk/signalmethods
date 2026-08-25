@@ -32,6 +32,40 @@ class CornerEditCommand final : public QUndoCommand {
   BodyDocument::CornerSnapshot after_;
 };
 
+class RootEditCommand final : public QUndoCommand {
+ public:
+  RootEditCommand(BodyDocument* document, std::size_t corner,
+                  BodyDocument::CornerSnapshot before,
+                  BodyDocument::CornerSnapshot after, std::uint64_t gesture)
+      : document_(document),
+        corner_(corner),
+        before_(std::move(before)),
+        after_(std::move(after)),
+        gesture_(gesture) {}
+
+  [[nodiscard]] int id() const override { return 0x5254; }
+
+  [[nodiscard]] bool mergeWith(const QUndoCommand* command) override {
+    const auto* next = dynamic_cast<const RootEditCommand*>(command);
+    if (next == nullptr || gesture_ == 0 || next->gesture_ != gesture_ ||
+        next->corner_ != corner_) {
+      return false;
+    }
+    after_ = next->after_;
+    return true;
+  }
+
+  void redo() override { document_->applyCorner(corner_, after_); }
+  void undo() override { document_->applyCorner(corner_, before_); }
+
+ private:
+  BodyDocument* document_{};
+  std::size_t corner_{};
+  BodyDocument::CornerSnapshot before_{};
+  BodyDocument::CornerSnapshot after_{};
+  std::uint64_t gesture_{};
+};
+
 class SpaceEditCommand final : public QUndoCommand {
  public:
   SpaceEditCommand(BodyDocument* document, trench::core::p2k::PerceptualSpace before,
@@ -106,6 +140,10 @@ double BodyDocument::sampleRateHz() const noexcept { return sample_rate_hz_; }
 
 QUndoStack* BodyDocument::undoStack() noexcept { return &undo_stack_; }
 
+bool BodyDocument::rootGestureActive() const noexcept {
+  return active_root_gesture_ != 0;
+}
+
 std::uint32_t BodyDocument::freedomMask() const noexcept { return freedom_mask_; }
 
 void BodyDocument::toggleLane(std::size_t section, bool pole) {
@@ -115,27 +153,62 @@ void BodyDocument::toggleLane(std::size_t section, bool pole) {
   emit freedomMaskChanged(freedom_mask_);
 }
 
+void BodyDocument::beginRootGesture() {
+  active_root_gesture_ = ++next_root_gesture_;
+  if (active_root_gesture_ == 0) active_root_gesture_ = ++next_root_gesture_;
+}
+
+bool BodyDocument::editRoot(const RootEdit& edit) {
+  namespace native = trench::core::native;
+  namespace p2k = trench::core::p2k;
+  if (edit.section >= native::kSections) return false;
+  const auto free_bit = edit.lane == RootLane::kPole ? p2k::pole_bit(edit.section)
+                                                      : p2k::zero_bit(edit.section);
+  if ((freedom_mask_ & free_bit) == 0U) return false;
+
+  const auto before = cornerSnapshot();
+  auto after = before;
+  auto& section = after.sections[edit.section];
+  const native::RealRoots parked{std::numeric_limits<double>::infinity(),
+                                 std::numeric_limits<double>::infinity()};
+  if (edit.parked) {
+    if (edit.lane == RootLane::kZero) {
+      section.zero = parked;
+    } else {
+      section.pole = parked;
+      section.zero = parked;
+    }
+  } else {
+    if (!std::isfinite(edit.hz) || !std::isfinite(edit.bandwidth_hz) ||
+        edit.bandwidth_hz <= 0.0) {
+      return false;
+    }
+    const auto hz = std::clamp(edit.hz, 20.0, sample_rate_hz_ * 0.49);
+    const auto bandwidth_hz = std::max(edit.bandwidth_hz, 1.0e-9);
+    const native::Resonant roots{hz, bandwidth_hz};
+    if (edit.lane == RootLane::kPole) {
+      section.pole = roots;
+    } else {
+      section.zero = roots;
+    }
+  }
+
+  const auto [b1, b2] = native::coefficients_of(section.zero, sample_rate_hz_);
+  section.dc_stabilised = std::abs(1.0 + b1 + b2) > 1.0e-9;
+  if (after == before) return false;
+  undo_stack_.push(
+      new RootEditCommand(this, corner_, before, after, active_root_gesture_));
+  return true;
+}
+
+void BodyDocument::endRootGesture() { active_root_gesture_ = 0; }
+
 void BodyDocument::applyP2kSection(std::size_t section,
                                    const trench::core::PackedSection& words) {
   if (section >= trench::core::native::kSections) return;
   auto rows = p2kCornerSnapshot();
   rows[section] = words;
   applyP2kCorner(corner_, rows);
-}
-
-void BodyDocument::editP2kSection(std::size_t section,
-                                  const trench::core::PackedSection& words) {
-  if (section >= trench::core::native::kSections) return;
-  auto rows = p2kCornerSnapshot();
-  rows[section] = words;
-  trench::core::p2k::write_dc_unity_scales(rows);
-  applyP2kCorner(corner_, rows);
-}
-
-void BodyDocument::commitGesture(const CornerSnapshot& before) {
-  const auto after = cornerSnapshot();
-  if (after == before) return;
-  undo_stack_.push(new CornerEditCommand(this, corner_, before, after));
 }
 
 const std::optional<std::vector<double>>& BodyDocument::target() const noexcept {

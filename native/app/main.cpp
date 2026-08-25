@@ -1,4 +1,5 @@
 #include "bisect_room.hpp"
+#include "armadillo_view.hpp"
 #include "body_document.hpp"
 #include "fit_controller.hpp"
 #include "main_window.hpp"
@@ -214,7 +215,7 @@ int main(int argc, char* argv[]) {
           std::filesystem::path(parser.value(target_option).toStdWString()));
     }
     if (parser.isSet(overlay_option) &&
-        !window.responsePlot()->setOverlay(parser.value(overlay_option))) {
+        !window.armadilloView()->setOverlay(parser.value(overlay_option))) {
       parser.showHelp(2);
     }
     if (parser.isSet(view_option) &&

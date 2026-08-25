@@ -26,6 +26,16 @@ class BodyDocument final : public QObject {
     double semitones{0.0};
   };
 
+  enum class RootLane { kPole, kZero };
+
+  struct RootEdit {
+    std::size_t section{};
+    RootLane lane{RootLane::kPole};
+    double hz{};
+    double bandwidth_hz{};
+    bool parked{};
+  };
+
   BodyDocument(trench::core::native::Body body, double sample_rate_hz,
                QObject* parent = nullptr);
 
@@ -37,6 +47,7 @@ class BodyDocument final : public QObject {
   [[nodiscard]] std::size_t corner() const noexcept;
   [[nodiscard]] double sampleRateHz() const noexcept;
   [[nodiscard]] QUndoStack* undoStack() noexcept;
+  [[nodiscard]] bool rootGestureActive() const noexcept;
   [[nodiscard]] std::uint32_t freedomMask() const noexcept;
   [[nodiscard]] const std::optional<std::vector<double>>& target() const noexcept;
   [[nodiscard]] CornerSnapshot cornerSnapshot() const;
@@ -67,9 +78,10 @@ class BodyDocument final : public QObject {
   void applyIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
 
   void toggleLane(std::size_t section, bool pole);
+  void beginRootGesture();
+  bool editRoot(const RootEdit& edit);
+  void endRootGesture();
   void applyP2kSection(std::size_t section, const trench::core::PackedSection& words);
-  void editP2kSection(std::size_t section, const trench::core::PackedSection& words);
-  void commitGesture(const CornerSnapshot& before);
 
   void applyCorner(const CornerSnapshot& words);
   void applyCorner(std::size_t corner, const CornerSnapshot& words);
@@ -104,4 +116,6 @@ class BodyDocument final : public QObject {
   trench::core::p2k::RoleIntent intent_{};
   View view_{};
   QUndoStack undo_stack_;
+  std::uint64_t next_root_gesture_{};
+  std::uint64_t active_root_gesture_{};
 };

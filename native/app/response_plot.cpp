@@ -1,19 +1,14 @@
 #include "response_plot.hpp"
 
-#include "section_color.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/section_param.hpp"
 #include "trench/core/transpose.hpp"
 
-#include <QApplication>
 #include <QFontMetrics>
-#include <QMenu>
-#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
-#include <QResizeEvent>
+#include <QSizePolicy>
 #include <QTimer>
-#include <QToolButton>
 
 #include <algorithm>
 #include <cmath>
@@ -33,23 +28,15 @@ constexpr int kTraceMinimumBins = 192;
 constexpr double kTraceWidthPx = 1.1;
 constexpr float kTraceFlatPx = 0.15F;
 
-constexpr double kWidthSpanOct = 6.0;
-constexpr double kPairSnapOct = 0.1;
-constexpr int kFaintRingAlpha = 96;
-constexpr double kHitRadiusPx = 11.0;
 constexpr double kTokenRadiusPx = 8.0;
 constexpr qint64 kFlashHoldMs = 200;
 const QColor kTarget{72, 82, 88};
-const QColor kOverlayBand{174, 186, 190, 24};
-const QColor kOverlayLine{174, 186, 190, 70};
 const QColor kResidual{156, 130, 224};
 const QColor kPrimitive{174, 186, 190, 60};
 const QColor kExposed{174, 186, 190, 200};
 
 constexpr double kResidualBandPx = 34.0;
 
-constexpr double kOverlayBarWidthPx = 3.0;
-constexpr double kOverlayMinWidthPx = 2.0;
 constexpr double kPrimitiveWidthPx = 1.0;
 constexpr double kExposedWidthPx = 1.4;
 
@@ -169,127 +156,31 @@ trench::core::Cascade corner_cascade(const trench::core::native::Body& body,
 }  // namespace
 
 ResponsePlotWidget::ResponsePlotWidget(QWidget* parent) : QWidget(parent) {
-  setMinimumSize(480, 150);
   setAutoFillBackground(false);
-  setMouseTracking(true);
-  buildOverlayPicker();
+  setAccessibleName(QStringLiteral("Complete cascade response"));
+  setAccessibleDescription(
+      QStringLiteral("Read-only response, aligned target, residual, and fit pins"));
+  auto policy = QSizePolicy{QSizePolicy::Preferred, QSizePolicy::Preferred};
+  policy.setHeightForWidth(true);
+  setSizePolicy(policy);
 }
 
-void ResponsePlotWidget::buildOverlayPicker() {
-  overlay_menu_ = new QMenu(this);
-  overlay_menu_->setFont(QFont(QStringLiteral("Segoe UI"), 8));
-  overlay_menu_->setStyleSheet(QStringLiteral(
-      "QMenu { background: #1a1f23; color: #aebabe; border: 1px solid #373f43; }"
-      "QMenu::item { padding: 2px 16px 2px 12px; }"
-      "QMenu::item:selected { background: #373f43; }"));
-  connect(overlay_menu_->addAction(QStringLiteral("none")), &QAction::triggered, this,
-          [this] { setOverlay(QString()); });
+QSize ResponsePlotWidget::sizeHint() const { return {720, 260}; }
 
-  QMenu* group = nullptr;
-  QString type;
-  for (const auto& skeleton : trench::core::p2k::templates()) {
-    const auto skeleton_type = QString::fromUtf8(skeleton.type.data(),
-                                                 static_cast<int>(skeleton.type.size()));
-    if (group == nullptr || skeleton_type != type) {
-      type = skeleton_type;
-      group = overlay_menu_->addMenu(type);
-      group->setFont(overlay_menu_->font());
-      group->setStyleSheet(overlay_menu_->styleSheet());
-    }
-    const auto name = QString::fromUtf8(skeleton.name.data(),
-                                        static_cast<int>(skeleton.name.size()));
-    connect(group->addAction(name), &QAction::triggered, this,
-            [this, name] { setOverlay(name); });
-  }
+QSize ResponsePlotWidget::minimumSizeHint() const { return {480, 190}; }
 
-  overlay_button_ = new QToolButton(this);
-  overlay_button_->setObjectName(QStringLiteral("overlayPicker"));
-  overlay_button_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
-  overlay_button_->setFocusPolicy(Qt::NoFocus);
-  overlay_button_->setPopupMode(QToolButton::InstantPopup);
-  overlay_button_->setMenu(overlay_menu_);
-  overlay_button_->setStyleSheet(QStringLiteral(
-      "QToolButton { background: #1a1f23; color: #767f83; border: 1px solid #373f43; "
-      "border-radius: 2px; padding: 1px 8px; }"
-      "QToolButton:hover { color: #aebabe; }"
-      "QToolButton::menu-indicator { image: none; }"));
-  overlay_button_->setText(QStringLiteral("OVERLAY"));
-  placeOverlayPicker();
-}
-
-void ResponsePlotWidget::placeOverlayPicker() {
-  if (overlay_button_ == nullptr) return;
-  overlay_button_->adjustSize();
-  overlay_button_->move(width() - 18 - overlay_button_->width(), 5);
-}
-
-bool ResponsePlotWidget::setOverlay(const QString& name) {
-  overlay_poles_.clear();
-  overlay_name_.clear();
-  bool found = name.isEmpty();
-  if (!name.isEmpty()) {
-    if (const auto* skeleton = trench::core::p2k::posture(name.toStdString())) {
-      overlay_name_ = name;
-      for (std::size_t index = 0; index < skeleton->pole_count; ++index) {
-        overlay_poles_.push_back(skeleton->poles[index]);
-      }
-      found = true;
-    }
-  }
-  overlay_button_->setText(overlay_name_.isEmpty() ? QStringLiteral("OVERLAY")
-                                                   : overlay_name_);
-  placeOverlayPicker();
-  update();
-  return found;
-}
-
-QMenu* ResponsePlotWidget::overlayMenu() const noexcept { return overlay_menu_; }
-
-QToolButton* ResponsePlotWidget::overlayPicker() const noexcept { return overlay_button_; }
-
-QString ResponsePlotWidget::overlay() const { return overlay_name_; }
-
-std::size_t ResponsePlotWidget::overlayGhostCount() const noexcept {
-  return overlay_poles_.size();
-}
-
-void ResponsePlotWidget::resizeEvent(QResizeEvent* event) {
-  placeOverlayPicker();
-  QWidget::resizeEvent(event);
-}
-
-void ResponsePlotWidget::paintOverlay(QPainter& painter, const QRectF& plot) const {
-  if (overlay_poles_.empty() || frequencies_hz_.empty()) return;
-  const auto low_hz = frequencies_hz_.front();
-  const auto high_hz = frequencies_hz_.back();
-  painter.setPen(Qt::NoPen);
-  for (const auto& pole : overlay_poles_) {
-    const auto centre = x_for_frequency(std::clamp(pole.hz, low_hz, high_hz), low_hz,
-                                        high_hz, plot);
-    const auto width =
-        pole.bw_hz > 0.0
-            ? std::max(x_for_frequency(std::clamp(pole.hz + pole.bw_hz * 0.5, low_hz,
-                                                  high_hz),
-                                       low_hz, high_hz, plot) -
-                           x_for_frequency(std::clamp(pole.hz - pole.bw_hz * 0.5, low_hz,
-                                                      high_hz),
-                                           low_hz, high_hz, plot),
-                       kOverlayMinWidthPx)
-            : kOverlayBarWidthPx;
-    painter.setBrush(kOverlayBand);
-    painter.drawRect(QRectF{centre - width * 0.5, plot.top(), width, plot.height()});
-    painter.setBrush(kOverlayLine);
-    painter.drawRect(QRectF{centre - 0.5, plot.top(), 1.0, plot.height()});
-  }
-  painter.setBrush(Qt::NoBrush);
+int ResponsePlotWidget::heightForWidth(int width) const {
+  return std::clamp(static_cast<int>(std::lround(width / 2.8)), 190, 320);
 }
 
 void ResponsePlotWidget::setBody(const trench::core::native::Body* body,
                                  double sample_rate_hz,
                                  std::string source_label) {
+  const auto label = QString::fromStdString(source_label);
+  if (body_ == body && sample_rate_hz_ == sample_rate_hz && source_label_ == label) return;
   body_ = body;
   sample_rate_hz_ = sample_rate_hz;
-  source_label_ = QString::fromStdString(std::move(source_label));
+  source_label_ = label;
   refresh();
 }
 
@@ -306,6 +197,7 @@ void ResponsePlotWidget::setCorner(std::size_t corner) {
 }
 
 void ResponsePlotWidget::setView(float morph, float q, double semitones) {
+  if (view_morph_ == morph && view_q_ == q && view_semitones_ == semitones) return;
   view_morph_ = morph;
   view_q_ = q;
   view_semitones_ = semitones;
@@ -344,11 +236,13 @@ double ResponsePlotWidget::authorHzForX(double x, const QRectF& plot) const {
 }
 
 void ResponsePlotWidget::setFreedomMask(std::uint32_t mask) {
+  if (freedom_mask_ == mask) return;
   freedom_mask_ = mask;
   update();
 }
 
 void ResponsePlotWidget::setSelectedSection(std::size_t section, Lane lane) {
+  if (selected_section_ == section && selected_lane_ == lane) return;
   selected_section_ = section;
   selected_lane_ = lane;
   rebuildExposed();
@@ -374,12 +268,15 @@ double ResponsePlotWidget::responseDbAtHz(double hz) const {
 }
 
 void ResponsePlotWidget::setTarget(const std::vector<double>* target) {
-  target_db_ = target == nullptr ? std::vector<double>{} : *target;
+  const auto wanted = target == nullptr ? std::vector<double>{} : *target;
+  if (target_db_ == wanted) return;
+  target_db_ = wanted;
   rebuildResidual();
   update();
 }
 
 void ResponsePlotWidget::setFitRunning(bool running) {
+  if (fit_running_ == running) return;
   fit_running_ = running;
   update();
 }
@@ -469,20 +366,6 @@ void ResponsePlotWidget::rebuildExposed() {
     }
     primitives_.emplace_back(section, std::move(curve));
   }
-}
-
-double ResponsePlotWidget::contributionAt(std::size_t section, double hz) const {
-  if (section >= contributions_.size() || frequencies_hz_.empty()) return 0.0;
-  const auto& curve = contributions_[section];
-  const auto low = frequencies_hz_.front();
-  const auto high = frequencies_hz_.back();
-  const auto clamped = std::clamp(hz, low, high);
-  const auto position = std::log(clamped / low) / std::log(high / low) *
-                        static_cast<double>(curve.size() - 1);
-  const auto lower = static_cast<std::size_t>(std::floor(position));
-  const auto upper = std::min(lower + 1, curve.size() - 1);
-  const auto blend = position - static_cast<double>(lower);
-  return curve[lower] * (1.0 - blend) + curve[upper] * blend;
 }
 
 void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double high_db) {
@@ -578,10 +461,12 @@ void ResponsePlotWidget::strokeTrace(QPainter& painter, const QColor& colour) {
   const auto supersample =
       std::max(3, static_cast<int>(std::ceil(devicePixelRatioF())));
   const auto target = rect().size() * supersample;
-  if (trace_image_.size() != target || trace_image_color_ != colour) {
+  if (trace_image_.size() != target || trace_image_color_ != colour ||
+      trace_image_scale_ != supersample) {
     trace_image_ = QImage(target, QImage::Format_ARGB32_Premultiplied);
     trace_image_.fill(Qt::transparent);
     trace_image_color_ = colour;
+    trace_image_scale_ = supersample;
     QPainter buffer(&trace_image_);
     buffer.setRenderHint(QPainter::Antialiasing, true);
     buffer.scale(supersample, supersample);
@@ -591,9 +476,10 @@ void ResponsePlotWidget::strokeTrace(QPainter& painter, const QColor& colour) {
     buffer.setPen(pen);
     buffer.setBrush(Qt::NoBrush);
     buffer.drawPath(trace_path_);
+    buffer.end();
+    trace_image_.setDevicePixelRatio(supersample);
   }
-  painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-  painter.drawImage(QRectF(rect()), trace_image_);
+  painter.drawImage(QPointF{0.0, 0.0}, trace_image_);
 }
 
 std::size_t ResponsePlotWidget::responsePointCount() const noexcept {
@@ -737,88 +623,6 @@ std::size_t ResponsePlotWidget::primitiveCount() const noexcept {
   return primitives_.size();
 }
 
-std::optional<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::hit(
-    const QPointF& at) const {
-  std::optional<TokenInfo> best;
-  std::pair<int, double> best_key{2, kHitRadiusPx};
-  for (const auto& token : tokens()) {
-    const auto dx = token.position.x() - at.x();
-    const auto dy = token.position.y() - at.y();
-    const auto distance = std::hypot(dx, dy);
-    const auto score = token.lane == Lane::kPole ? distance
-                                                 : std::abs(distance - token.radius);
-    if (score >= kHitRadiusPx) continue;
-    const std::pair<int, double> key{token.section == selected_section_ ? 0 : 1, score};
-    if (!best || key < best_key) {
-      best_key = key;
-      best = token;
-    }
-  }
-  return best;
-}
-
-void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
-  if (event->button() != Qt::LeftButton || body_ == nullptr) {
-    QWidget::mousePressEvent(event);
-    return;
-  }
-  const auto token = hit(event->position());
-  if (!token) {
-    QWidget::mousePressEvent(event);
-    return;
-  }
-  pressed_ = true;
-  moved_ = false;
-  pin_emitted_ = false;
-  press_section_ = token->section;
-  press_lane_ = token->lane;
-  press_position_ = event->position();
-  emit tokenSelected(token->section, token->lane);
-  event->accept();
-}
-
-void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
-  if (!pressed_) {
-    const auto token = hit(event->position());
-    const auto hovered =
-        token ? std::optional<std::size_t>{token->section} : std::nullopt;
-    if (hovered != last_hover_section_) {
-      last_hover_section_ = hovered;
-      emit tokenHovered(hovered);
-    }
-    QWidget::mouseMoveEvent(event);
-    return;
-  }
-  const auto at = event->position();
-  const auto travel = std::hypot(at.x() - press_position_.x(), at.y() - press_position_.y());
-  if (travel >= QApplication::startDragDistance()) moved_ = true;
-  event->accept();
-}
-
-void ResponsePlotWidget::leaveEvent(QEvent* event) {
-  if (last_hover_section_) {
-    last_hover_section_.reset();
-    emit tokenHovered(std::nullopt);
-  }
-  QWidget::leaveEvent(event);
-}
-
-void ResponsePlotWidget::mouseReleaseEvent(QMouseEvent* event) {
-  if (!pressed_) {
-    QWidget::mouseReleaseEvent(event);
-    return;
-  }
-  const auto section = press_section_;
-  const auto lane = press_lane_;
-  const auto moved = moved_;
-  pressed_ = false;
-  moved_ = false;
-  pin_emitted_ = !moved;
-  if (pin_emitted_) emit pinToggled(section, lane);
-  update();
-  event->accept();
-}
-
 void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -885,8 +689,6 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   ensureTrace(plot, low_db, high_db);
   painter.setClipRect(plot);
 
-  paintOverlay(painter, plot);
-
   const auto stroke_primitive = [&](const std::vector<double>& curve, const QColor& ink,
                                    double width) {
     if (curve.size() != frequencies_hz_.size()) return;
@@ -904,10 +706,17 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     painter.setBrush(Qt::NoBrush);
     painter.drawPath(path);
   };
+  const auto flashing = flash_section_ && flash_age_.isValid() &&
+                        flash_age_.elapsed() <= kFlashHoldMs;
   for (const auto& [section, curve] : primitives_) {
     const auto pinned =
         (freedom_mask_ & trench::core::p2k::pole_bit(section)) == 0U;
-    stroke_primitive(curve, pinned ? kExposed : kPrimitive,
+    auto ink = pinned ? kExposed : kPrimitive;
+    if ((flashing && section == *flash_section_) ||
+        (highlight_section_ && section == *highlight_section_)) {
+      ink = ink.lighter(160);
+    }
+    stroke_primitive(curve, ink,
                      pinned ? kExposedWidthPx : kPrimitiveWidthPx);
   }
   stroke_primitive(exposed_db_, kExposed, kExposedWidthPx);
@@ -929,26 +738,5 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   }
 
   strokeTrace(painter, kTrace);
-
-
-  const auto flashing = flash_section_ && flash_age_.isValid() &&
-                        flash_age_.elapsed() <= kFlashHoldMs;
-  for (const auto& token : tokens()) {
-    if (token.lane == Lane::kPole) continue;
-    auto ink = section_color(token.section);
-    const auto highlighted = highlight_section_ && token.section == *highlight_section_;
-    if ((flashing && token.section == *flash_section_) || highlighted) {
-      ink = ink.lighter(160);
-    }
-    const auto selected = token.section == selected_section_;
-    const auto radius = token.radius;
-    {
-      auto ring = ink;
-      if (!selected) ring.setAlpha(kFaintRingAlpha);
-      painter.setPen(QPen(ring, token.pinned ? 2.4 : 1.4));
-      painter.setBrush(Qt::NoBrush);
-      painter.drawEllipse(token.position, radius, radius);
-    }
-  }
   painter.setClipping(false);
 }

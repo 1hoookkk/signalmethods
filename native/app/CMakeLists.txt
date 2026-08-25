@@ -48,6 +48,7 @@ if(BUILD_TESTING)
   )
   if(TARGET Qt6::QOffscreenIntegrationPlugin)
     set_property(TEST QtShell.CoreToViewSmoke PROPERTY ENVIRONMENT
+      "QT_QPA_PLATFORM=offscreen"
       "QT_QPA_PLATFORM_PLUGIN_PATH=$<TARGET_FILE_DIR:Qt6::QOffscreenIntegrationPlugin>"
       "QT_QPA_FONTDIR=C:/Windows/Fonts")
   endif()
