@@ -17,7 +17,7 @@ int probe_buffer_sample_count() {
   return buffer.getNumSamples();
 }
 
-std::optional<MonoClip> decode_mono(const std::filesystem::path& path) {
+std::optional<AudioClip> decode_audio(const std::filesystem::path& path) {
   juce::AudioFormatManager manager;
   manager.registerBasicFormats();
   const juce::File file(juce::String(path.wstring().c_str()));
@@ -26,13 +26,27 @@ std::optional<MonoClip> decode_mono(const std::filesystem::path& path) {
   const auto length = static_cast<int>(reader->lengthInSamples);
   juce::AudioBuffer<float> buffer(static_cast<int>(reader->numChannels), length);
   if (!reader->read(&buffer, 0, length, 0, true, true)) return std::nullopt;
-  MonoClip clip;
+  AudioClip clip;
   clip.sample_rate_hz = reader->sampleRate;
-  clip.samples.resize(static_cast<std::size_t>(length));
-  const float scale = 1.0F / static_cast<float>(buffer.getNumChannels());
+  clip.channels.resize(static_cast<std::size_t>(buffer.getNumChannels()));
   for (int channel = 0; channel < buffer.getNumChannels(); ++channel) {
     const float* data = buffer.getReadPointer(channel);
-    for (int i = 0; i < length; ++i) clip.samples[static_cast<std::size_t>(i)] += data[i] * scale;
+    clip.channels[static_cast<std::size_t>(channel)].assign(data, data + length);
+  }
+  return clip;
+}
+
+std::optional<MonoClip> decode_mono(const std::filesystem::path& path) {
+  const auto decoded = decode_audio(path);
+  if (!decoded || decoded->channels.empty()) return std::nullopt;
+  MonoClip clip;
+  clip.sample_rate_hz = decoded->sample_rate_hz;
+  clip.samples.assign(decoded->channels.front().size(), 0.0F);
+  const float scale = 1.0F / static_cast<float>(decoded->channels.size());
+  for (const auto& channel : decoded->channels) {
+    for (std::size_t index = 0; index < channel.size(); ++index) {
+      clip.samples[index] += channel[index] * scale;
+    }
   }
   return clip;
 }

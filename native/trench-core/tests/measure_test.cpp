@@ -5,6 +5,8 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <cstdint>
+#include <limits>
 #include <numbers>
 #include <vector>
 
@@ -155,6 +157,30 @@ TEST(Measure, WeightedErrorRemovesTheOffsetAndIgnoresZeroWeightPoints) {
   EXPECT_NEAR(report.offset_db, 10.0, 1e-12);
   EXPECT_NEAR(report.rms_db, 0.0, 1e-12);
   EXPECT_NEAR(report.worst_db, 0.0, 1e-12);
+}
+
+TEST(Measure, StereoTransferCarriesMagnitudePhaseAndCoherence) {
+  constexpr double rate = 48'000.0;
+  std::vector<float> input(16'384);
+  std::vector<float> output(input.size());
+  std::uint32_t state = 1;
+  for (std::size_t index = 0; index < input.size(); ++index) {
+    state = state * 1'664'525U + 1'013'904'223U;
+    input[index] = static_cast<float>(static_cast<double>(state) /
+                                      static_cast<double>(std::numeric_limits<std::uint32_t>::max()) *
+                                      2.0 - 1.0);
+    output[index] = 0.5F * input[index];
+  }
+  auto target = measure::transfer_function(input, output, rate);
+  ASSERT_TRUE(target.valid());
+  EXPECT_EQ(target.kind, trench::core::TargetKind::kTransferFunction);
+  EXPECT_TRUE(target.absolute_level);
+  ASSERT_EQ(target.phase_rad.size(), target.frequency_hz.size());
+  for (std::size_t index = 0; index < target.frequency_hz.size(); ++index) {
+    EXPECT_NEAR(target.magnitude_db[index], -6.020599913, 1.0e-9);
+    EXPECT_NEAR(target.phase_rad[index], 0.0, 1.0e-9);
+    EXPECT_NEAR(target.weight[index], 1.0, 1.0e-9);
+  }
 }
 
 }  // namespace

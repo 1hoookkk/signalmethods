@@ -8,7 +8,9 @@
 #include "posture_list.hpp"
 #include "response_plot.hpp"
 #include "section_readout.hpp"
+#include "vowel_journey.hpp"
 #include "trench/audio/audio_boundary.hpp"
+#include "trench/core/fit_target.hpp"
 #include "trench/core/formants.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/morph.hpp"
@@ -17,12 +19,18 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFileDialog>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QKeySequence>
+#include <QLabel>
 #include <QMenu>
+#include <QMimeData>
 #include <QPushButton>
+#include <QUrl>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -30,6 +38,7 @@
 #include <cmath>
 #include <cctype>
 #include <fstream>
+#include <limits>
 #include <numbers>
 #include <optional>
 #include <stdexcept>
@@ -39,8 +48,8 @@
 
 namespace {
 
-constexpr std::array<const char*, 12> kFilterTypes{"LPF", "HPF", "BPF", "EQ+", "EQ-", "VOW",
-                                                   "PHA", "FLG", "REZ", "WAH", "DST", "SFX"};
+constexpr std::array<const char*, 11> kFilterTypes{"LPF", "HPF", "BPF", "EQ+", "EQ-", "PHA",
+                                                   "FLG", "REZ", "WAH", "DST", "SFX"};
 
 std::vector<std::uint8_t> read_bytes(const std::filesystem::path& path) {
   std::ifstream stream(path, std::ios::binary | std::ios::ate);
@@ -53,42 +62,17 @@ std::vector<std::uint8_t> read_bytes(const std::filesystem::path& path) {
   return bytes;
 }
 
-std::vector<double> read_curve(const std::filesystem::path& path) {
-  std::ifstream stream(path);
-  if (!stream) return {};
-  std::vector<double> values;
-  double value = 0.0;
-  while (stream >> value) values.push_back(value);
-  if (!stream.eof() || values.size() != trench::core::p2k::kNpts) return {};
-  return values;
-}
-
-trench::core::p2k::CornerWords unflatten(const QList<quint16>& words) {
-  trench::core::p2k::CornerWords out{};
-  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
-    for (std::size_t word = 0; word < out[section].size(); ++word) {
-      out[section][word] =
-          words[static_cast<qsizetype>(section * out[section].size() + word)];
-    }
-  }
-  return out;
-}
-
-trench::core::p2k::CornerWords roots_of_corner(
-    const BodyDocument::P2kCorner& corner) {
-  trench::core::p2k::CornerWords out{};
-  for (std::size_t section = 0; section < trench::core::p2k::kStageCount; ++section) {
-    for (std::size_t word = 0; word < out[section].size(); ++word) {
-      out[section][word] = corner[section][word];
-    }
-  }
-  return out;
-}
-
 bool is_audio(const std::filesystem::path& path) {
   auto ext = path.extension().string();
   for (auto& c : ext) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   return ext == ".wav" || ext == ".aif" || ext == ".aiff" || ext == ".flac";
+}
+
+bool is_target_file(const std::filesystem::path& path) {
+  if (is_audio(path)) return true;
+  auto ext = path.extension().string();
+  for (auto& c : ext) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  return ext == ".csv" || ext == ".txt" || ext == ".body240" || ext == ".bin";
 }
 
 double bandwidth_for_radius(double radius, double sample_rate_hz) {
@@ -99,6 +83,39 @@ double bandwidth_for_radius(double radius, double sample_rate_hz) {
 bool roots_are_parked(const trench::core::native::Roots& roots) {
   const auto* real = std::get_if<trench::core::native::RealRoots>(&roots);
   return real != nullptr && !std::isfinite(real->a_hz) && !std::isfinite(real->b_hz);
+}
+
+trench::core::FitTarget grid_target(const trench::core::p2k::Grid& grid,
+                                    std::vector<double> magnitude_db,
+                                    trench::core::TargetKind kind,
+                                    bool absolute_level) {
+  trench::core::FitTarget target;
+  target.frequency_hz = grid.hz;
+  target.magnitude_db = std::move(magnitude_db);
+  target.weight = grid.weight;
+  target.kind = kind;
+  target.absolute_level = absolute_level;
+  return target;
+}
+
+trench::core::native::Corner vowel_corner(
+    const trench::core::p2k::VowelFormants& vowel, double bandwidth_scale) {
+  namespace native = trench::core::native;
+  const native::RealRoots parked{std::numeric_limits<double>::infinity(),
+                                 std::numeric_limits<double>::infinity()};
+  native::Corner corner;
+  for (auto& section : corner.sections) {
+    section.pole = parked;
+    section.zero = parked;
+    section.dc_stabilised = true;
+  }
+  for (std::size_t formant = 0; formant < vowel.f.size(); ++formant) {
+    corner.sections[formant].pole = native::Resonant{
+        vowel.f[formant].hz,
+        std::max(1.0e-3, vowel.f[formant].bw_hz * bandwidth_scale)};
+  }
+  corner.gain_db = 0.0;
+  return corner;
 }
 
 trench::core::native::Body empty_body() {
@@ -145,6 +162,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
                        double sample_rate_hz,
                        QWidget* parent)
     : QMainWindow(parent), body_path_(body_path) {
+  setAcceptDrops(true);
   document_ = new BodyDocument(
       body_path.empty() ? empty_body()
                         : trench::core::native::import_p2k(read_bytes(body_path)),
@@ -189,6 +207,43 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   auto* posture_layout = new QVBoxLayout(posture_column);
   posture_layout->setContentsMargins(0, 0, 0, 0);
   posture_layout->setSpacing(0);
+  vowel_journey_ = new VowelJourney(posture_column);
+  posture_layout->addWidget(vowel_journey_, 0);
+  auto* fit_actions = new QWidget(posture_column);
+  fit_actions->setFixedHeight(68);
+  fit_actions->setStyleSheet(QStringLiteral(
+      "QWidget { background: #111416; border-left: 1px solid #373f43; "
+      "border-bottom: 1px solid #373f43; }"
+      "QPushButton { background: #1a1f23; color: #aebabe; border: 1px solid #373f43; "
+      "padding: 3px; font: 600 8px 'Segoe UI'; }"
+      "QPushButton:hover { color: #57decd; border-color: #59656a; }"
+      "QPushButton:disabled { color: #4a5257; }"));
+  auto* fit_actions_layout = new QGridLayout(fit_actions);
+  fit_actions_layout->setContentsMargins(5, 4, 5, 4);
+  fit_actions_layout->setHorizontalSpacing(3);
+  fit_actions_layout->setVerticalSpacing(3);
+  fit_method_ = new QLabel(QStringLiteral("FIT · LOAD TARGET"), fit_actions);
+  fit_method_->setObjectName(QStringLiteral("fitMethod"));
+  fit_method_->setAccessibleName(QStringLiteral("Selected fitting target type"));
+  fit_method_->setStyleSheet(QStringLiteral(
+      "QLabel { color: #57decd; border: none; font: 600 8px 'Segoe UI'; }"));
+  lpc_poles_ = new QPushButton(QStringLiteral("1  LPC → POLES"), fit_actions);
+  lpc_poles_->setObjectName(QStringLiteral("lpcPoles"));
+  lpc_poles_->setAccessibleName(QStringLiteral("Commit LPC pole suggestions"));
+  lpc_poles_->setToolTip(QStringLiteral("commit the selected target's LPC poles"));
+  zero_fit_ = new QPushButton(QStringLiteral("2  FIT ZEROS"), fit_actions);
+  zero_fit_->setObjectName(QStringLiteral("fitZeros"));
+  zero_fit_->setAccessibleName(QStringLiteral("Fit zeros only"));
+  zero_fit_->setToolTip(QStringLiteral("hold poles; fit zeros; adjust level if measured"));
+  free_fit_ = new QPushButton(QStringLiteral("3  REFINE FREE"), fit_actions);
+  free_fit_->setObjectName(QStringLiteral("fitFree"));
+  free_fit_->setAccessibleName(QStringLiteral("Fit released roots"));
+  free_fit_->setToolTip(QStringLiteral("refine only roots released on the response"));
+  fit_actions_layout->addWidget(fit_method_, 0, 0, 1, 2);
+  fit_actions_layout->addWidget(lpc_poles_, 1, 0, 1, 2);
+  fit_actions_layout->addWidget(zero_fit_, 2, 0);
+  fit_actions_layout->addWidget(free_fit_, 2, 1);
+  posture_layout->addWidget(fit_actions, 0);
   keep_posture_ = new QPushButton(QStringLiteral("SAVE POLES"), posture_column);
   keep_posture_->setObjectName(QStringLiteral("keepPosture"));
   keep_posture_->setFocusPolicy(Qt::NoFocus);
@@ -207,6 +262,11 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   posture_layout->addWidget(posture_list_, 1);
   plot_layout->addWidget(posture_column, 0);
   connect(keep_posture_, &QPushButton::clicked, this, &MainWindow::keepPosture);
+  connect(vowel_journey_, &VowelJourney::journeyChosen,
+          this, &MainWindow::applyVowelJourney);
+  connect(lpc_poles_, &QAbstractButton::clicked, this, &MainWindow::applyLpcPoles);
+  connect(zero_fit_, &QAbstractButton::clicked, this, &MainWindow::startZeroFit);
+  connect(free_fit_, &QAbstractButton::clicked, this, &MainWindow::startFit);
   column->addWidget(plot_row, 1);
 
   morph_strip_ = new MorphStrip(central);
@@ -228,9 +288,13 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   resize(960, 680);
 
   connect(section_readout_, &SectionReadout::poleEdited, this, &MainWindow::applyPole);
-  connect(section_readout_, &SectionReadout::pinToggled, this,
-          [this](std::size_t section, bool pole) {
-            document_->toggleLane(section, pole);
+  connect(response_plot_, &ResponsePlotWidget::tokenSelected, this,
+          [this](std::size_t section, ResponsePlotWidget::Lane lane) {
+            selectSection(section, lane);
+          });
+  connect(response_plot_, &ResponsePlotWidget::pinToggled, this,
+          [this](std::size_t section, ResponsePlotWidget::Lane lane) {
+            document_->toggleLane(section, lane == ResponsePlotWidget::Lane::kPole);
           });
   connect(armadillo_, &ArmadilloView::rootPressed, this, [this](std::size_t section, bool zero) {
     document_->beginRootGesture();
@@ -344,21 +408,28 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
             updateReadout();
           });
   connect(document_, &BodyDocument::targetChanged, this, [this] {
-    response_plot_->setTarget(document_->target() ? &*document_->target() : nullptr);
+    response_plot_->setTarget(document_->target() ? &document_->targetGridDb() : nullptr);
     updateVerbs();
     updateProbes();
   });
 
   connect(fit_controller_, &FitController::previewReady, this,
-          [this](quint64 generation, const QList<quint16>& words) {
+          [this](quint64 generation, const trench::core::native::Corner& corner,
+                 qsizetype section) {
             if (!fit_active_ || generation != fit_controller_->generation()) return;
-            document_->applyFitStep(fit_corner_, unflatten(words));
+            document_->applyFitStep(fit_corner_, corner);
+            if (section >= 0 &&
+                section < static_cast<qsizetype>(trench::core::native::kSections)) {
+              response_plot_->setHighlightedSection(static_cast<std::size_t>(section));
+              response_plot_->flashLane(static_cast<std::size_t>(section));
+            }
           });
   connect(fit_controller_, &FitController::finished, this,
-          [this](quint64 generation, bool ok, const QList<quint16>& words) {
+          [this](quint64 generation, bool ok,
+                 const trench::core::native::Corner& corner) {
             if (!fit_active_ || generation != fit_controller_->generation()) return;
             if (ok) {
-              document_->applyFitStep(fit_corner_, unflatten(words));
+              document_->applyFitStep(fit_corner_, corner);
               document_->commitFit(fit_corner_, pre_fit_);
             } else {
               document_->applyCorner(fit_corner_, pre_fit_);
@@ -384,8 +455,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
         chooseTarget();
         break;
       case ChassisBar::Verb::kFit:
-        openFitRoom();
-        startFit();
+        startZeroFit();
         break;
       case ChassisBar::Verb::kKeep:
         stopAndKeep();
@@ -463,6 +533,8 @@ ChassisBar* MainWindow::chassisBar() const noexcept { return chassis_bar_; }
 MorphStrip* MainWindow::morphStrip() const noexcept { return morph_strip_; }
 
 PostureList* MainWindow::postureList() const noexcept { return posture_list_; }
+
+VowelJourney* MainWindow::vowelJourney() const noexcept { return vowel_journey_; }
 
 SectionReadout* MainWindow::sectionReadout() const noexcept {
   return section_readout_;
@@ -637,33 +709,69 @@ trench::core::measure::Source MainWindow::sourceModel() const noexcept {
 
 bool MainWindow::loadTarget(const std::filesystem::path& path) {
   if (is_audio(path)) {
-    const auto clip = trench::audio::decode_mono(path);
-    if (!clip) return false;
+    const auto decoded = trench::audio::decode_audio(path);
+    if (!decoded || decoded->channels.empty()) return false;
+    trench::audio::MonoClip clip;
+    clip.sample_rate_hz = decoded->sample_rate_hz;
+    clip.samples.assign(decoded->channels.front().size(), 0.0F);
+    const float channel_scale = 1.0F / static_cast<float>(decoded->channels.size());
+    for (const auto& channel : decoded->channels) {
+      for (std::size_t index = 0; index < channel.size(); ++index) {
+        clip.samples[index] += channel[index] * channel_scale;
+      }
+    }
     std::vector<double> target;
     std::vector<double> lpc_target;
     std::vector<double> marks;
+    std::vector<trench::core::native::Resonant> suggested_poles;
     try {
       const auto envelope = trench::core::measure::harmonic_envelope(
-          clip->samples, clip->sample_rate_hz, source_model_);
+          clip.samples, clip.sample_rate_hz, source_model_);
       target = trench::core::measure::target_on_grid(envelope, document_->grid().hz);
-      const auto lpc = trench::core::measure::lpc_envelope(clip->samples, clip->sample_rate_hz);
+      const auto lpc = trench::core::measure::lpc_envelope(clip.samples, clip.sample_rate_hz);
       lpc_target = trench::core::measure::target_on_grid(lpc, document_->grid().hz);
-      for (const auto& formant : lpc.formants) marks.push_back(formant.hz);
+      for (const auto& formant : lpc.formants) {
+        marks.push_back(formant.hz);
+        suggested_poles.push_back({formant.hz, formant.bw_hz});
+      }
     } catch (const std::exception&) {
       return false;
     }
     const auto name = QString::fromStdString(path.filename().string());
     auto target_marks = marks;
-    addOverlay(name + QStringLiteral(" LPC"), std::move(lpc_target), std::move(marks));
-    addOverlay(name, std::move(target), std::move(target_marks));
-    audition_clip_ = *clip;
-    if (audition_) audition_->setClip(*clip);
+    auto transfer_marks = marks;
+    auto target_poles = suggested_poles;
+    auto transfer_poles = suggested_poles;
+    addOverlay(name + QStringLiteral(" LPC"),
+               grid_target(document_->grid(), std::move(lpc_target),
+                           trench::core::TargetKind::kEnvelope, false),
+               std::move(marks), std::move(suggested_poles));
+    addOverlay(name,
+               grid_target(document_->grid(), std::move(target),
+                           trench::core::TargetKind::kEnvelope, false),
+               std::move(target_marks), std::move(target_poles));
+    if (decoded->channels.size() == 2) {
+      try {
+        addOverlay(name + QStringLiteral(" transfer"),
+                   trench::core::measure::transfer_function(
+                       decoded->channels[0], decoded->channels[1],
+                       decoded->sample_rate_hz),
+                   std::move(transfer_marks), std::move(transfer_poles));
+      } catch (const std::exception&) {
+        // The envelope targets remain usable when a stereo pair lacks coherent input.
+      }
+    }
+    audition_clip_ = clip;
+    if (audition_) audition_->setClip(clip);
     return true;
   }
-  if (path.extension() == ".txt") {
-    auto curve = read_curve(path);
-    if (curve.size() != trench::core::p2k::kNpts) return false;
-    addOverlay(QString::fromStdString(path.filename().string()), std::move(curve));
+  auto extension = path.extension().string();
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+  if (extension == ".txt" || extension == ".csv") {
+    auto target = trench::core::read_fit_target(path);
+    if (!target) return false;
+    addOverlay(QString::fromStdString(path.filename().string()), std::move(*target));
     return true;
   }
   std::vector<std::uint8_t> bytes;
@@ -673,16 +781,30 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
     return false;
   }
   if (bytes.size() != trench::core::kLegacyBodyBytes) return false;
-  addOverlay(QString::fromStdString(path.filename().string()),
-             trench::core::p2k::corner_response_db(
-                 trench::core::p2k::rom_corner_words(bytes, document_->corner()),
-                 document_->grid()));
+  const auto imported = trench::core::native::import_p2k(bytes);
+  const auto& corner = imported.corners[document_->corner()];
+  const auto cascade = trench::core::native::cascade(
+      trench::core::native::design(corner, document_->sampleRateHz()), corner.gain_db);
+  std::vector<double> magnitude_db;
+  magnitude_db.reserve(document_->grid().hz.size());
+  for (const double hz : document_->grid().hz) {
+    magnitude_db.push_back(trench::core::cascade_response_db(
+        cascade, hz, document_->sampleRateHz()));
+  }
+  addOverlay(QStringLiteral("%1 · C%2")
+                 .arg(QString::fromStdString(path.filename().string()))
+                 .arg(document_->corner() + 1),
+             grid_target(document_->grid(), std::move(magnitude_db),
+                         trench::core::TargetKind::kTransferFunction, true));
   return true;
 }
 
-void MainWindow::addOverlay(const QString& name, std::vector<double> curve,
-                            std::vector<double> marks_hz) {
-  overlays_.push_back(FitRoom::Overlay{name, std::move(curve), std::move(marks_hz)});
+void MainWindow::addOverlay(
+    const QString& name, trench::core::FitTarget target,
+    std::vector<double> marks_hz,
+    std::vector<trench::core::native::Resonant> suggested_poles) {
+  overlays_.push_back(FitRoom::Overlay{name, std::move(target), std::move(marks_hz),
+                                       std::move(suggested_poles)});
   selectOverlay(static_cast<int>(overlays_.size()) - 1);
 }
 
@@ -693,7 +815,8 @@ void MainWindow::selectOverlay(int index) {
   auto source = overlays_[index].name;
   if (source.endsWith(QStringLiteral(" LPC"))) source.chop(4);
   armadillo_->setLpcFormants(source, overlays_[index].marks_hz);
-  document_->setTarget(overlays_[index].db);
+  document_->setTarget(overlays_[index].target);
+  updateVerbs();
 }
 
 void MainWindow::removeOverlay(int index) {
@@ -704,6 +827,7 @@ void MainWindow::removeOverlay(int index) {
     chassis_bar_->setTargetName(QString());
     armadillo_->setLpcFormants(QString(), {});
     document_->clearTarget();
+    updateVerbs();
     return;
   }
   selectOverlay(std::min(index, static_cast<int>(overlays_.size()) - 1));
@@ -721,11 +845,7 @@ void MainWindow::openFitRoom() {
 
 void MainWindow::refreshFitRoom() {
   if (fit_room_ == nullptr) return;
-  fit_room_->setGridHz(document_->grid().hz);
-  fit_room_->setResponse(document_->viewResponseDb());
   fit_room_->setOverlays(overlays_, selected_overlay_);
-  fit_room_->setScoreDb(document_->targetScoreDb());
-  fit_room_->setFitRunning(fit_active_);
 }
 
 void MainWindow::rebuildPostureGroups() {
@@ -739,11 +859,6 @@ void MainWindow::rebuildPostureGroups() {
       if (skeleton.type != type) continue;
       group.names.push_back(
           QString::fromUtf8(skeleton.name.data(), static_cast<int>(skeleton.name.size())));
-    }
-    for (const auto& vowel : trench::core::p2k::compiled_vowels()) {
-      if (vowel.type != type) continue;
-      group.names.push_back(
-          QString::fromUtf8(vowel.name.data(), static_cast<int>(vowel.name.size())));
     }
     groups.push_back(group);
   }
@@ -859,6 +974,38 @@ void MainWindow::applyVowel(const QString& symbol) {
   updatePostureMatch();
 }
 
+void MainWindow::applyVowelJourney(const QString& from, const QString& to,
+                                   double high_q_bandwidth_scale) {
+  namespace native = trench::core::native;
+  namespace p2k = trench::core::p2k;
+  if (fit_active_) return;
+  const auto* from_vowel = p2k::klatt_vowel(from.toStdString());
+  const auto* to_vowel = p2k::klatt_vowel(to.toStdString());
+  if (from_vowel == nullptr || to_vowel == nullptr) return;
+
+  const auto high_q = std::clamp(high_q_bandwidth_scale, 0.15, 1.0);
+  const std::array<native::Corner, native::kCorners> corners{
+      vowel_corner(*from_vowel, 1.0), vowel_corner(*to_vowel, 1.0),
+      vowel_corner(*from_vowel, high_q), vowel_corner(*to_vowel, high_q)};
+
+  auto* stack = document_->undoStack();
+  stack->beginMacro(QString());
+  for (std::size_t corner = 0; corner < corners.size(); ++corner) {
+    const auto before = document_->cornerSnapshot(corner);
+    if (before == corners[corner]) continue;
+    document_->applyCorner(corner, corners[corner]);
+    document_->commitFit(corner, before);
+  }
+  stack->endMacro();
+
+  std::uint32_t fit_mask = native::kGainBit;
+  for (std::size_t section = 0; section < native::kSections; ++section) {
+    fit_mask |= native::zero_bit(section);
+  }
+  document_->setFreedomMask(fit_mask);
+  updatePostureMatch();
+}
+
 void MainWindow::applyCharacter(double amount) {
   if (fit_active_) return;
   if (!character_gesture_) {
@@ -873,7 +1020,7 @@ void MainWindow::applyCharacter(double amount) {
 void MainWindow::chooseTarget() {
   const auto chosen = QFileDialog::getOpenFileName(
       this, QStringLiteral("TARGET"), QString(),
-      QStringLiteral("Target (*.body240 *.bin *.txt *.wav *.aif *.aiff *.flac)"));
+      QStringLiteral("Target (*.csv *.txt *.body240 *.bin *.wav *.aif *.aiff *.flac)"));
   if (chosen.isEmpty()) return;
   loadTarget(std::filesystem::path(chosen.toStdWString()));
 }
@@ -885,21 +1032,52 @@ void MainWindow::startFit() {
   fit_active_ = true;
   response_plot_->setFitRunning(true);
   updateVerbs();
-  namespace p2k = trench::core::p2k;
-  const auto roots = roots_of_corner(document_->p2kCornerSnapshot());
-  auto ceiling = *document_->target();
-  const auto model = document_->viewResponseDb();
-  const auto& grid = document_->grid();
-  double offset = 0.0;
-  if (ceiling.size() == model.size() && ceiling.size() == grid.weight.size() &&
-      grid.weight_sum > 0.0) {
-    for (std::size_t index = 0; index < ceiling.size(); ++index) {
-      offset += grid.weight[index] * (ceiling[index] - model[index]);
-    }
-    offset /= grid.weight_sum;
-    for (auto& db : ceiling) db -= offset;
+  fit_controller_->start(*document_->target(), document_->cornerSnapshot(),
+                         document_->freedomMask(), document_->sampleRateHz());
+}
+
+void MainWindow::startZeroFit() {
+  if (fit_active_ || !document_->target()) return;
+  std::uint32_t mask = trench::core::native::kGainBit;
+  for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+    const auto bit = trench::core::native::zero_bit(section);
+    if ((document_->freedomMask() & bit) != 0U) mask |= bit;
   }
-  fit_controller_->startZeros(std::move(ceiling), roots, document_->freedomMask(), grid);
+  document_->setFreedomMask(mask);
+  startFit();
+}
+
+void MainWindow::applyLpcPoles() {
+  namespace native = trench::core::native;
+  if (fit_active_ || selected_overlay_ < 0 ||
+      selected_overlay_ >= static_cast<int>(overlays_.size())) return;
+  const auto& poles = overlays_[selected_overlay_].suggested_poles;
+  if (poles.empty()) return;
+
+  const native::RealRoots parked{std::numeric_limits<double>::infinity(),
+                                 std::numeric_limits<double>::infinity()};
+  const auto before = document_->cornerSnapshot();
+  auto after = before;
+  for (auto& section : after.sections) {
+    section.pole = parked;
+    section.zero = parked;
+    section.dc_stabilised = true;
+  }
+  for (std::size_t section = 0;
+       section < std::min(poles.size(), after.sections.size()); ++section) {
+    after.sections[section].pole = poles[section];
+  }
+  after.gain_db = 0.0;
+  if (after != before) {
+    document_->applyCorner(after);
+    document_->commitFit(document_->corner(), before);
+  }
+
+  std::uint32_t mask = native::kGainBit;
+  for (std::size_t section = 0; section < native::kSections; ++section) {
+    mask |= native::zero_bit(section);
+  }
+  document_->setFreedomMask(mask);
 }
 
 void MainWindow::stopAndKeep() {
@@ -946,6 +1124,32 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
   return QMainWindow::eventFilter(watched, event);
 }
 
+void MainWindow::dragEnterEvent(QDragEnterEvent* event) {
+  if (!fit_active_ && event->mimeData()->hasUrls() &&
+      event->mimeData()->urls().size() == 1) {
+    const auto& url = event->mimeData()->urls().front();
+    if (url.isLocalFile() &&
+        is_target_file(std::filesystem::path(url.toLocalFile().toStdWString()))) {
+      event->acceptProposedAction();
+      return;
+    }
+  }
+  QMainWindow::dragEnterEvent(event);
+}
+
+void MainWindow::dropEvent(QDropEvent* event) {
+  if (!fit_active_ && event->mimeData()->hasUrls() &&
+      event->mimeData()->urls().size() == 1) {
+    const auto& url = event->mimeData()->urls().front();
+    if (url.isLocalFile() &&
+        loadTarget(std::filesystem::path(url.toLocalFile().toStdWString()))) {
+      event->acceptProposedAction();
+      return;
+    }
+  }
+  QMainWindow::dropEvent(event);
+}
+
 void MainWindow::updateProbes() {
   chassis_bar_->setPowerDb(document_->viewPowerDb());
   chassis_bar_->setScoreDb(document_->targetScoreDb());
@@ -962,10 +1166,6 @@ void MainWindow::updateReadout() {
       selected_section_, pole == nullptr ? std::nullopt
                                          : std::optional{*pole},
       zero == nullptr ? std::nullopt : std::optional{*zero});
-  const auto mask = document_->freedomMask();
-  section_readout_->setPins(
-      (mask & trench::core::p2k::pole_bit(selected_section_)) != 0U,
-      (mask & trench::core::p2k::zero_bit(selected_section_)) != 0U);
 }
 
 void MainWindow::updateInterior() {
@@ -976,12 +1176,31 @@ void MainWindow::updateInterior() {
 void MainWindow::endRun() {
   fit_active_ = false;
   response_plot_->setFitRunning(false);
+  response_plot_->setHighlightedSection(std::nullopt);
   updateVerbs();
 }
 
 void MainWindow::updateVerbs() {
   const auto has_target = document_->target().has_value();
   chassis_bar_->setState(has_target, fit_active_);
+  const bool has_lpc = selected_overlay_ >= 0 &&
+                       selected_overlay_ < static_cast<int>(overlays_.size()) &&
+                       !overlays_[selected_overlay_].suggested_poles.empty();
+  if (fit_method_ != nullptr) {
+    QString method = QStringLiteral("FIT · LOAD TARGET");
+    if (fit_active_) {
+      method = QStringLiteral("FIT · RUNNING");
+    } else if (has_target) {
+      method = document_->target()->kind == trench::core::TargetKind::kTransferFunction
+                   ? QStringLiteral("FIT · TRANSFER")
+                   : (has_lpc ? QStringLiteral("FIT · AUDIO ENVELOPE")
+                              : QStringLiteral("FIT · RESPONSE CURVE"));
+    }
+    fit_method_->setText(method);
+  }
+  if (lpc_poles_ != nullptr) lpc_poles_->setEnabled(has_lpc && !fit_active_);
+  if (zero_fit_ != nullptr) zero_fit_->setEnabled(has_target && !fit_active_);
+  if (free_fit_ != nullptr) free_fit_->setEnabled(has_target && !fit_active_);
   refreshFitRoom();
   if (undo_action_ != nullptr) {
     undo_action_->setEnabled(!fit_active_ && document_->undoStack()->canUndo());

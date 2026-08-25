@@ -14,6 +14,8 @@
 namespace trench::core::measure {
 namespace {
 
+constexpr double kTau = 2.0 * std::numbers::pi;
+
 std::vector<double> magnitude_db(std::span<const float> mono, std::size_t fft_size) {
   std::vector<double> frame(fft_size, 0.0);
   const std::size_t start = mono.size() > fft_size ? (mono.size() - fft_size) / 4 : 0;
@@ -234,6 +236,89 @@ std::vector<double> target_on_grid(const LpcEnvelope& envelope, std::span<const 
     out.push_back(20.0 * std::log10(envelope.gain / std::max(std::abs(denominator), 1e-12)));
   }
   return out;
+}
+
+FitTarget transfer_function(std::span<const float> input,
+                            std::span<const float> output,
+                            double sample_rate_hz,
+                            const TransferOptions& options) {
+  if (input.size() != output.size() || input.empty() || !(sample_rate_hz > 0.0) ||
+      options.fft_size < 32 || options.hop_size == 0 || options.points < 2) {
+    throw std::invalid_argument("transfer_function needs equal channels, a rate and a grid");
+  }
+  const std::size_t bins = options.fft_size / 2 + 1;
+  std::vector<double> sxx(bins, 0.0);
+  std::vector<double> syy(bins, 0.0);
+  std::vector<std::complex<double>> sxy(bins, {0.0, 0.0});
+  std::vector<double> in_frame(options.fft_size, 0.0);
+  std::vector<double> out_frame(options.fft_size, 0.0);
+  std::vector<std::complex<double>> in_spectrum(bins);
+  std::vector<std::complex<double>> out_spectrum(bins);
+  const std::size_t final_start = input.size() > options.fft_size
+                                      ? input.size() - options.fft_size
+                                      : 0;
+  for (std::size_t start = 0;; start = std::min(start + options.hop_size, final_start)) {
+    std::fill(in_frame.begin(), in_frame.end(), 0.0);
+    std::fill(out_frame.begin(), out_frame.end(), 0.0);
+    const auto count = std::min(options.fft_size, input.size() - start);
+    for (std::size_t index = 0; index < count; ++index) {
+      const double window =
+          0.5 - 0.5 * std::cos(kTau * static_cast<double>(index) /
+                               static_cast<double>(options.fft_size - 1));
+      in_frame[index] = input[start + index] * window;
+      out_frame[index] = output[start + index] * window;
+    }
+    pocketfft::r2c(pocketfft::shape_t{options.fft_size},
+                   pocketfft::stride_t{sizeof(double)},
+                   pocketfft::stride_t{sizeof(std::complex<double>)}, std::size_t{0},
+                   pocketfft::FORWARD, in_frame.data(), in_spectrum.data(), 1.0);
+    pocketfft::r2c(pocketfft::shape_t{options.fft_size},
+                   pocketfft::stride_t{sizeof(double)},
+                   pocketfft::stride_t{sizeof(std::complex<double>)}, std::size_t{0},
+                   pocketfft::FORWARD, out_frame.data(), out_spectrum.data(), 1.0);
+    for (std::size_t bin = 0; bin < bins; ++bin) {
+      sxx[bin] += std::norm(in_spectrum[bin]);
+      syy[bin] += std::norm(out_spectrum[bin]);
+      sxy[bin] += std::conj(in_spectrum[bin]) * out_spectrum[bin];
+    }
+    if (start == final_start) break;
+  }
+
+  FitTarget target;
+  target.frequency_hz = logarithmic_frequency_grid(
+      options.low_hz, std::min(options.top_hz, sample_rate_hz * 0.49),
+      options.points);
+  target.magnitude_db.reserve(target.frequency_hz.size());
+  target.phase_rad.reserve(target.frequency_hz.size());
+  target.weight.reserve(target.frequency_hz.size());
+  const double bin_hz = sample_rate_hz / static_cast<double>(options.fft_size);
+  const double half_band = options.smoothing_octaves * 0.5;
+  for (const double hz : target.frequency_hz) {
+    const double low = hz * std::pow(2.0, -half_band);
+    const double high = hz * std::pow(2.0, half_band);
+    const auto first = std::clamp<std::size_t>(
+        static_cast<std::size_t>(std::floor(low / bin_hz)), 1, bins - 1);
+    const auto last = std::clamp<std::size_t>(
+        static_cast<std::size_t>(std::ceil(high / bin_hz)), first + 1, bins);
+    double input_power = 0.0;
+    double output_power = 0.0;
+    std::complex<double> cross{0.0, 0.0};
+    for (std::size_t bin = first; bin < last; ++bin) {
+      input_power += sxx[bin];
+      output_power += syy[bin];
+      cross += sxy[bin];
+    }
+    const auto transfer = cross / std::max(input_power, 1.0e-30);
+    const double coherence = std::norm(cross) /
+                             std::max(input_power * output_power, 1.0e-30);
+    target.magnitude_db.push_back(20.0 * std::log10(std::max(std::abs(transfer), 1.0e-15)));
+    target.phase_rad.push_back(std::arg(transfer));
+    target.weight.push_back(std::clamp(coherence, 0.0, 1.0));
+  }
+  target.kind = TargetKind::kTransferFunction;
+  target.absolute_level = true;
+  if (!target.valid()) throw std::runtime_error("transfer estimate is not finite");
+  return target;
 }
 
 ErrorReport weighted_error(std::span<const double> target_db, std::span<const double> model_db,

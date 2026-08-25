@@ -1,7 +1,7 @@
 #pragma once
 
-#include "trench/core/p2k.hpp"
 #include "trench/core/native_body.hpp"
+#include "trench/core/p2k.hpp"
 #include "trench/core/section_param.hpp"
 
 #include <QColor>
@@ -21,6 +21,7 @@
 #include <vector>
 
 class QPainter;
+class QMouseEvent;
 
 class ResponsePlotWidget final : public QWidget {
   Q_OBJECT
@@ -71,8 +72,15 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] QSize minimumSizeHint() const override;
   [[nodiscard]] int heightForWidth(int width) const override;
 
+ signals:
+  void tokenSelected(std::size_t section, Lane lane);
+  void pinToggled(std::size_t section, Lane lane);
+
  protected:
   void paintEvent(QPaintEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void mousePressEvent(QMouseEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
  private:
   [[nodiscard]] QRectF plotRect() const;
@@ -85,6 +93,7 @@ class ResponsePlotWidget final : public QWidget {
   void strokeTrace(QPainter& painter, const QColor& colour);
   void rebuildResidual();
   void rebuildExposed();
+  [[nodiscard]] std::optional<TokenInfo> tokenAt(const QPointF& position) const;
 
   const trench::core::native::Body* body_{};
   std::size_t corner_{};
@@ -113,6 +122,7 @@ class ResponsePlotWidget final : public QWidget {
   bool fit_running_{};
   std::optional<std::size_t> flash_section_;
   QElapsedTimer flash_age_;
+  std::optional<std::pair<std::size_t, Lane>> hovered_token_;
 
   std::uint64_t body_revision_{};
   QPainterPath trace_path_;

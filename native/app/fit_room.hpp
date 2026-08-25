@@ -1,12 +1,12 @@
 #pragma once
 
+#include "trench/core/fit_target.hpp"
+#include "trench/core/native_body.hpp"
+
 #include <QList>
-#include <QRectF>
 #include <QString>
 #include <QWidget>
 
-#include <cstddef>
-#include <utility>
 #include <vector>
 
 class QListWidget;
@@ -18,23 +18,17 @@ class FitRoom final : public QWidget {
  public:
   struct Overlay {
     QString name;
-    std::vector<double> db;
+    trench::core::FitTarget target;
     std::vector<double> marks_hz;
+    std::vector<trench::core::native::Resonant> suggested_poles;
   };
 
   explicit FitRoom(QWidget* parent = nullptr);
 
-  void setGridHz(std::vector<double> hz);
-  void setResponse(std::vector<double> db);
   void setOverlays(QList<Overlay> overlays, int selected);
-  void setScoreDb(double rms_db);
-  void setFitRunning(bool running);
 
   [[nodiscard]] int overlayCount() const;
   [[nodiscard]] int selectedOverlay() const;
-  [[nodiscard]] std::size_t pointCount() const noexcept;
-  [[nodiscard]] double differenceDbAt(std::size_t index) const;
-  [[nodiscard]] double scoreDb() const noexcept;
   [[nodiscard]] QListWidget* overlayList() const noexcept;
   [[nodiscard]] QPushButton* loadButton() const noexcept;
 
@@ -44,20 +38,11 @@ class FitRoom final : public QWidget {
   void loadRequested();
 
  protected:
-  void paintEvent(QPaintEvent* event) override;
-
   bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
-  [[nodiscard]] QRectF plotRect() const;
-  [[nodiscard]] std::pair<double, double> dbRange() const;
-
-  std::vector<double> hz_;
-  std::vector<double> response_db_;
   QList<Overlay> overlays_;
   int selected_{-1};
-  double score_db_{0.0};
-  bool fit_running_{false};
   bool populating_{false};
   QListWidget* list_{};
   QPushButton* load_{};

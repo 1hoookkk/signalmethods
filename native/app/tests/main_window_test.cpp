@@ -7,6 +7,7 @@
 #include "response_plot.hpp"
 #include "section_readout.hpp"
 #include "user_postures.hpp"
+#include "vowel_journey.hpp"
 #include "trench/core/formants.hpp"
 #include "trench/core/measure.hpp"
 #include "trench/core/p2k.hpp"
@@ -134,17 +135,6 @@ double corner_dc_db(const Rows& rows) {
 }
 
 template <typename Rows>
-trench::core::p2k::CornerWords root_words(const Rows& rows) {
-  trench::core::p2k::CornerWords out{};
-  for (std::size_t section = 0; section < out.size(); ++section) {
-    for (std::size_t word = 0; word < out[section].size(); ++word) {
-      out[section][word] = rows[section][word];
-    }
-  }
-  return out;
-}
-
-template <typename Rows>
 bool corner_scales_are_one_gain(const Rows& rows) {
   for (std::size_t section = 1; section < trench::core::kLegacySectionCount; ++section) {
     if (rows[section][4] != rows[0][4]) return false;
@@ -162,23 +152,21 @@ double grid_power_db(const BodyDocument& document) {
   return 10.0 * std::log10(power / grid.weight_sum);
 }
 
-double worst_over(const trench::core::p2k::CornerWords& roots,
-                  const std::vector<double>& ceiling,
-                  const trench::core::p2k::Grid& grid) {
-  namespace p2k = trench::core::p2k;
-  auto corner = p2k::Corner::from_words(p2k::enter(roots), grid);
-  auto model = corner.total();
-  double dc = 0.0;
-  for (const auto& row : roots) {
-    const auto [numerator, denominator] = p2k::dc_terms(row);
-    dc += 20.0 * std::log10(std::max(std::abs(numerator), 1.0e-15) /
-                              std::max(std::abs(denominator), 1.0e-15));
+trench::core::FitTarget fit_target(std::vector<double> frequency_hz,
+                                   std::vector<double> magnitude_db) {
+  trench::core::FitTarget target;
+  target.frequency_hz = std::move(frequency_hz);
+  target.magnitude_db = std::move(magnitude_db);
+  target.weight.assign(target.frequency_hz.size(), 1.0);
+  return target;
+}
+
+std::uint32_t zero_only_mask() {
+  std::uint32_t mask = trench::core::native::kGainBit;
+  for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+    mask |= trench::core::native::zero_bit(section);
   }
-  double worst = -1.0e9;
-  for (std::size_t index = 0; index < model.size(); ++index) {
-    worst = std::max(worst, model[index] - dc - ceiling[index]);
-  }
-  return worst;
+  return mask;
 }
 
 void double_click(QWidget* widget, const QPointF& position) {
@@ -345,6 +333,7 @@ class MainWindowTest final : public QObject {
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
+    QVERIFY(window.acceptDrops());
     std::size_t off = 0;
     for (std::size_t corner = 0; corner < trench::core::kLegacyCornerCount; ++corner) {
       for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
@@ -649,35 +638,36 @@ class MainWindowTest final : public QObject {
     QVERIFY(round_trip.legacy_bytes() == before_legacy);
   }
 
-  void heldRootIsImmobile() {
+  void responseTokensOwnFitPinsAndHeldRootsAreImmobile() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
-    const auto bit = trench::core::p2k::pole_bit(2);
+    const auto bit = trench::core::native::pole_bit(2);
     QVERIFY((window.freedomMask() & bit) != 0U);
-    window.selectSection(2);
-    auto* hold = window.sectionReadout()->findChild<QToolButton*>(
-        QStringLiteral("polePinButton"));
-    QVERIFY(hold != nullptr);
-    QCOMPARE(hold->text(), QStringLiteral("P FREE"));
-
-    QTest::mouseClick(hold, Qt::LeftButton);
+    QVERIFY(window.sectionReadout()->findChild<QToolButton*>(
+                QStringLiteral("polePinButton")) == nullptr);
+    const auto token = find_token(window.responsePlot(), 2,
+                                  ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    press(window.responsePlot(), token->position);
+    release(window.responsePlot(), token->position);
     QCOMPARE(window.freedomMask() & bit, 0U);
-    QVERIFY(hold->isChecked());
-    QCOMPARE(hold->text(), QStringLiteral("P HOLD"));
 
-    const auto before = window.body().words[0][2];
+    const auto before = window.document()->cornerSnapshot().sections[2].pole;
     const auto marker = armadillo_marker(window.armadilloView(), 2, false);
     QVERIFY(marker.has_value());
     drag(window.armadilloView(), marker->position,
          marker->position + QPointF{-80.0, 26.0}, 5);
-    QCOMPARE(window.body().words[0][2], before);
+    QVERIFY(window.document()->cornerSnapshot().sections[2].pole == before);
     QCOMPARE(window.undoStack()->count(), 0);
 
-    QTest::mouseClick(hold, Qt::LeftButton);
+    const auto held_token = find_token(window.responsePlot(), 2,
+                                       ResponsePlotWidget::Lane::kPole);
+    QVERIFY(held_token.has_value());
+    press(window.responsePlot(), held_token->position);
+    release(window.responsePlot(), held_token->position);
     QCOMPARE(window.freedomMask() & bit, bit);
-    QVERIFY(!hold->isChecked());
   }
 
   void identitySectionHasNoToken() {
@@ -820,8 +810,23 @@ class MainWindowTest final : public QObject {
     window.setSourceModel(trench::core::measure::Source::kSawtooth);
     QVERIFY(window.loadTarget(wav));
     QVERIFY(window.document()->target().has_value());
-    QCOMPARE(window.document()->target()->size(), trench::core::p2k::kNpts);
-    QVERIFY(window.armadilloView()->lpcFormantCount() > 0);
+    QCOMPARE(window.document()->target()->magnitude_db.size(),
+             trench::core::p2k::kNpts);
+    const auto lpc_count = window.armadilloView()->lpcFormantCount();
+    QVERIFY(lpc_count > 0);
+    auto* lpc_button = window.findChild<QPushButton*>(QStringLiteral("lpcPoles"));
+    auto* zero_button = window.findChild<QPushButton*>(QStringLiteral("fitZeros"));
+    auto* free_button = window.findChild<QPushButton*>(QStringLiteral("fitFree"));
+    auto* fit_method = window.findChild<QLabel*>(QStringLiteral("fitMethod"));
+    QVERIFY(lpc_button != nullptr && zero_button != nullptr && free_button != nullptr);
+    QVERIFY(fit_method != nullptr);
+    QCOMPARE(fit_method->text(), QStringLiteral("FIT · AUDIO ENVELOPE"));
+    QCOMPARE(lpc_button->text(), QStringLiteral("1  LPC → POLES"));
+    QCOMPARE(zero_button->text(), QStringLiteral("2  FIT ZEROS"));
+    QCOMPARE(free_button->text(), QStringLiteral("3  REFINE FREE"));
+    QVERIFY(lpc_button->isEnabled());
+    QVERIFY(zero_button->isEnabled());
+    QVERIFY(free_button->isEnabled());
     window.resize(960, 680);
     window.show();
     QTest::qWait(20);
@@ -836,7 +841,7 @@ class MainWindowTest final : public QObject {
       if (grid.hz[i] >= 49.14 && grid.hz[i] <= 12000.0) {
         hz.push_back(grid.hz[i]);
         weight.push_back(grid.weight[i]);
-        target.push_back((*window.document()->target())[i]);
+        target.push_back(window.document()->targetGridDb()[i]);
       }
     }
     std::vector<std::uint16_t> words;
@@ -844,7 +849,54 @@ class MainWindowTest final : public QObject {
     const auto report = trench::core::measure::score_words(
         words, trench::core::kP2kDatumHz, hz, weight, target);
     QVERIFY2(report.rms_db < 0.5, qPrintable(QString::number(report.rms_db)));
+
+    window.applyLpcPoles();
+    std::size_t live_poles = 0;
+    for (const auto& section : window.document()->cornerSnapshot().sections) {
+      live_poles += std::holds_alternative<trench::core::native::Resonant>(section.pole)
+                        ? 1U
+                        : 0U;
+      const auto* zero = std::get_if<trench::core::native::RealRoots>(&section.zero);
+      QVERIFY(zero != nullptr);
+      QVERIFY(!std::isfinite(zero->a_hz) && !std::isfinite(zero->b_hz));
+    }
+    QCOMPARE(live_poles,
+             std::min(lpc_count, trench::core::native::kSections));
+    QCOMPARE(window.freedomMask(), zero_only_mask());
+    QCOMPARE(window.undoStack()->count(), 1);
+    QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
+                               "/dev/e2e/app_lpc_poles.png"));
     std::filesystem::remove(wav);
+  }
+
+  void explicitFrequencyTargetsReplaceImplicitMagnitudeLists() {
+    const auto directory = std::filesystem::temp_directory_path();
+    const auto csv = directory / "trench_explicit_fit_target.csv";
+    const auto implicit = directory / "trench_implicit_fit_target.txt";
+    {
+      std::ofstream out(csv);
+      out << "frequency_hz,magnitude_db,phase_deg,weight\n"
+             "1000,-5.7,90,0.8\n"
+             "20,-18.2,,0.2\n"
+             "100,0,,1\n";
+    }
+    {
+      std::ofstream out(implicit);
+      out << "-18.2\n0\n-5.7\n";
+    }
+
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    QVERIFY(window.loadTarget(csv));
+    const auto& target = *window.document()->target();
+    QCOMPARE(target.frequency_hz,
+             (std::vector<double>{20.0, 100.0, 1000.0}));
+    QCOMPARE(target.magnitude_db,
+             (std::vector<double>{-18.2, 0.0, -5.7}));
+    QVERIFY(std::abs(target.phase_rad[2] - std::numbers::pi / 2.0) < 1.0e-12);
+    QCOMPARE(target.weight, (std::vector<double>{0.2, 1.0, 0.8}));
+    QVERIFY(!window.loadTarget(implicit));
+    std::filesystem::remove(csv);
+    std::filesystem::remove(implicit);
   }
 
   void fitRequiresATarget() {
@@ -862,33 +914,33 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
     window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
     window.undoStack()->clear();
+    window.document()->setFreedomMask(zero_only_mask());
     window.document()->setTarget(std::vector<double>(trench::core::p2k::kNpts, 0.0));
-    const auto before = window.body().native_bytes();
-    const auto before_corner = window.body().words[0];
+    const auto before = window.document()->body();
+    const auto before_corner = window.document()->cornerSnapshot();
 
+    QSignalSpy previews(window.fitController(), &FitController::previewReady);
     window.startFit();
     QVERIFY(window.fitRunning());
+    QTRY_VERIFY_WITH_TIMEOUT(previews.count() > 0 || !window.fitRunning(), 30000);
     window.stopAndKeep();
     QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
 
     QCOMPARE(window.undoStack()->count(), 1);
-    QVERIFY(window.body().is_legacy_representable());
-    QVERIFY(window.body().native_bytes() != before);
-    const auto after = window.body().words[0];
+    QVERIFY(window.document()->body() != before);
+    const auto after = window.document()->cornerSnapshot();
     bool zero_changed = false;
-    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-      QCOMPARE(after[section][2], before_corner[section][2]);
-      QCOMPARE(after[section][3], before_corner[section][3]);
-      zero_changed |= after[section][0] != before_corner[section][0] ||
-                      after[section][1] != before_corner[section][1];
+    for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+      QVERIFY(after.sections[section].pole == before_corner.sections[section].pole);
+      zero_changed |= after.sections[section].zero != before_corner.sections[section].zero;
+      QVERIFY(trench::core::native::is_stable(trench::core::native::design(
+          after.sections[section], trench::core::kP2kDatumHz)));
     }
     QVERIFY(zero_changed);
-    QVERIFY(corner_scales_are_one_gain(after));
-    QVERIFY(std::abs(corner_dc_db(after)) < 0.5);
     QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
                                "/dev/e2e/app_zero_fit_flat.png"));
     window.undoStack()->undo();
-    QVERIFY(window.body().native_bytes() == before);
+    QVERIFY(window.document()->body() == before);
   }
 
   void discardRestoresPreFitBytesAndDropsStragglers() {
@@ -897,6 +949,7 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
     window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
     window.undoStack()->clear();
+    window.document()->setFreedomMask(zero_only_mask());
     window.document()->setTarget(std::vector<double>(trench::core::p2k::kNpts, 0.0));
     const auto before = window.body().native_bytes();
 
@@ -915,30 +968,22 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
     window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
     window.undoStack()->clear();
+    window.document()->setFreedomMask(zero_only_mask());
     window.document()->setTarget(std::vector<double>(trench::core::p2k::kNpts, 0.0));
 
     auto* document = window.document();
-    for (std::size_t section = 0; section < 6; ++section) {
-      if (section == 3) continue;
-      document->toggleLane(section, false);
-    }
-    std::array<trench::core::PackedSection, 6> before{};
-    for (std::size_t section = 0; section < 6; ++section) {
-      before[section] = window.body().words[0][section];
-    }
+    document->setFreedomMask(trench::core::native::zero_bit(3));
+    const auto before = document->cornerSnapshot();
 
     window.startFit();
     QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
-    QVERIFY(window.body().words[0][3][0] != before[3][0] ||
-            window.body().words[0][3][1] != before[3][1]);
+    const auto after = document->cornerSnapshot();
+    QVERIFY(after.sections[3].zero != before.sections[3].zero);
     for (std::size_t section = 0; section < 6; ++section) {
       if (section == 3) continue;
-      for (std::size_t wi = 0; wi < 4; ++wi) {
-        QCOMPARE(window.body().words[0][section][wi], before[section][wi]);
-      }
+      QVERIFY(after.sections[section] == before.sections[section]);
     }
-    QVERIFY(corner_scales_are_one_gain(window.body().words[0]));
-    QVERIFY(std::abs(corner_dc_db(window.body().words[0])) < 0.5);
+    QCOMPARE(after.gain_db, before.gain_db);
   }
 
   void fitUsesTheAlignedTargetAndLeavesComparisonVisible() {
@@ -949,11 +994,10 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
     window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
     window.undoStack()->clear();
+    window.document()->setFreedomMask(zero_only_mask());
 
-    const auto before = window.body().words[0];
-    const auto model = window.document()->viewResponseDb();
-    const auto& grid = window.document()->grid();
-    std::vector<double> target(model.size(), 0.0);
+    const auto before = window.document()->cornerSnapshot();
+    std::vector<double> target(window.document()->grid().hz.size(), 0.0);
     for (std::size_t index = 0; index < target.size(); ++index) {
       const auto phase = static_cast<double>(index) /
                          static_cast<double>(target.size() - 1);
@@ -961,33 +1005,20 @@ class MainWindowTest final : public QObject {
     }
     window.document()->setTarget(target);
 
-    double offset = 0.0;
-    for (std::size_t index = 0; index < target.size(); ++index) {
-      offset += grid.weight[index] * (target[index] - model[index]);
-    }
-    offset /= grid.weight_sum;
-    std::vector<double> ceiling(target.size());
-    for (std::size_t index = 0; index < target.size(); ++index) {
-      ceiling[index] = target[index] - offset;
-    }
-    const auto before_over = worst_over(root_words(before), ceiling, grid);
+    const auto before_score = window.document()->targetScoreDb();
 
     window.startFit();
     QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
-    const auto after = window.body().words[0];
-    const auto after_over = worst_over(root_words(after), ceiling, grid);
-    QVERIFY2(after_over < before_over,
-             qPrintable(QStringLiteral("%1 !< %2").arg(after_over).arg(before_over)));
+    const auto after = window.document()->cornerSnapshot();
+    const auto after_score = window.document()->targetScoreDb();
+    QVERIFY2(after_score < before_score,
+             qPrintable(QStringLiteral("%1 !< %2").arg(after_score).arg(before_score)));
     bool zero_changed = false;
-    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-      QCOMPARE(after[section][2], before[section][2]);
-      QCOMPARE(after[section][3], before[section][3]);
-      zero_changed |= after[section][0] != before[section][0] ||
-                      after[section][1] != before[section][1];
+    for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+      QVERIFY(after.sections[section].pole == before.sections[section].pole);
+      zero_changed |= after.sections[section].zero != before.sections[section].zero;
     }
     QVERIFY(zero_changed);
-    QVERIFY(corner_scales_are_one_gain(after));
-    QVERIFY(std::abs(corner_dc_db(after)) < 0.5);
 
     auto* plot = window.responsePlot();
     QCOMPARE(plot->residualPointCount(), p2k::kNpts);
@@ -999,7 +1030,7 @@ class MainWindowTest final : public QObject {
                                "/dev/e2e/app_target_compare.png"));
     QCOMPARE(window.undoStack()->count(), 1);
     window.undoStack()->undo();
-    QCOMPARE(window.body().words[0], before);
+    QVERIFY(window.document()->cornerSnapshot() == before);
   }
 
   void editAtCornerTwoWritesOnlyThatCorner() {
@@ -1075,16 +1106,18 @@ class MainWindowTest final : public QObject {
     window.setCorner(3);
     window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
     window.undoStack()->clear();
-    const auto before = window.body();
+    window.document()->setFreedomMask(zero_only_mask());
+    const auto before = window.document()->body();
     window.startFit();
     QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 30000);
-    QVERIFY(window.body().words[3] != before.words[3]);
-    for (const std::size_t corner : {0U, 1U, 2U, 4U, 5U, 6U}) {
-      QCOMPARE(window.body().words[corner], before.words[corner]);
+    const auto after = window.document()->body();
+    QVERIFY(after.corners[3] != before.corners[3]);
+    for (const std::size_t corner : {0U, 1U, 2U}) {
+      QVERIFY(after.corners[corner] == before.corners[corner]);
     }
     QCOMPARE(window.undoStack()->count(), 1);
     window.undoStack()->undo();
-    QVERIFY(window.body().words == before.words);
+    QVERIFY(window.document()->body() == before);
   }
 
   void anIdentityCornerSeedsFromItsFittedNeighbourFirst() {
@@ -1221,18 +1254,21 @@ class MainWindowTest final : public QObject {
     QVERIFY(p2k::within_envelope(p2k::Role::kTilt, window.body().words[0][5],
                                  trench::core::kP2kDatumHz));
     document->setIntent(5, p2k::Role::kTilt);
+    document->setFreedomMask(trench::core::native::kAllFree);
 
-    const auto before = window.body().native_bytes();
-    const auto pole_before = std::array<std::uint16_t, 2>{
-        window.body().words[0][5][2], window.body().words[0][5][3]};
-    window.startFit();
+    const auto before = document->cornerSnapshot();
+    const auto pole_before = before.sections[5].pole;
+    window.startZeroFit();
+    QCOMPARE(window.freedomMask(), zero_only_mask());
     QTRY_VERIFY_WITH_TIMEOUT(!window.fitRunning(), 60000);
 
-    QVERIFY(window.body().native_bytes() != before);
-    QCOMPARE(window.body().words[0][5][2], pole_before[0]);
-    QCOMPARE(window.body().words[0][5][3], pole_before[1]);
-    QVERIFY(corner_scales_are_one_gain(window.body().words[0]));
-    QVERIFY(std::abs(corner_dc_db(window.body().words[0])) < 0.5);
+    const auto after = document->cornerSnapshot();
+    QVERIFY(after != before);
+    QVERIFY(after.sections[5].pole == pole_before);
+    for (const auto& section : after.sections) {
+      QVERIFY(trench::core::native::is_stable(
+          trench::core::native::design(section, trench::core::kP2kDatumHz)));
+    }
   }
 
   void pressingAPzMarkerShowsThatSectionInTheReadout() {
@@ -1333,14 +1369,15 @@ class MainWindowTest final : public QObject {
 
   void fitRoomSelectsTheOverlayAsTheTarget() {
     FitRoom room;
-    room.setGridHz({100.0, 1000.0, 10000.0});
-    room.setResponse({0.0, 6.0, -3.0});
-    room.setOverlays({{QStringLiteral("one"), {1.0, 2.0, 3.0}},
-                      {QStringLiteral("two"), {4.0, 5.0, 6.0}}},
+    room.setOverlays({{QStringLiteral("one"),
+                       fit_target({100.0, 1000.0, 10000.0}, {1.0, 2.0, 3.0}), {}},
+                      {QStringLiteral("two"),
+                       fit_target({100.0, 1000.0, 10000.0}, {4.0, 5.0, 6.0}), {}}},
                      1);
     QCOMPARE(room.overlayCount(), 2);
     QCOMPARE(room.selectedOverlay(), 1);
-    QCOMPARE(room.pointCount(), std::size_t{3});
+    QCOMPARE(room.windowTitle(), QStringLiteral("TARGETS"));
+    QVERIFY(room.loadButton() != nullptr);
 
     QSignalSpy spy(&room, &FitRoom::overlaySelected);
     room.overlayList()->setCurrentRow(0);
@@ -1349,14 +1386,13 @@ class MainWindowTest final : public QObject {
     QCOMPARE(room.selectedOverlay(), 0);
   }
 
-  void fitRoomDifferenceIsOverlayMinusResponse() {
+  void fitRoomHasNoDuplicateResponsePlot() {
     FitRoom room;
-    room.setGridHz({100.0, 1000.0, 10000.0});
-    room.setResponse({0.0, 6.0, -3.0});
-    room.setOverlays({{QStringLiteral("one"), {1.0, 2.0, 3.0}}}, 0);
-    QCOMPARE(room.differenceDbAt(0), 1.0);
-    QCOMPARE(room.differenceDbAt(1), -4.0);
-    QCOMPARE(room.differenceDbAt(2), 6.0);
+    room.setOverlays({{QStringLiteral("one"),
+                       fit_target({100.0, 1000.0, 10000.0}, {1.0, 2.0, 3.0}), {}}},
+                     0);
+    QCOMPARE(room.findChildren<ResponsePlotWidget*>().size(), 0);
+    QCOMPARE(room.findChildren<QListWidget*>().size(), 1);
   }
 
   void postureRowEmitsItsNameAndTheHeaderDoesNot() {
@@ -1375,24 +1411,15 @@ class MainWindowTest final : public QObject {
 
   void fitRoomScreenshot() {
     FitRoom room;
-    std::vector<double> hz(256);
-    std::vector<double> response(256);
-    std::vector<double> overlay(256);
-    for (std::size_t index = 0; index < hz.size(); ++index) {
-      const auto fraction = static_cast<double>(index) / 255.0;
-      hz[index] = 40.0 * std::pow(18000.0 / 40.0, fraction);
-      const auto octaves = std::log2(hz[index] / 1000.0);
-      response[index] = 12.0 * std::exp(-octaves * octaves * 1.5) - 6.0;
-      overlay[index] = response[index] + 3.0 * std::sin(fraction * 18.0);
-    }
-    room.setGridHz(hz);
-    room.setResponse(response);
-    room.setOverlays({{QStringLiteral("vowel aa"), overlay}}, 0);
-    room.setScoreDb(2.1);
-    room.resize(640, 460);
+    room.setOverlays({{QStringLiteral("voice.wav LPC"),
+                       fit_target({100.0, 1000.0, 10000.0}, {-6.0, 2.0, -18.0}), {}},
+                      {QStringLiteral("voice.wav"),
+                       fit_target({100.0, 1000.0, 10000.0}, {-4.0, 0.0, -20.0}), {}}},
+                     1);
+    room.resize(360, 280);
     room.show();
     QTest::qWait(50);
-    const auto path = QString(TRENCH_SOURCE_ROOT) + "/dev/app_slice_fitroom.png";
+    const auto path = QString(TRENCH_SOURCE_ROOT) + "/dev/e2e/app_targets.png";
     QVERIFY(room.grab().save(path));
   }
 
@@ -1404,10 +1431,10 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.overlayCount(), 2);
     QCOMPARE(window.fitRoom()->selectedOverlay(), 1);
     window.openFitRoom();
-    window.fitRoom()->resize(640, 460);
+    window.fitRoom()->resize(360, 280);
     QTest::qWait(50);
     QVERIFY(window.fitRoom()->grab().save(QString(TRENCH_SOURCE_ROOT) +
-                                          "/dev/app_slice_fitroom_hedz.png"));
+                                          "/dev/e2e/app_targets_hedz.png"));
     const auto hedz = *window.document()->target();
     window.fitRoom()->overlayList()->setCurrentRow(0);
     QVERIFY(*window.document()->target() != hedz);
@@ -1525,15 +1552,22 @@ class MainWindowTest final : public QObject {
     }
   }
 
-  void theResponseMonitorHasNoPointerInteraction() {
+  void theResponseMonitorOnlyChangesFitPins() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
     auto* plot = window.responsePlot();
-    QVERIFY(!plot->hasMouseTracking());
-    move(plot, plot->rect().center());
-    QCOMPARE(plot->highlightedSection(), std::optional<std::size_t>{});
+    QVERIFY(plot->hasMouseTracking());
+    const auto token = find_token(plot, 0, ResponsePlotWidget::Lane::kPole);
+    QVERIFY(token.has_value());
+    const auto body_before = window.document()->body();
+    const auto mask_before = window.freedomMask();
+    move(plot, token->position);
+    press(plot, token->position);
+    release(plot, token->position);
+    QVERIFY(window.document()->body() == body_before);
+    QCOMPARE(window.freedomMask(), mask_before ^ trench::core::native::pole_bit(0));
   }
 
   void aVowelWritesTypedRowsAsOneUndoEntry() {
@@ -1551,6 +1585,63 @@ class MainWindowTest final : public QObject {
     QCOMPARE(eq, std::size_t{3});
     window.undoStack()->undo();
     QCOMPARE(window.body().native_bytes(), before);
+  }
+
+  void vowelJourneyBuildsFourNativePoleOnlyCornersAndHoldsThePoles() {
+    namespace native = trench::core::native;
+    MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
+    QVERIFY(window.vowelJourney() != nullptr);
+    QCOMPARE(window.vowelJourney()->fromSymbol(), QStringLiteral("aa"));
+    QCOMPARE(window.vowelJourney()->toSymbol(), QStringLiteral("eh"));
+    QCOMPARE(window.vowelJourney()->fromBox()->currentText(), QStringLiteral("AH"));
+    QCOMPARE(window.vowelJourney()->toBox()->currentText(), QStringLiteral("EH"));
+
+    const auto before = window.document()->body();
+    window.applyVowelJourney(QStringLiteral("aa"), QStringLiteral("eh"), 0.5);
+    QCOMPARE(window.undoStack()->count(), 1);
+
+    const auto& body = window.document()->body();
+    const std::array<double, 3> from_hz{700.0, 1220.0, 2600.0};
+    const std::array<double, 3> to_hz{530.0, 1680.0, 2500.0};
+    for (std::size_t formant = 0; formant < 3; ++formant) {
+      const auto* from_low = std::get_if<native::Resonant>(
+          &body.corners[0].sections[formant].pole);
+      const auto* to_low = std::get_if<native::Resonant>(
+          &body.corners[1].sections[formant].pole);
+      const auto* from_high = std::get_if<native::Resonant>(
+          &body.corners[2].sections[formant].pole);
+      const auto* to_high = std::get_if<native::Resonant>(
+          &body.corners[3].sections[formant].pole);
+      QVERIFY(from_low != nullptr && to_low != nullptr &&
+              from_high != nullptr && to_high != nullptr);
+      QCOMPARE(from_low->hz, from_hz[formant]);
+      QCOMPARE(to_low->hz, to_hz[formant]);
+      QCOMPARE(from_high->hz, from_hz[formant]);
+      QCOMPARE(to_high->hz, to_hz[formant]);
+      QCOMPARE(from_high->bw_hz, from_low->bw_hz * 0.5);
+      QCOMPARE(to_high->bw_hz, to_low->bw_hz * 0.5);
+    }
+    for (const auto& corner : body.corners) {
+      for (const auto& section : corner.sections) {
+        const auto* zero = std::get_if<native::RealRoots>(&section.zero);
+        QVERIFY(zero != nullptr);
+        QVERIFY(!std::isfinite(zero->a_hz) && !std::isfinite(zero->b_hz));
+      }
+    }
+    QCOMPARE(window.freedomMask(), zero_only_mask());
+
+    for (int row = 0; row < window.postureList()->count(); ++row) {
+      QVERIFY(!window.postureList()->item(row)->text().contains(
+          QStringLiteral("AahAyEeh M")));
+    }
+    window.resize(960, 680);
+    window.show();
+    QTest::qWait(50);
+    QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
+                               "/dev/e2e/app_vowel_journey.png"));
+
+    window.undoStack()->undo();
+    QVERIFY(window.document()->body() == before);
   }
 
   void aManualRecipeWritesItsRowsThroughTheSameChooser() {
@@ -1787,7 +1878,7 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.body().words[0], before);
   }
 
-  void theListIsTheBankPosturesAndTheCompiledVowelCorners() {
+  void theListIsOnlyTheBankPostures() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     auto* list = window.postureList();
     QVERIFY(list != nullptr);
@@ -1804,17 +1895,6 @@ class MainWindowTest final : public QObject {
                                QStringLiteral("[EQ+]"),
                                QStringLiteral("EQ+ tb_or_not_tb c1"),
                                QStringLiteral("EQ+ dj_alkaline c0"),
-                               QStringLiteral("[VOW]"),
-                               QStringLiteral("VOW ooh_to_eee c1"),
-                               QStringLiteral("VOW talking_hedz c0"),
-                               QStringLiteral("VOW AahAyEeh M0Q0"),
-                               QStringLiteral("VOW AahAyEeh M100Q0"),
-                               QStringLiteral("VOW AahAyEeh M0Q100"),
-                               QStringLiteral("VOW AahAyEeh M100Q100"),
-                               QStringLiteral("VOW OohToAah M0Q0"),
-                               QStringLiteral("VOW OohToAah M100Q0"),
-                               QStringLiteral("VOW OohToAah M0Q100"),
-                               QStringLiteral("VOW OohToAah M100Q100"),
                                QStringLiteral("[PHA]"),
                                QStringLiteral("PHA cruz_pusher c1"),
                                QStringLiteral("[REZ]"),
@@ -2242,7 +2322,7 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.undoStack()->count(), 1);
 
     auto* list = window.postureList();
-    const auto row = list->rowOf(QStringLiteral("VOW ooh_to_eee c1"));
+    const auto row = list->rowOf(QStringLiteral("EQ+ tb_or_not_tb c1"));
     QVERIFY(row >= 0);
     list->scrollToItem(list->item(row));
     QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
@@ -2300,22 +2380,16 @@ class MainWindowTest final : public QObject {
     QCOMPARE(window.body().words[1], before);
   }
 
-  void theChooserListsTheCompiledVowelCorners() {
+  void theChooserDoesNotExposeCompiledVowelCorners() {
     MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
     window.resize(960, 540);
     window.show();
     QTest::qWait(20);
     auto* list = window.postureList();
-    const auto name = QStringLiteral("VOW OohToAah M0Q0");
-    const auto row = list->rowOf(name);
-    QVERIFY(row >= 0);
-    list->scrollToItem(list->item(row));
-    QTest::mouseClick(list->viewport(), Qt::LeftButton, Qt::KeyboardModifiers(),
-                      list->visualItemRect(list->item(row)).center());
-    QTest::qWait(20);
-    QVERIFY(!window.responsePlot()->tokens().empty());
-    QVERIFY(std::abs(corner_dc_db(window.body().words[0])) < 0.5);
-    QCOMPARE(list->matched(), name);
+    QCOMPARE(list->rowOf(QStringLiteral("VOW OohToAah M0Q0")), -1);
+    QCOMPARE(list->rowOf(QStringLiteral("VOW AahAyEeh M100Q100")), -1);
+    QCOMPARE(window.vowelJourney()->fromBox()->currentText(), QStringLiteral("AH"));
+    QCOMPARE(window.vowelJourney()->toBox()->currentText(), QStringLiteral("EH"));
   }
 
   void theArmadilloShowsEverySectionsRoots() {

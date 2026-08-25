@@ -1,92 +1,129 @@
-# Next session — one edit authority on the float engine
+# NEXT — one edit authority on `native::Body`
 
-Vocabulary: second-order section, conjugate pole pair (F, ΔF), zero pair, real-axis
-pair, series cascade, log-magnitude sum, DC gain, H(z), θ = 2πF/fs,
-r = exp(−πΔF/fs). Design datum 44,100 Hz. Method: Bell 1961; encoding: Rossum
-US 5,170,369 / US 10,514,883; morphing evidence: Ding & Rossum 1995.
+Plan of record, updated 2026-08-25. The packed runtime and its parity tests remain
+intact until the imported-body null gate passes. The native app is Tyson's dev
+authoring workbench; the commercial TRENCH plug-in is outside this movement.
 
-## State of the tree (2026-08-25 end of session, all UNCOMMITTED)
+## Green movement gates
 
-App suite 84/84, full CTest 104/104, headless. Landed and verified today:
+- [x] Baseline committed before migration edits: `8a14486`. Full headless CTest
+  104/104.
+- [x] 192 kHz native root coverage: `876c15a`. Full headless CTest 104/104.
+- [x] `BodyDocument` owns `native::Body`; P2K is explicit import/export only:
+  `0eaa463`. Full headless CTest 106/106.
+- [x] One root-edit command owns pole/zero Hz + BW, DC law, gesture undo, and all
+  editor projections: `ccb790f`. Full headless CTest 106/106.
+- [x] Interior interpolates each root in log-frequency and log(1-R), then
+  decodes. The morph 0.849 + transpose phantom-zero case and the interior/
+  modulation envelopes are covered: `3600e0e`. Full serial headless CTest
+  108/108.
 
-- **The armadillo plane is the primary editor** (armadillo_view.{hpp,cpp}): x = log2
-  frequency over fs/2048..fs/2, y = dB-from-rim (−20·log10(1−R), 96 dB span, rim on
-  top). Letters p/z per section; drag writes author words via words_from_root (the
-  byte lattice IS the grain — every landing quantizes to legal words);
-  double-click places a pole pair at (F, depth); ghost z at the right edge for
-  live-pole sections — drag in to birth the zero, drag any root off the right edge
-  to park it (zeros) or clear the section (poles); pins honored; legality guarded;
-  DC law on every write; one undo per gesture.
-- **Curve-space editing retired** (Tyson's verdict: "editing the curve feels wrong,
-  the armadillo feels right"). ResponsePlotWidget is a consequence monitor: tokens,
-  hover, pin clicks for FIT survive; drags, double-click placement, snap,
-  zeroWidthForDb y-solve, refusal display deleted. All gesture tests ported to the
-  armadillo; the y-solve specs died with the machinery.
-- **Per-corner TRANSPOSE**: the dial writes the current corner's semitones; the view
-  interpolates semitones bilinearly over (morph, q) and forms the ratio after —
-  corner 1 low, corner 2 high, MORPH rides the pitch trajectory. View-side only,
-  never in the body. The law (transpose.cpp): radius held (bandwidth-in-Hz
-  preserved), poles < 70 Hz anchored, sharp zeros (r ≥ 0.8) stop below 0.45·fs,
-  travel clamps to [20, 0.49·fs].
-- Corner pads 1–4 (lit = edited corner), Ctrl+click copies current corner there,
-  right-click menu copy/save/load; SAVE verb; chooser lists the 9 bank postures +
-  8 compiled vowel-class corners; tooltips throughout; LEVEL (grid-weighted power)
-  beside ERR (weighted zero-mean residual — Bell's alignment, tested).
+## Green gate — native fitting and target workflow
 
-## THE MOVEMENT: one edit authority on native::Body (ruled, audit verified)
+- [x] Step 5 native fitting and explicit target workflow. Focused operator tests
+  10/10; full serial headless CTest 117/117 (116 passed in the gate run, then
+  the repaired Qt aggregate passed on `--rerun-failed`).
 
-Sol's audit confirmed line-by-line (2026-08-25): BodyDocument still owns packed
-words; every armadillo drag quantizes through words_from_root; native::Body (the
-float engine, nulls the 33 imports) has no app consumer; audition sends the
-44.1 k-designed viewCascade() to the device without consulting its actual rate
-(main_window.cpp updateAudition) — at a 48 k device everything sounds ~1.47 st
-sharp; native tests stop at 96 k.
+The target is an observed response, never a disguised root list:
 
-The plan (adopted; staging per the CLAUDE.md invariant — packed stays engine of
-record until the nulls prove the move):
+```cpp
+struct FitTarget {
+  std::vector<double> frequency_hz;
+  std::vector<double> magnitude_db;
+  std::vector<double> phase_rad;  // optional
+  std::vector<double> weight;
+  TargetKind kind;                // envelope or transfer function
+  bool absolute_level;
+};
+```
 
-1. BodyDocument owns native::Body (float Hz/ΔF roots, one gain per corner).
-2. ONE root-edit command (pole or zero, Hz + bandwidth, undo-owning). The
-   armadillo and any overlay are synchronized projections calling that command —
-   one edit authority, not necessarily one visible editor.
-3. Interior = the patent law on encoded roots (log F, log(1−R)) — this also kills
-   the phantom-zero interior artifact (old task 6) by construction.
-4. FIT commits to the same native roots; Bell traces stay read-only; delete the
-   FitRoom duplicate plot (the main monitor already draws aligned target +
-   residual + ERR).
-5. Audition redesigns the cascade from the same roots at the audio device's
-   ACTUAL rate; display renders at the requested rate. (This is the fix for the
-   detune bug — do it on native roots, not as a packed-side patch.)
-6. Tests at 44.1/48/96/192 k (192 k is currently untested).
-7. P2K words survive only in explicit import/export adapters; design a native
-   save format (floats; .body240 remains the legacy export). Format decision goes
-   to Tyson before implementation.
-8. Gate: the 33 imports null on the native path before any packed parity test is
-   retired. Do not break packed while moving.
+Primary interchange is CSV/TXT with required `frequency_hz,magnitude_db` and
+optional `phase_deg,weight`. Naked 512-value magnitude files are rejected.
+The same target types may be dropped directly on the main window.
+Audio input creates a smoothed envelope plus LPC pole suggestions. Stereo
+measurement audio also creates a complex left-input/right-output transfer target
+with coherence weights. Existing body files contribute their complete native
+cascade response. Targets never contain pole or zero positions.
 
-Interaction law for the primary surface (ruled today, keep under the migration):
-double-click creates a pole at the clicked frequency and depth; horizontal drag =
-frequency; vertical drag = bandwidth/resonance; the zero stays parked until
-deliberately drawn (ghost-in); typed Hz/ΔF is for exact correction only.
+The native fitter's 25 continuous variables are exactly six pole log-Hz/log-BW
+pairs, six zero log-Hz/log-BW pairs, and one corner gain. Each trial is decoded
+through the native runtime law, constrained stable, DC-normalised, assembled as
+the ordered six-stage cascade, and accepted only when the weighted magnitude-dB
+loss improves. Adam makes the broad moves; block-coordinate L-BFGS finishes.
+One accepted step touches one section. Live root pins are read between steps;
+gain is solved separately. No raw coefficient variables or coefficient-space
+error are permitted.
 
-Queued behind the migration: optional vertical formant guides on the armadillo
-from Praat/the app's LPC analysis (evidence and candidates, never auto-authoring —
-place poles on guides by hand; SPAN stays a visual reference).
+The retained factory-forensics path continues to search exact minifloat words
+through the packed decoder and scores the complete cascade. Packed words never
+become variables in the native fitter.
 
-## Open decisions for Tyson
+Operator workflow:
 
-- Transpose wall pileup: compress the ratio so no root reaches a wall, or keep
-  the stack as the audible end-stop.
-- Armadillo letters under transpose: author positions (current) vs riding the
-  view law.
-- profiles/user_postures.json "mine 1"/"mine 2": old-bug fossils, delete on word.
-- Native save format naming/shape (item 7 above).
+1. Smooth/average recorded audio; ignore individual harmonic spikes.
+2. Use LPC suggestions or operator placement for broad pole resonances.
+3. Display the complete six-stage pole-only cascade.
+4. Freeze those poles.
+5. Fit native zero roots in log-Hz/log-BW against the complete-cascade residual.
+6. Adjust corner gain separately.
+7. Optionally release selected pole tokens for final joint refinement.
 
-## Standing laws (unchanged)
+The UI exposes this directly: `FIT · AUDIO ENVELOPE` / `FIT · TRANSFER` /
+`FIT · RESPONSE CURVE` names the selected target type; `1 LPC → POLES` commits
+ordered LPC suggestions as an all-pole corner and holds them; `2 FIT ZEROS`
+preserves zero pins and runs the ruled zero-only phase; `3 REFINE FREE` touches
+only roots released on the response. The chassis FIT verb is the same zero-only
+action, not an unqualified all-variable search.
 
-- Series cascade of six sections; log magnitudes add; the complete cascade is the
-  comparator. |H_i(1)| = 1 per section; |H(1)| = 1 for every viewed state.
-- Pole pairs: operator's choice. Zero pairs: the hand or the solver. Nothing else
-  writes roots. Section identity is ordered; never sort.
-- Imports byte-exact. Tests headless (-platform offscreen), never on the screen.
-- A claim without an address is not evidence.
+The compact vowel journey is `FROM [AH]` to `TO [EH]` with one high-Q bandwidth
+control. F1/F2/F3 keep sections 1/2/3 across the journey. It writes M0/Q0 = FROM,
+M100/Q0 = TO, and their high-Q counterparts, starts pole-only, freezes poles,
+and leaves zeros + gain free for FIT. Compiled factory surface corners do not appear
+as vowel endpoints.
+
+UI laws for this gate:
+
+- The main response is the only response plot. `TARGETS` is a compact source list;
+  the duplicate FitRoom plot is deleted.
+- Response tokens are literal `p1…p6` / `z1…z6` fit pins, shown only on hover or
+  for the active/fitting section. They never edit roots.
+- The root surface remains the editor: double-click pole placement; horizontal
+  drag frequency; vertical drag BW; Shift-drag BW only; zeros parked until drawn.
+- The overlay names its real source and corner. Grey items are reference poles;
+  LPC formants are a separate F1/F2/F3 layer. Authored and transposed locations
+  are both visible and share one frequency mapping with the response plot.
+- Minimal literal DSP vocabulary only: poles, zeros, Hz, BW, response, target,
+  residual, fit.
+
+Current implementation addresses: `trench-core/{fit_target,native_fit}.{hpp,cpp}`,
+`trench-core/src/measure.cpp`, `audio/audio_boundary.cpp`,
+`app/{fit_controller,fit_room,vowel_journey}.{hpp,cpp}`,
+`app/main_window.cpp`, and `app/response_plot.cpp`. User-visible proof belongs
+under `dev/e2e/` and is produced only by `-platform offscreen` tests.
+
+## Remaining gates, in order
+
+- [ ] 6. Audition redesigns the cascade from roots at the audio device's ACTUAL
+  rate; display remains at the requested rate. Prove the same body at two device
+  rates has the same pitch.
+- [ ] 7. The 33 imported bodies null against their decoded responses through the
+  app's native path. Only then may superseded packed parity tests retire.
+- [ ] 8. Bring Tyson the proposed native save shape before writing it.
+  `.body240` remains explicit legacy export.
+- [ ] Final full serial headless suite, screenshots, detune proof, null report,
+  and address-backed change report.
+
+## Open Tyson decisions — surface, never guess
+
+- Native save format name and shape.
+- Transpose wall pileup: compress or audible end-stop.
+- Whether editor letters stay at authored positions or ride transpose.
+- Whether `mine 1` / `mine 2` fossils are deleted.
+
+## Standing laws
+
+- Six ordered sections; section identity is never sorted.
+- One undo per gesture. DC law on every root write.
+- Bell/reference traces are read-only.
+- All tests are headless with `-platform offscreen`; never open test UI on screen.
+- A claim without a file/test/artifact address is not evidence.

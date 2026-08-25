@@ -1,8 +1,10 @@
 add_library(trench_native_core STATIC
   src/measure.cpp
+  src/fit_target.cpp
   src/packed_body.cpp
   src/response.cpp
   src/native_body.cpp
+  src/native_fit.cpp
   src/p2k/container.cpp
   src/p2k/corner.cpp
   src/p2k/fit.cpp
@@ -25,9 +27,10 @@ add_library(trench_native_core STATIC
   src/bisection.cpp
 )
 
+find_package(Ceres 2.2.0 EXACT CONFIG REQUIRED)
 find_package(Eigen3 5.0.1 EXACT CONFIG REQUIRED)
 find_path(POCKETFFT_INCLUDE_DIR pocketfft_hdronly.h REQUIRED)
-target_link_libraries(trench_native_core PRIVATE Eigen3::Eigen)
+target_link_libraries(trench_native_core PRIVATE Ceres::ceres Eigen3::Eigen)
 target_include_directories(trench_native_core PRIVATE ${POCKETFFT_INCLUDE_DIR})
 
 target_include_directories(trench_native_core PUBLIC include)
@@ -66,6 +69,7 @@ if(BUILD_TESTING)
   add_executable(trench_native_core_tests
     tests/core_tests.cpp
     tests/measure_test.cpp
+    tests/fit_target_test.cpp
     tests/p2k_parity_test.cpp
     tests/p2k_container_laws_test.cpp
     tests/p2k_fitter_semantics_test.cpp
@@ -75,6 +79,7 @@ if(BUILD_TESTING)
     tests/p2k_section_param_test.cpp
     tests/p2k_morph_test.cpp
     tests/native_body_test.cpp
+    tests/native_fit_test.cpp
     tests/adversary_test.cpp
     tests/audition_test.cpp
     tests/transpose_test.cpp

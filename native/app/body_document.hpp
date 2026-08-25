@@ -1,6 +1,7 @@
 #pragma once
 
 #include "trench/core/native_body.hpp"
+#include "trench/core/fit_target.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/role.hpp"
 
@@ -49,7 +50,8 @@ class BodyDocument final : public QObject {
   [[nodiscard]] QUndoStack* undoStack() noexcept;
   [[nodiscard]] bool rootGestureActive() const noexcept;
   [[nodiscard]] std::uint32_t freedomMask() const noexcept;
-  [[nodiscard]] const std::optional<std::vector<double>>& target() const noexcept;
+  [[nodiscard]] const std::optional<trench::core::FitTarget>& target() const noexcept;
+  [[nodiscard]] const std::vector<double>& targetGridDb() const noexcept;
   [[nodiscard]] CornerSnapshot cornerSnapshot() const;
   [[nodiscard]] CornerSnapshot cornerSnapshot(std::size_t corner) const;
   [[nodiscard]] trench::core::p2k::CornerWords seedWords() const;
@@ -65,6 +67,7 @@ class BodyDocument final : public QObject {
   [[nodiscard]] double targetScoreDb() const;
 
   void setCorner(std::size_t corner);
+  void setTarget(trench::core::FitTarget target);
   void setTarget(std::vector<double> target);
   void clearTarget();
   void setSpace(const trench::core::p2k::PerceptualSpace& space);
@@ -78,6 +81,7 @@ class BodyDocument final : public QObject {
   void applyIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
 
   void toggleLane(std::size_t section, bool pole);
+  void setFreedomMask(std::uint32_t mask);
   void beginRootGesture();
   bool editRoot(const RootEdit& edit);
   void endRootGesture();
@@ -87,7 +91,7 @@ class BodyDocument final : public QObject {
   void applyCorner(std::size_t corner, const CornerSnapshot& words);
   void applyP2kCorner(const P2kCorner& words);
   void applyP2kCorner(std::size_t corner, const P2kCorner& words);
-  void applyFitStep(std::size_t corner, const trench::core::p2k::CornerWords& words);
+  void applyFitStep(std::size_t corner, const CornerSnapshot& snapshot);
   void commitFit(std::size_t corner, const CornerSnapshot& before);
 
   void applyCharacter(double amount);
@@ -110,7 +114,8 @@ class BodyDocument final : public QObject {
   [[nodiscard]] double effectiveSemitones(float morph, float q) const;
   double sample_rate_hz_{};
   std::uint32_t freedom_mask_{};
-  std::optional<std::vector<double>> target_;
+  std::optional<trench::core::FitTarget> target_;
+  std::vector<double> target_grid_db_;
   trench::core::p2k::PerceptualSpace space_{};
   trench::core::p2k::Grid grid_;
   trench::core::p2k::RoleIntent intent_{};

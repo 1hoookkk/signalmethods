@@ -105,7 +105,7 @@ BodyDocument::BodyDocument(trench::core::native::Body body, double sample_rate_h
     : QObject(parent),
       body_(std::move(body)),
       sample_rate_hz_(sample_rate_hz),
-      freedom_mask_(trench::core::p2k::kAllFree),
+      freedom_mask_(trench::core::native::kAllFree),
       grid_(trench::core::p2k::make_grid(space_)),
       undo_stack_(this) {}
 
@@ -146,11 +146,16 @@ bool BodyDocument::rootGestureActive() const noexcept {
 
 std::uint32_t BodyDocument::freedomMask() const noexcept { return freedom_mask_; }
 
-void BodyDocument::toggleLane(std::size_t section, bool pole) {
-  const auto bit = pole ? trench::core::p2k::pole_bit(section)
-                        : trench::core::p2k::zero_bit(section);
-  freedom_mask_ ^= bit;
+void BodyDocument::setFreedomMask(std::uint32_t mask) {
+  if (freedom_mask_ == mask) return;
+  freedom_mask_ = mask;
   emit freedomMaskChanged(freedom_mask_);
+}
+
+void BodyDocument::toggleLane(std::size_t section, bool pole) {
+  const auto bit = pole ? trench::core::native::pole_bit(section)
+                        : trench::core::native::zero_bit(section);
+  setFreedomMask(freedom_mask_ ^ bit);
 }
 
 void BodyDocument::beginRootGesture() {
@@ -160,10 +165,9 @@ void BodyDocument::beginRootGesture() {
 
 bool BodyDocument::editRoot(const RootEdit& edit) {
   namespace native = trench::core::native;
-  namespace p2k = trench::core::p2k;
   if (edit.section >= native::kSections) return false;
-  const auto free_bit = edit.lane == RootLane::kPole ? p2k::pole_bit(edit.section)
-                                                      : p2k::zero_bit(edit.section);
+  const auto free_bit = edit.lane == RootLane::kPole ? native::pole_bit(edit.section)
+                                                      : native::zero_bit(edit.section);
   if ((freedom_mask_ & free_bit) == 0U) return false;
 
   const auto before = cornerSnapshot();
@@ -211,18 +215,36 @@ void BodyDocument::applyP2kSection(std::size_t section,
   applyP2kCorner(corner_, rows);
 }
 
-const std::optional<std::vector<double>>& BodyDocument::target() const noexcept {
+const std::optional<trench::core::FitTarget>& BodyDocument::target() const noexcept {
   return target_;
 }
 
-void BodyDocument::setTarget(std::vector<double> target) {
+const std::vector<double>& BodyDocument::targetGridDb() const noexcept {
+  return target_grid_db_;
+}
+
+void BodyDocument::setTarget(trench::core::FitTarget target) {
+  if (!target.valid()) return;
   target_ = std::move(target);
+  target_grid_db_ = trench::core::magnitude_on_grid(*target_, grid_.hz);
   emit targetChanged();
+}
+
+void BodyDocument::setTarget(std::vector<double> target) {
+  if (target.size() != grid_.hz.size()) return;
+  trench::core::FitTarget explicit_target;
+  explicit_target.frequency_hz = grid_.hz;
+  explicit_target.magnitude_db = std::move(target);
+  explicit_target.weight = grid_.weight;
+  explicit_target.kind = trench::core::TargetKind::kEnvelope;
+  explicit_target.absolute_level = false;
+  setTarget(std::move(explicit_target));
 }
 
 void BodyDocument::clearTarget() {
   if (!target_) return;
   target_.reset();
+  target_grid_db_.clear();
   emit targetChanged();
 }
 
@@ -239,6 +261,8 @@ void BodyDocument::setSpace(const trench::core::p2k::PerceptualSpace& space) {
 void BodyDocument::applySpace(const trench::core::p2k::PerceptualSpace& space) {
   space_ = space;
   grid_ = trench::core::p2k::make_grid(space_);
+  target_grid_db_ = target_ ? trench::core::magnitude_on_grid(*target_, grid_.hz)
+                            : std::vector<double>{};
   emit spaceChanged();
 }
 
@@ -335,7 +359,7 @@ double BodyDocument::targetScoreDb() const {
   if (!target_) return std::numeric_limits<double>::quiet_NaN();
   const auto model = viewResponseDb();
   std::vector<double> scratch(model.size(), 0.0);
-  return std::sqrt(grid_.residual_var(*target_, model, scratch));
+  return std::sqrt(grid_.residual_var(target_grid_db_, model, scratch));
 }
 
 BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot() const {
@@ -404,15 +428,8 @@ void BodyDocument::applyP2kCorner(std::size_t corner, const P2kCorner& words) {
 }
 
 void BodyDocument::applyFitStep(std::size_t corner,
-                                const trench::core::p2k::CornerWords& words) {
-  auto rows = p2kCornerSnapshot(corner);
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    for (std::size_t word = 0; word < words[section].size(); ++word) {
-      rows[section][word] = words[section][word];
-    }
-  }
-  trench::core::p2k::write_dc_unity_scales(rows);
-  applyP2kCorner(corner, rows);
+                                const CornerSnapshot& snapshot) {
+  applyCorner(corner, snapshot);
 }
 
 void BodyDocument::applyCharacter(double amount) {

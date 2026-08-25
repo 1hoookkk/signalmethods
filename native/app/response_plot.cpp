@@ -7,10 +7,13 @@
 #include "trench/core/transpose.hpp"
 
 #include <QFontMetrics>
+#include <QLineF>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QSizePolicy>
 #include <QTimer>
+#include <QToolTip>
 
 #include <algorithm>
 #include <cmath>
@@ -24,6 +27,7 @@ const QColor kBackground{17, 20, 22};
 const QColor kGrid{55, 63, 67};
 const QColor kText{174, 186, 190};
 const QColor kTrace{87, 222, 205};
+const QColor kHeld{247, 184, 92};
 
 constexpr int kTraceOversample = 4;
 constexpr int kTraceMinimumBins = 192;
@@ -143,6 +147,7 @@ trench::core::Cascade corner_cascade(const trench::core::native::Body& body,
 }  // namespace
 
 ResponsePlotWidget::ResponsePlotWidget(QWidget* parent) : QWidget(parent) {
+  setMouseTracking(true);
   setAutoFillBackground(false);
   setAccessibleName(QStringLiteral("Complete cascade response"));
   setAccessibleDescription(
@@ -567,8 +572,8 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
       } else {
         hz = viewHz(hz, radius, zero_root);
       }
-      const auto bit = lane == Lane::kPole ? trench::core::p2k::pole_bit(section)
-                                           : trench::core::p2k::zero_bit(section);
+      const auto bit = lane == Lane::kPole ? trench::core::native::pole_bit(section)
+                                           : trench::core::native::zero_bit(section);
       const auto [low_db, high_db] = dbRange();
       const auto lit = section == selected_section_ ||
                        (highlight_section_ && section == *highlight_section_);
@@ -599,6 +604,55 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
     }
   }
   return out;
+}
+
+std::optional<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokenAt(
+    const QPointF& position) const {
+  std::optional<TokenInfo> best;
+  double distance = 12.0;
+  for (const auto& token : tokens()) {
+    const double candidate = QLineF(position, token.position).length();
+    if (candidate <= distance) {
+      distance = candidate;
+      best = token;
+    }
+  }
+  return best;
+}
+
+void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
+  const auto hit = tokenAt(event->position());
+  const auto next = hit ? std::optional{std::pair{hit->section, hit->lane}}
+                        : std::nullopt;
+  if (hovered_token_ != next) {
+    hovered_token_ = next;
+    setCursor(hit ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    update();
+  }
+  if (hit) {
+    const auto label = QStringLiteral("%1%2 · %3")
+                           .arg(hit->lane == Lane::kPole ? QLatin1Char('p')
+                                                        : QLatin1Char('z'))
+                           .arg(hit->section + 1)
+                           .arg(hit->pinned ? QStringLiteral("held")
+                                            : QStringLiteral("free"));
+    QToolTip::showText(event->globalPosition().toPoint(), label, this);
+  }
+}
+
+void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
+  if (event->button() != Qt::LeftButton) return;
+  const auto hit = tokenAt(event->position());
+  if (!hit) return;
+  emit tokenSelected(hit->section, hit->lane);
+  emit pinToggled(hit->section, hit->lane);
+}
+
+void ResponsePlotWidget::leaveEvent(QEvent* event) {
+  hovered_token_.reset();
+  setCursor(Qt::ArrowCursor);
+  update();
+  QWidget::leaveEvent(event);
 }
 
 std::vector<double> ResponsePlotWidget::exposedDb() const { return exposed_db_; }
@@ -724,4 +778,19 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
 
   strokeTrace(painter, kTrace);
   painter.setClipping(false);
+
+  for (const auto& token : tokens()) {
+    const bool hovered = hovered_token_ && hovered_token_->first == token.section &&
+                         hovered_token_->second == token.lane;
+    const bool fitting = fit_running_ && highlight_section_ &&
+                         *highlight_section_ == token.section;
+    if (!hovered && !fitting) continue;
+    painter.setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
+    painter.setPen(token.pinned ? kHeld : kTrace);
+    const auto label = QStringLiteral("%1%2")
+                           .arg(token.lane == Lane::kPole ? QLatin1Char('p')
+                                                         : QLatin1Char('z'))
+                           .arg(token.section + 1);
+    painter.drawText(token.position + QPointF{4.0, -4.0}, label);
+  }
 }

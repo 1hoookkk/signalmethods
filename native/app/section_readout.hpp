@@ -9,7 +9,6 @@
 
 class QLabel;
 class QLineEdit;
-class QToolButton;
 
 class SectionReadout final : public QWidget {
   Q_OBJECT
@@ -20,11 +19,8 @@ class SectionReadout final : public QWidget {
   void setReading(std::size_t section,
                   const std::optional<trench::core::native::Resonant>& pole,
                   const std::optional<trench::core::native::Resonant>& zero);
-  void setPins(bool pole_free, bool zero_free);
-
  signals:
   void poleEdited(std::size_t section, double frequency_hz, double bw_hz);
-  void pinToggled(std::size_t section, bool pole);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -42,6 +38,4 @@ class SectionReadout final : public QWidget {
   QLineEdit* hz_{};
   QLineEdit* bw_{};
   QLabel* zero_{};
-  QToolButton* pole_pin_{};
-  QToolButton* zero_pin_{};
 };

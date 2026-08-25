@@ -14,6 +14,12 @@ struct MonoClip {
   double sample_rate_hz{};
 };
 
+struct AudioClip {
+  std::vector<std::vector<float>> channels;
+  double sample_rate_hz{};
+};
+
+std::optional<AudioClip> decode_audio(const std::filesystem::path& path);
 std::optional<MonoClip> decode_mono(const std::filesystem::path& path);
 
 }  // namespace trench::audio

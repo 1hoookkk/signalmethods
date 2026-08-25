@@ -26,10 +26,14 @@
 class ArmadilloView;
 class QAction;
 class QAbstractButton;
+class QDragEnterEvent;
+class QDropEvent;
+class QLabel;
 class ChassisBar;
 class MorphStrip;
 class PostureList;
 class SectionReadout;
+class VowelJourney;
 
 class MainWindow final : public QMainWindow {
   Q_OBJECT
@@ -65,11 +69,16 @@ class MainWindow final : public QMainWindow {
   void setSourceModel(trench::core::measure::Source source);
   [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
   void startFit();
+  void startZeroFit();
+  void applyLpcPoles();
   void openFitRoom();
   void applyVowel(const QString& symbol);
+  void applyVowelJourney(const QString& from, const QString& to,
+                         double high_q_bandwidth_scale);
   void applyCharacter(double amount);
   [[nodiscard]] FitRoom* fitRoom() const noexcept;
   [[nodiscard]] PostureList* postureList() const noexcept;
+  [[nodiscard]] VowelJourney* vowelJourney() const noexcept;
   [[nodiscard]] int overlayCount() const noexcept;
   void selectOverlay(int index);
   void removeOverlay(int index);
@@ -80,11 +89,14 @@ class MainWindow final : public QMainWindow {
 
  protected:
   bool eventFilter(QObject* watched, QEvent* event) override;
+  void dragEnterEvent(QDragEnterEvent* event) override;
+  void dropEvent(QDropEvent* event) override;
 
  private:
   void chooseTarget();
-  void addOverlay(const QString& name, std::vector<double> curve,
-                  std::vector<double> marks_hz = {});
+  void addOverlay(const QString& name, trench::core::FitTarget target,
+                  std::vector<double> marks_hz = {},
+                  std::vector<trench::core::native::Resonant> suggested_poles = {});
   void refreshFitRoom();
   void updateAudition();
   void saveBodyAs();
@@ -119,7 +131,12 @@ class MainWindow final : public QMainWindow {
   ArmadilloView* armadillo_{};
   MorphStrip* morph_strip_{};
   PostureList* posture_list_{};
+  VowelJourney* vowel_journey_{};
   QAbstractButton* keep_posture_{};
+  QLabel* fit_method_{};
+  QAbstractButton* lpc_poles_{};
+  QAbstractButton* zero_fit_{};
+  QAbstractButton* free_fit_{};
   UserPostures user_postures_;
   SectionReadout* section_readout_{};
   ChassisBar* chassis_bar_{};

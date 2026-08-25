@@ -1,5 +1,7 @@
 #pragma once
 
+#include "trench/core/fit_target.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <span>
@@ -58,6 +60,20 @@ LpcEnvelope lpc_envelope(std::span<const float> mono, double sample_rate_hz,
                          const LpcOptions& options = {});
 
 std::vector<double> target_on_grid(const LpcEnvelope& envelope, std::span<const double> grid_hz);
+
+struct TransferOptions {
+  std::size_t fft_size{4096};
+  std::size_t hop_size{2048};
+  std::size_t points{512};
+  double low_hz{20.0};
+  double top_hz{20'000.0};
+  double smoothing_octaves{1.0 / 6.0};
+};
+
+FitTarget transfer_function(std::span<const float> input,
+                            std::span<const float> output,
+                            double sample_rate_hz,
+                            const TransferOptions& options = {});
 
 ErrorReport weighted_error(std::span<const double> target_db, std::span<const double> model_db,
                            std::span<const double> weight);

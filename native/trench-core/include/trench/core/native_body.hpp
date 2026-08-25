@@ -14,6 +14,16 @@ namespace trench::core::native {
 inline constexpr std::size_t kSections = 6;
 inline constexpr std::size_t kCorners = 4;
 inline constexpr double kPoleStabilityMargin = 1.0e-6;
+inline constexpr std::uint32_t kAllFree = 0xFFFFFFFFU;
+inline constexpr std::uint32_t kGainBit = 1U << 31U;
+
+constexpr std::uint32_t pole_bit(std::size_t section) {
+  return 1U << (3U * section);
+}
+
+constexpr std::uint32_t zero_bit(std::size_t section) {
+  return 1U << (3U * section + 1U);
+}
 
 struct Resonant {
   double hz{};

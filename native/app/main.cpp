@@ -232,7 +232,7 @@ int main(int argc, char* argv[]) {
     if (parser.isSet(fit_option)) {
       if (!save_path.empty()) {
         QObject::connect(window.fitController(), &FitController::finished, &window,
-                         [save_and_quit](quint64, bool, const QList<quint16>&) {
+                         [save_and_quit] {
                            QTimer::singleShot(0, save_and_quit);
                          });
       }

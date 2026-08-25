@@ -7,7 +7,6 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPainter>
-#include <QToolButton>
 
 #include <algorithm>
 #include <cmath>
@@ -27,12 +26,6 @@ const QString kFieldStyle = QStringLiteral(
     "border-bottom: 1px solid #2a3134; padding: 0; }"
     "QLineEdit:hover { border-bottom: 1px solid #57decd; }"
     "QLineEdit:focus { background: #111416; border: 1px solid #373f43; }");
-
-const QString kPinStyle = QStringLiteral(
-    "QToolButton { background: transparent; color: #767f83; border: 1px solid #373f43; "
-    "border-radius: 2px; padding: 0 5px; }"
-    "QToolButton:hover, QToolButton:focus { color: #aebabe; border-color: #59656a; }"
-    "QToolButton:checked { color: #f7b85c; border-color: #9a7138; }");
 
 QFont bar_font() { return QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold); }
 
@@ -85,47 +78,10 @@ SectionReadout::SectionReadout(QWidget* parent) : QWidget(parent) {
   zero_->setStyleSheet(QStringLiteral("color: %1;").arg(kDim.name()));
   row->addWidget(zero_, 1);
 
-  pole_pin_ = new QToolButton(this);
-  pole_pin_->setObjectName(QStringLiteral("polePinButton"));
-  pole_pin_->setAccessibleName(QStringLiteral("Hold pole for fitting"));
-  pole_pin_->setToolTip(QStringLiteral("toggle whether FIT may move this pole"));
-  pole_pin_->setFont(bar_font());
-  pole_pin_->setCheckable(true);
-  pole_pin_->setStyleSheet(kPinStyle);
-  row->addWidget(pole_pin_);
-
-  zero_pin_ = new QToolButton(this);
-  zero_pin_->setObjectName(QStringLiteral("zeroPinButton"));
-  zero_pin_->setAccessibleName(QStringLiteral("Hold zero for fitting"));
-  zero_pin_->setToolTip(QStringLiteral("toggle whether FIT may move this zero"));
-  zero_pin_->setFont(bar_font());
-  zero_pin_->setCheckable(true);
-  zero_pin_->setStyleSheet(kPinStyle);
-  row->addWidget(zero_pin_);
-
   connect(hz_, &QLineEdit::editingFinished, this, [this] { commit(hz_); });
   connect(bw_, &QLineEdit::editingFinished, this, [this] { commit(bw_); });
-  connect(pole_pin_, &QToolButton::clicked, this,
-          [this] { emit pinToggled(section_, true); });
-  connect(zero_pin_, &QToolButton::clicked, this,
-          [this] { emit pinToggled(section_, false); });
-
   zero_->setAccessibleName(QStringLiteral("Zero offset and bandwidth"));
   setReading(0, std::nullopt, std::nullopt);
-  setPins(true, true);
-}
-
-void SectionReadout::setPins(bool pole_free, bool zero_free) {
-  pole_pin_->setChecked(!pole_free);
-  zero_pin_->setChecked(!zero_free);
-  pole_pin_->setText(pole_free ? QStringLiteral("P FREE") : QStringLiteral("P HOLD"));
-  zero_pin_->setText(zero_free ? QStringLiteral("Z FREE") : QStringLiteral("Z HOLD"));
-  pole_pin_->setAccessibleDescription(
-      pole_free ? QStringLiteral("FIT may move the selected pole")
-                : QStringLiteral("The selected pole is held"));
-  zero_pin_->setAccessibleDescription(
-      zero_free ? QStringLiteral("FIT may move the selected zero")
-                : QStringLiteral("The selected zero is held"));
 }
 
 void SectionReadout::setReading(std::size_t section,

@@ -49,6 +49,12 @@ TEST(AudioBoundary, JuceNineAudioModulesBuildAndRun) {
 
 TEST(AudioBoundary, DecodeMonoAveragesChannelsAndReportsTheRate) {
   const auto path = write_stereo_wav(440.0, 48000, 4800);
+  const auto stereo = trench::audio::decode_audio(path);
+  ASSERT_TRUE(stereo.has_value());
+  EXPECT_DOUBLE_EQ(stereo->sample_rate_hz, 48000.0);
+  ASSERT_EQ(stereo->channels.size(), 2U);
+  EXPECT_EQ(stereo->channels[0].size(), 4800U);
+  EXPECT_NEAR(stereo->channels[0][100], -stereo->channels[1][100], 1.0e-6);
   const auto clip = trench::audio::decode_mono(path);
   ASSERT_TRUE(clip.has_value());
   EXPECT_DOUBLE_EQ(clip->sample_rate_hz, 48000.0);
