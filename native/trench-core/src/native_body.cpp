@@ -92,22 +92,52 @@ std::array<double, kCorners> corner_weights(double morph, double q) {
 constexpr double kAngleZeroHz = 20.0;
 constexpr double kAnglePiHz = 20'000.0;
 constexpr double kDecayCapHz = 1.0e9;
-constexpr double kBwFloorHz = 1.0e-9;
 const double kPackedScaleFloor = 4.0 * decode_word(1);
 
 double capped(double decay_hz) { return std::min(std::abs(decay_hz), kDecayCapHz); }
+
+double log_one_minus_radius(double decay_hz, double scale, double sample_rate_hz) {
+  if (!std::isfinite(decay_hz)) return 0.0;
+  const double exponent = -scale * std::abs(decay_hz) / sample_rate_hz;
+  return std::log(-std::expm1(exponent));
+}
+
+double decay_from_log_one_minus_radius(double encoded, double scale,
+                                       double sample_rate_hz) {
+  const double radius = -std::expm1(std::min(encoded, 0.0));
+  if (radius <= 0.0) return kInf;
+  return -std::log(radius) * sample_rate_hz / scale;
+}
+
+struct OrderedRealRoot {
+  double decay_hz{};
+  bool negative{};
+};
+
+std::array<OrderedRealRoot, 2> ordered_real_roots(const RealRoots& real) {
+  std::array<OrderedRealRoot, 2> out{{
+      {capped(real.a_hz), std::signbit(real.a_hz)},
+      {capped(real.b_hz), std::signbit(real.b_hz)},
+  }};
+  std::stable_sort(out.begin(), out.end(), [](const auto& lhs, const auto& rhs) {
+    return lhs.decay_hz < rhs.decay_hz;
+  });
+  return out;
+}
 
 Resonant as_resonant(const Roots& roots) {
   if (const auto* res = std::get_if<Resonant>(&roots)) {
     return *res;
   }
   const auto& real = std::get<RealRoots>(roots);
-  return {std::signbit(real.a_hz) ? kAnglePiHz : kAngleZeroHz,
+  const bool negative_angle = std::signbit(real.a_hz) && std::signbit(real.b_hz);
+  return {negative_angle ? kAnglePiHz : kAngleZeroHz,
           capped(real.a_hz) + capped(real.b_hz)};
 }
 
 Roots blend_roots(const std::array<const Roots*, kCorners>& corner,
-                  const std::array<double, kCorners>& weight) {
+                  const std::array<double, kCorners>& weight,
+                  double sample_rate_hz) {
   std::size_t nearest = 0;
   for (std::size_t ci = 1; ci < kCorners; ++ci) {
     if (weight[ci] > weight[nearest]) nearest = ci;
@@ -120,28 +150,38 @@ Roots blend_roots(const std::array<const Roots*, kCorners>& corner,
     all_real = all_real && std::holds_alternative<RealRoots>(*r);
   }
   if (all_real) {
-    double lo = 0.0;
-    double hi = 0.0;
+    std::array<double, 2> encoded{};
     for (std::size_t ci = 0; ci < kCorners; ++ci) {
-      const auto& real = std::get<RealRoots>(*corner[ci]);
-      const double a = capped(real.a_hz);
-      const double b = capped(real.b_hz);
-      lo += weight[ci] * std::log(std::max(std::min(a, b), kBwFloorHz));
-      hi += weight[ci] * std::log(std::max(std::max(a, b), kBwFloorHz));
+      if (weight[ci] == 0.0) continue;
+      const auto ordered = ordered_real_roots(std::get<RealRoots>(*corner[ci]));
+      for (std::size_t ri = 0; ri < ordered.size(); ++ri) {
+        encoded[ri] += weight[ci] *
+                       log_one_minus_radius(ordered[ri].decay_hz, kTau,
+                                            sample_rate_hz);
+      }
     }
-    const auto& sign_of = std::get<RealRoots>(*corner[nearest]);
-    const double sa = std::signbit(std::min(sign_of.a_hz, sign_of.b_hz)) ? -1.0 : 1.0;
-    const double sb = std::signbit(std::max(sign_of.a_hz, sign_of.b_hz)) ? -1.0 : 1.0;
-    return RealRoots{sa * std::exp(lo), sb * std::exp(hi)};
+    const auto sign_of = ordered_real_roots(std::get<RealRoots>(*corner[nearest]));
+    const auto decoded = [&](std::size_t ri) {
+      const double decay =
+          decay_from_log_one_minus_radius(encoded[ri], kTau, sample_rate_hz);
+      return sign_of[ri].negative ? -decay : decay;
+    };
+    return RealRoots{decoded(0), decoded(1)};
   }
   double log_hz = 0.0;
-  double log_bw = 0.0;
+  double encoded_radius = 0.0;
   for (std::size_t ci = 0; ci < kCorners; ++ci) {
+    if (weight[ci] == 0.0) continue;
     const Resonant res = as_resonant(*corner[ci]);
     log_hz += weight[ci] * std::log(std::max(res.hz, kAngleZeroHz));
-    log_bw += weight[ci] * std::log(std::max(res.bw_hz, kBwFloorHz));
+    encoded_radius += weight[ci] *
+                      log_one_minus_radius(res.bw_hz, std::numbers::pi,
+                                           sample_rate_hz);
   }
-  return Resonant{std::exp(log_hz), std::exp(log_bw)};
+  return Resonant{
+      std::exp(log_hz),
+      decay_from_log_one_minus_radius(encoded_radius, std::numbers::pi,
+                                      sample_rate_hz)};
 }
 
 }  // namespace
@@ -160,7 +200,8 @@ Design blend(const Body& body, double morph, double q, double sample_rate_hz) {
     for (std::size_t ci = 0; ci < kCorners; ++ci) {
       stabilised = stabilised && body.corners[ci].sections[si].dc_stabilised;
     }
-    out[si] = design(Section{blend_roots(poles, weight), blend_roots(zeros, weight), stabilised},
+    out[si] = design(Section{blend_roots(poles, weight, sample_rate_hz),
+                             blend_roots(zeros, weight, sample_rate_hz), stabilised},
                      sample_rate_hz);
   }
   return out;

@@ -12,6 +12,7 @@
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
 #include "trench/core/section_param.hpp"
+#include "trench/core/transpose.hpp"
 
 #include <QTest>
 #include <QApplication>
@@ -100,9 +101,10 @@ double peak_hz_below(const std::vector<double>& response_db,
 }
 
 void send_mouse(QWidget* widget, QEvent::Type type, const QPointF& position,
-                Qt::MouseButton button, Qt::MouseButtons buttons) {
+                Qt::MouseButton button, Qt::MouseButtons buttons,
+                Qt::KeyboardModifiers modifiers = Qt::NoModifier) {
   QMouseEvent event(type, position, widget->mapToGlobal(position), button, buttons,
-                    Qt::NoModifier);
+                    modifiers);
   QCoreApplication::sendEvent(widget, &event);
 }
 
@@ -110,8 +112,10 @@ void press(QWidget* widget, const QPointF& position) {
   send_mouse(widget, QEvent::MouseButtonPress, position, Qt::LeftButton, Qt::LeftButton);
 }
 
-void move(QWidget* widget, const QPointF& position) {
-  send_mouse(widget, QEvent::MouseMove, position, Qt::NoButton, Qt::LeftButton);
+void move(QWidget* widget, const QPointF& position,
+          Qt::KeyboardModifiers modifiers = Qt::NoModifier) {
+  send_mouse(widget, QEvent::MouseMove, position, Qt::NoButton, Qt::LeftButton,
+             modifiers);
 }
 
 void release(QWidget* widget, const QPointF& position) {
@@ -817,6 +821,12 @@ class MainWindowTest final : public QObject {
     QVERIFY(window.loadTarget(wav));
     QVERIFY(window.document()->target().has_value());
     QCOMPARE(window.document()->target()->size(), trench::core::p2k::kNpts);
+    QVERIFY(window.armadilloView()->lpcFormantCount() > 0);
+    window.resize(960, 680);
+    window.show();
+    QTest::qWait(20);
+    QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
+                               "/dev/e2e/app_lpc_formants.png"));
 
     const auto& grid = trench::core::p2k::grid();
     std::vector<double> hz;
@@ -2060,7 +2070,7 @@ class MainWindowTest final : public QObject {
     QVERIFY(!actions.isEmpty());
     QCOMPARE(actions.front()->text(), QStringLiteral("none"));
     QCOMPARE(actions.front()->menu(), nullptr);
-    QCOMPARE(actions.at(1)->text(), QStringLiteral("FULL P/Z"));
+    QCOMPARE(actions.at(1)->text(), QStringLiteral("POLES + ZEROS"));
     QVERIFY(actions.at(1)->menu() != nullptr);
     QCOMPARE(actions.at(1)->menu()->actions().size(), 33);
 
@@ -2321,6 +2331,10 @@ class MainWindowTest final : public QObject {
                                  window.responsePlot()->height();
     QVERIFY2(response_aspect >= 2.5 && response_aspect <= 3.1,
              qPrintable(QString::number(response_aspect)));
+    for (const double hz : {100.0, 1'000.0, 10'000.0}) {
+      QVERIFY(std::abs(armadillo->xForFrequency(hz) -
+                       window.responsePlot()->xForFrequency(hz)) < 1.0e-9);
+    }
     std::size_t poles = 0;
     std::size_t zeros = 0;
     for (const auto& marker : armadillo->markers()) {
@@ -2333,10 +2347,43 @@ class MainWindowTest final : public QObject {
     QCOMPARE(poles, std::size_t{6});
     QCOMPARE(zeros, std::size_t{6});
     QVERIFY(armadillo->setOverlay(QStringLiteral("P2k 013 talking hedz · C1")));
+    QCOMPARE(armadillo->overlayPicker()->text(),
+             QStringLiteral("P2K 013 talking hedz · C1"));
     QCOMPARE(armadillo->overlayPoleCount(), std::size_t{6});
     QCOMPARE(armadillo->overlayZeroCount(), std::size_t{6});
     QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
                                "/dev/e2e/app_armadillo_primary.png"));
+  }
+
+  void transposeShowsAuthoredAndMovedRootsOnTheResponseAxis() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 680);
+    window.show();
+    QTest::qWait(20);
+    window.document()->setTranspose(12);
+    QTest::qWait(20);
+
+    auto* roots = window.armadilloView();
+    std::optional<ArmadilloView::Marker> authored;
+    std::optional<QPointF> moved;
+    for (const auto& marker : roots->markers()) {
+      if (marker.zero || marker.real || marker.ghost) continue;
+      const auto candidate = roots->transposedPosition(marker.section, false);
+      if (!candidate) continue;
+      authored = marker;
+      moved = candidate;
+      break;
+    }
+    QVERIFY(authored.has_value());
+    QVERIFY(moved.has_value());
+    QVERIFY(std::abs(moved->x() - authored->position.x()) > 1.0);
+
+    const auto expected_hz = trench::core::transposed_root_hz(
+        authored->hz, authored->radius, 2.0, trench::core::kP2kDatumHz, false);
+    QVERIFY(std::abs(window.responsePlot()->xForFrequency(expected_hz) - moved->x()) <
+            1.0e-9);
+    QVERIFY(window.grab().save(QString(TRENCH_SOURCE_ROOT) +
+                               "/dev/e2e/app_authored_transposed_roots.png"));
   }
 
   void draggingAPoleOnTheArmadilloWritesNativeRoots() {
@@ -2373,6 +2420,34 @@ class MainWindowTest final : public QObject {
              qPrintable(QString::number(written->radius)));
     QVERIFY(std::abs(corner_dc_db(window.body().words[0])) < 0.5);
     QCOMPARE(window.undoStack()->count(), 1);
+  }
+
+  void shiftDragChangesBandwidthWithoutMovingFrequency() {
+    MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
+    window.resize(960, 540);
+    window.show();
+    QTest::qWait(20);
+    auto* armadillo = window.armadilloView();
+    const auto before = native_resonant(*window.document(), 1);
+    const auto pole = armadillo_marker(armadillo, 1, false);
+    QVERIFY(before.has_value());
+    QVERIFY(pole.has_value());
+
+    const auto target = QPointF{armadillo->xForFrequency(8'000.0),
+                                armadillo->yForRadius(0.90)};
+    press(armadillo, pole->position);
+    move(armadillo, target, Qt::ShiftModifier);
+    release(armadillo, target);
+    QTest::qWait(20);
+
+    const auto after = native_resonant(*window.document(), 1);
+    QVERIFY(after.has_value());
+    QVERIFY(std::abs(after->hz - before->hz) < 1.0e-9);
+    const auto expected_bw = -std::log(0.90) * trench::core::kP2kDatumHz /
+                             std::numbers::pi;
+    QVERIFY(std::abs(after->bw_hz - expected_bw) < 1.0e-6);
+    QCOMPARE(window.undoStack()->count(), 1);
+    verify_native_dc_law(*window.document(), 1);
   }
 
   void doubleClickOnTheArmadilloPlacesAPolePairAtDepth() {

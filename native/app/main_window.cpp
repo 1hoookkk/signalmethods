@@ -163,8 +163,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   response_plot_->setFreedomMask(document_->freedomMask());
   response_plot_->setSpace(document_->space());
   response_plot_->setToolTip(
-      QStringLiteral("read-only cascade magnitude, target, residual, and section traces — "
-                     "press space to audition"));
+      QStringLiteral("response, target, residual, sections · Space: audition"));
 
   auto* plot_row = new QWidget(central);
   auto* plot_layout = new QHBoxLayout(plot_row);
@@ -177,9 +176,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
   armadillo_ = new ArmadilloView(surface_column);
   armadillo_->setObjectName(QStringLiteral("armadilloView"));
   armadillo_->setToolTip(
-      QStringLiteral("pole-zero roots: x is log frequency; y is radius/bandwidth — "
-                     "drag a p or z — double-click adds a pole pair — drag past the "
-                     "right edge to remove it"));
+      QStringLiteral("drag: frequency / BW · Shift: BW only · double-click: pole"));
   armadillo_->setBody(&document_->body(), document_->sampleRateHz());
   for (const auto& overlay : factory_body_overlays()) {
     armadillo_->addBodyOverlay(overlay.name, overlay.body);
@@ -308,6 +305,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     const auto view = document_->view();
     morph_strip_->setView(view.morph, view.q);
     response_plot_->setView(view.morph, view.q, view.semitones);
+    armadillo_->setTranspose(view.semitones);
     morph_strip_->setTranspose(static_cast<int>(std::lround(view.semitones)));
     updateProbes();
     updatePostureMatch();
@@ -316,6 +314,7 @@ MainWindow::MainWindow(const std::filesystem::path& body_path,
     const auto view = document_->view();
     morph_strip_->setView(view.morph, view.q);
     response_plot_->setView(view.morph, view.q, view.semitones);
+    armadillo_->setTranspose(view.semitones);
     morph_strip_->setTranspose(static_cast<int>(std::lround(view.semitones)));
     updateReadout();
     updateProbes();
@@ -654,8 +653,9 @@ bool MainWindow::loadTarget(const std::filesystem::path& path) {
       return false;
     }
     const auto name = QString::fromStdString(path.filename().string());
+    auto target_marks = marks;
     addOverlay(name + QStringLiteral(" LPC"), std::move(lpc_target), std::move(marks));
-    addOverlay(name, std::move(target));
+    addOverlay(name, std::move(target), std::move(target_marks));
     audition_clip_ = *clip;
     if (audition_) audition_->setClip(*clip);
     return true;
@@ -690,6 +690,9 @@ void MainWindow::selectOverlay(int index) {
   if (index < 0 || index >= overlays_.size()) return;
   selected_overlay_ = index;
   chassis_bar_->setTargetName(overlays_[index].name);
+  auto source = overlays_[index].name;
+  if (source.endsWith(QStringLiteral(" LPC"))) source.chop(4);
+  armadillo_->setLpcFormants(source, overlays_[index].marks_hz);
   document_->setTarget(overlays_[index].db);
 }
 
@@ -699,6 +702,7 @@ void MainWindow::removeOverlay(int index) {
   if (overlays_.isEmpty()) {
     selected_overlay_ = -1;
     chassis_bar_->setTargetName(QString());
+    armadillo_->setLpcFormants(QString(), {});
     document_->clearTarget();
     return;
   }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "trench/core/native_body.hpp"
-#include "trench/core/formants.hpp"
 
 #include <QWidget>
 
@@ -32,9 +31,11 @@ class ArmadilloView final : public QWidget {
 
   void setBody(const trench::core::native::Body* body, double sample_rate_hz);
   void setCorner(std::size_t corner);
+  void setTranspose(double semitones);
   void setSelected(std::optional<std::size_t> section, bool zero);
   void addBodyOverlay(const QString& name, const trench::core::native::Body& body);
   bool setOverlay(const QString& name);
+  void setLpcFormants(const QString& source, std::vector<double> hz);
   void refresh();
 
   [[nodiscard]] const std::vector<Marker>& markers() const noexcept;
@@ -50,6 +51,9 @@ class ArmadilloView final : public QWidget {
   [[nodiscard]] std::size_t overlayZeroCount() const noexcept;
   [[nodiscard]] std::optional<trench::core::native::Roots> overlayRoot(
       std::size_t section, bool zero) const;
+  [[nodiscard]] std::optional<QPointF> transposedPosition(std::size_t section,
+                                                         bool zero) const;
+  [[nodiscard]] std::size_t lpcFormantCount() const noexcept;
   [[nodiscard]] QSize sizeHint() const override;
   [[nodiscard]] QSize minimumSizeHint() const override;
 
@@ -75,6 +79,8 @@ class ArmadilloView final : public QWidget {
   void rebuildMarkers();
   void buildOverlayPicker();
   void paintOverlay(QPainter& painter) const;
+  void paintLpcFormants(QPainter& painter) const;
+  [[nodiscard]] double transposedHz(double hz, double radius, bool zero) const;
 
   struct OverlayRoot {
     std::size_t section{};
@@ -89,15 +95,19 @@ class ArmadilloView final : public QWidget {
 
   const trench::core::native::Body* body_{};
   double sample_rate_hz_{44100.0};
+  double transpose_semitones_{};
   std::size_t corner_{};
   std::vector<Marker> markers_;
   std::optional<std::size_t> selected_section_;
   bool selected_zero_{};
   std::optional<std::pair<std::size_t, bool>> drag_;
+  double drag_hz_{};
   QMenu* overlay_menu_{};
   QMenu* body_overlay_menu_{};
   QToolButton* overlay_button_{};
   QString overlay_name_;
   std::vector<CornerOverlay> corner_overlays_;
   std::vector<OverlayRoot> overlay_roots_;
+  QString lpc_source_;
+  std::vector<double> lpc_formants_hz_;
 };

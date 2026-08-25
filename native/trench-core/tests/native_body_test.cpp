@@ -17,6 +17,7 @@
 #include "trench/core/native_body.hpp"
 #include "trench/core/p2k.hpp"
 #include "trench/core/packed_body.hpp"
+#include "trench/core/transpose.hpp"
 
 namespace p2k = trench::core::p2k;
 namespace nb = trench::core::native;
@@ -170,6 +171,82 @@ TEST(NativeBody, TheCornersOfTheBlendAreTheCorners) {
   }
 }
 
+TEST(NativeBody, EncodedRootInteriorAtMorph0849StaysExactUnderTranspose) {
+  constexpr double sr = 44'100.0;
+  constexpr double morph = 0.849;
+  constexpr double ratio = 1.5;
+  constexpr double hz0 = 650.0;
+  constexpr double hz1 = 7'800.0;
+  constexpr double bw0 = 10.0;
+  constexpr double bw1 = 8'000.0;
+
+  nb::Body body{};
+  for (auto& corner : body.corners) {
+    for (auto& section : corner.sections) {
+      section.pole = nb::Resonant{700.0, 250.0};
+      section.zero = nb::RealRoots{std::numeric_limits<double>::infinity(),
+                                   std::numeric_limits<double>::infinity()};
+    }
+  }
+  body.corners[0].sections[0].zero = nb::Resonant{hz0, bw0};
+  body.corners[1].sections[0].zero = nb::Resonant{hz1, bw1};
+
+  const auto design = nb::blend(body, morph, 0.0, sr);
+  const auto roots = nb::roots_from_coefficients(design[0].b1, design[0].b2, sr);
+  const auto* zero = std::get_if<nb::Resonant>(&roots);
+  ASSERT_NE(zero, nullptr);
+
+  const double expected_hz = std::exp((1.0 - morph) * std::log(hz0) +
+                                      morph * std::log(hz1));
+  const double radius0 = std::exp(-std::numbers::pi * bw0 / sr);
+  const double radius1 = std::exp(-std::numbers::pi * bw1 / sr);
+  const double encoded = (1.0 - morph) * std::log1p(-radius0) +
+                         morph * std::log1p(-radius1);
+  const double expected_radius = 1.0 - std::exp(encoded);
+  const double expected_bw = -std::log(expected_radius) * sr / std::numbers::pi;
+  EXPECT_NEAR(zero->hz, expected_hz, 1.0e-9);
+  EXPECT_NEAR(zero->bw_hz, expected_bw, 1.0e-9);
+
+  const double geometric_bw =
+      std::exp((1.0 - morph) * std::log(bw0) + morph * std::log(bw1));
+  EXPECT_GT(std::abs(zero->bw_hz - geometric_bw), 100.0);
+
+  const auto moved = trench::core::transpose_cascade(nb::cascade(design), ratio, sr);
+  const double b1 = moved[0][1] / moved[0][0];
+  const double b2 = moved[0][2] / moved[0][0];
+  ASSERT_TRUE(trench::core::conjugate_pair_hz(b1, b2, sr).has_value());
+  EXPECT_NEAR(*trench::core::conjugate_pair_hz(b1, b2, sr), expected_hz * ratio,
+              1.0e-9);
+  EXPECT_NEAR(std::sqrt(b2), expected_radius, 1.0e-12);
+}
+
+TEST(NativeBody, RealRootInteriorInterpolatesEachLogOneMinusRadius) {
+  constexpr double sr = 48'000.0;
+  nb::Body body{};
+  for (auto& corner : body.corners) {
+    for (auto& section : corner.sections) {
+      section.pole = nb::Resonant{700.0, 250.0};
+      section.zero = nb::RealRoots{100.0, -400.0};
+    }
+  }
+  body.corners[1].sections[0].zero = nb::RealRoots{1'000.0, -4'000.0};
+
+  const auto design = nb::blend(body, 0.5, 0.0, sr);
+  const auto expected_decay = [sr](double a, double b) {
+    const double ra = std::exp(-2.0 * std::numbers::pi * a / sr);
+    const double rb = std::exp(-2.0 * std::numbers::pi * b / sr);
+    const double encoded = 0.5 * (std::log1p(-ra) + std::log1p(-rb));
+    const double radius = 1.0 - std::exp(encoded);
+    return -std::log(radius) * sr / (2.0 * std::numbers::pi);
+  };
+  const double positive = std::exp(-2.0 * std::numbers::pi *
+                                   expected_decay(100.0, 1'000.0) / sr);
+  const double negative = -std::exp(-2.0 * std::numbers::pi *
+                                    expected_decay(400.0, 4'000.0) / sr);
+  EXPECT_NEAR(design[0].b1, -(positive + negative), 1.0e-12);
+  EXPECT_NEAR(design[0].b2, positive * negative, 1.0e-12);
+}
+
 TEST(NativeBody, TheInteriorIsStableConjugateAndUnityAtDc) {
   for (const auto& [name, body] : engine_bank()) {
     const auto imported = nb::import_p2k(body);
@@ -215,17 +292,17 @@ TEST(NativeBody, TheInteriorIsStableConjugateAndUnityAtDc) {
 TEST(NativeBody, TalkingHedzFloatInteriorEnvelope) {
   const auto audit = p2k::interior_audit(nb::import_p2k(hedz()), p2k::grid(), 33, 33);
   EXPECT_EQ(audit.refused, 0U);
-  EXPECT_NEAR(audit.max_step_db, 5.28, 0.11);
-  EXPECT_NEAR(audit.mean_step_db, 3.08, 0.07);
-  EXPECT_NEAR(audit.excursion_up_db, 69.43, 1.39);
-  EXPECT_NEAR(audit.excursion_down_db, 93.25, 1.87);
-  EXPECT_NEAR(audit.bilinear_dev_max_db, 14.45, 0.29);
-  EXPECT_NEAR(audit.bilinear_dev_p95_db, 12.81, 0.26);
-  EXPECT_NEAR(audit.detour_max, 6.70, 0.14);
-  EXPECT_NEAR(audit.loudness_swing_db, 39.46, 0.79);
-  EXPECT_NEAR(audit.loudness_beyond_corners_db, 30.59, 0.61);
-  EXPECT_NEAR(audit.prefix_headroom_db, 107.60, 2.15);
-  EXPECT_NEAR(audit.prefix_floor_db, -144.90, 2.90);
+  EXPECT_NEAR(audit.max_step_db, 5.28, 0.02);
+  EXPECT_NEAR(audit.mean_step_db, 3.08, 0.02);
+  EXPECT_NEAR(audit.excursion_up_db, 69.43, 0.02);
+  EXPECT_NEAR(audit.excursion_down_db, 93.25, 0.02);
+  EXPECT_NEAR(audit.bilinear_dev_max_db, 14.45, 0.02);
+  EXPECT_NEAR(audit.bilinear_dev_p95_db, 12.81, 0.02);
+  EXPECT_NEAR(audit.detour_max, 6.70, 0.02);
+  EXPECT_NEAR(audit.loudness_swing_db, 39.45, 0.02);
+  EXPECT_NEAR(audit.loudness_beyond_corners_db, 30.58, 0.02);
+  EXPECT_NEAR(audit.prefix_headroom_db, 107.60, 0.02);
+  EXPECT_NEAR(audit.prefix_floor_db, -144.89, 0.02);
 }
 
 TEST(NativeBody, MotionThroughTheBlendStaysFinite) {

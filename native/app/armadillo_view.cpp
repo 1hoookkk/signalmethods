@@ -1,6 +1,10 @@
 #include "armadillo_view.hpp"
 
+#include "frequency_axis.hpp"
+
+#include "trench/core/formants.hpp"
 #include "trench/core/p2k.hpp"
+#include "trench/core/transpose.hpp"
 
 #include <QFont>
 #include <QFontMetricsF>
@@ -28,6 +32,8 @@ const QColor kAccent{87, 222, 205};
 const QColor kOverlayGuide{174, 186, 190, 44};
 const QColor kOverlayPole{174, 186, 190, 148};
 const QColor kOverlayZero{247, 184, 92, 210};
+const QColor kTransposed{116, 174, 255};
+const QColor kLpc{156, 130, 224};
 
 constexpr double kRimDb = 96.0;
 constexpr double kHitRadius = 9.0;
@@ -71,9 +77,9 @@ QFont letter_font() { return QFont(QStringLiteral("Segoe UI"), 10, QFont::DemiBo
 
 ArmadilloView::ArmadilloView(QWidget* parent) : QWidget(parent) {
   setMouseTracking(true);
-  setAccessibleName(QStringLiteral("Pole-zero authoring plane"));
+  setAccessibleName(QStringLiteral("Pole and zero plot"));
   setAccessibleDescription(
-      QStringLiteral("Pole and zero frequency and bandwidth editor with read-only references"));
+      QStringLiteral("Edit pole and zero frequency and bandwidth; references are read-only"));
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
   buildOverlayPicker();
 }
@@ -92,7 +98,7 @@ void ArmadilloView::buildOverlayPicker() {
   connect(overlay_menu_->addAction(QStringLiteral("none")), &QAction::triggered, this,
           [this] { setOverlay(QString()); });
 
-  body_overlay_menu_ = overlay_menu_->addMenu(QStringLiteral("FULL P/Z"));
+  body_overlay_menu_ = overlay_menu_->addMenu(QStringLiteral("POLES + ZEROS"));
   body_overlay_menu_->setFont(overlay_menu_->font());
   body_overlay_menu_->setStyleSheet(overlay_menu_->styleSheet());
   body_overlay_menu_->setEnabled(false);
@@ -116,9 +122,8 @@ void ArmadilloView::buildOverlayPicker() {
 
   overlay_button_ = new QToolButton(this);
   overlay_button_->setObjectName(QStringLiteral("overlayPicker"));
-  overlay_button_->setAccessibleName(QStringLiteral("Pole-zero reference"));
-  overlay_button_->setToolTip(
-      QStringLiteral("display a read-only pole-zero reference"));
+  overlay_button_->setAccessibleName(QStringLiteral("Reference poles and zeros"));
+  overlay_button_->setToolTip(QStringLiteral("read-only reference"));
   overlay_button_->setFont(QFont(QStringLiteral("Segoe UI"), 8, QFont::DemiBold));
   overlay_button_->setPopupMode(QToolButton::InstantPopup);
   overlay_button_->setMenu(overlay_menu_);
@@ -144,7 +149,7 @@ void ArmadilloView::addBodyOverlay(const QString& name,
   for (std::size_t corner = 0; corner < body.corners.size(); ++corner) {
     const auto full_name = QStringLiteral("%1 · C%2").arg(name).arg(corner + 1);
     corner_overlays_.push_back({full_name, body.corners[corner]});
-    connect(body_menu->addAction(QStringLiteral("C%1 · poles + zeros").arg(corner + 1)),
+    connect(body_menu->addAction(QStringLiteral("C%1").arg(corner + 1)),
             &QAction::triggered, this, [this, full_name] { setOverlay(full_name); });
   }
   body_overlay_menu_->setEnabled(true);
@@ -179,16 +184,16 @@ bool ArmadilloView::setOverlay(const QString& name) {
   }
   auto button_text = overlay_name_;
   if (button_text.startsWith(QStringLiteral("P2k "), Qt::CaseInsensitive)) {
-    button_text.remove(0, 4);
+    button_text.replace(0, 3, QStringLiteral("P2K"));
   }
   overlay_button_->setText(button_text.isEmpty() ? QStringLiteral("OVERLAY") : button_text);
   overlay_button_->setToolTip(
       overlay_name_.isEmpty()
-          ? QStringLiteral("display a read-only pole-zero reference")
-          : QStringLiteral("%1 · hover a numbered root for exact Hz and bandwidth")
+          ? QStringLiteral("read-only reference")
+          : QStringLiteral("%1 · reference · hover for Hz and BW")
                 .arg(overlay_name_));
   overlay_button_->setAccessibleDescription(
-      overlay_name_.isEmpty() ? QStringLiteral("No pole-zero reference selected")
+      overlay_name_.isEmpty() ? QStringLiteral("No pole and zero reference selected")
                               : QStringLiteral("Read-only overlay %1, %2 poles and %3 zeros")
                                     .arg(overlay_name_)
                                     .arg(overlayPoleCount())
@@ -231,6 +236,30 @@ std::optional<trench::core::native::Roots> ArmadilloView::overlayRoot(
              : std::optional<trench::core::native::Roots>{found->roots};
 }
 
+double ArmadilloView::transposedHz(double hz, double radius, bool zero) const {
+  return trench::core::transposed_root_hz(
+      hz, radius, trench::core::ratio_of_semitones(transpose_semitones_),
+      sample_rate_hz_, zero);
+}
+
+std::optional<QPointF> ArmadilloView::transposedPosition(std::size_t section,
+                                                        bool zero) const {
+  if (transpose_semitones_ == 0.0) return std::nullopt;
+  const auto found = std::find_if(markers_.begin(), markers_.end(),
+                                  [section, zero](const Marker& marker) {
+                                    return marker.section == section && marker.zero == zero &&
+                                           !marker.real && !marker.ghost;
+                                  });
+  if (found == markers_.end()) return std::nullopt;
+  const double moved_hz = transposedHz(found->hz, found->radius, found->zero);
+  if (moved_hz == found->hz) return std::nullopt;
+  return QPointF{xForFrequency(moved_hz), found->position.y()};
+}
+
+std::size_t ArmadilloView::lpcFormantCount() const noexcept {
+  return lpc_formants_hz_.size();
+}
+
 void ArmadilloView::setBody(const trench::core::native::Body* body,
                             double sample_rate_hz) {
   if (body_ == body && sample_rate_hz_ == sample_rate_hz) return;
@@ -243,6 +272,26 @@ void ArmadilloView::setCorner(std::size_t corner) {
   if (corner_ == corner) return;
   corner_ = corner;
   refresh();
+}
+
+void ArmadilloView::setTranspose(double semitones) {
+  if (transpose_semitones_ == semitones) return;
+  transpose_semitones_ = semitones;
+  update();
+}
+
+void ArmadilloView::setLpcFormants(const QString& source, std::vector<double> hz) {
+  const double low = trench::app::frequency_axis::low_hz(sample_rate_hz_);
+  const double high = trench::app::frequency_axis::high_hz(sample_rate_hz_);
+  std::erase_if(hz, [low, high](double value) {
+    return !std::isfinite(value) || value < low || value > high;
+  });
+  std::sort(hz.begin(), hz.end());
+  hz.erase(std::unique(hz.begin(), hz.end()), hz.end());
+  if (lpc_source_ == source && lpc_formants_hz_ == hz) return;
+  lpc_source_ = source;
+  lpc_formants_hz_ = std::move(hz);
+  update();
 }
 
 void ArmadilloView::setSelected(std::optional<std::size_t> section, bool zero) {
@@ -262,16 +311,14 @@ const std::vector<ArmadilloView::Marker>& ArmadilloView::markers() const noexcep
 }
 
 QRectF ArmadilloView::plane() const {
-  return QRectF(10.0, 14.0, std::max(40.0, width() - 20.0),
+  return QRectF(54.0, 14.0, std::max(40.0, width() - 72.0),
                 std::max(30.0, height() - 30.0));
 }
 
 double ArmadilloView::xForFrequency(double hz) const {
   const auto area = plane();
-  const auto lo = sample_rate_hz_ / 2048.0;
-  const auto hi = sample_rate_hz_ / 2.0;
-  const auto clamped = std::clamp(hz, lo, hi);
-  return area.left() + area.width() * std::log2(clamped / lo) / std::log2(hi / lo);
+  return area.left() + area.width() *
+                           trench::app::frequency_axis::fraction(hz, sample_rate_hz_);
 }
 
 double ArmadilloView::yForRadius(double radius) const {
@@ -281,10 +328,8 @@ double ArmadilloView::yForRadius(double radius) const {
 
 double ArmadilloView::frequencyForX(double x) const {
   const auto area = plane();
-  const auto lo = sample_rate_hz_ / 2048.0;
-  const auto hi = sample_rate_hz_ / 2.0;
   const auto t = std::clamp((x - area.left()) / area.width(), 0.0, 1.0);
-  return lo * std::pow(hi / lo, t);
+  return trench::app::frequency_axis::hz(t, sample_rate_hz_);
 }
 
 double ArmadilloView::radiusForY(double y) const {
@@ -374,8 +419,10 @@ void ArmadilloView::paintEvent(QPaintEvent*) {
   painter.setPen(QPen(kRim, 1.4));
   painter.drawLine(QPointF{area.left(), area.top()}, QPointF{area.right(), area.top()});
   painter.setPen(kDim);
-  painter.drawText(QPointF{area.left() + 2.0, area.top() - 3.0}, QStringLiteral("R → 1"));
+  painter.drawText(QPointF{area.left() + 2.0, area.top() - 3.0},
+                   QStringLiteral("NARROW BW"));
 
+  paintLpcFormants(painter);
   paintOverlay(painter);
 
   for (const auto& marker : markers_) {
@@ -387,17 +434,41 @@ void ArmadilloView::paintEvent(QPaintEvent*) {
       ink = kDim;
       ink.setAlphaF(0.55F);
     }
+    const auto label = QStringLiteral("%1%2")
+                           .arg(marker.zero ? QLatin1Char('z') : QLatin1Char('p'))
+                           .arg(marker.section + 1);
     painter.setPen(selected ? kAccent : ink);
-    const auto letter = marker.zero ? QStringLiteral("z") : QStringLiteral("p");
-    const auto text_width = metrics.horizontalAdvance(letter);
+    const auto text_width = metrics.horizontalAdvance(label);
     painter.drawText(QPointF{marker.position.x() - text_width * 0.5,
                              marker.position.y() + metrics.ascent() * 0.35},
-                     letter);
-    if (selected) {
-      painter.setPen(QPen(kAccent, 1.0));
-      painter.drawEllipse(marker.position, 7.0, 7.0);
+                     label);
+    const auto moved = transposedPosition(marker.section, marker.zero);
+    if (moved) {
+      const auto moved_label = label + QStringLiteral("′");
+      painter.setPen(kTransposed);
+      painter.drawText(QPointF{moved->x() - metrics.horizontalAdvance(moved_label) * 0.5,
+                               moved->y() + metrics.ascent() * 0.35},
+                       moved_label);
     }
   }
+}
+
+void ArmadilloView::paintLpcFormants(QPainter& painter) const {
+  if (lpc_formants_hz_.empty()) return;
+  const auto area = plane();
+  painter.save();
+  painter.setFont(letter_font());
+  for (std::size_t index = 0; index < lpc_formants_hz_.size(); ++index) {
+    const auto x = xForFrequency(lpc_formants_hz_[index]);
+    auto guide = kLpc;
+    guide.setAlpha(78);
+    painter.setPen(QPen(guide, 1.0, Qt::DashDotLine));
+    painter.drawLine(QPointF{x, area.top()}, QPointF{x, area.bottom()});
+    painter.setPen(kLpc);
+    painter.drawText(QPointF{x + 3.0, area.top() + 14.0},
+                     QStringLiteral("F%1").arg(index + 1));
+  }
+  painter.restore();
 }
 
 void ArmadilloView::paintOverlay(QPainter& painter) const {
@@ -416,14 +487,8 @@ void ArmadilloView::paintOverlay(QPainter& painter) const {
     painter.drawLine(QPointF{at.x(), area.top()}, QPointF{at.x(), area.bottom()});
     const auto ink = marker.zero ? kOverlayZero : kOverlayPole;
     painter.setPen(QPen(ink, marker.zero ? 1.4 : 1.0));
-    painter.setBrush(Qt::NoBrush);
-    painter.drawEllipse(at, 7.0, 7.0);
-    if (marker.zero) {
-      painter.drawLine(at + QPointF{-4.0, -4.0}, at + QPointF{4.0, 4.0});
-      painter.drawLine(at + QPointF{-4.0, 4.0}, at + QPointF{4.0, -4.0});
-    }
     const auto label = QStringLiteral("%1%2")
-                           .arg(marker.zero ? QLatin1Char('z') : QLatin1Char('p'))
+                           .arg(marker.zero ? QLatin1Char('Z') : QLatin1Char('P'))
                            .arg(marker.section + 1);
     const auto text_width = metrics.horizontalAdvance(label);
     const auto label_y = at.y() < area.top() + 18.0
@@ -432,6 +497,17 @@ void ArmadilloView::paintOverlay(QPainter& painter) const {
     painter.drawText(QPointF{at.x() - text_width * 0.5,
                              label_y},
                      label);
+    if (transpose_semitones_ != 0.0) {
+      const double moved_hz = transposedHz(geometry->hz, geometry->radius, marker.zero);
+      if (moved_hz != geometry->hz) {
+        const auto moved_label = label + QStringLiteral("′");
+        const auto moved_x = xForFrequency(moved_hz);
+        painter.setPen(kTransposed);
+        painter.drawText(QPointF{moved_x - metrics.horizontalAdvance(moved_label) * 0.5,
+                                 label_y},
+                         moved_label);
+      }
+    }
   }
   painter.restore();
 }
@@ -442,11 +518,25 @@ void ArmadilloView::mousePressEvent(QMouseEvent* event) {
   if (!hit.has_value()) return;
   const auto& marker = markers_[*hit];
   drag_ = {marker.section, marker.zero};
+  drag_hz_ = marker.hz;
   emit rootPressed(marker.section, marker.zero);
 }
 
 void ArmadilloView::mouseMoveEvent(QMouseEvent* event) {
   if (!drag_.has_value()) {
+    for (std::size_t index = 0; index < lpc_formants_hz_.size(); ++index) {
+      if (std::abs(xForFrequency(lpc_formants_hz_[index]) - event->position().x()) >
+          kHitRadius) {
+        continue;
+      }
+      QToolTip::showText(event->globalPosition().toPoint(),
+                         QStringLiteral("%1 · LPC F%2 · %3 Hz")
+                             .arg(lpc_source_)
+                             .arg(index + 1)
+                             .arg(lpc_formants_hz_[index], 0, 'f', 1),
+                         this);
+      return;
+    }
     for (const auto& marker : overlay_roots_) {
       const auto geometry = root_geometry(marker.roots, sample_rate_hz_);
       if (!geometry.has_value()) continue;
@@ -455,9 +545,9 @@ void ArmadilloView::mouseMoveEvent(QMouseEvent* event) {
           kHitRadius) {
         continue;
       }
-      const auto root_name = QStringLiteral("%1%2")
-                                 .arg(marker.zero ? QLatin1Char('z') : QLatin1Char('p'))
-                                 .arg(marker.section + 1);
+      const auto root_name = marker.zero
+                                 ? QStringLiteral("reference zero z%1").arg(marker.section + 1)
+                                 : QStringLiteral("reference pole p%1").arg(marker.section + 1);
       QString detail;
       if (const auto* resonant =
               std::get_if<trench::core::native::Resonant>(&marker.roots)) {
@@ -487,8 +577,10 @@ void ArmadilloView::mouseMoveEvent(QMouseEvent* event) {
     }
     return;
   }
-  emit rootDragged(drag_->first, drag_->second, frequencyForX(event->position().x()),
-                   radiusForY(event->position().y()));
+  const double hz = event->modifiers().testFlag(Qt::ShiftModifier)
+                        ? drag_hz_
+                        : frequencyForX(event->position().x());
+  emit rootDragged(drag_->first, drag_->second, hz, radiusForY(event->position().y()));
 }
 
 void ArmadilloView::mouseReleaseEvent(QMouseEvent* event) {

@@ -1,5 +1,7 @@
 #include "response_plot.hpp"
 
+#include "frequency_axis.hpp"
+
 #include "trench/core/p2k.hpp"
 #include "trench/core/section_param.hpp"
 #include "trench/core/transpose.hpp"
@@ -44,28 +46,13 @@ constexpr double kAxisLowHz = 100.0;
 constexpr double kAxisHighHz = 16'000.0;
 constexpr double kAxisMaxSpanDb = 144.0;
 
-double erb_rate(double frequency_hz) {
-  return 21.4 * std::log10(1.0 + 0.00437 * frequency_hz);
+double x_for_frequency(double frequency_hz, double sample_rate_hz, const QRectF& plot) {
+  return plot.left() + trench::app::frequency_axis::fraction(frequency_hz, sample_rate_hz) *
+                           plot.width();
 }
 
-double frequency_for_erb_rate(double rate) {
-  return (std::pow(10.0, rate / 21.4) - 1.0) / 0.00437;
-}
-
-double frequency_for_fraction(double fraction, double low_hz, double high_hz) {
-  return frequency_for_erb_rate(erb_rate(low_hz) +
-                                fraction * (erb_rate(high_hz) - erb_rate(low_hz)));
-}
-
-double x_for_frequency(double frequency_hz, double low_hz, double high_hz,
-                       const QRectF& plot) {
-  const auto fraction = (erb_rate(frequency_hz) - erb_rate(low_hz)) /
-                        (erb_rate(high_hz) - erb_rate(low_hz));
-  return plot.left() + fraction * plot.width();
-}
-
-double frequency_for_x(double x, double low_hz, double high_hz, const QRectF& plot) {
-  return frequency_for_fraction((x - plot.left()) / plot.width(), low_hz, high_hz);
+double frequency_for_x(double x, double sample_rate_hz, const QRectF& plot) {
+  return trench::app::frequency_axis::hz((x - plot.left()) / plot.width(), sample_rate_hz);
 }
 
 double y_for_db(double db, double low_db, double high_db, const QRectF& plot) {
@@ -230,8 +217,7 @@ double ResponsePlotWidget::viewHz(double hz, double radius, bool zero) const {
 }
 
 double ResponsePlotWidget::authorHzForX(double x, const QRectF& plot) const {
-  const auto view_hz = frequency_for_x(x, frequencies_hz_.front(), frequencies_hz_.back(),
-                                       plot);
+  const auto view_hz = frequency_for_x(x, sample_rate_hz_, plot);
   return std::clamp(view_hz / viewRatio(), 20.0, trench::core::p2k::kRootHiHz);
 }
 
@@ -378,8 +364,6 @@ void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double h
   if (body_ == nullptr || plot.width() <= 0.0 || plot.height() <= 0.0) return;
 
   if (frequencies_hz_.empty()) return;
-  const auto axis_low_hz = frequencies_hz_.front();
-  const auto axis_high_hz = frequencies_hz_.back();
   const auto cascade = viewCascade();
   const auto bins =
       std::max(kTraceMinimumBins, static_cast<int>(std::lround(plot.width())));
@@ -399,7 +383,8 @@ void ResponsePlotWidget::ensureTrace(const QRectF& plot, double low_db, double h
       const auto index = bin * kTraceOversample + step;
       const auto fraction =
           static_cast<double>(index) / static_cast<double>(points - 1);
-      const auto frequency_hz = frequency_for_fraction(fraction, axis_low_hz, axis_high_hz);
+      const auto frequency_hz =
+          trench::app::frequency_axis::hz(fraction, sample_rate_hz_);
       const auto omega = 2.0 * std::numbers::pi * frequency_hz / sample_rate_hz_;
       const auto cw = static_cast<float>(std::cos(omega));
       const auto sw = static_cast<float>(std::sin(omega));
@@ -553,8 +538,7 @@ double ResponsePlotWidget::dbForY(double y) const {
 double ResponsePlotWidget::xForFrequency(double frequency_hz) const {
   const auto plot = plotRect();
   if (frequencies_hz_.empty() || plot.width() <= 0.0) return 0.0;
-  return x_for_frequency(frequency_hz, frequencies_hz_.front(), frequencies_hz_.back(),
-                         plot);
+  return x_for_frequency(frequency_hz, sample_rate_hz_, plot);
 }
 
 std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
@@ -562,8 +546,8 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
   if (body_ == nullptr || !at_corner_ || frequencies_hz_.empty()) return out;
   const auto plot = plotRect();
   if (plot.width() <= 0.0 || plot.height() <= 0.0) return out;
-  const auto low_hz = frequencies_hz_.front();
-  const auto high_hz = frequencies_hz_.back();
+  const auto low_hz = trench::app::frequency_axis::low_hz(sample_rate_hz_);
+  const auto high_hz = trench::app::frequency_axis::high_hz(sample_rate_hz_);
 
   for (const auto lane : {Lane::kPole, Lane::kZero}) {
     for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
@@ -595,7 +579,7 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
       if (lane == Lane::kPole) {
         for (const auto& [owner, curve] : primitives_) {
           if (owner != section || curve.empty()) continue;
-          const auto position = std::log(hz / low_hz) / std::log(high_hz / low_hz) *
+          const auto position = trench::app::frequency_axis::fraction(hz, sample_rate_hz_) *
                                 static_cast<double>(curve.size() - 1);
           const auto index = std::clamp<std::size_t>(
               static_cast<std::size_t>(std::lround(position)), 0, curve.size() - 1);
@@ -604,7 +588,7 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
         }
       }
       token.position = QPointF{
-          std::clamp(x_for_frequency(std::clamp(hz, low_hz, high_hz), low_hz, high_hz, plot),
+          std::clamp(x_for_frequency(std::clamp(hz, low_hz, high_hz), sample_rate_hz_, plot),
                      plot.left() + kTokenRadiusPx, plot.right() - kTokenRadiusPx),
           y};
       token.radius = lane == Lane::kPole ? kTokenRadiusPx * (lit ? 0.8 : 0.6)
@@ -635,11 +619,11 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
 
   painter.setFont(QFont(QStringLiteral("Segoe UI"), 8));
   painter.setPen(QPen(kGrid, 1.0));
-  const auto low_hz = frequencies_hz_.front();
-  const auto high_hz = frequencies_hz_.back();
+  const auto low_hz = trench::app::frequency_axis::low_hz(sample_rate_hz_);
+  const auto high_hz = trench::app::frequency_axis::high_hz(sample_rate_hz_);
   for (const auto frequency : {100.0, 1000.0, 10'000.0}) {
     if (frequency < low_hz || frequency > high_hz) continue;
-    const auto x = x_for_frequency(frequency, low_hz, high_hz, plot);
+    const auto x = x_for_frequency(frequency, sample_rate_hz_, plot);
     painter.drawLine(QPointF{x, plot.top()}, QPointF{x, plot.bottom()});
     painter.setPen(kText);
     const auto label = frequency >= 1000.0
@@ -671,7 +655,7 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
                      QStringLiteral("±%1 dB").arg(residual_span_db_, 0, 'f', 0));
     QPainterPath residual_path;
     for (std::size_t index = 0; index < residual_db_.size(); ++index) {
-      const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
+      const auto x = x_for_frequency(frequencies_hz_[index], sample_rate_hz_, plot);
       const auto y = middle - residual_db_[index] / residual_span_db_ * band.height() * 0.5;
       if (index == 0) {
         residual_path.moveTo(x, y);
@@ -694,7 +678,7 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     if (curve.size() != frequencies_hz_.size()) return;
     QPainterPath path;
     for (std::size_t index = 0; index < curve.size(); ++index) {
-      const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
+      const auto x = x_for_frequency(frequencies_hz_[index], sample_rate_hz_, plot);
       const auto y = y_for_db(curve[index], low_db, high_db, plot);
       if (index == 0) {
         path.moveTo(x, y);
@@ -708,23 +692,24 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
   };
   const auto flashing = flash_section_ && flash_age_.isValid() &&
                         flash_age_.elapsed() <= kFlashHoldMs;
-  for (const auto& [section, curve] : primitives_) {
-    const auto pinned =
-        (freedom_mask_ & trench::core::p2k::pole_bit(section)) == 0U;
-    auto ink = pinned ? kExposed : kPrimitive;
-    if ((flashing && section == *flash_section_) ||
-        (highlight_section_ && section == *highlight_section_)) {
-      ink = ink.lighter(160);
+  if (highlight_section_) {
+    const auto highlighted = std::find_if(
+        primitives_.begin(), primitives_.end(), [this](const auto& primitive) {
+          return primitive.first == *highlight_section_;
+        });
+    if (highlighted != primitives_.end()) {
+      stroke_primitive(highlighted->second, kPrimitive.lighter(160),
+                       kPrimitiveWidthPx);
     }
-    stroke_primitive(curve, ink,
-                     pinned ? kExposedWidthPx : kPrimitiveWidthPx);
   }
-  stroke_primitive(exposed_db_, kExposed, kExposedWidthPx);
+  if (fit_running_ || flashing) {
+    stroke_primitive(exposed_db_, kExposed, kExposedWidthPx);
+  }
 
   if (aligned_target_db_.size() == frequencies_hz_.size()) {
     QPainterPath target_path;
     for (std::size_t index = 0; index < aligned_target_db_.size(); ++index) {
-      const auto x = x_for_frequency(frequencies_hz_[index], low_hz, high_hz, plot);
+      const auto x = x_for_frequency(frequencies_hz_[index], sample_rate_hz_, plot);
       const auto y = y_for_db(aligned_target_db_[index], low_db, high_db, plot);
       if (index == 0) {
         target_path.moveTo(x, y);
