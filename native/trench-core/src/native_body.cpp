@@ -1,5 +1,7 @@
 #include "trench/core/native_body.hpp"
 
+#include "trench/core/p2k.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -219,13 +221,29 @@ Section import_section(const PackedSection& words, double datum_hz) {
   return {pair(2, 3), pair(0, 1), !zero_at_dc};
 }
 
+Corner import_p2k_corner(const P2kCorner& words, double datum_hz) {
+  Corner out{};
+  for (std::size_t si = 0; si < kSections; ++si) {
+    out.sections[si] = import_section(words[si], datum_hz);
+  }
+  double gain_db = 0.0;
+  for (std::size_t si = 0; si < kSections; ++si) {
+    const auto b = section_words_to_biquad(words[si]);
+    const double k = dc_scale(design(out.sections[si], datum_hz));
+    gain_db += 20.0 * (std::log10(std::max(std::abs(b[0]), kPackedScaleFloor)) -
+                       std::log10(std::abs(k)));
+  }
+  out.gain_db = gain_db;
+  return out;
+}
+
 Body import_p2k(std::span<const std::uint8_t> body, double datum_hz) {
   const auto packed = PackedBody::from_legacy_bytes(body);
   Body out{};
   for (std::size_t ci = 0; ci < kCorners; ++ci) {
-    for (std::size_t si = 0; si < kSections; ++si) {
-      out.corners[ci].sections[si] = import_section(packed.words[ci][si], datum_hz);
-    }
+    P2kCorner words{};
+    std::copy_n(packed.words[ci].begin(), kSections, words.begin());
+    out.corners[ci] = import_p2k_corner(words, datum_hz);
   }
   for (std::size_t si = 0; si < kSections; ++si) {
     bool stabilised = true;
@@ -236,17 +254,75 @@ Body import_p2k(std::span<const std::uint8_t> body, double datum_hz) {
       corner.sections[si].dc_stabilised = stabilised;
     }
   }
-  for (std::size_t ci = 0; ci < kCorners; ++ci) {
-    double gain_db = 0.0;
-    for (std::size_t si = 0; si < kSections; ++si) {
-      const auto b = section_words_to_biquad(packed.words[ci][si]);
-      const double k = dc_scale(design(out.corners[ci].sections[si], datum_hz));
-      gain_db += 20.0 * (std::log10(std::max(std::abs(b[0]), kPackedScaleFloor)) -
-                         std::log10(std::abs(k)));
+  return out;
+}
+
+P2kCorner export_p2k_corner(const Corner& corner, double datum_hz) {
+  p2k::CornerWords roots{};
+  for (std::size_t si = 0; si < kSections; ++si) {
+    const auto quantise = [datum_hz](const Roots& value) {
+      if (const auto* real = std::get_if<RealRoots>(&value);
+          real != nullptr && !std::isfinite(real->a_hz) &&
+          !std::isfinite(real->b_hz)) {
+        return std::pair{kIdentitySection[0], kIdentitySection[1]};
+      }
+      const auto [p, q] = coefficients_of(value, datum_hz);
+      const auto& lattice = p2k::lattice_decoded();
+      const auto& words = p2k::lattice_words();
+      const auto radius_index = p2k::nearest_lattice_word(
+          encode_word(std::clamp(1.0 - q, 0.0, 1.0)));
+      const double radius_word = lattice[radius_index];
+      const auto magnitude_index = p2k::nearest_lattice_word(
+          encode_word(std::clamp((p + 2.0 - radius_word) / 4.0, 0.0, 1.0)));
+      return std::pair{words[magnitude_index], words[radius_index]};
+    };
+    auto [zero_mag, zero_radius] = quantise(corner.sections[si].zero);
+    const auto* real_zero = std::get_if<RealRoots>(&corner.sections[si].zero);
+    const bool zero_is_parked = real_zero != nullptr && !std::isfinite(real_zero->a_hz) &&
+                                !std::isfinite(real_zero->b_hz);
+    if (si == kSections - 1 && !zero_is_parked) {
+      zero_radius = p2k::kS6ZeroRsqWord;
     }
-    out.corners[ci].gain_db = gain_db;
+    const auto [pole_mag, pole_radius] = quantise(corner.sections[si].pole);
+    roots[si] = {zero_mag, zero_radius, pole_mag, pole_radius};
+  }
+  roots = p2k::enter(roots);
+
+  double dc_ratio = 1.0;
+  for (const auto& row : roots) {
+    auto [numerator, denominator] = p2k::dc_terms(row);
+    if (std::abs(numerator) < 1.0e-15) {
+      numerator = std::copysign(1.0e-15, numerator == 0.0 ? 1.0 : numerator);
+    }
+    dc_ratio *= denominator / numerator;
+  }
+  const double corner_gain = std::pow(10.0, corner.gain_db / 20.0);
+  const double stage_scale =
+      std::pow(std::abs(dc_ratio * corner_gain), 1.0 / static_cast<double>(kSections));
+  const auto scale_word = p2k::nearest_gain_word(stage_scale);
+
+  P2kCorner out{};
+  for (std::size_t si = 0; si < kSections; ++si) {
+    std::copy(roots[si].begin(), roots[si].end(), out[si].begin());
+    out[si][4] = scale_word;
   }
   return out;
+}
+
+PackedBody export_p2k_body(const Body& body, double datum_hz) {
+  PackedBody out{};
+  for (auto& corner : out.words) corner.fill(kIdentitySection);
+  for (std::size_t ci = 0; ci < kCorners; ++ci) {
+    const auto words = export_p2k_corner(body.corners[ci], datum_hz);
+    std::copy(words.begin(), words.end(), out.words[ci].begin());
+    std::copy(words.begin(), words.end(), out.words[ci + kLegacyCornerCount].begin());
+  }
+  return out;
+}
+
+std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(const Body& body,
+                                                       double datum_hz) {
+  return export_p2k_body(body, datum_hz).legacy_bytes();
 }
 
 }  // namespace trench::core::native

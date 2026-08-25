@@ -1,6 +1,6 @@
 #pragma once
 
-#include "trench/core/packed_body.hpp"
+#include "trench/core/native_body.hpp"
 
 #include <QWidget>
 
@@ -25,7 +25,7 @@ class ArmadilloView final : public QWidget {
 
   explicit ArmadilloView(QWidget* parent = nullptr);
 
-  void setBody(const trench::core::PackedBody* body, double sample_rate_hz);
+  void setBody(const trench::core::native::Body* body, double sample_rate_hz);
   void setCorner(std::size_t corner);
   void setSelected(std::optional<std::size_t> section, bool zero);
   void refresh();
@@ -57,7 +57,7 @@ class ArmadilloView final : public QWidget {
   [[nodiscard]] std::optional<std::size_t> hitMarker(const QPointF& at) const;
   void rebuildMarkers();
 
-  const trench::core::PackedBody* body_{};
+  const trench::core::native::Body* body_{};
   double sample_rate_hz_{44100.0};
   std::size_t corner_{};
   std::vector<Marker> markers_;

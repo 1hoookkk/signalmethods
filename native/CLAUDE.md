@@ -37,21 +37,27 @@ is proved. Do not add new shipping behavior there.
 
 - Preserve semantics. Reimplement mechanics.
 - Keep domain, DSP, fitting, analysis, and file formats independent of Qt.
-- The native body is 8 corners × 7 ordered 2P2Z sections × 5 packed `u16`
-  words.
-- A section is pole geometry, zero geometry, and scale. It may contain
-  conjugate, real-axis, or degenerate root pairs.
+- `native::Body` is four corners × six ordered sections. A section owns float
+  pole and zero roots (conjugate F/ΔF or imported real-axis pairs) plus its DC
+  stabilisation flag; level is one gain per corner.
+- `BodyDocument` owns `native::Body`. Packed words may cross that boundary only
+  through explicitly named P2K import/export adapters.
 - Section index is correspondence. Never sort, renumber, or pair by frequency,
   strength, or discovery order.
-- Keep legacy 4-corner × 6-section bodies as a separate container path.
 - P2K is exactly that 240-byte, 4-corner × 6-stage container at a 44,100 Hz
-  datum. It has no Z interpolation leg.
-- The 8-corner × 7-section native extension is not a Morpheus container and is
-  not evidence of device parity. Morpheus uses a distinct packed bitstream and
-  must not share a container path with P2K.
-- Interpolate packed words in M, then Q, then Z. Decode after interpolation.
-- Compare the complete serial cascade. Section gains multiply.
-- Preserve exact bytes wherever the current implementation preserves them.
+  datum. Import it at load and export it only as the legacy `.body240` format.
+- `PackedBody` (8 corners × 7 packed sections) is a compatibility container,
+  not the native authoring model and not evidence of Morpheus device parity.
+  Morpheus uses a distinct packed bitstream and must not share a container path
+  with P2K.
+- Preserve the packed interpolation engine and its parity tests as the oracle
+  until all 33 imports null through the app's native path. Retire nothing before
+  that gate.
+- Native interior motion interpolates encoded roots (log F and log(1−R)) and
+  decodes after interpolation.
+- Compare the complete serial cascade. Each section enforces the DC law; level
+  is the corner gain.
+- Preserve exact P2K bytes wherever the explicit adapters can represent them.
 
 ### Analysis and fitting
 

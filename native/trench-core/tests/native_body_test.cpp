@@ -129,6 +129,32 @@ TEST(NativeBody, EveryFactoryCornerNullsAgainstItsDecodedResponse) {
   EXPECT_LT(worst_level, 1e-4) << worst_level_at;
 }
 
+TEST(NativeBody, P2kAdaptersPreserveEveryFactoryRootWord) {
+  for (const auto& [name, bytes] : engine_bank()) {
+    const auto original = trench::core::PackedBody::from_legacy_bytes(bytes);
+    const auto exported =
+        trench::core::PackedBody::from_legacy_bytes(nb::export_p2k(nb::import_p2k(bytes)));
+    for (std::size_t ci = 0; ci < nb::kCorners; ++ci) {
+      for (std::size_t si = 0; si < nb::kSections; ++si) {
+        for (std::size_t wi = 0; wi < 4; ++wi) {
+          EXPECT_EQ(exported.words[ci][si][wi], original.words[ci][si][wi])
+              << name << " corner " << ci << " section " << si << " word " << wi;
+        }
+      }
+    }
+  }
+}
+
+TEST(NativeBody, P2kAdaptersPreserveAnEmptyBody) {
+  trench::core::PackedBody packed{};
+  for (auto& corner : packed.words) {
+    corner.fill(trench::core::kIdentitySection);
+  }
+
+  const auto native = nb::import_p2k(packed.legacy_bytes());
+  EXPECT_EQ(nb::export_p2k(native), packed.legacy_bytes());
+}
+
 TEST(NativeBody, TheCornersOfTheBlendAreTheCorners) {
   const auto body = nb::import_p2k(hedz());
   const double coords[4][2] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};

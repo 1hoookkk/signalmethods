@@ -718,8 +718,7 @@ class MainWindowTest final : public QObject {
     QTest::qWait(20);
     auto* plot = window.responsePlot();
 
-    const auto body = trench::core::PackedBody::from_legacy_bytes(read_fixture(fixture_path()));
-    const auto cascade = body.interpolate_biquads(0.0F, 0.0F, 0.0F);
+    const auto cascade = window.document()->viewCascade();
     std::vector<double> cumulative(plot->responsePointCount(), 0.0);
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
       double expected = -1.0e9;
@@ -1047,9 +1046,9 @@ class MainWindowTest final : public QObject {
 
   void anIdentityCornerSeedsFromItsFittedNeighbourFirst() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    BodyDocument::CornerSnapshot identity{};
+    BodyDocument::P2kCorner identity{};
     identity.fill(trench::core::kIdentitySection);
-    window.document()->applyCorner(3, identity);
+    window.document()->applyP2kCorner(3, identity);
     window.setCorner(3);
     QVERIFY(window.document()->seedIsInherited());
     const auto seed = window.document()->seedWords();
@@ -1064,9 +1063,9 @@ class MainWindowTest final : public QObject {
 
   void anIdentityCornerSeedsItsFitFromCornerZero() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
-    BodyDocument::CornerSnapshot identity{};
+    BodyDocument::P2kCorner identity{};
     identity.fill(trench::core::kIdentitySection);
-    window.document()->applyCorner(1, identity);
+    window.document()->applyP2kCorner(1, identity);
     window.setCorner(1);
     const auto seed = window.document()->seedWords();
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
@@ -1175,7 +1174,7 @@ class MainWindowTest final : public QObject {
     const auto pole = p2k::words_from_root(500.0, 0.76);
     tilted[2] = pole.first;
     tilted[3] = pole.second;
-    document->applySection(5, tilted);
+    document->applyP2kSection(5, tilted);
     QVERIFY(p2k::within_envelope(p2k::Role::kTilt, window.body().words[0][5],
                                  trench::core::kP2kDatumHz));
     document->setIntent(5, p2k::Role::kTilt);
@@ -1434,7 +1433,7 @@ class MainWindowTest final : public QObject {
     QVERIFY(!plot->tokens().empty());
   }
 
-  void transposeKeepsTheViewedCascadeAtUnityDc() {
+  void transposePreservesTheCornersSingleLevelGainAtDc() {
     MainWindow window(std::filesystem::path{}, trench::core::kP2kDatumHz);
     window.applyVowel(QStringLiteral("REZ dead_ringer c1"));
     const auto bytes = window.body().native_bytes();
@@ -1442,19 +1441,29 @@ class MainWindowTest final : public QObject {
       window.document()->setTranspose(semitones);
       const auto dc = trench::core::cascade_response_db(
           window.document()->viewCascade(), 0.0, trench::core::kP2kDatumHz);
-      QVERIFY2(std::abs(dc) < 1.0e-9,
-               qPrintable(QStringLiteral("%1 st: %2 dB").arg(semitones).arg(dc)));
+      const auto view = window.document()->view();
+      const auto gain = trench::core::native::blend_gain_db(
+          window.document()->body(), view.morph, view.q);
+      QVERIFY2(std::abs(dc - gain) < 1.0e-9,
+               qPrintable(QStringLiteral("%1 st: %2 dB vs %3 dB")
+                              .arg(semitones)
+                              .arg(dc)
+                              .arg(gain)));
       QCOMPARE(window.body().native_bytes(), bytes);
     }
   }
 
-  void interiorViewKeepsTheViewedCascadeAtUnityDc() {
+  void interiorViewUsesOnlyTheInterpolatedCornerGainAtDc() {
     MainWindow window(fixture_path(), trench::core::kP2kDatumHz);
     const auto bytes = window.body().native_bytes();
     window.document()->setView(0.37F, 0.62F);
     const auto dc = trench::core::cascade_response_db(
         window.document()->viewCascade(), 0.0, trench::core::kP2kDatumHz);
-    QVERIFY2(std::abs(dc) < 1.0e-9, qPrintable(QString::number(dc)));
+    const auto view = window.document()->view();
+    const auto gain = trench::core::native::blend_gain_db(
+        window.document()->body(), view.morph, view.q);
+    QVERIFY2(std::abs(dc - gain) < 1.0e-9,
+             qPrintable(QStringLiteral("%1 dB vs %2 dB").arg(dc).arg(gain)));
     QCOMPARE(window.body().native_bytes(), bytes);
     QCOMPARE(window.undoStack()->count(), 0);
   }

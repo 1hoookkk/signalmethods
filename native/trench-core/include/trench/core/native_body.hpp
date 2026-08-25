@@ -56,6 +56,7 @@ struct Coefficients {
 };
 
 using Design = std::array<Coefficients, kSections>;
+using P2kCorner = std::array<PackedSection, kSections>;
 
 Roots roots_from_coefficients(double p, double q, double sample_rate_hz);
 std::pair<double, double> coefficients_of(const Roots& roots, double sample_rate_hz);
@@ -73,6 +74,11 @@ bool pole_is_conjugate(const Coefficients& c);
 bool pole_is_marginal(const Coefficients& c);
 
 Section import_section(const PackedSection& words, double datum_hz);
+Corner import_p2k_corner(const P2kCorner& words, double datum_hz = kP2kDatumHz);
 Body import_p2k(std::span<const std::uint8_t> body, double datum_hz = kP2kDatumHz);
+P2kCorner export_p2k_corner(const Corner& corner, double datum_hz = kP2kDatumHz);
+PackedBody export_p2k_body(const Body& body, double datum_hz = kP2kDatumHz);
+std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(
+    const Body& body, double datum_hz = kP2kDatumHz);
 
 }  // namespace trench::core::native

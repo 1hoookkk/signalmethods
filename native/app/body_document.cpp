@@ -15,12 +15,6 @@
 
 namespace {
 
-void write_section(trench::core::PackedBody& body, std::size_t corner,
-                   std::size_t section, const trench::core::PackedSection& words) {
-  body.words[corner][section] = words;
-  body.words[corner + trench::core::kLegacyCornerCount][section] = words;
-}
-
 class CornerEditCommand final : public QUndoCommand {
  public:
   CornerEditCommand(BodyDocument* document, std::size_t corner,
@@ -72,7 +66,7 @@ class IntentEditCommand final : public QUndoCommand {
 
 }  // namespace
 
-BodyDocument::BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
+BodyDocument::BodyDocument(trench::core::native::Body body, double sample_rate_hz,
                            QObject* parent)
     : QObject(parent),
       body_(std::move(body)),
@@ -81,7 +75,15 @@ BodyDocument::BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
       grid_(trench::core::p2k::make_grid(space_)),
       undo_stack_(this) {}
 
-const trench::core::PackedBody& BodyDocument::body() const noexcept { return body_; }
+const trench::core::native::Body& BodyDocument::body() const noexcept { return body_; }
+
+trench::core::PackedBody BodyDocument::exportP2kBody() const {
+  return trench::core::native::export_p2k_body(body_);
+}
+
+std::array<std::uint8_t, trench::core::kLegacyBodyBytes> BodyDocument::exportP2k() const {
+  return trench::core::native::export_p2k(body_);
+}
 
 std::size_t BodyDocument::corner() const noexcept { return corner_; }
 
@@ -113,23 +115,21 @@ void BodyDocument::toggleLane(std::size_t section, bool pole) {
   emit freedomMaskChanged(freedom_mask_);
 }
 
-void BodyDocument::applySection(std::size_t section,
-                                const trench::core::PackedSection& words) {
-  applySection(corner_, section, words);
+void BodyDocument::applyP2kSection(std::size_t section,
+                                   const trench::core::PackedSection& words) {
+  if (section >= trench::core::native::kSections) return;
+  auto rows = p2kCornerSnapshot();
+  rows[section] = words;
+  applyP2kCorner(corner_, rows);
 }
 
-void BodyDocument::applySection(std::size_t corner, std::size_t section,
-                                const trench::core::PackedSection& words) {
-  write_section(body_, corner, section, words);
-  emit bodyChanged();
-}
-
-void BodyDocument::editSection(std::size_t section,
-                               const trench::core::PackedSection& words) {
-  auto rows = cornerSnapshot();
+void BodyDocument::editP2kSection(std::size_t section,
+                                  const trench::core::PackedSection& words) {
+  if (section >= trench::core::native::kSections) return;
+  auto rows = p2kCornerSnapshot();
   rows[section] = words;
   trench::core::p2k::write_dc_unity_scales(rows);
-  applyCorner(corner_, rows);
+  applyP2kCorner(corner_, rows);
 }
 
 void BodyDocument::commitGesture(const CornerSnapshot& before) {
@@ -225,33 +225,25 @@ double BodyDocument::effectiveSemitones(float morph, float q) const {
 }
 
 trench::core::Cascade BodyDocument::viewCascade() const {
-  const auto cascade = body_.interpolate_biquads(view_.morph, view_.q, 0.0F);
+  const auto gain_db = trench::core::native::blend_gain_db(body_, view_.morph, view_.q);
+  const auto cascade = trench::core::native::cascade(
+      trench::core::native::blend(body_, view_.morph, view_.q, sample_rate_hz_), gain_db);
   if (view_.semitones == 0.0 && atCorner()) return cascade;
-  return trench::core::unity_dc(trench::core::transpose_cascade(
+  auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
       cascade, trench::core::ratio_of_semitones(view_.semitones), sample_rate_hz_));
+  const double gain = std::pow(10.0, gain_db / 20.0);
+  for (std::size_t wi = 0; wi < 3; ++wi) transposed[0][wi] *= gain;
+  return transposed;
 }
 
 std::vector<double> BodyDocument::viewResponseDb() const {
-  if (view_.semitones != 0.0) {
-    const auto cascade = viewCascade();
-    std::vector<double> out;
-    out.reserve(grid_.hz.size());
-    for (const auto hz : grid_.hz) {
-      out.push_back(trench::core::cascade_response_db(cascade, hz, sample_rate_hz_));
-    }
-    return out;
+  const auto cascade = viewCascade();
+  std::vector<double> out;
+  out.reserve(grid_.hz.size());
+  for (const auto hz : grid_.hz) {
+    out.push_back(trench::core::cascade_response_db(cascade, hz, sample_rate_hz_));
   }
-  if (atCorner()) {
-    trench::core::p2k::StoredCorner words{};
-    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-      for (std::size_t word = 0; word < trench::core::p2k::kWordCount; ++word) {
-        words[section][word] = body_.words[corner_][section][word];
-      }
-    }
-    return trench::core::p2k::corner_response_db(words, grid_);
-  }
-  const auto bytes = body_.legacy_bytes();
-  return trench::core::p2k::morph_response_db(bytes, view_.morph, view_.q, grid_);
+  return out;
 }
 
 double BodyDocument::viewPowerDb() const {
@@ -274,25 +266,26 @@ double BodyDocument::targetScoreDb() const {
 }
 
 BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot() const {
-  CornerSnapshot out{};
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    out[section] = body_.words[corner_][section];
-  }
-  return out;
+  return body_.corners[corner_];
 }
 
 BodyDocument::CornerSnapshot BodyDocument::cornerSnapshot(std::size_t corner) const {
-  CornerSnapshot out{};
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    out[section] = body_.words[corner][section];
-  }
-  return out;
+  return body_.corners[corner];
+}
+
+BodyDocument::P2kCorner BodyDocument::p2kCornerSnapshot() const {
+  return p2kCornerSnapshot(corner_);
+}
+
+BodyDocument::P2kCorner BodyDocument::p2kCornerSnapshot(std::size_t corner) const {
+  return trench::core::native::export_p2k_corner(body_.corners[corner]);
 }
 
 std::size_t BodyDocument::seedSource() const {
   const auto is_identity = [this](std::size_t corner) {
-    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-      if (body_.words[corner][section] != trench::core::kIdentitySection) return false;
+    const auto rows = p2kCornerSnapshot(corner);
+    for (const auto& row : rows) {
+      if (row != trench::core::kIdentitySection) return false;
     }
     return true;
   };
@@ -308,9 +301,10 @@ bool BodyDocument::seedIsInherited() const { return seedSource() != corner_; }
 trench::core::p2k::CornerWords BodyDocument::seedWords() const {
   const std::size_t source = seedSource();
   trench::core::p2k::CornerWords out{};
+  const auto rows = p2kCornerSnapshot(source);
   for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
     for (std::size_t word = 0; word < out[section].size(); ++word) {
-      out[section][word] = body_.words[source][section][word];
+      out[section][word] = rows[section][word];
     }
   }
   return out;
@@ -321,32 +315,43 @@ void BodyDocument::applyCorner(const CornerSnapshot& words) {
 }
 
 void BodyDocument::applyCorner(std::size_t corner, const CornerSnapshot& words) {
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    write_section(body_, corner, section, words[section]);
-  }
+  if (corner >= trench::core::native::kCorners) return;
+  body_.corners[corner] = words;
+  emit bodyChanged();
+}
+
+void BodyDocument::applyP2kCorner(const P2kCorner& words) {
+  applyP2kCorner(corner_, words);
+}
+
+void BodyDocument::applyP2kCorner(std::size_t corner, const P2kCorner& words) {
+  if (corner >= trench::core::native::kCorners) return;
+  body_.corners[corner] = trench::core::native::import_p2k_corner(words);
   emit bodyChanged();
 }
 
 void BodyDocument::applyFitStep(std::size_t corner,
                                 const trench::core::p2k::CornerWords& words) {
-  auto rows = cornerSnapshot(corner);
+  auto rows = p2kCornerSnapshot(corner);
   for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
     for (std::size_t word = 0; word < words[section].size(); ++word) {
       rows[section][word] = words[section][word];
     }
   }
   trench::core::p2k::write_dc_unity_scales(rows);
-  applyCorner(corner, rows);
+  applyP2kCorner(corner, rows);
 }
 
 void BodyDocument::applyCharacter(double amount) {
   for (std::size_t corner = 0; corner < 2; ++corner) {
-    CornerSnapshot narrowed{};
+    P2kCorner narrowed{};
+    const auto source = p2kCornerSnapshot(corner);
     for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
       narrowed[section] = trench::core::p2k::section_narrowed_toward_ceiling(
-          body_.words[corner][section], amount, sample_rate_hz_);
+          source[section], amount, sample_rate_hz_);
     }
-    applyCorner(corner + 2, narrowed);
+    trench::core::p2k::write_dc_unity_scales(narrowed);
+    applyP2kCorner(corner + 2, narrowed);
   }
 }
 
@@ -366,10 +371,7 @@ void BodyDocument::commitCharacter(const CornerSnapshot& before_low,
 }
 
 void BodyDocument::commitFit(std::size_t corner, const CornerSnapshot& before) {
-  CornerSnapshot after{};
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    after[section] = body_.words[corner][section];
-  }
+  const auto after = cornerSnapshot(corner);
   if (after == before) return;
   undo_stack_.push(new CornerEditCommand(this, corner, before, after));
 }

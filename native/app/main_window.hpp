@@ -47,7 +47,7 @@ class MainWindow final : public QMainWindow {
   [[nodiscard]] const std::filesystem::path& bodyPath() const noexcept;
   [[nodiscard]] BodyDocument* document() const noexcept;
   [[nodiscard]] FitController* fitController() const noexcept;
-  [[nodiscard]] const trench::core::PackedBody& body() const noexcept;
+  [[nodiscard]] trench::core::PackedBody body() const;
   [[nodiscard]] QUndoStack* undoStack() noexcept;
   [[nodiscard]] std::uint32_t freedomMask() const noexcept;
   [[nodiscard]] bool fitRunning() const noexcept;
@@ -100,7 +100,7 @@ class MainWindow final : public QMainWindow {
   void rebuildPostureGroups();
   void keepPosture();
   [[nodiscard]] std::vector<UserPostures::Pole> currentPolePosture() const;
-  [[nodiscard]] std::optional<BodyDocument::CornerSnapshot> cornerWithPosture(
+  [[nodiscard]] std::optional<BodyDocument::P2kCorner> cornerWithPosture(
       const QString& symbol) const;
   [[nodiscard]] bool posturePolesHeld(const QString& symbol) const;
   void endRun();

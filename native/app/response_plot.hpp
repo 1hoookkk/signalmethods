@@ -1,7 +1,7 @@
 #pragma once
 
 #include "trench/core/p2k.hpp"
-#include "trench/core/packed_body.hpp"
+#include "trench/core/native_body.hpp"
 #include "trench/core/section_param.hpp"
 
 #include "trench/core/formants.hpp"
@@ -44,7 +44,7 @@ class ResponsePlotWidget final : public QWidget {
 
   explicit ResponsePlotWidget(QWidget* parent = nullptr);
 
-  void setBody(const trench::core::PackedBody* body, double sample_rate_hz,
+  void setBody(const trench::core::native::Body* body, double sample_rate_hz,
                std::string source_label);
   void setCorner(std::size_t corner);
   void setSpace(const trench::core::p2k::PerceptualSpace& space);
@@ -107,7 +107,7 @@ class ResponsePlotWidget final : public QWidget {
   void placeOverlayPicker();
   void paintOverlay(QPainter& painter, const QRectF& plot) const;
 
-  const trench::core::PackedBody* body_{};
+  const trench::core::native::Body* body_{};
   std::size_t corner_{};
   float view_morph_{0.0F};
   float view_q_{0.0F};

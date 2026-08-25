@@ -1,7 +1,7 @@
 #pragma once
 
+#include "trench/core/native_body.hpp"
 #include "trench/core/p2k.hpp"
-#include "trench/core/packed_body.hpp"
 #include "trench/core/role.hpp"
 
 #include <QObject>
@@ -14,11 +14,11 @@
 #include <vector>
 
 class BodyDocument final : public QObject {
-  Q_OBJECT
+ Q_OBJECT
 
  public:
-  using CornerSnapshot =
-      std::array<trench::core::PackedSection, trench::core::kLegacySectionCount>;
+  using CornerSnapshot = trench::core::native::Corner;
+  using P2kCorner = trench::core::native::P2kCorner;
 
   struct View {
     float morph{0};
@@ -26,10 +26,14 @@ class BodyDocument final : public QObject {
     double semitones{0.0};
   };
 
-  BodyDocument(trench::core::PackedBody body, double sample_rate_hz,
+  BodyDocument(trench::core::native::Body body, double sample_rate_hz,
                QObject* parent = nullptr);
 
-  [[nodiscard]] const trench::core::PackedBody& body() const noexcept;
+  [[nodiscard]] const trench::core::native::Body& body() const noexcept;
+  [[nodiscard]] trench::core::PackedBody exportP2kBody() const;
+  [[nodiscard]] std::array<std::uint8_t, trench::core::kLegacyBodyBytes> exportP2k() const;
+  [[nodiscard]] P2kCorner p2kCornerSnapshot() const;
+  [[nodiscard]] P2kCorner p2kCornerSnapshot(std::size_t corner) const;
   [[nodiscard]] std::size_t corner() const noexcept;
   [[nodiscard]] double sampleRateHz() const noexcept;
   [[nodiscard]] QUndoStack* undoStack() noexcept;
@@ -63,14 +67,14 @@ class BodyDocument final : public QObject {
   void applyIntent(std::size_t section, std::optional<trench::core::p2k::Role> role);
 
   void toggleLane(std::size_t section, bool pole);
-  void applySection(std::size_t section, const trench::core::PackedSection& words);
-  void applySection(std::size_t corner, std::size_t section,
-                    const trench::core::PackedSection& words);
-  void editSection(std::size_t section, const trench::core::PackedSection& words);
+  void applyP2kSection(std::size_t section, const trench::core::PackedSection& words);
+  void editP2kSection(std::size_t section, const trench::core::PackedSection& words);
   void commitGesture(const CornerSnapshot& before);
 
   void applyCorner(const CornerSnapshot& words);
   void applyCorner(std::size_t corner, const CornerSnapshot& words);
+  void applyP2kCorner(const P2kCorner& words);
+  void applyP2kCorner(std::size_t corner, const P2kCorner& words);
   void applyFitStep(std::size_t corner, const trench::core::p2k::CornerWords& words);
   void commitFit(std::size_t corner, const CornerSnapshot& before);
 
@@ -88,7 +92,7 @@ class BodyDocument final : public QObject {
  private:
   [[nodiscard]] std::size_t seedSource() const;
 
-  trench::core::PackedBody body_;
+  trench::core::native::Body body_;
   std::size_t corner_{};
   std::array<int, trench::core::kLegacyCornerCount> corner_semitones_{};
   [[nodiscard]] double effectiveSemitones(float morph, float q) const;

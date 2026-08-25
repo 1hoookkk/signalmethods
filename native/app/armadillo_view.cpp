@@ -1,7 +1,5 @@
 #include "armadillo_view.hpp"
 
-#include "trench/core/p2k.hpp"
-
 #include <QFont>
 #include <QFontMetricsF>
 #include <QMouseEvent>
@@ -9,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 #include <variant>
 
 namespace {
@@ -38,7 +37,8 @@ ArmadilloView::ArmadilloView(QWidget* parent) : QWidget(parent) {
   setMinimumHeight(120);
 }
 
-void ArmadilloView::setBody(const trench::core::PackedBody* body, double sample_rate_hz) {
+void ArmadilloView::setBody(const trench::core::native::Body* body,
+                            double sample_rate_hz) {
   body_ = body;
   sample_rate_hz_ = sample_rate_hz;
   refresh();
@@ -99,19 +99,29 @@ double ArmadilloView::radiusForY(double y) const {
 void ArmadilloView::rebuildMarkers() {
   markers_.clear();
   if (body_ == nullptr) return;
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    const auto geometry =
-        trench::core::geometry_from_words(body_->words[corner_][section], sample_rate_hz_);
-    const auto place = [this, section](const trench::core::RootPair& pair, bool zero) {
-      if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
+  for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+    const auto& authored = body_->corners[corner_].sections[section];
+    const auto place = [this, section](const trench::core::native::Roots& pair, bool zero) {
+      if (const auto* conjugate = std::get_if<trench::core::native::Resonant>(&pair)) {
+        const auto radius =
+            std::exp(-std::numbers::pi * conjugate->bw_hz / sample_rate_hz_);
         markers_.push_back({section, zero,
-                            QPointF{xForFrequency(conjugate->hz), yForRadius(conjugate->radius)},
-                            conjugate->hz, conjugate->radius, false, false});
+                            QPointF{xForFrequency(conjugate->hz), yForRadius(radius)},
+                            conjugate->hz, radius, false, false});
         return true;
       }
-      if (const auto* real = std::get_if<trench::core::RealPair>(&pair)) {
-        const auto radius = std::max(std::abs(real->root_a), std::abs(real->root_b));
-        const auto positive = real->root_a + real->root_b >= 0.0;
+      if (const auto* real = std::get_if<trench::core::native::RealRoots>(&pair)) {
+        if (!std::isfinite(real->a_hz) && !std::isfinite(real->b_hz)) return false;
+        const auto root = [this](double decay_hz) {
+          if (!std::isfinite(decay_hz)) return 0.0;
+          const double magnitude = std::exp(-2.0 * std::numbers::pi *
+                                            std::abs(decay_hz) / sample_rate_hz_);
+          return std::signbit(decay_hz) ? -magnitude : magnitude;
+        };
+        const auto a = root(real->a_hz);
+        const auto b = root(real->b_hz);
+        const auto radius = std::max(std::abs(a), std::abs(b));
+        const auto positive = a + b >= 0.0;
         const auto hz = positive ? sample_rate_hz_ / 2048.0 : sample_rate_hz_ / 2.0;
         markers_.push_back({section, zero, QPointF{xForFrequency(hz), yForRadius(radius)},
                             hz, radius, true, false});
@@ -119,8 +129,8 @@ void ArmadilloView::rebuildMarkers() {
       }
       return false;
     };
-    const auto pole_live = place(geometry.pole, false);
-    if (!place(geometry.zero, true) && pole_live) {
+    const auto pole_live = place(authored.pole, false);
+    if (!place(authored.zero, true) && pole_live) {
       const auto area = plane();
       markers_.push_back({section, true,
                           QPointF{area.right() - 8.0,

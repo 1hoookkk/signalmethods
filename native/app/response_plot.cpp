@@ -128,17 +128,30 @@ std::vector<double> primitive_db(const trench::core::ConjugatePair& pair, bool p
   return out;
 }
 
-bool root_placement(const trench::core::RootPair& pair, double low_hz, double high_hz,
-                    double& hz, double& radius) {
-  if (const auto* conjugate = std::get_if<trench::core::ConjugatePair>(&pair)) {
+bool root_placement(const trench::core::native::Roots& pair, double sample_rate_hz,
+                    double low_hz, double high_hz, double& hz, double& radius) {
+  if (const auto* conjugate = std::get_if<trench::core::native::Resonant>(&pair)) {
     hz = conjugate->hz;
-    radius = conjugate->radius;
+    radius = std::exp(-std::numbers::pi * conjugate->bw_hz / sample_rate_hz);
     return true;
   }
-  if (const auto* real = std::get_if<trench::core::RealPair>(&pair)) {
-    const auto centre = (real->root_a + real->root_b) * 0.5;
+  if (const auto* real = std::get_if<trench::core::native::RealRoots>(&pair)) {
+    const auto root = [sample_rate_hz](double decay_hz) {
+      if (!std::isfinite(decay_hz)) return 0.0;
+      const double magnitude =
+          std::exp(-2.0 * std::numbers::pi * std::abs(decay_hz) / sample_rate_hz);
+      return std::signbit(decay_hz) ? -magnitude : magnitude;
+    };
+    const auto a = root(real->a_hz);
+    const auto b = root(real->b_hz);
+    if (a == 0.0 && b == 0.0) {
+      hz = low_hz;
+      radius = 0.0;
+      return false;
+    }
+    const auto centre = (a + b) * 0.5;
     hz = centre >= 0.0 ? low_hz : high_hz;
-    radius = std::clamp(std::max(std::abs(real->root_a), std::abs(real->root_b)), 0.0, 1.0);
+    radius = std::clamp(std::max(std::abs(a), std::abs(b)), 0.0, 1.0);
     return false;
   }
   hz = low_hz;
@@ -146,13 +159,11 @@ bool root_placement(const trench::core::RootPair& pair, double low_hz, double hi
   return false;
 }
 
-trench::core::Cascade corner_cascade(const trench::core::PackedBody& body,
-                                     std::size_t corner) {
-  trench::core::Cascade out{};
-  for (std::size_t section = 0; section < trench::core::kSectionCount; ++section) {
-    out[section] = trench::core::section_words_to_biquad(body.words[corner][section]);
-  }
-  return out;
+trench::core::Cascade corner_cascade(const trench::core::native::Body& body,
+                                     std::size_t corner, double sample_rate_hz) {
+  return trench::core::native::cascade(
+      trench::core::native::design(body.corners[corner], sample_rate_hz),
+      body.corners[corner].gain_db);
 }
 
 }  // namespace
@@ -273,7 +284,7 @@ void ResponsePlotWidget::paintOverlay(QPainter& painter, const QRectF& plot) con
   painter.setBrush(Qt::NoBrush);
 }
 
-void ResponsePlotWidget::setBody(const trench::core::PackedBody* body,
+void ResponsePlotWidget::setBody(const trench::core::native::Body* body,
                                  double sample_rate_hz,
                                  std::string source_label) {
   body_ = body;
@@ -303,10 +314,19 @@ void ResponsePlotWidget::setView(float morph, float q, double semitones) {
 }
 
 trench::core::Cascade ResponsePlotWidget::viewCascade() const {
-  if (at_corner_ && view_semitones_ == 0.0) return corner_cascade(*body_, corner_);
-  return trench::core::unity_dc(trench::core::transpose_cascade(
-      body_->interpolate_biquads(view_morph_, view_q_, 0.0F),
+  const auto gain_db =
+      trench::core::native::blend_gain_db(*body_, view_morph_, view_q_);
+  if (at_corner_ && view_semitones_ == 0.0) {
+    return corner_cascade(*body_, corner_, sample_rate_hz_);
+  }
+  auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
+      trench::core::native::cascade(
+          trench::core::native::blend(*body_, view_morph_, view_q_, sample_rate_hz_),
+          gain_db),
       trench::core::ratio_of_semitones(view_semitones_), sample_rate_hz_));
+  const double gain = std::pow(10.0, gain_db / 20.0);
+  for (std::size_t wi = 0; wi < 3; ++wi) transposed[0][wi] *= gain;
+  return transposed;
 }
 
 double ResponsePlotWidget::viewRatio() const {
@@ -428,21 +448,22 @@ void ResponsePlotWidget::rebuildExposed() {
   exposed_db_.clear();
   primitives_.clear();
   if (body_ == nullptr || !at_corner_ || frequencies_hz_.empty()) return;
-  for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-    const auto geometry = trench::core::geometry_from_words(
-        body_->words[corner_][section], sample_rate_hz_);
-    const auto* pole = std::get_if<trench::core::ConjugatePair>(&geometry.pole);
+  for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+    const auto& authored = body_->corners[corner_].sections[section];
+    const auto* pole = std::get_if<trench::core::native::Resonant>(&authored.pole);
     if (pole == nullptr) continue;
-    auto viewed = *pole;
-    viewed.hz = viewHz(pole->hz, pole->radius, false);
+    trench::core::ConjugatePair viewed{
+        pole->hz, std::exp(-std::numbers::pi * pole->bw_hz / sample_rate_hz_)};
+    viewed.hz = viewHz(pole->hz, viewed.radius, false);
     auto curve = primitive_db(viewed, true, frequencies_hz_, sample_rate_hz_);
     if (section == selected_section_) {
       if (selected_lane_ == Lane::kPole) {
         exposed_db_ = curve;
       } else if (const auto* zero =
-                     std::get_if<trench::core::ConjugatePair>(&geometry.zero)) {
-        auto viewed_zero = *zero;
-        viewed_zero.hz = viewHz(zero->hz, zero->radius, true);
+                     std::get_if<trench::core::native::Resonant>(&authored.zero)) {
+        trench::core::ConjugatePair viewed_zero{
+            zero->hz, std::exp(-std::numbers::pi * zero->bw_hz / sample_rate_hz_)};
+        viewed_zero.hz = viewHz(zero->hz, viewed_zero.radius, true);
         exposed_db_ = primitive_db(viewed_zero, false, frequencies_hz_, sample_rate_hz_);
       }
     }
@@ -659,17 +680,17 @@ std::vector<ResponsePlotWidget::TokenInfo> ResponsePlotWidget::tokens() const {
   const auto high_hz = frequencies_hz_.back();
 
   for (const auto lane : {Lane::kPole, Lane::kZero}) {
-    for (std::size_t section = 0; section < trench::core::kLegacySectionCount; ++section) {
-      const auto geometry = trench::core::geometry_from_words(
-          body_->words[corner_][section], sample_rate_hz_);
-      if (!std::holds_alternative<trench::core::ConjugatePair>(geometry.pole)) continue;
-      const auto& pair = lane == Lane::kPole ? geometry.pole : geometry.zero;
+    for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+      const auto& authored = body_->corners[corner_].sections[section];
+      if (!std::holds_alternative<trench::core::native::Resonant>(authored.pole)) continue;
+      const auto& pair = lane == Lane::kPole ? authored.pole : authored.zero;
       double hz = low_hz;
       double radius = 0.0;
       auto zero_root = lane == Lane::kZero;
-      if (!root_placement(pair, low_hz, high_hz, hz, radius)) {
+      if (!root_placement(pair, sample_rate_hz_, low_hz, high_hz, hz, radius)) {
         if (lane != Lane::kZero ||
-            !root_placement(geometry.pole, low_hz, high_hz, hz, radius)) {
+            !root_placement(authored.pole, sample_rate_hz_, low_hz, high_hz, hz,
+                            radius)) {
           continue;
         }
         zero_root = false;
