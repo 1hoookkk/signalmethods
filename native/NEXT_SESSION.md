@@ -108,12 +108,16 @@ under `dev/e2e/` and is produced only by `-platform offscreen` tests.
   `AuditionRate.SameNativeBodyKeepsItsPitchAtTwoDeviceRates` proves the corrected
   44.1/48 kHz responses keep the same pitch and the stale 44.1 kHz cascade shifts
   by the rate ratio. Full serial headless CTest 118/118.
-- [ ] 7. The 33 imported bodies null against their decoded responses through the
-  app's native path. Only then may superseded packed parity tests retire.
+- [x] 7. All 33 imported bodies, four corners each, null against the packed
+  decoder through `MainWindow → BodyDocument → native::Body`: 132/132 below
+  −120 dB, worst −230.968 dB. Addressed report:
+  `dev/e2e/imported_body_nulls.csv`. Packed forensic parity remains intact.
+  Full serial headless CTest 118/118.
 - [ ] 8. Bring Tyson the proposed native save shape before writing it.
   `.body240` remains explicit legacy export.
-- [ ] Final full serial headless suite, screenshots, detune proof, null report,
-  and address-backed change report.
+- [ ] Final address-backed change report after Tyson decides the native save
+  shape. Current suite 118/118; screenshots, detune proof, and null report are
+  complete.
 
 ## Open Tyson decisions — surface, never guess
 

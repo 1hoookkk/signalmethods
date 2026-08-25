@@ -38,8 +38,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <complex>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <numbers>
 #include <variant>
 #include <optional>
@@ -167,6 +169,20 @@ std::uint32_t zero_only_mask() {
     mask |= trench::core::native::zero_bit(section);
   }
   return mask;
+}
+
+std::complex<double> cascade_response(const trench::core::Cascade& cascade,
+                                      double frequency_hz,
+                                      double sample_rate_hz) {
+  const double omega = 2.0 * std::numbers::pi * frequency_hz / sample_rate_hz;
+  const auto z1 = std::polar(1.0, -omega);
+  const auto z2 = z1 * z1;
+  std::complex<double> response{1.0, 0.0};
+  for (const auto& section : cascade) {
+    response *= (section[0] + section[1] * z1 + section[2] * z2) /
+                (1.0 + section[3] * z1 + section[4] * z2);
+  }
+  return response;
 }
 
 void double_click(QWidget* widget, const QPointF& position) {
@@ -577,6 +593,79 @@ class MainWindowTest final : public QObject {
     window.resize(1200, 700);
     QTest::qWait(20);
     QCOMPARE(window.centralWidget()->size(), window.contentsRect().size());
+  }
+
+  void allImportedBodiesNullThroughTheAppNativePath() {
+    const auto directory = std::filesystem::path(TRENCH_SOURCE_ROOT) / "ref/presets";
+    std::vector<std::filesystem::path> bodies;
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+      if (entry.is_regular_file() && entry.path().extension() == ".bin") {
+        bodies.push_back(entry.path());
+      }
+    }
+    std::sort(bodies.begin(), bodies.end());
+    QCOMPARE(bodies.size(), std::size_t{33});
+
+    const auto report_path = std::filesystem::path(TRENCH_SOURCE_ROOT) /
+                             "dev/e2e/imported_body_nulls.csv";
+    std::ofstream report(report_path, std::ios::trunc);
+    report << "body,corner,null_db,max_magnitude_db_error\n";
+    report << std::setprecision(12);
+
+    double worst_null_db = -std::numeric_limits<double>::infinity();
+    double worst_magnitude_db = 0.0;
+    QString worst_address;
+    const auto& grid = trench::core::p2k::grid();
+    for (const auto& path : bodies) {
+      const auto bytes = read_fixture(path);
+      const auto decoded = trench::core::PackedBody::from_legacy_bytes(bytes);
+      MainWindow window(path, trench::core::kP2kDatumHz);
+      for (std::size_t corner = 0; corner < trench::core::kLegacyCornerCount;
+           ++corner) {
+        window.setCorner(corner);
+        const auto native = window.document()->viewCascade();
+        const auto packed = decoded.interpolate_biquads(
+            (corner & 1U) != 0U ? 1.0F : 0.0F,
+            (corner & 2U) != 0U ? 1.0F : 0.0F, 0.0F);
+
+        double reference_peak = 0.0;
+        double residual_peak = 0.0;
+        double magnitude_db_error = 0.0;
+        for (const double hz : grid.hz) {
+          const auto reference = cascade_response(packed, hz,
+                                                   trench::core::kP2kDatumHz);
+          const auto candidate = cascade_response(native, hz,
+                                                   trench::core::kP2kDatumHz);
+          reference_peak = std::max(reference_peak, std::abs(reference));
+          residual_peak = std::max(residual_peak, std::abs(candidate - reference));
+          if (std::abs(reference) > 1.0e-15 && std::abs(candidate) > 1.0e-15) {
+            magnitude_db_error = std::max(
+                magnitude_db_error,
+                std::abs(20.0 * std::log10(std::abs(candidate) /
+                                           std::abs(reference))));
+          }
+        }
+        const double null_db = residual_peak == 0.0
+                                   ? -std::numeric_limits<double>::infinity()
+                                   : 20.0 * std::log10(residual_peak / reference_peak);
+        report << path.filename().string() << ',' << corner + 1 << ',' << null_db
+               << ',' << magnitude_db_error << '\n';
+        if (null_db > worst_null_db || magnitude_db_error > worst_magnitude_db) {
+          if (null_db > worst_null_db) worst_null_db = null_db;
+          if (magnitude_db_error > worst_magnitude_db) {
+            worst_magnitude_db = magnitude_db_error;
+          }
+          worst_address = QStringLiteral("%1 C%2 null %3 dB magnitude %4 dB")
+                              .arg(QString::fromStdString(path.filename().string()))
+                              .arg(corner + 1)
+                              .arg(null_db, 0, 'g', 12)
+                              .arg(magnitude_db_error, 0, 'g', 12);
+        }
+      }
+    }
+    report.close();
+    QVERIFY2(worst_null_db < -120.0, qPrintable(worst_address));
+    QVERIFY2(worst_magnitude_db < 1.0e-9, qPrintable(worst_address));
   }
 
   void dragKeepsFloatRootsAndQuantisesOnlyAtExport() {
