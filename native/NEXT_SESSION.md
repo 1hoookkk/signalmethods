@@ -103,9 +103,11 @@ under `dev/e2e/` and is produced only by `-platform offscreen` tests.
 
 ## Remaining gates, in order
 
-- [ ] 6. Audition redesigns the cascade from roots at the audio device's ACTUAL
-  rate; display remains at the requested rate. Prove the same body at two device
-  rates has the same pitch.
+- [x] 6. Audition owns a native body/view snapshot and redesigns it when the
+  audio device reports its ACTUAL rate; display remains at the requested rate.
+  `AuditionRate.SameNativeBodyKeepsItsPitchAtTwoDeviceRates` proves the corrected
+  44.1/48 kHz responses keep the same pitch and the stale 44.1 kHz cascade shifts
+  by the rate ratio. Full serial headless CTest 118/118.
 - [ ] 7. The 33 imported bodies null against their decoded responses through the
   app's native path. Only then may superseded packed parity tests retire.
 - [ ] 8. Bring Tyson the proposed native save shape before writing it.

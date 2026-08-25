@@ -1,4 +1,5 @@
 #include "trench/audio/audio_boundary.hpp"
+#include "trench/audio/audition.hpp"
 
 #include <gtest/gtest.h>
 
@@ -6,10 +7,41 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <numbers>
 #include <vector>
 
 namespace {
+
+double response_peak_hz(const trench::core::Cascade& cascade,
+                        double sample_rate_hz, double low_hz,
+                        double high_hz) {
+  double best_hz = low_hz;
+  double best_db = -std::numeric_limits<double>::infinity();
+  for (double hz = low_hz; hz <= high_hz; hz += 0.25) {
+    const double db = trench::core::cascade_response_db(cascade, hz,
+                                                        sample_rate_hz);
+    if (db > best_db) {
+      best_db = db;
+      best_hz = hz;
+    }
+  }
+  return best_hz;
+}
+
+trench::audio::AuditionView pitched_view() {
+  namespace native = trench::core::native;
+  const native::RealRoots parked{std::numeric_limits<double>::infinity(),
+                                 std::numeric_limits<double>::infinity()};
+  native::Body body;
+  for (auto& corner : body.corners) {
+    for (auto& section : corner.sections) {
+      section = {parked, parked, true};
+    }
+    corner.sections[0].pole = native::Resonant{1700.0, 70.0};
+  }
+  return {body, 0.0F, 0.0F, 0.0};
+}
 
 void put32(std::ofstream& out, std::uint32_t v) { out.write(reinterpret_cast<const char*>(&v), 4); }
 void put16(std::ofstream& out, std::uint16_t v) { out.write(reinterpret_cast<const char*>(&v), 2); }
@@ -67,4 +99,18 @@ TEST(AudioBoundary, DecodeMonoAveragesChannelsAndReportsTheRate) {
 
 TEST(AudioBoundary, DecodeMonoRefusesAMissingFile) {
   EXPECT_FALSE(trench::audio::decode_mono(std::filesystem::temp_directory_path() / "no_such_file.wav").has_value());
+}
+
+TEST(AuditionRate, SameNativeBodyKeepsItsPitchAtTwoDeviceRates) {
+  const auto view = pitched_view();
+  const auto at_44100 = trench::audio::design_audition(view, 44100.0);
+  const auto at_48000 = trench::audio::design_audition(view, 48000.0);
+
+  const double pitch_44100 = response_peak_hz(at_44100, 44100.0, 1200.0, 2300.0);
+  const double pitch_48000 = response_peak_hz(at_48000, 48000.0, 1200.0, 2300.0);
+  EXPECT_NEAR(pitch_48000, pitch_44100, 1.0);
+
+  const double stale_pitch = response_peak_hz(at_44100, 48000.0, 1200.0, 2300.0);
+  EXPECT_NEAR(stale_pitch, pitch_44100 * 48000.0 / 44100.0, 2.0);
+  EXPECT_GT(stale_pitch - pitch_48000, 100.0);
 }

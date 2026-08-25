@@ -6,14 +6,39 @@
 #include <atomic>
 #include <cmath>
 #include <mutex>
+#include <utility>
 
 #include "trench/core/audition.hpp"
+#include "trench/core/transpose.hpp"
 
 namespace trench::audio {
+
+trench::core::Cascade design_audition(const AuditionView& view,
+                                      double device_sample_rate_hz) {
+  const auto gain_db = trench::core::native::blend_gain_db(
+      view.body, view.morph, view.q);
+  const auto designed = trench::core::native::cascade(
+      trench::core::native::blend(view.body, view.morph, view.q,
+                                  device_sample_rate_hz),
+      gain_db);
+  const bool at_corner = (view.morph == 0.0F || view.morph == 1.0F) &&
+                         (view.q == 0.0F || view.q == 1.0F);
+  if (view.semitones == 0.0 && at_corner) return designed;
+
+  auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
+      designed, trench::core::ratio_of_semitones(view.semitones),
+      device_sample_rate_hz));
+  const double gain = std::pow(10.0, gain_db / 20.0);
+  for (std::size_t coefficient = 0; coefficient < 3; ++coefficient) {
+    transposed[0][coefficient] *= gain;
+  }
+  return transposed;
+}
 
 struct Audition::Impl final : public juce::AudioIODeviceCallback {
   juce::AudioDeviceManager manager;
   std::mutex lock;
+  AuditionView view;
   trench::core::Cascade pending{};
   bool pending_fresh{};
   std::shared_ptr<const MonoClip> pending_clip;
@@ -22,7 +47,7 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
   std::atomic<float> saw_level{0.25F};
   std::atomic<bool> gate{false};
   std::atomic<bool> active{false};
-  double sample_rate{44100.0};
+  std::atomic<double> sample_rate{44100.0};
 
   trench::core::CascadeRunner runner;
   std::shared_ptr<const MonoClip> clip;
@@ -32,7 +57,13 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
   float gain{};
 
   void audioDeviceAboutToStart(juce::AudioIODevice* device) override {
-    sample_rate = device->getCurrentSampleRate();
+    const double actual_rate = device->getCurrentSampleRate();
+    sample_rate.store(actual_rate);
+    {
+      const std::scoped_lock guard(lock);
+      pending = design_audition(view, actual_rate);
+      pending_fresh = true;
+    }
     runner.reset();
     gain = 0.0F;
   }
@@ -59,7 +90,7 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
     const bool open = gate.load();
     const float target_gain = open ? 1.0F : 0.0F;
     const float slew = 1.0F / 256.0F;
-    saw_step = saw_hz.load() / sample_rate;
+    saw_step = saw_hz.load() / sample_rate.load();
     const float level = saw_level.load();
     for (int i = 0; i < frames; ++i) {
       float x = 0.0F;
@@ -105,11 +136,12 @@ void Audition::stop() {
 
 bool Audition::running() const noexcept { return impl_->active.load(); }
 
-double Audition::sampleRateHz() const noexcept { return impl_->sample_rate; }
+double Audition::sampleRateHz() const noexcept { return impl_->sample_rate.load(); }
 
-void Audition::setCascade(const trench::core::Cascade& cascade) {
+void Audition::setView(AuditionView view) {
   const std::scoped_lock guard(impl_->lock);
-  impl_->pending = cascade;
+  impl_->view = std::move(view);
+  impl_->pending = design_audition(impl_->view, impl_->sample_rate.load());
   impl_->pending_fresh = true;
 }
 

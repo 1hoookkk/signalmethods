@@ -4,9 +4,20 @@
 #include <string>
 
 #include "trench/audio/audio_boundary.hpp"
+#include "trench/core/native_body.hpp"
 #include "trench/core/packed_body.hpp"
 
 namespace trench::audio {
+
+struct AuditionView {
+  trench::core::native::Body body;
+  float morph{};
+  float q{};
+  double semitones{};
+};
+
+[[nodiscard]] trench::core::Cascade design_audition(
+    const AuditionView& view, double device_sample_rate_hz);
 
 class Audition {
  public:
@@ -20,7 +31,7 @@ class Audition {
   [[nodiscard]] bool running() const noexcept;
   [[nodiscard]] double sampleRateHz() const noexcept;
 
-  void setCascade(const trench::core::Cascade& cascade);
+  void setView(AuditionView view);
   void setSaw(double hz, float level);
   void setClip(MonoClip clip);
   void setGate(bool open);

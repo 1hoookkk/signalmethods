@@ -1110,7 +1110,8 @@ bool MainWindow::auditionOpen() const noexcept { return audition_open_; }
 
 void MainWindow::updateAudition() {
   if (!audition_) return;
-  audition_->setCascade(document_->viewCascade());
+  const auto view = document_->view();
+  audition_->setView({document_->body(), view.morph, view.q, view.semitones});
 }
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
