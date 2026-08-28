@@ -24,8 +24,10 @@ class EditorState final : public QObject {
   [[nodiscard]] const trench::core::native::Section& section(std::size_t index) const;
   [[nodiscard]] trench::core::Cascade cascade(double sample_rate_hz = kDatumHz) const;
   [[nodiscard]] std::size_t selectedSection() const noexcept;
+  [[nodiscard]] Lane selectedLane() const noexcept;
 
   void selectSection(std::size_t index);
+  void selectRoot(std::size_t index, Lane lane);
   void setRoot(std::size_t section, Lane lane, double frequency_hz,
                double bandwidth_hz);
 
@@ -36,4 +38,5 @@ class EditorState final : public QObject {
  private:
   trench::core::native::Corner corner_{};
   std::size_t selected_section_{};
+  Lane selected_lane_{Lane::kPole};
 };

@@ -165,8 +165,8 @@ MainWindow::MainWindow(QWidget* parent)
   section_buttons_.front()->setChecked(true);
   layout->addLayout(section_row);
 
-  root_editor_ = new RootEditor(&state_, central);
-  layout->addWidget(root_editor_);
+  armadillo_editor_ = new ArmadilloEditor(&state_, central);
+  layout->addWidget(armadillo_editor_, 1);
 
   auto* inspector = new QHBoxLayout;
   inspector->setSpacing(12);
@@ -350,7 +350,7 @@ void MainWindow::refreshInspector() {
   zero_bandwidth_->setValue(zero.bw_hz);
   section_label_->setText(QStringLiteral("SECTION %1 / 6").arg(selected + 1));
   section_buttons_[selected]->setChecked(true);
-  root_editor_->update();
+  armadillo_editor_->update();
 }
 
 void MainWindow::updateAuditionView() {

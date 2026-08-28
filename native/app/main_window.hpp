@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cascade_plot.hpp"
+#include "armadillo_editor.hpp"
 #include "editor_state.hpp"
-#include "root_editor.hpp"
 #include "trench/audio/audition.hpp"
 
 #include <QMainWindow>
@@ -46,7 +46,7 @@ class MainWindow final : public QMainWindow {
 
   EditorState state_;
   CascadePlot* cascade_plot_{};
-  RootEditor* root_editor_{};
+  ArmadilloEditor* armadillo_editor_{};
   QLabel* reference_label_{};
   QLabel* section_label_{};
   QLabel* status_label_{};

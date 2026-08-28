@@ -3,14 +3,14 @@ find_package(Qt6 6.11.1 EXACT REQUIRED COMPONENTS Widgets)
 qt_standard_project_setup()
 
 add_library(trench_native_ui STATIC
+  armadillo_editor.cpp
+  armadillo_editor.hpp
   cascade_plot.cpp
   cascade_plot.hpp
   editor_state.cpp
   editor_state.hpp
   main_window.cpp
   main_window.hpp
-  root_editor.cpp
-  root_editor.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

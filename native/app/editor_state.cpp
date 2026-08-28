@@ -47,9 +47,21 @@ std::size_t EditorState::selectedSection() const noexcept {
   return selected_section_;
 }
 
+EditorState::Lane EditorState::selectedLane() const noexcept {
+  return selected_lane_;
+}
+
 void EditorState::selectSection(std::size_t index) {
   if (index >= trench::core::native::kSections || index == selected_section_) return;
   selected_section_ = index;
+  emit selectionChanged(selected_section_);
+}
+
+void EditorState::selectRoot(std::size_t index, Lane lane) {
+  if (index >= trench::core::native::kSections) return;
+  if (index == selected_section_ && lane == selected_lane_) return;
+  selected_section_ = index;
+  selected_lane_ = lane;
   emit selectionChanged(selected_section_);
 }
 
