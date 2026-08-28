@@ -79,8 +79,13 @@ std::array<ArmadilloEditor::Handle, 12> ArmadilloEditor::handles() const {
     QPointF pole_point = pointFor(pole.hz, pole.bw_hz);
     QPointF zero_point = pointFor(zero.hz, zero.bw_hz);
     if (QLineF{pole_point, zero_point}.length() < 15.0) {
-      pole_point.rx() -= 5.5;
-      zero_point.rx() += 5.5;
+      if (pole_point.x() > field().right() - 12.0) {
+        pole_point.ry() -= 5.5;
+        zero_point.ry() += 5.5;
+      } else {
+        pole_point.rx() -= 5.5;
+        zero_point.rx() += 5.5;
+      }
     }
     result[section * 2] =
         Handle{section, EditorState::Lane::kPole, pole_point};
@@ -113,14 +118,17 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
 
   constexpr std::array<double, 10> frequency_lines{
       20.0, 50.0, 100.0, 200.0, 500.0, 1'000.0, 2'000.0,
-      5'000.0, 10'000.0, 20'000.0};
+      5'000.0, 10'000.0, EditorState::kNyquistHz};
   painter.setPen(QPen(QColor{43, 53, 56}, 1.0));
   for (const double hz : frequency_lines) {
     const double x = pointFor(hz, EditorState::kMinBandwidthHz).x();
     painter.drawLine(QPointF{x, bounds.top()}, QPointF{x, bounds.bottom()});
     painter.setPen(QColor{112, 127, 130});
-    painter.drawText(QRectF{x - 26.0, bounds.bottom() + 8.0, 52.0, 17.0},
-                     Qt::AlignHCenter | Qt::AlignTop, shortValue(hz));
+    painter.drawText(
+        QRectF{x - 26.0, bounds.bottom() + 8.0, 52.0, 17.0},
+        Qt::AlignHCenter | Qt::AlignTop,
+        hz == EditorState::kNyquistHz ? QStringLiteral("NYQ")
+                                      : shortValue(hz));
     painter.setPen(QPen(QColor{43, 53, 56}, 1.0));
   }
 
@@ -204,9 +212,21 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                             .arg(handle.lane == EditorState::Lane::kPole
                                      ? QStringLiteral("P")
                                      : QStringLiteral("Z"));
-    painter.drawText(QRectF{handle.position.x() + 10.0,
-                            handle.position.y() - 9.0, 28.0, 18.0},
-                     Qt::AlignLeft | Qt::AlignVCenter, tag);
+    const bool parked = handle.position.x() > bounds.right() - 42.0;
+    if (parked && !selected_section) continue;
+    const double label_y = parked
+                               ? handle.position.y() +
+                                     (handle.lane == EditorState::Lane::kPole
+                                          ? -22.0
+                                          : 4.0)
+                               : handle.position.y() - 9.0;
+    const QRectF label_bounds =
+        parked ? QRectF{handle.position.x() - 42.0, label_y, 32.0, 18.0}
+               : QRectF{handle.position.x() + 10.0, label_y, 28.0, 18.0};
+    painter.drawText(label_bounds,
+                     (parked ? Qt::AlignRight : Qt::AlignLeft) |
+                         Qt::AlignVCenter,
+                     tag);
   }
 
   const QColor selected_color = kSectionColors[state_->selectedSection()];

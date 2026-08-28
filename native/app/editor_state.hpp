@@ -14,7 +14,8 @@ class EditorState final : public QObject {
 
   static constexpr double kDatumHz = 44'100.0;
   static constexpr double kLowHz = 20.0;
-  static constexpr double kHighHz = 20'000.0;
+  static constexpr double kNyquistHz = kDatumHz * 0.5;
+  static constexpr double kHighHz = kNyquistHz;
   static constexpr double kMinBandwidthHz = 1.0;
   static constexpr double kMaxBandwidthHz = 20'000.0;
 

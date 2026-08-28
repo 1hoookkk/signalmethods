@@ -17,13 +17,13 @@ const Resonant& resonant(const trench::core::native::Roots& roots) {
 }  // namespace
 
 EditorState::EditorState(QObject* parent) : QObject(parent) {
-  constexpr std::array<double, trench::core::native::kSections> frequencies{
-      70.0, 160.0, 380.0, 900.0, 2'200.0, 6'000.0};
   constexpr std::array<double, trench::core::native::kSections> bandwidths{
       55.0, 85.0, 150.0, 280.0, 620.0, 1'400.0};
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
-    const Resonant root{frequencies[index], bandwidths[index]};
-    corner_.sections[index] = {root, root, true};
+    const Resonant parked{kNyquistHz, bandwidths[index]};
+    const Resonant pole = index == 0 ? Resonant{70.0, bandwidths[index]}
+                                     : parked;
+    corner_.sections[index] = {pole, parked, true};
   }
 }
 

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <span>
 
 namespace {
 
@@ -17,7 +18,7 @@ constexpr std::array<QColor, trench::core::native::kSections> kSectionColors{
     QColor{66, 224, 207}, QColor{231, 158, 76}, QColor{226, 210, 90},
     QColor{224, 99, 151}, QColor{92, 170, 238}, QColor{155, 213, 96}};
 
-constexpr double kCellGap = 6.0;
+constexpr double kCellGap = 14.0;
 
 }  // namespace
 
@@ -26,7 +27,7 @@ SectionStrip::SectionStrip(EditorState* state, QWidget* parent)
   setMinimumHeight(72);
   setMaximumHeight(82);
   setFocusPolicy(Qt::StrongFocus);
-  setAccessibleName(QStringLiteral("Six filter sections"));
+  setAccessibleName(QStringLiteral("Six serial signal-so-far sections"));
   connect(state_, &EditorState::changed, this,
           qOverload<>(&SectionStrip::update));
   connect(state_, &EditorState::selectionChanged, this,
@@ -47,6 +48,21 @@ void SectionStrip::paintEvent(QPaintEvent*) {
   painter.setRenderHint(QPainter::Antialiasing);
   painter.fillRect(rect(), QColor{12, 15, 17});
   const auto cascade = state_->cascade();
+
+  painter.setPen(QPen(QColor{76, 84, 87}, 1.0));
+  for (std::size_t index = 0;
+       index + 1 < trench::core::native::kSections; ++index) {
+    const QRectF before = cell(index);
+    const QRectF after = cell(index + 1);
+    const double centre_y = before.center().y();
+    const double left = before.right() + 3.0;
+    const double right = after.left() - 3.0;
+    painter.drawLine(QPointF{left, centre_y}, QPointF{right, centre_y});
+    painter.drawLine(QPointF{right - 3.0, centre_y - 3.0},
+                     QPointF{right, centre_y});
+    painter.drawLine(QPointF{right - 3.0, centre_y + 3.0},
+                     QPointF{right, centre_y});
+  }
 
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
@@ -80,9 +96,10 @@ void SectionStrip::paintEvent(QPaintEvent*) {
       const double hz = EditorState::kLowHz *
                         std::pow(EditorState::kHighHz / EditorState::kLowHz,
                                  fraction);
-      const double db = std::clamp(trench::core::section_response_db(
-                                       cascade[index], hz,
-                                       EditorState::kDatumHz),
+      const std::span<const trench::core::Biquad> prefix{cascade.data(),
+                                                         index + 1};
+      const double db = std::clamp(trench::core::cascade_response_db(
+                                       prefix, hz, EditorState::kDatumHz),
                                    -18.0, 18.0);
       const QPointF position{
           plot.left() + fraction * plot.width(),
