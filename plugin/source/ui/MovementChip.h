@@ -57,6 +57,9 @@ public:
         if (onStep != nullptr && ! juce::approximatelyEqual (w.deltaY, 0.0f))
             onStep (w.deltaY > 0 ? 1 : -1);
     }
+    /// Row seat (Tyson 2026-08-28): the picker rides row 2 of the FX+ drawer,
+    /// on the plate - its quiet voice is ink there, not glass telemetry.
+    void setOnPlate (bool p) { if (onPlate != p) { onPlate = p; repaint(); } }
     void mouseDown (const juce::MouseEvent&) override
     {
         if (onOpenMenu != nullptr)
@@ -68,16 +71,17 @@ public:
         const juce::Rectangle<float> lamp { b.getX() + 1.0f, b.getCentreY() - kLampD * 0.5f,
                                             kLampD, kLampD };
         const bool glowing = hover || menuOpen;
+        const auto quietInk = onPlate ? t.labelInk() : t.telemetry();
         g.setColour (active ? t.modulationLamp()
                             : t.labelInk().withAlpha (glowing ? 0.80f : 0.45f));
         g.fillEllipse (lamp);
         if (glowing)
         {
-            g.setColour ((active ? t.modulationLamp() : t.telemetry()).withAlpha (0.25f));
+            g.setColour ((active ? t.modulationLamp() : quietInk).withAlpha (0.25f));
             g.fillEllipse (lamp.expanded (2.0f));
         }
         g.setFont (telemetryFont (kNamePt));
-        g.setColour (t.telemetry().withAlpha (glowing ? 0.95f : (active ? 0.70f : 0.45f)));
+        g.setColour (quietInk.withAlpha (glowing ? 0.95f : (active ? 0.80f : 0.55f)));
         g.drawText (kWord, b.withTrimmedLeft (kLampD + kLampGap + 1.0f),
                     juce::Justification::centredLeft, false);
     }
@@ -86,6 +90,7 @@ private:
     Theme t;
     juce::String name { "MOVEMENT" };
     bool active = false;
+    bool onPlate = false;
     bool hover = false;
     bool menuOpen = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MovementChip)

@@ -38,8 +38,8 @@ public:
         setInterceptsMouseClicks (true, false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Section");
-        setHelpText ("One door - click GAIN to open its room, click it again to shut it");
-        setTooltip ("Room: click GAIN to open, click again to shut");
+        setHelpText ("One door - click FX+ to open the effects room, click it again to shut it");
+        setTooltip ("FX+: click to open the effects room, click again to shut");
     }
     std::function<void (int)> onToggleSection;   // editor owns the open state
     /// -1 = the bay is CLOSED: the word engraved quiet, no room carved.
@@ -63,33 +63,24 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // ONE ENGRAVED WORD plus a latch mark (Tyson 2026-08-25 "gain should
-        // look like you can easily open it and close it"): a small triangle
-        // pointing at the room when shut, into it when open — the disclosure
-        // glyph every cabinet speaks. The open door's word is full ink; the
-        // shut door sits back; hover lifts it halfway.
-        const auto ink = juce::Colour (0xff2a2722);
+        // THE CHIP IS THE DOOR (Tyson 2026-08-28 "the rooms can be solved by
+        // a 'FX+' chip"): the engraved word becomes a lit chip seated in the
+        // frame break - KeySnapBox's own pill construction, so the drawer's
+        // tab reads as a control instead of silkscreen.
         for (int i = 0; i < kNumSections; ++i)
         {
-            const float alpha = open == i     ? 0.95f
-                              : hoverIdx == i ? 0.66f
-                                              : 0.40f;
-            const auto r = wordRect (i);
-            juce::Path tri;
-            const float cx = r.getX() + 4.0f, cy = r.getCentreY();
-            if (open == i)
-            {
-                tri.addTriangle (cx - 3.0f, cy - 1.5f, cx + 3.0f, cy - 1.5f, cx, cy + 3.0f);
-            }
-            else
-            {
-                tri.addTriangle (cx - 1.5f, cy - 3.0f, cx - 1.5f, cy + 3.0f, cx + 3.0f, cy);
-            }
-            g.setColour (ink.withAlpha (alpha));
-            g.fillPath (tri);
-            g.setFont (t.smallLabel());
-            g.drawText (kNames[i], r.withTrimmedLeft (10.0f).toNearestInt(),
-                        juce::Justification::centredLeft, false);
+            const auto r = wordRect (i).reduced (1.0f, 0.5f);
+            g.setColour (juce::Colour (0xff101614).withAlpha (0.88f));
+            g.fillRoundedRectangle (r, 8.0f);
+            g.setColour (juce::Colours::black.withAlpha (0.55f));
+            g.drawRoundedRectangle (r, 8.0f, 1.0f);
+            g.setColour (juce::Colour (0xffc7d3cd).withAlpha (0.22f));
+            g.drawRoundedRectangle (r.reduced (1.0f), 7.0f, 0.7f);
+            const bool lit = open == i;
+            const float alpha = lit ? 0.95f : hoverIdx == i ? 0.80f : 0.55f;
+            g.setColour ((lit ? t.accent() : juce::Colour (0xffc7d3cd)).withAlpha (alpha));
+            g.setFont (displayFont (9.5f, true));
+            g.drawText (kNames[i], r.toNearestInt(), juce::Justification::centred, false);
         }
     }
     // light, plain popup — the E-mu/'95 menu, not the dark glass family.
@@ -136,9 +127,8 @@ public:
         }
     };
 private:
-    // E-mu's own voice: the X3 face says GAIN (dB).
-    static constexpr const char* kNames[kNumSections] = { "GAIN" };
-    // Width sized to the 9.5pt engraving plus the latch triangle.
+    static constexpr const char* kNames[kNumSections] = { "FX+" };
+    // Width sized to the 9.5pt label in its pill.
     static constexpr float kWordW = 48.0f;
     static constexpr int kPreferredWidth = 48;
     juce::Rectangle<float> wordRect (int) const

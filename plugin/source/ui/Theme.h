@@ -73,11 +73,11 @@ inline juce::Font telemetryFont (float height, bool emphasis = false)
 struct Theme
 {
     const trench::UiLayout& layout;
-    juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xff9b4f4a)); }
-    juce::Colour curveColour() const { return layout.colour ("curveColour", accent()); }
+    juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xff12a5a1)); }
+    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xffaef1f3)); }
     juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffe9a39b)); }
     juce::Colour telemetry() const { return layout.colour ("telemetry", accent()); }
-    juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff9b4f4a)); }
+    juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff12a5a1)); }
     juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xffb86a2b)); }
     juce::Colour amber()       const { return layout.colour ("amber",       juce::Colour (0xffa9554e)); }
     juce::Colour wellTop()     const { return layout.colour ("wellTop",     juce::Colour (0xffe7dec9)); }

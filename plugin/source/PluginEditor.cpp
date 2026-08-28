@@ -14,16 +14,16 @@ namespace
 // through kPanelSourceWidth - so the room reads as the same column carried
 // down the plate, not a narrow box beside it.
 constexpr float kBayLeft  = 35.5f;    // == the DISPLAY's left edge (source x 110)
-constexpr float kBayRight = 194.0f;   // compact: sized to its content, not the wheels
-constexpr float kBayPad   = 6.0f;
-constexpr float kBayRowGap = 4.0f;
-constexpr int   kBayRowH  = 36;
-const juce::Rectangle<int>   kBaySelector { (int) (kBayLeft + kBayPad), 328, 90, 17 };
-// GAIN is the bay's only room since MOVEMENT moved onto the display glass
-// (2026-08-25). Four compact rows end at y=490, with the carve ending at 496.
-const juce::Rectangle<float> kBayRoom {
-    kBayLeft, 336.0f, kBayRight - kBayLeft, 2.0f * kBayPad + kBayRowGap + 4.0f * (float) kBayRowH
-};
+constexpr float kBayRight = 249.0f;   // the readout column's right edge (source 772)
+// THE DRAWER IS TWO ROWS (Tyson 2026-08-28 "FX+ is a chip on the display
+// glass. It should open 2 rows of knobs and params for gain and movement.
+// Keep controls to an absolute minimum"): row 1 the four gain knobs as
+// compact cells, row 2 the movement picker. No carve, no door word - the
+// chip on the glass is the whole door, and the plate below the rows stays
+// bare to the notch.
+constexpr int kFxRow1Y = 340, kFxRow1H = 44;
+constexpr int kFxRow2Y = 394;
+constexpr int kFxChipH = 17;
 #if TRENCH_GOD_MODE || defined (TRENCH_PLAYER_DIAGNOSTICS)
 juce::File layoutWatchFile()
 {
@@ -224,22 +224,25 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
-    // THE BAY: one room under Q. GAIN is the chain before and after the
-    // cascade. SOURCE (resample) stays retired; MOVEMENT is on the glass.
+    // THE DRAWER: FX+ on the glass opens the gain row and the movement row.
+    // SOURCE (resample) stays retired.
     sectionRail = std::make_unique<SectionRail> (theme);
     preampKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::preamp, "Input");
     chewKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::chew,   "Bite");
     slamKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
     lowKnob    = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::lowKeep, "Low");
+    for (auto* k : { preampKnob.get(), chewKnob.get(), slamKnob.get(), lowKnob.get() })
+        k->setCompact (true);
     // TRACK retired from the face (Tyson 2026-08-15): the pitch listener was a
     // detector-driven retuner the X3 never had, and E-mu's authored answer to
     // pitch-following is the cube's own third axis. The parameter stays for
     // old sessions; the engine wiring stays; the knob is gone. The THIRD-AXIS
     // control ("Transform 2") appears only when a 560-byte cube body loads —
     // there is no cube load path yet, so it is not built yet.
-    // MOVEMENT lives on the glass (Tyson 2026-08-25): the chip is the whole
+    // MOVEMENT rides row 2 of the drawer: the chip is still the whole
     // control - wheel to step and audition, click for the list.
     movementChip = std::make_unique<MovementChip> (theme);
+    movementChip->setOnPlate (true);
     movementChip->onStep = [this] (int dir)
     {
         auto* p = processor.apvts.getParameter (ParamID::movePreset);
@@ -570,13 +573,13 @@ void PluginEditor::layoutComponents()
     const auto rectOf = [this] (const char* id) { return theme.rect (id).getSmallestIntegerContainer(); };
     graph->setBounds (rectOf ("spectrumGrid"));
     {
-        // The MOVEMENT chip sits ON the glass, lower-left: 10px in, 8px up off
-        // the floor. Left- and bottom-anchored because its width is its text's,
-        // and the pattern names are not one length.
+        // FX+ SITS ON THE GLASS, lower-left - the seat the movement word held
+        // (Tyson 2026-08-28). Left- and bottom-anchored, above the graph.
         const auto glass = rectOf ("spectrumGrid");
-        movementChip->setBounds (glass.getX() + 10,
-                                 glass.getBottom() - 14 - MovementChip::kHeight,
-                                 movementChip->preferredWidth(), MovementChip::kHeight);
+        sectionRail->setBounds (glass.getX() + 10,
+                                glass.getBottom() - 12 - kFxChipH,
+                                sectionRail->preferredWidth(), kFxChipH);
+        sectionRail->toFront (false);
     }
     {
         // KEY perches ABOVE the BODY bar, on the BRAND's optical baseline -
@@ -593,26 +596,18 @@ void PluginEditor::layoutComponents()
     morphReadout->setBounds (rectOf ("morphReadout"));
     secondaryReadout->setBounds (rectOf ("qReadout"));
     {
-        // THE BAY, restored to its authored joinery (mock_sel comp): a room
-        // CARVED into the plate, low and to the left, with the selector seated
-        // in a break at the frame's top-left. The lanes live inside the carve -
-        // they never float on bare plate.
-        // The door-word, seated where the room-frame break lands.
-        sectionRail->setBounds (kBaySelector.withWidth (sectionRail->preferredWidth()));
-        // ONE LANE PER ROW, chain order top-down - the stack the plate was
-        // carved for. Nothing sits beside anything, nothing leaves the carve.
-        // ONE ROW GRAMMAR: a full-height row band, the knob in a fixed left
-        // column, the caption-over-value block centred in the column beside
-        // it. Four 36px rows carry 32px knobs and compact caption/readout pairs.
-        const int x0 = juce::roundToInt (kBayLeft + kBayPad);
-        const int x1 = juce::roundToInt (kBayRight - kBayPad);
-        const int w  = x1 - x0;
-        const int rowY = juce::roundToInt (kBayRoom.getY() + kBayPad + kBayRowGap);
-        const auto rowAt = [&] (int i) { return juce::Rectangle<int> (x0, rowY + i * kBayRowH, w, kBayRowH); };
-        preampKnob->setBounds (rowAt (0));
-        chewKnob->setBounds   (rowAt (1));
-        slamKnob->setBounds   (rowAt (2));
-        lowKnob->setBounds    (rowAt (3));
+        // TWO ROWS in the wheel column: the gain chain across row 1 in chain
+        // order, the movement picker on row 2. Nothing else.
+        const int x0   = juce::roundToInt (kBayLeft);
+        const int cell = juce::roundToInt ((kBayRight - kBayLeft) / 4.0f);
+        const auto cellAt = [&] (int i)
+        { return juce::Rectangle<int> (x0 + i * cell, kFxRow1Y, cell, kFxRow1H); };
+        preampKnob->setBounds (cellAt (0));
+        chewKnob->setBounds   (cellAt (1));
+        slamKnob->setBounds   (cellAt (2));
+        lowKnob->setBounds    (cellAt (3));
+        movementChip->setBounds (x0, kFxRow2Y,
+                                 movementChip->preferredWidth(), MovementChip::kHeight);
         // DEPTH retired 2026-08-10: travel is part of each preset's record.
         // TRACK retired 2026-08-15 (see the knob's construction site above).
     }
@@ -650,24 +645,14 @@ void PluginEditor::layoutComponents()
 void PluginEditor::applySectionVisibility()
 {
     using trench::ui::SectionRail;
-    const bool gain = openSection == SectionRail::kDrive;
-    preampKnob->setVisible (gain);
-    chewKnob->setVisible (gain);
-    slamKnob->setVisible (gain);
-    lowKnob->setVisible (gain);
-    // -1 reaches the rail as the CLOSED state: the word engraved quiet.
+    const bool open = openSection == SectionRail::kDrive;
+    preampKnob->setVisible (open);
+    chewKnob->setVisible (open);
+    slamKnob->setVisible (open);
+    lowKnob->setVisible (open);
+    movementChip->setVisible (open);
+    // -1 reaches the chip as the CLOSED state: quiet pill, bare plate.
     sectionRail->setOpenSection (openSection);
-    // The visible cap hugs the selected word. Seat it here as well as in
-    // layoutComponents because the room-frame break is measured from it and
-    // the first call runs before the editor is sized.
-    const auto seat = kBaySelector.withWidth (sectionRail->preferredWidth());
-    sectionRail->setBounds (seat);
-    // The plate carves the room, the frame breaking around the word: the lit
-    // word in the break is the tab of the drawer it opened. Closed
-    // (openSection -1): no carve at all, one quiet word on bare plate.
-    faceplate->setRoomFrame (openSection < 0 ? juce::Rectangle<float>() : kBayRoom,
-                             (float) seat.getX() - 4.0f,
-                             (float) seat.getRight() + 4.0f);
     updateEditorSize();
 }
 void PluginEditor::updateEditorSize()

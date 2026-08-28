@@ -106,3 +106,14 @@ juce_add_plugin(TRENCH
   PRODUCT_NAME "TRENCH"
   COPY_PLUGIN_AFTER_BUILD FALSE)
 target_link_libraries(TRENCH PRIVATE TRENCHPluginCommon)
+
+juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")
+target_sources(TRENCH_FaceShot PRIVATE tools/FaceShot.cpp)
+target_include_directories(TRENCH_FaceShot PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_FaceShot PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_FaceShot PRIVATE
+    TRENCHPluginCommon
+    juce::juce_audio_formats
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)

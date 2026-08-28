@@ -34,6 +34,10 @@ public:
             defaultDenorm = param->convertFrom0to1 (param->getDefaultValue());
         }
     }
+    /// Row-cell presentation (Tyson 2026-08-28 "2 rows of knobs ... keep
+    /// controls to an absolute minimum"): the knob over its caption, the value
+    /// taking the caption's seat while the hand is on it - no bone box.
+    void setCompact (bool c) { if (compact != c) { compact = c; repaint(); } }
     /// Dimmed = the control is real but has nothing to act on right now
     /// (Tyson 2026-08-09 bay refactor): with PRESET at OFF the MOVEMENT room
     /// stays on screen, and Depth/Follow go quiet and stop taking the mouse
@@ -112,13 +116,14 @@ public:
         const auto b = getLocalBounds().toFloat();
         const float value = currentNormalised();
         const auto* choice = dynamic_cast<const juce::AudioParameterChoice*> (param);
-        const float d = kBayKnobDiameter;
+        const float d = compact ? 26.0f : kBayKnobDiameter;
         // The knob + caption/value block is ONE unit, centred in the row - the
         // carve's margins stay even on both sides (2026-08-06 proportion verdict).
         const float blockW = (float) kBayValueWidth + 26.0f;
         const float startX = b.getX() + juce::jmax (0.0f, (b.getWidth() - (d + 4.0f + blockW)) * 0.5f);
-        const auto knob = juce::Rectangle<float> (d, d)
-                              .withCentre ({ startX + d * 0.5f, b.getCentreY() });
+        const auto knob = compact
+            ? juce::Rectangle<float> (d, d).withCentre ({ b.getCentreX(), b.getY() + d * 0.5f + 1.0f })
+            : juce::Rectangle<float> (d, d).withCentre ({ startX + d * 0.5f, b.getCentreY() });
         const float blockX = startX + d + 4.0f;
         // The compact row carries one 10px caption, a 1px gap and the 17px
         // readout as a single centred block. This keeps all four rows inside
@@ -130,8 +135,9 @@ public:
         const float boxTop = contentTop + captionH + captionGap;
         const float capW = juce::jmin (blockW,
                                        b.getRight() - blockX);
-        drawBayCaption (g, juce::Rectangle<float> (blockX, contentTop, capW, captionH),
-                        label, t);
+        if (! compact)
+            drawBayCaption (g, juce::Rectangle<float> (blockX, contentTop, capW, captionH),
+                            label, t);
         const auto c = knob.getCentre();
         // NO code-drawn knob shadow. Tried and rejected three times now
         // (two drop-shadow methods 2026-08-01, a contact shadow 2026-08-05:
@@ -229,6 +235,16 @@ public:
         // "bake it into the blender"): each frame carries its lit teeth -
         // none at 0, full ring at 100. The live GRIT-activity flare that
         // overlaid it was never fed by anyone and is deleted.
+        if (compact)
+        {
+            const auto cap = juce::Rectangle<float> (b.getX(), knob.getBottom() + 2.0f,
+                                                     b.getWidth(), 10.0f);
+            drawBayCaption (g, cap,
+                            hover ? (choice != nullptr ? choice->getCurrentChoiceName()
+                                                       : juce::String (juce::roundToInt (value * 100.0f)))
+                                  : label, t);
+        }
+        else
         {
             // small readout centred under the knob: the SAME bone family as
             // every readout on the face, scaled down so it never rivals the
@@ -257,6 +273,7 @@ private:
     }
     Theme t;
     juce::String label;
+    bool compact = false;
     juce::Image strip;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;
