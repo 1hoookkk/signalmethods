@@ -33,6 +33,7 @@ class Audition {
   [[nodiscard]] double sampleRateHz() const noexcept;
 
   void setView(AuditionView view);
+  void setCorner(trench::core::native::Corner corner);
   void setSaw(double hz, float level);
   void setClip(MonoClip clip);
   void setGate(bool open);
