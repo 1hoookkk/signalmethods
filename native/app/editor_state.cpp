@@ -43,6 +43,10 @@ trench::core::Cascade EditorState::cascade(double sample_rate_hz) const {
       trench::core::native::design(corner_, sample_rate_hz), corner_.gain_db);
 }
 
+std::size_t EditorState::activeSections() const noexcept {
+  return active_sections_;
+}
+
 std::size_t EditorState::selectedSection() const noexcept {
   return selected_section_;
 }
@@ -52,22 +56,31 @@ EditorState::Lane EditorState::selectedLane() const noexcept {
 }
 
 void EditorState::selectSection(std::size_t index) {
-  if (index >= trench::core::native::kSections || index == selected_section_) return;
+  if (index >= active_sections_ || index == selected_section_) return;
   selected_section_ = index;
   emit selectionChanged(selected_section_);
 }
 
 void EditorState::selectRoot(std::size_t index, Lane lane) {
-  if (index >= trench::core::native::kSections) return;
+  if (index >= active_sections_) return;
   if (index == selected_section_ && lane == selected_lane_) return;
   selected_section_ = index;
   selected_lane_ = lane;
   emit selectionChanged(selected_section_);
 }
 
+void EditorState::activateNextSection() {
+  if (active_sections_ >= trench::core::native::kSections) return;
+  selected_section_ = active_sections_;
+  selected_lane_ = Lane::kPole;
+  ++active_sections_;
+  emit changed();
+  emit selectionChanged(selected_section_);
+}
+
 void EditorState::setRoot(std::size_t section_index, Lane lane,
                           double frequency_hz, double bandwidth_hz) {
-  if (section_index >= trench::core::native::kSections) return;
+  if (section_index >= active_sections_) return;
   const Resonant wanted{
       std::clamp(frequency_hz, kLowHz, kHighHz),
       std::clamp(bandwidth_hz, kMinBandwidthHz, kMaxBandwidthHz)};

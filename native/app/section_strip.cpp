@@ -48,10 +48,12 @@ void SectionStrip::paintEvent(QPaintEvent*) {
   painter.setRenderHint(QPainter::Antialiasing);
   painter.fillRect(rect(), QColor{12, 15, 17});
   const auto cascade = state_->cascade();
+  const std::size_t active = state_->activeSections();
 
   painter.setPen(QPen(QColor{76, 84, 87}, 1.0));
-  for (std::size_t index = 0;
-       index + 1 < trench::core::native::kSections; ++index) {
+  const std::size_t visible_links =
+      std::min(active, trench::core::native::kSections - 1);
+  for (std::size_t index = 0; index < visible_links; ++index) {
     const QRectF before = cell(index);
     const QRectF after = cell(index + 1);
     const double centre_y = before.center().y();
@@ -67,11 +69,16 @@ void SectionStrip::paintEvent(QPaintEvent*) {
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
     const QRectF bounds = cell(index);
+    const bool active_section = index < active;
+    const bool addable = index == active &&
+                         active < trench::core::native::kSections;
     const bool selected = index == state_->selectedSection();
     const QColor color = kSectionColors[index];
-    painter.fillRect(bounds, QColor{20, 23, 26});
-    painter.setPen(QPen(selected ? QColor{185, 236, 224}
-                                 : QColor{54, 61, 64},
+    painter.fillRect(bounds, active_section ? QColor{20, 23, 26}
+                                            : QColor{15, 18, 20});
+    painter.setPen(QPen(selected && active_section
+                            ? QColor{185, 236, 224}
+                            : QColor{42, 48, 51},
                         1.0));
     painter.drawRect(bounds.adjusted(0.5, 0.5, -0.5, -0.5));
 
@@ -79,15 +86,32 @@ void SectionStrip::paintEvent(QPaintEvent*) {
     number_font.setBold(true);
     number_font.setPointSizeF(8.5);
     painter.setFont(number_font);
-    painter.setPen(color);
+    painter.setPen(active_section ? color : QColor{59, 67, 70});
     painter.drawText(bounds.adjusted(7.0, 5.0, -7.0, 0.0),
                      Qt::AlignLeft | Qt::AlignTop,
                      QString::number(index + 1));
 
+    if (!active_section) {
+      if (addable) {
+        QFont add_font = painter.font();
+        add_font.setBold(false);
+        add_font.setPointSizeF(17.0);
+        painter.setFont(add_font);
+        painter.setPen(QColor{128, 143, 146});
+        painter.drawText(bounds, Qt::AlignCenter, QStringLiteral("+"));
+      }
+      continue;
+    }
+
     const QRectF plot = bounds.adjusted(8.0, 22.0, -8.0, -8.0);
     painter.setPen(QPen(QColor{44, 50, 53}, 1.0));
-    painter.drawLine(QPointF{plot.left(), plot.center().y()},
-                     QPointF{plot.right(), plot.center().y()});
+    constexpr double kMiniLowDb = -120.0;
+    constexpr double kMiniHighDb = 24.0;
+    const double zero_y = plot.top() +
+                          (kMiniHighDb / (kMiniHighDb - kMiniLowDb)) *
+                              plot.height();
+    painter.drawLine(QPointF{plot.left(), zero_y},
+                     QPointF{plot.right(), zero_y});
 
     QPainterPath path;
     constexpr int kPoints = 96;
@@ -98,12 +122,14 @@ void SectionStrip::paintEvent(QPaintEvent*) {
                                  fraction);
       const std::span<const trench::core::Biquad> prefix{cascade.data(),
                                                          index + 1};
-      const double db = std::clamp(trench::core::cascade_response_db(
-                                       prefix, hz, EditorState::kDatumHz),
-                                   -18.0, 18.0);
+      const double raw_db = trench::core::cascade_response_db(
+          prefix, hz, EditorState::kDatumHz);
+      const double db = std::clamp(std::isfinite(raw_db) ? raw_db : kMiniLowDb,
+                                   kMiniLowDb, kMiniHighDb);
       const QPointF position{
           plot.left() + fraction * plot.width(),
-          plot.center().y() - (db / 18.0) * plot.height() * 0.48};
+          plot.top() + (kMiniHighDb - db) /
+                           (kMiniHighDb - kMiniLowDb) * plot.height()};
       if (point == 0) {
         path.moveTo(position);
       } else {
@@ -124,7 +150,11 @@ void SectionStrip::mousePressEvent(QMouseEvent* event) {
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
     if (!cell(index).contains(event->position())) continue;
-    state_->selectSection(index);
+    if (index < state_->activeSections()) {
+      state_->selectSection(index);
+    } else if (index == state_->activeSections()) {
+      state_->activateNextSection();
+    }
     setFocus(Qt::MouseFocusReason);
     return;
   }
@@ -137,12 +167,14 @@ void SectionStrip::keyPressEvent(QKeyEvent* event) {
     return;
   }
   if (event->key() == Qt::Key_Right &&
-      selected + 1 < trench::core::native::kSections) {
+      selected + 1 < state_->activeSections()) {
     state_->selectSection(selected + 1);
     return;
   }
   if (event->key() >= Qt::Key_1 && event->key() <= Qt::Key_6) {
-    state_->selectSection(static_cast<std::size_t>(event->key() - Qt::Key_1));
+    const std::size_t wanted =
+        static_cast<std::size_t>(event->key() - Qt::Key_1);
+    if (wanted < state_->activeSections()) state_->selectSection(wanted);
     return;
   }
   QWidget::keyPressEvent(event);

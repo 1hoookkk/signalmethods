@@ -70,9 +70,10 @@ QPointF ArmadilloEditor::pointFor(double frequency_hz,
           bounds.bottom() - std::clamp(y_fraction, 0.0, 1.0) * bounds.height()};
 }
 
-std::array<ArmadilloEditor::Handle, 12> ArmadilloEditor::handles() const {
-  std::array<Handle, 12> result{};
-  for (std::size_t section = 0; section < trench::core::native::kSections;
+std::vector<ArmadilloEditor::Handle> ArmadilloEditor::handles() const {
+  std::vector<Handle> result;
+  result.reserve(state_->activeSections() * 2);
+  for (std::size_t section = 0; section < state_->activeSections();
        ++section) {
     const auto& pole = rootOf(*state_, section, EditorState::Lane::kPole);
     const auto& zero = rootOf(*state_, section, EditorState::Lane::kZero);
@@ -87,10 +88,10 @@ std::array<ArmadilloEditor::Handle, 12> ArmadilloEditor::handles() const {
         zero_point.rx() += 5.5;
       }
     }
-    result[section * 2] =
-        Handle{section, EditorState::Lane::kPole, pole_point};
-    result[section * 2 + 1] =
-        Handle{section, EditorState::Lane::kZero, zero_point};
+    result.push_back(
+        Handle{section, EditorState::Lane::kPole, pole_point});
+    result.push_back(
+        Handle{section, EditorState::Lane::kZero, zero_point});
   }
   return result;
 }
@@ -162,7 +163,7 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   painter.restore();
 
   const auto all_handles = handles();
-  for (std::size_t section = 0; section < trench::core::native::kSections;
+  for (std::size_t section = 0; section < state_->activeSections();
        ++section) {
     const bool selected = section == state_->selectedSection();
     const QColor color = kSectionColors[section];
