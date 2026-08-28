@@ -1,5 +1,7 @@
 #include "armadillo_view.hpp"
 
+#include "section_color.hpp"
+
 #include "frequency_axis.hpp"
 
 #include "trench/core/formants.hpp"
@@ -12,6 +14,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPolygonF>
 #include <QSizePolicy>
 #include <QToolButton>
 #include <QToolTip>
@@ -34,10 +37,12 @@ const QColor kOverlayPole{174, 186, 190, 148};
 const QColor kOverlayZero{247, 184, 92, 210};
 const QColor kTransposed{116, 174, 255};
 const QColor kLpc{156, 130, 224};
+const QColor kTravel{174, 186, 190};
 
 constexpr double kRimDb = 96.0;
 constexpr double kHitRadius = 9.0;
 constexpr double kMaxDragRadius = 0.99998;
+constexpr double kTravelArrowPx = 7.0;
 
 struct RootGeometry {
   double hz{};
@@ -96,7 +101,7 @@ void ArmadilloView::buildOverlayPicker() {
       "QMenu::item { padding: 2px 16px 2px 12px; }"
       "QMenu::item:selected { background: #373f43; }"));
   connect(overlay_menu_->addAction(QStringLiteral("none")), &QAction::triggered, this,
-          [this] { setOverlay(QString()); });
+          [this] { chooseOverlay(QString()); });
 
   body_overlay_menu_ = overlay_menu_->addMenu(QStringLiteral("POLES + ZEROS"));
   body_overlay_menu_->setFont(overlay_menu_->font());
@@ -117,7 +122,7 @@ void ArmadilloView::buildOverlayPicker() {
     const auto name = QString::fromUtf8(skeleton.name.data(),
                                        static_cast<int>(skeleton.name.size()));
     connect(group->addAction(name), &QAction::triggered, this,
-            [this, name] { setOverlay(name); });
+            [this, name] { chooseOverlay(name); });
   }
 
   overlay_button_ = new QToolButton(this);
@@ -150,9 +155,15 @@ void ArmadilloView::addBodyOverlay(const QString& name,
     const auto full_name = QStringLiteral("%1 · C%2").arg(name).arg(corner + 1);
     corner_overlays_.push_back({full_name, body.corners[corner]});
     connect(body_menu->addAction(QStringLiteral("C%1").arg(corner + 1)),
-            &QAction::triggered, this, [this, full_name] { setOverlay(full_name); });
+            &QAction::triggered, this,
+            [this, full_name] { chooseOverlay(full_name); });
   }
   body_overlay_menu_->setEnabled(true);
+}
+
+void ArmadilloView::chooseOverlay(const QString& name) {
+  setOverlay(name);
+  emit overlayChosen(name);
 }
 
 bool ArmadilloView::setOverlay(const QString& name) {
@@ -202,6 +213,17 @@ bool ArmadilloView::setOverlay(const QString& name) {
   return found;
 }
 
+void ArmadilloView::setOverlayReveal(bool poles, bool zeros) {
+  if (reveal_poles_ == poles && reveal_zeros_ == zeros) return;
+  reveal_poles_ = poles;
+  reveal_zeros_ = zeros;
+  update();
+}
+
+bool ArmadilloView::revealed(const OverlayRoot& root) const noexcept {
+  return root.zero ? reveal_zeros_ : reveal_poles_;
+}
+
 QMenu* ArmadilloView::overlayMenu() const noexcept { return overlay_menu_; }
 
 QToolButton* ArmadilloView::overlayPicker() const noexcept { return overlay_button_; }
@@ -209,27 +231,27 @@ QToolButton* ArmadilloView::overlayPicker() const noexcept { return overlay_butt
 QString ArmadilloView::overlay() const { return overlay_name_; }
 
 std::size_t ArmadilloView::overlayGhostCount() const noexcept {
-  return overlay_roots_.size();
+  return overlayPoleCount() + overlayZeroCount();
 }
 
 std::size_t ArmadilloView::overlayPoleCount() const noexcept {
   return static_cast<std::size_t>(std::count_if(
       overlay_roots_.begin(), overlay_roots_.end(),
-      [](const OverlayRoot& root) { return !root.zero; }));
+      [this](const OverlayRoot& root) { return !root.zero && revealed(root); }));
 }
 
 std::size_t ArmadilloView::overlayZeroCount() const noexcept {
   return static_cast<std::size_t>(std::count_if(
       overlay_roots_.begin(), overlay_roots_.end(),
-      [](const OverlayRoot& root) { return root.zero; }));
+      [this](const OverlayRoot& root) { return root.zero && revealed(root); }));
 }
 
 std::optional<trench::core::native::Roots> ArmadilloView::overlayRoot(
     std::size_t section, bool zero) const {
   const auto found = std::find_if(
       overlay_roots_.begin(), overlay_roots_.end(),
-      [section, zero](const OverlayRoot& root) {
-        return root.section == section && root.zero == zero;
+      [this, section, zero](const OverlayRoot& root) {
+        return root.section == section && root.zero == zero && revealed(root);
       });
   return found == overlay_roots_.end()
              ? std::nullopt
@@ -338,6 +360,73 @@ double ArmadilloView::radiusForY(double y) const {
   return std::min(kMaxDragRadius, 1.0 - std::pow(10.0, -t * kRimDb / 20.0));
 }
 
+std::size_t ArmadilloView::fromCorner() const noexcept {
+  return corner_ & ~std::size_t{1};
+}
+
+std::size_t ArmadilloView::toCorner() const noexcept {
+  return fromCorner() | std::size_t{1};
+}
+
+const std::vector<ArmadilloView::Travel>& ArmadilloView::travels() const noexcept {
+  return travels_;
+}
+
+void ArmadilloView::rebuildTravels() {
+  travels_.clear();
+  if (body_ == nullptr) return;
+  const auto from = fromCorner();
+  const auto to = toCorner();
+  if (from >= trench::core::native::kCorners || to >= trench::core::native::kCorners) {
+    return;
+  }
+  for (std::size_t section = 0; section < trench::core::native::kSections; ++section) {
+    for (const bool zero : {false, true}) {
+      const auto& a = body_->corners[from].sections[section];
+      const auto& b = body_->corners[to].sections[section];
+      const auto start = root_geometry(zero ? a.zero : a.pole, sample_rate_hz_);
+      const auto finish = root_geometry(zero ? b.zero : b.pole, sample_rate_hz_);
+      if (!start || !finish) continue;
+      travels_.push_back(
+          {section, zero,
+           QPointF{xForFrequency(start->hz), yForRadius(start->radius)},
+           QPointF{xForFrequency(finish->hz), yForRadius(finish->radius)}});
+    }
+  }
+}
+
+void ArmadilloView::paintTravel(QPainter& painter) const {
+  if (travels_.empty()) return;
+  painter.save();
+  for (const auto& travel : travels_) {
+    const bool chosen =
+        selected_section_.has_value() && *selected_section_ == travel.section;
+    auto ink = chosen ? section_color(travel.section) : kTravel;
+    ink.setAlpha(chosen ? 215 : 34);
+    painter.setPen(QPen(ink, chosen ? 1.5 : 1.0));
+    painter.setBrush(Qt::NoBrush);
+    const auto delta = travel.to - travel.from;
+    const auto length = std::hypot(delta.x(), delta.y());
+    painter.drawEllipse(travel.from, 2.8, 2.8);
+    if (length < kTravelArrowPx) {
+      painter.setBrush(ink);
+      painter.drawEllipse(travel.to, 2.2, 2.2);
+      continue;
+    }
+    const QPointF step{delta.x() / length, delta.y() / length};
+    const QPointF base{travel.to.x() - step.x() * kTravelArrowPx,
+                       travel.to.y() - step.y() * kTravelArrowPx};
+    painter.drawLine(travel.from, base);
+    const QPointF wing{-step.y() * 2.8, step.x() * 2.8};
+    QPolygonF head;
+    head << travel.to << (base + wing) << (base - wing);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(ink);
+    painter.drawPolygon(head);
+  }
+  painter.restore();
+}
+
 void ArmadilloView::rebuildMarkers() {
   markers_.clear();
   if (body_ == nullptr) return;
@@ -380,6 +469,7 @@ void ArmadilloView::rebuildMarkers() {
                           sample_rate_hz_ / 2.0, 0.9, false, true});
     }
   }
+  rebuildTravels();
 }
 
 std::optional<std::size_t> ArmadilloView::hitMarker(const QPointF& at) const {
@@ -424,20 +514,28 @@ void ArmadilloView::paintEvent(QPaintEvent*) {
 
   paintLpcFormants(painter);
   paintOverlay(painter);
+  paintTravel(painter);
 
   for (const auto& marker : markers_) {
-    const bool selected = selected_section_.has_value() &&
-                          *selected_section_ == marker.section &&
-                          selected_zero_ == marker.zero;
+    const bool in_stage =
+        selected_section_.has_value() && *selected_section_ == marker.section;
+    const bool selected = in_stage && selected_zero_ == marker.zero;
     auto ink = marker.real ? kDim : kInk;
     if (marker.ghost) {
       ink = kDim;
       ink.setAlphaF(0.55F);
     }
+    if (in_stage) {
+      ink = section_color(marker.section);
+      ink.setAlpha(marker.zero ? 200 : 255);
+    } else {
+      ink.setAlpha(70);
+    }
     const auto label = QStringLiteral("%1%2")
                            .arg(marker.zero ? QLatin1Char('z') : QLatin1Char('p'))
                            .arg(marker.section + 1);
-    painter.setPen(selected ? kAccent : ink);
+    painter.setPen(ink);
+    if (selected) painter.setPen(QPen(ink, 1.6));
     const auto text_width = metrics.horizontalAdvance(label);
     painter.drawText(QPointF{marker.position.x() - text_width * 0.5,
                              marker.position.y() + metrics.ascent() * 0.35},
@@ -478,6 +576,7 @@ void ArmadilloView::paintOverlay(QPainter& painter) const {
   painter.save();
   painter.setFont(letter_font());
   for (const auto& marker : overlay_roots_) {
+    if (!revealed(marker)) continue;
     const auto geometry = root_geometry(marker.roots, sample_rate_hz_);
     if (!geometry.has_value()) continue;
     const QPointF at{xForFrequency(geometry->hz), yForRadius(geometry->radius)};

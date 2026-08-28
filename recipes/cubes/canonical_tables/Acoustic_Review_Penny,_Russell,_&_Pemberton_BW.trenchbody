@@ -1,0 +1,300 @@
+{
+  "format": "trench.native-body",
+  "version": 1,
+  "name": "Acoustic_Review_Penny,_Russell,_&_Pemberton_BW",
+  "sample_rate_hz": 44100.0,
+  "corners": [
+    {
+      "corner_index": 0,
+      "label": "C1: M0 (Penny, Russell, & Pemberton (1994)) Low-Q",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 80.0,
+            "radius": 0.99432
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 80.0,
+            "radius": 0.99432
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 1,
+      "label": "C2: M100 (Penny, Russell, & Pemberton (1994)) Low-Q",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 80.0,
+            "radius": 0.99432
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 80.0,
+            "radius": 0.99432
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 2,
+      "label": "C3: M0 (Penny, Russell, & Pemberton (1994)) High-Q Focus",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 28.0,
+            "radius": 0.99801
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 28.0,
+            "radius": 0.99801
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 3,
+      "label": "C4: M100 (Penny, Russell, & Pemberton (1994)) High-Q Focus",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 28.0,
+            "radius": 0.99801
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2500.0,
+            "bandwidth_hz": 28.0,
+            "radius": 0.99801
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    }
+  ]
+}

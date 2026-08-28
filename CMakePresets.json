@@ -30,7 +30,7 @@
         "Python3_EXECUTABLE": "$env{TRENCH_PYTHON313}",
         "PYBIND11_FINDPYTHON": "ON",
         "VCPKG_OVERLAY_PORTS": "$env{TRENCH_VCPKG_OVERLAYS}",
-        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/native/vcpkg-triplets",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets",
         "VCPKG_HOST_TRIPLET": "x64-windows-release",
         "VCPKG_TARGET_TRIPLET": "x64-windows-release"
       }

@@ -1,0 +1,288 @@
+{
+  "format": "trench.native-body",
+  "version": 1,
+  "name": "deshler_2016_helmholtz_static",
+  "sample_rate_hz": 44100.0,
+  "corners": [
+    {
+      "corner_index": 0,
+      "label": "C1: M0 (Helmholtz bottle resonator) Low-Q",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 200.0,
+            "bandwidth_hz": 50.0,
+            "radius": 0.99644
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 1,
+      "label": "C2: M100 (Helmholtz bottle resonator) Low-Q",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 200.0,
+            "bandwidth_hz": 50.0,
+            "radius": 0.99644
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 2,
+      "label": "C3: M0 (Helmholtz bottle resonator) High-Q Focus",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 200.0,
+            "bandwidth_hz": 17.5,
+            "radius": 0.99875
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 3,
+      "label": "C4: M100 (Helmholtz bottle resonator) High-Q Focus",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 200.0,
+            "bandwidth_hz": 17.5,
+            "radius": 0.99875
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "format": "trench.native-body",
+  "version": 1,
+  "name": "ege_2018_multilayer_plates_morph",
+  "sample_rate_hz": 44100.0,
+  "corners": [
+    {
+      "corner_index": 0,
+      "label": "C1: M0 (multilayer plate SOFT) Low-Q",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 503.0,
+            "bandwidth_hz": 12.57,
+            "radius": 0.9991
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 1,
+      "label": "C2: M100 (multilayer plate SPS) Low-Q",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 8022.0,
+            "bandwidth_hz": 144.4,
+            "radius": 0.98977
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 2,
+      "label": "C3: M0 (multilayer plate SOFT) High-Q Focus",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 503.0,
+            "bandwidth_hz": 5.0,
+            "radius": 0.99964
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 3,
+      "label": "C4: M100 (multilayer plate SPS) High-Q Focus",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 8022.0,
+            "bandwidth_hz": 50.54,
+            "radius": 0.99641
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "parked"
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        }
+      ]
+    }
+  ]
+}

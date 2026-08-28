@@ -11,6 +11,7 @@ namespace trench::audio {
 
 struct AuditionView {
   trench::core::native::Body body;
+  trench::core::PackedBody packed;
   float morph{};
   float q{};
   double semitones{};

@@ -6,7 +6,6 @@
 #include "response_plot.hpp"
 #include "user_postures.hpp"
 #include "trench/audio/audition.hpp"
-#include "trench/core/measure.hpp"
 #include "trench/core/packed_body.hpp"
 #include "trench/core/section_param.hpp"
 
@@ -30,10 +29,10 @@ class QDragEnterEvent;
 class QDropEvent;
 class QLabel;
 class ChassisBar;
+class LaneStrip;
 class MorphStrip;
 class PostureList;
 class SectionReadout;
-class VowelJourney;
 
 class MainWindow final : public QMainWindow {
   Q_OBJECT
@@ -42,12 +41,14 @@ class MainWindow final : public QMainWindow {
   explicit MainWindow(const std::filesystem::path& body_path,
                       double sample_rate_hz,
                       QWidget* parent = nullptr);
+  ~MainWindow() override;
 
   [[nodiscard]] ResponsePlotWidget* responsePlot() const noexcept;
   [[nodiscard]] ArmadilloView* armadilloView() const noexcept;
   [[nodiscard]] ChassisBar* chassisBar() const noexcept;
   [[nodiscard]] MorphStrip* morphStrip() const noexcept;
   [[nodiscard]] SectionReadout* sectionReadout() const noexcept;
+  [[nodiscard]] LaneStrip* laneStrip() const noexcept;
   [[nodiscard]] const std::filesystem::path& bodyPath() const noexcept;
   [[nodiscard]] BodyDocument* document() const noexcept;
   [[nodiscard]] FitController* fitController() const noexcept;
@@ -58,6 +59,10 @@ class MainWindow final : public QMainWindow {
 
   void applySection(std::size_t section, const trench::core::PackedSection& words);
   void applyPole(std::size_t section, double frequency_hz, double bw_hz);
+  void applyZero(std::size_t section, double frequency_hz, double bw_hz);
+  void setStageEnabled(std::size_t section, bool on);
+  void applyLanePole(std::size_t section, std::size_t corner, double frequency_hz,
+                     double bw_hz);
   void clearSection(std::size_t section);
   void selectSection(std::size_t section,
                      ResponsePlotWidget::Lane lane = ResponsePlotWidget::Lane::kPole);
@@ -66,8 +71,7 @@ class MainWindow final : public QMainWindow {
   bool saveCorner(const std::filesystem::path& path);
   bool loadCorner(const std::filesystem::path& path);
   bool loadTarget(const std::filesystem::path& path);
-  void setSourceModel(trench::core::measure::Source source);
-  [[nodiscard]] trench::core::measure::Source sourceModel() const noexcept;
+  std::size_t loadTargets(std::vector<std::filesystem::path> paths);
   void startFit();
   void startZeroFit();
   void applyLpcPoles();
@@ -78,12 +82,12 @@ class MainWindow final : public QMainWindow {
   void applyCharacter(double amount);
   [[nodiscard]] FitRoom* fitRoom() const noexcept;
   [[nodiscard]] PostureList* postureList() const noexcept;
-  [[nodiscard]] VowelJourney* vowelJourney() const noexcept;
   [[nodiscard]] int overlayCount() const noexcept;
   void selectOverlay(int index);
   void removeOverlay(int index);
   void stopAndKeep();
   void discardFit();
+  void resetBody();
   void setAuditionGate(bool open);
   [[nodiscard]] bool auditionOpen() const noexcept;
 
@@ -96,7 +100,9 @@ class MainWindow final : public QMainWindow {
   void chooseTarget();
   void addOverlay(const QString& name, trench::core::FitTarget target,
                   std::vector<double> marks_hz = {},
-                  std::vector<trench::core::native::Resonant> suggested_poles = {});
+                  std::vector<trench::core::native::Resonant> suggested_poles = {},
+                  FitRoom::SourceKind source = FitRoom::SourceKind::kCurve,
+                  std::optional<std::size_t> corner = std::nullopt);
   void refreshFitRoom();
   void updateAudition();
   void saveBodyAs();
@@ -109,29 +115,33 @@ class MainWindow final : public QMainWindow {
   void updateInterior();
   void updateReadout();
   void updatePostureMatch();
+  void updateEndpointNames();
   void rebuildPostureGroups();
   void keepPosture();
   [[nodiscard]] std::vector<UserPostures::Pole> currentPolePosture() const;
   [[nodiscard]] std::optional<BodyDocument::P2kCorner> cornerWithPosture(
       const QString& symbol) const;
   [[nodiscard]] bool posturePolesHeld(const QString& symbol) const;
+  [[nodiscard]] bool posturePolesHeld(const QString& symbol,
+                                      std::size_t corner) const;
+  [[nodiscard]] QString matchedPosture(std::size_t corner) const;
   void endRun();
 
   BodyDocument* document_{};
   FitController* fit_controller_{};
+  trench::core::native::Body initial_body_{};
   std::filesystem::path body_path_;
   BodyDocument::CornerSnapshot pre_fit_{};
   std::size_t fit_corner_{};
   bool fit_active_{};
-  trench::core::measure::Source source_model_{trench::core::measure::Source::kFlat};
   bool character_gesture_{};
   std::array<BodyDocument::CornerSnapshot, 2> character_before_{};
   std::size_t selected_section_{};
+  bool selected_lane_zero_{};
   ResponsePlotWidget* response_plot_{};
   ArmadilloView* armadillo_{};
   MorphStrip* morph_strip_{};
   PostureList* posture_list_{};
-  VowelJourney* vowel_journey_{};
   QAbstractButton* keep_posture_{};
   QLabel* fit_method_{};
   QAbstractButton* lpc_poles_{};
@@ -139,6 +149,7 @@ class MainWindow final : public QMainWindow {
   QAbstractButton* free_fit_{};
   UserPostures user_postures_;
   SectionReadout* section_readout_{};
+  LaneStrip* lane_strip_{};
   ChassisBar* chassis_bar_{};
   FitRoom* fit_room_{};
   std::unique_ptr<trench::audio::Audition> audition_;

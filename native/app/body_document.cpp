@@ -4,6 +4,7 @@
 
 #include "trench/core/morph.hpp"
 #include "trench/core/p2k.hpp"
+#include "trench/core/packed_body.hpp"
 #include "trench/core/section_param.hpp"
 
 #include <QUndoCommand>
@@ -64,6 +65,21 @@ class RootEditCommand final : public QUndoCommand {
   BodyDocument::CornerSnapshot before_{};
   BodyDocument::CornerSnapshot after_{};
   std::uint64_t gesture_{};
+};
+
+class BodyEditCommand final : public QUndoCommand {
+ public:
+  BodyEditCommand(BodyDocument* document, trench::core::native::Body before,
+                  trench::core::native::Body after)
+      : document_(document), before_(std::move(before)), after_(std::move(after)) {}
+
+  void redo() override { document_->applyBody(after_); }
+  void undo() override { document_->applyBody(before_); }
+
+ private:
+  BodyDocument* document_{};
+  trench::core::native::Body before_{};
+  trench::core::native::Body after_{};
 };
 
 class SpaceEditCommand final : public QUndoCommand {
@@ -166,11 +182,10 @@ void BodyDocument::beginRootGesture() {
 bool BodyDocument::editRoot(const RootEdit& edit) {
   namespace native = trench::core::native;
   if (edit.section >= native::kSections) return false;
-  const auto free_bit = edit.lane == RootLane::kPole ? native::pole_bit(edit.section)
-                                                      : native::zero_bit(edit.section);
-  if ((freedom_mask_ & free_bit) == 0U) return false;
+  const std::size_t corner = edit.corner.value_or(corner_);
+  if (corner >= native::kCorners) return false;
 
-  const auto before = cornerSnapshot();
+  const auto before = cornerSnapshot(corner);
   auto after = before;
   auto& section = after.sections[edit.section];
   const native::RealRoots parked{std::numeric_limits<double>::infinity(),
@@ -201,7 +216,7 @@ bool BodyDocument::editRoot(const RootEdit& edit) {
   section.dc_stabilised = std::abs(1.0 + b1 + b2) > 1.0e-9;
   if (after == before) return false;
   undo_stack_.push(
-      new RootEditCommand(this, corner_, before, after, active_root_gesture_));
+      new RootEditCommand(this, corner, before, after, active_root_gesture_));
   return true;
 }
 
@@ -322,9 +337,21 @@ double BodyDocument::effectiveSemitones(float morph, float q) const {
 }
 
 trench::core::Cascade BodyDocument::viewCascade() const {
-  const auto gain_db = trench::core::native::blend_gain_db(body_, view_.morph, view_.q);
-  const auto cascade = trench::core::native::cascade(
-      trench::core::native::blend(body_, view_.morph, view_.q, sample_rate_hz_), gain_db);
+  const auto at_corner = atCorner();
+  const auto interior =
+      at_corner ? trench::core::native::Corner{}
+                : trench::core::native::packed_interior_corner(exportP2kBody(),
+                                                               view_.morph, view_.q);
+  const auto gain_db =
+      at_corner ? trench::core::native::blend_gain_db(body_, view_.morph, view_.q)
+                : interior.gain_db;
+  const auto cascade =
+      at_corner
+          ? trench::core::native::cascade(
+                trench::core::native::blend(body_, view_.morph, view_.q, sample_rate_hz_),
+                gain_db)
+          : trench::core::native::cascade(
+                trench::core::native::design(interior, sample_rate_hz_), gain_db);
   if (view_.semitones == 0.0 && atCorner()) return cascade;
   auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
       cascade, trench::core::ratio_of_semitones(view_.semitones), sample_rate_hz_));
@@ -417,6 +444,17 @@ void BodyDocument::applyCorner(std::size_t corner, const CornerSnapshot& words) 
   emit bodyChanged();
 }
 
+void BodyDocument::applyBody(const trench::core::native::Body& body) {
+  if (body_ == body) return;
+  body_ = body;
+  emit bodyChanged();
+}
+
+void BodyDocument::resetBody(const trench::core::native::Body& body) {
+  if (body_ == body) return;
+  undo_stack_.push(new BodyEditCommand(this, body_, body));
+}
+
 void BodyDocument::applyP2kCorner(const P2kCorner& words) {
   applyP2kCorner(corner_, words);
 }
@@ -432,6 +470,21 @@ void BodyDocument::applyFitStep(std::size_t corner,
   applyCorner(corner, snapshot);
 }
 
+double BodyDocument::meanLevelDb(const P2kCorner& rows) const {
+  std::vector<trench::core::Biquad> cascade;
+  cascade.reserve(rows.size());
+  for (const auto& row : rows) {
+    cascade.push_back(trench::core::section_words_to_biquad(row));
+  }
+  double power = 0.0;
+  for (std::size_t index = 0; index < grid_.hz.size(); ++index) {
+    const auto db = trench::core::cascade_response_db(cascade, grid_.hz[index],
+                                                      sample_rate_hz_);
+    power += grid_.weight[index] * std::pow(10.0, db / 10.0);
+  }
+  return 10.0 * std::log10(std::max(power / grid_.weight_sum, 1.0e-30));
+}
+
 void BodyDocument::applyCharacter(double amount) {
   for (std::size_t corner = 0; corner < 2; ++corner) {
     P2kCorner narrowed{};
@@ -441,6 +494,11 @@ void BodyDocument::applyCharacter(double amount) {
           source[section], amount, sample_rate_hz_);
     }
     trench::core::p2k::write_dc_unity_scales(narrowed);
+    const auto delta = meanLevelDb(source) - meanLevelDb(narrowed);
+    if (std::isfinite(delta) && std::abs(delta) > 0.05) {
+      trench::core::p2k::write_dc_unity_scales(narrowed,
+                                               std::pow(10.0, delta / 20.0));
+    }
     applyP2kCorner(corner + 2, narrowed);
   }
 }

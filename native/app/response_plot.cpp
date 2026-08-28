@@ -1,5 +1,7 @@
 #include "response_plot.hpp"
 
+#include "section_color.hpp"
+
 #include "frequency_axis.hpp"
 
 #include "trench/core/p2k.hpp"
@@ -39,11 +41,14 @@ constexpr qint64 kFlashHoldMs = 200;
 const QColor kTarget{72, 82, 88};
 const QColor kResidual{156, 130, 224};
 const QColor kPrimitive{174, 186, 190, 60};
+const QColor kPrefix{87, 222, 205, 46};
+const QColor kPrefixLive{87, 222, 205, 150};
 const QColor kExposed{174, 186, 190, 200};
 
 constexpr double kResidualBandPx = 34.0;
 
 constexpr double kPrimitiveWidthPx = 1.0;
+constexpr double kPrefixWidthPx = 0.9;
 constexpr double kExposedWidthPx = 1.4;
 
 constexpr double kAxisLowHz = 100.0;
@@ -85,6 +90,68 @@ double y_for_contribution(double db, double low_db, double high_db, const QRectF
            (kOverflowBandPx - kTokenRadiusPx) / (1.0 + excess / kOverflowScaleDb);
   }
   return bottom - (db - low_db) / (high_db - low_db) * (bottom - top);
+}
+
+double smoothing_octaves(ResponsePlotWidget::Smoothing mode, double hz) {
+  using S = ResponsePlotWidget::Smoothing;
+  switch (mode) {
+    case S::kNone:
+      return 0.0;
+    case S::kSixth:
+      return 1.0 / 6.0;
+    case S::kThird:
+      return 1.0 / 3.0;
+    case S::kVariable: {
+      if (hz <= 100.0) return 1.0 / 48.0;
+      if (hz >= 10000.0) return 1.0 / 3.0;
+      if (hz <= 1000.0) {
+        const auto t = std::log2(hz / 100.0) / std::log2(10.0);
+        return (1.0 / 48.0) + t * ((1.0 / 6.0) - (1.0 / 48.0));
+      }
+      const auto t = std::log2(hz / 1000.0) / std::log2(10.0);
+      return (1.0 / 6.0) + t * ((1.0 / 3.0) - (1.0 / 6.0));
+    }
+    case S::kPsychoacoustic: {
+      if (hz <= 100.0) return 1.0 / 3.0;
+      if (hz >= 1000.0) return 1.0 / 6.0;
+      const auto t = std::log2(hz / 100.0) / std::log2(10.0);
+      return (1.0 / 3.0) + t * ((1.0 / 6.0) - (1.0 / 3.0));
+    }
+    case S::kErb: {
+      const auto bw = 0.108 * hz + 24.7;
+      const auto low = std::max(hz - bw * 0.5, 1.0);
+      return std::log2((hz + bw * 0.5) / low);
+    }
+  }
+  return 0.0;
+}
+
+std::vector<double> smooth_curve(const std::vector<double>& db,
+                                 const std::vector<double>& hz,
+                                 ResponsePlotWidget::Smoothing mode) {
+  if (mode == ResponsePlotWidget::Smoothing::kNone || db.size() != hz.size() ||
+      db.size() < 3) {
+    return db;
+  }
+  const auto bins_per_octave =
+      static_cast<double>(db.size() - 1) / std::log2(hz.back() / hz.front());
+  std::vector<double> out(db.size(), 0.0);
+  for (std::size_t i = 0; i < db.size(); ++i) {
+    const auto octaves = smoothing_octaves(mode, hz[i]);
+    const auto sigma = std::max(0.5, octaves * bins_per_octave * 0.5);
+    const auto reach = static_cast<int>(std::ceil(sigma * 2.5));
+    double sum = 0.0;
+    double weight_sum = 0.0;
+    for (int d = -reach; d <= reach; ++d) {
+      const auto j = static_cast<int>(i) + d;
+      if (j < 0 || j >= static_cast<int>(db.size())) continue;
+      const auto w = std::exp(-0.5 * (d / sigma) * (d / sigma));
+      sum += w * db[static_cast<std::size_t>(j)];
+      weight_sum += w;
+    }
+    out[i] = weight_sum > 0.0 ? sum / weight_sum : db[i];
+  }
+  return out;
 }
 
 std::vector<double> primitive_db(const trench::core::ConjugatePair& pair, bool pole,
@@ -198,19 +265,13 @@ void ResponsePlotWidget::setView(float morph, float q, double semitones) {
 }
 
 trench::core::Cascade ResponsePlotWidget::viewCascade() const {
-  const auto gain_db =
-      trench::core::native::blend_gain_db(*body_, view_morph_, view_q_);
-  if (at_corner_ && view_semitones_ == 0.0) {
-    return corner_cascade(*body_, corner_, sample_rate_hz_);
-  }
-  auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
-      trench::core::native::cascade(
-          trench::core::native::blend(*body_, view_morph_, view_q_, sample_rate_hz_),
-          gain_db),
-      trench::core::ratio_of_semitones(view_semitones_), sample_rate_hz_));
-  const double gain = std::pow(10.0, gain_db / 20.0);
-  for (std::size_t wi = 0; wi < 3; ++wi) transposed[0][wi] *= gain;
-  return transposed;
+  if (pushed_cascade_) return *pushed_cascade_;
+  return corner_cascade(*body_, corner_, sample_rate_hz_);
+}
+
+void ResponsePlotWidget::setCascade(const trench::core::Cascade& cascade) {
+  pushed_cascade_ = cascade;
+  refresh();
 }
 
 double ResponsePlotWidget::viewRatio() const {
@@ -301,10 +362,70 @@ void ResponsePlotWidget::refresh() {
     }
     running_peak_db_[section] = peak;
   }
+  if (body_ != nullptr) {
+    const auto from = corner_ & ~std::size_t{1};
+    for (std::size_t end = 0; end < 2; ++end) {
+      const auto ends = corner_cascade(*body_, end == 0 ? from : (from | 1U),
+                                       sample_rate_hz_);
+      corner_db_[end].clear();
+      corner_db_[end].reserve(frequencies_hz_.size());
+      for (const auto frequency_hz : frequencies_hz_) {
+        corner_db_[end].push_back(
+            trench::core::cascade_response_db(ends, frequency_hz, sample_rate_hz_));
+      }
+    }
+  }
   rebuildResidual();
   rebuildExposed();
   ++body_revision_;
   update();
+}
+
+void ResponsePlotWidget::setSmoothing(Smoothing smoothing) {
+  if (smoothing == smoothing_) return;
+  smoothing_ = smoothing;
+  rebuildResidual();
+  ++body_revision_;
+  update();
+}
+
+void ResponsePlotWidget::setSlopeDbPerOctave(double slope) {
+  if (std::abs(slope - slope_db_per_octave_) < 1.0e-9) return;
+  slope_db_per_octave_ = slope;
+  ++body_revision_;
+  update();
+}
+
+QString ResponsePlotWidget::smoothingName() const {
+  switch (smoothing_) {
+    case Smoothing::kNone: return QStringLiteral("EXACT");
+    case Smoothing::kSixth: return QStringLiteral("1/6 OCT");
+    case Smoothing::kThird: return QStringLiteral("1/3 OCT");
+    case Smoothing::kVariable: return QStringLiteral("VARIABLE");
+    case Smoothing::kPsychoacoustic: return QStringLiteral("PSYCHO");
+    case Smoothing::kErb: return QStringLiteral("ERB");
+  }
+  return {};
+}
+
+double ResponsePlotWidget::tiltDb(double frequency_hz) const {
+  if (slope_db_per_octave_ == 0.0 || frequency_hz <= 0.0) return 0.0;
+  return slope_db_per_octave_ * std::log2(frequency_hz / 1000.0);
+}
+
+QRectF ResponsePlotWidget::smoothingChip() const {
+  const auto plot = plotRect();
+  return QRectF(plot.right() - 152.0, plot.top() + 4.0, 68.0, 14.0);
+}
+
+QRectF ResponsePlotWidget::slopeChip() const {
+  const auto plot = plotRect();
+  return QRectF(plot.right() - 78.0, plot.top() + 4.0, 68.0, 14.0);
+}
+
+double ResponsePlotWidget::shownTargetDbAt(std::size_t index) const {
+  if (index >= shown_target_db_.size()) return 0.0;
+  return shown_target_db_[index];
 }
 
 void ResponsePlotWidget::rebuildResidual() {
@@ -330,6 +451,7 @@ void ResponsePlotWidget::rebuildResidual() {
     largest = std::max(largest, std::abs(value));
   }
   residual_span_db_ = std::max(1.0, std::ceil(largest));
+  shown_target_db_ = smooth_curve(aligned_target_db_, frequencies_hz_, smoothing_);
 }
 
 void ResponsePlotWidget::rebuildExposed() {
@@ -642,6 +764,20 @@ void ResponsePlotWidget::mouseMoveEvent(QMouseEvent* event) {
 
 void ResponsePlotWidget::mousePressEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton) return;
+  if (smoothingChip().contains(event->position())) {
+    const auto next = (static_cast<int>(smoothing_) + 1) % 6;
+    setSmoothing(static_cast<Smoothing>(next));
+    return;
+  }
+  if (slopeChip().contains(event->position())) {
+    static const std::array<double, 5> kSlopes{0.0, 3.0, 6.0, 9.0, -3.0};
+    std::size_t at = 0;
+    for (std::size_t i = 0; i < kSlopes.size(); ++i) {
+      if (std::abs(kSlopes[i] - slope_db_per_octave_) < 1.0e-9) at = i;
+    }
+    setSlopeDbPerOctave(kSlopes[(at + 1) % kSlopes.size()]);
+    return;
+  }
   const auto hit = tokenAt(event->position());
   if (!hit) return;
   emit tokenSelected(hit->section, hit->lane);
@@ -656,6 +792,27 @@ void ResponsePlotWidget::leaveEvent(QEvent* event) {
 }
 
 std::vector<double> ResponsePlotWidget::exposedDb() const { return exposed_db_; }
+
+std::size_t ResponsePlotWidget::selectedSection() const noexcept {
+  return selected_section_;
+}
+
+std::size_t ResponsePlotWidget::contributionPointCount() const noexcept {
+  if (selected_section_ >= contributions_.size()) return 0;
+  return contributions_[selected_section_].size();
+}
+
+double ResponsePlotWidget::contributionDbAt(std::size_t index) const {
+  if (selected_section_ >= contributions_.size()) return 0.0;
+  const auto& curve = contributions_[selected_section_];
+  if (index >= curve.size()) return 0.0;
+  return curve[index];
+}
+
+double ResponsePlotWidget::cornerDbAt(std::size_t end, std::size_t index) const {
+  if (end > 1 || index >= corner_db_[end].size()) return 0.0;
+  return corner_db_[end][index];
+}
 
 std::size_t ResponsePlotWidget::primitiveCount() const noexcept {
   return primitives_.size();
@@ -733,7 +890,8 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     QPainterPath path;
     for (std::size_t index = 0; index < curve.size(); ++index) {
       const auto x = x_for_frequency(frequencies_hz_[index], sample_rate_hz_, plot);
-      const auto y = y_for_db(curve[index], low_db, high_db, plot);
+      const auto y = y_for_db(curve[index] + tiltDb(frequencies_hz_[index]), low_db,
+                              high_db, plot);
       if (index == 0) {
         path.moveTo(x, y);
       } else {
@@ -744,6 +902,17 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     painter.setBrush(Qt::NoBrush);
     painter.drawPath(path);
   };
+  for (std::size_t end = 0; end < 2; ++end) {
+    auto ghost = kText;
+    ghost.setAlpha(end == 0 ? 52 : 78);
+    stroke_primitive(corner_db_[end], ghost, kPrefixWidthPx);
+  }
+  if (selected_section_ < contributions_.size()) {
+    auto stage = section_color(selected_section_);
+    stage.setAlpha(210);
+    stroke_primitive(contributions_[selected_section_], stage, 1.6);
+  }
+
   const auto flashing = flash_section_ && flash_age_.isValid() &&
                         flash_age_.elapsed() <= kFlashHoldMs;
   if (highlight_section_) {
@@ -764,7 +933,10 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     QPainterPath target_path;
     for (std::size_t index = 0; index < aligned_target_db_.size(); ++index) {
       const auto x = x_for_frequency(frequencies_hz_[index], sample_rate_hz_, plot);
-      const auto y = y_for_db(aligned_target_db_[index], low_db, high_db, plot);
+      const auto shown = index < shown_target_db_.size() ? shown_target_db_[index]
+                                                        : aligned_target_db_[index];
+      const auto y = y_for_db(shown + tiltDb(frequencies_hz_[index]), low_db, high_db,
+                              plot);
       if (index == 0) {
         target_path.moveTo(x, y);
       } else {
@@ -774,6 +946,26 @@ void ResponsePlotWidget::paintEvent(QPaintEvent*) {
     painter.setPen(QPen(kTarget, kTraceWidthPx));
     painter.setBrush(Qt::NoBrush);
     painter.drawPath(target_path);
+  }
+
+  {
+    painter.setFont(QFont(QStringLiteral("Segoe UI"), 7, QFont::DemiBold));
+    const auto draw_chip = [&](const QRectF& box, const QString& text, bool lit) {
+      painter.setPen(Qt::NoPen);
+      painter.setBrush(QColor(17, 20, 22, 220));
+      painter.drawRoundedRect(box, 2.0, 2.0);
+      painter.setPen(QPen(lit ? kTrace : kGrid, 1.0));
+      painter.setBrush(Qt::NoBrush);
+      painter.drawRoundedRect(box, 2.0, 2.0);
+      painter.setPen(lit ? kTrace : kText);
+      painter.drawText(box, Qt::AlignCenter, text);
+    };
+    draw_chip(smoothingChip(), smoothingName(), smoothing_ != Smoothing::kNone);
+    draw_chip(slopeChip(),
+              QStringLiteral("%1%2 dB/oct")
+                  .arg(slope_db_per_octave_ > 0.0 ? QStringLiteral("+") : QString())
+                  .arg(slope_db_per_octave_, 0, 'f', 0),
+              slope_db_per_octave_ != 0.0);
   }
 
   strokeTrace(painter, kTrace);

@@ -31,10 +31,12 @@ struct VerbLook {
   const QColor* ink;
 };
 
-const std::array<VerbLook, 6> kVerbs{{
+const std::array<VerbLook, 8> kVerbs{{
     {ChassisBar::Verb::kSave, "SAVE", &kIdentity},
-    {ChassisBar::Verb::kSource, "", &kIdentityDim},
     {ChassisBar::Verb::kTarget, "TARGET", &kIdentity},
+    {ChassisBar::Verb::kUndo, "UNDO", &kIdentityDim},
+    {ChassisBar::Verb::kRedo, "REDO", &kIdentityDim},
+    {ChassisBar::Verb::kReset, "RESET", &kKeep},
     {ChassisBar::Verb::kFit, "FIT", &kFit},
     {ChassisBar::Verb::kKeep, "STOP & KEEP", &kKeep},
     {ChassisBar::Verb::kDiscard, "DISCARD", &kDiscard},
@@ -59,11 +61,17 @@ bool ChassisBar::event(QEvent* event) {
         case Verb::kSave:
           tip = QStringLiteral("save the body (ctrl+S — ctrl+shift+S for a new file)");
           break;
-        case Verb::kSource:
-          tip = QStringLiteral("measurement source for audio targets: flat or sawtooth");
-          break;
         case Verb::kTarget:
           tip = QStringLiteral("load a target to fit against (ctrl+T)");
+          break;
+        case Verb::kUndo:
+          tip = QStringLiteral("undo the last edit (ctrl+Z)");
+          break;
+        case Verb::kRedo:
+          tip = QStringLiteral("redo the last edit (ctrl+Y)");
+          break;
+        case Verb::kReset:
+          tip = QStringLiteral("restore the body as opened; keep loaded targets");
           break;
         case Verb::kFit:
           tip = QStringLiteral("solve the free zeros under the target; poles stay put");
@@ -100,8 +108,10 @@ void ChassisBar::setState(bool has_target, bool running) {
   update();
 }
 
-void ChassisBar::setSourceSawtooth(bool sawtooth) {
-  source_sawtooth_ = sawtooth;
+void ChassisBar::setHistoryState(bool can_undo, bool can_redo, bool can_reset) {
+  can_undo_ = can_undo;
+  can_redo_ = can_redo;
+  can_reset_ = can_reset;
   update();
 }
 
@@ -120,9 +130,6 @@ void ChassisBar::setScoreDb(double db) {
 double ChassisBar::scoreDb() const noexcept { return score_db_; }
 
 QString ChassisBar::labelFor(Verb verb) const {
-  if (verb == Verb::kSource) {
-    return source_sawtooth_ ? QStringLiteral("SAW") : QStringLiteral("FLAT");
-  }
   for (const auto& look : kVerbs) {
     if (look.verb == verb) return QString::fromLatin1(look.label);
   }
@@ -142,9 +149,17 @@ std::vector<ChassisBar::Pad> ChassisBar::pads() const {
     pad.rect = QRectF(right - pad_width, top, pad_width, kPadHeight);
     switch (it->verb) {
       case Verb::kSave:
-      case Verb::kSource:
       case Verb::kTarget:
         pad.available = !running_;
+        break;
+      case Verb::kUndo:
+        pad.available = !running_ && can_undo_;
+        break;
+      case Verb::kRedo:
+        pad.available = !running_ && can_redo_;
+        break;
+      case Verb::kReset:
+        pad.available = !running_ && can_reset_;
         break;
       case Verb::kFit:
         pad.available = has_target_ && !running_;

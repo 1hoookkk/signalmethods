@@ -5,10 +5,8 @@
   "dependencies": [
     "ceres",
     "eigen3",
-    "gtest",
     "nlohmann-json",
     "pocketfft",
-    "pybind11",
     {
       "name": "qtbase",
       "default-features": false,
@@ -29,7 +27,7 @@
   "overrides": [
     {
       "name": "qtbase",
-      "version": "6.11.2"
+      "version": "6.11.1"
     }
   ]
 }

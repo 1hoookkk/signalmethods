@@ -1,0 +1,416 @@
+{
+  "format": "trench.native-body",
+  "version": 1,
+  "name": "AngelzHairz",
+  "sample_rate_hz": 44100.0,
+  "corners": [
+    {
+      "corner_index": 0,
+      "label": "Corner 1: M0 Q0 (Closed Low-Q)",
+      "gain_db": -6.22,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 8802.2,
+            "bandwidth_hz": 37.78,
+            "radius": 0.99731
+          },
+          "zero": {
+            "type": "real_pair",
+            "root_a": 0.74698,
+            "root_b": 0.10491
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 553.49,
+            "bandwidth_hz": 336.8,
+            "radius": 0.97629
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 3570.76,
+            "bandwidth_hz": 3123.51,
+            "radius": 0.8005
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3787.12,
+            "bandwidth_hz": 21.44,
+            "radius": 0.99847
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 7198.43,
+            "bandwidth_hz": 936.85,
+            "radius": 0.93544
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 11354.02,
+            "bandwidth_hz": 36.06,
+            "radius": 0.99743
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 14901.1,
+            "bandwidth_hz": 2470.31,
+            "radius": 0.83863
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 6176.8,
+            "bandwidth_hz": 41.23,
+            "radius": 0.99707
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 16367.43,
+            "bandwidth_hz": 720.89,
+            "radius": 0.94994
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 16995.42,
+            "bandwidth_hz": 1322.9,
+            "radius": 0.91006
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 16003.31,
+            "bandwidth_hz": 0.03,
+            "radius": 1.0
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 1,
+      "label": "Corner 2: M100 Q0 (Open Low-Q)",
+      "gain_db": -4.76,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 11823.25,
+            "bandwidth_hz": 138.36,
+            "radius": 0.99019
+          },
+          "zero": {
+            "type": "real_pair",
+            "root_a": 0.74698,
+            "root_b": 0.10491
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 1954.27,
+            "bandwidth_hz": 58.46,
+            "radius": 0.99584
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 4162.19,
+            "bandwidth_hz": 2165.18,
+            "radius": 0.85706
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3885.62,
+            "bandwidth_hz": 124.39,
+            "radius": 0.99118
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 7042.33,
+            "bandwidth_hz": 2316.09,
+            "radius": 0.8479
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 15189.75,
+            "bandwidth_hz": 131.37,
+            "radius": 0.99068
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 14901.1,
+            "bandwidth_hz": 2470.31,
+            "radius": 0.83863
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 6542.48,
+            "bandwidth_hz": 131.37,
+            "radius": 0.99068
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 16847.86,
+            "bandwidth_hz": 3296.77,
+            "radius": 0.79069
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 1500.82,
+            "bandwidth_hz": 1873.6,
+            "radius": 0.87505
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 5566.89,
+            "bandwidth_hz": 0.03,
+            "radius": 1.0
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 2,
+      "label": "Corner 3: M0 Q100 (Closed High-Q)",
+      "gain_db": -11.43,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 4919.13,
+            "bandwidth_hz": 16.29,
+            "radius": 0.99884
+          },
+          "zero": {
+            "type": "real_pair",
+            "root_a": 0.74698,
+            "root_b": 0.10491
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 553.49,
+            "bandwidth_hz": 336.8,
+            "radius": 0.97629
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 2178.75,
+            "bandwidth_hz": 61.92,
+            "radius": 0.9956
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 1509.29,
+            "bandwidth_hz": 18.86,
+            "radius": 0.99866
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 6553.07,
+            "bandwidth_hz": 173.4,
+            "radius": 0.98772
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3870.35,
+            "bandwidth_hz": 14.57,
+            "radius": 0.99896
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 14901.1,
+            "bandwidth_hz": 2470.31,
+            "radius": 0.83863
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2474.55,
+            "bandwidth_hz": 17.15,
+            "radius": 0.99878
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 4539.79,
+            "bandwidth_hz": 293.78,
+            "radius": 0.97929
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 16995.42,
+            "bandwidth_hz": 1322.9,
+            "radius": 0.91006
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 17960.83,
+            "bandwidth_hz": 0.03,
+            "radius": 1.0
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 3,
+      "label": "Corner 4: M100 Q100 (Open High-Q)",
+      "gain_db": -5.72,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 11758.3,
+            "bandwidth_hz": 32.61,
+            "radius": 0.99768
+          },
+          "zero": {
+            "type": "real_pair",
+            "root_a": 0.74698,
+            "root_b": 0.10491
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 673.59,
+            "bandwidth_hz": 19.72,
+            "radius": 0.9986
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 4162.19,
+            "bandwidth_hz": 2165.18,
+            "radius": 0.85706
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3790.55,
+            "bandwidth_hz": 46.4,
+            "radius": 0.9967
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 7042.33,
+            "bandwidth_hz": 2316.09,
+            "radius": 0.8479
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 15063.65,
+            "bandwidth_hz": 25.74,
+            "radius": 0.99817
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 14901.1,
+            "bandwidth_hz": 2470.31,
+            "radius": 0.83863
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 6515.67,
+            "bandwidth_hz": 25.74,
+            "radius": 0.99817
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 16847.86,
+            "bandwidth_hz": 3296.77,
+            "radius": 0.79069
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 11734.15,
+            "bandwidth_hz": 9723.18,
+            "radius": 0.50024
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 17960.83,
+            "bandwidth_hz": 0.03,
+            "radius": 1.0
+          },
+          "dc_stabilised": true
+        }
+      ]
+    }
+  ]
+}

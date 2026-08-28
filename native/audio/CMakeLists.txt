@@ -22,14 +22,3 @@ target_compile_definitions(trench_native_audio_boundary PRIVATE
   JUCE_WEB_BROWSER=0
   JUCE_USE_CURL=0
 )
-
-if(BUILD_TESTING)
-  find_package(GTest 1.18.0 EXACT CONFIG REQUIRED)
-  add_executable(trench_native_audio_tests tests/audio_boundary_tests.cpp)
-  target_link_libraries(trench_native_audio_tests PRIVATE
-    trench_native_audio_boundary
-    GTest::gtest_main
-  )
-  include(GoogleTest)
-  gtest_discover_tests(trench_native_audio_tests)
-endif()

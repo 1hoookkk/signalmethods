@@ -13,14 +13,23 @@ class ChassisBar final : public QWidget {
   Q_OBJECT
 
  public:
-  enum class Verb { kSave, kSource, kTarget, kFit, kKeep, kDiscard };
+  enum class Verb {
+    kSave,
+    kTarget,
+    kUndo,
+    kRedo,
+    kReset,
+    kFit,
+    kKeep,
+    kDiscard
+  };
 
   explicit ChassisBar(QWidget* parent = nullptr);
 
   void setBodyName(const QString& name);
   void setTargetName(const QString& name);
   void setState(bool has_target, bool running);
-  void setSourceSawtooth(bool sawtooth);
+  void setHistoryState(bool can_undo, bool can_redo, bool can_reset);
   void setPowerDb(double db);
   [[nodiscard]] double powerDb() const noexcept;
   void setScoreDb(double db);
@@ -54,7 +63,9 @@ class ChassisBar final : public QWidget {
   QString target_name_;
   bool has_target_{};
   bool running_{};
-  bool source_sawtooth_{};
+  bool can_undo_{};
+  bool can_redo_{};
+  bool can_reset_{};
   double power_db_{std::numeric_limits<double>::quiet_NaN()};
   double score_db_{std::numeric_limits<double>::quiet_NaN()};
   std::optional<Verb> hover_;

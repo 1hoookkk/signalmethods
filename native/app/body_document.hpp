@@ -35,6 +35,7 @@ class BodyDocument final : public QObject {
     double hz{};
     double bandwidth_hz{};
     bool parked{};
+    std::optional<std::size_t> corner{};
   };
 
   BodyDocument(trench::core::native::Body body, double sample_rate_hz,
@@ -89,12 +90,15 @@ class BodyDocument final : public QObject {
 
   void applyCorner(const CornerSnapshot& words);
   void applyCorner(std::size_t corner, const CornerSnapshot& words);
+  void applyBody(const trench::core::native::Body& body);
+  void resetBody(const trench::core::native::Body& body);
   void applyP2kCorner(const P2kCorner& words);
   void applyP2kCorner(std::size_t corner, const P2kCorner& words);
   void applyFitStep(std::size_t corner, const CornerSnapshot& snapshot);
   void commitFit(std::size_t corner, const CornerSnapshot& before);
 
   void applyCharacter(double amount);
+  [[nodiscard]] double meanLevelDb(const P2kCorner& rows) const;
   void commitCharacter(const CornerSnapshot& before_low, const CornerSnapshot& before_high);
 
  signals:

@@ -21,6 +21,8 @@
 #include <filesystem>
 #include <optional>
 #include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace {
 
@@ -142,8 +144,6 @@ int main(int argc, char* argv[]) {
                                         QStringLiteral("Load a .corner file into a slot, \"N=path\" with N in 1-4; repeatable."),
                                         QStringLiteral("spec"));
   parser.addOption(load_corner_option);
-  QCommandLineOption saw_option(QStringLiteral("saw"),
-                                QStringLiteral("Measure audio targets as a sawtooth source."));
   QCommandLineOption intent_option(
       QStringLiteral("intent"),
       QStringLiteral("Row intents, \"1=tilt,2=peak,...\" over rows 1-6 and "
@@ -159,7 +159,6 @@ int main(int argc, char* argv[]) {
   QCommandLineOption view_option(QStringLiteral("view"),
                                  QStringLiteral("Interior view \"morph,q\" after showing."),
                                  QStringLiteral("spec"));
-  parser.addOption(saw_option);
   parser.addOption(intent_option);
   parser.addOption(space_option);
   parser.addOption(overlay_option);
@@ -199,9 +198,6 @@ int main(int argc, char* argv[]) {
     }
     window.show();
     window.setCorner(static_cast<std::size_t>(parser.value(corner_option).toUInt()));
-    if (parser.isSet(saw_option)) {
-      window.setSourceModel(trench::core::measure::Source::kSawtooth);
-    }
     if (parser.isSet(space_option) &&
         !apply_space(window.document(), parser.value(space_option))) {
       parser.showHelp(2);
@@ -211,8 +207,11 @@ int main(int argc, char* argv[]) {
       parser.showHelp(2);
     }
     if (parser.isSet(target_option)) {
-      window.loadTarget(
-          std::filesystem::path(parser.value(target_option).toStdWString()));
+      std::vector<std::filesystem::path> targets;
+      for (const auto& value : parser.values(target_option)) {
+        targets.emplace_back(value.toStdWString());
+      }
+      window.loadTargets(std::move(targets));
     }
     if (parser.isSet(overlay_option) &&
         !window.armadilloView()->setOverlay(parser.value(overlay_option))) {

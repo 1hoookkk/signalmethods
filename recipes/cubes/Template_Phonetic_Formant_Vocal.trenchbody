@@ -1,0 +1,372 @@
+{
+  "format": "trench.native-body",
+  "version": 1,
+  "name": "Template - Phonetic Formant (Vocal Morphs)",
+  "sample_rate_hz": 44100.0,
+  "corners": [
+    {
+      "corner_index": 0,
+      "label": "C1: M0 Q0 (Vowel 'OO' - Closed Jaw)",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 280.0,
+            "bandwidth_hz": 28.1,
+            "radius": 0.998
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 870.0,
+            "bandwidth_hz": 112.75,
+            "radius": 0.992
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2780.0,
+            "bandwidth_hz": 212.16,
+            "radius": 0.985
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3370.0,
+            "bandwidth_hz": 269.28,
+            "radius": 0.981
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 1,
+      "label": "C2: M100 Q0 (Vowel 'EE' - Open Mouth Front)",
+      "gain_db": 0.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 280.0,
+            "bandwidth_hz": 28.1,
+            "radius": 0.998
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2290.0,
+            "bandwidth_hz": 169.47,
+            "radius": 0.988
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2780.0,
+            "bandwidth_hz": 212.16,
+            "radius": 0.985
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3370.0,
+            "bandwidth_hz": 269.28,
+            "radius": 0.981
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 2,
+      "label": "C3: M0 Q100 (Focused 'OO' Robot Resonance)",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 280.0,
+            "bandwidth_hz": 7.02,
+            "radius": 0.9995
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 870.0,
+            "bandwidth_hz": 21.07,
+            "radius": 0.9985
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2780.0,
+            "bandwidth_hz": 42.18,
+            "radius": 0.997
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3370.0,
+            "bandwidth_hz": 70.36,
+            "radius": 0.995
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        }
+      ]
+    },
+    {
+      "corner_index": 3,
+      "label": "C4: M100 Q100 (Focused 'EE' Laser Resonance)",
+      "gain_db": 3.0,
+      "sections": [
+        {
+          "section": 0,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 280.0,
+            "bandwidth_hz": 7.02,
+            "radius": 0.9995
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 1,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2290.0,
+            "bandwidth_hz": 21.07,
+            "radius": 0.9985
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 2,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 2780.0,
+            "bandwidth_hz": 42.18,
+            "radius": 0.997
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 3,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 3370.0,
+            "bandwidth_hz": 70.36,
+            "radius": 0.995
+          },
+          "zero": {
+            "type": "parked"
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 4,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        },
+        {
+          "section": 5,
+          "pole": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "zero": {
+            "type": "resonant",
+            "frequency_hz": 9380.0,
+            "bandwidth_hz": 29150.0,
+            "radius": 0.125
+          },
+          "dc_stabilised": true
+        }
+      ]
+    }
+  ]
+}

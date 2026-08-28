@@ -27,6 +27,9 @@ class ResponsePlotWidget final : public QWidget {
   Q_OBJECT
 
  public:
+  enum class Smoothing { kNone, kSixth, kThird, kVariable, kPsychoacoustic, kErb };
+  Q_ENUM(Smoothing)
+
   enum class Lane { kPole, kZero };
   Q_ENUM(Lane)
 
@@ -46,6 +49,16 @@ class ResponsePlotWidget final : public QWidget {
   void setCorner(std::size_t corner);
   void setSpace(const trench::core::p2k::PerceptualSpace& space);
   void setView(float morph, float q, double semitones = 0.0);
+  void setCascade(const trench::core::Cascade& cascade);
+  void setSmoothing(Smoothing smoothing);
+  void setSlopeDbPerOctave(double slope);
+  [[nodiscard]] Smoothing smoothing() const noexcept { return smoothing_; }
+  [[nodiscard]] double slopeDbPerOctave() const noexcept { return slope_db_per_octave_; }
+  [[nodiscard]] QString smoothingName() const;
+  [[nodiscard]] double tiltDb(double frequency_hz) const;
+  [[nodiscard]] QRectF smoothingChip() const;
+  [[nodiscard]] QRectF slopeChip() const;
+  [[nodiscard]] double shownTargetDbAt(std::size_t index) const;
   void setFreedomMask(std::uint32_t mask);
   void setTarget(const std::vector<double>* target);
   void setFitRunning(bool running);
@@ -61,6 +74,10 @@ class ResponsePlotWidget final : public QWidget {
   [[nodiscard]] double dbForY(double y) const;
   [[nodiscard]] double responseDbAt(std::size_t index) const;
   [[nodiscard]] double runningPeakDb(std::size_t section) const;
+  [[nodiscard]] std::size_t selectedSection() const noexcept;
+  [[nodiscard]] std::size_t contributionPointCount() const noexcept;
+  [[nodiscard]] double contributionDbAt(std::size_t index) const;
+  [[nodiscard]] double cornerDbAt(std::size_t end, std::size_t index) const;
   [[nodiscard]] std::size_t residualPointCount() const noexcept;
   [[nodiscard]] double residualDbAt(std::size_t index) const;
   [[nodiscard]] double alignedTargetDbAt(std::size_t index) const;
@@ -107,9 +124,14 @@ class ResponsePlotWidget final : public QWidget {
   std::size_t selected_section_{};
   Lane selected_lane_{Lane::kPole};
   std::optional<std::size_t> highlight_section_;
+  std::optional<trench::core::Cascade> pushed_cascade_;
   std::vector<double> frequencies_hz_;
   std::vector<double> response_db_;
   std::array<double, trench::core::kLegacySectionCount> running_peak_db_{};
+  std::array<std::vector<double>, 2> corner_db_;
+  std::vector<double> shown_target_db_;
+  Smoothing smoothing_{Smoothing::kNone};
+  double slope_db_per_octave_{0.0};
   std::vector<double> residual_db_;
   std::vector<double> aligned_target_db_;
   std::vector<double> exposed_db_;

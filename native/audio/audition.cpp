@@ -15,14 +15,24 @@ namespace trench::audio {
 
 trench::core::Cascade design_audition(const AuditionView& view,
                                       double device_sample_rate_hz) {
-  const auto gain_db = trench::core::native::blend_gain_db(
-      view.body, view.morph, view.q);
-  const auto designed = trench::core::native::cascade(
-      trench::core::native::blend(view.body, view.morph, view.q,
-                                  device_sample_rate_hz),
-      gain_db);
   const bool at_corner = (view.morph == 0.0F || view.morph == 1.0F) &&
                          (view.q == 0.0F || view.q == 1.0F);
+  const auto interior =
+      at_corner ? trench::core::native::Corner{}
+                : trench::core::native::packed_interior_corner(view.packed, view.morph,
+                                                               view.q);
+  const auto gain_db =
+      at_corner
+          ? trench::core::native::blend_gain_db(view.body, view.morph, view.q)
+          : interior.gain_db;
+  const auto designed =
+      at_corner
+          ? trench::core::native::cascade(
+                trench::core::native::blend(view.body, view.morph, view.q,
+                                            device_sample_rate_hz),
+                gain_db)
+          : trench::core::native::cascade(
+                trench::core::native::design(interior, device_sample_rate_hz), gain_db);
   if (view.semitones == 0.0 && at_corner) return designed;
 
   auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
@@ -109,6 +119,21 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
       std::fill(left, left + frames, 0.0F);
     } else {
       runner.process({left, static_cast<std::size_t>(frames)});
+      bool broken = false;
+      for (int i = 0; i < frames; ++i) {
+        if (!std::isfinite(left[i])) {
+          broken = true;
+          break;
+        }
+      }
+      if (broken) {
+        runner.reset();
+        std::fill(left, left + frames, 0.0F);
+      } else {
+        for (int i = 0; i < frames; ++i) {
+          left[i] = std::clamp(left[i], -1.0F, 1.0F);
+        }
+      }
     }
     for (int c = 1; c < channels; ++c) std::copy(left, left + frames, out[c]);
   }
