@@ -658,9 +658,11 @@ void PluginEditor::applySectionVisibility()
 void PluginEditor::updateEditorSize()
 {
     using trench::ui::SectionRail;
+    // ONE HEIGHT (Tyson 2026-08-28 "dont make the ui cut like that"): the
+    // face never shortens - shut just means bare plate under the wheels.
     setSize (kEditorWidth + (devPanel != nullptr && devPanel->isVisible()
                                  ? trench::ui::DevBypassPanel::kWidth : 0),
-             openSection == SectionRail::kDrive ? kEditorHeight : kEditorHeightClosed);
+             kEditorHeight);
 }
 void PluginEditor::onFrame()
 {

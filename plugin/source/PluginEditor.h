@@ -74,7 +74,7 @@ private:
     std::unique_ptr<trench::ui::BayKnob>          chewKnob;
     std::unique_ptr<trench::ui::BayKnob>          slamKnob;
     std::unique_ptr<trench::ui::BayKnob>          lowKnob;
-    int openSection = trench::ui::SectionRail::kDrive;
+    int openSection = -1;
     void applySectionVisibility();
     void updateEditorSize();
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;

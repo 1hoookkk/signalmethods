@@ -245,8 +245,8 @@ public:
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (face);
             if (displayPlate.isNull())
-                displayPlate = juce::ImageCache::getFromMemory (BinaryData::trench_glass_png,
-                                                                BinaryData::trench_glass_pngSize);
+                displayPlate = juce::ImageCache::getFromMemory (BinaryData::display_bitmap4613_png,
+                                                                BinaryData::display_bitmap4613_pngSize);
             {
                 juce::Graphics::ScopedSaveState samplingState (g);
                 g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
@@ -509,7 +509,7 @@ private:
     juce::Path responsePath;
     // One logical pixel, antialiased by the supersampled cache. No companion
     // stroke or glow: the curve is a precise mint hairline on dark glass.
-    static constexpr float kTraceWidth = 1.0f;
+    static constexpr float kTraceWidth = 1.1f;
     mutable juce::Image traceCache;
     mutable juce::Colour cachedColour;
     std::vector<float> traceXs;

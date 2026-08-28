@@ -63,24 +63,26 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // THE CHIP IS THE DOOR (Tyson 2026-08-28 "the rooms can be solved by
-        // a 'FX+' chip"): the engraved word becomes a lit chip seated in the
-        // frame break - KeySnapBox's own pill construction, so the drawer's
-        // tab reads as a control instead of silkscreen.
+        // THE CHIP SPEAKS MODULATION'S LANGUAGE (Tyson 2026-08-28 "The
+        // Modulation chip is what Fx+ should be"): a lamp and a quiet word on
+        // the glass - no pill. Open = the lamp lit and the word full ink.
+        const auto b = getLocalBounds().toFloat();
         for (int i = 0; i < kNumSections; ++i)
         {
-            const auto r = wordRect (i).reduced (1.0f, 0.5f);
-            g.setColour (juce::Colour (0xff101614).withAlpha (0.88f));
-            g.fillRoundedRectangle (r, 8.0f);
-            g.setColour (juce::Colours::black.withAlpha (0.55f));
-            g.drawRoundedRectangle (r, 8.0f, 1.0f);
-            g.setColour (juce::Colour (0xffc7d3cd).withAlpha (0.22f));
-            g.drawRoundedRectangle (r.reduced (1.0f), 7.0f, 0.7f);
             const bool lit = open == i;
-            const float alpha = lit ? 0.95f : hoverIdx == i ? 0.80f : 0.55f;
-            g.setColour ((lit ? t.accent() : juce::Colour (0xffc7d3cd)).withAlpha (alpha));
-            g.setFont (displayFont (9.5f, true));
-            g.drawText (kNames[i], r.toNearestInt(), juce::Justification::centred, false);
+            const float ink = lit ? 0.95f : hoverIdx == i ? 0.80f : 0.55f;
+            const juce::Rectangle<float> lamp { b.getX() + 1.0f, b.getCentreY() - 3.0f, 6.0f, 6.0f };
+            g.setColour (lit ? t.modulationLamp() : t.telemetry().withAlpha (0.45f));
+            g.fillEllipse (lamp);
+            if (hoverIdx == i)
+            {
+                g.setColour ((lit ? t.modulationLamp() : t.telemetry()).withAlpha (0.25f));
+                g.fillEllipse (lamp.expanded (2.0f));
+            }
+            g.setFont (telemetryFont (9.8f));
+            g.setColour (t.telemetry().withAlpha (ink));
+            g.drawText (kNames[i], b.withTrimmedLeft (12.0f).toNearestInt(),
+                        juce::Justification::centredLeft, false);
         }
     }
     // light, plain popup — the E-mu/'95 menu, not the dark glass family.

@@ -96,54 +96,51 @@ public:
         // BELOW the wheel centre (their 3px of 25) -> y 705 / 873.5; digit
         // cap = 54% of pill height, 1px stems -> fontSize 21, regular.
         // The v2 plate has no readout recesses; the pills float on plate.
-        layout.elements["morphReadout"] = { { 562.6f, 698.0f, 167.3f, 68.1f },  18.0f, juce::Colour (0xff3A2A0E) };
-        layout.elements["qReadout"]     = { { 562.6f, 865.2f, 167.3f, 68.1f },  18.0f, juce::Colour (0xff3A2A0E) };
+        layout.elements["morphReadout"] = { { 562.6f, 698.0f, 167.3f, 68.1f },  20.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qReadout"]     = { { 562.6f, 865.2f, 167.3f, 68.1f },  20.0f, juce::Colour (0xff2a2722) };
         // RE-MEASURED with per-axis mapping (2026-08-15 "Re measure all
         // bounds"; plate->source is x*1010/828, y*1557/1280 - NOT one factor).
         // The recess interior in df2_panel_beige.png (luma < 60) is plate px
         // x 97..738, y 191..498 -> source x 118.3..901.4, y 232.3..607.0.
         // The wheel wells were measured the same pass and their elements sit
         // dead-centred on the punched holes (centres agree to 0.05 px).
-        layout.elements["spectrumGrid"] = { { 117.0f, 230.0f, 782.4f, 375.6f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 118.3f, 232.3f, 781.9f, 373.4f }, {}, {} };
         // anchored near its box so the eye tracks the pair (UX audit 2026-07-31)
         // the ROW starts where the display starts (source x 110): the label is
         // set flush left there, the selector still ends on the display's right
-        layout.elements["typeLabel"]    = { { 152.0f, 139.0f, 72.0f, 68.0f },  15.0f, juce::Colour (0xff222222) };
+        layout.elements["typeLabel"]    = { { 152.0f, 139.0f, 72.0f, 68.0f },  15.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
         // Black, like the readouts: text on the light frosted panel needs a
         // darker ink than text engraved into beige (contrast measured 0.43 here
         // against 0.55-0.58 on the plate).
-        layout.elements["typeName"]     = { { 244.0f, 143.0f, 530.0f, 64.0f },  18.0f, juce::Colour (0xff3A2A0E) };
+        layout.elements["typeName"]     = { { 244.0f, 143.0f, 530.0f, 64.0f },  18.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeArrow"]    = { { 850.0f, 143.0f, 52.0f,  64.0f },  {}, {} };
-        layout.elements["morphLabel"]   = { { 114.0f, 640.0f, 434.0f, 38.0f },  18.0f, juce::Colour (0xff222222) };
+        layout.elements["morphLabel"]   = { { 114.0f, 640.0f, 434.0f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["morphLabel"].text = "MORPH";
-        layout.elements["qLabel"]       = { { 114.0f, 798.0f, 434.0f, 38.0f },  18.0f, juce::Colour (0xff222222) };
+        layout.elements["qLabel"]       = { { 114.0f, 798.0f, 434.0f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
         // No per-element ink: the logo takes the brandInk palette token, so a
         // theme swap carries it. Every other label stays plate near-black.
-        layout.elements["brandLabel"]   = { { 100.0f, 73.0f, 230.0f, 44.0f }, 20.0f, juce::Colour (0xff0f0c09) };
+        layout.elements["brandLabel"]   = { { 100.0f, 73.0f, 230.0f, 44.0f }, 18.5f, juce::Colour (0xff0f0c09) };
         // The name is TRENCH (Tyson 2026-08-09, final): detached, slightly
         // unknowable - never trench imagery, military language or depth
         // claims anywhere on the product.
         layout.elements["brandLabel"].text = "TRENCH";
-        layout.elements["brandSub"]     = { { 100.0f, 119.0f, 230.0f, 26.0f }, 8.5f, juce::Colour (0xff0f0c09) };
-        layout.elements["brandSub"].text = "SIGNAL METHODS";
-        // JULY TEAL-SAGE RESTORATION: dark petrol glass, quiet sage telemetry,
-        // a pale 1px response trace and saturated light only inside the controls.
-        layout.colours["accent"]             = juce::Colour (0xffB9ECE0);
-        layout.colours["curveColour"]        = juce::Colour (0xffB9ECE0);
-        layout.colours["curveHighlight"]     = juce::Colour (0xffEAFFF9);
-        layout.colours["telemetry"]          = juce::Colour (0xff45523F);
-        layout.colours["rollerIllumination"] = juce::Colour (0xff2BD8C3);
-        layout.colours["modulationLamp"]     = juce::Colour (0xff2BD8C3);
-        layout.colours["phosphor"]           = juce::Colour (0xff8CA487);
+        layout.colours["accent"]             = juce::Colour (0xffc96a54);
+        layout.colours["curveColour"]        = juce::Colour (0xffd9d6c9);
+        layout.colours["curveHighlight"]     = juce::Colour (0xffefece2);
+        layout.colours["telemetry"]          = juce::Colour (0xffa39ac0);
+        layout.colours["dashed"]             = juce::Colour (0xffa39ac0);
+        layout.colours["rollerIllumination"] = juce::Colour (0xffc96a54);
+        layout.colours["modulationLamp"]     = juce::Colour (0xffc96a54);
+        layout.colours["phosphor"]           = juce::Colour (0xff1a1624);
         // amber = the SOURCE voice (RESAMPLE/GEN only) - never the trace's value
         layout.colours["amber"]              = juce::Colour (0xffb8862e);
-        layout.colours["screenEdge"]         = juce::Colour (0xff0D221E);
+        layout.colours["screenEdge"]         = juce::Colour (0xff171325);
         // No glow on the curve: the ghost halo matches the glass exactly, so
         // the trace reads as a clean line with no aura.
-        layout.colours["spectrumGhost"]      = juce::Colour (0xff1E5149);
-        layout.colours["labelInk"]    = juce::Colour (0xff222222);
+        layout.colours["spectrumGhost"]      = juce::Colour (0xff1a1624);
+        layout.colours["labelInk"]    = juce::Colour (0xff24231f);
         // The TRENCH title takes no token of its own: it is the window's navy
         // (phosphor) lettering inside a catch of the trace's mint (accent),
         // both already defined above. See LabelsLayer.
