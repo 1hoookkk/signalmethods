@@ -96,8 +96,8 @@ public:
         // BELOW the wheel centre (their 3px of 25) -> y 705 / 873.5; digit
         // cap = 54% of pill height, 1px stems -> fontSize 21, regular.
         // The v2 plate has no readout recesses; the pills float on plate.
-        layout.elements["morphReadout"] = { { 562.6f, 698.0f, 167.3f, 68.1f },  20.0f, juce::Colour (0xff2a2722) };
-        layout.elements["qReadout"]     = { { 562.6f, 865.2f, 167.3f, 68.1f },  20.0f, juce::Colour (0xff2a2722) };
+        layout.elements["morphReadout"] = { { 562.6f, 698.0f, 167.3f, 68.1f },  15.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qReadout"]     = { { 562.6f, 865.2f, 167.3f, 68.1f },  15.0f, juce::Colour (0xff2a2722) };
         // RE-MEASURED with per-axis mapping (2026-08-15 "Re measure all
         // bounds"; plate->source is x*1010/828, y*1557/1280 - NOT one factor).
         // The recess interior in df2_panel_beige.png (luma < 60) is plate px
