@@ -98,6 +98,9 @@ void SectionStrip::paintEvent(QPaintEvent*) {
       painter.drawPath(diamond);
     }
 
+    // An OFF slot claims nothing (Tyson 2026-08-28 "make it transparent to
+    // whats happening"): no curve until the stage exists in the cascade.
+    if (!enabled) continue;
     const QRectF plot = bounds.adjusted(8.0, 22.0, -8.0, -8.0);
     painter.setPen(QPen(QColor{44, 50, 53}, 1.0));
     constexpr double kMiniLowDb = -120.0;
@@ -131,9 +134,7 @@ void SectionStrip::paintEvent(QPaintEvent*) {
         path.lineTo(position);
       }
     }
-    QColor curve_color = color;
-    if (!enabled) curve_color.setAlpha(78);
-    QPen curve_pen(curve_color, 1.0);
+    QPen curve_pen(color, 1.0);
     curve_pen.setCosmetic(true);
     curve_pen.setCapStyle(Qt::FlatCap);
     painter.setPen(curve_pen);
