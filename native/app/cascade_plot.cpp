@@ -119,7 +119,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   };
   include(response_db_);
   include(reference_db_);
-  for (const auto& section : section_db_) include(section);
+  if (enabled_[selected_section_]) include(section_db_[selected_section_]);
   const double centre = 0.5 * (low_db + high_db);
   const double half_span = std::max(24.0, 0.5 * (high_db - low_db) + 4.0);
   low_db = std::floor((centre - half_span) / 6.0) * 6.0;
@@ -175,27 +175,20 @@ void CascadePlot::paintEvent(QPaintEvent*) {
     painter.drawPath(path);
   };
 
-  if (enabled_[selected_section_] && selected_frequency_hz_ >= kLowHz &&
-      selected_frequency_hz_ <= kHighHz) {
-    QColor guide = kSectionColors[selected_section_];
-    guide.setAlpha(115);
-    painter.setPen(QPen(guide, 1.0));
-    const double x = xForFrequency(selected_frequency_hz_, plot);
-    painter.drawLine(QPointF{x, plot.top()}, QPointF{x, plot.bottom()});
-  }
-
   QPen reference_pen(kReference, 1.0, Qt::DashLine);
   reference_pen.setCosmetic(true);
   reference_pen.setCapStyle(Qt::FlatCap);
   draw_curve(reference_hz_, reference_db_, reference_pen);
-  for (std::size_t section = 0; section < section_db_.size(); ++section) {
-    if (!enabled_[section]) continue;
-    QColor color = kSectionColors[section];
-    color.setAlpha(section == selected_section_ ? 205 : 72);
-    QPen section_pen(color, section == selected_section_ ? 1.2 : 1.0);
+  // ONE LINE, plus the addressed stage (Tyson 2026-08-28 "dont add more than
+  // one line other than when you select a stage"): the complete cascade is
+  // the plot; selecting a stage overlays exactly that stage's own curve.
+  if (enabled_[selected_section_]) {
+    QColor color = kSectionColors[selected_section_];
+    color.setAlpha(205);
+    QPen section_pen(color, 1.2);
     section_pen.setCosmetic(true);
     section_pen.setCapStyle(Qt::FlatCap);
-    draw_curve(grid_hz_, section_db_[section], section_pen);
+    draw_curve(grid_hz_, section_db_[selected_section_], section_pen);
   }
   QPen response_pen(kResponse, 1.0);
   response_pen.setCosmetic(true);
