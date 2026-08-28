@@ -13,6 +13,7 @@
 #include <QVBoxLayout>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <cctype>
@@ -147,20 +148,27 @@ MainWindow::MainWindow(QWidget* parent)
 
   auto* inspector = new QHBoxLayout;
   inspector->setSpacing(12);
-  pole_frequency_ = physicalEditor(EditorState::kLowHz, EditorState::kHighHz, central);
+  pole_frequency_ = physicalEditor(EditorState::kLowHz, EditorState::kNyquistHz, central);
   pole_bandwidth_ = physicalEditor(EditorState::kMinBandwidthHz,
                                    EditorState::kMaxBandwidthHz, central);
-  zero_frequency_ = physicalEditor(EditorState::kLowHz, EditorState::kHighHz, central);
+  zero_frequency_ = physicalEditor(EditorState::kLowHz, EditorState::kNyquistHz, central);
   zero_bandwidth_ = physicalEditor(EditorState::kMinBandwidthHz,
                                    EditorState::kMaxBandwidthHz, central);
   inspector->addWidget(labelledEditor(QStringLiteral("POLE FREQUENCY"),
                                       pole_frequency_, central));
   inspector->addWidget(labelledEditor(QStringLiteral("POLE BANDWIDTH"),
                                       pole_bandwidth_, central));
-  inspector->addWidget(labelledEditor(QStringLiteral("ZERO FREQUENCY"),
-                                      zero_frequency_, central));
-  inspector->addWidget(labelledEditor(QStringLiteral("ZERO BANDWIDTH"),
-                                      zero_bandwidth_, central));
+  zero_frequency_group_ = labelledEditor(QStringLiteral("ZERO FREQUENCY"),
+                                         zero_frequency_, central);
+  zero_bandwidth_group_ = labelledEditor(QStringLiteral("ZERO BANDWIDTH"),
+                                         zero_bandwidth_, central);
+  inspector->addWidget(zero_frequency_group_);
+  inspector->addWidget(zero_bandwidth_group_);
+  zero_state_label_ = new QLabel(QStringLiteral("ZERO OFF"), central);
+  zero_state_label_->setObjectName(QStringLiteral("zeroState"));
+  add_zero_button_ = new QPushButton(QStringLiteral("ADD ZERO AT NYQUIST"), central);
+  inspector->addWidget(zero_state_label_, 0, Qt::AlignBottom);
+  inspector->addWidget(add_zero_button_, 0, Qt::AlignBottom);
   status_label_ = new QLabel(QStringLiteral("44,100 Hz DSP"), central);
   status_label_->setObjectName(QStringLiteral("status"));
   inspector->addStretch(1);
@@ -182,6 +190,7 @@ MainWindow::MainWindow(QWidget* parent)
                                    color: #dd8e55; }
     QLabel#referenceName { color: #dd8e55; }
     QLabel#fieldName { color: #758286; font-size: 10px; letter-spacing: 1px; }
+    QLabel#zeroState { color: #758286; padding: 7px 4px; letter-spacing: 1px; }
     QLabel#status { color: #758286; }
     QDoubleSpinBox { background: #111619; border: 1px solid #354044;
                      padding: 6px; color: #e5edef; selection-background-color: #245b56; }
@@ -190,9 +199,11 @@ MainWindow::MainWindow(QWidget* parent)
   connect(load, &QPushButton::clicked, this, &MainWindow::chooseReference);
   connect(audition_button_, &QPushButton::toggled, this,
           &MainWindow::setAudition);
+  connect(add_zero_button_, &QPushButton::clicked, &state_,
+          &EditorState::addZeroAtNyquist);
   connect(&state_, &EditorState::changed, this, &MainWindow::refresh);
   connect(&state_, &EditorState::selectionChanged, this,
-          [this] { refreshInspector(); });
+          [this] { refresh(); });
 
   connect(pole_frequency_, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
           [this](double value) {
@@ -309,7 +320,21 @@ void MainWindow::setReference(Reference reference) {
 }
 
 void MainWindow::refresh() {
-  cascade_plot_->setCascade(state_.cascade(), EditorState::kDatumHz);
+  std::array<trench::core::Biquad, trench::core::native::kSections> sections{};
+  std::array<bool, trench::core::native::kSections> enabled{};
+  for (std::size_t index = 0; index < sections.size(); ++index) {
+    sections[index] = state_.sectionBiquad(index);
+    enabled[index] = state_.sectionEnabled(index);
+  }
+  const std::size_t selected = state_.selectedSection();
+  const auto& selected_section = state_.section(selected);
+  const bool selected_zero =
+      state_.selectedLane() == EditorState::Lane::kZero &&
+      state_.rootPresent(selected, EditorState::Lane::kZero);
+  const double selected_frequency =
+      resonant(selected_zero ? selected_section.zero : selected_section.pole).hz;
+  cascade_plot_->setCascade(state_.cascade(), sections, enabled, selected,
+                            selected_frequency, EditorState::kDatumHz);
   refreshInspector();
   updateAuditionView();
 }
@@ -327,13 +352,27 @@ void MainWindow::refreshInspector() {
   pole_bandwidth_->setValue(pole.bw_hz);
   zero_frequency_->setValue(zero.hz);
   zero_bandwidth_->setValue(zero.bw_hz);
+  const bool enabled = state_.sectionEnabled(selected);
+  const bool zero_present =
+      state_.rootPresent(selected, EditorState::Lane::kZero);
+  pole_frequency_->setEnabled(enabled);
+  pole_bandwidth_->setEnabled(enabled);
+  zero_frequency_group_->setVisible(zero_present);
+  zero_bandwidth_group_->setVisible(zero_present);
+  zero_frequency_->setEnabled(enabled && zero_present);
+  zero_bandwidth_->setEnabled(enabled && zero_present);
+  zero_state_label_->setVisible(!zero_present);
+  zero_state_label_->setText(enabled ? QStringLiteral("ZERO OFF")
+                                     : QStringLiteral("SECTION OFF"));
+  add_zero_button_->setVisible(!zero_present);
+  add_zero_button_->setEnabled(enabled);
   section_strip_->update();
   armadillo_editor_->update();
 }
 
 void MainWindow::updateAuditionView() {
   if (!audition_) return;
-  audition_->setCorner(state_.corner());
+  audition_->setCascade(state_.cascade(audition_->sampleRateHz()));
 }
 
 trench::audio::MonoClip MainWindow::clipForDevice(

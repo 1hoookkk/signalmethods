@@ -55,6 +55,10 @@ class MainWindow final : public QMainWindow {
   QDoubleSpinBox* pole_bandwidth_{};
   QDoubleSpinBox* zero_frequency_{};
   QDoubleSpinBox* zero_bandwidth_{};
+  QWidget* zero_frequency_group_{};
+  QWidget* zero_bandwidth_group_{};
+  QLabel* zero_state_label_{};
+  QPushButton* add_zero_button_{};
   std::optional<Reference> reference_;
   std::unique_ptr<trench::audio::Audition> audition_;
 };

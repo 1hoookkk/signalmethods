@@ -24,6 +24,9 @@ QColor kGrid{45, 52, 56};
 QColor kText{151, 163, 166};
 QColor kResponse{185, 236, 224};
 QColor kReference{184, 134, 46};
+constexpr std::array<QColor, trench::core::native::kSections> kSectionColors{
+    QColor{66, 224, 207}, QColor{231, 158, 76}, QColor{226, 210, 90},
+    QColor{224, 99, 151}, QColor{92, 170, 238}, QColor{155, 213, 96}};
 
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -120.0 : 120.0;
@@ -38,8 +41,16 @@ CascadePlot::CascadePlot(QWidget* parent) : QWidget(parent) {
   grid_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
 }
 
-void CascadePlot::setCascade(const trench::core::Cascade& cascade,
-                             double sample_rate_hz) {
+void CascadePlot::setCascade(
+    const trench::core::Cascade& cascade,
+    const std::array<trench::core::Biquad,
+                     trench::core::native::kSections>& sections,
+    const std::array<bool, trench::core::native::kSections>& enabled,
+    std::size_t selected_section, double selected_frequency_hz,
+    double sample_rate_hz) {
+  enabled_ = enabled;
+  selected_section_ = selected_section;
+  selected_frequency_hz_ = selected_frequency_hz;
   response_db_.clear();
   response_db_.reserve(grid_hz_.size());
   const std::span<const trench::core::Biquad> six_sections{
@@ -47,6 +58,16 @@ void CascadePlot::setCascade(const trench::core::Cascade& cascade,
   for (const double hz : grid_hz_) {
     response_db_.push_back(finiteDb(trench::core::cascade_response_db(
         six_sections, hz, sample_rate_hz)));
+  }
+  for (std::size_t section = 0; section < section_db_.size(); ++section) {
+    section_db_[section].clear();
+    if (!enabled_[section]) continue;
+    section_db_[section].reserve(grid_hz_.size());
+    const std::span<const trench::core::Biquad> one{&sections[section], 1};
+    for (const double hz : grid_hz_) {
+      section_db_[section].push_back(finiteDb(
+          trench::core::cascade_response_db(one, hz, sample_rate_hz)));
+    }
   }
   update();
 }
@@ -98,6 +119,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   };
   include(response_db_);
   include(reference_db_);
+  for (const auto& section : section_db_) include(section);
   const double centre = 0.5 * (low_db + high_db);
   const double half_span = std::max(24.0, 0.5 * (high_db - low_db) + 4.0);
   low_db = std::floor((centre - half_span) / 6.0) * 6.0;
@@ -153,10 +175,28 @@ void CascadePlot::paintEvent(QPaintEvent*) {
     painter.drawPath(path);
   };
 
+  if (enabled_[selected_section_] && selected_frequency_hz_ >= kLowHz &&
+      selected_frequency_hz_ <= kHighHz) {
+    QColor guide = kSectionColors[selected_section_];
+    guide.setAlpha(115);
+    painter.setPen(QPen(guide, 1.0));
+    const double x = xForFrequency(selected_frequency_hz_, plot);
+    painter.drawLine(QPointF{x, plot.top()}, QPointF{x, plot.bottom()});
+  }
+
   QPen reference_pen(kReference, 1.0, Qt::DashLine);
   reference_pen.setCosmetic(true);
   reference_pen.setCapStyle(Qt::FlatCap);
   draw_curve(reference_hz_, reference_db_, reference_pen);
+  for (std::size_t section = 0; section < section_db_.size(); ++section) {
+    if (!enabled_[section]) continue;
+    QColor color = kSectionColors[section];
+    color.setAlpha(section == selected_section_ ? 205 : 72);
+    QPen section_pen(color, section == selected_section_ ? 1.2 : 1.0);
+    section_pen.setCosmetic(true);
+    section_pen.setCapStyle(Qt::FlatCap);
+    draw_curve(grid_hz_, section_db_[section], section_pen);
+  }
   QPen response_pen(kResponse, 1.0);
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
@@ -169,16 +209,12 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   painter.setFont(title_font);
   painter.drawText(QRectF{plot.left(), 12.0, plot.width(), 22.0},
                    Qt::AlignLeft | Qt::AlignVCenter,
-                   QStringLiteral("COMPLETE CASCADE  ·  6 × 2P2Z"));
+                   QStringLiteral("COMPLETE CASCADE"));
 
   QFont legend_font = painter.font();
   legend_font.setBold(false);
   legend_font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
   painter.setFont(legend_font);
-  painter.setPen(kResponse);
-  painter.drawText(QRectF{plot.right() - 270.0, 12.0, 110.0, 22.0},
-                   Qt::AlignRight | Qt::AlignVCenter,
-                   QStringLiteral("CASCADE"));
   if (!reference_name_.isEmpty()) {
     painter.setPen(kReference);
     painter.drawText(QRectF{plot.right() - 150.0, 12.0, 150.0, 22.0},

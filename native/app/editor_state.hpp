@@ -4,6 +4,7 @@
 
 #include <QObject>
 
+#include <array>
 #include <cstddef>
 
 class EditorState final : public QObject {
@@ -24,13 +25,17 @@ class EditorState final : public QObject {
   [[nodiscard]] const trench::core::native::Corner& corner() const noexcept;
   [[nodiscard]] const trench::core::native::Section& section(std::size_t index) const;
   [[nodiscard]] trench::core::Cascade cascade(double sample_rate_hz = kDatumHz) const;
-  [[nodiscard]] std::size_t activeSections() const noexcept;
+  [[nodiscard]] trench::core::Biquad sectionBiquad(
+      std::size_t index, double sample_rate_hz = kDatumHz) const;
+  [[nodiscard]] bool sectionEnabled(std::size_t index) const;
+  [[nodiscard]] bool rootPresent(std::size_t index, Lane lane) const;
   [[nodiscard]] std::size_t selectedSection() const noexcept;
   [[nodiscard]] Lane selectedLane() const noexcept;
 
   void selectSection(std::size_t index);
   void selectRoot(std::size_t index, Lane lane);
-  void activateNextSection();
+  void toggleSection(std::size_t index);
+  void addZeroAtNyquist();
   void setRoot(std::size_t section, Lane lane, double frequency_hz,
                double bandwidth_hz);
 
@@ -40,7 +45,8 @@ class EditorState final : public QObject {
 
  private:
   trench::core::native::Corner corner_{};
-  std::size_t active_sections_{1};
+  std::array<bool, trench::core::native::kSections> enabled_{};
+  std::array<bool, trench::core::native::kSections> zero_present_{};
   std::size_t selected_section_{};
   Lane selected_lane_{Lane::kPole};
 };

@@ -27,11 +27,16 @@ SectionStrip::SectionStrip(EditorState* state, QWidget* parent)
   setMinimumHeight(72);
   setMaximumHeight(82);
   setFocusPolicy(Qt::StrongFocus);
-  setAccessibleName(QStringLiteral("Six serial signal-so-far sections"));
+  setAccessibleName(QStringLiteral("Six addressable filter sections"));
   connect(state_, &EditorState::changed, this,
           qOverload<>(&SectionStrip::update));
   connect(state_, &EditorState::selectionChanged, this,
           [this] { update(); });
+}
+
+QRectF SectionStrip::toggleRect(std::size_t index) const {
+  const QRectF bounds = cell(index);
+  return {bounds.right() - 42.0, bounds.top() + 5.0, 34.0, 16.0};
 }
 
 QRectF SectionStrip::cell(std::size_t index) const {
@@ -47,60 +52,50 @@ void SectionStrip::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
   painter.fillRect(rect(), QColor{12, 15, 17});
-  const auto cascade = state_->cascade();
-  const std::size_t active = state_->activeSections();
-
-  painter.setPen(QPen(QColor{76, 84, 87}, 1.0));
-  const std::size_t visible_links =
-      std::min(active, trench::core::native::kSections - 1);
-  for (std::size_t index = 0; index < visible_links; ++index) {
-    const QRectF before = cell(index);
-    const QRectF after = cell(index + 1);
-    const double centre_y = before.center().y();
-    const double left = before.right() + 3.0;
-    const double right = after.left() - 3.0;
-    painter.drawLine(QPointF{left, centre_y}, QPointF{right, centre_y});
-    painter.drawLine(QPointF{right - 3.0, centre_y - 3.0},
-                     QPointF{right, centre_y});
-    painter.drawLine(QPointF{right - 3.0, centre_y + 3.0},
-                     QPointF{right, centre_y});
-  }
-
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
     const QRectF bounds = cell(index);
-    const bool active_section = index < active;
-    const bool addable = index == active &&
-                         active < trench::core::native::kSections;
+    const bool enabled = state_->sectionEnabled(index);
     const bool selected = index == state_->selectedSection();
     const QColor color = kSectionColors[index];
-    painter.fillRect(bounds, active_section ? QColor{20, 23, 26}
-                                            : QColor{15, 18, 20});
-    painter.setPen(QPen(selected && active_section
-                            ? QColor{185, 236, 224}
-                            : QColor{42, 48, 51},
-                        1.0));
+    painter.fillRect(bounds, QColor{enabled ? 20 : 15, enabled ? 23 : 18,
+                                    enabled ? 26 : 20});
+    painter.setPen(QPen(selected ? color : QColor{42, 48, 51}, 1.0));
     painter.drawRect(bounds.adjusted(0.5, 0.5, -0.5, -0.5));
 
     QFont number_font = painter.font();
     number_font.setBold(true);
     number_font.setPointSizeF(8.5);
     painter.setFont(number_font);
-    painter.setPen(active_section ? color : QColor{59, 67, 70});
+    painter.setPen(selected || enabled ? color : QColor{79, 87, 90});
     painter.drawText(bounds.adjusted(7.0, 5.0, -7.0, 0.0),
                      Qt::AlignLeft | Qt::AlignTop,
                      QString::number(index + 1));
 
-    if (!active_section) {
-      if (addable) {
-        QFont add_font = painter.font();
-        add_font.setBold(false);
-        add_font.setPointSizeF(17.0);
-        painter.setFont(add_font);
-        painter.setPen(QColor{128, 143, 146});
-        painter.drawText(bounds, Qt::AlignCenter, QStringLiteral("+"));
-      }
-      continue;
+    const QRectF toggle = toggleRect(index);
+    painter.fillRect(toggle, enabled ? color.darker(310) : QColor{24, 29, 31});
+    painter.setPen(QPen(enabled ? color : QColor{83, 93, 96}, 1.0));
+    painter.drawRect(toggle.adjusted(0.5, 0.5, -0.5, -0.5));
+    QFont state_font = painter.font();
+    state_font.setBold(true);
+    state_font.setPointSizeF(7.0);
+    painter.setFont(state_font);
+    painter.drawText(toggle, Qt::AlignCenter,
+                     enabled ? QStringLiteral("ON") : QStringLiteral("OFF"));
+
+    painter.setPen(QPen(enabled ? color : QColor{70, 79, 82}, 1.0));
+    painter.setBrush(Qt::NoBrush);
+    const QPointF pole_mark{bounds.left() + 29.0, bounds.top() + 13.0};
+    painter.drawEllipse(pole_mark, 3.0, 3.0);
+    if (state_->rootPresent(index, EditorState::Lane::kZero)) {
+      const QPointF zero_mark{bounds.left() + 43.0, bounds.top() + 13.0};
+      QPainterPath diamond;
+      diamond.moveTo(zero_mark + QPointF{0.0, -3.5});
+      diamond.lineTo(zero_mark + QPointF{3.5, 0.0});
+      diamond.lineTo(zero_mark + QPointF{0.0, 3.5});
+      diamond.lineTo(zero_mark + QPointF{-3.5, 0.0});
+      diamond.closeSubpath();
+      painter.drawPath(diamond);
     }
 
     const QRectF plot = bounds.adjusted(8.0, 22.0, -8.0, -8.0);
@@ -120,10 +115,10 @@ void SectionStrip::paintEvent(QPaintEvent*) {
       const double hz = EditorState::kLowHz *
                         std::pow(EditorState::kHighHz / EditorState::kLowHz,
                                  fraction);
-      const std::span<const trench::core::Biquad> prefix{cascade.data(),
-                                                         index + 1};
+      const auto section = state_->sectionBiquad(index);
+      const std::span<const trench::core::Biquad> one{&section, 1};
       const double raw_db = trench::core::cascade_response_db(
-          prefix, hz, EditorState::kDatumHz);
+          one, hz, EditorState::kDatumHz);
       const double db = std::clamp(std::isfinite(raw_db) ? raw_db : kMiniLowDb,
                                    kMiniLowDb, kMiniHighDb);
       const QPointF position{
@@ -136,7 +131,9 @@ void SectionStrip::paintEvent(QPaintEvent*) {
         path.lineTo(position);
       }
     }
-    QPen curve_pen(color, 1.0);
+    QColor curve_color = color;
+    if (!enabled) curve_color.setAlpha(78);
+    QPen curve_pen(curve_color, 1.0);
     curve_pen.setCosmetic(true);
     curve_pen.setCapStyle(Qt::FlatCap);
     painter.setPen(curve_pen);
@@ -150,10 +147,10 @@ void SectionStrip::mousePressEvent(QMouseEvent* event) {
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
     if (!cell(index).contains(event->position())) continue;
-    if (index < state_->activeSections()) {
+    if (toggleRect(index).contains(event->position())) {
+      state_->toggleSection(index);
+    } else {
       state_->selectSection(index);
-    } else if (index == state_->activeSections()) {
-      state_->activateNextSection();
     }
     setFocus(Qt::MouseFocusReason);
     return;
@@ -167,14 +164,18 @@ void SectionStrip::keyPressEvent(QKeyEvent* event) {
     return;
   }
   if (event->key() == Qt::Key_Right &&
-      selected + 1 < state_->activeSections()) {
+      selected + 1 < trench::core::native::kSections) {
     state_->selectSection(selected + 1);
     return;
   }
   if (event->key() >= Qt::Key_1 && event->key() <= Qt::Key_6) {
     const std::size_t wanted =
         static_cast<std::size_t>(event->key() - Qt::Key_1);
-    if (wanted < state_->activeSections()) state_->selectSection(wanted);
+    state_->selectSection(wanted);
+    return;
+  }
+  if (event->key() == Qt::Key_Space) {
+    state_->toggleSection(selected);
     return;
   }
   QWidget::keyPressEvent(event);

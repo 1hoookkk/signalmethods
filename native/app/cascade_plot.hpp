@@ -1,19 +1,26 @@
 #pragma once
 
-#include "trench/core/packed_body.hpp"
+#include "trench/core/native_body.hpp"
 
 #include <QWidget>
 
 #include <QString>
 
+#include <array>
+#include <cstddef>
 #include <vector>
 
 class CascadePlot final : public QWidget {
  public:
   explicit CascadePlot(QWidget* parent = nullptr);
 
-  void setCascade(const trench::core::Cascade& cascade,
-                  double sample_rate_hz);
+  void setCascade(
+      const trench::core::Cascade& cascade,
+      const std::array<trench::core::Biquad,
+                       trench::core::native::kSections>& sections,
+      const std::array<bool, trench::core::native::kSections>& enabled,
+      std::size_t selected_section, double selected_frequency_hz,
+      double sample_rate_hz);
   void setReference(QString name, std::vector<double> frequency_hz,
                     std::vector<double> magnitude_db);
   void clearReference();
@@ -30,6 +37,11 @@ class CascadePlot final : public QWidget {
   QString reference_name_;
   std::vector<double> grid_hz_;
   std::vector<double> response_db_;
+  std::array<std::vector<double>, trench::core::native::kSections>
+      section_db_;
+  std::array<bool, trench::core::native::kSections> enabled_{};
+  std::size_t selected_section_{};
+  double selected_frequency_hz_{20.0};
   std::vector<double> reference_hz_;
   std::vector<double> reference_db_;
 };

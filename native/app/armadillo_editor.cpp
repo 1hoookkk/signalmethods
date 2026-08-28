@@ -54,7 +54,7 @@ ArmadilloEditor::ArmadilloEditor(EditorState* state, QWidget* parent)
 }
 
 QRectF ArmadilloEditor::field() const {
-  return QRectF(rect()).adjusted(68.0, 48.0, -24.0, -38.0);
+  return QRectF(rect()).adjusted(62.0, 42.0, -22.0, -38.0);
 }
 
 QPointF ArmadilloEditor::pointFor(double frequency_hz,
@@ -67,31 +67,22 @@ QPointF ArmadilloEditor::pointFor(double frequency_hz,
       std::log(bandwidth_hz / EditorState::kMinBandwidthHz) /
       std::log(EditorState::kMaxBandwidthHz / EditorState::kMinBandwidthHz);
   return {bounds.left() + std::clamp(x_fraction, 0.0, 1.0) * bounds.width(),
-          bounds.bottom() - std::clamp(y_fraction, 0.0, 1.0) * bounds.height()};
+          bounds.top() + std::clamp(y_fraction, 0.0, 1.0) * bounds.height()};
 }
 
 std::vector<ArmadilloEditor::Handle> ArmadilloEditor::handles() const {
   std::vector<Handle> result;
-  result.reserve(state_->activeSections() * 2);
-  for (std::size_t section = 0; section < state_->activeSections();
-       ++section) {
-    const auto& pole = rootOf(*state_, section, EditorState::Lane::kPole);
+  const std::size_t section = state_->selectedSection();
+  if (!state_->sectionEnabled(section)) return result;
+  result.reserve(2);
+  const auto& pole = rootOf(*state_, section, EditorState::Lane::kPole);
+  result.push_back(Handle{section, EditorState::Lane::kPole,
+                          pointFor(pole.hz, pole.bw_hz)});
+  if (state_->rootPresent(section, EditorState::Lane::kZero)) {
     const auto& zero = rootOf(*state_, section, EditorState::Lane::kZero);
-    QPointF pole_point = pointFor(pole.hz, pole.bw_hz);
-    QPointF zero_point = pointFor(zero.hz, zero.bw_hz);
-    if (QLineF{pole_point, zero_point}.length() < 15.0) {
-      if (pole_point.x() > field().right() - 12.0) {
-        pole_point.ry() -= 5.5;
-        zero_point.ry() += 5.5;
-      } else {
-        pole_point.rx() -= 5.5;
-        zero_point.rx() += 5.5;
-      }
-    }
     result.push_back(
-        Handle{section, EditorState::Lane::kPole, pole_point});
-    result.push_back(
-        Handle{section, EditorState::Lane::kZero, zero_point});
+        Handle{section, EditorState::Lane::kZero,
+               pointFor(zero.hz, zero.bw_hz)});
   }
   return result;
 }
@@ -159,20 +150,10 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   painter.rotate(-90.0);
   painter.drawText(QRectF{-bounds.height() * 0.5, -8.0,
                           bounds.height(), 16.0},
-                   Qt::AlignCenter, QStringLiteral("bandwidth  →"));
+                   Qt::AlignCenter, QStringLiteral("bandwidth"));
   painter.restore();
 
   const auto all_handles = handles();
-  for (std::size_t section = 0; section < state_->activeSections();
-       ++section) {
-    const bool selected = section == state_->selectedSection();
-    const QColor color = kSectionColors[section];
-    painter.setPen(QPen(faded(color, selected ? 160 : 62),
-                        selected ? 1.4 : 1.0));
-    painter.drawLine(all_handles[section * 2].position,
-                     all_handles[section * 2 + 1].position);
-  }
-
   for (const Handle& handle : all_handles) {
     const bool selected_section = handle.section == state_->selectedSection();
     const bool selected_root =
@@ -214,13 +195,7 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                                      ? QStringLiteral("P")
                                      : QStringLiteral("Z"));
     const bool parked = handle.position.x() > bounds.right() - 42.0;
-    if (parked && !selected_section) continue;
-    const double label_y = parked
-                               ? handle.position.y() +
-                                     (handle.lane == EditorState::Lane::kPole
-                                          ? -22.0
-                                          : 4.0)
-                               : handle.position.y() - 9.0;
+    const double label_y = handle.position.y() - 9.0;
     const QRectF label_bounds =
         parked ? QRectF{handle.position.x() - 42.0, label_y, 32.0, 18.0}
                : QRectF{handle.position.x() + 10.0, label_y, 28.0, 18.0};
@@ -239,8 +214,12 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   painter.setPen(selected_color);
   painter.drawText(QRectF{bounds.left(), 12.0, 250.0, 24.0},
                    Qt::AlignLeft | Qt::AlignVCenter,
-                   QStringLiteral("ARMADILLO  ·  SECTION %1")
-                       .arg(state_->selectedSection() + 1));
+                   QStringLiteral("ARMADILLO"));
+  if (all_handles.empty()) {
+    painter.setPen(QColor{91, 102, 105});
+    painter.drawText(bounds, Qt::AlignCenter,
+                     QStringLiteral("SECTION OFF"));
+  }
 }
 
 void ArmadilloEditor::mousePressEvent(QMouseEvent* event) {
@@ -287,7 +266,7 @@ void ArmadilloEditor::applyPointer(const QPointF& position) {
   const double x_fraction = std::clamp(
       (position.x() - bounds.left()) / bounds.width(), 0.0, 1.0);
   const double y_fraction = std::clamp(
-      (bounds.bottom() - position.y()) / bounds.height(), 0.0, 1.0);
+      (position.y() - bounds.top()) / bounds.height(), 0.0, 1.0);
   const double frequency =
       EditorState::kLowHz *
       std::pow(EditorState::kHighHz / EditorState::kLowHz, x_fraction);

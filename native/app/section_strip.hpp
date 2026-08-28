@@ -15,6 +15,7 @@ class SectionStrip final : public QWidget {
 
  private:
   [[nodiscard]] QRectF cell(std::size_t index) const;
+  [[nodiscard]] QRectF toggleRect(std::size_t index) const;
 
   EditorState* state_{};
 };

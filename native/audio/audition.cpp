@@ -51,6 +51,7 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
   std::mutex lock;
   AuditionView view;
   std::optional<trench::core::native::Corner> direct_corner;
+  std::optional<trench::core::Cascade> direct_cascade;
   trench::core::Cascade pending{};
   bool pending_fresh{};
   std::shared_ptr<const MonoClip> pending_clip;
@@ -77,7 +78,8 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
                     ? trench::core::native::cascade(
                           trench::core::native::design(*direct_corner, actual_rate),
                           direct_corner->gain_db)
-                    : design_audition(view, actual_rate);
+                : direct_cascade ? *direct_cascade
+                                 : design_audition(view, actual_rate);
       pending_fresh = true;
     }
     runner.reset();
@@ -172,6 +174,7 @@ double Audition::sampleRateHz() const noexcept { return impl_->sample_rate.load(
 void Audition::setView(AuditionView view) {
   const std::scoped_lock guard(impl_->lock);
   impl_->direct_corner.reset();
+  impl_->direct_cascade.reset();
   impl_->view = std::move(view);
   impl_->pending = design_audition(impl_->view, impl_->sample_rate.load());
   impl_->pending_fresh = true;
@@ -179,11 +182,20 @@ void Audition::setView(AuditionView view) {
 
 void Audition::setCorner(trench::core::native::Corner corner) {
   const std::scoped_lock guard(impl_->lock);
+  impl_->direct_cascade.reset();
   impl_->direct_corner = std::move(corner);
   impl_->pending = trench::core::native::cascade(
       trench::core::native::design(*impl_->direct_corner,
                                    impl_->sample_rate.load()),
       impl_->direct_corner->gain_db);
+  impl_->pending_fresh = true;
+}
+
+void Audition::setCascade(trench::core::Cascade cascade) {
+  const std::scoped_lock guard(impl_->lock);
+  impl_->direct_corner.reset();
+  impl_->direct_cascade = cascade;
+  impl_->pending = std::move(cascade);
   impl_->pending_fresh = true;
 }
 

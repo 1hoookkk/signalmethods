@@ -34,6 +34,7 @@ class Audition {
 
   void setView(AuditionView view);
   void setCorner(trench::core::native::Corner corner);
+  void setCascade(trench::core::Cascade cascade);
   void setSaw(double hz, float level);
   void setClip(MonoClip clip);
   void setGate(bool open);
