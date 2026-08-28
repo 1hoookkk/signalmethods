@@ -3,11 +3,11 @@
 #include "cascade_plot.hpp"
 #include "armadillo_editor.hpp"
 #include "editor_state.hpp"
+#include "section_strip.hpp"
 #include "trench/audio/audition.hpp"
 
 #include <QMainWindow>
 
-#include <array>
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -47,11 +47,10 @@ class MainWindow final : public QMainWindow {
   EditorState state_;
   CascadePlot* cascade_plot_{};
   ArmadilloEditor* armadillo_editor_{};
+  SectionStrip* section_strip_{};
   QLabel* reference_label_{};
-  QLabel* section_label_{};
   QLabel* status_label_{};
   QPushButton* audition_button_{};
-  std::array<QPushButton*, trench::core::native::kSections> section_buttons_{};
   QDoubleSpinBox* pole_frequency_{};
   QDoubleSpinBox* pole_bandwidth_{};
   QDoubleSpinBox* zero_frequency_{};

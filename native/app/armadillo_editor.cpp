@@ -170,19 +170,16 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
         selected_section && handle.lane == state_->selectedLane();
     const QColor color = kSectionColors[handle.section];
     if (selected_root) {
-      painter.setPen(QPen(faded(color, 75), 1.0));
+      painter.setPen(QPen(QColor{69, 82, 79}, 1.0));
       painter.drawLine(QPointF{handle.position.x(), bounds.top()},
                        QPointF{handle.position.x(), bounds.bottom()});
       painter.drawLine(QPointF{bounds.left(), handle.position.y()},
                        QPointF{bounds.right(), handle.position.y()});
-      painter.setPen(Qt::NoPen);
-      painter.setBrush(faded(color, 38));
-      painter.drawEllipse(handle.position, 15.0, 15.0);
     }
 
     painter.setPen(QPen(faded(color, selected_section ? 255 : 145),
                         selected_root ? 2.4 : 1.5));
-    painter.setBrush(selected_section ? faded(color, 75) : QColor{15, 20, 22});
+    painter.setBrush(selected_root ? color : QColor{15, 20, 22});
     if (handle.lane == EditorState::Lane::kPole) {
       painter.drawEllipse(handle.position, selected_root ? 8.0 : 6.5,
                           selected_root ? 8.0 : 6.5);
@@ -212,10 +209,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                      Qt::AlignLeft | Qt::AlignVCenter, tag);
   }
 
-  const auto& pole = rootOf(*state_, state_->selectedSection(),
-                            EditorState::Lane::kPole);
-  const auto& zero = rootOf(*state_, state_->selectedSection(),
-                            EditorState::Lane::kZero);
   const QColor selected_color = kSectionColors[state_->selectedSection()];
   QFont title_font = painter.font();
   title_font.setBold(true);
@@ -227,20 +220,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                    Qt::AlignLeft | Qt::AlignVCenter,
                    QStringLiteral("ARMADILLO  ·  SECTION %1")
                        .arg(state_->selectedSection() + 1));
-  painter.setPen(QColor{190, 201, 203});
-  QFont value_font = painter.font();
-  value_font.setBold(false);
-  value_font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
-  value_font.setPointSizeF(9.0);
-  painter.setFont(value_font);
-  painter.drawText(QRectF{bounds.left() + 260.0, 12.0,
-                          bounds.width() - 260.0, 24.0},
-                   Qt::AlignRight | Qt::AlignVCenter,
-                   QStringLiteral("P  %1 Hz / %2 Hz BW    Z  %3 Hz / %4 Hz BW")
-                       .arg(pole.hz, 0, 'f', 2)
-                       .arg(pole.bw_hz, 0, 'f', 2)
-                       .arg(zero.hz, 0, 'f', 2)
-                       .arg(zero.bw_hz, 0, 'f', 2));
 }
 
 void ArmadilloEditor::mousePressEvent(QMouseEvent* event) {

@@ -19,11 +19,11 @@ constexpr double kLowHz = 20.0;
 constexpr double kHighHz = 20'000.0;
 
 QColor kBackground{12, 15, 17};
-QColor kPanel{17, 22, 25};
-QColor kGrid{47, 57, 61};
-QColor kText{178, 190, 193};
-QColor kResponse{66, 224, 207};
-QColor kReference{221, 142, 85};
+QColor kPanel{20, 23, 26};
+QColor kGrid{45, 52, 56};
+QColor kText{151, 163, 166};
+QColor kResponse{185, 236, 224};
+QColor kReference{184, 134, 46};
 
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -120.0 : 120.0;
@@ -153,9 +153,14 @@ void CascadePlot::paintEvent(QPaintEvent*) {
     painter.drawPath(path);
   };
 
-  draw_curve(reference_hz_, reference_db_,
-             QPen(kReference, 1.4, Qt::DashLine));
-  draw_curve(grid_hz_, response_db_, QPen(kResponse, 2.0));
+  QPen reference_pen(kReference, 1.0, Qt::DashLine);
+  reference_pen.setCosmetic(true);
+  reference_pen.setCapStyle(Qt::FlatCap);
+  draw_curve(reference_hz_, reference_db_, reference_pen);
+  QPen response_pen(kResponse, 1.0);
+  response_pen.setCosmetic(true);
+  response_pen.setCapStyle(Qt::FlatCap);
+  draw_curve(grid_hz_, response_db_, response_pen);
 
   painter.setPen(QColor{220, 229, 231});
   QFont title_font = painter.font();

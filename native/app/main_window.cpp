@@ -3,7 +3,6 @@
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
 
-#include <QButtonGroup>
 #include <QCloseEvent>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
@@ -143,30 +142,8 @@ MainWindow::MainWindow(QWidget* parent)
   cascade_plot_ = new CascadePlot(central);
   layout->addWidget(cascade_plot_, 1);
 
-  auto* section_row = new QHBoxLayout;
-  section_row->setSpacing(7);
-  section_label_ = new QLabel(QStringLiteral("SECTION 1 / 6"), central);
-  section_label_->setObjectName(QStringLiteral("sectionTitle"));
-  section_row->addWidget(section_label_);
-  section_row->addStretch(1);
-  auto* section_group = new QButtonGroup(this);
-  section_group->setExclusive(true);
-  for (std::size_t index = 0; index < section_buttons_.size(); ++index) {
-    auto* button = new QPushButton(QString::number(index + 1), central);
-    button->setCheckable(true);
-    button->setObjectName(QStringLiteral("sectionButton"));
-    button->setFixedSize(42, 30);
-    section_group->addButton(button, static_cast<int>(index));
-    section_buttons_[index] = button;
-    section_row->addWidget(button);
-    connect(button, &QPushButton::clicked, this,
-            [this, index] { state_.selectSection(index); });
-  }
-  section_buttons_.front()->setChecked(true);
-  layout->addLayout(section_row);
-
-  armadillo_editor_ = new ArmadilloEditor(&state_, central);
-  layout->addWidget(armadillo_editor_, 1);
+  section_strip_ = new SectionStrip(&state_, central);
+  layout->addWidget(section_strip_);
 
   auto* inspector = new QHBoxLayout;
   inspector->setSpacing(12);
@@ -190,6 +167,9 @@ MainWindow::MainWindow(QWidget* parent)
   inspector->addWidget(status_label_, 0, Qt::AlignBottom);
   layout->addLayout(inspector);
 
+  armadillo_editor_ = new ArmadilloEditor(&state_, central);
+  layout->addWidget(armadillo_editor_, 1);
+
   setCentralWidget(central);
   setStyleSheet(QStringLiteral(R"(
     QMainWindow, QWidget { background: #0c0f11; color: #b2bec1; }
@@ -201,7 +181,6 @@ MainWindow::MainWindow(QWidget* parent)
     QPushButton#audition:checked { background: #5b3423; border-color: #dd8e55;
                                    color: #dd8e55; }
     QLabel#referenceName { color: #dd8e55; }
-    QLabel#sectionTitle { color: #dce5e7; font-weight: 600; letter-spacing: 1px; }
     QLabel#fieldName { color: #758286; font-size: 10px; letter-spacing: 1px; }
     QLabel#status { color: #758286; }
     QDoubleSpinBox { background: #111619; border: 1px solid #354044;
@@ -348,8 +327,7 @@ void MainWindow::refreshInspector() {
   pole_bandwidth_->setValue(pole.bw_hz);
   zero_frequency_->setValue(zero.hz);
   zero_bandwidth_->setValue(zero.bw_hz);
-  section_label_->setText(QStringLiteral("SECTION %1 / 6").arg(selected + 1));
-  section_buttons_[selected]->setChecked(true);
+  section_strip_->update();
   armadillo_editor_->update();
 }
 

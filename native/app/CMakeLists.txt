@@ -11,6 +11,8 @@ add_library(trench_native_ui STATIC
   editor_state.hpp
   main_window.cpp
   main_window.hpp
+  section_strip.cpp
+  section_strip.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
