@@ -173,31 +173,41 @@ MainWindow::MainWindow(QWidget* parent)
   for (const auto& group : groups) {
     for (const auto& entry : group.entries) shelf_.push_back(entry);
   }
-  template_shelf_ = new QPushButton(QStringLiteral("EQ"), central);
-  template_shelf_->setObjectName(QStringLiteral("eqTemplate"));
+  const auto build_menu = [this, &groups](QToolButton* button,
+                                          const QString& title, bool overlay) {
+    button->setText(title);
+    button->setPopupMode(QToolButton::InstantPopup);
+    auto* menu = new QMenu(button);
+    if (overlay) {
+      menu->addAction(QStringLiteral("NONE"), this, [this] { chooseOverlay(std::nullopt); });
+      menu->addSeparator();
+    }
+    std::size_t flat = 0;
+    for (const auto& group : groups) {
+      QMenu* sub = menu->addMenu(group.title);
+      for (const auto& entry : group.entries) {
+        const std::size_t slot = flat++;
+        sub->addAction(entry.name, this, [this, slot, overlay] {
+          if (overlay) chooseOverlay(slot); else chooseTemplate(slot);
+        });
+      }
+    }
+    QMenu* mine = menu->addMenu(QStringLiteral("MINE"));
+    for (const auto& kept : user_shelf_) {
+      const std::size_t slot = flat++;
+      mine->addAction(kept.name, this, [this, slot, overlay] {
+        if (overlay) chooseOverlay(slot); else chooseTemplate(slot);
+      });
+    }
+    button->setMenu(menu);
+    return mine;
+  };
+  template_shelf_ = new QToolButton(central);
+  template_shelf_->setObjectName(QStringLiteral("templateShelf"));
+  template_mine_ = build_menu(template_shelf_, QStringLiteral("TEMPLATE"), false);
   overlay_shelf_ = new QToolButton(central);
   overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
-  overlay_shelf_->setText(QStringLiteral("OVERLAY"));
-  overlay_shelf_->setPopupMode(QToolButton::InstantPopup);
-  auto* overlay_menu = new QMenu(overlay_shelf_);
-  overlay_menu->addAction(QStringLiteral("NONE"), this, [this] { chooseOverlay(std::nullopt); });
-  overlay_menu->addSeparator();
-  std::size_t flat = 0;
-  for (const auto& group : groups) {
-    QMenu* sub = overlay_menu->addMenu(group.title);
-    for (const auto& entry : group.entries) {
-      const std::size_t slot = flat++;
-      sub->addAction(entry.name, this, [this, slot] { chooseOverlay(slot); });
-    }
-  }
-  overlay_mine_ = overlay_menu->addMenu(QStringLiteral("MINE"));
-  for (const auto& kept : user_shelf_) {
-    const std::size_t slot = flat++;
-    overlay_mine_->addAction(kept.name, this, [this, slot] { chooseOverlay(slot); });
-  }
-  overlay_shelf_->setMenu(overlay_menu);
-  connect(template_shelf_, &QPushButton::clicked, this,
-          [this] { state_.loadTemplate(trench::app::kEqTemplate); });
+  overlay_mine_ = build_menu(overlay_shelf_, QStringLiteral("OVERLAY"), true);
   auto* keep = new QPushButton(QStringLiteral("+"), central);
   keep->setObjectName(QStringLiteral("keepTemplate"));
   keep->setFixedSize(28, 28);
@@ -629,6 +639,7 @@ void MainWindow::keepTemplate() {
   } else {
     user_shelf_.push_back({name, std::move(poles), std::move(zeros)});
     const std::size_t slot = shelf_.size() + user_shelf_.size() - 1;
+    template_mine_->addAction(name, this, [this, slot] { chooseTemplate(slot); });
     overlay_mine_->addAction(name, this, [this, slot] { chooseOverlay(slot); });
   }
   status_label_->setText(QStringLiteral("KEPT · %1").arg(name.toUpper()));
@@ -716,6 +727,16 @@ void MainWindow::chooseOverlay(std::optional<std::size_t> slot) {
   for (const auto& pole : ghost) marks.push_back(pole.first);
   cascade_plot_->setFormantMarks(std::move(marks));
   armadillo_editor_->setGhost(std::move(ghost));
+}
+
+void MainWindow::chooseTemplate(std::size_t slot) {
+  if (slot < shelf_.size()) {
+    state_.loadTemplate(shelf_[slot]);
+    return;
+  }
+  if (slot - shelf_.size() >= user_shelf_.size()) return;
+  const auto& kept = user_shelf_[slot - shelf_.size()];
+  state_.loadPoles(kept.poles, kept.zeros);
 }
 
 void MainWindow::clearProposal() {

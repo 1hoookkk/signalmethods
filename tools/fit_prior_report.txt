@@ -1,0 +1,62 @@
+MOUTHS S1  bahn tense a             bands 4  rms 6.18 dB  shelf 5.65 dB
+MOUTHS S1  beet tense e             bands 4  rms 6.32 dB  shelf 4.67 dB
+MOUTHS S1  tiere tense i            bands 4  rms 7.64 dB  shelf 5.27 dB
+MOUTHS S1  boote tense o            bands 4  rms 7.11 dB  shelf 4.59 dB
+MOUTHS S1  bude tense u             bands 4  rms 8.49 dB  shelf 6.36 dB
+MOUTHS S1  laehmung tense ae        bands 4  rms 6.75 dB  shelf 5.39 dB
+MOUTHS S1  hoehle tense oe          bands 4  rms 6.35 dB  shelf 4.66 dB
+MOUTHS S1  guete tense y            bands 4  rms 5.58 dB  shelf 5.16 dB
+MOUTHS S1  los l                    bands 4  rms 5.91 dB  shelf 4.20 dB
+MOUTHS S1  fahrt f                  bands 4  rms 5.64 dB  shelf 3.60 dB
+MOUTHS S1  bass s                   bands 4  rms 6.64 dB  shelf 3.82 dB
+MOUTHS S1  schoen sh                bands 4  rms 7.36 dB  shelf 5.70 dB
+MOUTHS S1  ich c                    bands 4  rms 8.97 dB  shelf 6.38 dB
+MOUTHS S1  ach x                    bands 4  rms 6.08 dB  shelf 4.73 dB
+MOUTHS S1  bass lax a               bands 4  rms 6.36 dB  shelf 6.13 dB
+MOUTHS S1  bett lax ae              bands 4  rms 9.06 dB  shelf 6.97 dB
+MOUTHS S1  mit lax i                bands 4  rms 7.21 dB  shelf 4.11 dB
+MOUTHS S1  offen lax o              bands 4  rms 8.93 dB  shelf 5.54 dB
+MOUTHS S1  butter lax u             bands 4  rms 7.83 dB  shelf 5.03 dB
+MOUTHS S1  muetter lax y            bands 4  rms 6.48 dB  shelf 4.00 dB
+MOUTHS S1  goetter lax oe           bands 4  rms 5.68 dB  shelf 4.37 dB
+MOUTHS S1  ehe schwa                bands 4  rms 5.87 dB  shelf 4.32 dB
+MOUTHS S2  bahn tense a             bands 4  rms 6.59 dB  shelf 5.21 dB
+MOUTHS S2  beet tense e             bands 4  rms 5.32 dB  shelf 5.17 dB
+MOUTHS S2  tiere tense i            bands 4  rms 4.09 dB  shelf 6.80 dB
+MOUTHS S2  boote tense o            bands 4  rms 6.52 dB  shelf 6.85 dB
+MOUTHS S2  bude tense u             bands 4  rms 5.95 dB  shelf 5.76 dB
+MOUTHS S2  laehmung tense ae        bands 4  rms 4.37 dB  shelf 2.80 dB
+MOUTHS S2  hoehle tense oe          bands 4  rms 5.50 dB  shelf 4.69 dB
+MOUTHS S2  guete tense y            bands 4  rms 6.30 dB  shelf 4.27 dB
+MOUTHS S2  los l                    bands 4  rms 6.00 dB  shelf 3.54 dB
+MOUTHS S2  fahrt f                  bands 4  rms 7.80 dB  shelf 5.73 dB
+MOUTHS S2  bass s                   bands 4  rms 5.18 dB  shelf 3.43 dB
+MOUTHS S2  schoen sh                bands 4  rms 5.29 dB  shelf 4.82 dB
+MOUTHS S2  ich c                    bands 4  rms 5.06 dB  shelf 4.73 dB
+MOUTHS S2  ach x                    bands 4  rms 6.44 dB  shelf 5.89 dB
+MOUTHS S2  bass lax a               bands 4  rms 5.43 dB  shelf 5.43 dB
+MOUTHS S2  bett lax ae              bands 4  rms 5.53 dB  shelf 4.33 dB
+MOUTHS S2  mit lax i                bands 4  rms 6.68 dB  shelf 4.47 dB
+MOUTHS S2  offen lax o              bands 4  rms 7.09 dB  shelf 6.25 dB
+MOUTHS S2  butter lax u             bands 4  rms 7.09 dB  shelf 4.94 dB
+MOUTHS S2  muetter lax y            bands 4  rms 5.39 dB  shelf 4.10 dB
+MOUTHS S2  goetter lax oe           bands 4  rms 5.90 dB  shelf 5.02 dB
+MOUTHS S2  ehe schwa                bands 4  rms 6.14 dB  shelf 5.84 dB
+BODIES     alto sax mf              bands 4  rms 12.80 dB  shelf 11.09 dB
+BODIES     bass clarinet mf         bands 4  rms 8.02 dB  shelf 6.40 dB
+BODIES     bassoon mf               bands 4  rms 9.98 dB  shelf 8.92 dB
+BODIES     cello mf                 bands 4  rms 8.45 dB  shelf 10.59 dB
+BODIES     double bass mf           bands 4  rms 6.69 dB  shelf 6.11 dB
+BODIES     tenor trombone mf        bands 4  rms 7.22 dB  shelf 13.40 dB
+BODIES     tuba mf                  bands 4  rms 3.20 dB  shelf 5.59 dB
+OBJECTS    drum 110                 bands 4  rms 3.31 dB  shelf 4.61 dB
+OBJECTS    metal bar                bands 4  rms 3.37 dB  shelf 1.87 dB
+OBJECTS    tb303 synthetic          bands 4  rms 5.66 dB  shelf 24.06 dB
+OBJECTS    tube 50cm                bands 4  rms 3.38 dB  shelf 5.49 dB
+HRTF       KEMAR el -60             bands 4  rms 1.73 dB  shelf 2.45 dB
+HRTF       KEMAR el -40             bands 4  rms 1.54 dB  shelf 3.29 dB
+HRTF       KEMAR el -20             bands 4  rms 1.90 dB  shelf 3.39 dB
+HRTF       KEMAR el 0               bands 4  rms 2.46 dB  shelf 3.40 dB
+HRTF       KEMAR el +20             bands 4  rms 2.81 dB  shelf 3.49 dB
+HRTF       KEMAR el +40             bands 4  rms 1.58 dB  shelf 3.33 dB
+HRTF       KEMAR el +60             bands 4  rms 2.42 dB  shelf 3.31 dB

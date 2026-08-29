@@ -4,6 +4,8 @@
 
 #include "corpus_shelf.hpp"
 
+#include "fitted_shelf.hpp"
+
 #include "trench/core/formants.hpp"
 
 #include <array>
@@ -56,6 +58,17 @@ void appendByType(std::vector<TemplateEntry>& entries, std::string_view type,
   }
 }
 
+void appendFitted(std::vector<TemplateEntry>& entries, std::string_view group) {
+  for (const auto& source : kFittedShelf) {
+    if (std::string_view(source.group) != group) continue;
+    TemplateEntry entry;
+    entry.name = QString::fromUtf8(source.name);
+    entry.poles = source.poles;
+    entry.zeros = source.zeros;
+    entries.push_back(std::move(entry));
+  }
+}
+
 TemplateEntry withTalkingHedzEnds(TemplateEntry entry) {
   for (const auto& corpus : kCorpusShelf) {
     if (std::string_view(corpus.name) != "talking hedz M0Q0") continue;
@@ -84,6 +97,9 @@ void hedzEnds(ShelfGroup& group) {
 std::vector<ShelfGroup> buildShelf() {
   std::vector<ShelfGroup> groups;
 
+  ShelfGroup eq{QStringLiteral("EQ"), {kEqTemplate}};
+  groups.push_back(std::move(eq));
+
   ShelfGroup ipa{QString::fromUtf8("VOWELS \xc2\xb7 IPA"), {}};
   appendByType(ipa.entries, "VOWELS", QString());
   hedzEnds(ipa);
@@ -109,13 +125,11 @@ std::vector<ShelfGroup> buildShelf() {
   groups.push_back(std::move(female));
 
   ShelfGroup s1{QStringLiteral("MOUTHS S1"), {}};
-  appendByType(s1.entries, "MOUTHS S1", QStringLiteral("s1 "));
-  hedzEnds(s1);
+  appendFitted(s1.entries, "MOUTHS S1");
   groups.push_back(std::move(s1));
 
   ShelfGroup s2{QStringLiteral("MOUTHS S2"), {}};
-  appendByType(s2.entries, "MOUTHS S2", QStringLiteral("s2 "));
-  hedzEnds(s2);
+  appendFitted(s2.entries, "MOUTHS S2");
   groups.push_back(std::move(s2));
 
   ShelfGroup poses{QStringLiteral("POSES"), {}};
@@ -123,12 +137,16 @@ std::vector<ShelfGroup> buildShelf() {
   groups.push_back(std::move(poses));
 
   ShelfGroup bodies{QStringLiteral("BODIES"), {}};
-  appendByType(bodies.entries, "BODIES", QString());
+  appendFitted(bodies.entries, "BODIES");
   groups.push_back(std::move(bodies));
 
   ShelfGroup objects{QStringLiteral("OBJECTS"), {}};
-  appendByType(objects.entries, "OBJECTS", QString());
+  appendFitted(objects.entries, "OBJECTS");
   groups.push_back(std::move(objects));
+
+  ShelfGroup hrtf{QStringLiteral("HRTF"), {}};
+  appendFitted(hrtf.entries, "HRTF");
+  groups.push_back(std::move(hrtf));
 
   ShelfGroup modal{QStringLiteral("MODAL"), {}};
   for (const QString& name :

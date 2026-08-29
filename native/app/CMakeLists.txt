@@ -14,6 +14,7 @@ add_library(trench_native_ui STATIC
   cascade_plot.cpp
   cascade_plot.hpp
   corpus_shelf.hpp
+  fitted_shelf.hpp
   editor_state.cpp
   editor_state.hpp
   gesture_dial.cpp
