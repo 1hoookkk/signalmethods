@@ -219,7 +219,15 @@ int main()
             const auto snapped = runSine (processor, 0.01f);
             check (snapped.finite && std::abs (db (snapped.peak / off.peak)) > 1.0, "KEY F# audibly shifts the Crisp body at 220 Hz (dB)", db (snapped.peak / off.peak), 1.0);
             setParam (processor, ParamID::keySnap, 0.0f);
-            setParam (processor, ParamID::body, (float) trench::kDefaultBodyIndex);
+            if (std::getenv ("TRENCH_MEASURE") != nullptr)
+            {
+                int n = 0; trench::bodyRoster (n);
+                for (int i = 0; i < n; ++i)
+                    if (trench::bodyDisplayName (i).containsIgnoreCase (std::getenv ("TRENCH_MEASURE"))) { setParam (processor, ParamID::body, (float) i); break; }
+                setParam (processor, ParamID::morph, 0.44f);
+            }
+            else
+                setParam (processor, ParamID::body, (float) trench::kDefaultBodyIndex);
             pump (400);
         }
     }
