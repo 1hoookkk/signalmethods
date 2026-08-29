@@ -5,6 +5,8 @@
 
 #include <functional>
 
+inline constexpr double kThrowPixels = 120.0;
+
 class GestureDial final : public QWidget {
  public:
   GestureDial(QString label, double units_per_pixel,
