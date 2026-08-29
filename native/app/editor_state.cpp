@@ -206,6 +206,14 @@ void EditorState::setPadPosition(double morph01, double q01) {
   if (morph == morph_pos_ && q == q_pos_) return;
   morph_pos_ = morph;
   q_pos_ = q;
+  // RIDE INTO A CORNER, EDIT THAT CORNER (Tyson 2026-08-29 "auto swap to a
+  // corner when you morph pretty much all the way").
+  const bool hi_m = morph_pos_ > 0.88, lo_m = morph_pos_ < 0.12;
+  const bool hi_q = q_pos_ > 0.88, lo_q = q_pos_ < 0.12;
+  if ((lo_m || hi_m) && (lo_q || hi_q)) {
+    const std::size_t corner = (hi_q ? 2u : 0u) + (hi_m ? 1u : 0u);
+    if (corner != editing_corner_) setEditingCorner(corner);
+  }
   emit changed();
 }
 
