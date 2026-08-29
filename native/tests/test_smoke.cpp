@@ -67,12 +67,12 @@ TRENCH_TEST(window_smoke_at_minimum_and_normal_size) {
   projection->click();
   capture(window, QStringLiteral("min_zplane.png"));
 
-  window.resize(1180, 860);
+  window.resize(1060, 940);
   QTest::qWait(60);
   capture(window, QStringLiteral("normal_zplane.png"));
   projection->click();
   capture(window, QStringLiteral("normal_armadillo.png"));
-  std::printf("plot %d px tall, plane %d px tall at 1180x860\n", plot->height(), plane->height());
+  std::printf("plot %d px tall, plane %d px tall at 1060x940\n", plot->height(), plane->height());
   CHECK(plane->height() == 230);
   CHECK(plot->height() > plane->height());
   window.close();

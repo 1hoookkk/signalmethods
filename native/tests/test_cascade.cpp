@@ -42,7 +42,26 @@ double responseDb(std::span<const Biquad> sections, double hz, double rate) {
   return trench::core::cascade_response_db(sections, hz, rate);
 }
 
+void flatEq(EditorState& state) {
+  constexpr std::array<std::pair<double, double>, 6> bands{{
+      {80.0, 114.0}, {250.0, 250.0}, {700.0, 700.0}, {2'000.0, 2'000.0}, {5'500.0, 5'500.0}, {12'000.0, 12'000.0}}};
+  const std::size_t editing = state.editingCorner();
+  for (std::size_t corner = 0; corner < native::kCorners; ++corner) {
+    state.setEditingCorner(corner);
+    for (std::size_t index = 0; index < native::kSections; ++index) {
+      if (!state.sectionEnabled(index)) state.toggleSection(index);
+      state.setRoot(index, Lane::kPole, bands[index].first, bands[index].second);
+      state.selectSection(index);
+      if (!state.rootPresent(index, Lane::kZero)) state.addZeroAt(bands[index].first, bands[index].second);
+      state.setRoot(index, Lane::kZero, bands[index].first, bands[index].second);
+    }
+  }
+  state.setEditingCorner(editing);
+  state.selectSection(0);
+}
+
 void shape(EditorState& state) {
+  flatEq(state);
   state.setEditingCorner(1);
   state.setRoot(0, Lane::kPole, 120.0, 90.0);
   state.setRoot(2, Lane::kPole, 900.0, 60.0);
@@ -110,6 +129,8 @@ TRENCH_TEST(cascade_parity_graph_ears_export) {
 TRENCH_TEST(off_section_exports_identity) {
   EditorState plain;
   EditorState moved;
+  flatEq(plain);
+  flatEq(moved);
   for (std::size_t corner = 0; corner < native::kCorners; ++corner) {
     plain.setEditingCorner(corner);
     plain.toggleSection(2);
@@ -150,6 +171,8 @@ TRENCH_TEST(off_section_exports_identity) {
 TRENCH_TEST(absent_zero_exports_flat) {
   EditorState plain;
   EditorState moved;
+  flatEq(plain);
+  flatEq(moved);
   plain.setEditingCorner(1);
   plain.selectSection(1);
   plain.removeZero();
@@ -231,6 +254,7 @@ TRENCH_TEST(legacy_export_size_and_legality) {
 
 TRENCH_TEST(s6_zero_export_law_is_the_existing_one) {
   EditorState state;
+  flatEq(state);
   const auto& packed = state.packed();
   for (std::size_t corner = 0; corner < native::kCorners; ++corner) {
     CHECK(packed.words[corner][5][1] == p2k::kS6ZeroRsqWord);
@@ -258,6 +282,7 @@ TRENCH_TEST(s6_zero_export_law_is_the_existing_one) {
   }
 
   EditorState absent;
+  flatEq(absent);
   absent.selectSection(5);
   absent.removeZero();
   CHECK(identityRoot(absent.packed().words[0][5], 0));

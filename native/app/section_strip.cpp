@@ -23,6 +23,7 @@ constexpr QColor kQuiet{210, 207, 198, 105};
 constexpr QColor kAccent{196, 103, 79};
 
 constexpr double kCellGap = 12.0;
+constexpr double kCellMax = 120.0;
 constexpr double kMiniLowDb = -120.0;
 constexpr double kMiniHighDb = 24.0;
 constexpr int kCurvePoints = 96;
@@ -31,7 +32,9 @@ constexpr int kCurvePoints = 96;
 
 SectionStrip::SectionStrip(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {
-  setFixedHeight(64);
+  QSizePolicy policy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  policy.setHeightForWidth(true);
+  setSizePolicy(policy);
   setFocusPolicy(Qt::StrongFocus);
   setAccessibleName(QStringLiteral("Six addressable filter sections"));
   connect(state_, &EditorState::changed, this, [this] {
@@ -49,13 +52,27 @@ QRectF SectionStrip::toggleRect(std::size_t index) const {
   return {bounds.right() - 42.0, bounds.top() + 5.0, 34.0, 16.0};
 }
 
+bool SectionStrip::hasHeightForWidth() const { return true; }
+
+int SectionStrip::heightForWidth(int width) const {
+  const double size = std::min(
+      kCellMax, (static_cast<double>(width) - kCellGap * (trench::core::native::kSections - 1)) /
+                    trench::core::native::kSections);
+  return static_cast<int>(std::ceil(std::max(size, 1.0)));
+}
+
+double SectionStrip::cellSize() const {
+  return std::min(kCellMax, (static_cast<double>(width()) -
+                             kCellGap * (trench::core::native::kSections - 1)) /
+                                trench::core::native::kSections);
+}
+
 QRectF SectionStrip::cell(std::size_t index) const {
-  const QRectF bounds = QRectF(rect());
-  const double width =
-      (bounds.width() - kCellGap * (trench::core::native::kSections - 1)) /
-      trench::core::native::kSections;
-  return {bounds.left() + static_cast<double>(index) * (width + kCellGap),
-          bounds.top(), width, bounds.height()};
+  const double size = cellSize();
+  const double row = size * trench::core::native::kSections +
+                     kCellGap * (trench::core::native::kSections - 1);
+  const double left = 0.5 * (static_cast<double>(width()) - row);
+  return {left + static_cast<double>(index) * (size + kCellGap), 0.0, size, size};
 }
 
 void SectionStrip::rebuildCurves() {

@@ -93,6 +93,7 @@ void GestureDial::mousePressEvent(QMouseEvent* event) {
   last_y_ = event->position().x();
   deflect_ = 0.0;
   total_ = 0.0;
+  if (onBegin) onBegin();
   update();
 }
 
@@ -119,6 +120,7 @@ void GestureDial::mouseReleaseEvent(QMouseEvent* event) {
   dragging_ = false;
   deflect_ = 0.0;
   total_ = 0.0;
+  if (onEnd) onEnd();
   update();
 }
 

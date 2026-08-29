@@ -71,8 +71,9 @@ TRENCH_TEST(zplane_rejects_outside_disc_and_lower_half) {
   CHECK(!editor.placementAt(centre + QPointF(0.99 * radius, -0.0001 * radius)));
   CHECK(!editor.placementAt(centre + QPointF(0.5 * radius, 0.0)));
 
+  state.toggleSection(1);
+  state.setRoot(1, Lane::kPole, 1'500.0, 120.0);
   state.selectSection(1);
-  state.removeZero();
   CHECK(!state.rootPresent(1, Lane::kZero));
   QTest::mouseDClick(&editor, Qt::LeftButton, {},
                      (centre + QPointF(0.0, 0.5 * radius)).toPoint());

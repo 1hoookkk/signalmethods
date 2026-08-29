@@ -18,6 +18,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
+#include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QLabel>
@@ -133,10 +134,17 @@ QWidget* labelledEditor(const QString& label, QDoubleSpinBox* editor,
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), audition_(std::make_unique<trench::audio::Audition>()) {
   setWindowTitle(QStringLiteral("TRENCH · 6 × 2P2Z"));
-  resize(1180, 860);
+  resize(1060, 940);
   loadUserShelf();
 
-  auto* central = new QWidget(this);
+  auto* frame = new QWidget(this);
+  auto* frame_layout = new QHBoxLayout(frame);
+  frame_layout->setContentsMargins(0, 0, 0, 0);
+  auto* central = new QWidget(frame);
+  central->setMaximumWidth(1040);
+  frame_layout->addStretch(1);
+  frame_layout->addWidget(central, 0);
+  frame_layout->addStretch(1);
   auto* layout = new QVBoxLayout(central);
   layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(12);
@@ -144,12 +152,13 @@ MainWindow::MainWindow(QWidget* parent)
   auto* top = new QHBoxLayout;
   top->setSpacing(10);
   auto* load = new QPushButton(QStringLiteral("OPEN"), central);
+  auto* reset = new QPushButton(QStringLiteral("RESET"), central);
+  reset->setObjectName(QStringLiteral("resetDocument"));
   auto* save = new QPushButton(QStringLiteral("SAVE"), central);
   auto* export_body = new QPushButton(QStringLiteral("EXPORT .BODY240"), central);
   export_body->setObjectName(QStringLiteral("exportBody240"));
   analyze_button_ = new QPushButton(QStringLiteral("ANALYZE"), central);
   analyze_button_->setObjectName(QStringLiteral("analyze"));
-  analyze_button_->setEnabled(false);
   sections_button_ = new QPushButton(QStringLiteral("SECTIONS"), central);
   auto* projection = new QPushButton(QStringLiteral("F×BW"), central);
   projection->setObjectName(QStringLiteral("projectionSwitch"));
@@ -160,8 +169,9 @@ MainWindow::MainWindow(QWidget* parent)
   audition_button_->setCheckable(true);
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
-  reference_label_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-  reference_label_->setMinimumWidth(40);
+  reference_label_->setMinimumWidth(
+      QFontMetrics(valueFont(reference_label_)).horizontalAdvance(QStringLiteral("NO REFERENCE")) + 12);
+  reference_label_->setMaximumWidth(280);
   tilt_button_ = new QPushButton(QStringLiteral("TILT"), central);
   tilt_button_->setCheckable(true);
   tilt_button_->setObjectName(QStringLiteral("tiltSwitch"));
@@ -169,7 +179,7 @@ MainWindow::MainWindow(QWidget* parent)
   template_shelf_ = new QComboBox(central);
   template_shelf_->setObjectName(QStringLiteral("templateShelf"));
   template_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  template_shelf_->setMinimumContentsLength(5);
+  template_shelf_->setMinimumContentsLength(9);
   template_shelf_->addItem(QStringLiteral("TEMPLATE"));
   for (const auto& entry : trench::app::kTemplateShelf) {
     template_shelf_->addItem(QString::fromUtf8(entry.name));
@@ -177,7 +187,7 @@ MainWindow::MainWindow(QWidget* parent)
   overlay_shelf_ = new QComboBox(central);
   overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
   overlay_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  overlay_shelf_->setMinimumContentsLength(5);
+  overlay_shelf_->setMinimumContentsLength(9);
   overlay_shelf_->addItem(QStringLiteral("OVERLAY"));
   for (const auto& entry : trench::app::kTemplateShelf) {
     overlay_shelf_->addItem(QString::fromUtf8(entry.name));
@@ -191,6 +201,7 @@ MainWindow::MainWindow(QWidget* parent)
   keep->setFixedSize(28, 28);
   keep->setFont(captionFont(keep));
   load->setFont(captionFont(load));
+  reset->setFont(captionFont(reset));
   save->setFont(captionFont(save));
   export_body->setFont(captionFont(export_body));
   analyze_button_->setFont(captionFont(analyze_button_));
@@ -202,25 +213,30 @@ MainWindow::MainWindow(QWidget* parent)
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
   reference_label_->setFont(valueFont(reference_label_));
   for (QWidget* chrome : std::initializer_list<QWidget*>{
-           load, save, export_body, analyze_button_, sections_button_,
+           load, reset, save, export_body, analyze_button_, sections_button_,
            projection, tilt_button_, keep, template_shelf_, overlay_shelf_,
            audition_button_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
   }
   top->addWidget(load);
+  top->addWidget(reset);
   top->addWidget(template_shelf_);
   top->addWidget(keep);
   top->addWidget(reference_label_);
   top->addWidget(tilt_button_);
   top->addWidget(overlay_shelf_);
   top->addStretch(1);
-  top->addWidget(audition_button_);
-  top->addWidget(projection);
-  top->addWidget(sections_button_);
-  top->addWidget(analyze_button_);
-  top->addWidget(export_body);
-  top->addWidget(save);
   layout->addLayout(top);
+  auto* actions = new QHBoxLayout;
+  actions->setSpacing(10);
+  actions->addWidget(audition_button_);
+  actions->addWidget(projection);
+  actions->addWidget(sections_button_);
+  actions->addWidget(analyze_button_);
+  actions->addStretch(1);
+  actions->addWidget(export_body);
+  actions->addWidget(save);
+  layout->addLayout(actions);
 
   // THE RESPONSE TAKES THE THRONE (Tyson 2026-08-29 "i agree with the
   // patent"): the aggregate curve owns the height, the plane is a compact
@@ -251,8 +267,10 @@ MainWindow::MainWindow(QWidget* parent)
   transpose->onDelta = [this](double delta) {
     state_.applyAffine(delta, 1.0, 1.0, 1.0);
   };
+  transpose->onBegin = [this] { state_.beginUndoGroup(); };
+  transpose->onEnd = [this] { state_.endUndoGroup(); };
   gestures->addWidget(transpose);
-  const auto addRatioDial = [central, gestures](
+  const auto addRatioDial = [this, central, gestures](
                                 const QString& label, double units_per_pixel,
                                 int decimals, std::function<void(double)> apply) {
     auto product = std::make_shared<double>(1.0);
@@ -267,6 +285,8 @@ MainWindow::MainWindow(QWidget* parent)
       *product *= 1.0 + delta;
       apply(delta);
     };
+    dial->onBegin = [this] { state_.beginUndoGroup(); };
+    dial->onEnd = [this] { state_.endUndoGroup(); };
     gestures->addWidget(dial);
   };
   addRatioDial(QStringLiteral("TRACT"), 0.0015, 3, [this](double delta) {
@@ -309,7 +329,7 @@ MainWindow::MainWindow(QWidget* parent)
   inspector->addWidget(status_label_, 0, Qt::AlignBottom);
   layout->addLayout(inspector);
 
-  setCentralWidget(central);
+  setCentralWidget(frame);
   setStyleSheet(QStringLiteral(R"(
     QMainWindow, QWidget { background: #edebe6; color: #26241f; }
     QPushButton, QComboBox, QDoubleSpinBox {
@@ -341,6 +361,13 @@ MainWindow::MainWindow(QWidget* parent)
   )"));
 
   connect(load, &QPushButton::clicked, this, &MainWindow::openFile);
+  connect(reset, &QPushButton::clicked, this, &MainWindow::resetDocument);
+  auto* undo = new QShortcut(QKeySequence::Undo, this);
+  connect(undo, &QShortcut::activated, this, [this] { state_.undo(); });
+  auto* redo = new QShortcut(QKeySequence::Redo, this);
+  connect(redo, &QShortcut::activated, this, [this] { state_.redo(); });
+  auto* redo_shift = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z), this);
+  connect(redo_shift, &QShortcut::activated, this, [this] { state_.redo(); });
   connect(sections_button_, &QPushButton::clicked, this,
           &MainWindow::toggleSectionDesk);
   connect(projection, &QPushButton::toggled, this,
@@ -569,6 +596,13 @@ void MainWindow::saveDocument() {
       QStringLiteral("SAVED · %1").arg(QFileInfo(chosen).fileName().toUpper()));
 }
 
+void MainWindow::resetDocument() {
+  state_.setDocument(EditorState::blank());
+  document_path_.clear();
+  setWindowTitle(QStringLiteral("TRENCH · 6 × 2P2Z"));
+  status_label_->setText(QStringLiteral("RESET · SIX SECTIONS OFF"));
+}
+
 void MainWindow::exportBody240() {
   const QString folder =
       QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
@@ -769,7 +803,6 @@ void MainWindow::setReference(Reference reference) {
   reference_ = std::move(reference);
   reference_label_->setText(reference_->name.toUpper());
   tilt_button_->setEnabled(true);
-  analyze_button_->setEnabled(reference_->clip.has_value());
   applyReferenceView();
   status_label_->setText(QStringLiteral("REFERENCE LOADED · %1 POINTS")
                              .arg(reference_->frequency_hz.size()));

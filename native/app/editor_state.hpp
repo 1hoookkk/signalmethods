@@ -45,6 +45,8 @@ class EditorState final : public QObject {
 
   explicit EditorState(QObject* parent = nullptr);
 
+  [[nodiscard]] static Document blank();
+
   [[nodiscard]] const trench::core::native::Corner& corner() const noexcept;
   [[nodiscard]] const trench::core::native::Section& section(std::size_t index) const;
   [[nodiscard]] const trench::core::native::Section& sectionAt(
@@ -66,6 +68,12 @@ class EditorState final : public QObject {
   [[nodiscard]] double qPos() const noexcept;
 
   void setDocument(const Document& document);
+  void undo();
+  void redo();
+  [[nodiscard]] bool canUndo() const noexcept;
+  [[nodiscard]] bool canRedo() const noexcept;
+  void beginUndoGroup();
+  void endUndoGroup();
   void selectSection(std::size_t index);
   void selectRoot(std::size_t index, Lane lane);
   void setEditingCorner(std::size_t index);
@@ -89,7 +97,13 @@ class EditorState final : public QObject {
   [[nodiscard]] const CornerState& editing() const noexcept;
   void render();
   void commit();
+  void remember();
+  void restore(const Document& document);
 
+  std::vector<Document> undo_;
+  std::vector<Document> redo_;
+  int group_depth_{};
+  bool group_recorded_{};
   std::array<CornerState, trench::core::native::kCorners> corners_{};
   std::size_t editing_corner_{};
   double morph_pos_{};

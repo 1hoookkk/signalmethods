@@ -14,6 +14,8 @@ class GestureDial final : public QWidget {
               QWidget* parent = nullptr);
 
   std::function<void(double delta)> onDelta;
+  std::function<void()> onBegin;
+  std::function<void()> onEnd;
 
  protected:
   void paintEvent(QPaintEvent* event) override;

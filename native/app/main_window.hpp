@@ -45,6 +45,7 @@ class MainWindow final : public QMainWindow {
 
   void openFile();
   void saveDocument();
+  void resetDocument();
   void exportBody240();
   void analyzeReference();
   void adoptProposal();

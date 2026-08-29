@@ -11,6 +11,9 @@ class SectionStrip final : public QWidget {
  public:
   explicit SectionStrip(EditorState* state, QWidget* parent = nullptr);
 
+  [[nodiscard]] bool hasHeightForWidth() const override;
+  [[nodiscard]] int heightForWidth(int width) const override;
+
  protected:
   void paintEvent(QPaintEvent* event) override;
   void resizeEvent(QResizeEvent* event) override;
@@ -18,6 +21,7 @@ class SectionStrip final : public QWidget {
   void keyPressEvent(QKeyEvent* event) override;
 
  private:
+  [[nodiscard]] double cellSize() const;
   [[nodiscard]] QRectF cell(std::size_t index) const;
   [[nodiscard]] QRectF toggleRect(std::size_t index) const;
   void rebuildCurves();

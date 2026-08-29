@@ -418,6 +418,7 @@ void ArmadilloEditor::groupPrimaryOnly() {
 // drag multiple"): every member is carried by the same log-plane delta, so the
 // shape held between the roots survives the drag.
 void ArmadilloEditor::beginDrag(const QPointF& position) {
+  state_->beginUndoGroup();
   members_.clear();
   for (const Key& key : group_) {
     if (!state_->sectionEnabled(key.first)) continue;
@@ -495,6 +496,7 @@ void ArmadilloEditor::mouseMoveEvent(QMouseEvent* event) {
 void ArmadilloEditor::mouseReleaseEvent(QMouseEvent* event) {
   if (!drag_ || event->button() != Qt::LeftButton) return;
   applyPointer(event->position());
+  state_->endUndoGroup();
   drag_.reset();
   members_.clear();
   releaseMouse();

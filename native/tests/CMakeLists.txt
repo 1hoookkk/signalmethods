@@ -8,6 +8,7 @@ add_executable(trench_native_tests
   test_smoke.cpp
   test_cascade.cpp
   test_document.cpp
+  test_undo.cpp
   test_zplane.cpp
 )
 target_link_libraries(trench_native_tests PRIVATE trench_native_ui Qt6::Test)
@@ -19,6 +20,7 @@ set(TRENCH_NATIVE_TEST_CASES
   analyze_recovers_nasal_poles_and_antiformant
   audition_button_reports_device_state
   audition_device_opens_streams_and_closes
+  boot_is_empty_and_toggling_places_a_fresh_pole
   cascade_parity_graph_ears_export
   document_load_restores_editable_state_not_overlay
   document_rejects_malformed
@@ -30,7 +32,9 @@ set(TRENCH_NATIVE_TEST_CASES
   peq_list_opens_as_poles_and_zeros
   positive_response_table_is_not_pole_material
   praat_formant_table_opens_as_median_poles
+  reset_is_a_blank_document_and_undoable
   s6_zero_export_law_is_the_existing_one
+  undo_restores_each_edit_and_groups_a_drag
   window_smoke_at_minimum_and_normal_size
   zplane_circle_and_labels_fit_compact_pane
   zplane_drag_is_bounded_and_mirrors
