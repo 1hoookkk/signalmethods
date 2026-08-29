@@ -61,6 +61,18 @@ int SectionStrip::heightForWidth(int width) const {
   return static_cast<int>(std::ceil(std::max(size, 1.0)));
 }
 
+QSize SectionStrip::sizeHint() const {
+  const int width = static_cast<int>(kCellMax * trench::core::native::kSections +
+                                     kCellGap * (trench::core::native::kSections - 1));
+  return {width, heightForWidth(width)};
+}
+
+QSize SectionStrip::minimumSizeHint() const {
+  const int width = static_cast<int>(48.0 * trench::core::native::kSections +
+                                     kCellGap * (trench::core::native::kSections - 1));
+  return {width, heightForWidth(width)};
+}
+
 double SectionStrip::cellSize() const {
   return std::min(kCellMax, (static_cast<double>(width()) -
                              kCellGap * (trench::core::native::kSections - 1)) /

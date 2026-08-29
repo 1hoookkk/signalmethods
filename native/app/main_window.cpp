@@ -306,6 +306,7 @@ MainWindow::MainWindow(QWidget* parent)
   layout->addLayout(gestures);
 
   section_strip_ = new SectionStrip(&state_, central);
+  section_strip_->setObjectName(QStringLiteral("sectionStrip"));
   layout->addWidget(section_strip_);
 
   auto* inspector = new QHBoxLayout;

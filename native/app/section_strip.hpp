@@ -13,6 +13,8 @@ class SectionStrip final : public QWidget {
 
   [[nodiscard]] bool hasHeightForWidth() const override;
   [[nodiscard]] int heightForWidth(int width) const override;
+  [[nodiscard]] QSize sizeHint() const override;
+  [[nodiscard]] QSize minimumSizeHint() const override;
 
  protected:
   void paintEvent(QPaintEvent* event) override;

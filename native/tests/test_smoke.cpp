@@ -5,6 +5,7 @@
 
 #include <QComboBox>
 #include <QDir>
+#include <QImage>
 #include <QPixmap>
 #include <QPushButton>
 #include <QTest>
@@ -75,5 +76,15 @@ TRENCH_TEST(window_smoke_at_minimum_and_normal_size) {
   std::printf("plot %d px tall, plane %d px tall at 1060x940\n", plot->height(), plane->height());
   CHECK(plane->height() == 230);
   CHECK(plot->height() > plane->height());
+  auto* strip = window.findChild<QWidget*>(QStringLiteral("sectionStrip"));
+  CHECK(strip != nullptr);
+  std::printf("strip %dx%d\n", strip->width(), strip->height());
+  CHECK(strip->height() >= 100 && strip->height() <= 120);
+  CHECK(strip->height() == strip->heightForWidth(strip->width()));
+  const QImage frame = window.grab().toImage();
+  const QPoint first_card = strip->mapTo(&window, QPoint(strip->width() / 2 - 2 * strip->height(), strip->height() / 2));
+  const QColor painted = frame.pixelColor(first_card);
+  std::printf("first card pixel %d,%d,%d\n", painted.red(), painted.green(), painted.blue());
+  CHECK(painted.red() < 60 && painted.green() < 60 && painted.blue() < 60);
   window.close();
 }
