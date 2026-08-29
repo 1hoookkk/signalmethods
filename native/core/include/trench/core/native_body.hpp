@@ -73,8 +73,8 @@ std::pair<double, double> coefficients_of(const Roots& roots, double sample_rate
 
 Coefficients design(const Section& section, double sample_rate_hz);
 Design design(const Corner& corner, double sample_rate_hz);
-Design blend(const Body& body, double morph, double q, double sample_rate_hz);
-double blend_gain_db(const Body& body, double morph, double q);
+Design blend_roots_log_2019(const Body& body, double morph, double q, double sample_rate_hz);
+double blend_gain_db_2019(const Body& body, double morph, double q);
 
 double dc_scale(const Coefficients& c);
 Biquad biquad(const Coefficients& c);

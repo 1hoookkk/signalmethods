@@ -186,7 +186,7 @@ Roots blend_roots(const std::array<const Roots*, kCorners>& corner,
 
 }  // namespace
 
-Design blend(const Body& body, double morph, double q, double sample_rate_hz) {
+Design blend_roots_log_2019(const Body& body, double morph, double q, double sample_rate_hz) {
   const auto weight = corner_weights(morph, q);
   Design out{};
   for (std::size_t si = 0; si < kSections; ++si) {
@@ -207,7 +207,7 @@ Design blend(const Body& body, double morph, double q, double sample_rate_hz) {
   return out;
 }
 
-double blend_gain_db(const Body& body, double morph, double q) {
+double blend_gain_db_2019(const Body& body, double morph, double q) {
   const auto weight = corner_weights(morph, q);
   double acc = 0.0;
   for (std::size_t ci = 0; ci < kCorners; ++ci) {

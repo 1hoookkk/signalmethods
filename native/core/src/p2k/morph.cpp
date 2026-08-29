@@ -71,7 +71,8 @@ InteriorAudit interior_audit(const native::Body& body, const Grid& g, std::size_
   return interior_audit(
       [&](float m, float q) {
         const auto cascade =
-            native::cascade(native::blend(body, m, q, kSr), native::blend_gain_db(body, m, q));
+            native::cascade(native::blend_roots_log_2019(body, m, q, kSr),
+                            native::blend_gain_db_2019(body, m, q));
         SectionBiquads out{};
         std::copy_n(cascade.begin(), kStageCount, out.begin());
         return out;
