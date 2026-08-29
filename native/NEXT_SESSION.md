@@ -61,6 +61,35 @@ same index). Commit native work with explicit pathspecs only:
   scrub ribbon so ANALYZE fits one chosen moment per corner (VV2 recipe:
   ~30 ms steady state, onset and offset of a diphthong = corners A and B).
 
+## Verdict pass with Tyson at the screen (2026-08-29 evening)
+- Boot is EMPTY: six sections off, nothing placed ("why have you baked in
+  arbitrary poles and zeros"). A section switched on gets a fresh
+  1 kHz / 100 Hz pole. `EditorState::blank()` is the reset document.
+- Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z: 200-deep document undo; a plane drag or a
+  dial throw is one step (begin/endUndoGroup). RESET button, undoable.
+- ANALYZE is always live and says "NEEDS A SOUND" without one.
+- Chrome in two rows (file row / action row) so nothing truncates; the
+  column is capped at 1040 px and centred; stage cards square (<= 120 px,
+  48 px minimum) with a real sizeHint; default window 1060x940.
+- ZEROS button: the two zero habits on the editing corner - skirt zero half
+  an octave under the lowest seat (< 700 Hz, same width), level-trim zero on
+  every Q >= 10 pole (width x Q / 2 -> peak near +6 dB); S6 is never touched
+  because the packed contract forces any S6 zero to the trench depth.
+- OPEN routes added: `.Table` (Praat formant track -> median poles), `.txt`
+  declaring `Configurable_PEQ` (cuts -> poles, boosts -> zeros, zeros attach
+  to the nearest pole), REW `*` headers on response tables.
+- core fix: export_p2k_corner keeps the forced S6 zero at its authored
+  frequency (was moving 12 kHz -> 8.56 kHz); depth forcing is still the
+  contract and still needs a ruling.
+- Banks baked by `trench_native_tests --bake-shelf <dir> [--zeros]`:
+  `out/bodies/shelf/` (pole only) and `out/bodies/shelf_zeros/` (habits
+  applied, 157 zeros, none on S6): every shelf template as corner 0 with
+  corners 1-3 duplicated, canonical export.
+- Pending at wrap: the plain-tool skin (verdict "over-styled for what it
+  is") - an executor is applying paint/fonts only: no stylesheet, white
+  panels with 1 px #c8c8c8 borders, #e6e6e6 grid, black 1 px curves, one
+  accent (#c4674f) for the addressed thing only, default fonts.
+
 ## Measured contract facts (report, not fixed — Tyson's call)
 - Lattice quantisation of the core exporter: an authored 250 Hz / 250 Hz pole
   exports as 233.68 Hz / 251.03 Hz (`export_p2k_corner`, native_body.cpp).
@@ -79,7 +108,7 @@ same index). Commit native work with explicit pathspecs only:
 
 ## Evidence classes produced
 - Build: fresh `cmake --preset app` configure + build, then incremental.
-- Tests: 22 CTest cases under `native.*`, all passing headless;
+- Tests: 27 CTest cases under `native.*`, all passing headless;
   the two audible cases pass live with `TRENCH_AUDIBLE=1` and skip otherwise.
 - Packed parity: graph vs export re-import 0 dB delta over 3 rates x 8
   positions x 240 grid points; exported words legal (`p2k::is_legal`,
