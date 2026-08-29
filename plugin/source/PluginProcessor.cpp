@@ -2,6 +2,7 @@
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
 #include "dsp/SlamStage.h"
+#include "dsp/PreampLaw.h"
 #include "parameters/CurveMap.h"
 #include "BinaryData.h"
 #include <cmath>
@@ -12,17 +13,6 @@ namespace
 constexpr int kCleanInputMode = 0;
 constexpr int kMackieDeskSlam = 1;
 constexpr int kSpatialOff = 2;
-// PERCEPTUAL DRIVE TAPER (Tyson 2026-08-01 "too easy to destroy the sound"):
-// the desk model's input stage is 1+99*drive — linear in GAIN, so +21 dB
-// arrives inside the first 10% of PREAMP's travel and the rest of the throw
-// is identical mush. Remap the knob linear-in-dB over the SAME 0..+40 dB
-// range (half throw = +20 dB). Endpoints exact; the clean-roomed Mackie
-// model itself stays verbatim.
-float driveTaper (float k) noexcept
-{
-    k = juce::jlimit (0.0f, 1.0f, k);
-    return k <= 0.0f ? 0.0f : (std::pow (10.0f, 2.0f * k) - 1.0f) * (1.0f / 99.0f);
-}
 // KEY AUTO label mapping (same as KeySnapBox::snapChoiceForSuggestion):
 // detector labels are 0..11 major, 12..23 minor; the parameter is
 // 1..12 minor, 13..24 major, 0 = AUTO.
@@ -332,8 +322,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
     const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
     const float chew      = curveMap (Axis::bite,   juce::jlimit (0.0f, 1.0f, pChew->load()));
-    const float slam      = curveMap (Axis::slam,   pSlam->load());
-    const float preamp    = curveMap (Axis::preamp, juce::jlimit (0.0f, 1.0f, pPreamp->load()));
+    const float slam      = 0.0f;
+    const float preamp    = 0.0f;
     const float follow    = curveMap (Axis::follow, juce::jlimit (0.0f, 1.0f, pFollow->load()));
     const float track     = curveMap (Axis::track,  juce::jlimit (0.0f, 1.0f, pTrack->load()));
     const int movePreset  = (int) pMovePreset->load();
@@ -389,7 +379,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
         dspBridge.setInputMode (preampActive ? kMackieDeskSlam : kCleanInputMode);
         lastPreampActive = preampActive;
     }
-    dspBridge.setInputPreamp (driveTaper (preamp));   // same dB-linear law as SLAM
+    dspBridge.setInputPreamp (trench::preampGain (preamp));
     TrenchParams params;
     params.q = q;                       // the static authored second axis
     params.poleDistortion = chew;       // BITE/CHEW, independent of Q
@@ -415,7 +405,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     params.keySnap = keyChoice;
     // 9. LOW KEEP — the floor goes around the machine. A first-order pair sums
     //    back to unity, so at 0 there is no filter in the path at all.
-    const float lowKeep = juce::jlimit (0.0f, 1.0f, pLowKeep->load());
+    const float lowKeep = 0.0f;
     const bool lowKeepActive = lowKeep > 0.0f;
     const int lowKeepChannels = lowKeepActive
                                     ? juce::jmin (kLowKeepMaxChannels, buffer.getNumChannels())

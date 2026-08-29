@@ -96,7 +96,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ParamID::keySnap, 1 },
         "Key Snap",
         juce::StringArray {
-            "AUTO",
+            "OFF",
             "C m", "C# m", "D m", "D# m", "E m", "F m",
             "F# m", "G m", "G# m", "A m", "A# m", "B m",
             "C M", "C# M", "D M", "D# M", "E M", "F M",

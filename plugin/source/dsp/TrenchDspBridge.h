@@ -5,6 +5,7 @@
 #include <trench/core/audition.hpp>
 #include <trench/core/native_body.hpp>
 #include <trench/core/packed_body.hpp>
+#include <trench/core/transpose.hpp>
 
 #include <algorithm>
 #include <array>
@@ -193,10 +194,13 @@ public:
         const int samples = buffer.getNumSamples();
         if (channels <= 0 || samples <= 0)
             return;
+        const double keyRatio = keySnapRatio (params.keySnap);
         for (int sample = 0; sample < samples; ++sample)
         {
             auto cascade = body.interpolate_biquads (juce::jlimit (0.0f, 1.0f, morphPerSample[sample]),
                                                       juce::jlimit (0.0f, 1.0f, params.q), 0.0f);
+            if (keyRatio != 1.0)
+                cascade = trench::core::transpose_cascade (cascade, keyRatio, sampleRateHz);
             publishCascade (cascade);
             processSample (left, buffer.getWritePointer (0)[sample], cascade);
             if (channels > 1)
@@ -230,6 +234,15 @@ public:
     void setAgcDrive (float drive) noexcept { bypass.agcDrive = std::max (1.0f, drive); }
     void setSaturationEnabled (bool enabled) noexcept { bypass.saturate = enabled; }
 
+public:
+    static double keySnapRatio (int choice) noexcept
+    {
+        if (choice <= 0 || choice > 24)
+            return 1.0;
+        const int root = (choice - 1) % 12;
+        const int semitones = root <= 6 ? root : root - 12;
+        return trench::core::ratio_of_semitones ((double) semitones);
+    }
 private:
     static trench::core::PackedBody compileBody (std::span<const std::uint8_t> bytes,
                                                   double datumRate, double runtimeRate)
@@ -271,7 +284,7 @@ private:
                         const trench::core::Cascade& cascade)
     {
         sample *= inputPreamp;
-        runner.set_target (cascade);
+        runner.set_target (trench::core::encode_cascade (cascade));
         runner.process (std::span<float> (&sample, 1));
     }
 
