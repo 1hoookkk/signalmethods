@@ -15,6 +15,9 @@ class ArmadilloEditor final : public QWidget {
  public:
   explicit ArmadilloEditor(EditorState* state, QWidget* parent = nullptr);
 
+  void setGhost(std::vector<std::pair<double, double>> poles);
+  void clearGhost();
+
  protected:
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
@@ -52,6 +55,7 @@ class ArmadilloEditor final : public QWidget {
   std::optional<Handle> drag_;
   std::set<Key> group_;
   std::vector<Member> members_;
+  std::vector<std::pair<double, double>> ghost_;
   double press_hz_{};
   double press_bw_hz_{};
 };

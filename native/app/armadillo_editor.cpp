@@ -24,6 +24,7 @@ constexpr QColor kGrid{52, 58, 63};
 constexpr QColor kText{139, 139, 132};
 constexpr QColor kInk{210, 207, 198};
 constexpr QColor kAccent{196, 103, 79};
+constexpr QColor kOverlay{184, 134, 46};
 
 const Resonant& rootOf(const EditorState& state, std::size_t section,
                        EditorState::Lane lane) {
@@ -123,6 +124,19 @@ std::vector<ArmadilloEditor::Handle> ArmadilloEditor::handles() const {
   return result;
 }
 
+// THE OVERLAY LIVES WHERE THE EDITING LIVES (Tyson 2026-08-29): the compared
+// posture is drawn on the same plane, under the live roots, and cannot be
+// grabbed - it is a target to move onto, not a thing to move.
+void ArmadilloEditor::setGhost(std::vector<std::pair<double, double>> poles) {
+  ghost_ = std::move(poles);
+  update();
+}
+
+void ArmadilloEditor::clearGhost() {
+  ghost_.clear();
+  update();
+}
+
 std::optional<ArmadilloEditor::Handle> ArmadilloEditor::hitHandle(
     const QPointF& position) const {
   std::optional<Handle> closest;
@@ -202,6 +216,12 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                           bounds.height(), 16.0},
                    Qt::AlignCenter, QStringLiteral("bandwidth"));
   painter.restore();
+
+  painter.setPen(QPen(faded(kOverlay, 165), 1.1));
+  painter.setBrush(Qt::NoBrush);
+  for (const auto& ghost : ghost_) {
+    painter.drawEllipse(pointFor(ghost.first, ghost.second), 4.0, 4.0);
+  }
 
   QFont marker_font = painter.font();
   marker_font.setCapitalization(QFont::MixedCase);

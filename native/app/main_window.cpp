@@ -14,7 +14,9 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QSignalBlocker>
 #include <QStandardPaths>
@@ -138,6 +140,34 @@ bool isPoleMaterial(const std::vector<NumericRow>& rows) {
          });
 }
 
+QString templatesFolder() {
+  return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
+         QStringLiteral("/TRENCH/templates");
+}
+
+QString templateStem(const QString& name) {
+  QString stem;
+  for (const QChar letter : name) {
+    stem.append(letter.isLetterOrNumber() ? letter : QChar('_'));
+  }
+  return stem.isEmpty() ? QStringLiteral("untitled") : stem;
+}
+
+QString templateName(const std::filesystem::path& path) {
+  std::ifstream stream(path);
+  std::string line;
+  while (std::getline(stream, line)) {
+    const auto first = line.find_first_not_of(" \t\r");
+    if (first == std::string::npos) continue;
+    if (line[first] != '#') break;
+    const QString named =
+        QString::fromStdString(line.substr(first + 1)).trimmed();
+    if (!named.isEmpty()) return named;
+    break;
+  }
+  return QString::fromStdWString(path.stem().wstring());
+}
+
 QFont captionFont(const QWidget* base) {
   QFont font = base->font();
   font.setPixelSize(10);
@@ -187,6 +217,7 @@ MainWindow::MainWindow(QWidget* parent)
   setWindowTitle(QStringLiteral("TRENCH · 6 × 2P2Z"));
   resize(1180, 860);
   setMinimumSize(900, 700);
+  loadUserShelf();
 
   auto* central = new QWidget(this);
   auto* layout = new QVBoxLayout(central);
@@ -215,6 +246,14 @@ MainWindow::MainWindow(QWidget* parent)
   for (const auto& entry : trench::app::kTemplateShelf) {
     overlay_shelf_->addItem(QString::fromUtf8(entry.name));
   }
+  for (const auto& kept : user_shelf_) {
+    template_shelf_->addItem(kept.first);
+    overlay_shelf_->addItem(kept.first);
+  }
+  auto* keep = new QPushButton(QStringLiteral("+"), central);
+  keep->setObjectName(QStringLiteral("keepTemplate"));
+  keep->setFixedSize(28, 28);
+  keep->setFont(captionFont(keep));
   load->setFont(captionFont(load));
   save->setFont(captionFont(save));
   tilt_button_->setFont(captionFont(tilt_button_));
@@ -223,6 +262,7 @@ MainWindow::MainWindow(QWidget* parent)
   reference_label_->setFont(valueFont(reference_label_));
   top->addWidget(load);
   top->addWidget(template_shelf_);
+  top->addWidget(keep);
   top->addWidget(reference_label_);
   top->addWidget(tilt_button_);
   top->addWidget(overlay_shelf_);
@@ -329,6 +369,7 @@ MainWindow::MainWindow(QWidget* parent)
     QPushButton:checked { border-color: #c4674f; color: #c4674f; }
     QPushButton#tiltSwitch:checked { background: #f6f4ef;
                                      border-color: #c4674f; color: #c4674f; }
+    QPushButton#keepTemplate { padding: 0px; }
     QComboBox::drop-down { border: none; width: 18px; }
     QComboBox QAbstractItemView { background: #f6f4ef; border: 1px solid #c9c4b8;
                                   color: #26241f; outline: none;
@@ -348,21 +389,40 @@ MainWindow::MainWindow(QWidget* parent)
   connect(save, &QPushButton::clicked, this, &MainWindow::saveBody);
   connect(tilt_button_, &QPushButton::toggled, this,
           [this] { applyReferenceView(); });
+  connect(keep, &QPushButton::clicked, this, &MainWindow::keepTemplate);
   connect(overlay_shelf_, &QComboBox::activated, this, [this](int index) {
     if (index <= 0) {
       cascade_plot_->clearFormantMarks();
+      armadillo_editor_->clearGhost();
       return;
     }
-    const auto& entry = trench::app::kTemplateShelf[std::size_t(index) - 1];
-    std::vector<double> marks;
-    for (const auto& pole : entry.poles) {
-      if (pole.present) marks.push_back(pole.hz);
+    const std::size_t compiled = trench::app::kTemplateShelf.size();
+    const std::size_t slot = static_cast<std::size_t>(index) - 1;
+    std::vector<std::pair<double, double>> ghost;
+    if (slot < compiled) {
+      for (const auto& pole : trench::app::kTemplateShelf[slot].poles) {
+        if (pole.present) ghost.emplace_back(pole.hz, pole.bw_hz);
+      }
+    } else {
+      if (slot - compiled >= user_shelf_.size()) return;
+      ghost = user_shelf_[slot - compiled].second;
     }
+    std::vector<double> marks;
+    marks.reserve(ghost.size());
+    for (const auto& pole : ghost) marks.push_back(pole.first);
     cascade_plot_->setFormantMarks(std::move(marks));
+    armadillo_editor_->setGhost(std::move(ghost));
   });
   connect(template_shelf_, &QComboBox::activated, this, [this](int index) {
     if (index < 1) return;
-    state_.loadTemplate(trench::app::kTemplateShelf[static_cast<std::size_t>(index - 1)]);
+    const std::size_t compiled = trench::app::kTemplateShelf.size();
+    const std::size_t slot = static_cast<std::size_t>(index) - 1;
+    if (slot < compiled) {
+      state_.loadTemplate(trench::app::kTemplateShelf[slot]);
+    } else {
+      if (slot - compiled >= user_shelf_.size()) return;
+      state_.loadPoles(user_shelf_[slot - compiled].second);
+    }
     template_shelf_->setCurrentIndex(0);
   });
   candidate_lane_->onPick = [this](double hz, double bw_hz) {
@@ -460,6 +520,74 @@ void MainWindow::saveBody() {
       refusal.isEmpty()
           ? QStringLiteral("SAVED · %1").arg(QFileInfo(chosen).fileName().toUpper())
           : refusal);
+}
+
+// A POSTURE FOUND IS A POSTURE KEPT (Tyson 2026-08-29): the shelf takes what
+// the hands made, in the same two-column form OPEN already reads, so a kept
+// corner returns as a template and as an overlay.
+void MainWindow::loadUserShelf() {
+  const QDir folder(templatesFolder());
+  if (!folder.exists()) return;
+  for (const QFileInfo& info : folder.entryInfoList(
+           {QStringLiteral("*.fbw")}, QDir::Files, QDir::Name)) {
+    const std::filesystem::path path(info.absoluteFilePath().toStdWString());
+    const auto rows = readNumericRows(path);
+    if (!isPoleMaterial(rows)) continue;
+    std::vector<std::pair<double, double>> poles;
+    poles.reserve(rows.size());
+    for (const auto& row : rows) poles.emplace_back(row[0], row[1]);
+    user_shelf_.emplace_back(templateName(path), std::move(poles));
+  }
+}
+
+void MainWindow::keepTemplate() {
+  bool accepted = false;
+  const QString name =
+      QInputDialog::getText(this, QStringLiteral("Keep this posture"),
+                            QStringLiteral("NAME"), QLineEdit::Normal,
+                            QString(), &accepted)
+          .trimmed();
+  if (!accepted || name.isEmpty()) return;
+
+  std::vector<std::pair<double, double>> poles;
+  for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
+    if (!state_.sectionEnabled(index)) continue;
+    if (!state_.rootPresent(index, EditorState::Lane::kPole)) continue;
+    const auto& pole = resonant(state_.section(index).pole);
+    poles.emplace_back(pole.hz, pole.bw_hz);
+  }
+  if (poles.empty()) {
+    status_label_->setText(QStringLiteral("NOTHING TO KEEP"));
+    return;
+  }
+
+  const QString folder = templatesFolder();
+  QDir().mkpath(folder);
+  const QString file =
+      folder + QStringLiteral("/") + templateStem(name) + QStringLiteral(".fbw");
+  std::ofstream stream(std::filesystem::path(file.toStdWString()));
+  if (!stream) {
+    status_label_->setText(QStringLiteral("KEEP FAILED · %1").arg(name.toUpper()));
+    return;
+  }
+  stream << "# " << name.toStdString() << '\n';
+  for (const auto& pole : poles) {
+    stream << QString::number(pole.first, 'f', 4).toStdString() << ' '
+           << QString::number(pole.second, 'f', 4).toStdString() << '\n';
+  }
+  stream.close();
+
+  const auto kept = std::find_if(
+      user_shelf_.begin(), user_shelf_.end(),
+      [&name](const auto& entry) { return entry.first == name; });
+  if (kept != user_shelf_.end()) {
+    kept->second = std::move(poles);
+  } else {
+    user_shelf_.emplace_back(name, std::move(poles));
+    template_shelf_->addItem(name);
+    overlay_shelf_->addItem(name);
+  }
+  status_label_->setText(QStringLiteral("KEPT · %1").arg(name.toUpper()));
 }
 
 bool MainWindow::loadReference(const std::filesystem::path& path) {

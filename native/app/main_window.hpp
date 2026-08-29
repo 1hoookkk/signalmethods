@@ -11,8 +11,11 @@
 #include <QMainWindow>
 
 #include <filesystem>
+#include <QString>
+
 #include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 class QComboBox;
@@ -41,6 +44,8 @@ class MainWindow final : public QMainWindow {
 
   void openFile();
   void saveBody();
+  void loadUserShelf();
+  void keepTemplate();
   void refresh();
   void refreshInspector();
   void updateAuditionView();
@@ -66,6 +71,8 @@ class MainWindow final : public QMainWindow {
   QWidget* zero_frequency_group_{};
   QWidget* zero_bandwidth_group_{};
   QPushButton* tilt_button_{};
+  std::vector<std::pair<QString, std::vector<std::pair<double, double>>>>
+      user_shelf_;
   std::optional<Reference> reference_;
   std::unique_ptr<trench::audio::Audition> audition_;
 };
