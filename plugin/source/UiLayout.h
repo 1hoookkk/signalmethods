@@ -3,7 +3,6 @@
 #include <juce_graphics/juce_graphics.h>
 #include <map>
 #include <optional>
-#include <vector>
 namespace trench
 {
 struct UiElementLayout
@@ -14,16 +13,6 @@ struct UiElementLayout
     std::optional<juce::String> text;
     std::optional<float> opacity;
 };
-struct Decal
-{
-    juce::String type;
-    juce::Rectangle<float> sourceRect;
-    juce::String text;
-    juce::Colour colour { juce::Colours::white };
-    float fontSize = 12.0f;
-    float thickness = 1.5f;
-    bool fill = false;
-};
 class UiLayout
 {
 public:
@@ -31,14 +20,15 @@ public:
     {
         UiLayout layout;
 
-        layout.elements["morphWheel"]   = { { 115.9f, 675.0f, 430.6f, 96.0f }, {}, {} };
-        layout.elements["qWheel"]       = { { 115.9f, 842.5f, 430.6f, 96.0f }, {}, {} };
+        layout.elements["morphWheel"]   = { { 112.2f, 675.1f, 442.8f, 99.7f }, {}, {} };
+        layout.elements["qWheel"]       = { { 112.2f, 840.5f, 442.8f, 103.4f }, {}, {} };
         layout.elements["typeSelector"] = { { 230.0f, 139.0f, 675.0f, 68.0f },  {}, {} };
 
-        layout.elements["bayDoors"]     = { { 108.4f, 965.8f, 663.0f, 40.0f }, {}, {} };
+        layout.elements["colorRow"]     = { { 108.4f, 978.1f, 821.0f, 247.6f }, {}, {} };
+        layout.elements["keyBox"]       = { { 560.0f, 65.0f, 345.0f, 62.0f }, {}, {} };
 
-        layout.elements["morphReadout"] = { { 562.6f, 708.0f, 178.0f, 48.0f },  12.0f, juce::Colour (0xff2a2722) };
-        layout.elements["qReadout"]     = { { 562.6f, 875.0f, 178.0f, 48.0f },  12.0f, juce::Colour (0xff2a2722) };
+        layout.elements["morphReadout"] = { { 572.0f, 701.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qReadout"]     = { { 572.0f, 868.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
 
         layout.elements["spectrumGrid"] = { { 118.3f, 232.3f, 781.9f, 373.4f }, {}, {} };
 
@@ -82,97 +72,6 @@ public:
         layout.strings["fontFamily"] = "Arial";
         layout.strings["fontFamilyEmphasis"] = "Arial";
         return layout;
-    }
-    static UiLayout fromJson (const juce::String& jsonText)
-    {
-        UiLayout layout = defaults();
-        const juce::var root = juce::JSON::parse (jsonText);
-        auto* obj = root.getDynamicObject();
-        if (obj == nullptr)
-            return layout;
-        auto hex = [] (const juce::var& v)
-        { return juce::Colour ((juce::uint32) v.toString().getHexValue32()); };
-        if (auto* els = obj->getProperty ("elements").getDynamicObject())
-            for (auto& p : els->getProperties())
-            {
-                auto& el = layout.elements[p.name.toString()];
-                if (auto* eo = p.value.getDynamicObject())
-                {
-                    if (auto* r = eo->getProperty ("rect").getArray(); r != nullptr && r->size() == 4)
-                        el.sourceRect = { (float) (double) (*r)[0], (float) (double) (*r)[1],
-                                          (float) (double) (*r)[2], (float) (double) (*r)[3] };
-                    if (eo->hasProperty ("fontSize"))
-                        el.fontSize = (float) (double) eo->getProperty ("fontSize");
-                    if (eo->hasProperty ("textColor"))
-                        el.textColour = hex (eo->getProperty ("textColor"));
-                    if (eo->hasProperty ("text"))
-                        el.text = eo->getProperty ("text").toString();
-                    if (eo->hasProperty ("opacity"))
-                        el.opacity = (float) (double) eo->getProperty ("opacity");
-                }
-            }
-        if (auto* cols = obj->getProperty ("colours").getDynamicObject())
-            for (auto& p : cols->getProperties())
-                layout.colours[p.name.toString()] = hex (p.value);
-        if (auto* pars = obj->getProperty ("params").getDynamicObject())
-            for (auto& p : pars->getProperties())
-                layout.params[p.name.toString()] = (double) p.value;
-        if (auto* strs = obj->getProperty ("strings").getDynamicObject())
-            for (auto& p : strs->getProperties())
-                layout.strings[p.name.toString()] = p.value.toString();
-        if (auto* arr = obj->getProperty ("decals").getArray())
-        {
-            layout.decals.clear();
-            for (auto& dv : *arr)
-                if (auto* d = dv.getDynamicObject())
-                {
-                    Decal dec;
-                    dec.type = d->getProperty ("type").toString();
-                    if (auto* r = d->getProperty ("rect").getArray(); r != nullptr && r->size() == 4)
-                        dec.sourceRect = { (float) (double) (*r)[0], (float) (double) (*r)[1],
-                                           (float) (double) (*r)[2], (float) (double) (*r)[3] };
-                    dec.text = d->getProperty ("text").toString();
-                    if (d->hasProperty ("color"))     dec.colour = hex (d->getProperty ("color"));
-                    if (d->hasProperty ("colour"))    dec.colour = hex (d->getProperty ("colour"));
-                    if (d->hasProperty ("fontSize"))  dec.fontSize  = (float) (double) d->getProperty ("fontSize");
-                    if (d->hasProperty ("thickness")) dec.thickness = (float) (double) d->getProperty ("thickness");
-                    if (d->hasProperty ("fill"))      dec.fill = (bool) d->getProperty ("fill");
-                    layout.decals.push_back (dec);
-                }
-        }
-        return layout;
-    }
-    juce::String toJson() const
-    {
-        auto* root = new juce::DynamicObject();
-        auto* els = new juce::DynamicObject();
-        for (const auto& e : elements)
-        {
-            auto* eo = new juce::DynamicObject();
-            juce::Array<juce::var> rect;
-            rect.add (e.second.sourceRect.getX());     rect.add (e.second.sourceRect.getY());
-            rect.add (e.second.sourceRect.getWidth()); rect.add (e.second.sourceRect.getHeight());
-            eo->setProperty ("rect", rect);
-            if (e.second.fontSize)   eo->setProperty ("fontSize", *e.second.fontSize);
-            if (e.second.textColour) eo->setProperty ("textColor", juce::String::toHexString ((int) e.second.textColour->getARGB()));
-            if (e.second.text)       eo->setProperty ("text", *e.second.text);
-            if (e.second.opacity)    eo->setProperty ("opacity", *e.second.opacity);
-            els->setProperty (e.first, juce::var (eo));
-        }
-        root->setProperty ("elements", juce::var (els));
-        auto* cols = new juce::DynamicObject();
-        for (const auto& c : colours)
-            cols->setProperty (c.first, juce::String::toHexString ((int) c.second.getARGB()));
-        root->setProperty ("colours", juce::var (cols));
-        auto* pars = new juce::DynamicObject();
-        for (const auto& p : params)
-            pars->setProperty (p.first, p.second);
-        root->setProperty ("params", juce::var (pars));
-        auto* strs = new juce::DynamicObject();
-        for (const auto& s : strings)
-            strs->setProperty (s.first, s.second);
-        root->setProperty ("strings", juce::var (strs));
-        return juce::JSON::toString (juce::var (root), false);
     }
     juce::Rectangle<float> sourceRectFor (const juce::String& id,
                                           juce::Rectangle<float> fallback = {}) const
@@ -220,6 +119,5 @@ public:
     std::map<juce::String, juce::Colour> colours;
     std::map<juce::String, double> params;
     std::map<juce::String, juce::String> strings;
-    std::vector<Decal> decals;
 };
 }

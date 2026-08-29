@@ -30,10 +30,8 @@ if(NOT TARGET RTNeural)
 endif()
 target_compile_definitions(RTNeural PUBLIC RTNEURAL_NO_DEBUG=1)
 
-option(TRENCH_GOD_MODE "Compile the layout diagnostics" OFF)
 set(TRENCH_WORKSPACE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(TRENCH_COMMON_DEFINITIONS
-  TRENCH_GOD_MODE=$<BOOL:${TRENCH_GOD_MODE}>
   TRENCH_TABLE_STITCH_PANEL=0
   TRENCH_TABLE_STITCH_ROOT="${TRENCH_WORKSPACE_DIR}"
   JUCE_WEB_BROWSER=0
@@ -65,8 +63,6 @@ endforeach()
 juce_add_binary_data(TRENCHAssets SOURCES
   assets/df2_panel_beige.png
   assets/trench_roller_strip.png
-  assets/trench_knob_strip.png
-  assets/display_bitmap4613.png
   assets/key_model_rtneural.json
   assets/bodies/identity.body240
   ${TRENCH_SHIPPING_PRESET_FILES})
@@ -80,11 +76,10 @@ set(TRENCH_PLUGIN_SOURCES
   source/dsp/KeyDetector.h source/dsp/KeyDetector.cpp
   source/dsp/Movement.h source/dsp/SlamStage.h
   source/dsp/TrenchCleanBody.h source/dsp/TrenchDspBridge.h
-  source/dsp/TrenchRuntimePreset.h source/dsp/FuncGenPatterns.h
-  source/ui/DecalsLayer.h source/ui/FaceplateView.h source/ui/GodMode.h
-  source/ui/GraphDisplay.h source/ui/KeySnapBox.h source/ui/LabelsLayer.h
-  source/ui/SectionRail.h source/ui/BayKnob.h source/ui/ParamInteraction.h
-  source/ui/SelectorLookAndFeel.h source/ui/Onboarding.h source/ui/Theme.h
+  source/dsp/TrenchRuntimePreset.h source/dsp/FuncGenPatterns.h source/dsp/PreampLaw.h
+  source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/KeyBox.h
+  source/ui/BayKnob.h source/ui/ParamInteraction.h
+  source/ui/SelectorLookAndFeel.h source/ui/Theme.h
   source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h)
 
 add_library(TRENCHPluginCommon STATIC ${TRENCH_PLUGIN_SOURCES})
@@ -117,3 +112,16 @@ target_link_libraries(TRENCH_FaceShot PRIVATE
     juce::juce_audio_formats
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_Tests PRODUCT_NAME "TRENCH Tests")
+target_sources(TRENCH_Tests PRIVATE tests/PluginTests.cpp)
+target_include_directories(TRENCH_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_Tests PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_Tests PRIVATE
+    TRENCHPluginCommon
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+
+enable_testing()
+add_test(NAME trench_plugin COMMAND TRENCH_Tests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")

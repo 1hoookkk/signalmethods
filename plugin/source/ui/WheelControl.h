@@ -178,13 +178,17 @@ public:
         const auto wheelRect = getLocalBounds().toFloat()
                                    .translated ((float) kSeatShift, (float) kSeatDrop);
 
-        static constexpr float kThrowOverscan = 1.12f;
-        const auto frameRect = juce::Rectangle<float> ((float) fw * kThrowOverscan / 3.0f,
-                                                       (float) fh / 3.0f)
-                                   .withCentre (wheelRect.getCentre());
+        const auto frameRect = wheelRect;
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+        juce::Graphics::ScopedSaveState slotClip (g);
+        {
+            const auto slot = wheelRect.reduced (2.0f, 2.4f);
+            juce::Path opening;
+            opening.addRoundedRectangle (slot, slot.getHeight() * 0.34f);
+            g.reduceClipRegion (opening);
+        }
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
         const int pw = juce::jmax (1, juce::roundToInt (frameRect.getWidth()  * pixelScale));

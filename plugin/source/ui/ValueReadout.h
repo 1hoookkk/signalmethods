@@ -105,7 +105,7 @@ public:
         editor->setBounds (getLocalBounds().reduced (5, 2));
         editor->setJustification (juce::Justification::centred);
         editor->setFont (displayFont (t.fontSize (id, 20.0f), false));
-        editor->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0xffe4dccb));
+        editor->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0xffc3d1df));
         editor->setColour (juce::TextEditor::textColourId, t.labelInk());
         editor->setColour (juce::TextEditor::highlightColourId, t.labelInk().withAlpha (0.25f));
         editor->setWantsKeyboardFocus (true);
@@ -139,12 +139,12 @@ public:
             textArea = textArea.withTrimmedRight (7.0f);
 
         drawCrispText (g, textArea, numeric, fs,
-                       t.textColour (id, juce::Colour (0xff4a3520)), true);
+                       t.textColour (id, juce::Colour (0xff2a2722)), true);
         if (adjustCue && param != nullptr)
         {
             const float cxr = b.getRight() - 7.5f;
             const float cy = b.getCentreY();
-            g.setColour (t.textColour (id, juce::Colour (0xff4a3520)).withAlpha (0.55f));
+            g.setColour (t.textColour (id, juce::Colour (0xff2a2722)).withAlpha (0.55f));
             juce::Path up, dn;
             up.addTriangle (cxr - 2.6f, cy - 2.2f, cxr + 2.6f, cy - 2.2f, cxr, cy - 5.6f);
             dn.addTriangle (cxr - 2.6f, cy + 2.2f, cxr + 2.6f, cy + 2.2f, cxr, cy + 5.6f);

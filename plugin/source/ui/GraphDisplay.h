@@ -16,7 +16,6 @@ class GraphDisplay : public juce::Component,
                      private juce::Timer
 {
 public:
-    void setBodyName (const juce::String& s) { if (bodyName != s) { bodyName = s; repaint(); } }
     void playSeedPulse()
     {
         if (traceXs.empty() || traceDbs.size() != traceXs.size())
@@ -167,35 +166,33 @@ public:
         const auto aperture = getLocalBounds().toFloat();
         const auto glass = aperture;
         {
-            g.setColour (juce::Colour (0xff14171a));
+            g.setColour (juce::Colour (0xff080a0a));
             g.fillPath (recessPath (aperture, 1.0f));
         }
         {
             juce::Path face = recessPath (glass, 0.0f);
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (face);
-            if (displayPlate.isNull())
-                displayPlate = juce::ImageCache::getFromMemory (BinaryData::display_bitmap4613_png,
-                                                                BinaryData::display_bitmap4613_pngSize);
             {
-                juce::Graphics::ScopedSaveState samplingState (g);
-                g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-                g.drawImage (displayPlate, glass.expanded (1.0f),
-                             juce::RectanglePlacement::stretchToFit, false);
-            }
-
-            {
-                juce::ColourGradient vig (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
-                                          juce::Colours::black.withAlpha (0.38f), glass.getX(), glass.getY(), true);
-                g.setGradientFill (vig);
+                juce::ColourGradient tint (juce::Colour (0xff4b625e), 0.0f, glass.getY(),
+                                           juce::Colour (0xff2c433f), 0.0f, glass.getBottom(), false);
+                g.setGradientFill (tint);
                 g.fillRect (glass.expanded (1.0f));
-                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.13f), 0.0f, glass.getY(),
-                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.42f, false);
-                gloss.addColour (0.55, juce::Colours::white.withAlpha (0.05f));
-                g.setGradientFill (gloss);
-                g.fillRect (glass.withHeight (glass.getHeight() * 0.42f));
+                const auto plot = plotBounds();
+                g.setColour (juce::Colours::black.withAlpha (0.11f));
+                for (int i = 1; i < 8; ++i)
+                {
+                    const float x = std::floor (plot.getX() + plot.getWidth() * (float) i / 8.0f) + 0.5f;
+                    g.drawLine (x, plot.getY(), x, plot.getBottom(), 1.0f);
+                }
+                for (int i = 1; i < 4; ++i)
+                {
+                    const float y = std::floor (plot.getY() + plot.getHeight() * (float) i / 4.0f) + 0.5f;
+                    g.drawLine (plot.getX(), y, plot.getRight(), y, 1.0f);
+                }
+                g.setColour (juce::Colour (0xff192321).withAlpha (0.9f));
+                g.strokePath (recessPath (glass, -0.5f), juce::PathStrokeType (1.0f));
             }
-
             {
 
                 juce::Graphics::ScopedSaveState bootSave (g);
@@ -352,14 +349,6 @@ private:
                 g.drawLine (x, y - 3.0f, x, y + 3.0f, 1.0f);
             }
         }
-        if (bodyName.isNotEmpty())
-        {
-            g.setFont (telemetryFont (9.8f, false));
-            g.setColour (phos.withAlpha (0.70f));
-            g.drawText (bodyName.toUpperCase(),
-                        juce::Rectangle<float> (plot.getRight() - 190.0f, plot.getBottom() - 16.0f, 182.0f, 12.0f),
-                        juce::Justification::centredRight, false);
-        }
     }
     void drawSeedPulseTrace (juce::Graphics& g) const
     {
@@ -412,7 +401,6 @@ private:
                               juce::PathStrokeType::butt });
     }
     Theme t;
-    mutable juce::Image displayPlate;
     mutable juce::Image gridPlate;
     juce::Path responsePath;
 
@@ -421,7 +409,6 @@ private:
     mutable juce::Colour cachedColour;
     std::vector<float> traceXs;
     std::vector<float> traceDbs;
-    juce::String bodyName;
     float lastCoeffs[trench::kUiCoeffCount] = {};
     float lastBoost = -1.0f;
     double lastSr = 0.0;

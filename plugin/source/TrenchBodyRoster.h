@@ -63,12 +63,6 @@ inline juce::File auditionSlotFile() noexcept
                .getChildFile ("TRENCH")
                .getChildFile ("authoring_slot.json");
 }
-inline juce::File uiLayoutFile() noexcept
-{
-    return juce::File::getSpecialLocation (juce::File::userDocumentsDirectory)
-               .getChildFile ("TRENCH")
-               .getChildFile ("ui_layout.json");
-}
 namespace detail
 {
 struct RosterStore

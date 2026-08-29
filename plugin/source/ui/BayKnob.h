@@ -2,9 +2,7 @@
 #include "ParamInteraction.h"
 #include "Theme.h"
 #include "../parameters/TrenchParameters.h"
-#include "BinaryData.h"
 #include <juce_audio_processors/juce_audio_processors.h>
-#include <algorithm>
 #include <cmath>
 #include <memory>
 namespace trench::ui
@@ -13,13 +11,16 @@ class BayKnob final : public juce::Component,
                       public juce::SettableTooltipClient
 {
 public:
+    static constexpr float kKnobD    = 30.0f;
+    static constexpr float kWellD    = 34.0f;
+    static constexpr float kCaptionH = kLabelPt + 1.0f;
+    static constexpr float kStackH   = kCaptionH + 2.0f + (float) kBayValueHeight + 3.0f + kWellD;
     BayKnob (juce::AudioProcessorValueTreeState& apvts, const Theme& theme,
              const juce::String& paramID, juce::String displayLabel)
         : t (theme), label (std::move (displayLabel)),
           param (apvts.getParameter (paramID))
     {
         setInterceptsMouseClicks (true, false);
-
         setPaintingIsUnclipped (true);
         setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
         setTitle (label);
@@ -27,27 +28,10 @@ public:
         setTooltip (label + ": drag/wheel, Shift fine, double-click reset");
         if (param != nullptr)
         {
-            attachment = std::make_unique<juce::ParameterAttachment> (
-                *param, [this] (float) { repaint(); });
+            attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
             attachment->sendInitialUpdate();
             defaultDenorm = param->convertFrom0to1 (param->getDefaultValue());
         }
-    }
-
-    void setCompact (bool c) { if (compact != c) { compact = c; repaint(); } }
-    void setScale (float s) { scale = s; repaint(); }
-
-    void setDimmed (bool d)
-    {
-        if (dimmed == d)
-            return;
-        dimmed = d;
-
-        setAlpha (d ? 0.35f : (isEnabled() ? 1.0f : 0.32f));
-        setInterceptsMouseClicks (! d, false);
-        setMouseCursor (d ? juce::MouseCursor::NormalCursor
-                          : juce::MouseCursor::UpDownResizeCursor);
-        repaint();
     }
     void mouseEnter (const juce::MouseEvent&) override { hover = true; repaint(); }
     void mouseExit  (const juce::MouseEvent&) override { hover = false; repaint(); }
@@ -60,7 +44,6 @@ public:
         }
         if (attachment != nullptr)
             attachment->beginGesture();
-
         e.source.enableUnboundedMouseMovement (true, false);
         dragStartY = e.position.y;
         valueAtStart = currentNormalised();
@@ -70,9 +53,8 @@ public:
         if (attachment == nullptr || param == nullptr || e.mods.isPopupMenu())
             return;
         const float travel = 72.0f;
-        const float scale = e.mods.isShiftDown() ? 0.25f : 1.0f;
-        const float next = juce::jlimit (0.0f, 1.0f,
-                                         valueAtStart + (dragStartY - e.position.y) / travel * scale);
+        const float fine = e.mods.isShiftDown() ? 0.25f : 1.0f;
+        const float next = juce::jlimit (0.0f, 1.0f, valueAtStart + (dragStartY - e.position.y) / travel * fine);
         attachment->setValueAsPartOfGesture (param->convertFrom0to1 (next));
         repaint();
     }
@@ -90,8 +72,7 @@ public:
     {
         if (attachment == nullptr || param == nullptr)
             return;
-        const float next = juce::jlimit (0.0f, 1.0f,
-                                         currentNormalised() + wheel.deltaY * 0.08f);
+        const float next = juce::jlimit (0.0f, 1.0f, currentNormalised() + wheel.deltaY * 0.08f);
         attachment->setValueAsCompleteGesture (param->convertFrom0to1 (next));
         repaint();
     }
@@ -99,125 +80,81 @@ public:
     {
         juce::Graphics::ScopedSaveState state (g);
         g.setOpacity (isEnabled() ? 1.0f : 0.32f);
-
         const auto b = getLocalBounds().toFloat();
         const float value = currentNormalised();
+        const float top = b.getCentreY() - kStackH * 0.5f;
+        const float cx = b.getCentreX();
+        drawBayCaption (g, juce::Rectangle<float> (b.getX(), top, b.getWidth(), kCaptionH), label, t);
+        const auto box = juce::Rectangle<float> ((float) kBayValueWidth, (float) kBayValueHeight)
+                             .withCentre ({ cx, top + kCaptionH + 2.0f + (float) kBayValueHeight * 0.5f });
+        drawMutedBoneReadout (g, box, box.getHeight() * 0.17f, hover, t);
         const auto* choice = dynamic_cast<const juce::AudioParameterChoice*> (param);
-        const float d = compact ? 26.0f : kBayKnobDiameter * scale;
-        const float boxWv = (float) kBayValueWidth * scale, boxHv = (float) kBayValueHeight * scale;
-
-        const float blockW = boxWv + 26.0f * scale;
-        const float startX = b.getX() + juce::jmax (0.0f, (b.getWidth() - (d + 4.0f + blockW)) * 0.5f);
-        const auto knob = compact
-            ? juce::Rectangle<float> (d, d).withCentre ({ b.getCentreX(), b.getY() + d * 0.5f + 1.0f })
-            : juce::Rectangle<float> (d, d).withCentre ({ startX + d * 0.5f, b.getCentreY() });
-        const float blockX = startX + d + 4.0f;
-
-        constexpr float captionH = 10.0f;
-        constexpr float captionGap = 1.0f;
-        const float contentH = captionH + captionGap + boxHv;
-        const float contentTop = b.getCentreY() - contentH * 0.5f;
-        const float boxTop = contentTop + captionH + captionGap;
-        const float capW = juce::jmin (blockW,
-                                       b.getRight() - blockX);
-        if (! compact)
-            drawBayCaption (g, juce::Rectangle<float> (blockX, contentTop, capW, captionH),
-                            label, t);
-        const auto c = knob.getCentre();
-
-        {
-
-            if (strip.isNull())
-            {
-
-                static juce::Image* machinedPtr = new juce::Image();
-                juce::Image& machined = *machinedPtr;
-                if (machined.isNull())
-                    machined = juce::ImageCache::getFromMemory (BinaryData::trench_knob_strip_png,
-                                                                BinaryData::trench_knob_strip_pngSize);
-                strip = machined;
-            }
-            constexpr int frameSize = 96, frameCount = 61;
-            const int frame = juce::jlimit (0, frameCount - 1,
-                                            juce::roundToInt ((1.0f - value) * (float) (frameCount - 1)));
-
-            const float frameD = d * (96.0f / 76.0f);
-            g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-
-            {
-                const auto shade = juce::Colour (0xff2a1f12);
-                juce::ColourGradient cast (shade.withAlpha (0.42f), c.x + d * 0.06f, c.y + d * 0.10f,
-                                           shade.withAlpha (0.0f), c.x + d * 0.06f, c.y + d * 0.62f, true);
-                g.setGradientFill (cast);
-                g.fillEllipse (c.x - d * 0.54f + d * 0.06f, c.y - d * 0.54f + d * 0.10f,
-                               d * 1.08f, d * 1.08f);
-            }
-
-            g.drawImage (strip,
-                         (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f),
-                         (int) frameD, (int) frameD,
-                         frame * frameSize, 0, frameSize, frameSize,
-                         false);
-
-            {
-                juce::Graphics::ScopedSaveState save (g);
-                juce::Path cap;
-                cap.addEllipse (c.x - d * 0.5f, c.y - d * 0.5f, d, d);
-                g.reduceClipRegion (cap);
-
-                const float rimD = d - 1.2f;
-                juce::Path rim;
-                rim.addEllipse (c.x - rimD * 0.5f, c.y - rimD * 0.5f, rimD, rimD);
-                juce::ColourGradient edge (juce::Colours::white.withAlpha (0.55f),
-                                           c.x, c.y - d * 0.5f,
-                                           juce::Colour (0xff100c07).withAlpha (0.75f),
-                                           c.x, c.y + d * 0.5f, false);
-                edge.addColour (0.5, juce::Colours::transparentBlack);
-                g.setGradientFill (edge);
-                g.strokePath (rim, juce::PathStrokeType (1.1f));
-            }
-        }
-
-        if (compact)
-        {
-            const auto cap = juce::Rectangle<float> (b.getX(), knob.getBottom() + 2.0f,
-                                                     b.getWidth(), 10.0f);
-            drawBayCaption (g, cap,
-                            hover ? (choice != nullptr ? choice->getCurrentChoiceName()
-                                                       : juce::String (juce::roundToInt (value * 100.0f)))
-                                  : label, t);
-        }
-        else
-        {
-
-            const float boxW = juce::jmin (boxWv, b.getRight() - blockX - 1.0f);
-
-            const auto box = juce::Rectangle<float> (blockX + (capW - boxW) * 0.5f,
-                                                     boxTop, boxW, boxHv);
-
-            drawMutedBoneReadout (g, box, box.getHeight() * 0.17f, hover, t);
-            drawCrispText (g, box.reduced (4.0f, 1.0f),
-                           choice != nullptr ? choice->getCurrentChoiceName()
-                                             : juce::String (juce::roundToInt (value * 100.0f)),
-                           kBayValuePt * scale, t.textColour ("morphReadout", juce::Colour (0xff2a2722)));
-        }
+        drawCrispText (g, box.reduced (4.0f, 1.0f),
+                       choice != nullptr ? choice->getCurrentChoiceName()
+                                         : juce::String (juce::roundToInt (value * 100.0f)),
+                       kBayValuePt, t.textColour ("morphReadout", juce::Colour (0xff2a2722)));
+        const juce::Point<float> c { cx, box.getBottom() + 3.0f + kWellD * 0.5f };
+        drawCap (g, c, value);
     }
 private:
-    float currentNormalised() const noexcept
+    float currentNormalised() const noexcept { return param != nullptr ? param->getValue() : 0.0f; }
+    void drawCap (juce::Graphics& g, juce::Point<float> c, float value) const
     {
-        return param != nullptr ? param->getValue() : 0.0f;
+        const float r = kKnobD * 0.5f;
+        const auto cap = juce::Rectangle<float> (kKnobD, kKnobD).withCentre (c);
+        g.setColour (juce::Colours::black.withAlpha (0.55f));
+        g.fillEllipse (cap.translated (0.0f, 2.2f).expanded (1.2f));
+        g.setColour (juce::Colours::black.withAlpha (0.30f));
+        g.fillEllipse (cap.translated (0.0f, 3.8f).expanded (0.6f));
+        juce::ColourGradient body (juce::Colour (0xff3b3b3e), c.x - r * 0.6f, c.y - r * 0.7f,
+                                   juce::Colour (0xff0e0e10), c.x + r * 0.5f, c.y + r * 0.9f, true);
+        body.addColour (0.55, juce::Colour (0xff1c1c1f));
+        g.setGradientFill (body);
+        g.fillEllipse (cap);
+        {
+            juce::Graphics::ScopedSaveState save (g);
+            juce::Path clip;
+            clip.addEllipse (cap);
+            g.reduceClipRegion (clip);
+            g.setColour (juce::Colours::black.withAlpha (0.28f));
+            for (int i = 0; i < 36; ++i)
+            {
+                const float a = juce::MathConstants<float>::twoPi * (float) i / 36.0f;
+                const juce::Point<float> o { c.x + std::cos (a) * (r - 0.5f), c.y + std::sin (a) * (r - 0.5f) };
+                const juce::Point<float> in { c.x + std::cos (a) * (r - 4.0f), c.y + std::sin (a) * (r - 4.0f) };
+                g.drawLine ({ o, in }, 1.0f);
+            }
+        }
+        juce::ColourGradient rim (juce::Colours::white.withAlpha (0.40f), c.x, cap.getY(),
+                                  juce::Colours::black.withAlpha (0.85f), c.x, cap.getBottom(), false);
+        g.setGradientFill (rim);
+        g.drawEllipse (cap.reduced (0.6f), 1.1f);
+        const float inset = r - 5.0f;
+        juce::ColourGradient face (juce::Colour (0xff2a2a2d), c.x, c.y - inset,
+                                   juce::Colour (0xff151517), c.x, c.y + inset, false);
+        g.setGradientFill (face);
+        g.fillEllipse (juce::Rectangle<float> (inset * 2.0f, inset * 2.0f).withCentre (c));
+        g.setColour (juce::Colours::white.withAlpha (0.10f));
+        g.drawEllipse (juce::Rectangle<float> (inset * 2.0f, inset * 2.0f).withCentre (c), 0.8f);
+        const float angle = juce::degreesToRadians (-135.0f + 270.0f * juce::jlimit (0.0f, 1.0f, value));
+        const juce::Point<float> dir { std::sin (angle), -std::cos (angle) };
+        const juce::Point<float> p0 = c + dir * (inset * 0.30f);
+        const juce::Point<float> p1 = c + dir * (inset * 0.92f);
+        const auto glow = t.rollerIllumination();
+        g.setColour (glow.withAlpha (hover ? 0.55f : 0.35f));
+        g.drawLine ({ p0, p1 }, 4.5f);
+        g.setColour (glow.brighter (0.25f));
+        g.drawLine ({ p0, p1 }, 1.8f);
+        g.setColour (juce::Colours::white.withAlpha (0.85f));
+        g.fillEllipse (juce::Rectangle<float> (2.4f, 2.4f).withCentre (p1));
     }
     Theme t;
     juce::String label;
-    bool compact = false;
-    float scale = 1.0f;
-    juce::Image strip;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;
     float defaultDenorm = 0.0f;
     float dragStartY = 0.0f;
     float valueAtStart = 0.0f;
     bool hover = false;
-    bool dimmed = false;
 };
 }
