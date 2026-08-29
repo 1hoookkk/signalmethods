@@ -370,11 +370,14 @@ void EditorState::loadTemplate(const trench::app::TemplateEntry& entry) {
   std::size_t first_present = trench::core::native::kSections;
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
     const auto& pole = entry.poles[index];
+    const auto& zero = entry.zeros[index];
+    const bool carries_zero = pole.present && zero.present;
     state.corner.sections[index] = {
         pole.present ? Resonant{pole.hz, pole.bw_hz} : kHiddenRoot,
-        kHiddenRoot, true};
+        carries_zero ? lockedZero(index, Resonant{zero.hz, zero.bw_hz}) : kHiddenRoot,
+        true};
     state.enabled[index] = pole.present;
-    state.zero_present[index] = false;
+    state.zero_present[index] = carries_zero;
     if (pole.present && first_present == trench::core::native::kSections) {
       first_present = index;
     }
@@ -386,19 +389,29 @@ void EditorState::loadTemplate(const trench::app::TemplateEntry& entry) {
   emit selectionChanged(selected_section_);
 }
 
-void EditorState::loadPoles(const std::vector<std::pair<double, double>>& poles) {
+void EditorState::loadPoles(
+    const std::vector<std::pair<double, double>>& poles,
+    const std::vector<std::optional<std::pair<double, double>>>& zeros) {
   remember();
   auto& state = editing();
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
     const bool carried = index < poles.size();
+    const bool carries_zero =
+        carried && index < zeros.size() && zeros[index].has_value();
     state.corner.sections[index] = {
         carried ? Resonant{std::clamp(poles[index].first, kLowHz, kNyquistHz),
                            std::clamp(poles[index].second, kMinBandwidthHz,
                                       kMaxBandwidthHz)}
                 : kHiddenRoot,
-        kHiddenRoot, true};
+        carries_zero
+            ? lockedZero(index,
+                         Resonant{std::clamp(zeros[index]->first, kLowHz, kNyquistHz),
+                                  std::clamp(zeros[index]->second, kMinBandwidthHz,
+                                             kMaxBandwidthHz)})
+            : kHiddenRoot,
+        true};
     state.enabled[index] = carried;
-    state.zero_present[index] = false;
+    state.zero_present[index] = carries_zero;
   }
   selected_section_ = 0;
   selected_lane_ = Lane::kPole;

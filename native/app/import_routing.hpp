@@ -30,6 +30,11 @@ struct FormantTrack {
   std::size_t frames{};
 };
 
+struct TemplateMaterial {
+  PoleRows poles;
+  std::vector<std::optional<std::pair<double, double>>> zeros;
+};
+
 struct PeqList {
   PoleRows poles;
   PoleRows zeros;
@@ -41,6 +46,8 @@ struct PeqList {
 [[nodiscard]] std::optional<ResponseCurve> read_response_curve(
     const std::filesystem::path& path);
 [[nodiscard]] std::optional<PoleRows> read_pole_material(
+    const std::filesystem::path& path);
+[[nodiscard]] std::optional<TemplateMaterial> read_template_material(
     const std::filesystem::path& path);
 [[nodiscard]] std::optional<FormantTrack> read_formant_track(
     const std::filesystem::path& path);

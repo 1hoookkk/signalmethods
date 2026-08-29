@@ -17,6 +17,7 @@ struct TemplatePole {
 struct TemplateEntry {
   QString name;
   std::array<TemplatePole, 6> poles;
+  std::array<TemplatePole, 6> zeros{};
 };
 
 inline const std::array<TemplateEntry, 41> kTemplateShelf{{

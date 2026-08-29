@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -87,7 +88,8 @@ class EditorState final : public QObject {
   void addZeroAt(double hz, double bw_hz);
   void removeZero();
   void loadTemplate(const trench::app::TemplateEntry& entry);
-  void loadPoles(const std::vector<std::pair<double, double>>& poles);
+  void loadPoles(const std::vector<std::pair<double, double>>& poles,
+                 const std::vector<std::optional<std::pair<double, double>>>& zeros = {});
   void setRoot(std::size_t section, Lane lane, double frequency_hz,
                double bandwidth_hz);
   void applyAffine(double semitones, double tract, double character,

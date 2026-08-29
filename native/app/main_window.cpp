@@ -39,6 +39,7 @@
 #include <functional>
 #include <initializer_list>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <span>
@@ -166,6 +167,10 @@ MainWindow::MainWindow(QWidget* parent)
   audition_button_ = new QPushButton(QStringLiteral("AUDITION"), central);
   audition_button_->setObjectName(QStringLiteral("auditionSwitch"));
   audition_button_->setCheckable(true);
+  clip_button_ = new QPushButton(QStringLiteral("CLIP"), central);
+  clip_button_->setObjectName(QStringLiteral("clipSwitch"));
+  clip_button_->setCheckable(true);
+  clip_button_->setEnabled(false);
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
   reference_label_->setMinimumWidth(
@@ -194,7 +199,7 @@ MainWindow::MainWindow(QWidget* parent)
     combo->addItem(QStringLiteral("MINE"));
     markShelfHeader(combo);
     for (const auto& kept : user_shelf_) {
-      combo->addItem(QStringLiteral("  ") + kept.first,
+      combo->addItem(QStringLiteral("  ") + kept.name,
                      QVariant::fromValue(static_cast<qulonglong>(flat)));
       ++flat;
     }
@@ -221,6 +226,7 @@ MainWindow::MainWindow(QWidget* parent)
   sections_button_->setFont(captionFont(sections_button_));
   zeros->setFont(captionFont(zeros));
   audition_button_->setFont(captionFont(audition_button_));
+  clip_button_->setFont(captionFont(clip_button_));
   tilt_button_->setFont(captionFont(tilt_button_));
   template_shelf_->setFont(captionFont(template_shelf_));
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
@@ -228,7 +234,7 @@ MainWindow::MainWindow(QWidget* parent)
   for (QWidget* chrome : std::initializer_list<QWidget*>{
            load, reset, save, export_body, analyze_button_, sections_button_, zeros,
            tilt_button_, keep, template_shelf_, overlay_shelf_,
-           audition_button_}) {
+           audition_button_, clip_button_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
   }
   top->addWidget(load);
@@ -243,6 +249,7 @@ MainWindow::MainWindow(QWidget* parent)
   auto* actions = new QHBoxLayout;
   actions->setSpacing(10);
   actions->addWidget(audition_button_);
+  actions->addWidget(clip_button_);
   actions->addWidget(sections_button_);
   actions->addWidget(analyze_button_);
   actions->addWidget(zeros);
@@ -350,6 +357,9 @@ MainWindow::MainWindow(QWidget* parent)
   connect(redo_shift, &QShortcut::activated, this, [this] { state_.redo(); });
   connect(sections_button_, &QPushButton::clicked, this,
           &MainWindow::toggleSectionDesk);
+  connect(clip_button_, &QPushButton::toggled, this, [this] {
+    if (audition_->running()) applyAuditionSource();
+  });
   connect(audition_button_, &QPushButton::toggled, this,
           [this](bool open) { setAudition(open); });
   connect(save, &QPushButton::clicked, this, &MainWindow::saveDocument);
@@ -376,7 +386,7 @@ MainWindow::MainWindow(QWidget* parent)
       }
     } else {
       if (slot - shelf_.size() >= user_shelf_.size()) return;
-      ghost = user_shelf_[slot - shelf_.size()].second;
+      ghost = user_shelf_[slot - shelf_.size()].poles;
     }
     std::vector<double> marks;
     marks.reserve(ghost.size());
@@ -393,7 +403,8 @@ MainWindow::MainWindow(QWidget* parent)
       state_.loadTemplate(shelf_[slot]);
     } else {
       if (slot - shelf_.size() >= user_shelf_.size()) return;
-      state_.loadPoles(user_shelf_[slot - shelf_.size()].second);
+      const auto& kept = user_shelf_[slot - shelf_.size()];
+      state_.loadPoles(kept.poles, kept.zeros);
     }
     template_shelf_->setCurrentIndex(0);
   });
@@ -608,9 +619,10 @@ void MainWindow::loadUserShelf() {
   for (const QFileInfo& info : folder.entryInfoList(
            {QStringLiteral("*.fbw")}, QDir::Files, QDir::Name)) {
     const std::filesystem::path path(info.absoluteFilePath().toStdWString());
-    auto poles = trench::app::read_pole_material(path);
-    if (!poles) continue;
-    user_shelf_.emplace_back(templateName(path), std::move(*poles));
+    auto material = trench::app::read_template_material(path);
+    if (!material) continue;
+    user_shelf_.push_back({templateName(path), std::move(material->poles),
+                           std::move(material->zeros)});
   }
 }
 
@@ -624,11 +636,18 @@ void MainWindow::keepTemplate() {
   if (!accepted || name.isEmpty()) return;
 
   std::vector<std::pair<double, double>> poles;
+  std::vector<std::optional<std::pair<double, double>>> zeros;
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
     if (!state_.sectionEnabled(index)) continue;
     if (!state_.rootPresent(index, EditorState::Lane::kPole)) continue;
     const auto& pole = resonant(state_.section(index).pole);
     poles.emplace_back(pole.hz, pole.bw_hz);
+    if (state_.rootPresent(index, EditorState::Lane::kZero)) {
+      const auto& zero = resonant(state_.section(index).zero);
+      zeros.emplace_back(std::make_pair(zero.hz, zero.bw_hz));
+    } else {
+      zeros.emplace_back(std::nullopt);
+    }
   }
   if (poles.empty()) {
     status_label_->setText(QStringLiteral("NOTHING TO KEEP"));
@@ -645,19 +664,25 @@ void MainWindow::keepTemplate() {
     return;
   }
   stream << "# " << name.toStdString() << '\n';
-  for (const auto& pole : poles) {
-    stream << QString::number(pole.first, 'f', 4).toStdString() << ' '
-           << QString::number(pole.second, 'f', 4).toStdString() << '\n';
+  for (std::size_t index = 0; index < poles.size(); ++index) {
+    stream << QString::number(poles[index].first, 'f', 4).toStdString() << ' '
+           << QString::number(poles[index].second, 'f', 4).toStdString();
+    if (zeros[index].has_value()) {
+      stream << ' ' << QString::number(zeros[index]->first, 'f', 4).toStdString() << ' '
+             << QString::number(zeros[index]->second, 'f', 4).toStdString();
+    }
+    stream << '\n';
   }
   stream.close();
 
   const auto kept = std::find_if(
       user_shelf_.begin(), user_shelf_.end(),
-      [&name](const auto& entry) { return entry.first == name; });
+      [&name](const auto& entry) { return entry.name == name; });
   if (kept != user_shelf_.end()) {
-    kept->second = std::move(poles);
+    kept->poles = std::move(poles);
+    kept->zeros = std::move(zeros);
   } else {
-    user_shelf_.emplace_back(name, std::move(poles));
+    user_shelf_.push_back({name, std::move(poles), std::move(zeros)});
     const auto slot = static_cast<qulonglong>(shelf_.size() + user_shelf_.size() - 1);
     template_shelf_->addItem(QStringLiteral("  ") + name, QVariant::fromValue(slot));
     overlay_shelf_->addItem(QStringLiteral("  ") + name, QVariant::fromValue(slot));
@@ -693,17 +718,37 @@ void MainWindow::analyzeReference() {
 
 void MainWindow::adoptProposal() {
   state_.loadPoles(proposal_poles_);
-  const std::size_t paired =
-      std::min(proposal_poles_.size(), proposal_zeros_.size());
-  for (std::size_t index = 0; index < paired; ++index) {
-    state_.selectRoot(index, EditorState::Lane::kPole);
-    state_.addZeroAt(proposal_zeros_[index].first,
-                     proposal_zeros_[index].second);
+  std::vector<bool> taken(proposal_poles_.size(), false);
+  std::size_t dropped = 0;
+  for (const auto& zero : proposal_zeros_) {
+    std::size_t nearest = proposal_poles_.size();
+    double best = std::numeric_limits<double>::max();
+    for (std::size_t index = 0; index < proposal_poles_.size(); ++index) {
+      if (taken[index]) continue;
+      const double distance =
+          std::abs(std::log2(zero.first / proposal_poles_[index].first));
+      if (distance < best) {
+        best = distance;
+        nearest = index;
+      }
+    }
+    if (nearest == proposal_poles_.size()) {
+      ++dropped;
+      continue;
+    }
+    taken[nearest] = true;
+    state_.selectRoot(nearest, EditorState::Lane::kPole);
+    state_.addZeroAt(zero.first, zero.second);
   }
   state_.selectRoot(0, EditorState::Lane::kPole);
   const std::size_t corner = state_.editingCorner();
   clearProposal();
-  status_label_->setText(QStringLiteral("ADOPTED · CORNER %1").arg(corner + 1));
+  status_label_->setText(
+      dropped == 0
+          ? QStringLiteral("ADOPTED · CORNER %1").arg(corner + 1)
+          : QStringLiteral("ADOPTED · CORNER %1 · %2 ZEROS UNPLACED")
+                .arg(corner + 1)
+                .arg(dropped));
 }
 
 void MainWindow::clearProposal() {
@@ -779,12 +824,16 @@ void MainWindow::setReference(Reference reference) {
   applyReferenceView();
   status_label_->setText(QStringLiteral("REFERENCE LOADED · %1 POINTS")
                              .arg(reference_->frequency_hz.size()));
-  if (audition_->running()) {
-    if (reference_->clip) {
-      audition_->setClip(clipForDevice(*reference_->clip));
-    } else {
-      audition_->setSaw(73.42, 0.18F);
-    }
+  clip_button_->setEnabled(reference_->clip.has_value());
+  if (!reference_->clip) clip_button_->setChecked(false);
+  if (audition_->running()) applyAuditionSource();
+}
+
+void MainWindow::applyAuditionSource() {
+  if (clip_button_->isChecked() && reference_ && reference_->clip) {
+    audition_->setClip(clipForDevice(*reference_->clip));
+  } else {
+    audition_->setSaw(73.42, 0.18F);
   }
 }
 
@@ -944,11 +993,7 @@ void MainWindow::setAudition(bool enabled) {
     return;
   }
   updateAuditionView();
-  if (reference_ && reference_->clip) {
-    audition_->setClip(clipForDevice(*reference_->clip));
-  } else {
-    audition_->setSaw(73.42, 0.18F);
-  }
+  applyAuditionSource();
   audition_->setGate(true);
   syncAuditionButton(true);
   status_label_->setText(QStringLiteral("AUDITION OPEN · %1 · %2 Hz")

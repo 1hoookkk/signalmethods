@@ -37,6 +37,7 @@ constexpr QColor kReference{128, 128, 128};
 constexpr double kLowDb = -30.0;
 constexpr double kHighDb = 30.0;
 constexpr int kStepDb = 10;
+constexpr double kPixelsPerOctave = 24.0;
 
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -400.0 : 400.0;
@@ -155,13 +156,6 @@ double CascadePlot::frequencyForX(double x, const QRectF& plot) const {
   return kLowHz * std::pow(kHighHz / kLowHz, fraction);
 }
 
-double CascadePlot::dbForY(double y, const QRectF& plot, double low_db,
-                           double high_db) const {
-  const double fraction =
-      std::clamp((plot.bottom() - y) / plot.height(), 0.0, 1.0);
-  return low_db + fraction * (high_db - low_db);
-}
-
 double CascadePlot::responseDbAt(double frequency_hz) const {
   if (grid_hz_.empty() || response_db_.size() != grid_hz_.size()) return 0.0;
   std::size_t nearest = 0;
@@ -209,77 +203,13 @@ std::optional<CascadePlot::Handle> CascadePlot::hitHandle(
   return closest;
 }
 
-double CascadePlot::solveBandwidth(std::size_t section, double frequency_hz,
-                                   double target_db) const {
-  const auto& authored = state_->section(section);
-  if (section + 1 == trench::core::native::kSections) {
-    const auto* zero = resonantOf(authored.zero);
-    return zero == nullptr ? EditorState::kMinBandwidthHz : zero->bw_hz;
-  }
-  std::vector<trench::core::Biquad> others;
-  for (std::size_t index = 0; index < trench::core::native::kSections;
-       ++index) {
-    if (index == section || !state_->sectionEnabled(index)) continue;
-    others.push_back(state_->sectionBiquad(index));
-  }
-  const double base = finiteDb(trench::core::cascade_response_db(
-      std::span<const trench::core::Biquad>{others.data(), others.size()},
-      frequency_hz, sample_rate_hz_));
-  const auto error = [&](double bandwidth_hz) {
-    trench::core::native::Section candidate = authored;
-    candidate.zero = trench::core::native::Resonant{frequency_hz, bandwidth_hz};
-    const trench::core::Biquad own = trench::core::native::biquad(
-        trench::core::native::design(candidate, sample_rate_hz_));
-    const std::span<const trench::core::Biquad> one{&own, 1};
-    const double total =
-        base + finiteDb(trench::core::cascade_response_db(one, frequency_hz,
-                                                          sample_rate_hz_));
-    return std::abs(total - target_db);
-  };
-
-  constexpr int kProbes = 48;
-  const double span =
-      EditorState::kMaxBandwidthHz / EditorState::kMinBandwidthHz;
-  int best = 0;
-  double best_error = std::numeric_limits<double>::max();
-  for (int probe = 0; probe < kProbes; ++probe) {
-    const double bandwidth_hz =
-        EditorState::kMinBandwidthHz *
-        std::pow(span, static_cast<double>(probe) / (kProbes - 1));
-    const double value = error(bandwidth_hz);
-    if (value < best_error) {
-      best_error = value;
-      best = probe;
-    }
-  }
-  const auto probe_hz = [&](int probe) {
-    return EditorState::kMinBandwidthHz *
-           std::pow(span, static_cast<double>(std::clamp(probe, 0, kProbes - 1)) /
-                              (kProbes - 1));
-  };
-  double low = probe_hz(best - 1);
-  double high = probe_hz(best + 1);
-  for (int step = 0; step < 12; ++step) {
-    const double ratio = high / low;
-    const double first = low * std::pow(ratio, 1.0 / 3.0);
-    const double second = low * std::pow(ratio, 2.0 / 3.0);
-    if (error(first) <= error(second)) {
-      high = second;
-    } else {
-      low = first;
-    }
-  }
-  return std::clamp(std::sqrt(low * high), EditorState::kMinBandwidthHz,
-                    EditorState::kMaxBandwidthHz);
-}
-
 void CascadePlot::applyPointer(const QPointF& position) {
   if (!drag_) return;
   const QRectF plot = plotRect();
   const double frequency_hz = frequencyForX(position.x(), plot);
-  const double target_db = dbForY(position.y(), plot, kLowDb, kHighDb);
+  const double octaves = (press_y_ - position.y()) / kPixelsPerOctave;
   state_->setRoot(drag_->section, EditorState::Lane::kZero, frequency_hz,
-                  solveBandwidth(drag_->section, frequency_hz, target_db));
+                  press_bw_hz_ * std::pow(2.0, octaves));
 }
 
 void CascadePlot::mousePressEvent(QMouseEvent* event) {
@@ -290,7 +220,11 @@ void CascadePlot::mousePressEvent(QMouseEvent* event) {
     return;
   }
   state_->selectRoot(hit->section, EditorState::Lane::kZero);
+  const auto* zero = resonantOf(state_->section(hit->section).zero);
+  if (zero == nullptr) return;
   drag_ = hit;
+  press_y_ = event->position().y();
+  press_bw_hz_ = zero->bw_hz;
   state_->beginUndoGroup();
   grabMouse();
 }
@@ -300,14 +234,10 @@ void CascadePlot::mouseDoubleClickEvent(QMouseEvent* event) {
   const std::size_t section = state_->selectedSection();
   if (!state_->sectionEnabled(section)) return;
   if (state_->rootPresent(section, EditorState::Lane::kZero)) return;
-  const QRectF plot = plotRect();
-  const double frequency_hz = frequencyForX(event->position().x(), plot);
-  const double target_db = dbForY(event->position().y(), plot, kLowDb, kHighDb);
-  state_->beginUndoGroup();
-  state_->addZeroAt(frequency_hz, 100.0);
-  state_->setRoot(section, EditorState::Lane::kZero, frequency_hz,
-                  solveBandwidth(section, frequency_hz, target_db));
-  state_->endUndoGroup();
+  const auto* pole = resonantOf(state_->section(section).pole);
+  if (pole == nullptr) return;
+  state_->addZeroAt(frequencyForX(event->position().x(), plotRect()),
+                    pole->bw_hz);
 }
 
 void CascadePlot::mouseMoveEvent(QMouseEvent* event) {

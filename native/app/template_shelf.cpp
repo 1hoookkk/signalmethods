@@ -1,9 +1,12 @@
 #include "template_shelf.hpp"
 
+#include "corpus_shelf.hpp"
+
 #include "trench/core/formants.hpp"
 
 #include <array>
 #include <cstddef>
+#include <string_view>
 
 namespace trench::app {
 
@@ -130,6 +133,20 @@ std::vector<ShelfGroup> buildShelf() {
     p2k.entries.push_back(fromPosture(posture, stripped(posture.name, QStringLiteral("VOW "))));
   }
   groups.push_back(std::move(p2k));
+
+  for (const char* group_name : {"REZ", "VOW", "EQ+", "EQ-", "LPF", "PHA", "FLG", "DST",
+                                 "WAH", "SFX", "ARCHETYPES"}) {
+    ShelfGroup corpus{QString::fromUtf8("P+Z \xc2\xb7 ") + QString::fromUtf8(group_name), {}};
+    for (const auto& source : kCorpusShelf) {
+      if (std::string_view(source.group) != std::string_view(group_name)) continue;
+      TemplateEntry entry;
+      entry.name = QString::fromUtf8(source.name);
+      entry.poles = source.poles;
+      entry.zeros = source.zeros;
+      corpus.entries.push_back(std::move(entry));
+    }
+    groups.push_back(std::move(corpus));
+  }
 
   return groups;
 }

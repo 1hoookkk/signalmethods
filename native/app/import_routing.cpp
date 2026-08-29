@@ -8,14 +8,15 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <utility>
 
 namespace trench::app {
 namespace {
 
-std::optional<PoleRows> readRows(const std::filesystem::path& path) {
+std::optional<TemplateMaterial> readRows(const std::filesystem::path& path) {
   std::ifstream stream(path);
   if (!stream) return std::nullopt;
-  PoleRows rows;
+  TemplateMaterial material;
   std::string line;
   while (std::getline(stream, line)) {
     const auto first = line.find_first_not_of(" \t\r");
@@ -29,9 +30,19 @@ std::optional<PoleRows> readRows(const std::filesystem::path& path) {
     if (!std::isfinite(column_one) || !std::isfinite(column_two)) {
       return std::nullopt;
     }
-    rows.emplace_back(column_one, column_two);
+    material.poles.emplace_back(column_one, column_two);
+    double column_three = 0.0;
+    double column_four = 0.0;
+    if (row >> column_three >> column_four) {
+      if (!std::isfinite(column_three) || !std::isfinite(column_four)) {
+        return std::nullopt;
+      }
+      material.zeros.emplace_back(std::make_pair(column_three, column_four));
+    } else {
+      material.zeros.emplace_back(std::nullopt);
+    }
   }
-  return rows;
+  return material;
 }
 
 }
@@ -63,30 +74,42 @@ ImportKind classify_import(const std::filesystem::path& path) {
 
 std::optional<ResponseCurve> read_response_curve(
     const std::filesystem::path& path) {
-  const auto rows = readRows(path);
-  if (!rows || rows->size() < 2) return std::nullopt;
+  const auto material = readRows(path);
+  if (!material || material->poles.size() < 2) return std::nullopt;
+  const PoleRows& rows = material->poles;
   ResponseCurve curve;
-  curve.frequency_hz.reserve(rows->size());
-  curve.magnitude_db.reserve(rows->size());
-  for (std::size_t index = 0; index < rows->size(); ++index) {
-    const double frequency = (*rows)[index].first;
+  curve.frequency_hz.reserve(rows.size());
+  curve.magnitude_db.reserve(rows.size());
+  for (std::size_t index = 0; index < rows.size(); ++index) {
+    const double frequency = rows[index].first;
     if (!(frequency > 0.0)) return std::nullopt;
-    if (index > 0 && !(frequency > (*rows)[index - 1].first)) {
+    if (index > 0 && !(frequency > rows[index - 1].first)) {
       return std::nullopt;
     }
     curve.frequency_hz.push_back(frequency);
-    curve.magnitude_db.push_back((*rows)[index].second);
+    curve.magnitude_db.push_back(rows[index].second);
   }
   return curve;
 }
 
 std::optional<PoleRows> read_pole_material(const std::filesystem::path& path) {
-  auto rows = readRows(path);
-  if (!rows || rows->empty()) return std::nullopt;
-  for (const auto& row : *rows) {
+  auto material = read_template_material(path);
+  if (!material) return std::nullopt;
+  return std::move(material->poles);
+}
+
+std::optional<TemplateMaterial> read_template_material(
+    const std::filesystem::path& path) {
+  auto material = readRows(path);
+  if (!material || material->poles.empty()) return std::nullopt;
+  for (const auto& row : material->poles) {
     if (!(row.first > 0.0) || !(row.second > 0.0)) return std::nullopt;
   }
-  return rows;
+  for (const auto& row : material->zeros) {
+    if (!row.has_value()) continue;
+    if (!(row->first > 0.0) || !(row->second > 0.0)) return std::nullopt;
+  }
+  return material;
 }
 
 namespace {

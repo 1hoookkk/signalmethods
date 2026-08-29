@@ -31,11 +31,18 @@ class MainWindow final : public QMainWindow {
 
   bool loadReference(const std::filesystem::path& path);
   void setAudition(bool enabled);
+  void applyAuditionSource();
 
  protected:
   void closeEvent(QCloseEvent* event) override;
 
  private:
+  struct KeptTemplate {
+    QString name;
+    std::vector<std::pair<double, double>> poles;
+    std::vector<std::optional<std::pair<double, double>>> zeros;
+  };
+
   struct Reference {
     QString name;
     std::vector<double> frequency_hz;
@@ -82,12 +89,12 @@ class MainWindow final : public QMainWindow {
   QPushButton* analyze_button_{};
   QPushButton* sections_button_{};
   QPushButton* audition_button_{};
+  QPushButton* clip_button_{};
   SectionDesk* section_desk_{};
   std::vector<std::pair<double, double>> proposal_poles_;
   std::vector<std::pair<double, double>> proposal_zeros_;
   std::vector<trench::app::TemplateEntry> shelf_;
-  std::vector<std::pair<QString, std::vector<std::pair<double, double>>>>
-      user_shelf_;
+  std::vector<KeptTemplate> user_shelf_;
   std::optional<Reference> reference_;
   QString document_path_;
   std::unique_ptr<trench::audio::Audition> audition_;

@@ -48,17 +48,15 @@ class CascadePlot final : public QWidget {
   [[nodiscard]] double yForDb(double db, const QRectF& plot,
                               double low_db, double high_db) const;
   [[nodiscard]] double frequencyForX(double x, const QRectF& plot) const;
-  [[nodiscard]] double dbForY(double y, const QRectF& plot, double low_db,
-                              double high_db) const;
   [[nodiscard]] double responseDbAt(double frequency_hz) const;
   [[nodiscard]] std::vector<Handle> zeroHandles() const;
   [[nodiscard]] std::optional<Handle> hitHandle(const QPointF& position) const;
-  [[nodiscard]] double solveBandwidth(std::size_t section, double frequency_hz,
-                                      double target_db) const;
   void applyPointer(const QPointF& position);
 
   EditorState* state_{};
   std::optional<Handle> drag_;
+  double press_y_{};
+  double press_bw_hz_{};
   std::vector<double> base_hz_;
   std::vector<double> grid_hz_;
   std::vector<double> response_db_;
