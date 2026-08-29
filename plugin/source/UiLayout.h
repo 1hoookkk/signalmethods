@@ -30,7 +30,7 @@ public:
         layout.elements["morphReadout"] = { { 572.0f, 701.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
         layout.elements["qReadout"]     = { { 572.0f, 868.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
 
-        layout.elements["spectrumGrid"] = { { 118.3f, 232.3f, 781.9f, 373.4f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 126.9f, 232.3f, 769.7f, 374.7f }, {}, {} };
 
         layout.elements["typeLabel"]    = { { 152.0f, 139.0f, 72.0f, 68.0f },  15.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
@@ -46,7 +46,7 @@ public:
 
         layout.elements["brandLabel"].text = "TRENCH";
         layout.colours["accent"]             = juce::Colour (0xff3cc8be);
-        layout.colours["curveColour"]        = juce::Colour (0xffbef0d7);
+        layout.colours["curveColour"]        = juce::Colour (0xff3cc8be);
         layout.colours["curveHighlight"]     = juce::Colour (0xffe6fff4);
         layout.colours["telemetry"]          = juce::Colour (0xff608074);
         layout.colours["dashed"]             = juce::Colour (0xff608074);

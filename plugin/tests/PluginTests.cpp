@@ -5,7 +5,7 @@
 #include "dsp/PreampLaw.h"
 #include "ui/GlassWords.h"
 #include "ui/BayKnob.h"
-#include "ui/KeyBox.h"
+#include "ui/KeySnapBox.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cmath>
 #include <complex>
@@ -236,12 +236,12 @@ int main()
     auto* words = findChild<trench::ui::GlassWords> (*editor);
     auto* c1 = findChild<trench::ui::BayKnob> (*editor, "Color 1");
     auto* c3 = findChild<trench::ui::BayKnob> (*editor, "Color 3");
-    auto* keyBox = findChild<trench::ui::KeyBox> (*editor);
+    auto* keyBox = findChild<trench::ui::KeySnapBox> (*editor);
     check (words != nullptr && c1 != nullptr && c3 != nullptr && keyBox != nullptr && keyBox->isShowing(), "Modulation chip, KEY box, three slots exist");
     if (words == nullptr || c1 == nullptr || c3 == nullptr)
         return 1;
     check (words->isShowing() && c1->isShowing() && c3->isShowing(), "Modulation, KEY, and the three slots are always on the face");
-    for (const char* gone : { "Input", "Bite", "Follow", "Key Snap", "Movement", "Output", "Low", "Division", "Section", "Generator" })
+    for (const char* gone : { "Input", "Bite", "Follow", "Movement", "Output", "Low", "Division", "Section", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
     check (c1->getHeight() >= 24 && words->getHeight() >= 18, "rows are legible", c1->getHeight(), words->getHeight());
     pump (150);

@@ -58,7 +58,16 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     colorKnobs[1] = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::envAmount, "Color 2");
     colorKnobs[2] = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::track, "Color 3");
     glassWords = std::make_unique<GlassWords> (theme);
-    keyBox = std::make_unique<KeyBox> (processor.apvts, theme, movementMenuLnF);
+    keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
+    keySnapBox->setSuggestionProviders (
+        [this] { return processor.getDetectedKeyForUi(); },
+        [this] { return processor.getDetectedAltKeyForUi(); });
+    keySnapBox->setListeningProvider ([this]
+    {
+        return juce::jmax (processor.getInputMeterLeftForUi().load (std::memory_order_relaxed),
+                           processor.getInputMeterRightForUi().load (std::memory_order_relaxed))
+               > 0.0015f;
+    });
     glassWords->onStep = [this] (int dir)
     {
         auto* prm = processor.apvts.getParameter (ParamID::movePreset);
@@ -107,7 +116,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*morphReadout);
     addAndMakeVisible (*secondaryReadout);
     addAndMakeVisible (*glassWords);
-    addAndMakeVisible (*keyBox);
+    addAndMakeVisible (*keySnapBox);
     for (auto& k : colorKnobs) addAndMakeVisible (*k);
     addAndMakeVisible (*labels);
     addChildComponent (*bodyBrowser);
@@ -137,7 +146,10 @@ void PluginEditor::resized()
         const auto glass = rectOf ("spectrumGrid");
         glassWords->setBounds (glass.getX() + 12, glass.getBottom() - 26, 120, 18);
     }
-    keyBox->setBounds (rectOf ("keyBox"));
+    {
+        const auto key = rectOf ("keyBox");
+        keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
+    }
     {
         const auto row = rectOf ("colorRow");
         for (int i = 0; i < 3; ++i)
@@ -155,9 +167,7 @@ void PluginEditor::onFrame()
           : preset == trench::Movement::kGrowlIndex ? juce::String ("GROWL")
                                                     : juce::String ("LIVE");
         glassWords->setState (moveName, processor.isMorphModulatedForUi());
-        const bool listening = juce::jmax (processor.getInputMeterLeftForUi().load (std::memory_order_relaxed),
-                                           processor.getInputMeterRightForUi().load (std::memory_order_relaxed)) > 0.0015f;
-        keyBox->setState (processor.getDetectedKeyForUi(), listening);
+        keySnapBox->refreshSuggestion();
     }
     const auto read = [this] (const char* paramID)
     {

@@ -1,6 +1,7 @@
 #pragma once
 #include "ParamInteraction.h"
 #include "Theme.h"
+#include "BinaryData.h"
 #include "../parameters/TrenchParameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <cmath>
@@ -100,56 +101,43 @@ private:
     float currentNormalised() const noexcept { return param != nullptr ? param->getValue() : 0.0f; }
     void drawCap (juce::Graphics& g, juce::Point<float> c, float value) const
     {
-        const float r = kKnobD * 0.5f;
-        const auto cap = juce::Rectangle<float> (kKnobD, kKnobD).withCentre (c);
-        g.setColour (juce::Colours::black.withAlpha (0.55f));
-        g.fillEllipse (cap.translated (0.0f, 2.2f).expanded (1.2f));
-        g.setColour (juce::Colours::black.withAlpha (0.30f));
-        g.fillEllipse (cap.translated (0.0f, 3.8f).expanded (0.6f));
-        juce::ColourGradient body (juce::Colour (0xff3b3b3e), c.x - r * 0.6f, c.y - r * 0.7f,
-                                   juce::Colour (0xff0e0e10), c.x + r * 0.5f, c.y + r * 0.9f, true);
-        body.addColour (0.55, juce::Colour (0xff1c1c1f));
-        g.setGradientFill (body);
-        g.fillEllipse (cap);
+        if (strip.isNull())
+            strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_strip_png,
+                                                     BinaryData::trench_knob_strip_pngSize);
+        constexpr int frameSize = 96, frameCount = 61;
+        const int frame = juce::jlimit (0, frameCount - 1,
+                                        juce::roundToInt ((1.0f - value) * (float) (frameCount - 1)));
+        const float d = kKnobD;
+        const float frameD = d * (96.0f / 76.0f);
+        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+        {
+            const auto shade = juce::Colour (0xff2a1f12);
+            juce::ColourGradient cast (shade.withAlpha (0.42f), c.x + d * 0.06f, c.y + d * 0.10f,
+                                       shade.withAlpha (0.0f), c.x + d * 0.06f, c.y + d * 0.62f, true);
+            g.setGradientFill (cast);
+            g.fillEllipse (c.x - d * 0.54f + d * 0.06f, c.y - d * 0.54f + d * 0.10f, d * 1.08f, d * 1.08f);
+        }
+        g.drawImage (strip,
+                     (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f), (int) frameD, (int) frameD,
+                     frame * frameSize, 0, frameSize, frameSize, false);
         {
             juce::Graphics::ScopedSaveState save (g);
-            juce::Path clip;
-            clip.addEllipse (cap);
-            g.reduceClipRegion (clip);
-            g.setColour (juce::Colours::black.withAlpha (0.28f));
-            for (int i = 0; i < 36; ++i)
-            {
-                const float a = juce::MathConstants<float>::twoPi * (float) i / 36.0f;
-                const juce::Point<float> o { c.x + std::cos (a) * (r - 0.5f), c.y + std::sin (a) * (r - 0.5f) };
-                const juce::Point<float> in { c.x + std::cos (a) * (r - 4.0f), c.y + std::sin (a) * (r - 4.0f) };
-                g.drawLine ({ o, in }, 1.0f);
-            }
+            juce::Path cap;
+            cap.addEllipse (c.x - d * 0.5f, c.y - d * 0.5f, d, d);
+            g.reduceClipRegion (cap);
+            const float rimD = d - 1.2f;
+            juce::Path rim;
+            rim.addEllipse (c.x - rimD * 0.5f, c.y - rimD * 0.5f, rimD, rimD);
+            juce::ColourGradient edge (juce::Colours::white.withAlpha (0.55f), c.x, c.y - d * 0.5f,
+                                       juce::Colour (0xff100c07).withAlpha (0.75f), c.x, c.y + d * 0.5f, false);
+            edge.addColour (0.5, juce::Colours::transparentBlack);
+            g.setGradientFill (edge);
+            g.strokePath (rim, juce::PathStrokeType (1.1f));
         }
-        juce::ColourGradient rim (juce::Colours::white.withAlpha (0.40f), c.x, cap.getY(),
-                                  juce::Colours::black.withAlpha (0.85f), c.x, cap.getBottom(), false);
-        g.setGradientFill (rim);
-        g.drawEllipse (cap.reduced (0.6f), 1.1f);
-        const float inset = r - 5.0f;
-        juce::ColourGradient face (juce::Colour (0xff2a2a2d), c.x, c.y - inset,
-                                   juce::Colour (0xff151517), c.x, c.y + inset, false);
-        g.setGradientFill (face);
-        g.fillEllipse (juce::Rectangle<float> (inset * 2.0f, inset * 2.0f).withCentre (c));
-        g.setColour (juce::Colours::white.withAlpha (0.10f));
-        g.drawEllipse (juce::Rectangle<float> (inset * 2.0f, inset * 2.0f).withCentre (c), 0.8f);
-        const float angle = juce::degreesToRadians (-135.0f + 270.0f * juce::jlimit (0.0f, 1.0f, value));
-        const juce::Point<float> dir { std::sin (angle), -std::cos (angle) };
-        const juce::Point<float> p0 = c + dir * (inset * 0.30f);
-        const juce::Point<float> p1 = c + dir * (inset * 0.92f);
-        const auto glow = t.rollerIllumination();
-        g.setColour (glow.withAlpha (hover ? 0.55f : 0.35f));
-        g.drawLine ({ p0, p1 }, 4.5f);
-        g.setColour (glow.brighter (0.25f));
-        g.drawLine ({ p0, p1 }, 1.8f);
-        g.setColour (juce::Colours::white.withAlpha (0.85f));
-        g.fillEllipse (juce::Rectangle<float> (2.4f, 2.4f).withCentre (p1));
     }
     Theme t;
     juce::String label;
+    mutable juce::Image strip;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;
     float defaultDenorm = 0.0f;

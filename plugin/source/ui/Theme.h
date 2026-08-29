@@ -63,7 +63,7 @@ struct Theme
 {
     const trench::UiLayout& layout;
     juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xff3cc8be)); }
-    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xffbef0d7)); }
+    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xff3cc8be)); }
     juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffe6fff4)); }
     juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xff608074)); }
     juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff3cc8be)); }
