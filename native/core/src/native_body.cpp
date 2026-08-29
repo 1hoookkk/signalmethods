@@ -323,6 +323,13 @@ P2kCorner export_p2k_corner(const Corner& corner, double datum_hz) {
                                 !std::isfinite(real_zero->b_hz);
     if (si == kSections - 1 && !zero_is_parked) {
       zero_radius = p2k::kS6ZeroRsqWord;
+      if (const auto* res = std::get_if<Resonant>(&corner.sections[si].zero)) {
+        const double d_rsq = decode_word(zero_radius);
+        const double p = -2.0 * std::sqrt(1.0 - d_rsq) *
+                         std::cos(kTau * res->hz / datum_hz);
+        zero_mag = p2k::lattice_words()[p2k::nearest_lattice_word(
+            encode_word(std::clamp((p + 2.0 - d_rsq) / 4.0, 0.0, 1.0)))];
+      }
     }
     const auto [pole_mag, pole_radius] = quantise(corner.sections[si].pole);
     roots[si] = {zero_mag, zero_radius, pole_mag, pole_radius};

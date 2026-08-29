@@ -263,6 +263,7 @@ TRENCH_TEST(s6_zero_export_law_is_the_existing_one) {
   const auto* zero = std::get_if<trench::core::ConjugatePair>(&geometry.zero);
   CHECK(zero != nullptr);
   CHECK_NEAR(zero->radius, p2k::s6_zero_radius(), 1.0e-12);
+  CHECK_NEAR(zero->hz, 12'000.0, 0.03 * 12'000.0);
   const double forced_bw_hz = -std::log(zero->radius) * 44'100.0 / std::numbers::pi;
   std::printf("S6 zero authored 12000 Hz / 12000 Hz bw exports as %.2f Hz / %.4f Hz bw\n",
               zero->hz, forced_bw_hz);
