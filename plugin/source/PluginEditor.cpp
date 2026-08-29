@@ -7,25 +7,10 @@
 using namespace trench::ui;
 namespace
 {
-// The bay's fixed joinery (mock_sel comp, editor px): the selector bar seats in
-// the break at the room frame's top-left, and each room is a carve on the SAME
-// anchor. THE CARVE IS THE WHEEL COLUMN CONTINUED (verdict 2026-08-05 "too
-// crammed"): its left and right edges are the MORPH/Q wheel + readout block's
-// own edges - qWheel source x 114 and morphReadout source right 772, mapped
-// through kPanelSourceWidth - so the room reads as the same column carried
-// down the plate, not a narrow box beside it.
-constexpr float kBayLeft  = 35.5f;    // == the DISPLAY's left edge (source x 110)
-constexpr float kBayRight = 249.0f;   // the readout column's right edge (source 772)
-// THE DRAWER IS TWO ROWS (Tyson 2026-08-28 "FX+ is a chip on the display
-// glass. It should open 2 rows of knobs and params for gain and movement.
-// Keep controls to an absolute minimum"): row 1 the four gain knobs as
-// compact cells, row 2 the movement picker. No carve, no door word - the
-// chip on the glass is the whole door, and the plate below the rows stays
-// bare to the notch.
-// THE DOCK (Tyson 2026-08-29): the instrument above never moves. Under Q
-// sits one permanent rail - GAIN and MOVE - and beneath it two bays with
-// fixed seats: GAIN left, MOVEMENT right. Neither, one, or both may be open;
-// nothing else moves and the face never changes size.
+
+constexpr float kBayLeft  = 35.5f;
+constexpr float kBayRight = 249.0f;
+
 constexpr int kRailY = 312, kRailH = 13, kBayY = 330, kBayRowH = 32;
 constexpr int kGainX = 35, kGainW = 116, kMoveX = 150, kMoveW = 92;
 constexpr int kFxChipH = 17;
@@ -33,13 +18,12 @@ constexpr int kFxChipH = 17;
 juce::File layoutWatchFile()
 {
    #if TRENCH_GOD_MODE
-    return trench::ui::godLayoutFile();   // the proof harness can redirect this
+    return trench::ui::godLayoutFile();
    #else
     return trench::uiLayoutFile();
    #endif
 }
-// A half-written save must never blank the face: only text that parses into a
-// JSON object is allowed to replace the live layout.
+
 bool readLayoutFile (const juce::File& f, trench::UiLayout& out)
 {
     const auto text = f.loadFileAsString();
@@ -98,9 +82,7 @@ int movePresetIndex (juce::AudioProcessorValueTreeState& apvts)
         return juce::roundToInt (v->load());
     return 0;
 }
-// The drawn phrase leaves through the same channel the Workstation uses: one
-// JSON file the processor polls by modification time, so the stamp must move
-// forward on every write even when two strokes land inside the clock's tick.
+
 void writeLivePhrase (const trench::ui::MovementSketch& sketch)
 {
     static juce::int64 stampMs = juce::Time::currentTimeMillis();
@@ -178,16 +160,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 {
     processor.setEditorOpen (true);
     reloadLayoutFromDisk();
-    // The plate: the original beige. Linen tried 2026-07-30, rejected same
-    // night ("too much on the eyes") - texture candidates live in git/evidence.
+
     auto panel = juce::ImageCache::getFromMemory (BinaryData::df2_panel_beige_png,
                                                   BinaryData::df2_panel_beige_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_roller_strip_png,
                                                   BinaryData::trench_roller_strip_pngSize);
     faceplate    = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
-    // SLAM lives on its own knob now; the glass is display-only (the hidden
-    // screen-drag was "still ambiguous" - Tyson 2026-07-30).
+
     graph        = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders (
@@ -211,9 +191,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     typeSelector->onSeed       = runSeed;
     typeSelector->onExportBody = [this] { processor.exportCurrentBody(); };
     typeSelector->onAnnounce   = [this] (const juce::String& s) { graph->announce (s); graph->setBodyName (s); };
-    // Hovering or flicking through bodies AUDITIONS them; only a click writes
-    // the parameter, so browsing never touches automation or undo.
-    // Clicking BODY opens the face's own library, not a system menu.
+
     bodyBrowser = std::make_unique<BodyBrowser> (theme);
     addChildComponent (*bodyBrowser);
     bodyBrowser->onPreview = [this] (int index) { processor.previewBodyForUi (index); };
@@ -229,8 +207,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
-    // THE DRAWER: FX+ on the glass opens the gain row and the movement row.
-    // SOURCE (resample) stays retired.
+
     sectionRail = std::make_unique<SectionRail> (theme);
     preampKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::preamp, "Input");
     chewKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::chew,   "Bite");
@@ -246,22 +223,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         bay->onOpenMenu = [this] { if (movementChip->onOpenMenu) movementChip->onOpenMenu(); };
         movementBay = std::move (bay);
     }
-    // TRACK retired from the face (Tyson 2026-08-15): the pitch listener was a
-    // detector-driven retuner the X3 never had, and E-mu's authored answer to
-    // pitch-following is the cube's own third axis. The parameter stays for
-    // old sessions; the engine wiring stays; the knob is gone. The THIRD-AXIS
-    // control ("Transform 2") appears only when a 560-byte cube body loads —
-    // there is no cube load path yet, so it is not built yet.
-    // MOVEMENT rides row 2 of the drawer: the chip is still the whole
-    // control - wheel to step and audition, click for the list.
+
     movementChip = std::make_unique<MovementChip> (theme);
     movementChip->onStep = [this] (int dir)
     {
         auto* p = processor.apvts.getParameter (ParamID::movePreset);
         if (p == nullptr)
             return;
-        // Stepping walks the BANK only: GROWL and LIVE are picked off the
-        // list, never landed on by wheeling past the end of the patterns.
+
         const int n = trench::kNumFuncGenPatterns;
         const int now = movePresetIndex (processor.apvts);
         const int next = (now >= 1 && now <= n) ? ((now - 1 + dir) % n + n) % n + 1
@@ -277,7 +246,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
             return;
         const auto names = p->getAllValueStrings();
         const int cur = movePresetIndex (processor.apvts);
-        // LIVE is only real while a phrase is being fed in.
+
         const bool liveReady = processor.hasLivePhraseForUi();
         juce::PopupMenu m;
         m.setLookAndFeel (&movementMenuLnF);
@@ -302,13 +271,12 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     };
     sectionRail->onToggleSection = [this] (int s)
     {
-        // Picking the open door's word again shuts the drawer (2026-08-15).
+
         openSection ^= (1 << s);
         applySectionVisibility();
     };
     onboarding = std::make_unique<Onboarding> (theme);
-    // The tour teaches over a REAL curve: it loads a demo body while it is up,
-    // then lands on the shipping default.
+
     const auto setBodyIndex = [this] (int idx)
     {
         if (auto* b = processor.apvts.getParameter (ParamID::body))
@@ -316,14 +284,12 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     };
     const auto loadTourDemoBody = [this, setBodyIndex]
     {
-        // The tour BORROWS a body; the user's choice comes back when it ends.
+
         bodyBeforeTour = juce::roundToInt (
             processor.apvts.getRawParameterValue (ParamID::body)->load());
         int n = 0;
         trench::bodyRoster (n);
-        // "Morph LP X" wears its roster pretty-name "2-Pole Lowpass" now; the
-        // old literal matched nothing and every tour ran on the index-1
-        // fallback. Same body, found by its real name.
+
         for (int i = 0; i < n; ++i)
             if (trench::bodyDisplayName (i) == "2-Pole Lowpass")
                 return setBodyIndex (i);
@@ -335,8 +301,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         setBodyIndex (bodyBeforeTour >= 0 ? bodyBeforeTour : trench::kDefaultBodyIndex);
         bodyBeforeTour = -1;
     };
-    // MORPH demo step: the tour sweeps the wheel to the far pose and back so the
-    // travel is SEEN. The editor owns the gesture and restores the pose after.
+
     onboarding->onDemoMorph = [this] (float phase)
     {
         auto* p = processor.apvts.getParameter (ParamID::morph);
@@ -373,16 +338,13 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         if (labels != nullptr) labels->setBrandLit (lit);
     };
     labels       = std::make_unique<LabelsLayer> (theme);
-    // Deadpan instrument labelling (2026-08-10): blunt, engineering-first —
-    // the parentheses were UI politeness, not hardware.
+
     labels->setRailLabels ("MORPH (%)", "Q (%)");
     decalsLayer  = std::make_unique<DecalsLayer> (theme);
     decalsLayer->setBufferedToImage (true);
     addAndMakeVisible (*faceplate);
     addAndMakeVisible (*graph);
-    // AFTER the graph, so the chip sits on the glass rather than under it. The
-    // glass itself still takes no clicks; the chip is the only thing on it that
-    // does.
+
     addAndMakeVisible (*movementChip);
     addAndMakeVisible (*followKnob);
     addAndMakeVisible (*autoTrim);
@@ -390,40 +352,22 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*typeSelector);
     addAndMakeVisible (*morphWheel);
     addAndMakeVisible (*secondaryWheel);
-    // The wheels live BEHIND the plate: the wells are cut out of the plate
-    // art (alpha holes) and the wheel shows through, lip overlapping it —
-    // seated in the cutout, spinning while embedded (Tyson 2026-08-07).
-    // It is a flat-laying wheel, a pitchwheel on its side — NOT a drum.
-    // BEHIND THE PLATE AGAIN (Tyson 2026-08-11: "make the wheel underneath the
-    // plate asset"). punch_wheel_wells.py cuts the two openings out of the
-    // plate art, so the drum shows through a real hole with the lip overlapping
-    // it. Order matters and reads backwards: toBack() drops a child to index 0,
-    // so the plate goes down FIRST and the wheels go under it after. Everything
-    // else keeps its place above the plate - only the wheels move.
-    // OVER THE PLATE (Tyson 2026-08-13: "render them over the plate"). Only the
-    // faceplate dropped to the back; the wheels stayed above it, composited ON
-    // the art instead of showing through the punched wells.
-    // BEHIND AGAIN (Tyson 2026-08-14: "render it behind see if that fixes it").
-    // The flat-pitchwheel overscan draws the tread WIDER than the slot, and
-    // over the plate that spilled onto the lip ("slightly too far out").
-    // Behind the plate, the punched hole windows the tread: the plate's own
-    // edge cuts it and nothing can spill. toBack() reads backwards: plate
-    // first, then each wheel drops under it.
+
     faceplate->toBack();
     morphWheel->toBack();
     secondaryWheel->toBack();
     addAndMakeVisible (*morphReadout);
     addAndMakeVisible (*secondaryReadout);
-    addAndMakeVisible (*keySnapBox);   // KEY stays on the top bar
+    addAndMakeVisible (*keySnapBox);
     addAndMakeVisible (*sectionRail);
-    // Room contents: only the open room's lanes are on the plate.
+
     addChildComponent (*preampKnob);
     addChildComponent (*chewKnob);
     addChildComponent (*slamKnob);
     addChildComponent (*lowKnob);
     applySectionVisibility();
     addChildComponent (*onboarding);
-    // First-run teach: shown for the first few openings, or until clicked away.
+
     if (trench::ui::Onboarding::shouldShow())
     {
         loadTourDemoBody();
@@ -432,15 +376,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     }
     addAndMakeVisible (*labels);
     addAndMakeVisible (*decalsLayer);
-    // The dev bypass desk. Its state lives on the BRIDGE, not here, so closing
-    // and reopening the window does not quietly put a stage back.
+
     devPanel = std::make_unique<trench::ui::DevBypassPanel> (theme);
     devPanel->onChange = [this] (const trench::ui::DevBypassPanel::Bypass& b)
     {
         processor.dspBridge.setBypass (b);
     };
     addChildComponent (*devPanel);
-    // The window grows to make room for the desk instead of covering the face.
+
     devPanel->onOpenChanged = [this] (bool) { updateEditorSize(); };
     devPanel->onNext = [this]
     {
@@ -466,8 +409,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     movementSketch->onChanged = [this]
     {
         writeLivePhrase (*movementSketch);
-        // LIVE is the last choice: drawing IS selecting it, so a stroke is heard
-        // without a second gesture.
+
         if (auto* p = dynamic_cast<juce::AudioParameterChoice*> (
                           processor.apvts.getParameter (ParamID::movePreset)))
             p->setValueNotifyingHost (p->convertTo0to1 ((float) (p->choices.size() - 1)));
@@ -490,7 +432,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         funcGenVerdicts().load();
         devPanel->open (processor.dspBridge.getBypass());
     };
-    // Click the TRENCH badge to replay the tour. No new faceplate furniture.
+
     addAndMakeVisible (onboardingReplayHotspot);
     setResizable (false, false);
     updateEditorSize();
@@ -499,11 +441,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     godMode = std::make_unique<trench::ui::GodModeOverlay> (currentLayout);
     godMode->onLayoutChanged = [this] { layoutComponents(); repaint(); };
     addChildComponent (*godMode);
-    // The toggle has to arrive even while the overlay is asleep, so the editor
-    // listens for keys and hands every one of them to the overlay first.
+
     setWantsKeyboardFocus (true);
     addKeyListener (godMode.get());
-    startTimer (250);   // the layout-file watch, armed whether or not the overlay is
+    startTimer (250);
 #endif
     vblank = std::make_unique<juce::VBlankAttachment> (this, [this] { onFrame(); });
    #ifdef TRENCH_PLAYER_DIAGNOSTICS
@@ -517,17 +458,10 @@ void PluginEditor::showOnboardingStep (int step)
 }
 PluginEditor::~PluginEditor()
 {
-    // FIRST, before anything else is torn down: kill the per-frame callback and
-    // the timers. VBlankAttachment fires onFrame() on EVERY screen refresh and
-    // captures `this`; members destruct in REVERSE declaration order, so the
-    // components onFrame() touches are gone before the attachment is. One
-    // refresh landing mid-teardown reads freed memory - that is the host
-    // hanging on close.
+
     vblank.reset();
     stopTimer();
 
-    // Closing the window mid-tour must not leave a host gesture open with MORPH
-    // parked wherever the demo sweep happened to be.
     if (onboarding != nullptr && onboarding->onDemoEnd != nullptr)
         onboarding->onDemoEnd();
 #if TRENCH_GOD_MODE
@@ -554,9 +488,7 @@ void PluginEditor::reloadLayoutFromDisk()
 void PluginEditor::timerCallback()
 {
    #if TRENCH_GOD_MODE || defined (TRENCH_PLAYER_DIAGNOSTICS)
-    // HOT RELOAD: poll the layout file's modification time. Save the JSON in an
-    // editor and the running face follows - no rebuild, no reopen. A file that
-    // is mid-write simply fails to parse and is left for the next tick.
+
     auto f = layoutWatchFile();
     if (! f.existsAsFile())
         return;
@@ -596,9 +528,7 @@ void PluginEditor::layoutComponents()
         sectionRail->toFront (false);
     }
     {
-        // KEY perches ABOVE the BODY bar, on the BRAND's optical baseline -
-        // its centre line is taken from the brand label's rect, not a magic
-        // offset off the selector.
+
         const auto sel = rectOf ("typeSelector");
         const auto brand = theme.rect ("brandLabel");
         keySnapBox->setBounds (sel.getRight() - 138,
@@ -618,10 +548,9 @@ void PluginEditor::layoutComponents()
         autoTrim->setBounds   (kGainX + 6, kBayY + 2 * kBayRowH + 2, kGainW, 12);
         movementBay->setBounds (kMoveX, kBayY + 4, kMoveW, 46);
         followKnob->setBounds  (kMoveX - 6, kBayY + 52, kMoveW + 6, kBayRowH);
-        // DEPTH retired 2026-08-10: travel is part of each preset's record.
-        // TRACK retired 2026-08-15 (see the knob's construction site above).
+
     }
-    onboarding->setBounds (base);   // full face: the tour spotlights each control
+    onboarding->setBounds (base);
     onboardingReplayHotspot.setBounds (rectOf ("brandLabel"));
     decalsLayer->setBounds (base);
     if (devPanel != nullptr)
@@ -670,22 +599,14 @@ void PluginEditor::applySectionVisibility()
 void PluginEditor::updateEditorSize()
 {
     using trench::ui::SectionRail;
-    // ONE HEIGHT (Tyson 2026-08-28 "dont make the ui cut like that"): the
-    // face never shortens - shut just means bare plate under the wheels.
+
     setSize (kEditorWidth + (devPanel != nullptr && devPanel->isVisible()
                                  ? trench::ui::DevBypassPanel::kWidth : 0),
              kEditorHeight);
 }
 void PluginEditor::onFrame()
 {
-    // NO FADE, EVER (Tyson 2026-08-15 "No fucking fade"). The old law dimmed
-    // MORPH, Q, KEY, BITE and the MOVEMENT side to 28% on the No-filter body
-    // because they act on nothing there — honest, but with No filter as the
-    // shipping default it made the FIRST face read as unplugged. The hardware
-    // model wins instead: every control stays full-strength and fully
-    // interactive, exactly like the knobs on an unpatched synth — they turn,
-    // the identity body just gives them nothing to change. Output and the
-    // preamp remain live around the filter path.
+
     keySnapBox->refreshSuggestion();
     if (devPanel != nullptr && devPanel->isVisible())
     {
@@ -696,8 +617,7 @@ void PluginEditor::onFrame()
                                kept, killed,
                                trench::kNumFuncGenPatterns - kept - killed);
     }
-    // The chip on the glass reads the pattern and lights while it is running.
-    // OFF has no pattern to name, so it wears the word MOVEMENT instead.
+
     {
         const int preset = movePresetIndex (processor.apvts);
         const auto bank = bankPatternName (preset);
@@ -719,17 +639,15 @@ void PluginEditor::onFrame()
             return juce::jlimit (0.0f, 1.0f, v->load());
         return 0.0f;
     };
-    // The response curve draws from the EFFECTIVE (modulated) morph/Q, so an
-    // armed modulation visibly plays the curve along with the wheel.
+
     float coeffs[trench::kUiCoeffCount] = {};
     float boost = 1.0f;
     const bool morphMoving = processor.isMorphModulatedForUi();
     const float baseMorph = morphMoving ? processor.getEffectiveMorphForUi()
                                         : read (ParamID::morph);
-    // Q is the static authored second axis — Movement never modulates it.
+
     const float baseQ = read (ParamID::q);
-    // The probe recompiles the whole packed body; only pay for it when the
-    // wheel position or the body itself has actually moved since last frame.
+
     const int bodyVersion = processor.bodyVersionForUi.load (std::memory_order_relaxed);
     const double probeRate = processor.getSampleRate();
     if (baseMorph != lastProbedMorph || baseQ != lastProbedQ
@@ -747,9 +665,7 @@ void PluginEditor::onFrame()
                                          : 44'100.0);
         }
     }
-    // While a hand is on MORPH the readout shows THAT hand, exactly like the
-    // wheel does - a running phrase must not argue with the number you are
-    // dragging (WheelControl::displayNormalised holds the same law).
+
     const bool morphHandDown = morphWheel->isMouseButtonDown (true)
                             || morphReadout->isMouseButtonDown (true);
     const bool moving = processor.isMorphModulatedForUi() && ! morphHandDown;

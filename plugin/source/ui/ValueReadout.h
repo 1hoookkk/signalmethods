@@ -137,12 +137,7 @@ public:
         auto textArea = b.reduced (4.0f, 1.0f);
         if (adjustCue)
             textArea = textArea.withTrimmedRight (7.0f);
-        // The reference's digits are plain Helvetica - a stem 0.125 of their own
-        // height. Bold was tried to keep a 1.2px stem from antialiasing into two
-        // grey columns at our smaller box, and it does fix that, but it costs
-        // more than it buys (Tyson 2026-08-09: "the readout text is way too
-        // heavy"). Back to the reference weight; legibility is carried by the
-        // SIZE, which matches it at 0.55 of the box, and by the black ink.
+
         drawCrispText (g, textArea, numeric, fs,
                        t.textColour (id, juce::Colour (0xff4a3520)), true);
         if (adjustCue && param != nullptr)

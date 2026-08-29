@@ -3,13 +3,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 namespace trench::ui
 {
-// THE SIX PRIMITIVES (Tyson 2026-08-29 "build like 6 primitives"): Plate,
-// Window, Wheel, Pill, Word, Knob. Plate/Window/Wheel/Knob are components;
-// Pill and Word are painters shared by everything that shows a value or a
-// working word. The state grammar and the shadow numbers are E-mu's own,
-// measured off the X3 bitmap dump: every control is rest / hover / engaged /
-// engaged-hover; surfaces are flat and top-lit; depth is painted into the
-// plate, never onto the part.
+
 enum class ControlState { rest, hover, engaged, engagedHover };
 inline ControlState stateOf (bool engaged, bool hover)
 {
@@ -19,23 +13,16 @@ inline ControlState stateOf (bool engaged, bool hover)
 inline bool isEngaged (ControlState s) { return s == ControlState::engaged || s == ControlState::engagedHover; }
 inline bool isHover   (ControlState s) { return s == ControlState::hover   || s == ControlState::engagedHover; }
 
-// PILL - E-mu BITMAP4605: 238 at the lip falling to 184 over the top eight
-// rows, flat below, sides flat at 191. No outline. The tint is the theme's
-// frost family; these are the luminance stops.
 inline void paintPill (juce::Graphics& g, juce::Rectangle<float> r, float radius, const Theme& t, bool lit = false)
 {
     drawMutedBoneReadout (g, r, radius, lit, t);
 }
 
-// WORD - a working word on the plate. Rest: engraved ink at 0.58. Hover: the
-// alive colour. Engaged: full ink with the latch open, lamp lit in the
-// engaged colour. E-mu's word-buttons invert to a dark body when engaged;
-// on our plate the same signal is carried by the lamp and the ink weight.
 struct WordStyle
 {
-    bool lamp = false;        // a 5px lamp before the word
-    bool latch = false;       // a latch triangle before the word (dock sections)
-    float pt = 0.0f;          // 0 = theme small label
+    bool lamp = false;
+    bool latch = false;
+    float pt = 0.0f;
 };
 inline void paintWord (juce::Graphics& g, juce::Rectangle<float> r, const juce::String& word,
                        ControlState s, const Theme& t, WordStyle style = {})
@@ -72,7 +59,6 @@ inline void paintWord (juce::Graphics& g, juce::Rectangle<float> r, const juce::
                 juce::Justification::centredLeft, false);
 }
 
-// STEPPER - the E-mu spinner pair, or a single arrow, in ink.
 inline void paintArrow (juce::Graphics& g, juce::Rectangle<float> r, bool pointsRight, ControlState s, const Theme& t)
 {
     juce::Path p;

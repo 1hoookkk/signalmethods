@@ -5,19 +5,13 @@
 #include <functional>
 namespace trench::ui
 {
-// MOVEMENT ON THE GLASS (Tyson 2026-08-25): the pattern stopped being a room
-// in the bay and became a chip in the display's lower-left. The chip is the
-// fixed word "Modulation" in the readout voice — dim at rest, glowing under
-// the cursor and while its menu is up (Tyson: "dim ... when clicked it glows
-// and when hove it glows"); the lamp alone says whether the wheel is moving.
-// The mouse wheel steps the bank and every step restarts on the retrigger
-// law, so wheeling the chip IS auditioning; a click opens the whole list.
+
 class MovementChip final : public juce::Component,
                            public juce::SettableTooltipClient
 {
 public:
     static constexpr int   kHeight  = 13;
-    static constexpr float kNamePt  = 9.8f;   // the glass's telemetry voice
+    static constexpr float kNamePt  = 9.8f;
     static constexpr float kLampD   = 6.0f;
     static constexpr float kLampGap = 5.0f;
     explicit MovementChip (const Theme& theme) : t (theme)
@@ -54,12 +48,11 @@ public:
     void mouseExit  (const juce::MouseEvent&) override { hover = false; repaint(); }
     void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
     {
-        // The face's gesture law: the mouse wheel always works.
+
         if (onStep != nullptr && ! juce::approximatelyEqual (w.deltaY, 0.0f))
             onStep (w.deltaY > 0 ? 1 : -1);
     }
-    /// Row seat (Tyson 2026-08-28): the picker rides row 2 of the FX+ drawer,
-    /// on the plate - its quiet voice is ink there, not glass telemetry.
+
     void setOnPlate (bool p) { if (onPlate != p) { onPlate = p; repaint(); } }
     void mouseDown (const juce::MouseEvent&) override
     {
@@ -68,8 +61,7 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // The Modulation Word on the glass: lamp lit while the wheel is
-        // travelling, the word takes the plate's ink when seated on plate.
+
         paintWord (g, getLocalBounds().toFloat(), kWord, stateOf (active, hover || menuOpen), t,
                    { true, false, kNamePt });
     }

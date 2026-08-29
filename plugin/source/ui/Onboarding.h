@@ -5,13 +5,7 @@
 
 namespace trench::ui
 {
-/// First-run guided tour across the WHOLE face.
-///
-/// The panel is deliberately sparse and its screen-UP SLAM gesture is invisible.
-/// Painting instructions onto the artwork fought the trace; stock JUCE tooltips
-/// are host-dependent and off-brand. So the face is dimmed, one control is
-/// spotlit per step, and the card sits clear of it. NEXT to advance, SKIP to
-/// leave, never shown again.
+
 class Onboarding final : public juce::Component,
                          private juce::Timer
 {
@@ -33,13 +27,10 @@ public:
     }
 
     std::function<void()> onDismiss;
-    /// Demo hooks: during the MORPH step the tour sweeps the wheel itself so the
-    /// user SEES the travel instead of reading about it. The editor owns the
-    /// parameter gesture; the tour only reports sweep phase 0..1 and completion.
+
     std::function<void (float)> onDemoMorph;
     std::function<void()> onDemoEnd;
 
-    /// Re-run the tour (logo click). Does not touch the done-file.
     void replay (int startStep = 0)
     {
         endDemo();
@@ -52,16 +43,12 @@ public:
         repaint();
     }
 
-    /// Invisible click target the editor places over the TRENCH badge.
     struct ReplayHotspot final : juce::Component
     {
         ReplayHotspot() { setMouseCursor (juce::MouseCursor::PointingHandCursor); }
         std::function<void()> onClick;
         std::function<void (bool)> onHover;
-        /// Ctrl+Shift+click on the badge. The dev bypass desk hangs off this
-        /// rather than a keystroke because hosts eat key events in a plug-in
-        /// window (FL certainly does) and a dev tool that only sometimes opens
-        /// is worse than none.
+
         std::function<void()> onSecretClick;
         void mouseDown  (const juce::MouseEvent& e) override
         {
@@ -101,10 +88,6 @@ public:
         const auto full = getLocalBounds().toFloat();
         const auto spot = spotlight().expanded (4.0f, 4.0f);
 
-        // Scrim over the whole face with the spotlit control punched out, so the
-        // user's eye goes to the one thing the step is talking about. Warm and
-        // half-strength: the panel should read as hardware with the room lights
-        // down, not as a software modal — the beige plate stays recognisable.
         {
             juce::Path scrim;
             scrim.setUsingNonZeroWinding (false);
@@ -117,7 +100,6 @@ public:
         g.drawRoundedRectangle (spot, 5.0f, 1.1f);
         paintGestureHint (g, spot);
 
-        // Tooltip card, anchored to the spotlit control.
         const auto card = cardBounds();
         paintTail (g, alpha);
         g.setColour (juce::Colour (0xff0b0d10).withAlpha (juce::jmin (1.0f, 1.06f * alpha)));
@@ -131,8 +113,6 @@ public:
         auto footer = content.removeFromBottom (13.0f);
         auto title = content.removeFromTop (14.0f);
 
-        // Whole-pixel font sizes and no horizontal squeeze: fitted text at this
-        // size condenses the glyphs into artifacts. Wrap, never squash.
         g.setFont (telemetryFont (11.0f, false));
         g.setColour (ink.withAlpha (0.95f * alpha));
         g.drawText (s.title, title.toNearestInt(),
@@ -170,9 +150,7 @@ private:
     static const Step* steps()
     {
         static const Step s[] = {
-            // "Drag across the bar" was a lie - the bar has no drag gesture
-            // (verified 2026-08-15): click opens the list, the mouse wheel
-            // steps. The card says what the hardware actually does.
+
             { "typeSelector", "THE FILTERS",
               "One roars, one talks, one bites. Click the bar for the list, "
               "mouse-wheel to step; \"No filter\" leaves the filter out.",
@@ -185,12 +163,10 @@ private:
               "Q travels the body's authored second axis. Push it to sharpen or "
               "transform the response.",
               animWheel },
-            // The doors are bare engraved words (2026-08-15 bay refactor) — a
-            // deliberate zero-affordance surface, and this step is where a new
-            // user learns they open.
-            { "bayDoors", "THE ROOMS",
-              "GAIN and MOVEMENT are two doors. Click a word and its room "
-              "opens below it; the face stays bare until you ask.",
+
+            { "bayDoors", "THE DOCK",
+              "1 AMP and 2 GEN are the two sections under Q. Click one to open "
+              "its bay - one, both, or neither; the instrument above never moves.",
               animNone },
         };
         return s;
@@ -202,9 +178,7 @@ private:
         auto r = t.rect (steps()[(size_t) step].rectId);
         return r.isEmpty() ? getLocalBounds().toFloat().reduced (40.0f) : r;
     }
-    /// The card is a TOOLTIP on the spotlit control: it sits immediately beside
-    /// it, aligned to it, not floating in the middle of the face. Below where
-    /// there is room, above otherwise, clamped inside the panel.
+
     juce::Rectangle<float> cardBounds() const
     {
         const auto full = getLocalBounds().toFloat();
@@ -218,8 +192,7 @@ private:
                               : juce::jmax (full.getY() + 6.0f, spot.getY() - h - 7.0f);
         return { x, y, w, h };
     }
-    /// Crude little arrows showing which way the gesture goes: wheels get a
-    /// chevron ping-ponging along the roller; SLAM gets chevrons drifting up.
+
     void paintGestureHint (juce::Graphics& g, juce::Rectangle<float> spot) const
     {
         const auto anim = steps()[(size_t) step].anim;
@@ -228,7 +201,7 @@ private:
         const auto ink = t.curveColour();
         const auto chevron = [&] (juce::Point<float> tip, float dx, float dy, float a)
         {
-            // Two strokes meeting at the tip, opening opposite the direction.
+
             const float s = 5.0f;
             const juce::Point<float> back { tip.x - dx * s, tip.y - dy * s };
             juce::Path p;
@@ -241,7 +214,7 @@ private:
         };
         if (anim == animWheel)
         {
-            // One chevron sliding left-right along the roller, nose leading.
+
             const float sway = std::sin (juce::MathConstants<float>::twoPi * animPhase);
             const float dir  = std::cos (juce::MathConstants<float>::twoPi * animPhase) >= 0.0f ? 1.0f : -1.0f;
             chevron ({ spot.getCentreX() + sway * spot.getWidth() * 0.30f,
@@ -257,7 +230,7 @@ private:
                      0.0f, -1.0f, fade);
         }
     }
-    /// Little pointer from the card back to the control it describes.
+
     void paintTail (juce::Graphics& g, float a) const
     {
         const auto spot = spotlight().expanded (4.0f, 4.0f);
@@ -284,7 +257,7 @@ private:
         const auto c = cardBounds();
         return { c.getRight() - 98.0f, c.getBottom() - 17.0f, 38.0f, 13.0f };
     }
-    static constexpr int kDemoStep = 1;   // MORPH
+    static constexpr int kDemoStep = 1;
     void beginDemo()
     {
         if (onDemoMorph == nullptr) return;
@@ -299,7 +272,7 @@ private:
     }
     void visibilityChanged() override
     {
-        // The gesture hints animate for as long as the tour is up.
+
         if (isVisible()) startTimerHz (60);
         else stopTimer();
     }
@@ -321,10 +294,10 @@ private:
     {
         if (! dismissing)
         {
-            animPhase = std::fmod (animPhase + 1.0f / 90.0f, 1.0f);   // 1.5 s loop
+            animPhase = std::fmod (animPhase + 1.0f / 90.0f, 1.0f);
             if (demoActive)
             {
-                // Demo sweep: ~2.4 s out to the far pose and back, then hand over.
+
                 demoPhase += 1.0f / 144.0f;
                 if (demoPhase >= 1.0f) endDemo();
                 else if (onDemoMorph) onDemoMorph (demoPhase);

@@ -7,26 +7,14 @@ namespace trench::ui
 inline constexpr int   kEditorWidth        = 326;
 inline constexpr int   kEditorHeight       = 503;
 inline constexpr int   kEditorHeightClosed = 361;
-// The bay's shared value-column width: every room row - knob readouts and the
-// SOURCE selector alike - draws the same frosted box on the same axis.
-// Bay readouts are the MORPH/Q readouts' smaller SIBLINGS, not a different
-// family: the primaries are 61x25 (aspect 2.5), so these hold the same
-// aspect at ~75% scale. 86x13 was aspect 6.6 and WIDER than the primaries,
-// which inverted the hierarchy (Tyson 2026-08-05: wrong proportions).
-inline constexpr int   kBayValueWidth      = 46;   // numeric boxes (352px-face legibility)
-inline constexpr int   kBaySourceWidth     = 116;  // the longest preset name plus its menu chevron
-inline constexpr int   kBaySourceHeight    = 20;   // a dropdown needs more than a number does
-// BAY TYPE, in ACTUAL pixels. The rest of the face sizes type in a 440-wide
-// reference space that Theme::fontSize scales by 326/440; the bay used to mix
-// the two, so its caption landed at 7.4px while its value landed at 8.5px -
-// the label smaller than the number, both under the face's 11-15px range and
-// unreadable at the shipped size. One system now: these are real pixels.
+
+inline constexpr int   kBayValueWidth      = 46;
+inline constexpr int   kBaySourceWidth     = 116;
+inline constexpr int   kBaySourceHeight    = 20;
+
 inline constexpr float kBayValuePt          = 12.0f;
-inline constexpr int   kBayValueHeight     = 17;   // shared by every bay box
-// The filmstrip frame draws at d * 96/76 and its content (disc + baked contact
-// shadow) fills 80 of those 96px, so a row must be at least 1.053 * d tall or
-// one knob's shadow lands on the next. A 32px disc in a 36px row leaves enough
-// real air for the compact 326x503 face without letting adjacent shadows touch.
+inline constexpr int   kBayValueHeight     = 17;
+
 inline constexpr float kBayKnobDiameter    = 32.0f;
 inline constexpr float kPanelSourceWidth   = 1010.0f;
 inline constexpr float kPanelSourceHeight  = 1557.0f;
@@ -41,12 +29,12 @@ inline const char* const kUiFontName = "Tahoma";
 inline const char* const kUiEmphasisFontName = "Tahoma";
 inline juce::String& uiFontFamily()
 {
-    static juce::String* family = new juce::String (kUiFontName);   // leaked on purpose
+    static juce::String* family = new juce::String (kUiFontName);
     return *family;
 }
 inline juce::String& uiEmphasisFontFamily()
 {
-    static juce::String* family = new juce::String (kUiEmphasisFontName);   // leaked on purpose
+    static juce::String* family = new juce::String (kUiEmphasisFontName);
     return *family;
 }
 inline bool& uiBoldEnabled()
@@ -65,9 +53,7 @@ inline constexpr float kPlateWordPt    = 9.5f;
 inline constexpr float kMicroCaptionPt = 8.6f;
 inline juce::Font telemetryFont (float height, bool emphasis = false)
 {
-    // ONE TYPEFACE: the readouts and panel labels share the compact Windows-era
-    // Tahoma voice visible in the E-mu reference. Hierarchy comes from size and
-    // weight, not a second display font.
+
     return displayFont (height, emphasis);
 }
 struct Theme
@@ -101,8 +87,7 @@ struct Theme
     {
         return sourceRectToEditor (layout.sourceRectFor (id));
     }
-    /// The same rect BEFORE the editor mapping, for anything that has to index
-    /// back into the plate bitmap's own pixels.
+
     juce::Rectangle<float> sourceRect (const juce::String& id) const
     {
         return layout.sourceRectFor (id);
@@ -138,15 +123,7 @@ struct Theme
         return out;
     }
 };
-// RESTORED VERBATIM from 4db42c24 "Face: Five Point construction + the
-// actual citron UI" (Tyson 2026-08-12: "get the readouts and stuff back,
-// they look better"). This session had warmed it to bone, then cooled it to
-// a neutral silver, then swapped its seat for a cut recess - three passes
-// away from the construction that was judged good. Recovered from
-// C:/Users/hooki/trench-workstation, which still holds this history.
-// DO NOT re-tune these stops without a verdict against a render.
-// READOUTS from d9bdfe97, the goal build (Tyson 2026-08-12: "the way the
-// readouts look ... everything else we want"). Verbatim.
+
 inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r,
                                      float radius, bool isActive, const Theme& t)
 {
@@ -208,14 +185,7 @@ inline void drawMutedBoneReadout (juce::Graphics& g, juce::Rectangle<float> r,
 {
     drawFrostedGlassControl (g, r, radius, isActive, t);
 }
-// The bay's caption: the SAME voice as the anchor labels (verdict 2026-08-01
-// "it looks disconnected") - same family, same tracking, plain ink; only the
-// size steps down. No private engraving treatment.
-// THE E-MU SPINNER (Tyson 2026-08-09: "add a up down on the rooms. And the
-// preset and room selector arent the same"): the X3 sheet's stacked up/down
-// stepper pair, one construction for every choice box that steps. Same
-// triangle geometry as the readouts' adjust cue - one family, stated once.
-// Hit-testing is the caller's, split at the box's vertical centre.
+
 inline void drawEmuSpinner (juce::Graphics& g, juce::Rectangle<float> box,
                             bool enabled, const Theme& t)
 {
@@ -238,16 +208,7 @@ inline void drawBayCaption (juce::Graphics& g, juce::Rectangle<float> r,
     g.setColour (t.labelInk());
     g.drawFittedText (text.toUpperCase(), r.toNearestInt(), juce::Justification::centred, 1);
 }
-// The catch defaults to the plate's own bone white - an engraving lit from
-// above. A caller can hand it a colour instead, which turns the same passes
-// into E-MU's panel-title glow: measured on their FILTER, dark letterforms
-// inside a ~2px halo that peaks at the raw accent (#6CDBDA, sat 0.51 val 0.86)
-// and is back to panel by the third pixel out.
-// extraWeight draws the ink twice, a pixel apart, which widens every stem by
-// one pixel with the letterforms untouched. JUCE's Font carries bold as a style
-// flag, not a numeric weight axis, so above Arial Bold this is the only way to
-// add weight without changing typeface - and the ask was heavier type, not
-// different type.
+
 inline void drawEngravedText (juce::Graphics& g, const juce::String& text,
                               juce::Rectangle<int> area, juce::Justification just,
                               juce::Colour ink, float catchAlpha = 0.45f,

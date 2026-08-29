@@ -61,8 +61,7 @@ public:
         }
         lastListening = listeningNow;
     }
-    // The idle engraving is not a control: clicks pass through unless there
-    // is a guess to take or a locked key to release.
+
     bool hitTest (int x, int y) override
     {
         juce::ignoreUnused (x, y);
@@ -95,8 +94,7 @@ public:
         repaint();
         if (param == nullptr || ! getLocalBounds().contains (e.position.toInt()))
             return;
-        // Right-click is the host-automation gesture across the whole face; it
-        // must not fall through and change the key instead.
+
         if (e.mods.isPopupMenu())
         {
             showParamContextMenu (*this, param);
@@ -112,7 +110,7 @@ public:
                 applySuggestedChoice (suggestion (secondarySuggestion));
             return;
         }
-        // Click the locked key: release it back to AUTO — no menu, one gesture.
+
         param->beginChangeGesture();
         param->setValueNotifyingHost (param->convertTo0to1 (0.0f));
         param->endChangeGesture();
@@ -135,18 +133,10 @@ public:
         const int first = suggestion (primarySuggestion);
         const int second = suggestion (secondarySuggestion);
         const bool showingSuggestion = currentChoice() == 0 && first >= 0;
-        // Compact cell (docked in the BODY bar): one quiet inset segment.
+
         if (getHeight() < 26)
         {
-            // LABEL + BOX, E-MU's own pairing (Tyson 2026-08-08: "lastly is
-            // KEY... match the typography and rendering style too"). Every
-            // stated value on the reference panel lives in a frosted box with
-            // its name beside it - TYPE, STAGE, SHAPE, FREQ, Q. KEY was the one
-            // control on our face saying its value as bare text on the plate,
-            // so it read as an engraved caption rather than something you can
-            // set. The box only appears once there IS a value: an empty frosted
-            // slot beside a quiet KEY would advertise a control that does
-            // nothing until the model has an opinion.
+
             const auto ink = juce::Colour (0xff2a2722);
             const bool locked = currentChoice() != 0;
             const auto b = getLocalBounds().toFloat();
@@ -165,28 +155,20 @@ public:
                 drawMutedBoneReadout (g, box, boxH * 0.17f, hover, t);
                 return box;
             };
-            // ACTING WEARS THE ACCENT; SUGGESTING WEARS PENCIL (Tyson
-            // 2026-08-15 "its not obvious if key is changing the sound or
-            // looking for a target"). The old faces differed by a 4px dot —
-            // and the dot gave the accent to the state that does NOTHING
-            // (AUTO detects, it never retunes). Now the face's one colour
-            // law answers at a glance: accent ink = the key is snapping the
-            // filter right now; dim graphite = an offer you can click.
+
             if (locked)
             {
-                // Click the locked key again to release it — no menu.
+
                 const auto text = shortChoiceText (currentChoice());
                 const auto box = valueBox (text, bigFont);
+
                 g.setFont (bigFont);
-                g.setColour (t.accent());
+                g.setColour (juce::Colour (0xff2a2722));
                 g.drawText (text, box.toNearestInt(), juce::Justification::centred, false);
             }
             else if (showingSuggestion)
             {
-                // Punctuated suggestions ("Cm?" / "Cm!") were tried and
-                // rejected same-day (Tyson 2026-08-15). The ink alone
-                // carries the state: dim graphite = suggesting, accent =
-                // acting.
+
                 const auto text = shortSuggestionText (first);
                 const auto box = valueBox (text, bigFont);
                 g.setFont (bigFont);
@@ -203,13 +185,12 @@ public:
                 drawListeningHairline (g);
             return;
         }
-        // On-glass chip (the reference "C m" plate): always seated so the
-        // user knows KEY exists, quiet until it has something to say.
+
         const auto chip = getLocalBounds().toFloat().reduced (1.5f);
         const bool alive = showingSuggestion || currentChoice() != 0 || isListening();
         if (! alive)
         {
-            // Nothing to say: just a quiet KEY ghost so the spot is known.
+
             g.setFont (displayFont (6.4f, true));
             g.setColour (juce::Colour (0xffc7d3cd).withAlpha (0.30f));
             g.drawText ("KEY", getLocalBounds().removeFromTop (13),
@@ -292,7 +273,7 @@ private:
     {
         if (currentChoice() != 0 || suggestion (primarySuggestion) < 0)
             return -1;
-        if (getHeight() < 26)   // compact: the small alt zone, else the guess
+        if (getHeight() < 26)
             return ! compactAlt.isEmpty() && compactAlt.contains (point) ? 1 : 0;
         if (juce::Rectangle<float> (8.0f, 11.0f, 33.0f, 26.0f).contains (point))
             return 0;
@@ -308,8 +289,7 @@ private:
         g.setColour (juce::Colour (0xffc7d3cd).withAlpha (hover ? 0.82f : 0.60f));
         g.drawRoundedRectangle (tile.reduced (0.5f), 1.8f, 0.7f);
         g.setFont (displayFont (10.4f, true));
-        // Acting wears the accent, here too (2026-08-15): a selected key is
-        // snapping the filter right now.
+
         g.setColour (t.accent().withAlpha (0.95f));
         g.drawText (text, tile.toNearestInt(), juce::Justification::centred, false);
     }

@@ -3,7 +3,7 @@
 #include <functional>
 namespace trench::ui
 {
-// AUTO TRIM - a printed state in bay 1, not a control: the stage trims itself.
+
 struct AutoTrimMark final : juce::Component
 {
     explicit AutoTrimMark (const Theme& theme) : t (theme) { setInterceptsMouseClicks (false, false); }
@@ -14,8 +14,6 @@ struct AutoTrimMark final : juce::Component
     Theme t;
 };
 
-// BAY 2 - GEN is preset-first: the phrase in a pill with its steppers, then
-// the rate. Deeper parameters stay behind the phrase list.
 struct MovementBay final : juce::Component
 {
     explicit MovementBay (const Theme& theme) : t (theme) { setMouseCursor (juce::MouseCursor::PointingHandCursor); }

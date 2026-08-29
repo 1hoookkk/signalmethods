@@ -30,101 +30,30 @@ public:
     static UiLayout defaults()
     {
         UiLayout layout;
-        // ONE well geometry for both wheels, on the DISPLAY's own left edge
-        // (source x 110): the two wells used to differ by a pixel each way.
-        // Sized to HOLD the 148x33 frame without clipping its rounded caps, and
-        // centred on the apertures measured off the plate art (morph centre
-        // y 233.62, q centre y 287.26, both x 106.70 in face px).
-        // The E-mu reference is a shallow, fully visible roller: matte ribs and
-        // a small transmitted-light packet, not a large drum cropped by the
-        // aperture. These are the earlier clean-face bounds restored verbatim.
-        // RE-MEASURED off the definitive master (Tyson 2026-08-11: "re measure
-        // the actual well, the wheel is slightly too small"). The old numbers
-        // were measured against the previous plate and the drum sat inside its
-        // opening rather than filling it. Apertures found by thresholding the
-        // 828x1280 plate at luminance 55 and scaled by 1010/828, 1557/1280:
-        //   MORPH  plate x97 y561 w349 h66
-        //   Q      plate x97 y697 w349 h69   (the master's Q slot IS 3px taller)
-        // WHEEL GEOMETRY IS NOT TO BE "CORRECTED" TO THE STRIP'S ASPECT.
-        // Tried 2026-08-12 and reverted the same pass: the wheel sits BEHIND the
-        // plate and is only ever seen through the punched hole, which measures
-        // 131.3 x 20.0 editor px (aspect 6.5). The component is therefore
-        // deliberately LARGER than what shows - matching it to the strip's own
-        // 4.4839 made the drum taller than the opening and changed how much of
-        // the barrel reads through it (Tyson: "looks worse and dont sit
-        // properly"). The aperture is not the visible area. These are the
-        // judged numbers; leave them.
-        // READOUT PLACEMENT follows the X3 proportion (Tyson 2026-08-12): the
-        // value box sits hard against its roller - a 6px gap, not 13.4 - and
-        // slightly BELOW the roller's centre line rather than on it. Dead
-        // centring is a modern habit; the reference hangs the number low.
-        // THE RECT IS THE VISIBLE WHEEL (2026-08-13). It used to be sized to the
-        // filmstrip FRAME, padding and all, and WheelControl filled it - so the
-        // wheel that actually showed was 3% smaller than the rect, seated off
-        // its own centre, and the two wheels were DIFFERENT SIZES because the
-        // two rects were (97.7 against 102.3, the master's Q slot being 3px
-        // taller). One wheel, one size, seated on each opening's own centre.
-        // Measured off the plate art: both openings are x 97..445 plate px, the
-        // MORPH slot y 562..626 and the Q slot y 698..765, which is 137.4 x 25.6
-        // and 137.4 x 26.7 in editor px. The wheel is 127.5 x 25.5 - the ink
-        // aspect is 405:81, so height fills the slot and the width that follows
-        // leaves ~5px of floor at each cap (the flat-pitchwheel overscan now
-        // covers it; WheelControl::kThrowOverscan).
-        // 139x31 editor pixels at the 1010x1557 source scale, centred on the
-        // same measured well axes. This restores the locked native-frame law.
+
         layout.elements["morphWheel"]   = { { 115.9f, 675.0f, 430.6f, 96.0f }, {}, {} };
         layout.elements["qWheel"]       = { { 115.9f, 842.5f, 430.6f, 96.0f }, {}, {} };
         layout.elements["typeSelector"] = { { 230.0f, 139.0f, 675.0f, 68.0f },  {}, {} };
-        // The bay's two door-words (SectionRail seat, PluginEditor
-        // kBaySelector {43.5, 328, 114, 17} editor px at the 326/1010 map).
-        // Stated here so the onboarding tour can spotlight it.
-        layout.elements["bayDoors"]     = { { 134.8f, 1016.2f, 353.2f, 52.7f }, {}, {} };
-        // The panel asset contains readout recesses, but they are not part of
-        // the desired control grammar. The white modules therefore cover the
-        // recesses completely. Both use the same 2.5:1 E-mu proportion and the
-        // geometry measured from the selected clean-face reference.
-        // Ink is TRUE BLACK, not the plate's 0x222222 (Tyson: "make the text
-        // more readable at small screens"). Measured on the render, these digits
-        // were the lowest-contrast text on the whole face at 0.40, against
-        // 0.55-0.58 for the engraved plate labels - a light frosted panel needs
-        // a darker ink than beige does, and the reference readout's digits are
-        // pure black.
-        // E-MU MEASURED, every number (Tyson 2026-08-09: "Reference the emu
-        // proportions and typography... the readout close to the wheels").
-        // Off BITMAP4615/4602: pill = 42.5% of wheel width at 2.85:1 ->
-        // 182x64 for the 428 wheels; pill centre sits 12% of wheel height
-        // BELOW the wheel centre (their 3px of 25) -> y 705 / 873.5; digit
-        // cap = 54% of pill height, 1px stems -> fontSize 21, regular.
-        // The v2 plate has no readout recesses; the pills float on plate.
+
+        layout.elements["bayDoors"]     = { { 108.4f, 965.8f, 663.0f, 40.0f }, {}, {} };
+
         layout.elements["morphReadout"] = { { 562.6f, 708.0f, 178.0f, 48.0f },  12.0f, juce::Colour (0xff2a2722) };
         layout.elements["qReadout"]     = { { 562.6f, 875.0f, 178.0f, 48.0f },  12.0f, juce::Colour (0xff2a2722) };
-        // RE-MEASURED with per-axis mapping (2026-08-15 "Re measure all
-        // bounds"; plate->source is x*1010/828, y*1557/1280 - NOT one factor).
-        // The recess interior in df2_panel_beige.png (luma < 60) is plate px
-        // x 97..738, y 191..498 -> source x 118.3..901.4, y 232.3..607.0.
-        // The wheel wells were measured the same pass and their elements sit
-        // dead-centred on the punched holes (centres agree to 0.05 px).
+
         layout.elements["spectrumGrid"] = { { 118.3f, 232.3f, 781.9f, 373.4f }, {}, {} };
-        // anchored near its box so the eye tracks the pair (UX audit 2026-07-31)
-        // the ROW starts where the display starts (source x 110): the label is
-        // set flush left there, the selector still ends on the display's right
+
         layout.elements["typeLabel"]    = { { 152.0f, 139.0f, 72.0f, 68.0f },  15.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
-        // Black, like the readouts: text on the light frosted panel needs a
-        // darker ink than text engraved into beige (contrast measured 0.43 here
-        // against 0.55-0.58 on the plate).
+
         layout.elements["typeName"]     = { { 244.0f, 143.0f, 530.0f, 64.0f },  18.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeArrow"]    = { { 850.0f, 143.0f, 52.0f,  64.0f },  {}, {} };
         layout.elements["morphLabel"]   = { { 114.0f, 640.0f, 434.0f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 114.0f, 798.0f, 434.0f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        // No per-element ink: the logo takes the brandInk palette token, so a
-        // theme swap carries it. Every other label stays plate near-black.
+
         layout.elements["brandLabel"]   = { { 100.0f, 73.0f, 230.0f, 44.0f }, 18.5f, juce::Colour (0xff0f0c09) };
-        // The name is TRENCH (Tyson 2026-08-09, final): detached, slightly
-        // unknowable - never trench imagery, military language or depth
-        // claims anywhere on the product.
+
         layout.elements["brandLabel"].text = "TRENCH";
         layout.colours["accent"]             = juce::Colour (0xff3cc8be);
         layout.colours["curveColour"]        = juce::Colour (0xffbef0d7);
@@ -134,19 +63,13 @@ public:
         layout.colours["rollerIllumination"] = juce::Colour (0xff3cc8be);
         layout.colours["modulationLamp"]     = juce::Colour (0xff3cc8be);
         layout.colours["phosphor"]           = juce::Colour (0xff1a1624);
-        // amber = the SOURCE voice (RESAMPLE/GEN only) - never the trace's value
+
         layout.colours["amber"]              = juce::Colour (0xffb8862e);
         layout.colours["screenEdge"]         = juce::Colour (0xff171325);
-        // No glow on the curve: the ghost halo matches the glass exactly, so
-        // the trace reads as a clean line with no aura.
+
         layout.colours["spectrumGhost"]      = juce::Colour (0xff1a1624);
         layout.colours["labelInk"]    = juce::Colour (0xff24231f);
-        // The TRENCH title takes no token of its own: it is the window's navy
-        // (phosphor) lettering inside a catch of the trace's mint (accent),
-        // both already defined above. See LabelsLayer.
-        // WELL INSERT LAW (Tyson 2026-08-04): the recessed well reads as a
-        // separate dark-metal insert bolted into the beige plate - dark
-        // charcoal floor (#2A2A2A) framing the matte-black wheels.
+
         layout.colours["wellTop"]            = juce::Colour (0xff2A2A2A);
         layout.colours["wellBottom"]         = juce::Colour (0xff1A1A1A);
         layout.colours["wellKeyline"]        = juce::Colour (0xff4A4A4A);
