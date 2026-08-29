@@ -19,10 +19,11 @@
 #include <utility>
 #include <vector>
 
-class QComboBox;
 class QDoubleSpinBox;
 class QLabel;
+class QMenu;
 class QPushButton;
+class QToolButton;
 
 class MainWindow final : public QMainWindow {
  public:
@@ -32,6 +33,8 @@ class MainWindow final : public QMainWindow {
   bool loadReference(const std::filesystem::path& path);
   void setAudition(bool enabled);
   void applyAuditionSource();
+  void chooseOverlay(std::optional<std::size_t> slot);
+  void chooseTemplate(std::size_t slot);
 
  protected:
   void closeEvent(QCloseEvent* event) override;
@@ -77,8 +80,10 @@ class MainWindow final : public QMainWindow {
   SectionStrip* section_strip_{};
   QLabel* reference_label_{};
   QLabel* status_label_{};
-  QComboBox* template_shelf_{};
-  QComboBox* overlay_shelf_{};
+  QToolButton* template_shelf_{};
+  QToolButton* overlay_shelf_{};
+  QMenu* template_mine_{};
+  QMenu* overlay_mine_{};
   QDoubleSpinBox* pole_frequency_{};
   QDoubleSpinBox* pole_bandwidth_{};
   QDoubleSpinBox* zero_frequency_{};

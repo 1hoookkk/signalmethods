@@ -12,7 +12,6 @@
 #include <QAbstractSpinBox>
 #include <QApplication>
 #include <QCloseEvent>
-#include <QComboBox>
 #include <QDir>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
@@ -23,11 +22,12 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSignalBlocker>
-#include <QStandardItemModel>
 #include <QStandardPaths>
+#include <QToolButton>
 #include <QVBoxLayout>
 #include <QVariant>
 
@@ -93,17 +93,6 @@ QString templateName(const std::filesystem::path& path) {
 QFont captionFont(const QWidget* base) { return base->font(); }
 
 QFont valueFont(const QWidget* base) { return base->font(); }
-
-void markShelfHeader(QComboBox* combo) {
-  auto* model = qobject_cast<QStandardItemModel*>(combo->model());
-  if (model == nullptr) return;
-  QStandardItem* item = model->item(combo->count() - 1);
-  if (item == nullptr) return;
-  item->setFlags(Qt::NoItemFlags);
-  QFont bold = captionFont(combo);
-  bold.setBold(true);
-  item->setData(bold, Qt::FontRole);
-}
 
 QDoubleSpinBox* physicalEditor(double low, double high, QWidget* parent) {
   auto* editor = new QDoubleSpinBox(parent);
@@ -184,36 +173,41 @@ MainWindow::MainWindow(QWidget* parent)
   for (const auto& group : groups) {
     for (const auto& entry : group.entries) shelf_.push_back(entry);
   }
-  auto fill = [this, &groups](QComboBox* combo, const QString& placeholder) {
-    combo->addItem(placeholder);
+  const auto build_menu = [this, &groups](QToolButton* button,
+                                          const QString& title, bool overlay) {
+    button->setText(title);
+    button->setPopupMode(QToolButton::InstantPopup);
+    auto* menu = new QMenu(button);
+    if (overlay) {
+      menu->addAction(QStringLiteral("NONE"), this, [this] { chooseOverlay(std::nullopt); });
+      menu->addSeparator();
+    }
     std::size_t flat = 0;
     for (const auto& group : groups) {
-      combo->addItem(group.title);
-      markShelfHeader(combo);
+      QMenu* sub = menu->addMenu(group.title);
       for (const auto& entry : group.entries) {
-        combo->addItem(QStringLiteral("  ") + entry.name,
-                       QVariant::fromValue(static_cast<qulonglong>(flat)));
-        ++flat;
+        const std::size_t slot = flat++;
+        sub->addAction(entry.name, this, [this, slot, overlay] {
+          if (overlay) chooseOverlay(slot); else chooseTemplate(slot);
+        });
       }
     }
-    combo->addItem(QStringLiteral("MINE"));
-    markShelfHeader(combo);
+    QMenu* mine = menu->addMenu(QStringLiteral("MINE"));
     for (const auto& kept : user_shelf_) {
-      combo->addItem(QStringLiteral("  ") + kept.name,
-                     QVariant::fromValue(static_cast<qulonglong>(flat)));
-      ++flat;
+      const std::size_t slot = flat++;
+      mine->addAction(kept.name, this, [this, slot, overlay] {
+        if (overlay) chooseOverlay(slot); else chooseTemplate(slot);
+      });
     }
+    button->setMenu(menu);
+    return mine;
   };
-  template_shelf_ = new QComboBox(central);
+  template_shelf_ = new QToolButton(central);
   template_shelf_->setObjectName(QStringLiteral("templateShelf"));
-  template_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  template_shelf_->setMinimumContentsLength(14);
-  fill(template_shelf_, QStringLiteral("TEMPLATE"));
-  overlay_shelf_ = new QComboBox(central);
+  template_mine_ = build_menu(template_shelf_, QStringLiteral("TEMPLATE"), false);
+  overlay_shelf_ = new QToolButton(central);
   overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
-  overlay_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  overlay_shelf_->setMinimumContentsLength(14);
-  fill(overlay_shelf_, QStringLiteral("OVERLAY"));
+  overlay_mine_ = build_menu(overlay_shelf_, QStringLiteral("OVERLAY"), true);
   auto* keep = new QPushButton(QStringLiteral("+"), central);
   keep->setObjectName(QStringLiteral("keepTemplate"));
   keep->setFixedSize(28, 28);
@@ -258,7 +252,7 @@ MainWindow::MainWindow(QWidget* parent)
   actions->addWidget(save);
   layout->addLayout(actions);
 
-  cascade_plot_ = new CascadePlot(&state_, central);
+  cascade_plot_ = new CascadePlot(central);
   cascade_plot_->setObjectName(QStringLiteral("cascadePlot"));
   morph_pad_ = new MorphPad(&state_, central);
   auto* interior = new QHBoxLayout;
@@ -369,45 +363,6 @@ MainWindow::MainWindow(QWidget* parent)
   connect(tilt_button_, &QPushButton::toggled, this,
           [this] { applyReferenceView(); });
   connect(keep, &QPushButton::clicked, this, &MainWindow::keepTemplate);
-  connect(overlay_shelf_, &QComboBox::activated, this, [this](int index) {
-    clearProposal();
-    if (index <= 0) {
-      cascade_plot_->clearFormantMarks();
-      armadillo_editor_->clearGhost();
-      return;
-    }
-    const QVariant held = overlay_shelf_->itemData(index);
-    if (!held.isValid()) return;
-    const std::size_t slot = static_cast<std::size_t>(held.toULongLong());
-    std::vector<std::pair<double, double>> ghost;
-    if (slot < shelf_.size()) {
-      for (const auto& pole : shelf_[slot].poles) {
-        if (pole.present) ghost.emplace_back(pole.hz, pole.bw_hz);
-      }
-    } else {
-      if (slot - shelf_.size() >= user_shelf_.size()) return;
-      ghost = user_shelf_[slot - shelf_.size()].poles;
-    }
-    std::vector<double> marks;
-    marks.reserve(ghost.size());
-    for (const auto& pole : ghost) marks.push_back(pole.first);
-    cascade_plot_->setFormantMarks(std::move(marks));
-    armadillo_editor_->setGhost(std::move(ghost));
-  });
-  connect(template_shelf_, &QComboBox::activated, this, [this](int index) {
-    if (index < 1) return;
-    const QVariant held = template_shelf_->itemData(index);
-    if (!held.isValid()) return;
-    const std::size_t slot = static_cast<std::size_t>(held.toULongLong());
-    if (slot < shelf_.size()) {
-      state_.loadTemplate(shelf_[slot]);
-    } else {
-      if (slot - shelf_.size() >= user_shelf_.size()) return;
-      const auto& kept = user_shelf_[slot - shelf_.size()];
-      state_.loadPoles(kept.poles, kept.zeros);
-    }
-    template_shelf_->setCurrentIndex(0);
-  });
   auto* toggle_addressed = new QShortcut(QKeySequence(Qt::Key_Space), this);
   connect(toggle_addressed, &QShortcut::activated, this, [this] {
     QWidget* focused = qApp->focusWidget();
@@ -683,9 +638,9 @@ void MainWindow::keepTemplate() {
     kept->zeros = std::move(zeros);
   } else {
     user_shelf_.push_back({name, std::move(poles), std::move(zeros)});
-    const auto slot = static_cast<qulonglong>(shelf_.size() + user_shelf_.size() - 1);
-    template_shelf_->addItem(QStringLiteral("  ") + name, QVariant::fromValue(slot));
-    overlay_shelf_->addItem(QStringLiteral("  ") + name, QVariant::fromValue(slot));
+    const std::size_t slot = shelf_.size() + user_shelf_.size() - 1;
+    template_mine_->addAction(name, this, [this, slot] { chooseTemplate(slot); });
+    overlay_mine_->addAction(name, this, [this, slot] { chooseOverlay(slot); });
   }
   status_label_->setText(QStringLiteral("KEPT · %1").arg(name.toUpper()));
 }
@@ -749,6 +704,39 @@ void MainWindow::adoptProposal() {
           : QStringLiteral("ADOPTED · CORNER %1 · %2 ZEROS UNPLACED")
                 .arg(corner + 1)
                 .arg(dropped));
+}
+
+void MainWindow::chooseOverlay(std::optional<std::size_t> slot) {
+  clearProposal();
+  if (!slot) {
+    cascade_plot_->clearFormantMarks();
+    armadillo_editor_->clearGhost();
+    return;
+  }
+  std::vector<std::pair<double, double>> ghost;
+  if (*slot < shelf_.size()) {
+    for (const auto& pole : shelf_[*slot].poles) {
+      if (pole.present) ghost.emplace_back(pole.hz, pole.bw_hz);
+    }
+  } else {
+    if (*slot - shelf_.size() >= user_shelf_.size()) return;
+    ghost = user_shelf_[*slot - shelf_.size()].poles;
+  }
+  std::vector<double> marks;
+  marks.reserve(ghost.size());
+  for (const auto& pole : ghost) marks.push_back(pole.first);
+  cascade_plot_->setFormantMarks(std::move(marks));
+  armadillo_editor_->setGhost(std::move(ghost));
+}
+
+void MainWindow::chooseTemplate(std::size_t slot) {
+  if (slot < shelf_.size()) {
+    state_.loadTemplate(shelf_[slot]);
+    return;
+  }
+  if (slot - shelf_.size() >= user_shelf_.size()) return;
+  const auto& kept = user_shelf_[slot - shelf_.size()];
+  state_.loadPoles(kept.poles, kept.zeros);
 }
 
 void MainWindow::clearProposal() {

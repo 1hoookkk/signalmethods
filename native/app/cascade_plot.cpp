@@ -4,20 +4,16 @@
 
 #include <QFont>
 #include <QFontMetrics>
-#include <QLineF>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
-#include <QShortcut>
-#include <QToolTip>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <limits>
 #include <span>
-#include <vector>
 
 namespace {
 
@@ -37,36 +33,19 @@ constexpr QColor kReference{128, 128, 128};
 constexpr double kLowDb = -30.0;
 constexpr double kHighDb = 30.0;
 constexpr int kStepDb = 10;
-constexpr double kPixelsPerOctave = 24.0;
 
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -400.0 : 400.0;
   return std::clamp(value, -400.0, 400.0);
 }
 
-const trench::core::native::Resonant* resonantOf(
-    const trench::core::native::Roots& roots) {
-  return std::get_if<trench::core::native::Resonant>(&roots);
 }
 
-}
-
-CascadePlot::CascadePlot(EditorState* state, QWidget* parent)
-    : QWidget(parent), state_(state) {
+CascadePlot::CascadePlot(QWidget* parent) : QWidget(parent) {
   setMinimumHeight(160);
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  setMouseTracking(true);
-  setFocusPolicy(Qt::ClickFocus);
   base_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
   grid_hz_ = base_hz_;
-  connect(state_, &EditorState::changed, this,
-          qOverload<>(&CascadePlot::update));
-  connect(state_, &EditorState::selectionChanged, this, [this] { update(); });
-  for (const auto key : {Qt::Key_Delete, Qt::Key_Backspace}) {
-    auto* drop_zero = new QShortcut(QKeySequence(key), this);
-    drop_zero->setContext(Qt::WidgetShortcut);
-    connect(drop_zero, &QShortcut::activated, state_, &EditorState::removeZero);
-  }
 }
 
 void CascadePlot::setCascade(
@@ -76,7 +55,6 @@ void CascadePlot::setCascade(
     const std::array<bool, trench::core::native::kSections>& enabled,
     const std::vector<double>& seed_hz, std::size_t selected_section,
     double selected_frequency_hz, double sample_rate_hz) {
-  sample_rate_hz_ = sample_rate_hz;
   enabled_ = enabled;
   selected_section_ = selected_section;
   selected_frequency_hz_ = selected_frequency_hz;
@@ -134,10 +112,6 @@ void CascadePlot::clearReference() {
   update();
 }
 
-QRectF CascadePlot::plotRect() const {
-  return QRectF(rect()).adjusted(62.0, 14.0, -22.0, -38.0);
-}
-
 double CascadePlot::xForFrequency(double frequency_hz, const QRectF& plot) const {
   const double fraction = std::log(frequency_hz / kLowHz) /
                           std::log(kHighHz / kLowHz);
@@ -148,123 +122,6 @@ double CascadePlot::yForDb(double db, const QRectF& plot, double low_db,
                            double high_db) const {
   const double fraction = (db - low_db) / (high_db - low_db);
   return plot.bottom() - fraction * plot.height();
-}
-
-double CascadePlot::frequencyForX(double x, const QRectF& plot) const {
-  const double fraction =
-      std::clamp((x - plot.left()) / plot.width(), 0.0, 1.0);
-  return kLowHz * std::pow(kHighHz / kLowHz, fraction);
-}
-
-double CascadePlot::responseDbAt(double frequency_hz) const {
-  if (grid_hz_.empty() || response_db_.size() != grid_hz_.size()) return 0.0;
-  std::size_t nearest = 0;
-  double best = std::numeric_limits<double>::max();
-  for (std::size_t index = 0; index < grid_hz_.size(); ++index) {
-    const double distance = std::abs(grid_hz_[index] - frequency_hz);
-    if (distance < best) {
-      best = distance;
-      nearest = index;
-    }
-  }
-  return response_db_[nearest];
-}
-
-std::vector<CascadePlot::Handle> CascadePlot::zeroHandles() const {
-  std::vector<Handle> result;
-  if (state_ == nullptr) return result;
-  const QRectF plot = plotRect();
-  for (std::size_t section = 0; section < trench::core::native::kSections;
-       ++section) {
-    if (!state_->sectionEnabled(section)) continue;
-    if (!state_->rootPresent(section, EditorState::Lane::kZero)) continue;
-    const auto* zero = resonantOf(state_->section(section).zero);
-    if (zero == nullptr) continue;
-    const double x = xForFrequency(std::clamp(zero->hz, kLowHz, kHighHz), plot);
-    const double y = std::clamp(
-        yForDb(responseDbAt(zero->hz), plot, kLowDb, kHighDb), plot.top(),
-        plot.bottom());
-    result.push_back(Handle{section, QPointF{x, y}});
-  }
-  return result;
-}
-
-std::optional<CascadePlot::Handle> CascadePlot::hitHandle(
-    const QPointF& position) const {
-  std::optional<Handle> closest;
-  double closest_distance = 14.0;
-  for (const Handle& handle : zeroHandles()) {
-    const double distance = QLineF{position, handle.position}.length();
-    if (distance <= closest_distance) {
-      closest = handle;
-      closest_distance = distance;
-    }
-  }
-  return closest;
-}
-
-void CascadePlot::applyPointer(const QPointF& position) {
-  if (!drag_) return;
-  const QRectF plot = plotRect();
-  const double frequency_hz = frequencyForX(position.x(), plot);
-  const double octaves = (press_y_ - position.y()) / kPixelsPerOctave;
-  state_->setRoot(drag_->section, EditorState::Lane::kZero, frequency_hz,
-                  press_bw_hz_ * std::pow(2.0, octaves));
-}
-
-void CascadePlot::mousePressEvent(QMouseEvent* event) {
-  if (event->button() != Qt::LeftButton) return;
-  const auto hit = hitHandle(event->position());
-  if (!hit) {
-    drag_.reset();
-    return;
-  }
-  state_->selectRoot(hit->section, EditorState::Lane::kZero);
-  const auto* zero = resonantOf(state_->section(hit->section).zero);
-  if (zero == nullptr) return;
-  drag_ = hit;
-  press_y_ = event->position().y();
-  press_bw_hz_ = zero->bw_hz;
-  state_->beginUndoGroup();
-  grabMouse();
-}
-
-void CascadePlot::mouseDoubleClickEvent(QMouseEvent* event) {
-  if (event->button() != Qt::LeftButton || hitHandle(event->position())) return;
-  const std::size_t section = state_->selectedSection();
-  if (!state_->sectionEnabled(section)) return;
-  if (state_->rootPresent(section, EditorState::Lane::kZero)) return;
-  const auto* pole = resonantOf(state_->section(section).pole);
-  if (pole == nullptr) return;
-  state_->addZeroAt(frequencyForX(event->position().x(), plotRect()),
-                    pole->bw_hz);
-}
-
-void CascadePlot::mouseMoveEvent(QMouseEvent* event) {
-  if (drag_) {
-    applyPointer(event->position());
-    return;
-  }
-  const auto hit = hitHandle(event->position());
-  setCursor(hit ? Qt::OpenHandCursor : Qt::ArrowCursor);
-  if (!hit) return;
-  const auto* zero = resonantOf(state_->section(hit->section).zero);
-  if (zero == nullptr) return;
-  QToolTip::showText(event->globalPosition().toPoint(),
-                     QStringLiteral("S%1 ZERO  ·  %2 Hz  ·  %3 Hz BW")
-                         .arg(hit->section + 1)
-                         .arg(zero->hz, 0, 'f', 2)
-                         .arg(zero->bw_hz, 0, 'f', 2),
-                     this);
-}
-
-void CascadePlot::mouseReleaseEvent(QMouseEvent* event) {
-  if (!drag_ || event->button() != Qt::LeftButton) return;
-  applyPointer(event->position());
-  state_->endUndoGroup();
-  drag_.reset();
-  releaseMouse();
-  setCursor(Qt::ArrowCursor);
 }
 
 void CascadePlot::paintEvent(QPaintEvent*) {
@@ -279,7 +136,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   painter.setBrush(Qt::NoBrush);
   painter.drawRect(card);
 
-  const QRectF plot = plotRect();
+  const QRectF plot = QRectF(rect()).adjusted(62.0, 14.0, -22.0, -38.0);
 
   const double low_db = kLowDb;
   const double high_db = kHighDb;
@@ -368,21 +225,4 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
   draw_curve(grid_hz_, response_db_, response_pen);
-
-  const bool zero_selected =
-      state_->selectedLane() == EditorState::Lane::kZero;
-  for (const Handle& handle : zeroHandles()) {
-    const bool addressed =
-        handle.section == state_->selectedSection() && zero_selected;
-    const double radius = addressed ? 6.5 : 4.5;
-    painter.setPen(addressed ? QPen(Qt::NoPen) : QPen(kResponse, 1.0));
-    painter.setBrush(addressed ? QBrush(kAddressed) : QBrush(Qt::NoBrush));
-    QPainterPath diamond;
-    diamond.moveTo(handle.position + QPointF{0.0, -radius});
-    diamond.lineTo(handle.position + QPointF{radius, 0.0});
-    diamond.lineTo(handle.position + QPointF{0.0, radius});
-    diamond.lineTo(handle.position + QPointF{-radius, 0.0});
-    diamond.closeSubpath();
-    painter.drawPath(diamond);
-  }
 }
