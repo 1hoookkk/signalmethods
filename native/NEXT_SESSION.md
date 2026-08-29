@@ -1,7 +1,7 @@
 # NEXT SESSION — workstation (written 2026-08-29, end of the recovery session)
 
 Branch `face/ship-candidate-fx`. Everything below assumes the committed state
-through `764c006` (workstation) and `5762791` (tools). Launcher:
+through `30315f5`. Launcher:
 `TRENCH Workstation.bat` at repo root (points at
 `out\build\app\native\app\trench_native.exe`); build: `TRENCH Build App.bat`
 or `cmake --preset app && cmake --build --preset app`; tests:
@@ -96,11 +96,48 @@ same index). Commit native work with explicit pathspecs only:
   hardware does it. Graph and ears run packed_interior_corner (8818bb0 was
   reverted the same evening). Measured: word-lerp vs exact k-linear differs
   by <= 0.033 octave in frequency and <= 5% in bandwidth, exact at morph
-  0.5. native::blend (2019 law) stays in core, unused by the display. This
-  supersedes the 2026-08-23 "Rossum 2019" ruling for the shipped bank.
+  0.5 - so the word-lerp is NOT exact k-linear interpolation; it is the
+  plugin's law and the display previews the plugin. UNPROVEN: that the P2K
+  hardware itself interpolated the raw 16-bit word integers (vs an internal
+  k representation) - Rossum's paper establishes encoded-space interpolation,
+  not the integer arithmetic; the plugin's behaviour is what we ship.
+  native::blend_roots_log_2019 (renamed) stays in core for interior_audit
+  only. This supersedes the 2026-08-23 "Rossum 2019" ruling for the shipped
+  bank.
+- Audition movement is now encoded-domain per sample (core CascadeRunner):
+  the ARMAdillo encoding of the device-rate cascade (ln of the five decoded
+  word values per section) ramps linearly over kApproachSamples = 256 and is
+  decoded every sample; block-size independent. The approach length is a
+  provisional constant - the host-side approach time of US 5,170,369 lives
+  in p2k226.dli and is still undecompiled.
+- S6 zero depth is a proven P2K bank convention (all 132 corners carry rsq
+  word 0x01F0; Morpheus does not) and the editor now locks the S6 zero's
+  bandwidth to the trench depth, so author == export for S6.
 - Frame lie still open: a curve past +-30 dB is pinned to the frame edge
   (a pole at Nyquist / 4 Hz is really +150 dB). Fix: clip instead of clamp
   and print the true peak in the plot corner and the strip minis.
+
+## Open decisions for Tyson (explained in the 08-29 wrap; nothing built until ruled)
+1. Lattice: export snaps words to E-mu's 271-entry authoring lattice (250 Hz
+   -> 233.7 Hz). The chip decodes any 16-bit word. Full-resolution words
+   would make authored ~= shipped to ~0.05% at zero format cost; hardware
+   parity of the *interpolation* is unaffected. Yes/no.
+2. Neutral C for CHARACTER/EXAGGERATE in k-space: (a) bound pairs collapsed
+   and free widths at their log-mean, or (b) identity. Needs an ear.
+3. Calibration's destination: designer-only measurement/report (recommended
+   while the plugin's law is fixed), or a per-preset control curve the
+   plugin must honour.
+
+## Not started (stopped at wrap)
+- The authentic (k1, k2) ARMAdillo view as a third projection, with the
+  boundary + 0..1 trajectory sweep tests: spec written at
+  scratchpad/spec_k1k2_view.md of session 50f8663f (copy below in the
+  next-session prompt). Executor was stopped before it produced anything.
+- REDUCE panel (ANALYZE's ablation scores + FREE/BOUND tags), CHARACTER /
+  EXAGGERATE in k-space, CALIBRATE bisection, MAP - in that order, each
+  behind its decision above.
+- `native/core.zip` appeared untracked in the tree at wrap (not this
+  session's file); leave it for its owner.
 
 ## Measured contract facts (report, not fixed — Tyson's call)
 - Lattice quantisation of the core exporter: an authored 250 Hz / 250 Hz pole
@@ -120,7 +157,7 @@ same index). Commit native work with explicit pathspecs only:
 
 ## Evidence classes produced
 - Build: fresh `cmake --preset app` configure + build, then incremental.
-- Tests: 28 CTest cases under `native.*`, all passing headless;
+- Tests: 31 CTest cases under `native.*`, all passing headless;
   the two audible cases pass live with `TRENCH_AUDIBLE=1` and skip otherwise.
 - Packed parity: graph vs export re-import 0 dB delta over 3 rates x 8
   positions x 240 grid points; exported words legal (`p2k::is_legal`,
