@@ -2,6 +2,7 @@
 
 #include "editor_state.hpp"
 
+#include <cmath>
 #include <variant>
 #include <vector>
 
@@ -91,4 +92,34 @@ TRENCH_TEST(reset_is_a_blank_document_and_undoable) {
   state.undo();
   CHECK(state.document() == authored);
   CHECK(state.rootPresent(1, Lane::kZero));
+}
+
+TRENCH_TEST(zero_habits_add_a_skirt_and_level_trims) {
+  EditorState state;
+  state.loadPoles({{250.0, 90.0}, {1'000.0, 50.0}, {2'400.0, 400.0}, {4'000.0, 100.0}});
+  const auto habits = state.applyZeroHabits();
+  CHECK(habits.skirts == 1);
+  CHECK(habits.trims == 2);
+  CHECK(state.rootPresent(0, Lane::kZero));
+  const auto& skirt = std::get<Resonant>(state.section(0).zero);
+  CHECK_NEAR(skirt.hz, 250.0 / std::exp2(0.46), 1e-9);
+  CHECK(skirt.bw_hz == 90.0);
+  CHECK(state.rootPresent(1, Lane::kZero));
+  const auto& trim = std::get<Resonant>(state.section(1).zero);
+  CHECK(trim.hz == 1'000.0);
+  CHECK_NEAR(trim.bw_hz, 50.0 * 20.0 / 2.0, 1e-9);
+  CHECK(!state.rootPresent(2, Lane::kZero));
+  CHECK(state.rootPresent(3, Lane::kZero));
+  CHECK_NEAR(std::get<Resonant>(state.section(3).zero).bw_hz, 100.0 * 40.0 / 2.0, 1e-9);
+  const auto again = state.applyZeroHabits();
+  CHECK(again.skirts == 0 && again.trims == 0);
+  state.undo();
+  for (std::size_t index = 0; index < 4; ++index) CHECK(!state.rootPresent(index, Lane::kZero));
+
+  EditorState trench;
+  trench.loadPoles({{1'000.0, 200.0}, {1'500.0, 200.0}, {2'000.0, 200.0},
+                    {3'000.0, 200.0}, {4'000.0, 200.0}, {220.0, 20.0}});
+  const auto sixth = trench.applyZeroHabits();
+  CHECK(sixth.skirts == 0 && sixth.trims == 0);
+  CHECK(!trench.rootPresent(5, Lane::kZero));
 }

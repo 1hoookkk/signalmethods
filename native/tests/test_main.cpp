@@ -44,11 +44,13 @@ int main(int argc, char** argv) {
       return 2;
     }
     const QString folder = QString::fromLocal8Bit(argv[2]);
+    const bool with_zeros = argc > 3 && std::string(argv[3]) == "--zeros";
     QDir().mkpath(folder);
     int written = 0;
     for (const auto& entry : trench::app::kTemplateShelf) {
       EditorState state;
       state.loadTemplate(entry);
+      if (with_zeros) state.applyZeroHabits();
       auto document = state.document();
       for (std::size_t corner = 1; corner < trench::core::native::kCorners; ++corner) {
         document.corners[corner] = document.corners[0];

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
@@ -18,6 +19,10 @@ constexpr double kHiddenRootBandwidthHz = 1.0e9;
 constexpr Resonant kHiddenRoot{EditorState::kNyquistHz, kHiddenRootBandwidthHz};
 constexpr double kPivotCeilingHz = 15'000.0;
 constexpr Resonant kFreshPole{1'000.0, 100.0};
+constexpr double kSeatCeilingHz = 700.0;
+constexpr double kSkirtOctaves = 0.46;
+constexpr double kTrimQ = 10.0;
+constexpr double kTrimPeak = 2.0;
 constexpr double kInf = std::numeric_limits<double>::infinity();
 
 Roots absentRoot() { return RealRoots{kInf, kInf}; }
@@ -280,6 +285,46 @@ void EditorState::toggleSection(std::size_t index) {
   }
   commit();
   emit selectionChanged(selected_section_);
+}
+
+EditorState::ZeroHabits EditorState::applyZeroHabits() {
+  ZeroHabits habits;
+  auto& state = editing();
+  std::optional<std::size_t> seat;
+  for (std::size_t index = 0; index + 1 < trench::core::native::kSections; ++index) {
+    if (!state.enabled[index] || state.zero_present[index]) continue;
+    const Resonant& pole = resonant(state.corner.sections[index].pole);
+    if (pole.hz >= kSeatCeilingHz) continue;
+    if (!seat || pole.hz < resonant(state.corner.sections[*seat].pole).hz) seat = index;
+  }
+  bool changed = false;
+  for (std::size_t index = 0; index + 1 < trench::core::native::kSections; ++index) {
+    if (!state.enabled[index] || state.zero_present[index]) continue;
+    const Resonant pole = resonant(state.corner.sections[index].pole);
+    if (seat && index == *seat) {
+      if (!changed) remember();
+      changed = true;
+      state.corner.sections[index].zero =
+          Resonant{std::clamp(pole.hz / std::exp2(kSkirtOctaves), kLowHz, kNyquistHz),
+                   std::clamp(pole.bw_hz, kMinBandwidthHz, kMaxBandwidthHz)};
+      state.zero_present[index] = true;
+      ++habits.skirts;
+      continue;
+    }
+    const double q = pole.hz / pole.bw_hz;
+    if (q < kTrimQ) continue;
+    if (!changed) remember();
+    changed = true;
+    state.corner.sections[index].zero =
+        Resonant{pole.hz, std::clamp(pole.bw_hz * q / kTrimPeak, kMinBandwidthHz, kMaxBandwidthHz)};
+    state.zero_present[index] = true;
+    ++habits.trims;
+  }
+  if (changed) {
+    commit();
+    emit selectionChanged(selected_section_);
+  }
+  return habits;
 }
 
 void EditorState::addZeroAt(double hz, double bw_hz) {

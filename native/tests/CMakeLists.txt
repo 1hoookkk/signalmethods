@@ -36,6 +36,7 @@ set(TRENCH_NATIVE_TEST_CASES
   s6_zero_export_law_is_the_existing_one
   undo_restores_each_edit_and_groups_a_drag
   window_smoke_at_minimum_and_normal_size
+  zero_habits_add_a_skirt_and_level_trims
   zplane_circle_and_labels_fit_compact_pane
   zplane_drag_is_bounded_and_mirrors
   zplane_frequency_bandwidth_roundtrip

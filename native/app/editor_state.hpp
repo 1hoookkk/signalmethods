@@ -79,6 +79,11 @@ class EditorState final : public QObject {
   void setEditingCorner(std::size_t index);
   void setPadPosition(double morph01, double q01);
   void toggleSection(std::size_t index);
+  struct ZeroHabits {
+    std::size_t skirts{};
+    std::size_t trims{};
+  };
+  ZeroHabits applyZeroHabits();
   void addZeroAt(double hz, double bw_hz);
   void removeZero();
   void loadTemplate(const trench::app::TemplateEntry& entry);

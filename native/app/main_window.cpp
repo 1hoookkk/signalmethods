@@ -160,6 +160,8 @@ MainWindow::MainWindow(QWidget* parent)
   analyze_button_ = new QPushButton(QStringLiteral("ANALYZE"), central);
   analyze_button_->setObjectName(QStringLiteral("analyze"));
   sections_button_ = new QPushButton(QStringLiteral("SECTIONS"), central);
+  auto* zeros = new QPushButton(QStringLiteral("ZEROS"), central);
+  zeros->setObjectName(QStringLiteral("zeroHabits"));
   auto* projection = new QPushButton(QStringLiteral("F×BW"), central);
   projection->setObjectName(QStringLiteral("projectionSwitch"));
   projection->setCheckable(true);
@@ -206,6 +208,7 @@ MainWindow::MainWindow(QWidget* parent)
   export_body->setFont(captionFont(export_body));
   analyze_button_->setFont(captionFont(analyze_button_));
   sections_button_->setFont(captionFont(sections_button_));
+  zeros->setFont(captionFont(zeros));
   projection->setFont(captionFont(projection));
   audition_button_->setFont(captionFont(audition_button_));
   tilt_button_->setFont(captionFont(tilt_button_));
@@ -213,7 +216,7 @@ MainWindow::MainWindow(QWidget* parent)
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
   reference_label_->setFont(valueFont(reference_label_));
   for (QWidget* chrome : std::initializer_list<QWidget*>{
-           load, reset, save, export_body, analyze_button_, sections_button_,
+           load, reset, save, export_body, analyze_button_, sections_button_, zeros,
            projection, tilt_button_, keep, template_shelf_, overlay_shelf_,
            audition_button_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
@@ -233,6 +236,7 @@ MainWindow::MainWindow(QWidget* parent)
   actions->addWidget(projection);
   actions->addWidget(sections_button_);
   actions->addWidget(analyze_button_);
+  actions->addWidget(zeros);
   actions->addStretch(1);
   actions->addWidget(export_body);
   actions->addWidget(save);
@@ -362,6 +366,7 @@ MainWindow::MainWindow(QWidget* parent)
 
   connect(load, &QPushButton::clicked, this, &MainWindow::openFile);
   connect(reset, &QPushButton::clicked, this, &MainWindow::resetDocument);
+  connect(zeros, &QPushButton::clicked, this, &MainWindow::applyZeroHabits);
   auto* undo = new QShortcut(QKeySequence::Undo, this);
   connect(undo, &QShortcut::activated, this, [this] { state_.undo(); });
   auto* redo = new QShortcut(QKeySequence::Redo, this);
@@ -601,6 +606,15 @@ void MainWindow::resetDocument() {
   document_path_.clear();
   setWindowTitle(QStringLiteral("TRENCH · 6 × 2P2Z"));
   status_label_->setText(QStringLiteral("RESET · SIX SECTIONS OFF"));
+}
+
+void MainWindow::applyZeroHabits() {
+  const auto habits = state_.applyZeroHabits();
+  status_label_->setText(habits.skirts + habits.trims == 0
+                             ? QStringLiteral("ZEROS · NOTHING TO ADD")
+                             : QStringLiteral("ZEROS · %1 SKIRT · %2 TRIMS")
+                                   .arg(habits.skirts)
+                                   .arg(habits.trims));
 }
 
 void MainWindow::exportBody240() {
