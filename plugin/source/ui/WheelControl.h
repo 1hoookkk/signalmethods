@@ -183,12 +183,7 @@ public:
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         juce::Graphics::ScopedSaveState slotClip (g);
-        {
-            const auto slot = wheelRect.reduced (4.7f, 5.0f);
-            juce::Path opening;
-            opening.addRoundedRectangle (slot, slot.getHeight() * 0.22f);
-            g.reduceClipRegion (opening);
-        }
+        g.reduceClipRegion (wheelRect.reduced (4.7f, 0.0f).toNearestInt());
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
         const int pw = juce::jmax (1, juce::roundToInt (frameRect.getWidth()  * pixelScale));
