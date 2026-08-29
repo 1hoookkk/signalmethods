@@ -66,8 +66,8 @@ public:
         layout.params["wellRadius"]        = 9.0;
         layout.params["readoutAliasScale"] = 0.95;
         layout.params["typeArrowExtra"]    = 6.0;
-        layout.params["curveDbTop"]        = 48.0;
-        layout.params["curveDbBottom"]     = -48.0;
+        layout.params["curveDbTop"]        = 40.0;
+        layout.params["curveDbBottom"]     = -40.0;
         layout.params["fontBold"]          = 1.0;
         layout.strings["fontFamily"] = "Arial";
         layout.strings["fontFamilyEmphasis"] = "Arial";

@@ -81,8 +81,8 @@ public:
         rawXs.reserve (bins);
         for (int b = 0; b < bins; ++b)
         {
-            double powerSum = 0.0;
-            int have = 0;
+            double peakDb = 0.0;
+            bool have = false;
             for (int k = 0; k < kOversample; ++k)
             {
                 const int i = b * kOversample + k;
@@ -106,15 +106,19 @@ public:
 
                 if (std::isnan (power))
                     continue;
-                powerSum += (double) power;
-                ++have;
+                const double db = 10.0 * std::log10 ((double) power);
+                if (! have || std::abs (peakDb) < std::abs (db))
+                {
+                    peakDb = db;
+                    have = true;
+                }
             }
-            if (have == 0)
+            if (! have)
                 continue;
-            const double db = 10.0 * std::log10 (powerSum / (double) have);
+            const double db = peakDb;
             const double frac = (double) b / (double) (bins - 1);
 
-            const double yt = juce::jlimit (0.0, 1.0, (dbTop - db) / (dbTop - dbBot));
+            const double yt = juce::jlimit (-0.25, 1.25, (dbTop - db) / (dbTop - dbBot));
 
             const float xRaw = plot.getX() + (float) frac * plot.getWidth();
             const float x = std::floor (xRaw) + 0.5f;
@@ -324,27 +328,6 @@ private:
         g.setOpacity (1.0f);
         strokeTrace (g, responsePath, phos);
 
-        {
-            const double dbTop = t.curveDbTop(), dbBot = t.curveDbBottom();
-            const int N = (int) traceDbs.size(), win = juce::jmax (3, N / 40);
-            g.setColour (phos);
-            for (int i = win; i < N - win; ++i)
-            {
-                const float v = traceDbs[(size_t) i];
-                bool peak = true;
-                float floor = v;
-                for (int k = i - win; k <= i + win && peak; ++k)
-                {
-                    if (k != i && traceDbs[(size_t) k] >= v) peak = false;
-                    floor = juce::jmin (floor, traceDbs[(size_t) k]);
-                }
-                if (! peak || v - floor < 2.5f) continue;
-                const float yt = (float) juce::jlimit (0.0, 1.0, (dbTop - v) / (dbTop - dbBot));
-                const float x = traceXs[(size_t) i], y = plot.getY() + yt * plot.getHeight();
-                g.drawLine (x - 3.0f, y, x + 3.0f, y, 1.0f);
-                g.drawLine (x, y - 3.0f, x, y + 3.0f, 1.0f);
-            }
-        }
     }
     void drawSeedPulseTrace (juce::Graphics& g) const
     {
