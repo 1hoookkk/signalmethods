@@ -150,10 +150,6 @@ std::vector<ShelfGroup> buildShelf() {
   appendFitted(objects.entries, "OBJECTS");
   groups.push_back(std::move(objects));
 
-  ShelfGroup hrtf{QStringLiteral("HRTF"), {}};
-  appendFitted(hrtf.entries, "HRTF");
-  groups.push_back(std::move(hrtf));
-
   ShelfGroup modal{QStringLiteral("MODAL"), {}};
   for (const QString& name :
        {QStringLiteral("MARIMBA"), QStringLiteral("VIBRAPHONE"), QStringLiteral("AGOGO"),

@@ -326,24 +326,72 @@ def load_tfs():
     return out
 
 
-def load_hrtf():
+HEAD_CORNERS = (
+    ("M0Q0", 0.0, -40.0),
+    ("M100Q0", 0.0, 40.0),
+    ("M0Q100", 60.0, -40.0),
+    ("M100Q100", 60.0, 40.0),
+)
+
+OUT_CUBE = os.path.join(REPO, "recipes", "cubes", "kemar_head.trenchbody")
+
+
+def root_json(root):
+    return {"hz": round(float(root[0]), 2), "bw_hz": round(float(root[1]), 2)}
+
+
+def head_curves():
     out = []
     with h5py.File(SOFA, "r") as handle:
         ir = handle["Data.IR"]
         pos = handle["SourcePosition"][:]
         fs = float(handle["Data.SamplingRate"][0])
-        az = np.minimum(np.abs(pos[:, 0]), np.abs(360.0 - pos[:, 0]))
-        candidates = np.where(az < 1e-6)[0]
         freqs = np.fft.rfftfreq(8192, 1.0 / fs)
-        for el in (-60, -40, -20, 0, 20, 40, 60):
-            row = candidates[np.argmin(np.abs(pos[candidates, 1] - el))]
-            h = np.array(ir[row, 0, :], float)
+        for label, az_target, el_target in HEAD_CORNERS:
+            best = 0
+            best_dist = None
+            for i in range(len(pos)):
+                daz = abs(((pos[i, 0] - az_target) + 180.0) % 360.0 - 180.0)
+                dist = daz + abs(pos[i, 1] - el_target)
+                if best_dist is None or dist < best_dist:
+                    best_dist = dist
+                    best = i
+            h = np.array(ir[best, 0, :], float)
             mag = np.abs(np.fft.rfft(h, 8192))
             db = 20.0 * np.log10(np.maximum(mag, 1e-12))
             curve = smooth_octave(to_grid(freqs, db), 1.0 / 6.0)
-            label = "KEMAR el %+d" % el if el != 0 else "KEMAR el 0"
-            out.append(("HRTF", label, curve))
+            out.append((label, float(pos[best, 0]), float(pos[best, 1]), curve))
     return out
+
+
+def write_head_cube():
+    corners = []
+    for label, az, el, target in head_curves():
+        poles, zeros, used, err, bell_err, shelf_err = fit_target(target)
+        print("HEAD       %-10s az %.1f el %.1f  bells %d  rms %.2f dB" % (
+            label, az, el, used, err))
+        sections = []
+        for slot in range(6):
+            pole = poles[slot]
+            zero = zeros[slot]
+            section = {
+                "enabled": bool(pole[2]),
+                "pole": root_json(pole),
+                "zero": root_json(zero),
+            }
+            section["zero"]["present"] = bool(pole[2] and zero[2])
+            sections.append(section)
+        corners.append({"gain_db": 0.0, "sections": sections})
+    document = {
+        "format": "trenchbody",
+        "version": 1,
+        "editing_corner": 0,
+        "morph": 0.0,
+        "q": 0.0,
+        "corners": corners,
+    }
+    with open(OUT_CUBE, "w") as handle:
+        handle.write(json.dumps(document, indent=4) + "\n")
 
 
 def fmt(pole):
@@ -351,7 +399,7 @@ def fmt(pole):
 
 
 def main():
-    entries = load_mouths() + load_tfs() + load_hrtf()
+    entries = load_mouths() + load_tfs()
     rows = []
     lines = []
     for group, name, target in entries:
@@ -385,6 +433,8 @@ def main():
     text += "\n}};\n\n}\n"
     with open(OUT_HPP, "w") as handle:
         handle.write(text)
+
+    write_head_cube()
 
 
 main()

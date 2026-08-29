@@ -1,0 +1,317 @@
+{
+    "format": "trenchbody",
+    "version": 1,
+    "editing_corner": 0,
+    "morph": 0.0,
+    "q": 0.0,
+    "corners": [
+        {
+            "gain_db": 0.0,
+            "sections": [
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 13244.05,
+                        "bw_hz": 6622.03
+                    },
+                    "zero": {
+                        "hz": 346.52,
+                        "bw_hz": 173.26,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 138.49,
+                        "bw_hz": 205.02
+                    },
+                    "zero": {
+                        "hz": 155.45,
+                        "bw_hz": 239.9,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 3726.47,
+                        "bw_hz": 1202.32
+                    },
+                    "zero": {
+                        "hz": 3319.91,
+                        "bw_hz": 4362.29,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 7240.77,
+                        "bw_hz": 2342.84
+                    },
+                    "zero": {
+                        "hz": 7240.77,
+                        "bw_hz": 4965.81,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": false,
+                    "pole": {
+                        "hz": 22050.0,
+                        "bw_hz": 1000000000.0
+                    },
+                    "zero": {
+                        "hz": 22050.0,
+                        "bw_hz": 1000000000.0,
+                        "present": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 400.0,
+                        "bw_hz": 200.0
+                    },
+                    "zero": {
+                        "hz": 20000.0,
+                        "bw_hz": 0.03,
+                        "present": true
+                    }
+                }
+            ]
+        },
+        {
+            "gain_db": 0.0,
+            "sections": [
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 9074.5,
+                        "bw_hz": 4537.25
+                    },
+                    "zero": {
+                        "hz": 346.52,
+                        "bw_hz": 173.26,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 310.89,
+                        "bw_hz": 226.67
+                    },
+                    "zero": {
+                        "hz": 359.19,
+                        "bw_hz": 196.14,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 5270.03,
+                        "bw_hz": 2384.57
+                    },
+                    "zero": {
+                        "hz": 5747.01,
+                        "bw_hz": 13995.2,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 7671.33,
+                        "bw_hz": 2560.55
+                    },
+                    "zero": {
+                        "hz": 8610.78,
+                        "bw_hz": 5743.15,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": false,
+                    "pole": {
+                        "hz": 22050.0,
+                        "bw_hz": 1000000000.0
+                    },
+                    "zero": {
+                        "hz": 22050.0,
+                        "bw_hz": 1000000000.0,
+                        "present": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 400.0,
+                        "bw_hz": 200.0
+                    },
+                    "zero": {
+                        "hz": 20000.0,
+                        "bw_hz": 0.03,
+                        "present": true
+                    }
+                }
+            ]
+        },
+        {
+            "gain_db": 0.0,
+            "sections": [
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 13244.05,
+                        "bw_hz": 6622.03
+                    },
+                    "zero": {
+                        "hz": 281.07,
+                        "bw_hz": 140.54,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 269.09,
+                        "bw_hz": 203.03
+                    },
+                    "zero": {
+                        "hz": 348.96,
+                        "bw_hz": 172.59,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 4561.4,
+                        "bw_hz": 1377.01
+                    },
+                    "zero": {
+                        "hz": 4063.75,
+                        "bw_hz": 5043.57,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 8365.65,
+                        "bw_hz": 1489.75
+                    },
+                    "zero": {
+                        "hz": 8049.63,
+                        "bw_hz": 4518.45,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": false,
+                    "pole": {
+                        "hz": 22050.0,
+                        "bw_hz": 1000000000.0
+                    },
+                    "zero": {
+                        "hz": 22050.0,
+                        "bw_hz": 1000000000.0,
+                        "present": false
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 400.0,
+                        "bw_hz": 200.0
+                    },
+                    "zero": {
+                        "hz": 20000.0,
+                        "bw_hz": 0.03,
+                        "present": true
+                    }
+                }
+            ]
+        },
+        {
+            "gain_db": 0.0,
+            "sections": [
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 10962.81,
+                        "bw_hz": 5481.4
+                    },
+                    "zero": {
+                        "hz": 281.07,
+                        "bw_hz": 140.54,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 261.43,
+                        "bw_hz": 177.46
+                    },
+                    "zero": {
+                        "hz": 373.29,
+                        "bw_hz": 117.88,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 829.98,
+                        "bw_hz": 920.64
+                    },
+                    "zero": {
+                        "hz": 798.62,
+                        "bw_hz": 551.47,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 4305.39,
+                        "bw_hz": 2614.51
+                    },
+                    "zero": {
+                        "hz": 3835.67,
+                        "bw_hz": 6264.45,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 7896.12,
+                        "bw_hz": 3121.95
+                    },
+                    "zero": {
+                        "hz": 8863.09,
+                        "bw_hz": 8376.4,
+                        "present": true
+                    }
+                },
+                {
+                    "enabled": true,
+                    "pole": {
+                        "hz": 400.0,
+                        "bw_hz": 200.0
+                    },
+                    "zero": {
+                        "hz": 20000.0,
+                        "bw_hz": 0.03,
+                        "present": true
+                    }
+                }
+            ]
+        }
+    ]
+}
