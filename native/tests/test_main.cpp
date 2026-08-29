@@ -1,6 +1,12 @@
 #include "harness.hpp"
 
+#include "body_io.hpp"
+#include "editor_state.hpp"
+#include "template_shelf.hpp"
+
 #include <QApplication>
+#include <QDir>
+#include <QString>
 
 #include <algorithm>
 #include <cstdio>
@@ -30,6 +36,37 @@ int main(int argc, char** argv) {
   const std::string command = argv[1];
   if (command == "--list") {
     for (const auto& item : cases) std::printf("%s\n", item.name);
+    return 0;
+  }
+  if (command == "--bake-shelf") {
+    if (argc < 3) {
+      std::fprintf(stderr, "usage: trench_native_tests --bake-shelf <directory>\n");
+      return 2;
+    }
+    const QString folder = QString::fromLocal8Bit(argv[2]);
+    QDir().mkpath(folder);
+    int written = 0;
+    for (const auto& entry : trench::app::kTemplateShelf) {
+      EditorState state;
+      state.loadTemplate(entry);
+      auto document = state.document();
+      for (std::size_t corner = 1; corner < trench::core::native::kCorners; ++corner) {
+        document.corners[corner] = document.corners[0];
+      }
+      state.setDocument(document);
+      QString stem;
+      for (const QChar letter : QString::fromUtf8(entry.name).toLower()) {
+        stem.append(letter.isLetterOrNumber() ? letter : QChar('_'));
+      }
+      const QString path = folder + QStringLiteral("/") + stem + QStringLiteral(".body240");
+      const QString refusal = trench::app::saveBody240(state, path);
+      std::size_t poles = 0;
+      for (const auto& pole : entry.poles) poles += pole.present ? 1 : 0;
+      std::printf("%-22s %zu poles  %s\n", entry.name, poles,
+                  refusal.isEmpty() ? path.toUtf8().constData() : refusal.toUtf8().constData());
+      written += refusal.isEmpty() ? 1 : 0;
+    }
+    std::printf("%d bodies written\n", written);
     return 0;
   }
   if (command == "--registry") {
