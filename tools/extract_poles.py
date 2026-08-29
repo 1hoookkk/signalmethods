@@ -1,12 +1,14 @@
-"""One-button all-pole caricature: WAV in, six (f, B) stages out.
+"""One-button all-pole caricature: WAV in, up to six (f, B) stages out.
 
-    python tools/extract_poles.py sound.wav [--out-dir DIR] [--mode stages|lpc]
+    python tools/extract_poles.py sound.wav [--out-dir DIR] [--mode peaks|bands|lpc]
                                             [--pairs N] [--orders 4,6,8,10,12] [--all]
 
-stages (default): the energy-weighted peak-hold envelope is split into the six
-acoustic bands (sub / warmth / vowel-horn / presence / sizzle / air); each
-band contributes its dominant peak as centre frequency + bandwidth, in stage
-order S1..S6 (the workstation's ordered sections).
+peaks (default): the six most dominant distinct peaks of the energy-weighted
+peak-hold envelope (at least a quarter octave apart, within 40 dB of the
+loudest), sorted ascending into S1..S6 and labelled with the acoustic band
+they fell in (sub / warmth / vowel-horn / presence / sizzle / air).
+
+bands: one dominant peak per acoustic band, always six stages in band order.
 
 lpc: several candidate regions (attack, peak, post-attack, sustained,
 multi-frame average) x several Burg orders x three analysis rates are fitted,
@@ -27,11 +29,13 @@ FRAME = 4096
 HOP = 1024
 PAIR_PENALTY_DB = 0.12
 PRUNE_DB = 0.5
-MIN_SMOOTH_HZ = 80.0
+MIN_SMOOTH_HZ = 25.0
 ABSENT_BELOW_DB = 40.0
+MIN_STAGE_OCTAVES = 0.25
+ENVELOPE_FRAME = 16384
 
 BANDS = [
-    (50.0, 250.0, 10.0, 40.0, 'sub weight / chest thump'),
+    (20.0, 250.0, 10.0, 40.0, 'sub weight / chest thump'),
     (300.0, 800.0, 50.0, 120.0, 'warmth / throat / box resonance'),
     (900.0, 2200.0, 80.0, 200.0, 'vowel clarity / horn bite'),
     (2500.0, 4500.0, 150.0, 350.0, 'attack presence / metallic edge'),
@@ -64,6 +68,9 @@ def load_mono(path):
         if ch > 1:
             x = x.reshape(-1, ch).mean(axis=1)
     x = x - x.mean()
+    if len(x) > 64:
+        from scipy.signal import butter, sosfiltfilt
+        x = sosfiltfilt(butter(2, MIN_HZ, 'highpass', fs=rate, output='sos'), x)
     peak = np.max(np.abs(x)) if len(x) else 0.0
     if peak > 0:
         x = x / peak * 0.9
@@ -143,14 +150,15 @@ def envelope(x, rate, grid, frame=FRAME, hop=HOP):
     power = acc / weight
     bins = np.fft.rfftfreq(frame, 1.0 / rate)
     out = np.empty(len(grid))
+    source = np.zeros(len(grid), dtype=int)
     for k, f in enumerate(grid):
         half = max(f * (2 ** (1 / 6) - 1), MIN_SMOOTH_HZ)
-        sel = (bins >= f - half) & (bins <= f + half)
-        if not np.any(sel):
-            idx = min(len(bins) - 1, int(round(f / rate * frame)))
-            sel = np.zeros(len(bins), bool); sel[idx] = True
-        out[k] = 10.0 * math.log10(np.max(power[sel]) + 1e-20)
-    return out, power, bins
+        sel = np.where((bins >= f - half) & (bins <= f + half))[0]
+        if len(sel) == 0:
+            sel = np.array([min(len(bins) - 1, int(round(f / rate * frame)))])
+        source[k] = int(sel[np.argmax(power[sel])])
+        out[k] = 10.0 * math.log10(power[source[k]] + 1e-20)
+    return out, power, bins, source
 
 
 def all_pole_db(a, rate, grid):
@@ -330,55 +338,126 @@ def nearest_lpc_bandwidth(f0, scored, max_octaves=0.4):
     return None if best is None else best[1]
 
 
-def stage_caricature(grid, target, power, bins, rate, scored=()):
+def role_of(hz, rate):
+    edges = band_edges(rate)
+    for k in range(len(BANDS)):
+        if edges[k] <= hz <= edges[k + 1]:
+            return k
+    return len(BANDS) - 1 if hz > edges[-1] else 0
+
+
+def refine_bin(j, power, bins, lo, hi):
+    f0 = float(bins[j])
+    if 0 < j < len(power) - 1:
+        ya, yb, yc = (math.log(power[j - 1] + 1e-20), math.log(power[j] + 1e-20),
+                      math.log(power[j + 1] + 1e-20))
+        den = ya - 2 * yb + yc
+        shift = 0.5 * (ya - yc) / den if abs(den) > 1e-12 else 0.0
+        f0 = float(np.clip(bins[j] + shift * (bins[1] - bins[0]), lo, hi))
+    return f0
+
+
+def measure_peak(j, lo, hi, grid, target, power, bins, rate, scored, bw_lo, bw_hi):
+    f0 = refine_bin(j, power, bins, lo, hi)
+    g = int(np.argmin(np.abs(grid - f0)))
+    top = float(target[g])
+    left = g
+    while left > 0 and grid[left - 1] >= lo and target[left - 1] >= top - 3.0:
+        left -= 1
+    right = g
+    while right < len(grid) - 1 and grid[right + 1] <= hi and target[right + 1] >= top - 3.0:
+        right += 1
+    left_w = grid[g] - grid[left]; right_w = grid[right] - grid[g]
+    hit_left = left == g or grid[left] <= lo * 1.0001
+    hit_right = right == g or grid[right] >= hi * 0.9999
+    if hit_left and not hit_right:
+        raw = 2.0 * right_w
+    elif hit_right and not hit_left:
+        raw = 2.0 * left_w
+    else:
+        raw = left_w + right_w
+    half = max(f0 * (2 ** (1 / 6) - 1), MIN_SMOOTH_HZ)
+    envelope_bw = max(raw - 2.0 * half, bw_lo) if raw > 0 else bw_lo
+    lpc_bw = nearest_lpc_bandwidth(f0, scored)
+    bw = float(np.clip(envelope_bw if lpc_bw is None else lpc_bw, bw_lo * 0.5, bw_hi * 2.0))
+    return f0, bw, float(raw), 'envelope' if lpc_bw is None else 'lpc'
+
+
+def stage_caricature(grid, target, power, bins, rate, source, scored=()):
     edges = band_edges(rate)
     ceiling = float(np.max(target))
     stages = []
     for k, (band_lo, band_hi, bw_lo, bw_hi, role) in enumerate(BANDS):
         lo, hi = edges[k], edges[k + 1]
         inside = np.where((grid >= lo) & (grid <= hi))[0]
-        if len(inside) == 0:
+        owned = sorted({int(source[i]) for i in inside if lo <= bins[source[i]] <= hi},
+                       key=lambda j: -power[j])
+        previous = stages[-1]['freq_hz'] if stages else None
+
+        def far(j):
+            return previous is None or abs(math.log2(bins[j] / previous)) > MIN_STAGE_OCTAVES
+
+        distinct = [j for j in owned if far(j)]
+        if not distinct:
+            fallback = [int(j) for j in np.where((bins >= lo) & (bins <= hi))[0] if far(j)]
+            distinct = sorted(fallback, key=lambda j: -power[j])
+        if not distinct:
             stages.append({'stage': k + 1, 'freq_hz': math.sqrt(band_lo * band_hi), 'bandwidth_hz': bw_hi,
-                           'raw_width_hz': 0.0, 'level_db': -120.0, 'present': False, 'role': role})
+                           'raw_width_hz': 0.0, 'bandwidth_source': 'none', 'level_db': -120.0,
+                           'present': False, 'role': role})
             continue
-        g = int(inside[np.argmax(target[inside])])
-        level = float(target[g])
-        f0 = float(grid[g])
-        half = max(f0 * (2 ** (1 / 6) - 1), MIN_SMOOTH_HZ)
-        sel = np.where((bins >= max(lo, f0 - half)) & (bins <= min(hi, f0 + half)))[0]
-        if len(sel):
-            j = int(sel[np.argmax(power[sel])])
-            if 0 < j < len(power) - 1:
-                ya, yb, yc = (math.log(power[j - 1] + 1e-20), math.log(power[j] + 1e-20),
-                              math.log(power[j + 1] + 1e-20))
-                den = ya - 2 * yb + yc
-                shift = 0.5 * (ya - yc) / den if abs(den) > 1e-12 else 0.0
-                f0 = float(np.clip(bins[j] + shift * (bins[1] - bins[0]), lo, hi))
-            else:
-                f0 = float(bins[j])
-        left = g
-        while left > 0 and grid[left - 1] >= lo and target[left - 1] >= level - 3.0:
-            left -= 1
-        right = g
-        while right < len(grid) - 1 and grid[right + 1] <= hi and target[right + 1] >= level - 3.0:
-            right += 1
-        left_w = grid[g] - grid[left]; right_w = grid[right] - grid[g]
-        hit_left = left == 0 or grid[left] <= lo * 1.0001 or left == g
-        hit_right = right == len(grid) - 1 or grid[right] >= hi * 0.9999 or right == g
-        if hit_left and not hit_right:
-            raw = 2.0 * right_w
-        elif hit_right and not hit_left:
-            raw = 2.0 * left_w
-        else:
-            raw = left_w + right_w
-        envelope_bw = max(raw - 2.0 * half, bw_lo) if raw > 0 else bw_lo
-        lpc_bw = nearest_lpc_bandwidth(f0, scored)
-        source = 'envelope' if lpc_bw is None else 'lpc'
-        bw = float(np.clip(envelope_bw if lpc_bw is None else lpc_bw, bw_lo * 0.5, bw_hi * 2.0))
-        stages.append({'stage': k + 1, 'freq_hz': f0, 'bandwidth_hz': bw, 'raw_width_hz': float(raw),
-                       'bandwidth_source': source, 'level_db': level - ceiling,
+        j = distinct[0]
+        level = 10.0 * math.log10(power[j] + 1e-20)
+        f0, bw, raw, kind = measure_peak(j, lo, hi, grid, target, power, bins, rate, scored, bw_lo, bw_hi)
+        stages.append({'stage': k + 1, 'freq_hz': f0, 'bandwidth_hz': bw, 'raw_width_hz': raw,
+                       'bandwidth_source': kind, 'level_db': level - ceiling,
                        'present': level >= ceiling - ABSENT_BELOW_DB, 'role': role})
     return stages
+
+
+def dominant_peaks(grid, target, power, bins, rate, source, scored=(), count=6):
+    ceiling = float(np.max(target))
+    lo, hi = MIN_HZ, min(20000.0, 0.49 * rate)
+    maxima = [i for i in range(len(grid))
+              if (i == 0 or target[i] >= target[i - 1]) and (i == len(grid) - 1 or target[i] >= target[i + 1])]
+    owned = sorted({int(source[i]) for i in maxima}, key=lambda j: -power[j])
+    chosen = []
+    for j in owned:
+        if 10.0 * math.log10(power[j] + 1e-20) < ceiling - ABSENT_BELOW_DB:
+            break
+        if all(abs(math.log2(bins[j] / bins[c])) > MIN_STAGE_OCTAVES for c in chosen):
+            chosen.append(j)
+        if len(chosen) == count:
+            break
+    chosen.sort(key=lambda j: bins[j])
+    peaks = []
+    for n, j in enumerate(chosen):
+        band = role_of(float(bins[j]), rate)
+        bw_lo, bw_hi = BANDS[band][2], BANDS[band][3]
+        f0, bw, raw, kind = measure_peak(j, lo, hi, grid, target, power, bins, rate, scored, bw_lo, bw_hi)
+        level = 10.0 * math.log10(power[j] + 1e-20)
+        peaks.append({'stage': n + 1, 'freq_hz': f0, 'bandwidth_hz': bw, 'raw_width_hz': raw,
+                      'bandwidth_source': kind, 'level_db': level - ceiling, 'present': True,
+                      'role': BANDS[band][4]})
+    return peaks
+
+
+def harmonic_fundamental(peaks, tolerance=0.03, needed=4, highest=8):
+    freqs = [p['freq_hz'] for p in peaks]
+    best = (0, None)
+    for f in freqs:
+        for k in range(1, highest + 1):
+            f0 = f / k
+            if f0 < 2.0 * MIN_HZ:
+                continue
+            hits = 0
+            for g in freqs:
+                n = round(g / f0)
+                if 1 <= n <= highest and abs(g / f0 - n) <= tolerance:
+                    hits += 1
+            if hits > best[0]:
+                best = (hits, f0)
+    return best[1] if best[0] >= needed else None
 
 
 def fmt_hz(v):
@@ -389,13 +468,14 @@ def clamp_pole(hz, bw, rate):
     return (round(min(max(hz, MIN_HZ), 0.5 * rate), 3), round(min(max(bw, MIN_BW_HZ), MAX_BW_HZ), 3))
 
 
-def export(path, out_dir, rate, mode, stages, lpc):
+def export(path, out_dir, rate, mode, stages, peaks, lpc):
     stem = os.path.splitext(os.path.basename(path))[0]
     base = os.path.join(out_dir, stem)
-    if mode == 'stages':
-        rows = [dict(clamped=clamp_pole(s['freq_hz'], s['bandwidth_hz'], rate), present=s['present']) for s in stages]
-    else:
+    if mode == 'lpc':
         rows = [dict(clamped=clamp_pole(hz, bw, rate), present=True) for hz, bw in lpc['pairs']]
+    else:
+        rows = [dict(clamped=clamp_pole(s['freq_hz'], s['bandwidth_hz'], rate), present=s['present'])
+                for s in (peaks if mode == 'peaks' else stages)]
     with open(base + '.fbw', 'w', newline='\n') as f:
         f.write('# %s (%s)\n' % (stem, mode))
         for row in rows:
@@ -403,6 +483,10 @@ def export(path, out_dir, rate, mode, stages, lpc):
     with open(base + '.poles.json', 'w', newline='\n') as f:
         json.dump({'sample_rate': int(rate), 'source': os.path.basename(path), 'mode': mode,
                    'poles': [{'freq_hz': r['clamped'][0], 'bandwidth_hz': r['clamped'][1]} for r in rows],
+                   'peaks': [{'stage': s['stage'], 'freq_hz': round(s['freq_hz'], 3),
+                              'bandwidth_hz': round(s['bandwidth_hz'], 3),
+                              'bandwidth_source': s['bandwidth_source'],
+                              'level_db': round(s['level_db'], 2), 'role': s['role']} for s in peaks],
                    'stages': [{'stage': s['stage'], 'freq_hz': round(s['freq_hz'], 3),
                                'bandwidth_hz': round(s['bandwidth_hz'], 3),
                                'raw_width_hz': round(s['raw_width_hz'], 3),
@@ -434,7 +518,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('wav')
     ap.add_argument('--out-dir', default=None)
-    ap.add_argument('--mode', choices=('stages', 'lpc'), default='stages')
+    ap.add_argument('--mode', choices=('auto', 'peaks', 'bands', 'lpc'), default='auto')
     ap.add_argument('--max-pairs', type=int, default=6)
     ap.add_argument('--orders', default='4,6,8,10,12')
     ap.add_argument('--pairs', type=int, default=None, help='lpc: force exactly this many pairs (1-6)')
@@ -448,18 +532,27 @@ def main():
 
     x, rate = load_mono(args.wav)
     grid = log_grid(rate)
-    target, power, bins = envelope(x, rate, grid)
+    target, power, bins, source = envelope(x, rate, grid, frame=ENVELOPE_FRAME)
     lpc, scored = lpc_fit(x, rate, grid, target, orders, max_pairs, exact, args.prune_db, args.penalty_db)
-    stages = stage_caricature(grid, target, power, bins, rate, scored)
+    stages = stage_caricature(grid, target, power, bins, rate, source, scored)
+    peaks = dominant_peaks(grid, target, power, bins, rate, source, scored, max_pairs)
     if args.mode == 'lpc' and lpc is None:
         raise SystemExit('no stable all-pole candidate found')
+    fundamental = harmonic_fundamental(peaks)
+    if args.mode == 'auto':
+        args.mode = 'bands' if fundamental is not None else 'peaks'
+        print('auto: %s' % ('harmonic partials of ~%.1f Hz, so formant bands' % fundamental
+                            if fundamental is not None else 'no common fundamental, so tonal peaks'))
 
     out_dir = args.out_dir or os.path.dirname(os.path.abspath(args.wav))
     os.makedirs(out_dir, exist_ok=True)
-    base = export(args.wav, out_dir, rate, args.mode, stages, lpc)
+    base = export(args.wav, out_dir, rate, args.mode, stages, peaks, lpc)
 
-    print('Six-stage caricature (dominant peak per band, -3 dB width):')
-    for s in stages:
+    if args.mode == 'peaks':
+        print('Dominant peaks (%d distinct, sorted into S1..S6, labelled by band):' % len(peaks))
+    else:
+        print('Six-stage caricature (dominant peak per band, -3 dB width):')
+    for s in (peaks if args.mode == 'peaks' else stages):
         flag = ' ' if s['present'] else 'x'
         print('S%d %s %-10s BW %-10s %6.1f dB  %-8s %s' % (s['stage'], flag, fmt_hz(s['freq_hz']),
                                                            fmt_hz(s['bandwidth_hz']), s['level_db'],
