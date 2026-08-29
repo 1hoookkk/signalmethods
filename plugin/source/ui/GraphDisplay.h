@@ -81,8 +81,8 @@ public:
         rawXs.reserve (bins);
         for (int b = 0; b < bins; ++b)
         {
-            double peakDb = 0.0;
-            bool have = false;
+            double powerSum = 0.0;
+            int have = 0;
             for (int k = 0; k < kOversample; ++k)
             {
                 const int i = b * kOversample + k;
@@ -106,19 +106,15 @@ public:
 
                 if (std::isnan (power))
                     continue;
-                const double db = 10.0 * std::log10 ((double) power);
-                if (! have || std::abs (peakDb) < std::abs (db))
-                {
-                    peakDb = db;
-                    have = true;
-                }
+                powerSum += (double) power;
+                ++have;
             }
-            if (! have)
+            if (have == 0)
                 continue;
-            const double db = peakDb;
+            const double db = 10.0 * std::log10 (powerSum / (double) have);
             const double frac = (double) b / (double) (bins - 1);
 
-            const double yt = juce::jlimit (-0.25, 1.25, (dbTop - db) / (dbTop - dbBot));
+            const double yt = juce::jlimit (0.0, 1.0, (dbTop - db) / (dbTop - dbBot));
 
             const float xRaw = plot.getX() + (float) frac * plot.getWidth();
             const float x = std::floor (xRaw) + 0.5f;
