@@ -929,7 +929,8 @@ void MainWindow::refreshInspector() {
   zero_frequency_group_->setVisible(zero_present);
   zero_bandwidth_group_->setVisible(zero_present);
   zero_frequency_->setEnabled(enabled && zero_present);
-  zero_bandwidth_->setEnabled(enabled && zero_present);
+  zero_bandwidth_->setEnabled(enabled && zero_present &&
+                              selected + 1 != trench::core::native::kSections);
   section_strip_->update();
   armadillo_editor_->update();
 }

@@ -115,6 +115,7 @@ std::vector<ArmadilloEditor::Handle> ArmadilloEditor::handles() const {
     result.push_back(Handle{section, EditorState::Lane::kPole,
                             pointFor(pole.hz, pole.bw_hz)});
     if (!state_->rootPresent(section, EditorState::Lane::kZero)) continue;
+    if (section + 1 == trench::core::native::kSections) continue;
     const auto& zero = rootOf(*state_, section, EditorState::Lane::kZero);
     result.push_back(
         Handle{section, EditorState::Lane::kZero,
@@ -206,6 +207,16 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   painter.setBrush(Qt::NoBrush);
   for (const auto& ghost : ghost_) {
     painter.drawEllipse(pointFor(ghost.first, ghost.second), 4.0, 4.0);
+  }
+  const std::size_t floor = trench::core::native::kSections - 1;
+  if (state_->sectionEnabled(floor) &&
+      state_->rootPresent(floor, EditorState::Lane::kZero)) {
+    const auto& zero = rootOf(*state_, floor, EditorState::Lane::kZero);
+    const QPointF at = pointFor(zero.hz, EditorState::kMinBandwidthHz);
+    painter.setPen(QPen(kDormant, 1.2));
+    painter.drawLine(at + QPointF{-4.0, -4.0}, at + QPointF{4.0, 4.0});
+    painter.drawLine(at + QPointF{-4.0, 4.0}, at + QPointF{4.0, -4.0});
+    painter.drawLine(QPointF{at.x(), bounds.top()}, QPointF{at.x(), at.y() - 6.0});
   }
 
   const auto dormant = [this](std::size_t section) {
