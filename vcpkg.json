@@ -6,28 +6,35 @@
     "ceres",
     "eigen3",
     "nlohmann-json",
-    "pocketfft",
-    {
-      "name": "qtbase",
-      "default-features": false,
-      "features": [
-        "doubleconversion",
-        "freetype",
-        "gui",
-        "harfbuzz",
-        "network",
-        "pcre2",
-        "png",
-        "testlib",
-        "thread",
-        "widgets"
-      ]
-    }
+    "pocketfft"
   ],
   "overrides": [
     {
       "name": "qtbase",
       "version": "6.11.1"
     }
-  ]
+  ],
+  "features": {
+    "gui": {
+      "description": "Qt workstation app",
+      "dependencies": [
+        {
+          "name": "qtbase",
+          "default-features": false,
+          "features": [
+            "doubleconversion",
+            "freetype",
+            "gui",
+            "harfbuzz",
+            "network",
+            "pcre2",
+            "png",
+            "testlib",
+            "thread",
+            "widgets"
+          ]
+        }
+      ]
+    }
+  }
 }
