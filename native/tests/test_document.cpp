@@ -213,6 +213,18 @@ TRENCH_TEST(positive_response_table_is_not_pole_material) {
   CHECK(curve.has_value());
   CHECK(curve->frequency_hz.size() == 4);
   CHECK(curve->magnitude_db.size() == 4);
+
+  const QString rew_path = dir.filePath(QStringLiteral("rew.txt"));
+  writeAll(rew_path,
+           QByteArrayLiteral("* Measurement data exported by REW\n"
+                             "* Freq(Hz) SPL(dB) Phase(degrees)\n"
+                             "20.000 71.2 -12.4\n"
+                             "100.000 74.9 8.1\n"
+                             "1000.000 78.0 -95.3\n"));
+  const auto rew = trench::app::read_response_curve(native_path(rew_path));
+  CHECK(rew.has_value());
+  CHECK(rew->frequency_hz.size() == 3);
+  CHECK(rew->magnitude_db[2] == 78.0);
   CHECK(curve->frequency_hz[0] == 20.0);
   CHECK(curve->frequency_hz[3] == 10'000.0);
   CHECK(curve->magnitude_db[0] == 3.0);

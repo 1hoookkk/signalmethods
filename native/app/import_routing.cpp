@@ -18,7 +18,7 @@ std::optional<PoleRows> readRows(const std::filesystem::path& path) {
   while (std::getline(stream, line)) {
     const auto first = line.find_first_not_of(" \t\r");
     if (first == std::string::npos) continue;
-    if (line[first] == '#' || line[first] == ';') continue;
+    if (line[first] == '#' || line[first] == ';' || line[first] == '*') continue;
     std::replace(line.begin(), line.end(), ',', ' ');
     std::stringstream row(line);
     double column_one = 0.0;
