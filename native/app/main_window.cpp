@@ -201,7 +201,7 @@ MainWindow::MainWindow(QWidget* parent)
       });
     }
     if (!overlay) {
-      QMenu* disk = menu->addMenu(QStringLiteral("CUBES ON DISK"));
+      QMenu* disk = menu->addMenu(QStringLiteral("BODIES ON DISK"));
       QDirIterator files(QDir::current().filePath(QStringLiteral("recipes/cubes")),
                          {QStringLiteral("*.trenchbody")}, QDir::Files,
                          QDirIterator::Subdirectories);
