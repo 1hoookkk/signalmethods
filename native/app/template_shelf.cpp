@@ -131,13 +131,11 @@ std::vector<ShelfGroup> buildShelf() {
   groups.push_back(std::move(female));
 
   ShelfGroup s1{QStringLiteral("MOUTHS S1"), {}};
-  appendByType(s1.entries, "MOUTHS S1", QStringLiteral("s1 "));
-  hedzEnds(s1);
+  appendFitted(s1.entries, "MOUTHS S1");
   groups.push_back(std::move(s1));
 
   ShelfGroup s2{QStringLiteral("MOUTHS S2"), {}};
-  appendByType(s2.entries, "MOUTHS S2", QStringLiteral("s2 "));
-  hedzEnds(s2);
+  appendFitted(s2.entries, "MOUTHS S2");
   groups.push_back(std::move(s2));
 
   ShelfGroup poses{QStringLiteral("POSES"), {}};

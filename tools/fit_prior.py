@@ -134,67 +134,155 @@ def clamp_bw(bw):
     return float(min(20000.0, max(1.0, bw)))
 
 
-def pick_features(residual):
-    curve = smooth_octave(residual, 1.0 / 12.0)
+MOUTH_S1_POLE = (10522.88, 351.19, True)
+MOUTH_S1_ZERO = (391.46, 936.85, True)
+MOUTH_S6_POLE = (225.15, 124.39, True)
+MOUTH_S6_ZERO = (20000.00, 0.03, True)
+
+
+def demeaned(curve, mask):
+    out = curve.copy()
+    out = out - out[mask].mean()
+    return out
+
+
+def pole_db(pole):
+    return -denom_db(pole[0], pole[1])
+
+
+def bells_db(poles):
+    out = np.zeros_like(GRID)
+    for pole in poles:
+        out = out + pole_db(pole)
+    return out
+
+
+def index_of(hz):
+    best = 0
+    for i in range(len(GRID)):
+        if abs(np.log(GRID[i]) - np.log(hz)) < abs(np.log(GRID[best]) - np.log(hz)):
+            best = i
+    return best
+
+
+def valley_depth(curve, lo, hi, idx):
+    left = curve[idx]
+    for i in range(lo, idx + 1):
+        if curve[i] > left:
+            left = curve[i]
+    right = curve[idx]
+    for i in range(idx, hi + 1):
+        if curve[i] > right:
+            right = curve[i]
+    return min(left, right) - curve[idx]
+
+
+def pick_mouth_poles(residual, lo_hz, hi_hz):
     found = []
-    hi, hp = find_peaks(curve, prominence=2.0)
-    for k, idx in enumerate(hi):
-        found.append((float(hp["prominences"][k]), int(idx), 1))
-    lo, lp = find_peaks(-curve, prominence=2.0)
-    for k, idx in enumerate(lo):
-        found.append((float(lp["prominences"][k]), int(idx), -1))
+    for bar in (3.0, 1.5):
+        idx, props = find_peaks(residual, prominence=bar)
+        found = []
+        for k in range(len(idx)):
+            f = float(GRID[idx[k]])
+            if f < lo_hz or f > hi_hz:
+                continue
+            found.append((float(props["prominences"][k]), int(idx[k])))
+        if len(found) >= 4:
+            break
     found.sort(key=lambda item: -item[0])
     chosen = found[:4]
-    chosen.sort(key=lambda item: GRID[item[1]])
-    bands = []
-    for height, idx, sign in chosen:
-        f = float(GRID[idx])
-        b = clamp_bw(walk_width(curve, idx, sign))
-        scale = 10.0 ** (height / 20.0)
-        if sign > 0:
-            pole = (f, b, True)
-            zero = (f, clamp_bw(b * scale), True)
+    chosen.sort(key=lambda item: item[1])
+    poles = []
+    for prom, i in chosen:
+        poles.append((float(GRID[i]), clamp_bw(walk_width(residual, i, 1)), True))
+    return poles, [i for prom, i in chosen]
+
+
+def pick_mouth_zeros(residual2, poles, peak_idx, top_cap):
+    zeros = []
+    for k in range(len(poles)):
+        lo = peak_idx[k]
+        if k + 1 < len(poles):
+            hi = peak_idx[k + 1]
         else:
-            pole = (f, clamp_bw(b * scale), True)
-            zero = (f, b, True)
-        bands.append((pole, zero, sign))
-    return bands
+            top = min(top_cap, 3.0 * poles[k][0])
+            hi = index_of(top)
+        if hi <= lo:
+            hi = min(len(GRID) - 1, lo + 1)
+        best = lo
+        for i in range(lo, hi + 1):
+            if residual2[i] < residual2[best]:
+                best = i
+        depth = valley_depth(residual2, lo, hi, best)
+        if depth < 2.0:
+            bw = clamp_bw(1.5 * poles[k][1])
+        else:
+            bw = clamp_bw(walk_width(residual2, best, -1))
+        zeros.append((float(GRID[best]), bw, True))
+    return zeros
 
 
-def refine(bands, s1_pole, s1_zero, s6_pole, s6_zero, target):
-    poles = [s1_pole] + [b[0] for b in bands] + [ABSENT] * (4 - len(bands)) + [s6_pole]
-    zeros = [s1_zero] + [b[1] for b in bands] + [ABSENT] * (4 - len(bands)) + [s6_zero]
-    factors = np.geomspace(0.5, 2.0, 9)
-    for i, band in enumerate(bands):
-        slot = i + 1
-        sign = band[2]
-        base = zeros[slot][1] if sign > 0 else poles[slot][1]
+def fit_frame(target, s1_pole, s1_zero, s6_pole, s6_zero, lo_hz, hi_hz, top_cap):
+    frame = section_db(s1_pole, s1_zero) + section_db(s6_pole, s6_zero)
+    residual = demeaned(target - frame, BAND_FIT)
+    bell_poles, peak_idx = pick_mouth_poles(residual, lo_hz, hi_hz)
+    residual2 = residual - bells_db(bell_poles)
+    bell_zeros = pick_mouth_zeros(residual2, bell_poles, peak_idx, top_cap)
+
+    count = len(bell_poles)
+    poles = [s1_pole] + bell_poles + [ABSENT] * (4 - count) + [s6_pole]
+    zeros = [s1_zero] + bell_zeros + [ABSENT] * (4 - count) + [s6_zero]
+
+    shifts = np.geomspace(2.0 ** (-1.0 / 6.0), 2.0 ** (1.0 / 6.0), 7)
+    widths = np.geomspace(0.5, 3.0, 11)
+    for k in range(count):
+        slot = k + 1
+        f0 = zeros[slot][0]
+        b0 = zeros[slot][1]
+        best = zeros[slot]
         best_err = None
-        best_bw = base
-        for factor in factors:
-            bw = clamp_bw(base * factor)
-            if sign > 0:
-                zeros[slot] = (zeros[slot][0], bw, True)
-            else:
-                poles[slot] = (poles[slot][0], bw, True)
+        for shift in shifts:
+            for factor in widths:
+                zeros[slot] = (float(f0 * shift), clamp_bw(b0 * factor), True)
+                err = demeaned_rms(target - cascade_db(poles, zeros), BAND_FIT)
+                if best_err is None or err < best_err:
+                    best_err = err
+                    best = zeros[slot]
+        zeros[slot] = best
+
+    pole_widths = np.geomspace(0.6, 1.6, 9)
+    for k in range(count):
+        slot = k + 1
+        b0 = poles[slot][1]
+        best = poles[slot]
+        best_err = None
+        for factor in pole_widths:
+            poles[slot] = (poles[slot][0], clamp_bw(b0 * factor), True)
             err = demeaned_rms(target - cascade_db(poles, zeros), BAND_FIT)
             if best_err is None or err < best_err:
                 best_err = err
-                best_bw = bw
-        if sign > 0:
-            zeros[slot] = (zeros[slot][0], best_bw, True)
-        else:
-            poles[slot] = (poles[slot][0], best_bw, True)
-    return poles, zeros
+                best = poles[slot]
+        poles[slot] = best
 
-
-def fit_target(target):
-    s1_pole, s1_zero, s6_pole, s6_zero, shelf_err = fit_shelf(target)
-    shelf = section_db(s1_pole, s1_zero) + section_db(s6_pole, s6_zero)
-    bands = pick_features(target - shelf)
-    poles, zeros = refine(bands, s1_pole, s1_zero, s6_pole, s6_zero, target)
     err = demeaned_rms(target - cascade_db(poles, zeros), BAND_FIT)
-    return poles, zeros, len(bands), err, shelf_err
+    bare = list(zeros)
+    for k in range(4):
+        bare[k + 1] = ABSENT
+    bell_err = demeaned_rms(target - cascade_db(poles, bare), BAND_FIT)
+    shelf_err = demeaned_rms(target - frame, BAND_FIT)
+    return poles, zeros, count, err, bell_err, shelf_err
+
+
+def fit_mouth(raw):
+    target = smooth_octave(raw, 1.0 / 12.0)
+    return fit_frame(target, MOUTH_S1_POLE, MOUTH_S1_ZERO, MOUTH_S6_POLE, MOUTH_S6_ZERO,
+                     150.0, 6000.0, 12000.0)
+
+
+def fit_target(raw):
+    target = smooth_octave(raw, 1.0 / 12.0)
+    s1_pole, s1_zero, s6_pole, s6_zero, _ = fit_shelf(target)
+    return fit_frame(target, s1_pole, s1_zero, s6_pole, s6_zero, 60.0, 12000.0, 16000.0)
 
 
 def to_grid(freqs, db):
@@ -267,10 +355,17 @@ def main():
     rows = []
     lines = []
     for group, name, target in entries:
-        poles, zeros, used, err, shelf_err = fit_target(target)
+        if group.startswith("MOUTHS"):
+            poles, zeros, used, err, bell_err, shelf_err = fit_mouth(target)
+            line = "%-10s %-24s bells %d  rms %.2f dB  bells only %.2f dB" % (
+                group, name, used, err, bell_err)
+        else:
+            poles, zeros, used, err, bell_err, shelf_err = fit_target(target)
+            line = "%-10s %-24s bells %d  rms %.2f dB  bells only %.2f dB  shelf only %.2f dB" % (
+                group, name, used, err, bell_err, shelf_err)
         rows.append((group, name, poles, zeros))
-        lines.append("%-10s %-24s bands %d  rms %.2f dB  shelf %.2f dB" % (group, name, used, err, shelf_err))
-        print(lines[-1])
+        lines.append(line)
+        print(line)
 
     with open(OUT_TXT, "w") as handle:
         handle.write("\n".join(lines) + "\n")

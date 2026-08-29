@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include <span>
+#include <vector>
 
 namespace {
 
@@ -25,8 +26,8 @@ constexpr QColor kAccent{196, 103, 79};
 
 constexpr double kCellGap = 12.0;
 constexpr double kCellMax = 120.0;
-constexpr double kMiniLowDb = -120.0;
-constexpr double kMiniHighDb = 24.0;
+constexpr double kMiniLowDb = -30.0;
+constexpr double kMiniHighDb = 30.0;
 constexpr int kCurvePoints = 96;
 
 }
@@ -96,6 +97,9 @@ void SectionStrip::rebuildCurves() {
       const QRectF plot = cell(index).adjusted(8.0, 24.0, -8.0, -10.0);
       const auto section = state_->sectionBiquad(index);
       const std::span<const trench::core::Biquad> one{&section, 1};
+      std::vector<double> dbs(kCurvePoints);
+      double level = 0.0;
+      int counted = 0;
       for (int point = 0; point < kCurvePoints; ++point) {
         const double fraction =
             static_cast<double>(point) / (kCurvePoints - 1);
@@ -104,7 +108,16 @@ void SectionStrip::rebuildCurves() {
                                    fraction);
         const double raw_db = trench::core::cascade_response_db(
             one, hz, EditorState::kDatumHz);
-        const double db = std::isfinite(raw_db) ? raw_db : kMiniLowDb;
+        dbs[point] = std::isfinite(raw_db) ? raw_db : -400.0;
+        if (hz < 100.0 || hz > 10'000.0) continue;
+        level += dbs[point];
+        ++counted;
+      }
+      if (counted > 0) level /= counted;
+      for (int point = 0; point < kCurvePoints; ++point) {
+        const double fraction =
+            static_cast<double>(point) / (kCurvePoints - 1);
+        const double db = dbs[point] - level;
         const QPointF position{
             plot.left() + fraction * plot.width(),
             plot.top() + (kMiniHighDb - db) /

@@ -319,8 +319,7 @@ MainWindow::MainWindow(QWidget* parent)
   pole_bandwidth_ = physicalEditor(EditorState::kMinBandwidthHz,
                                    EditorState::kMaxBandwidthHz, central);
   zero_frequency_ = physicalEditor(EditorState::kLowHz, EditorState::kNyquistHz, central);
-  zero_bandwidth_ = physicalEditor(EditorState::kMinBandwidthHz,
-                                   EditorState::kMaxBandwidthHz, central);
+  zero_bandwidth_ = physicalEditor(0.01, EditorState::kMaxBandwidthHz, central);
   inspector->addWidget(labelledEditor(QStringLiteral("POLE FREQUENCY"),
                                       pole_frequency_, central));
   inspector->addWidget(labelledEditor(QStringLiteral("POLE BANDWIDTH"),
