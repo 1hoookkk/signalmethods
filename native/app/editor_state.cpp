@@ -1,10 +1,12 @@
 #include "editor_state.hpp"
 
 #include "template_shelf.hpp"
+#include "trench/core/p2k.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <numbers>
 #include <optional>
 #include <stdexcept>
 #include <utility>
@@ -26,6 +28,15 @@ constexpr double kTrimPeak = 2.0;
 constexpr double kInf = std::numeric_limits<double>::infinity();
 
 Roots absentRoot() { return RealRoots{kInf, kInf}; }
+
+double trenchDepthBandwidthHz() {
+  return -std::log(trench::core::p2k::s6_zero_radius()) * EditorState::kDatumHz / std::numbers::pi;
+}
+
+Resonant lockedZero(std::size_t section, Resonant zero) {
+  if (section + 1 == trench::core::native::kSections) zero.bw_hz = trenchDepthBandwidthHz();
+  return zero;
+}
 
 const Resonant& resonant(const Roots& roots) {
   const auto* value = std::get_if<Resonant>(&roots);
@@ -333,9 +344,9 @@ void EditorState::addZeroAt(double hz, double bw_hz) {
     return;
   }
   remember();
-  state.corner.sections[selected_section_].zero =
-      Resonant{std::clamp(hz, kLowHz, kNyquistHz),
-               std::clamp(bw_hz, kMinBandwidthHz, kMaxBandwidthHz)};
+  state.corner.sections[selected_section_].zero = lockedZero(
+      selected_section_, Resonant{std::clamp(hz, kLowHz, kNyquistHz),
+                                  std::clamp(bw_hz, kMinBandwidthHz, kMaxBandwidthHz)});
   state.zero_present[selected_section_] = true;
   selected_lane_ = Lane::kZero;
   commit();
@@ -402,9 +413,10 @@ void EditorState::setRoot(std::size_t section_index, Lane lane,
       !state.enabled[section_index] || !rootPresent(section_index, lane)) {
     return;
   }
-  const Resonant wanted{
+  Resonant wanted{
       std::clamp(frequency_hz, kLowHz, kNyquistHz),
       std::clamp(bandwidth_hz, kMinBandwidthHz, kMaxBandwidthHz)};
+  if (lane == Lane::kZero) wanted = lockedZero(section_index, wanted);
   auto& roots = lane == Lane::kPole ? state.corner.sections[section_index].pole
                                     : state.corner.sections[section_index].zero;
   if (resonant(roots) == wanted) return;

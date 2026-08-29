@@ -151,7 +151,7 @@ TRENCH_TEST(armadillo_encoding_round_trips) {
   }
 }
 
-TRENCH_TEST(interior_is_the_armadillo_word_lerp_within_the_papers_error) {
+TRENCH_TEST(word_lerp_tracks_exact_k_linear_within_tolerance) {
   EditorState state;
   state.setEditingCorner(0);
   state.loadPoles({{300.0, 40.0}, {1'200.0, 150.0}, {3'000.0, 300.0}});
