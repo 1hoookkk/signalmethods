@@ -88,13 +88,16 @@ same index). Commit native work with explicit pathspecs only:
 - Plain-tool skin landed (5c6f9c0): no stylesheet, white panels with 1 px
   #c8c8c8 borders, #e6e6e6 grid, black 1 px curves, one accent (#c4674f) for
   the addressed thing only, default fonts. Tyson's verdict on it is pending.
-- INTERIOR LAW RESTORED (8818bb0): the graph and the ears run the core's
-  native::blend of the authored body - US 10,514,883 / the ARMAdillo paper's
-  (k1, k2) space: linear in log f and log(1 - r) per root, decoded after, one
-  gain per corner. This morning's packed-word display was wrong against the
-  2026-08-23 ruling and Tyson caught it ("still lying"). The packed words are
-  the export only; test interior_follows_the_patent_law proves the law at
-  morph 0.5 to 1e-6. Corners vs export still differ by lattice + S6 depth.
+- INTERIOR LAW, FINAL FOR THIS BANK: Tyson, "I play whatever is not a current
+  patent" - the plugin plays the 1992 ARMAdillo encoding, not the 2019
+  patent's per-root law. k2 = -ln(1 - b2), k1 = -ln((b1 + 1 + b2)/4), linear
+  in (k1, k2), decode after; the P2K words store e^-k2 / e^-k1 in the
+  octave-shift float format, so the packed word-lerp IS that scheme as the
+  hardware does it. Graph and ears run packed_interior_corner (8818bb0 was
+  reverted the same evening). Measured: word-lerp vs exact k-linear differs
+  by <= 0.033 octave in frequency and <= 5% in bandwidth, exact at morph
+  0.5. native::blend (2019 law) stays in core, unused by the display. This
+  supersedes the 2026-08-23 "Rossum 2019" ruling for the shipped bank.
 - Frame lie still open: a curve past +-30 dB is pinned to the frame edge
   (a pole at Nyquist / 4 Hz is really +150 dB). Fix: clip instead of clamp
   and print the true peak in the plot corner and the strip minis.
