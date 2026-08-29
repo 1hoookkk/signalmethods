@@ -35,8 +35,8 @@ constexpr double kHighDb = 30.0;
 constexpr int kStepDb = 10;
 
 double finiteDb(double value) {
-  if (!std::isfinite(value)) return value < 0.0 ? -120.0 : 120.0;
-  return std::clamp(value, -120.0, 120.0);
+  if (!std::isfinite(value)) return value < 0.0 ? -400.0 : 400.0;
+  return std::clamp(value, -400.0, 400.0);
 }
 
 }  // namespace
@@ -121,7 +121,7 @@ double CascadePlot::xForFrequency(double frequency_hz, const QRectF& plot) const
 double CascadePlot::yForDb(double db, const QRectF& plot, double low_db,
                            double high_db) const {
   const double fraction = (db - low_db) / (high_db - low_db);
-  return plot.bottom() - std::clamp(fraction, 0.0, 1.0) * plot.height();
+  return plot.bottom() - fraction * plot.height();
 }
 
 void CascadePlot::paintEvent(QPaintEvent*) {
@@ -192,8 +192,11 @@ void CascadePlot::paintEvent(QPaintEvent*) {
         path.lineTo(point);
       }
     }
+    painter.save();
+    painter.setClipRect(plot);
     painter.setPen(pen);
     painter.drawPath(path);
+    painter.restore();
   };
 
   painter.setBrush(Qt::NoBrush);
@@ -212,9 +215,6 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   reference_pen.setCosmetic(true);
   reference_pen.setCapStyle(Qt::FlatCap);
   draw_curve(reference_hz_, reference_db_, reference_pen);
-  // ONE LINE, plus the addressed stage (Tyson 2026-08-28 "dont add more than
-  // one line other than when you select a stage"): the complete cascade is
-  // the plot; selecting a stage overlays exactly that stage's own curve.
   if (enabled_[selected_section_]) {
     QPen section_pen(kAddressed, 1.0);
     section_pen.setCosmetic(true);
@@ -225,4 +225,28 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
   draw_curve(grid_hz_, response_db_, response_pen);
+
+  if (!response_db_.empty()) {
+    std::size_t peak = 0;
+    std::size_t trough = 0;
+    for (std::size_t index = 0; index < response_db_.size(); ++index) {
+      if (response_db_[index] > response_db_[peak]) peak = index;
+      if (response_db_[index] < response_db_[trough]) trough = index;
+    }
+    const bool over = response_db_[peak] > high_db;
+    const bool under = response_db_[trough] < low_db;
+    if (over || under) {
+      const std::size_t index = over ? peak : trough;
+      const double hz = grid_hz_[index];
+      const QString where = hz >= 1000.0 ? QStringLiteral("%1k").arg(hz / 1000.0, 0, 'f', 1)
+                                         : QStringLiteral("%1").arg(hz, 0, 'f', 0);
+      painter.setPen(kText);
+      painter.drawText(QRectF{plot.right() - 220.0, plot.top() + 4.0, 216.0, 16.0},
+                       Qt::AlignRight | Qt::AlignVCenter,
+                       QStringLiteral("%1 %2 dB @ %3 Hz")
+                           .arg(over ? QStringLiteral("PEAK") : QStringLiteral("TROUGH"))
+                           .arg(response_db_[index], 0, 'f', 1)
+                           .arg(where));
+    }
+  }
 }

@@ -104,9 +104,7 @@ void SectionStrip::rebuildCurves() {
                                    fraction);
         const double raw_db = trench::core::cascade_response_db(
             one, hz, EditorState::kDatumHz);
-        const double db =
-            std::clamp(std::isfinite(raw_db) ? raw_db : kMiniLowDb,
-                       kMiniLowDb, kMiniHighDb);
+        const double db = std::isfinite(raw_db) ? raw_db : kMiniLowDb;
         const QPointF position{
             plot.left() + fraction * plot.width(),
             plot.top() + (kMiniHighDb - db) /
@@ -177,7 +175,10 @@ void SectionStrip::paintEvent(QPaintEvent*) {
     curve_pen.setCapStyle(Qt::FlatCap);
     painter.setPen(curve_pen);
     painter.setBrush(Qt::NoBrush);
+    painter.save();
+    painter.setClipRect(plot);
     painter.drawPath(curves_[index]);
+    painter.restore();
   }
 }
 
