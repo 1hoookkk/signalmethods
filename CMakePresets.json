@@ -78,7 +78,8 @@
       "name": "app",
       "configurePreset": "app",
       "targets": [
-        "trench_native"
+        "trench_native",
+        "trench_native_tests"
       ]
     },
     {
@@ -101,6 +102,13 @@
     {
       "name": "windows-msvc-release",
       "configurePreset": "windows-msvc-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "app",
+      "configurePreset": "app",
       "output": {
         "outputOnFailure": true
       }

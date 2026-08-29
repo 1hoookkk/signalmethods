@@ -878,7 +878,7 @@ void MainWindow::toggleSectionDesk() {
 
 void MainWindow::updateAuditionView() {
   if (!audition_) return;
-  audition_->setCascade(state_.cascade(audition_->sampleRateHz()));
+  audition_->setView(state_.view());
 }
 
 trench::audio::MonoClip MainWindow::clipForDevice(

@@ -1,6 +1,8 @@
 #pragma once
 
+#include "trench/audio/audition.hpp"
 #include "trench/core/native_body.hpp"
+#include "trench/core/packed_body.hpp"
 
 #include <QObject>
 
@@ -19,6 +21,21 @@ class EditorState final : public QObject {
  public:
   enum class Lane { kPole, kZero };
 
+  struct CornerState {
+    trench::core::native::Corner corner{};
+    std::array<bool, trench::core::native::kSections> enabled{};
+    std::array<bool, trench::core::native::kSections> zero_present{};
+    bool operator==(const CornerState&) const = default;
+  };
+
+  struct Document {
+    std::array<CornerState, trench::core::native::kCorners> corners{};
+    std::size_t editing_corner{};
+    double morph{};
+    double q{};
+    bool operator==(const Document&) const = default;
+  };
+
   static constexpr double kDatumHz = 44'100.0;
   static constexpr double kLowHz = 20.0;
   static constexpr double kNyquistHz = kDatumHz * 0.5;
@@ -34,9 +51,12 @@ class EditorState final : public QObject {
       std::size_t corner, std::size_t index) const;
   [[nodiscard]] bool sectionEnabledAt(std::size_t corner, std::size_t index) const;
   [[nodiscard]] bool zeroPresentAt(std::size_t corner, std::size_t index) const;
+  [[nodiscard]] Document document() const;
+  [[nodiscard]] trench::core::native::Body body() const;
+  [[nodiscard]] const trench::core::PackedBody& packed() const noexcept;
+  [[nodiscard]] trench::audio::AuditionView view() const;
   [[nodiscard]] trench::core::Cascade cascade(double sample_rate_hz = kDatumHz) const;
-  [[nodiscard]] trench::core::Biquad sectionBiquad(
-      std::size_t index, double sample_rate_hz = kDatumHz) const;
+  [[nodiscard]] trench::core::Biquad sectionBiquad(std::size_t index) const;
   [[nodiscard]] bool sectionEnabled(std::size_t index) const;
   [[nodiscard]] bool rootPresent(std::size_t index, Lane lane) const;
   [[nodiscard]] std::size_t selectedSection() const noexcept;
@@ -45,6 +65,7 @@ class EditorState final : public QObject {
   [[nodiscard]] double morphPos() const noexcept;
   [[nodiscard]] double qPos() const noexcept;
 
+  void setDocument(const Document& document);
   void selectSection(std::size_t index);
   void selectRoot(std::size_t index, Lane lane);
   void setEditingCorner(std::size_t index);
@@ -64,16 +85,10 @@ class EditorState final : public QObject {
   void selectionChanged(std::size_t section);
 
  private:
-  struct CornerState {
-    trench::core::native::Corner corner{};
-    std::array<bool, trench::core::native::kSections> enabled{};
-    std::array<bool, trench::core::native::kSections> zero_present{};
-  };
-
   [[nodiscard]] CornerState& editing() noexcept;
   [[nodiscard]] const CornerState& editing() const noexcept;
-  [[nodiscard]] trench::core::Biquad interiorSectionBiquad(
-      std::size_t index, double sample_rate_hz) const;
+  void render();
+  void commit();
 
   std::array<CornerState, trench::core::native::kCorners> corners_{};
   std::size_t editing_corner_{};
@@ -81,4 +96,5 @@ class EditorState final : public QObject {
   double q_pos_{};
   std::size_t selected_section_{};
   Lane selected_lane_{Lane::kPole};
+  trench::core::PackedBody packed_{};
 };

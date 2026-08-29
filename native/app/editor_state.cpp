@@ -4,47 +4,32 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
 namespace {
 
 using Resonant = trench::core::native::Resonant;
+using RealRoots = trench::core::native::RealRoots;
+using Roots = trench::core::native::Roots;
 
-constexpr double kAbsentRootBandwidthHz = 1.0e9;
-constexpr Resonant kParkedRoot{EditorState::kNyquistHz, kAbsentRootBandwidthHz};
+constexpr double kHiddenRootBandwidthHz = 1.0e9;
+constexpr Resonant kHiddenRoot{EditorState::kNyquistHz, kHiddenRootBandwidthHz};
 constexpr double kPivotCeilingHz = 15'000.0;
+constexpr double kInf = std::numeric_limits<double>::infinity();
 
-const Resonant& resonant(const trench::core::native::Roots& roots) {
+Roots absentRoot() { return RealRoots{kInf, kInf}; }
+
+const Resonant& resonant(const Roots& roots) {
   const auto* value = std::get_if<Resonant>(&roots);
   if (value == nullptr) throw std::logic_error("editor state contains non-resonant roots");
   return *value;
 }
 
-// THE INTERIOR IS LOG FREQUENCY AND LOG BANDWIDTH (Rossum 2019): corners 0/1
-// are the Q0 morph pair and 2/3 the Q100 pair, so morph runs first and Q
-// blends the two results.
-Resonant blend(const std::array<Resonant, trench::core::native::kCorners>& roots,
-               double morph, double q) {
-  const auto along_morph = [&](std::size_t low, std::size_t high) {
-    return std::pair{
-        std::lerp(std::log2(roots[low].hz), std::log2(roots[high].hz), morph),
-        std::lerp(std::log2(roots[low].bw_hz), std::log2(roots[high].bw_hz),
-                  morph)};
-  };
-  const auto at_q0 = along_morph(0, 1);
-  const auto at_q100 = along_morph(2, 3);
-  return {std::exp2(std::lerp(at_q0.first, at_q100.first, q)),
-          std::exp2(std::lerp(at_q0.second, at_q100.second, q))};
-}
-
 }  // namespace
 
 EditorState::EditorState(QObject* parent) : QObject(parent) {
-  // BOOT IS A FLAT EQ (Tyson 2026-08-28 "use a low shelf and 5 parametric
-  // bells"): six live bands, pole and zero paired at each centre with equal
-  // width, so the cascade opens at 0 dB and pulling a pole off its zero IS
-  // the bell gain. Band 1 sits low and wide - the shelf seat.
   constexpr std::array<Resonant, trench::core::native::kSections> bands{{
       {80.0, 114.0}, {250.0, 250.0}, {700.0, 700.0},
       {2'000.0, 2'000.0}, {5'500.0, 5'500.0}, {12'000.0, 12'000.0},
@@ -56,6 +41,7 @@ EditorState::EditorState(QObject* parent) : QObject(parent) {
       state.zero_present[index] = true;
     }
   }
+  render();
 }
 
 EditorState::CornerState& EditorState::editing() noexcept {
@@ -64,6 +50,15 @@ EditorState::CornerState& EditorState::editing() noexcept {
 
 const EditorState::CornerState& EditorState::editing() const noexcept {
   return corners_[editing_corner_];
+}
+
+void EditorState::render() {
+  packed_ = trench::core::native::export_p2k_body(body());
+}
+
+void EditorState::commit() {
+  render();
+  emit changed();
 }
 
 const trench::core::native::Corner& EditorState::corner() const noexcept {
@@ -102,46 +97,45 @@ bool EditorState::zeroPresentAt(std::size_t corner, std::size_t index) const {
   return corners_[corner].zero_present[index];
 }
 
-trench::core::Cascade EditorState::cascade(double sample_rate_hz) const {
-  trench::core::Cascade out{};
-  for (auto& biquad : out) biquad = {1.0, 0.0, 0.0, 0.0, 0.0};
-  for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
-    const bool live = std::any_of(
-        corners_.begin(), corners_.end(),
-        [index](const CornerState& state) { return state.enabled[index]; });
-    if (live) out[index] = interiorSectionBiquad(index, sample_rate_hz);
+EditorState::Document EditorState::document() const {
+  return {corners_, editing_corner_, morph_pos_, q_pos_};
+}
+
+trench::core::native::Body EditorState::body() const {
+  trench::core::native::Body out{};
+  for (std::size_t corner = 0; corner < trench::core::native::kCorners; ++corner) {
+    const CornerState& state = corners_[corner];
+    auto& target = out.corners[corner];
+    target.gain_db = state.corner.gain_db;
+    for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
+      const bool live = state.enabled[index];
+      const auto& authored = state.corner.sections[index];
+      target.sections[index] = {
+          live ? authored.pole : absentRoot(),
+          live && state.zero_present[index] ? authored.zero : absentRoot(),
+          true};
+    }
   }
   return out;
 }
 
-// A lane a corner does not carry stands at the rim, so it lerps out the way
-// the hardware parks an absent root.
-trench::core::Biquad EditorState::interiorSectionBiquad(
-    std::size_t index, double sample_rate_hz) const {
-  std::array<Resonant, trench::core::native::kCorners> poles{};
-  std::array<Resonant, trench::core::native::kCorners> zeros{};
-  for (std::size_t corner = 0; corner < trench::core::native::kCorners; ++corner) {
-    const auto& state = corners_[corner];
-    const bool live = state.enabled[index];
-    poles[corner] = live ? resonant(state.corner.sections[index].pole) : kParkedRoot;
-    zeros[corner] = live && state.zero_present[index]
-                        ? resonant(state.corner.sections[index].zero)
-                        : kParkedRoot;
-  }
-  const trench::core::native::Section blended{blend(poles, morph_pos_, q_pos_),
-                                              blend(zeros, morph_pos_, q_pos_),
-                                              true};
-  return trench::core::native::biquad(
-      trench::core::native::design(blended, sample_rate_hz));
+const trench::core::PackedBody& EditorState::packed() const noexcept {
+  return packed_;
 }
 
-trench::core::Biquad EditorState::sectionBiquad(std::size_t index,
-                                                double sample_rate_hz) const {
+trench::audio::AuditionView EditorState::view() const {
+  return {packed_, static_cast<float>(morph_pos_), static_cast<float>(q_pos_), 0.0};
+}
+
+trench::core::Cascade EditorState::cascade(double sample_rate_hz) const {
+  return trench::audio::design_audition(view(), sample_rate_hz);
+}
+
+trench::core::Biquad EditorState::sectionBiquad(std::size_t index) const {
   if (index >= trench::core::native::kSections) {
     throw std::out_of_range("section index is outside the six-section state");
   }
-  return trench::core::native::biquad(trench::core::native::design(
-      editing().corner.sections[index], sample_rate_hz));
+  return cascade(kDatumHz)[index];
 }
 
 bool EditorState::sectionEnabled(std::size_t index) const {
@@ -173,6 +167,20 @@ std::size_t EditorState::editingCorner() const noexcept {
 double EditorState::morphPos() const noexcept { return morph_pos_; }
 
 double EditorState::qPos() const noexcept { return q_pos_; }
+
+void EditorState::setDocument(const Document& document) {
+  if (document.editing_corner >= trench::core::native::kCorners) {
+    throw std::out_of_range("document editing corner is outside the four corners");
+  }
+  corners_ = document.corners;
+  editing_corner_ = document.editing_corner;
+  morph_pos_ = std::clamp(document.morph, 0.0, 1.0);
+  q_pos_ = std::clamp(document.q, 0.0, 1.0);
+  selected_section_ = 0;
+  selected_lane_ = Lane::kPole;
+  commit();
+  emit selectionChanged(selected_section_);
+}
 
 void EditorState::selectSection(std::size_t index) {
   if (index >= trench::core::native::kSections || index == selected_section_) return;
@@ -206,8 +214,6 @@ void EditorState::setPadPosition(double morph01, double q01) {
   if (morph == morph_pos_ && q == q_pos_) return;
   morph_pos_ = morph;
   q_pos_ = q;
-  // RIDE INTO A CORNER, EDIT THAT CORNER (Tyson 2026-08-29 "auto swap to a
-  // corner when you morph pretty much all the way").
   const bool hi_m = morph_pos_ > 0.88, lo_m = morph_pos_ < 0.12;
   const bool hi_q = q_pos_ > 0.88, lo_q = q_pos_ < 0.12;
   if ((lo_m || hi_m) && (lo_q || hi_q)) {
@@ -222,7 +228,7 @@ void EditorState::toggleSection(std::size_t index) {
   selected_section_ = index;
   selected_lane_ = Lane::kPole;
   editing().enabled[index] = !editing().enabled[index];
-  emit changed();
+  commit();
   emit selectionChanged(selected_section_);
 }
 
@@ -236,17 +242,17 @@ void EditorState::addZeroAt(double hz, double bw_hz) {
                std::clamp(bw_hz, kMinBandwidthHz, kMaxBandwidthHz)};
   state.zero_present[selected_section_] = true;
   selected_lane_ = Lane::kZero;
-  emit changed();
+  commit();
   emit selectionChanged(selected_section_);
 }
 
 void EditorState::removeZero() {
   auto& state = editing();
   if (!state.zero_present[selected_section_]) return;
-  state.corner.sections[selected_section_].zero = kParkedRoot;
+  state.corner.sections[selected_section_].zero = kHiddenRoot;
   state.zero_present[selected_section_] = false;
   selected_lane_ = Lane::kPole;
-  emit changed();
+  commit();
   emit selectionChanged(selected_section_);
 }
 
@@ -256,8 +262,8 @@ void EditorState::loadTemplate(const trench::app::TemplateEntry& entry) {
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
     const auto& pole = entry.poles[index];
     state.corner.sections[index] = {
-        pole.present ? Resonant{pole.hz, pole.bw_hz} : kParkedRoot,
-        kParkedRoot, true};
+        pole.present ? Resonant{pole.hz, pole.bw_hz} : kHiddenRoot,
+        kHiddenRoot, true};
     state.enabled[index] = pole.present;
     state.zero_present[index] = false;
     if (pole.present && first_present == trench::core::native::kSections) {
@@ -267,7 +273,7 @@ void EditorState::loadTemplate(const trench::app::TemplateEntry& entry) {
   selected_section_ =
       first_present == trench::core::native::kSections ? 0 : first_present;
   selected_lane_ = Lane::kPole;
-  emit changed();
+  commit();
   emit selectionChanged(selected_section_);
 }
 
@@ -279,14 +285,14 @@ void EditorState::loadPoles(const std::vector<std::pair<double, double>>& poles)
         carried ? Resonant{std::clamp(poles[index].first, kLowHz, kNyquistHz),
                            std::clamp(poles[index].second, kMinBandwidthHz,
                                       kMaxBandwidthHz)}
-                : kParkedRoot,
-        kParkedRoot, true};
+                : kHiddenRoot,
+        kHiddenRoot, true};
     state.enabled[index] = carried;
     state.zero_present[index] = false;
   }
   selected_section_ = 0;
   selected_lane_ = Lane::kPole;
-  emit changed();
+  commit();
   emit selectionChanged(selected_section_);
 }
 
@@ -304,7 +310,7 @@ void EditorState::setRoot(std::size_t section_index, Lane lane,
                                     : state.corner.sections[section_index].zero;
   if (resonant(roots) == wanted) return;
   roots = wanted;
-  emit changed();
+  commit();
 }
 
 void EditorState::applyAffine(double semitones, double tract, double character,
@@ -377,5 +383,5 @@ void EditorState::applyAffine(double semitones, double tract, double character,
       });
     }
   }
-  emit changed();
+  commit();
 }

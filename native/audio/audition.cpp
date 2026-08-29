@@ -6,40 +6,26 @@
 #include <atomic>
 #include <cmath>
 #include <mutex>
-#include <optional>
 #include <utility>
 
 #include "trench/core/audition.hpp"
+#include "trench/core/native_body.hpp"
 #include "trench/core/transpose.hpp"
 
 namespace trench::audio {
 
 trench::core::Cascade design_audition(const AuditionView& view,
                                       double device_sample_rate_hz) {
-  const bool at_corner = (view.morph == 0.0F || view.morph == 1.0F) &&
-                         (view.q == 0.0F || view.q == 1.0F);
-  const auto interior =
-      at_corner ? trench::core::native::Corner{}
-                : trench::core::native::packed_interior_corner(view.packed, view.morph,
-                                                               view.q);
-  const auto gain_db =
-      at_corner
-          ? trench::core::native::blend_gain_db(view.body, view.morph, view.q)
-          : interior.gain_db;
-  const auto designed =
-      at_corner
-          ? trench::core::native::cascade(
-                trench::core::native::blend(view.body, view.morph, view.q,
-                                            device_sample_rate_hz),
-                gain_db)
-          : trench::core::native::cascade(
-                trench::core::native::design(interior, device_sample_rate_hz), gain_db);
-  if (view.semitones == 0.0 && at_corner) return designed;
+  const auto corner = trench::core::native::packed_interior_corner(
+      view.packed, view.morph, view.q);
+  const auto designed = trench::core::native::cascade(
+      trench::core::native::design(corner, device_sample_rate_hz), corner.gain_db);
+  if (view.semitones == 0.0) return designed;
 
   auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
       designed, trench::core::ratio_of_semitones(view.semitones),
       device_sample_rate_hz));
-  const double gain = std::pow(10.0, gain_db / 20.0);
+  const double gain = std::pow(10.0, corner.gain_db / 20.0);
   for (std::size_t coefficient = 0; coefficient < 3; ++coefficient) {
     transposed[0][coefficient] *= gain;
   }
@@ -50,8 +36,6 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
   juce::AudioDeviceManager manager;
   std::mutex lock;
   AuditionView view;
-  std::optional<trench::core::native::Corner> direct_corner;
-  std::optional<trench::core::Cascade> direct_cascade;
   trench::core::Cascade pending{};
   bool pending_fresh{};
   std::shared_ptr<const MonoClip> pending_clip;
@@ -74,12 +58,7 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
     sample_rate.store(actual_rate);
     {
       const std::scoped_lock guard(lock);
-      pending = direct_corner
-                    ? trench::core::native::cascade(
-                          trench::core::native::design(*direct_corner, actual_rate),
-                          direct_corner->gain_db)
-                : direct_cascade ? *direct_cascade
-                                 : design_audition(view, actual_rate);
+      pending = design_audition(view, actual_rate);
       pending_fresh = true;
     }
     runner.reset();
@@ -154,7 +133,14 @@ Audition::~Audition() { stop(); }
 std::string Audition::start() {
   if (impl_->active.load()) return {};
   const auto error = impl_->manager.initialiseWithDefaultDevices(0, 2);
-  if (error.isNotEmpty()) return error.toStdString();
+  if (error.isNotEmpty()) {
+    impl_->manager.closeAudioDevice();
+    return error.toStdString();
+  }
+  if (impl_->manager.getCurrentAudioDevice() == nullptr) {
+    impl_->manager.closeAudioDevice();
+    return "no output device";
+  }
   impl_->manager.addAudioCallback(impl_.get());
   impl_->active.store(true);
   return {};
@@ -171,31 +157,15 @@ bool Audition::running() const noexcept { return impl_->active.load(); }
 
 double Audition::sampleRateHz() const noexcept { return impl_->sample_rate.load(); }
 
+std::string Audition::deviceName() const {
+  const auto* device = impl_->manager.getCurrentAudioDevice();
+  return device == nullptr ? std::string{} : device->getName().toStdString();
+}
+
 void Audition::setView(AuditionView view) {
   const std::scoped_lock guard(impl_->lock);
-  impl_->direct_corner.reset();
-  impl_->direct_cascade.reset();
   impl_->view = std::move(view);
   impl_->pending = design_audition(impl_->view, impl_->sample_rate.load());
-  impl_->pending_fresh = true;
-}
-
-void Audition::setCorner(trench::core::native::Corner corner) {
-  const std::scoped_lock guard(impl_->lock);
-  impl_->direct_cascade.reset();
-  impl_->direct_corner = std::move(corner);
-  impl_->pending = trench::core::native::cascade(
-      trench::core::native::design(*impl_->direct_corner,
-                                   impl_->sample_rate.load()),
-      impl_->direct_corner->gain_db);
-  impl_->pending_fresh = true;
-}
-
-void Audition::setCascade(trench::core::Cascade cascade) {
-  const std::scoped_lock guard(impl_->lock);
-  impl_->direct_corner.reset();
-  impl_->direct_cascade = cascade;
-  impl_->pending = std::move(cascade);
   impl_->pending_fresh = true;
 }
 

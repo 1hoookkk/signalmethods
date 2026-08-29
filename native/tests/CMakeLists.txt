@@ -1,0 +1,37 @@
+find_package(Qt6 6.11.1 EXACT REQUIRED COMPONENTS Gui Test)
+
+add_executable(trench_native_tests
+  harness.hpp
+  test_main.cpp
+  test_cascade.cpp
+)
+target_link_libraries(trench_native_tests PRIVATE trench_native_ui Qt6::Test)
+
+set(TRENCH_NATIVE_TEST_CASES
+  absent_zero_exports_flat
+  cascade_parity_graph_ears_export
+  legacy_export_size_and_legality
+  off_section_exports_identity
+  s6_zero_export_law_is_the_existing_one
+)
+
+set(TRENCH_NATIVE_TEST_NAMES)
+foreach(case IN LISTS TRENCH_NATIVE_TEST_CASES)
+  add_test(NAME native.${case} COMMAND trench_native_tests ${case})
+  list(APPEND TRENCH_NATIVE_TEST_NAMES native.${case})
+endforeach()
+add_test(NAME native.ctest_registry
+  COMMAND trench_native_tests --registry ${TRENCH_NATIVE_TEST_CASES})
+list(APPEND TRENCH_NATIVE_TEST_NAMES native.ctest_registry)
+set_tests_properties(${TRENCH_NATIVE_TEST_NAMES}
+  PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+
+if(WIN32 AND TARGET Qt6::QOffscreenIntegrationPlugin)
+  add_custom_command(TARGET trench_native_tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+      "$<TARGET_FILE_DIR:trench_native_tests>/platforms"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "$<TARGET_FILE:Qt6::QOffscreenIntegrationPlugin>"
+      "$<TARGET_FILE_DIR:trench_native_tests>/platforms/qoffscreen.dll"
+  )
+endif()
