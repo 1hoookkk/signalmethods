@@ -238,6 +238,9 @@ MainWindow::MainWindow(QWidget* parent)
   analyze_button_->setObjectName(QStringLiteral("analyze"));
   analyze_button_->setEnabled(false);
   sections_button_ = new QPushButton(QStringLiteral("SECTIONS"), central);
+  auto* projection = new QPushButton(QStringLiteral("F×BW"), central);
+  projection->setCheckable(true);
+  projection->setFixedHeight(28);
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
   tilt_button_ = new QPushButton(QStringLiteral("TILT"), central);
@@ -268,13 +271,14 @@ MainWindow::MainWindow(QWidget* parent)
   save->setFont(captionFont(save));
   analyze_button_->setFont(captionFont(analyze_button_));
   sections_button_->setFont(captionFont(sections_button_));
+  projection->setFont(captionFont(projection));
   tilt_button_->setFont(captionFont(tilt_button_));
   template_shelf_->setFont(captionFont(template_shelf_));
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
   reference_label_->setFont(valueFont(reference_label_));
   for (QWidget* chrome : std::initializer_list<QWidget*>{
-           load, save, analyze_button_, sections_button_, tilt_button_, keep,
-           template_shelf_, overlay_shelf_}) {
+           load, save, analyze_button_, sections_button_, projection,
+           tilt_button_, keep, template_shelf_, overlay_shelf_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
   }
   top->addWidget(load);
@@ -284,27 +288,29 @@ MainWindow::MainWindow(QWidget* parent)
   top->addWidget(tilt_button_);
   top->addWidget(overlay_shelf_);
   top->addStretch(1);
+  top->addWidget(projection);
   top->addWidget(sections_button_);
   top->addWidget(analyze_button_);
   top->addWidget(save);
   layout->addLayout(top);
 
-  // THE EDITOR IS THE SURFACE (Tyson 2026-08-28 "direct armadillo editor"):
-  // the cascade is a fixed monitor above, the plane below owns the height.
+  // THE RESPONSE TAKES THE THRONE (Tyson 2026-08-29 "i agree with the
+  // patent"): the aggregate curve owns the height, the plane is a compact
+  // roots pane below.
   cascade_plot_ = new CascadePlot(central);
-  cascade_plot_->setFixedHeight(170);
   morph_pad_ = new MorphPad(&state_, central);
   auto* interior = new QHBoxLayout;
   interior->setSpacing(12);
   interior->addWidget(cascade_plot_, 3);
   interior->addWidget(morph_pad_, 0, Qt::AlignTop);
-  layout->addLayout(interior);
+  layout->addLayout(interior, 1);
 
   candidate_lane_ = new CandidateLane(central);
   layout->addWidget(candidate_lane_);
 
   armadillo_editor_ = new ArmadilloEditor(&state_, central);
-  layout->addWidget(armadillo_editor_, 1);
+  armadillo_editor_->setFixedHeight(230);
+  layout->addWidget(armadillo_editor_);
 
   auto* gestures = new QHBoxLayout;
   gestures->setSpacing(10);
@@ -407,6 +413,14 @@ MainWindow::MainWindow(QWidget* parent)
   connect(load, &QPushButton::clicked, this, &MainWindow::openFile);
   connect(sections_button_, &QPushButton::clicked, this,
           &MainWindow::toggleSectionDesk);
+  connect(projection, &QPushButton::toggled, this,
+          [this, projection](bool z_plane) {
+            projection->setText(z_plane ? QStringLiteral("Z-PLANE")
+                                        : QStringLiteral("F×BW"));
+            armadillo_editor_->setProjection(
+                z_plane ? ArmadilloEditor::Projection::kZPlane
+                        : ArmadilloEditor::Projection::kArmadillo);
+          });
   connect(save, &QPushButton::clicked, this, &MainWindow::saveBody);
   connect(analyze_button_, &QPushButton::clicked, this,
           &MainWindow::analyzeReference);

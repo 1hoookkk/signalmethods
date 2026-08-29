@@ -4,6 +4,7 @@
 
 #include <QFont>
 #include <QFontMetrics>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
@@ -19,11 +20,13 @@ namespace {
 
 constexpr double kLowHz = 20.0;
 constexpr double kHighHz = 20'000.0;
+constexpr double kNyquistHz = 22'050.0;
 
 constexpr QColor kChassis{237, 235, 230};
 constexpr QColor kCard{30, 34, 38};
 constexpr QColor kHairline{50, 55, 59};
-constexpr QColor kGrid{52, 58, 63};
+constexpr QColor kGrid{52, 58, 63, 140};
+constexpr QColor kGridUnity{52, 58, 63};
 constexpr QColor kText{139, 139, 132};
 constexpr QColor kResponse{210, 207, 198};
 constexpr QColor kAddressed{196, 103, 79};
@@ -35,7 +38,7 @@ struct Frame {
   int step_db;
 };
 
-constexpr Frame kNormalFrame{-48.0, 24.0, 12};
+constexpr Frame kNormalFrame{-30.0, 30.0, 10};
 constexpr Frame kTallFrame{-120.0, 96.0, 24};
 
 double finiteDb(double value) {
@@ -152,15 +155,17 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   painter.setFont(scale_font);
 
   painter.setPen(QPen(kGrid, 1.0));
-  constexpr std::array<double, 10> frequency_lines{
-      20.0, 50.0, 100.0, 200.0, 500.0, 1'000.0, 2'000.0,
-      5'000.0, 10'000.0, 20'000.0};
+  // OCTAVE GRID FROM 20 Hz (US 10,514,883's own display law).
+  constexpr std::array<double, 11> frequency_lines{
+      20.0, 40.0, 80.0, 160.0, 320.0, 640.0, 1'280.0,
+      2'560.0, 5'120.0, 10'240.0, 20'480.0};
   for (const double hz : frequency_lines) {
     const double x = xForFrequency(hz, plot);
     painter.drawLine(QPointF{x, plot.top()}, QPointF{x, plot.bottom()});
-    const QString label = hz >= 1000.0
-                              ? QStringLiteral("%1k").arg(hz / 1000.0, 0, 'g', 2)
-                              : QString::number(static_cast<int>(hz));
+    QString label = hz >= 1000.0
+                        ? QStringLiteral("%1k").arg(hz / 1000.0, 0, 'g', 2)
+                        : QString::number(static_cast<int>(hz));
+    if (hz == kNyquistHz) label = QStringLiteral("NYQ");
     painter.setPen(kText);
     painter.drawText(QRectF{x - 28.0, plot.bottom() + 8.0, 56.0, 18.0},
                      Qt::AlignHCenter | Qt::AlignTop, label);
@@ -171,6 +176,8 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   for (int db = first_db; db <= static_cast<int>(high_db);
        db += frame.step_db) {
     const double y = yForDb(static_cast<double>(db), plot, low_db, high_db);
+    const bool unity = db == 0;
+    painter.setPen(QPen(unity ? kGridUnity : kGrid, unity ? 1.5 : 1.0));
     painter.drawLine(QPointF{plot.left(), y}, QPointF{plot.right(), y});
     painter.setPen(kText);
     painter.drawText(QRectF{8.0, y - 9.0, 46.0, 18.0},
@@ -223,7 +230,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   // one line other than when you select a stage"): the complete cascade is
   // the plot; selecting a stage overlays exactly that stage's own curve.
   if (enabled_[selected_section_]) {
-    QPen section_pen(kAddressed, 1.1);
+    QPen section_pen(kAddressed, 1.0);
     section_pen.setCosmetic(true);
     section_pen.setCapStyle(Qt::FlatCap);
     draw_curve(grid_hz_, section_db_[selected_section_], section_pen);
