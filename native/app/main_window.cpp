@@ -134,7 +134,6 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), audition_(std::make_unique<trench::audio::Audition>()) {
   setWindowTitle(QStringLiteral("TRENCH · 6 × 2P2Z"));
   resize(1180, 860);
-  setMinimumSize(900, 700);
   loadUserShelf();
 
   auto* central = new QWidget(this);
@@ -162,7 +161,7 @@ MainWindow::MainWindow(QWidget* parent)
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
   reference_label_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-  reference_label_->setMinimumWidth(90);
+  reference_label_->setMinimumWidth(40);
   tilt_button_ = new QPushButton(QStringLiteral("TILT"), central);
   tilt_button_->setCheckable(true);
   tilt_button_->setObjectName(QStringLiteral("tiltSwitch"));
@@ -170,7 +169,7 @@ MainWindow::MainWindow(QWidget* parent)
   template_shelf_ = new QComboBox(central);
   template_shelf_->setObjectName(QStringLiteral("templateShelf"));
   template_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  template_shelf_->setMinimumContentsLength(9);
+  template_shelf_->setMinimumContentsLength(5);
   template_shelf_->addItem(QStringLiteral("TEMPLATE"));
   for (const auto& entry : trench::app::kTemplateShelf) {
     template_shelf_->addItem(QString::fromUtf8(entry.name));
@@ -178,7 +177,7 @@ MainWindow::MainWindow(QWidget* parent)
   overlay_shelf_ = new QComboBox(central);
   overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
   overlay_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  overlay_shelf_->setMinimumContentsLength(9);
+  overlay_shelf_->setMinimumContentsLength(5);
   overlay_shelf_->addItem(QStringLiteral("OVERLAY"));
   for (const auto& entry : trench::app::kTemplateShelf) {
     overlay_shelf_->addItem(QString::fromUtf8(entry.name));
@@ -315,7 +314,7 @@ MainWindow::MainWindow(QWidget* parent)
     QMainWindow, QWidget { background: #edebe6; color: #26241f; }
     QPushButton, QComboBox, QDoubleSpinBox {
         background: #f6f4ef; border: 1px solid #c9c4b8; border-radius: 4px;
-        padding: 0px 12px; min-height: 26px; color: #26241f; }
+        padding: 0px 8px; min-height: 26px; color: #26241f; }
     QPushButton:hover, QComboBox:hover, QDoubleSpinBox:hover {
         border-color: #a8a296; }
     QPushButton:focus, QComboBox:focus, QDoubleSpinBox:focus {

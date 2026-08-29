@@ -2,6 +2,7 @@
 
 #include "main_window.hpp"
 
+#include <QComboBox>
 #include <QDir>
 #include <QPixmap>
 #include <QPushButton>
@@ -44,6 +45,16 @@ TRENCH_TEST(window_smoke_at_minimum_and_normal_size) {
 
   const QSize least = window.minimumSizeHint();
   std::printf("minimum size hint %dx%d\n", least.width(), least.height());
+  for (QWidget* child : window.findChildren<QWidget*>()) {
+    const bool chrome = qobject_cast<QPushButton*>(child) != nullptr ||
+                        qobject_cast<QComboBox*>(child) != nullptr ||
+                        child->objectName() == QStringLiteral("referenceName");
+    if (!chrome || child->minimumSizeHint().width() <= 0) continue;
+    std::printf("  %-18s %-16s min %4d px\n",
+                child->objectName().toUtf8().constData(),
+                child->property("text").toString().toUtf8().constData(),
+                child->minimumSizeHint().width());
+  }
   window.resize(least);
   QTest::qWait(60);
   capture(window, QStringLiteral("min_armadillo.png"));
