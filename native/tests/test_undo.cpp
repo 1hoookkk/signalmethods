@@ -117,8 +117,8 @@ TRENCH_TEST(zero_habits_add_a_skirt_and_level_trims) {
   for (std::size_t index = 0; index < 4; ++index) CHECK(!state.rootPresent(index, Lane::kZero));
 
   EditorState trench;
-  trench.loadPoles({{1'000.0, 200.0}, {1'500.0, 200.0}, {2'000.0, 200.0},
-                    {3'000.0, 200.0}, {4'000.0, 200.0}, {220.0, 20.0}});
+  trench.loadPoles({{1'000.0, 200.0}, {1'500.0, 200.0}, {2'000.0, 300.0},
+                    {3'000.0, 400.0}, {4'000.0, 500.0}, {220.0, 20.0}});
   const auto sixth = trench.applyZeroHabits();
   CHECK(sixth.skirts == 0 && sixth.trims == 0);
   CHECK(!trench.rootPresent(5, Lane::kZero));
