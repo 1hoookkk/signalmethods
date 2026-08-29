@@ -228,6 +228,53 @@ TRENCH_TEST(praat_formant_table_opens_as_median_poles) {
   CHECK(!trench::app::read_formant_track(native_path(junk)).has_value());
 }
 
+TRENCH_TEST(peq_list_opens_as_poles_and_zeros) {
+  QTemporaryDir dir;
+  CHECK(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("organ.txt"));
+  writeAll(path,
+           QByteArrayLiteral(
+               "Notes:\r\n"
+               "Configurable_PEQ\r\n"
+               "Number Enabled Control Type Frequency(Hz) Gain(dB) Q Bandwidth(Hz) TargetT60(ms) \r\n"
+               "1 True Auto PK 147 -36.0 8.06 18.24 \r\n"
+               "2 True Auto PK 203 12.0 1.00 203.0 \r\n"
+               "3 True Auto PK 220 -28.0 5.00 44.00 \r\n"
+               "4 True Auto PK 295 -16.5 5.00 59.00 \r\n"
+               "5 True Auto LS 350 -3.0 0.70 500.0 \r\n"
+               "6 True Auto PK 443 -14.4 5.00 88.60 \r\n"
+               "7 True Auto PK 473 9.2 6.99 67.67 \r\n"
+               "8 False Auto PK 900 -6.0 4.00 225.0 \r\n"));
+  CHECK(trench::app::classify_import(native_path(path)) == ImportKind::kResponseTable);
+  const auto list = trench::app::read_peq_list(native_path(path));
+  CHECK(list.has_value());
+  CHECK(list->poles.size() == 4);
+  CHECK(list->zeros.size() == 2);
+  CHECK(list->skipped == 2);
+  CHECK(list->poles[0].first == 147.0);
+  CHECK(list->poles[0].second == 18.24);
+  CHECK(list->poles[3].first == 443.0);
+  CHECK(list->zeros[1].first == 473.0);
+  CHECK(list->zeros[1].second == 67.67);
+
+  EditorState state;
+  trench::app::applyPeqList(state, *list);
+  CHECK(state.sectionEnabled(0) && state.sectionEnabled(3));
+  CHECK(!state.sectionEnabled(4));
+  CHECK(std::get<trench::core::native::Resonant>(state.section(1).pole).hz == 220.0);
+  CHECK(state.rootPresent(1, EditorState::Lane::kZero));
+  CHECK(std::get<trench::core::native::Resonant>(state.section(1).zero).hz == 203.0);
+  CHECK(state.rootPresent(3, EditorState::Lane::kZero));
+  CHECK(std::get<trench::core::native::Resonant>(state.section(3).zero).hz == 473.0);
+  CHECK(!state.rootPresent(0, EditorState::Lane::kZero));
+  CHECK(!state.rootPresent(2, EditorState::Lane::kZero));
+
+  const QString plain = dir.filePath(QStringLiteral("curve.txt"));
+  writeAll(plain, QByteArrayLiteral("20 3.0\n100 2.5\n1000 1.0\n"));
+  CHECK(!trench::app::read_peq_list(native_path(plain)).has_value());
+  CHECK(trench::app::read_response_curve(native_path(plain)).has_value());
+}
+
 TRENCH_TEST(positive_response_table_is_not_pole_material) {
   QTemporaryDir dir;
   CHECK(dir.isValid());

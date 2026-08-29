@@ -181,4 +181,89 @@ std::optional<FormantTrack> read_formant_track(const std::filesystem::path& path
   return track;
 }
 
+namespace {
+
+std::vector<std::string> splitSpaces(const std::string& line) {
+  std::vector<std::string> cells;
+  std::string cell;
+  for (const char letter : line) {
+    if (letter == ' ' || letter == '\t' || letter == '\r' || letter == '\n') {
+      if (!cell.empty()) cells.push_back(cell);
+      cell.clear();
+    } else {
+      cell.push_back(letter);
+    }
+  }
+  if (!cell.empty()) cells.push_back(cell);
+  return cells;
+}
+
+std::optional<std::size_t> columnOf(const std::vector<std::string>& header,
+                                    const std::string& name) {
+  const auto found = std::find(header.begin(), header.end(), name);
+  if (found == header.end()) return std::nullopt;
+  return static_cast<std::size_t>(found - header.begin());
+}
+
+}  // namespace
+
+std::optional<PeqList> read_peq_list(const std::filesystem::path& path) {
+  std::ifstream stream(path);
+  if (!stream) return std::nullopt;
+  std::string line;
+  bool declared = false;
+  std::vector<std::string> header;
+  for (std::size_t seen = 0; seen < 8 && std::getline(stream, line); ++seen) {
+    const auto cells = splitSpaces(line);
+    if (cells.size() == 1 && cells.front() == "Configurable_PEQ") declared = true;
+    if (declared && !cells.empty() && cells.front() == "Number") {
+      header = cells;
+      break;
+    }
+  }
+  if (!declared || header.empty()) return std::nullopt;
+  const auto enabled = columnOf(header, "Enabled");
+  const auto type = columnOf(header, "Type");
+  const auto frequency = columnOf(header, "Frequency(Hz)");
+  const auto gain = columnOf(header, "Gain(dB)");
+  const auto quality = columnOf(header, "Q");
+  const auto bandwidth = columnOf(header, "Bandwidth(Hz)");
+  if (!enabled || !type || !frequency || !gain || (!quality && !bandwidth)) return std::nullopt;
+
+  PeqList list;
+  while (std::getline(stream, line)) {
+    const auto cells = splitSpaces(line);
+    if (cells.empty()) continue;
+    const std::size_t needed = std::max({*enabled, *type, *frequency, *gain,
+                                         quality ? *quality : 0, bandwidth ? *bandwidth : 0});
+    if (cells.size() <= needed) {
+      ++list.skipped;
+      continue;
+    }
+    if (cells[*enabled] != "True" || cells[*type] != "PK") {
+      ++list.skipped;
+      continue;
+    }
+    const auto number = [&](std::size_t index) -> std::optional<double> {
+      char* end = nullptr;
+      const double value = std::strtod(cells[index].c_str(), &end);
+      if (end == cells[index].c_str() || !std::isfinite(value)) return std::nullopt;
+      return value;
+    };
+    const auto hz = number(*frequency);
+    const auto db = number(*gain);
+    std::optional<double> bw = bandwidth ? number(*bandwidth) : std::nullopt;
+    if (!bw && quality) {
+      if (const auto q = number(*quality); q && *q > 0.0 && hz) bw = *hz / *q;
+    }
+    if (!hz || !db || !bw || !(*hz > 0.0) || !(*bw > 0.0) || *db == 0.0) {
+      ++list.skipped;
+      continue;
+    }
+    (*db < 0.0 ? list.poles : list.zeros).emplace_back(*hz, *bw);
+  }
+  if (list.poles.empty() && list.zeros.empty()) return std::nullopt;
+  return list;
+}
+
 }  // namespace trench::app

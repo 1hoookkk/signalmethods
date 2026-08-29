@@ -30,6 +30,12 @@ struct FormantTrack {
   std::size_t frames{};
 };
 
+struct PeqList {
+  PoleRows poles;
+  PoleRows zeros;
+  std::size_t skipped{};
+};
+
 [[nodiscard]] std::string lower_extension(const std::filesystem::path& path);
 [[nodiscard]] ImportKind classify_import(const std::filesystem::path& path);
 [[nodiscard]] std::optional<ResponseCurve> read_response_curve(
@@ -38,5 +44,6 @@ struct FormantTrack {
     const std::filesystem::path& path);
 [[nodiscard]] std::optional<FormantTrack> read_formant_track(
     const std::filesystem::path& path);
+[[nodiscard]] std::optional<PeqList> read_peq_list(const std::filesystem::path& path);
 
 }  // namespace trench::app

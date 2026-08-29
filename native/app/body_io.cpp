@@ -12,8 +12,10 @@
 #include <QJsonValue>
 #include <QSaveFile>
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <optional>
 #include <variant>
 
 namespace trench::app {
@@ -75,6 +77,28 @@ QString saveBody240(const EditorState& state, const QString& path) {
   return writeAtomically(
       path, QByteArray(reinterpret_cast<const char*>(bytes.data()),
                        static_cast<qsizetype>(bytes.size())));
+}
+
+void applyPeqList(EditorState& state, const PeqList& list) {
+  state.loadPoles(list.poles);
+  const std::size_t sections =
+      std::min(list.poles.size(), trench::core::native::kSections);
+  for (const auto& [hz, bw_hz] : list.zeros) {
+    std::optional<std::size_t> best;
+    double best_distance = 0.0;
+    for (std::size_t index = 0; index < sections; ++index) {
+      if (state.rootPresent(index, EditorState::Lane::kZero)) continue;
+      const double distance = std::abs(std::log2(hz / list.poles[index].first));
+      if (!best || distance < best_distance) {
+        best = index;
+        best_distance = distance;
+      }
+    }
+    if (!best) break;
+    state.selectSection(*best);
+    state.addZeroAt(hz, bw_hz);
+  }
+  state.selectSection(0);
 }
 
 QString saveDocument(const EditorState::Document& document, const QString& path) {

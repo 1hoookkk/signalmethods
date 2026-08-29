@@ -490,6 +490,15 @@ void MainWindow::openFile() {
       return;
     }
     case trench::app::ImportKind::kResponseTable: {
+      if (const auto peq = trench::app::read_peq_list(path)) {
+        trench::app::applyPeqList(state_, *peq);
+        status_label_->setText(
+            QStringLiteral("PEQ · %1 POLES · %2 ZEROS · %3 SKIPPED")
+                .arg(std::min(peq->poles.size(), trench::core::native::kSections))
+                .arg(peq->zeros.size())
+                .arg(peq->skipped));
+        return;
+      }
       const auto curve = trench::app::read_response_curve(path);
       if (!curve) {
         status_label_->setText(

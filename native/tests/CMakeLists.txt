@@ -27,6 +27,7 @@ set(TRENCH_NATIVE_TEST_CASES
   legacy_export_size_and_legality
   off_section_exports_identity
   pole_material_rejects_negative_rows
+  peq_list_opens_as_poles_and_zeros
   positive_response_table_is_not_pole_material
   praat_formant_table_opens_as_median_poles
   s6_zero_export_law_is_the_existing_one
