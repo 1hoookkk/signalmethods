@@ -1,5 +1,6 @@
 #pragma once
 #include "SelectorLookAndFeel.h"
+#include "Primitives.h"
 #include "Theme.h"
 #include "../dsp/FuncGenPatterns.h"
 #include "../parameters/TrenchParameters.h"
@@ -66,33 +67,17 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // THE DOCK RAIL (Tyson 2026-08-29): one permanent utility rail under Q.
-        // Two physical section headers - GAIN and MOVE - each a latch triangle
-        // and an engraved word; MOVE carries its live status beside it so the
-        // face says what is moving even with both bays shut.
+        // THE DOCK RAIL: two Words with a latch. 2 GEN carries its live status.
         const auto b = getLocalBounds().toFloat();
         for (int i = 0; i < kNumSections; ++i)
         {
-            const bool lit = (open & (1 << i)) != 0;
-            const float ink = lit ? 0.92f : hoverIdx == i ? 0.75f : 0.58f;
             const auto r = wordRect (i);
-            juce::Path tri;
-            const float cx = r.getX() + 4.0f, cy = r.getCentreY();
-            if (lit) tri.addTriangle (cx - 3.0f, cy - 1.5f, cx + 3.0f, cy - 1.5f, cx, cy + 2.5f);
-            else     tri.addTriangle (cx - 1.5f, cy - 3.0f, cx - 1.5f, cy + 3.0f, cx + 2.5f, cy);
-            g.setColour (t.labelInk().withAlpha (ink));
-            g.fillPath (tri);
-            g.setFont (t.smallLabel (true));
-            g.drawText (kNames[i], r.withTrimmedLeft (10.0f).withWidth (44.0f).toNearestInt(),
-                        juce::Justification::centredLeft, false);
+            const auto s = stateOf ((open & (1 << i)) != 0, hoverIdx == i);
+            paintWord (g, r.withWidth (54.0f), kNames[i], s, t, { false, true, 0.0f });
             if (i == kMovement && status.isNotEmpty())
-            {
-                g.setFont (telemetryFont (8.5f, false));
-                g.setColour (t.labelInk().withAlpha (0.70f));
-                g.drawText (status, r.withTrimmedLeft (56.0f).toNearestInt(),
-                            juce::Justification::centredLeft, false);
-            }
+                paintWord (g, r.withTrimmedLeft (56.0f), status, ControlState::rest, t, { false, false, 8.5f });
         }
+        juce::ignoreUnused (b);
     }
     // light, plain popup — the E-mu/'95 menu, not the dark glass family.
     // The rail has no menu of its own any more; the MOVEMENT chip's list and

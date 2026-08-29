@@ -1,3 +1,4 @@
+#include "ui/DockBays.h"
 #include "PluginEditor.h"
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
@@ -27,74 +28,6 @@ constexpr float kBayRight = 249.0f;   // the readout column's right edge (source
 // nothing else moves and the face never changes size.
 constexpr int kRailY = 312, kRailH = 13, kBayY = 330, kBayRowH = 32;
 constexpr int kGainX = 35, kGainW = 116, kMoveX = 150, kMoveW = 92;
-namespace
-{
-// A printed state, not a control: the gain stage trims itself.
-struct AutoTrimMark final : juce::Component
-{
-    explicit AutoTrimMark (const trench::ui::Theme& theme) : t (theme) { setInterceptsMouseClicks (false, false); }
-    void paint (juce::Graphics& g) override
-    {
-        const auto b = getLocalBounds().toFloat();
-        g.setColour (t.modulationLamp());
-        g.fillEllipse (b.getX() + 1.0f, b.getCentreY() - 2.5f, 5.0f, 5.0f);
-        g.setFont (trench::ui::telemetryFont (8.5f, false));
-        g.setColour (t.labelInk().withAlpha (0.70f));
-        g.drawText ("AUTO TRIM", b.withTrimmedLeft (10.0f).toNearestInt(), juce::Justification::centredLeft, false);
-    }
-    trench::ui::Theme t;
-};
-// The MOVEMENT bay is preset-first: the phrase with its steppers, then the
-// rate. Deeper parameters stay behind the phrase list.
-struct MovementBay final : juce::Component
-{
-    explicit MovementBay (const trench::ui::Theme& theme) : t (theme) { setMouseCursor (juce::MouseCursor::PointingHandCursor); }
-    std::function<void (int)> onStep;
-    std::function<void()>     onOpenMenu;
-    void setState (const juce::String& n, const juce::String& r, bool a)
-    {
-        if (n == name && r == rate && a == active) return;
-        name = n; rate = r; active = a; repaint();
-    }
-    void mouseUp (const juce::MouseEvent& e) override
-    {
-        const auto b = getLocalBounds().toFloat();
-        if (e.position.y > 26.0f) return;
-        if (e.position.x < 16.0f)                { if (onStep) onStep (-1); }
-        else if (e.position.x > b.getRight() - 16.0f) { if (onStep) onStep (1); }
-        else if (onOpenMenu) onOpenMenu();
-    }
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
-    {
-        if (onStep && ! juce::approximatelyEqual (w.deltaY, 0.0f)) onStep (w.deltaY > 0 ? 1 : -1);
-    }
-    void paint (juce::Graphics& g) override
-    {
-        const auto b = getLocalBounds().toFloat();
-        const auto ink = t.labelInk();
-        g.setFont (trench::ui::telemetryFont (8.0f, false));
-        g.setColour (ink.withAlpha (0.55f));
-        g.drawText ("PRESET", b.withHeight (10.0f).toNearestInt(), juce::Justification::centredLeft, false);
-        const auto row = juce::Rectangle<float> (b.getX(), b.getY() + 11.0f, b.getWidth(), 16.0f);
-        trench::ui::drawMutedBoneReadout (g, row, 3.0f, false, t);
-        g.setColour (juce::Colour (0xff2a2722));
-        juce::Path l, r;
-        l.addTriangle (row.getX() + 9.0f, row.getCentreY() - 3.5f, row.getX() + 9.0f, row.getCentreY() + 3.5f, row.getX() + 4.5f, row.getCentreY());
-        r.addTriangle (row.getRight() - 9.0f, row.getCentreY() - 3.5f, row.getRight() - 9.0f, row.getCentreY() + 3.5f, row.getRight() - 4.5f, row.getCentreY());
-        g.fillPath (l); g.fillPath (r);
-        g.setFont (trench::ui::displayFont (10.0f, false));
-        g.drawText (name, row.reduced (12.0f, 0.0f).toNearestInt(), juce::Justification::centred, false);
-        g.setFont (trench::ui::telemetryFont (8.0f, false));
-        g.setColour (ink.withAlpha (0.55f));
-        g.drawText ("RATE", juce::Rectangle<float> (b.getX(), b.getY() + 33.0f, 30.0f, 10.0f).toNearestInt(), juce::Justification::centredLeft, false);
-        g.setColour (ink.withAlpha (0.85f));
-        g.drawText (rate, juce::Rectangle<float> (b.getX() + 30.0f, b.getY() + 33.0f, b.getWidth() - 30.0f, 10.0f).toNearestInt(), juce::Justification::centredLeft, false);
-    }
-    trench::ui::Theme t;
-    juce::String name { "OFF" }, rate;
-    bool active = false;
-};
-}
 constexpr int kFxChipH = 17;
 #if TRENCH_GOD_MODE || defined (TRENCH_PLAYER_DIAGNOSTICS)
 juce::File layoutWatchFile()
@@ -306,9 +239,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     followKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::envAmount, "Follow");
     for (auto* k : { preampKnob.get(), chewKnob.get(), followKnob.get() })
         k->setScale (0.75f);
-    autoTrim   = std::make_unique<AutoTrimMark> (theme);
+    autoTrim   = std::make_unique<trench::ui::AutoTrimMark> (theme);
     {
-        auto bay = std::make_unique<MovementBay> (theme);
+        auto bay = std::make_unique<trench::ui::MovementBay> (theme);
         bay->onStep     = [this] (int dir) { if (movementChip->onStep) movementChip->onStep (dir); };
         bay->onOpenMenu = [this] { if (movementChip->onOpenMenu) movementChip->onOpenMenu(); };
         movementBay = std::move (bay);
@@ -777,7 +710,7 @@ void PluginEditor::onFrame()
         juce::String rate;
         if (auto* div = dynamic_cast<juce::AudioParameterChoice*> (processor.apvts.getParameter (ParamID::moveDivision)))
             rate = div->getCurrentChoiceName();
-        static_cast<MovementBay*> (movementBay.get())->setState (preset <= 0 ? juce::String ("OFF") : moveName, rate, processor.isMorphModulatedForUi());
+        static_cast<trench::ui::MovementBay*> (movementBay.get())->setState (preset <= 0 ? juce::String ("OFF") : moveName, rate, processor.isMorphModulatedForUi());
         sectionRail->setStatus (preset <= 0 ? juce::String ("OFF") : moveName + (rate.isNotEmpty() ? "  " + rate : juce::String()));
     }
     const auto read = [this] (const char* paramID)

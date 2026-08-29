@@ -1,4 +1,5 @@
 #pragma once
+#include "Primitives.h"
 #include "Theme.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <functional>
@@ -67,23 +68,10 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        const auto b = getLocalBounds().toFloat();
-        const juce::Rectangle<float> lamp { b.getX() + 1.0f, b.getCentreY() - kLampD * 0.5f,
-                                            kLampD, kLampD };
-        const bool glowing = hover || menuOpen;
-        const auto quietInk = onPlate ? t.labelInk() : t.telemetry();
-        g.setColour (active ? t.modulationLamp()
-                            : t.labelInk().withAlpha (glowing ? 0.80f : 0.45f));
-        g.fillEllipse (lamp);
-        if (glowing)
-        {
-            g.setColour ((active ? t.modulationLamp() : quietInk).withAlpha (0.25f));
-            g.fillEllipse (lamp.expanded (2.0f));
-        }
-        g.setFont (telemetryFont (kNamePt));
-        g.setColour (quietInk.withAlpha (glowing ? 0.95f : (active ? 0.80f : 0.55f)));
-        g.drawText (kWord, b.withTrimmedLeft (kLampD + kLampGap + 1.0f),
-                    juce::Justification::centredLeft, false);
+        // The Modulation Word on the glass: lamp lit while the wheel is
+        // travelling, the word takes the plate's ink when seated on plate.
+        paintWord (g, getLocalBounds().toFloat(), kWord, stateOf (active, hover || menuOpen), t,
+                   { true, false, kNamePt });
     }
 private:
     static constexpr const char* kWord = "Modulation";
