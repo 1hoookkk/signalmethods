@@ -20,15 +20,15 @@ public:
     {
         UiLayout layout;
 
-        layout.elements["morphWheel"]   = { { 126.9f, 675.1f, 442.8f, 99.7f }, {}, {} };
-        layout.elements["qWheel"]       = { { 126.9f, 840.5f, 442.8f, 103.4f }, {}, {} };
+        layout.elements["morphWheel"]   = { { 109.8f, 675.1f, 442.8f, 99.7f }, {}, {} };
+        layout.elements["qWheel"]       = { { 109.8f, 840.5f, 442.8f, 103.4f }, {}, {} };
         layout.elements["typeSelector"] = { { 230.0f, 139.0f, 666.6f, 68.0f },  {}, {} };
 
         layout.elements["colorRow"]     = { { 126.9f, 978.1f, 769.7f, 247.6f }, {}, {} };
         layout.elements["keyBox"]       = { { 551.6f, 65.0f, 345.0f, 62.0f }, {}, {} };
 
-        layout.elements["morphReadout"] = { { 591.7f, 697.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
-        layout.elements["qReadout"]     = { { 591.7f, 864.3f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
+        layout.elements["morphReadout"] = { { 574.6f, 697.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qReadout"]     = { { 574.6f, 864.3f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
 
         layout.elements["spectrumGrid"] = { { 126.9f, 227.8f, 769.7f, 383.7f }, {}, {} };
 
@@ -37,9 +37,9 @@ public:
 
         layout.elements["typeName"]     = { { 244.0f, 143.0f, 522.0f, 64.0f },  18.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeArrow"]    = { { 841.6f, 143.0f, 52.0f,  64.0f },  {}, {} };
-        layout.elements["morphLabel"]   = { { 126.9f, 640.0f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
+        layout.elements["morphLabel"]   = { { 109.8f, 640.0f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["morphLabel"].text = "MORPH";
-        layout.elements["qLabel"]       = { { 126.9f, 798.0f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qLabel"]       = { { 109.8f, 798.0f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
 
         layout.elements["brandLabel"]   = { { 126.9f, 73.0f, 230.0f, 44.0f }, 18.5f, juce::Colour (0xff0f0c09) };
