@@ -75,6 +75,17 @@ void CascadePlot::setCascade(
     response_db_.push_back(finiteDb(trench::core::cascade_response_db(
         six_sections, hz, sample_rate_hz)));
   }
+  double level = 0.0;
+  std::size_t counted = 0;
+  for (std::size_t index = 0; index < grid_hz_.size(); ++index) {
+    if (grid_hz_[index] < 100.0 || grid_hz_[index] > 10'000.0) continue;
+    level += response_db_[index];
+    ++counted;
+  }
+  if (counted > 0) {
+    level /= static_cast<double>(counted);
+    for (double& db : response_db_) db -= level;
+  }
   for (std::size_t section = 0; section < section_db_.size(); ++section) {
     section_db_[section].clear();
     if (!enabled_[section]) continue;
