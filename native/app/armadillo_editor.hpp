@@ -21,6 +21,15 @@ class ArmadilloEditor final : public QWidget {
   void setGhost(std::vector<std::pair<double, double>> poles);
   void clearGhost();
 
+  [[nodiscard]] QPointF discCentre() const;
+  [[nodiscard]] double discRadius() const;
+  [[nodiscard]] QPointF pointFor(double frequency_hz,
+                                 double bandwidth_hz) const;
+  [[nodiscard]] std::optional<std::pair<double, double>> placementAt(
+      const QPointF& position) const;
+  [[nodiscard]] std::pair<double, double> dragTargetAt(
+      const QPointF& position) const;
+
  protected:
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
@@ -45,11 +54,6 @@ class ArmadilloEditor final : public QWidget {
   using Key = std::pair<std::size_t, EditorState::Lane>;
 
   [[nodiscard]] QRectF field() const;
-  [[nodiscard]] QPointF discCentre() const;
-  [[nodiscard]] double discRadius() const;
-  [[nodiscard]] QPointF pointFor(double frequency_hz,
-                                 double bandwidth_hz) const;
-  [[nodiscard]] std::pair<double, double> rootAt(const QPointF& position) const;
   [[nodiscard]] std::vector<Handle> handles() const;
   [[nodiscard]] std::optional<Handle> hitHandle(const QPointF& position) const;
   void groupPrimaryOnly();

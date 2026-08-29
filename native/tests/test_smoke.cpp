@@ -1,5 +1,6 @@
 #include "harness.hpp"
 
+#include "armadillo_editor.hpp"
 #include "main_window.hpp"
 
 #include <QComboBox>
@@ -59,6 +60,9 @@ TRENCH_TEST(window_smoke_at_minimum_and_normal_size) {
   QTest::qWait(60);
   capture(window, QStringLiteral("min_armadillo.png"));
   CHECK(plane->height() == 230);
+  auto* editor = static_cast<ArmadilloEditor*>(plane);
+  CHECK(editor->discCentre().y() - editor->discRadius() >= 20.0);
+  CHECK(editor->discCentre().y() + editor->discRadius() <= editor->height() - 2.0);
   CHECK(plot->height() >= 160);
   projection->click();
   capture(window, QStringLiteral("min_zplane.png"));
@@ -70,5 +74,6 @@ TRENCH_TEST(window_smoke_at_minimum_and_normal_size) {
   capture(window, QStringLiteral("normal_armadillo.png"));
   std::printf("plot %d px tall, plane %d px tall at 1180x860\n", plot->height(), plane->height());
   CHECK(plane->height() == 230);
+  CHECK(plot->height() > plane->height());
   window.close();
 }

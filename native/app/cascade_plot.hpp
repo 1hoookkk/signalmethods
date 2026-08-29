@@ -27,7 +27,6 @@ class CascadePlot final : public QWidget {
 
  protected:
   void paintEvent(QPaintEvent* event) override;
-  void wheelEvent(QWheelEvent* event) override;
 
  private:
   [[nodiscard]] double xForFrequency(double frequency_hz,
@@ -46,5 +45,4 @@ class CascadePlot final : public QWidget {
   std::vector<double> formant_hz_;
   std::vector<double> reference_hz_;
   std::vector<double> reference_db_;
-  bool tall_frame_{};
 };

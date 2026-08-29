@@ -7,6 +7,7 @@ add_executable(trench_native_tests
   test_smoke.cpp
   test_cascade.cpp
   test_document.cpp
+  test_zplane.cpp
 )
 target_link_libraries(trench_native_tests PRIVATE trench_native_ui Qt6::Test)
 
@@ -25,6 +26,10 @@ set(TRENCH_NATIVE_TEST_CASES
   positive_response_table_is_not_pole_material
   s6_zero_export_law_is_the_existing_one
   window_smoke_at_minimum_and_normal_size
+  zplane_circle_and_labels_fit_compact_pane
+  zplane_drag_is_bounded_and_mirrors
+  zplane_frequency_bandwidth_roundtrip
+  zplane_rejects_outside_disc_and_lower_half
 )
 
 set(TRENCH_NATIVE_TEST_NAMES)

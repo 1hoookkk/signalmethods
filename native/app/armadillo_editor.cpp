@@ -28,7 +28,22 @@ constexpr QColor kAccent{196, 103, 79};
 constexpr QColor kOverlay{184, 134, 46};
 
 constexpr double kMinDragBandwidthHz = 4.0;
-constexpr double kMaxUnitRadius = 0.999'993'6;
+constexpr double kLowAngle =
+    2.0 * std::numbers::pi * EditorState::kLowHz / EditorState::kDatumHz;
+constexpr double kHighAngle = std::numbers::pi;
+constexpr double kAngleFloor = kLowAngle * (1.0 - 1.0e-9);
+const double kMaxRadius = std::exp(
+    -std::numbers::pi * EditorState::kMinBandwidthHz / EditorState::kDatumHz);
+const double kMinRadius = std::exp(
+    -std::numbers::pi * EditorState::kMaxBandwidthHz / EditorState::kDatumHz);
+
+double frequencyForAngle(double angle) {
+  return angle / (2.0 * std::numbers::pi) * EditorState::kDatumHz;
+}
+
+double bandwidthForRadius(double radius) {
+  return -std::log(radius) * EditorState::kDatumHz / std::numbers::pi;
+}
 
 const Resonant& rootOf(const EditorState& state, std::size_t section,
                        EditorState::Lane lane) {
@@ -53,7 +68,7 @@ QColor faded(QColor color, int alpha) {
 
 ArmadilloEditor::ArmadilloEditor(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {
-  setMinimumHeight(290);
+  setMinimumHeight(230);
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   setMouseTracking(true);
   setCursor(Qt::CrossCursor);
@@ -84,7 +99,7 @@ QPointF ArmadilloEditor::discCentre() const {
 }
 
 double ArmadilloEditor::discRadius() const {
-  return 0.92 * std::min(width(), height()) * 0.5;
+  return std::min(width() * 0.5, height() * 0.5) - 22.0;
 }
 
 QPointF ArmadilloEditor::pointFor(double frequency_hz,
@@ -109,20 +124,30 @@ QPointF ArmadilloEditor::pointFor(double frequency_hz,
           bounds.top() + std::clamp(y_fraction, 0.0, 1.0) * bounds.height()};
 }
 
-std::pair<double, double> ArmadilloEditor::rootAt(
+std::optional<std::pair<double, double>> ArmadilloEditor::placementAt(
+    const QPointF& position) const {
+  if (projection_ != Projection::kZPlane) return dragTargetAt(position);
+  const QPointF offset = (position - discCentre()) / discRadius();
+  const double radius = std::hypot(offset.x(), offset.y());
+  const double angle = std::atan2(0.0 - offset.y(), offset.x());
+  if (radius > 1.0 || angle < kAngleFloor || angle > kHighAngle) {
+    return std::nullopt;
+  }
+  return std::pair<double, double>{
+      frequencyForAngle(angle),
+      bandwidthForRadius(std::clamp(radius, kMinRadius, kMaxRadius))};
+}
+
+std::pair<double, double> ArmadilloEditor::dragTargetAt(
     const QPointF& position) const {
   if (projection_ == Projection::kZPlane) {
     const QPointF offset = (position - discCentre()) / discRadius();
-    const double angle = std::clamp(std::atan2(-offset.y(), offset.x()), 0.0,
-                                    std::numbers::pi);
-    const double radius = std::clamp(
-        std::hypot(offset.x(), offset.y()),
-        std::exp(-std::numbers::pi * EditorState::kMaxBandwidthHz /
-                 EditorState::kDatumHz),
-        kMaxUnitRadius);
-    return {std::clamp(angle / (2.0 * std::numbers::pi) * EditorState::kDatumHz,
-                       EditorState::kLowHz, EditorState::kHighHz),
-            -std::log(radius) * EditorState::kDatumHz / std::numbers::pi};
+    const double angle =
+        std::clamp(std::atan2(std::abs(offset.y()), offset.x()), kLowAngle,
+                   kHighAngle);
+    const double radius = std::clamp(std::hypot(offset.x(), offset.y()),
+                                     kMinRadius, kMaxRadius);
+    return {frequencyForAngle(angle), bandwidthForRadius(radius)};
   }
   const QRectF bounds = field();
   const double x_fraction = std::clamp(
@@ -400,7 +425,7 @@ void ArmadilloEditor::beginDrag(const QPointF& position) {
     const auto& root = rootOf(*state_, key.first, key.second);
     members_.push_back(Member{key.first, key.second, root.hz, root.bw_hz});
   }
-  const auto press = rootAt(position);
+  const auto press = dragTargetAt(position);
   press_hz_ = press.first;
   press_bw_hz_ = press.second;
 }
@@ -440,9 +465,10 @@ void ArmadilloEditor::mousePressEvent(QMouseEvent* event) {
 
 void ArmadilloEditor::mouseDoubleClickEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton || hitHandle(event->position())) return;
-  const auto root = rootAt(event->position());
-  state_->addZeroAt(root.first,
-                    std::max(kMinDragBandwidthHz, root.second));
+  const auto placement = placementAt(event->position());
+  if (!placement) return;
+  state_->addZeroAt(placement->first,
+                    std::max(kMinDragBandwidthHz, placement->second));
 }
 
 void ArmadilloEditor::mouseMoveEvent(QMouseEvent* event) {
@@ -477,7 +503,7 @@ void ArmadilloEditor::mouseReleaseEvent(QMouseEvent* event) {
 
 void ArmadilloEditor::applyPointer(const QPointF& position) {
   if (!drag_) return;
-  const auto now = rootAt(position);
+  const auto now = dragTargetAt(position);
   const double frequency_ratio = now.first / press_hz_;
   const double bandwidth_ratio = now.second / press_bw_hz_;
   for (const Member& member : members_) {

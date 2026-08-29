@@ -8,7 +8,6 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
-#include <QWheelEvent>
 
 #include <algorithm>
 #include <array>
@@ -32,14 +31,9 @@ constexpr QColor kResponse{210, 207, 198};
 constexpr QColor kAddressed{196, 103, 79};
 constexpr QColor kReference{184, 134, 46};
 
-struct Frame {
-  double low_db;
-  double high_db;
-  int step_db;
-};
-
-constexpr Frame kNormalFrame{-30.0, 30.0, 10};
-constexpr Frame kTallFrame{-120.0, 96.0, 24};
+constexpr double kLowDb = -30.0;
+constexpr double kHighDb = 30.0;
+constexpr int kStepDb = 10;
 
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -120.0 : 120.0;
@@ -50,7 +44,7 @@ double finiteDb(double value) {
 
 CascadePlot::CascadePlot(QWidget* parent) : QWidget(parent) {
   setMinimumHeight(160);
-  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   base_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
   grid_hz_ = base_hz_;
 }
@@ -145,9 +139,8 @@ void CascadePlot::paintEvent(QPaintEvent*) {
 
   const QRectF plot = QRectF(rect()).adjusted(62.0, 14.0, -22.0, -38.0);
 
-  const Frame frame = tall_frame_ ? kTallFrame : kNormalFrame;
-  const double low_db = frame.low_db;
-  const double high_db = frame.high_db;
+  const double low_db = kLowDb;
+  const double high_db = kHighDb;
 
   QFont scale_font = painter.font();
   scale_font.setPixelSize(9);
@@ -171,10 +164,9 @@ void CascadePlot::paintEvent(QPaintEvent*) {
                      Qt::AlignHCenter | Qt::AlignTop, label);
     painter.setPen(QPen(kGrid, 1.0));
   }
-  const double step = static_cast<double>(frame.step_db);
+  const double step = static_cast<double>(kStepDb);
   const int first_db = static_cast<int>(std::ceil(low_db / step) * step);
-  for (int db = first_db; db <= static_cast<int>(high_db);
-       db += frame.step_db) {
+  for (int db = first_db; db <= static_cast<int>(high_db); db += kStepDb) {
     const double y = yForDb(static_cast<double>(db), plot, low_db, high_db);
     const bool unity = db == 0;
     painter.setPen(QPen(unity ? kGridUnity : kGrid, unity ? 1.5 : 1.0));
@@ -235,18 +227,8 @@ void CascadePlot::paintEvent(QPaintEvent*) {
     section_pen.setCapStyle(Qt::FlatCap);
     draw_curve(grid_hz_, section_db_[selected_section_], section_pen);
   }
-  QPen response_pen(kResponse, 1.5);
+  QPen response_pen(kResponse, 1.0);
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
   draw_curve(grid_hz_, response_db_, response_pen);
-}
-
-void CascadePlot::wheelEvent(QWheelEvent* event) {
-  if (!event->modifiers().testFlag(Qt::ControlModifier)) {
-    QWidget::wheelEvent(event);
-    return;
-  }
-  tall_frame_ = !tall_frame_;
-  event->accept();
-  update();
 }
