@@ -35,6 +35,7 @@ class MainWindow final : public QMainWindow {
   void applyAuditionSource();
   void chooseOverlay(std::optional<std::size_t> slot);
   void chooseTemplate(std::size_t slot);
+  void openDocument(const QString& chosen);
 
  protected:
   void closeEvent(QCloseEvent* event) override;

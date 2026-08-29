@@ -13,6 +13,7 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDir>
+#include <QDirIterator>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -198,6 +199,19 @@ MainWindow::MainWindow(QWidget* parent)
       mine->addAction(kept.name, this, [this, slot, overlay] {
         if (overlay) chooseOverlay(slot); else chooseTemplate(slot);
       });
+    }
+    if (!overlay) {
+      QMenu* disk = menu->addMenu(QStringLiteral("CUBES ON DISK"));
+      QDirIterator files(QDir::current().filePath(QStringLiteral("recipes/cubes")),
+                         {QStringLiteral("*.trenchbody")}, QDir::Files,
+                         QDirIterator::Subdirectories);
+      std::vector<QString> paths;
+      while (files.hasNext()) paths.push_back(files.next());
+      std::sort(paths.begin(), paths.end());
+      for (const QString& path : paths) {
+        disk->addAction(QFileInfo(path).completeBaseName(), this,
+                        [this, path] { openDocument(path); });
+      }
     }
     button->setMenu(menu);
     return mine;
@@ -475,21 +489,9 @@ void MainWindow::openFile() {
                                  .arg(curve->frequency_hz.size()));
       return;
     }
-    case trench::app::ImportKind::kDocument: {
-      QString error;
-      const auto document = trench::app::loadDocument(chosen, &error);
-      if (!document) {
-        status_label_->setText(
-            QStringLiteral("DOCUMENT REJECTED · %1 · %2").arg(name, error));
-        return;
-      }
-      state_.setDocument(*document);
-      document_path_ = chosen;
-      setWindowTitle(
-          QStringLiteral("TRENCH · %1").arg(QFileInfo(chosen).fileName()));
-      status_label_->setText(QStringLiteral("OPENED · %1").arg(name));
+    case trench::app::ImportKind::kDocument:
+      openDocument(chosen);
       return;
-    }
     case trench::app::ImportKind::kPackedBody:
       loadReference(path);
       return;
@@ -565,6 +567,22 @@ void MainWindow::exportBody240() {
           ? QStringLiteral("EXPORTED · %1")
                 .arg(QFileInfo(chosen).fileName().toUpper())
           : refusal);
+}
+
+void MainWindow::openDocument(const QString& chosen) {
+  const QString name = QFileInfo(chosen).fileName().toUpper();
+  QString error;
+  const auto document = trench::app::loadDocument(chosen, &error);
+  if (!document) {
+    status_label_->setText(
+        QStringLiteral("DOCUMENT REJECTED · %1 · %2").arg(name, error));
+    return;
+  }
+  state_.setDocument(*document);
+  document_path_ = chosen;
+  setWindowTitle(
+      QStringLiteral("TRENCH · %1").arg(QFileInfo(chosen).fileName()));
+  status_label_->setText(QStringLiteral("OPENED · %1").arg(name));
 }
 
 void MainWindow::loadUserShelf() {
