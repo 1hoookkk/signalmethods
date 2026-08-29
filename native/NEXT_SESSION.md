@@ -14,10 +14,10 @@ same index). Commit native work with explicit pathspecs only:
 `git commit -F msg -- <paths>`.
 
 ## What this session closed (all native, all tested)
-- One cascade. `EditorState` renders the document to a `PackedBody`
-  (`export_p2k_body`); graph, ears and `.body240` export all consume
-  `design_audition(view, rate)` from that packed body at every Morph x Q
-  position and device rate. The editor-local log2 lerp is gone. OFF sections
+- One cascade. Graph and ears consume `design_audition(view, rate)` = the
+  core's patent-law blend of the authored body; `.body240` export is the
+  packed body (`export_p2k_body`) of the same document. The editor-local
+  lerp is gone. OFF sections
   and absent zeros are the core's identity roots (`RealRoots{inf, inf}`) and
   export as the identity words; body_io's hand codec is gone.
 - SAVE writes a lossless, versioned `.trenchbody` JSON document (four
@@ -85,10 +85,19 @@ same index). Commit native work with explicit pathspecs only:
   `out/bodies/shelf/` (pole only) and `out/bodies/shelf_zeros/` (habits
   applied, 157 zeros, none on S6): every shelf template as corner 0 with
   corners 1-3 duplicated, canonical export.
-- Pending at wrap: the plain-tool skin (verdict "over-styled for what it
-  is") - an executor is applying paint/fonts only: no stylesheet, white
-  panels with 1 px #c8c8c8 borders, #e6e6e6 grid, black 1 px curves, one
-  accent (#c4674f) for the addressed thing only, default fonts.
+- Plain-tool skin landed (5c6f9c0): no stylesheet, white panels with 1 px
+  #c8c8c8 borders, #e6e6e6 grid, black 1 px curves, one accent (#c4674f) for
+  the addressed thing only, default fonts. Tyson's verdict on it is pending.
+- INTERIOR LAW RESTORED (8818bb0): the graph and the ears run the core's
+  native::blend of the authored body - US 10,514,883 / the ARMAdillo paper's
+  (k1, k2) space: linear in log f and log(1 - r) per root, decoded after, one
+  gain per corner. This morning's packed-word display was wrong against the
+  2026-08-23 ruling and Tyson caught it ("still lying"). The packed words are
+  the export only; test interior_follows_the_patent_law proves the law at
+  morph 0.5 to 1e-6. Corners vs export still differ by lattice + S6 depth.
+- Frame lie still open: a curve past +-30 dB is pinned to the frame edge
+  (a pole at Nyquist / 4 Hz is really +150 dB). Fix: clip instead of clamp
+  and print the true peak in the plot corner and the strip minis.
 
 ## Measured contract facts (report, not fixed — Tyson's call)
 - Lattice quantisation of the core exporter: an authored 250 Hz / 250 Hz pole
@@ -108,7 +117,7 @@ same index). Commit native work with explicit pathspecs only:
 
 ## Evidence classes produced
 - Build: fresh `cmake --preset app` configure + build, then incremental.
-- Tests: 27 CTest cases under `native.*`, all passing headless;
+- Tests: 28 CTest cases under `native.*`, all passing headless;
   the two audible cases pass live with `TRENCH_AUDIBLE=1` and skip otherwise.
 - Packed parity: graph vs export re-import 0 dB delta over 3 rates x 8
   positions x 240 grid points; exported words legal (`p2k::is_legal`,
