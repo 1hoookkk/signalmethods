@@ -184,9 +184,9 @@ public:
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         juce::Graphics::ScopedSaveState slotClip (g);
         {
-            const auto slot = wheelRect.reduced (2.0f, 2.4f);
+            const auto slot = wheelRect.reduced (4.7f, 5.0f);
             juce::Path opening;
-            opening.addRoundedRectangle (slot, slot.getHeight() * 0.34f);
+            opening.addRoundedRectangle (slot, slot.getHeight() * 0.22f);
             g.reduceClipRegion (opening);
         }
 
