@@ -1,3 +1,5 @@
+#include <QFontMetrics>
+#include <algorithm>
 #include "gesture_dial.hpp"
 
 #include <QFont>
@@ -27,7 +29,11 @@ GestureDial::GestureDial(QString label, double units_per_pixel,
       label_(std::move(label)),
       units_per_pixel_(units_per_pixel),
       formatter_(std::move(formatter)) {
-  setFixedSize(86, 44);
+  QFont measure = font();
+  measure.setPixelSize(10);
+  measure.setWeight(QFont::DemiBold);
+  measure.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
+  setFixedSize(std::max(86, QFontMetrics(measure).horizontalAdvance(label_.toUpper()) + 16), 44);
   setCursor(Qt::SizeVerCursor);
   setAccessibleName(label_);
 }

@@ -86,20 +86,6 @@ void SectionStrip::paintEvent(QPaintEvent*) {
                              : QBrush(Qt::NoBrush));
     painter.drawEllipse(lamp, 3.0, 3.0);
 
-    painter.setPen(QPen(color, 1.0));
-    painter.setBrush(Qt::NoBrush);
-    const QPointF pole_mark{bounds.left() + 29.0, bounds.top() + 13.0};
-    painter.drawEllipse(pole_mark, 3.0, 3.0);
-    if (state_->rootPresent(index, EditorState::Lane::kZero)) {
-      const QPointF zero_mark{bounds.left() + 43.0, bounds.top() + 13.0};
-      QPainterPath diamond;
-      diamond.moveTo(zero_mark + QPointF{0.0, -3.5});
-      diamond.lineTo(zero_mark + QPointF{3.5, 0.0});
-      diamond.lineTo(zero_mark + QPointF{0.0, 3.5});
-      diamond.lineTo(zero_mark + QPointF{-3.5, 0.0});
-      diamond.closeSubpath();
-      painter.drawPath(diamond);
-    }
 
     // An OFF slot claims nothing (Tyson 2026-08-28 "make it transparent to
     // whats happening"): no curve until the stage exists in the cascade.
