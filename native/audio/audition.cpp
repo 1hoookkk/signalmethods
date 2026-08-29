@@ -37,7 +37,7 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
   juce::AudioDeviceManager manager;
   std::mutex lock;
   AuditionView view;
-  trench::core::Cascade pending{};
+  trench::core::EncodedCascade pending{};
   bool pending_fresh{};
   std::shared_ptr<const MonoClip> pending_clip;
   bool clip_fresh{};
@@ -59,7 +59,7 @@ struct Audition::Impl final : public juce::AudioIODeviceCallback {
     sample_rate.store(actual_rate);
     {
       const std::scoped_lock guard(lock);
-      pending = design_audition(view, actual_rate);
+      pending = trench::core::encode_cascade(design_audition(view, actual_rate));
       pending_fresh = true;
     }
     runner.reset();
@@ -166,7 +166,8 @@ std::string Audition::deviceName() const {
 void Audition::setView(AuditionView view) {
   const std::scoped_lock guard(impl_->lock);
   impl_->view = std::move(view);
-  impl_->pending = design_audition(impl_->view, impl_->sample_rate.load());
+  impl_->pending = trench::core::encode_cascade(
+      design_audition(impl_->view, impl_->sample_rate.load()));
   impl_->pending_fresh = true;
 }
 

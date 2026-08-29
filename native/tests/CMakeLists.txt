@@ -8,6 +8,7 @@ add_executable(trench_native_tests
   test_smoke.cpp
   test_cascade.cpp
   test_document.cpp
+  test_runner.cpp
   test_undo.cpp
   test_zplane.cpp
 )
@@ -25,9 +26,9 @@ set(TRENCH_NATIVE_TEST_CASES
   document_load_restores_editable_state_not_overlay
   document_rejects_malformed
   document_roundtrip_is_lossless_and_deterministic
+  encoding_round_trips_a_cascade
   armadillo_encoding_round_trips
   import_classification_by_extension
-  interior_is_the_armadillo_word_lerp_within_the_papers_error
   legacy_export_size_and_legality
   off_section_exports_identity
   pole_material_rejects_negative_rows
@@ -35,9 +36,11 @@ set(TRENCH_NATIVE_TEST_CASES
   positive_response_table_is_not_pole_material
   praat_formant_table_opens_as_median_poles
   reset_is_a_blank_document_and_undoable
+  runner_ramps_in_the_encoded_domain_and_ignores_block_size
   s6_zero_export_law_is_the_existing_one
   undo_restores_each_edit_and_groups_a_drag
   window_smoke_at_minimum_and_normal_size
+  word_lerp_tracks_exact_k_linear_within_tolerance
   zero_habits_add_a_skirt_and_level_trims
   zplane_circle_and_labels_fit_compact_pane
   zplane_drag_is_bounded_and_mirrors

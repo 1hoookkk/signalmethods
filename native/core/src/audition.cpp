@@ -1,15 +1,69 @@
 #include "trench/core/audition.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 namespace trench::core {
 
-void CascadeRunner::set_target(const Cascade& target) {
+namespace {
+
+constexpr double kDecodedFloor = 1.0e-30;
+
+double logged(double decoded) { return std::log(std::max(decoded, kDecodedFloor)); }
+
+}  // namespace
+
+EncodedSection encode_section(const Biquad& section) {
+  const double b0 = section[0];
+  const double gain = std::abs(b0) > 0.0 ? b0 : kDecodedFloor;
+  const double zero_p = section[1] / gain;
+  const double zero_q = section[2] / gain;
+  const double pole_p = section[3];
+  const double pole_q = section[4];
+  const double zero_rsq = 1.0 - zero_q;
+  const double pole_rsq = 1.0 - pole_q;
+  return {logged((zero_p + 2.0 - zero_rsq) / 4.0), logged(zero_rsq),
+          logged((pole_p + 2.0 - pole_rsq) / 4.0), logged(pole_rsq),
+          logged(std::abs(gain) / 4.0)};
+}
+
+EncodedCascade encode_cascade(const Cascade& cascade) {
+  EncodedCascade out{};
+  for (std::size_t si = 0; si < kSectionCount; ++si) out[si] = encode_section(cascade[si]);
+  return out;
+}
+
+Biquad decode_section(const EncodedSection& encoded) {
+  const double d0 = std::exp(encoded[0]);
+  const double d1 = std::exp(encoded[1]);
+  const double d2 = std::exp(encoded[2]);
+  const double d3 = std::exp(encoded[3]);
+  const double d4 = std::exp(encoded[4]);
+  const double c0 = 4.0 * d0 + d1;
+  const double c2 = 4.0 * d2 + d3;
+  const double c4 = 4.0 * d4;
+  return {c4, (c0 - 2.0) * c4, (1.0 - d1) * c4, c2 - 2.0, 1.0 - d3};
+}
+
+void CascadeRunner::decode() {
+  for (std::size_t si = 0; si < kSectionCount; ++si) coefficients_[si] = decode_section(current_[si]);
+}
+
+void CascadeRunner::set_target(const EncodedCascade& target) {
   target_ = target;
   if (!primed_) {
     current_ = target;
+    remaining_ = 0;
     primed_ = true;
+    decode();
+    return;
   }
+  for (std::size_t si = 0; si < kSectionCount; ++si) {
+    for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) {
+      step_[si][ci] = (target_[si][ci] - current_[si][ci]) / static_cast<double>(kApproachSamples);
+    }
+  }
+  remaining_ = kApproachSamples;
 }
 
 void CascadeRunner::reset() {
@@ -17,34 +71,32 @@ void CascadeRunner::reset() {
 }
 
 void CascadeRunner::process(std::span<float> block) {
-  std::size_t done = 0;
-  while (done < block.size()) {
-    const std::size_t n = std::min(kAuditionTick, block.size() - done);
-    Cascade delta{};
+  for (float& sample : block) {
+    if (remaining_ > 0) {
+      --remaining_;
+      if (remaining_ == 0) {
+        current_ = target_;
+      } else {
+        for (std::size_t si = 0; si < kSectionCount; ++si) {
+          for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) current_[si][ci] += step_[si][ci];
+        }
+      }
+      decode();
+    }
+    double x = sample;
     for (std::size_t si = 0; si < kSectionCount; ++si) {
-      for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) {
-        delta[si][ci] = (target_[si][ci] - current_[si][ci]) / static_cast<double>(n);
-      }
+      const auto& c = coefficients_[si];
+      auto& s = state_[si];
+      const double y = c[0] * x + s.w1;
+      s.w1 = c[1] * x - c[3] * y + s.w2;
+      s.w2 = c[2] * x - c[4] * y;
+      x = y;
     }
-    for (std::size_t i = 0; i < n; ++i) {
-      double x = block[done + i];
-      for (std::size_t si = 0; si < kSectionCount; ++si) {
-        auto& c = current_[si];
-        for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) c[ci] += delta[si][ci];
-        auto& s = state_[si];
-        const double y = c[0] * x + s.w1;
-        s.w1 = c[1] * x - c[3] * y + s.w2;
-        s.w2 = c[2] * x - c[4] * y;
-        x = y;
-      }
-      if (!std::isfinite(x)) {
-        x = 0.0;
-        reset();
-      }
-      block[done + i] = static_cast<float>(x);
+    if (!std::isfinite(x)) {
+      x = 0.0;
+      reset();
     }
-    current_ = target_;
-    done += n;
+    sample = static_cast<float>(x);
   }
 }
 
