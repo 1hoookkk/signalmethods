@@ -26,6 +26,7 @@ set(TRENCH_NATIVE_TEST_CASES
   document_rejects_malformed
   document_roundtrip_is_lossless_and_deterministic
   import_classification_by_extension
+  interior_follows_the_patent_law
   legacy_export_size_and_legality
   off_section_exports_identity
   pole_material_rejects_negative_rows

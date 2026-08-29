@@ -104,26 +104,58 @@ TRENCH_TEST(cascade_parity_graph_ears_export) {
       state.setPadPosition(morph, q);
       const Cascade graph = state.cascade(rate);
       const Cascade ears = trench::audio::design_audition(state.view(), rate);
-      const auto bytes = state.packed().legacy_bytes();
-      const Cascade exported = trench::audio::design_audition(
-          {PackedBody::from_legacy_bytes(bytes), static_cast<float>(morph),
-           static_cast<float>(q), 0.0},
-          rate);
       for (std::size_t si = 0; si < trench::core::kSectionCount; ++si) {
         for (std::size_t ci = 0; ci < trench::core::kCoefficientCount; ++ci) {
           CHECK(graph[si][ci] == ears[si][ci]);
-          CHECK_NEAR(graph[si][ci], exported[si][ci], 1.0e-12);
         }
+        CHECK(native::is_stable({graph[si][1] / graph[si][0], graph[si][2] / graph[si][0],
+                                 graph[si][3], graph[si][4], true}));
       }
+      const bool corner = (morph == 0.0 || morph == 1.0) && (q == 0.0 || q == 1.0);
+      if (!corner) continue;
+      const auto bytes = state.packed().legacy_bytes();
+      const auto exported = native::design(
+          native::packed_interior_corner(PackedBody::from_legacy_bytes(bytes), morph, q), rate);
+      Cascade packed_cascade = native::cascade(exported, 0.0);
       for (const double f : hz) {
-        const double delta = std::abs(responseDb(graph, f, rate) - responseDb(exported, f, rate));
-        worst_db = std::max(worst_db, delta);
-        CHECK_NEAR(responseDb(graph, f, rate), responseDb(exported, f, rate), 1.0e-9);
+        worst_db = std::max(worst_db, std::abs(responseDb(graph, f, rate) - responseDb(packed_cascade, f, rate)));
       }
     }
   }
-  std::printf("graph vs exported worst |delta| = %.3e dB over %zu rates x %zu positions x %zu points\n",
-              worst_db, kRates.size(), kPositions.size(), hz.size());
+  std::printf("graph == ears exactly at %zu rates x %zu positions; authored corners vs packed export worst |delta| = %.2f dB (lattice + S6 law)\n",
+              kRates.size(), kPositions.size(), worst_db);
+}
+
+TRENCH_TEST(interior_follows_the_patent_law) {
+  EditorState state;
+  state.setEditingCorner(0);
+  state.loadPoles({{300.0, 40.0}, {1'200.0, 150.0}});
+  state.setEditingCorner(1);
+  state.loadPoles({{600.0, 160.0}, {2'400.0, 75.0}});
+  state.setEditingCorner(2);
+  state.loadPoles({{300.0, 40.0}, {1'200.0, 150.0}});
+  state.setEditingCorner(3);
+  state.loadPoles({{600.0, 160.0}, {2'400.0, 75.0}});
+  for (const double rate : kRates) {
+    state.setPadPosition(0.5, 0.0);
+    const Cascade middle = state.cascade(rate);
+    const std::array<std::pair<double, double>, 2> ends[2] = {
+        {{{300.0, 40.0}, {600.0, 160.0}}}, {{{1'200.0, 150.0}, {2'400.0, 75.0}}}};
+    for (std::size_t si = 0; si < 2; ++si) {
+      const auto pole = native::roots_from_coefficients(middle[si][3], middle[si][4], rate);
+      const auto* resonant = std::get_if<native::Resonant>(&pole);
+      CHECK(resonant != nullptr);
+      const double expected_hz = std::sqrt(ends[si][0].first * ends[si][1].first);
+      const double r0 = std::exp(-std::numbers::pi * ends[si][0].second / rate);
+      const double r1 = std::exp(-std::numbers::pi * ends[si][1].second / rate);
+      const double expected_r = 1.0 - std::sqrt((1.0 - r0) * (1.0 - r1));
+      const double expected_bw = -std::log(expected_r) * rate / std::numbers::pi;
+      std::printf("S%zu at morph 0.5, %.0f Hz: %.2f Hz / %.2f Hz bw (law %.2f / %.2f)\n", si + 1, rate,
+                  resonant->hz, resonant->bw_hz, expected_hz, expected_bw);
+      CHECK_NEAR(resonant->hz, expected_hz, 1.0e-6 * expected_hz);
+      CHECK_NEAR(resonant->bw_hz, expected_bw, 1.0e-6 * expected_bw);
+    }
+  }
 }
 
 TRENCH_TEST(off_section_exports_identity) {

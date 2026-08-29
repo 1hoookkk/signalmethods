@@ -4,12 +4,13 @@
 #include <string>
 
 #include "trench/audio/audio_boundary.hpp"
+#include "trench/core/native_body.hpp"
 #include "trench/core/packed_body.hpp"
 
 namespace trench::audio {
 
 struct AuditionView {
-  trench::core::PackedBody packed;
+  trench::core::native::Body body;
   float morph{};
   float q{};
   double semitones{};
