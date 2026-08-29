@@ -21,8 +21,11 @@ constexpr float kBayRight = 249.0f;   // the readout column's right edge (source
 // compact cells, row 2 the movement picker. No carve, no door word - the
 // chip on the glass is the whole door, and the plate below the rows stays
 // bare to the notch.
-constexpr int kFxRow1Y = 340, kFxRow1H = 44;
-constexpr int kFxRow2Y = 394;
+// THE ROOM (Tyson 2026-08-29 "go back to this"): GAIN carves a framed room
+// low-left, the door-word seated in the frame's break, one knob lane per row
+// with its value box. MOVEMENT stays a word on the glass.
+const juce::Rectangle<float> kBayRoom { kBayLeft, 318.0f, 158.5f, 136.0f };
+constexpr int kBayPad = 8, kBayRowGap = 6, kBayRowH = 38;
 constexpr int kFxChipH = 17;
 #if TRENCH_GOD_MODE || defined (TRENCH_PLAYER_DIAGNOSTICS)
 juce::File layoutWatchFile()
@@ -231,8 +234,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     chewKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::chew,   "Bite");
     slamKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
     lowKnob    = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::lowKeep, "Low");
-    for (auto* k : { preampKnob.get(), chewKnob.get(), slamKnob.get(), lowKnob.get() })
-        k->setCompact (true);
     // TRACK retired from the face (Tyson 2026-08-15): the pitch listener was a
     // detector-driven retuner the X3 never had, and E-mu's authored answer to
     // pitch-following is the cube's own third axis. The parameter stays for
@@ -242,7 +243,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     // MOVEMENT rides row 2 of the drawer: the chip is still the whole
     // control - wheel to step and audition, click for the list.
     movementChip = std::make_unique<MovementChip> (theme);
-    movementChip->setOnPlate (true);
     movementChip->onStep = [this] (int dir)
     {
         auto* p = processor.apvts.getParameter (ParamID::movePreset);
@@ -573,11 +573,12 @@ void PluginEditor::layoutComponents()
     const auto rectOf = [this] (const char* id) { return theme.rect (id).getSmallestIntegerContainer(); };
     graph->setBounds (rectOf ("spectrumGrid"));
     {
-        // FX+ SITS ON THE GLASS, lower-left - the seat the movement word held
-        // (Tyson 2026-08-28). Left- and bottom-anchored, above the graph.
         const auto glass = rectOf ("spectrumGrid");
-        sectionRail->setBounds (glass.getX() + 10,
-                                glass.getBottom() - 12 - kFxChipH,
+        movementChip->setBounds (glass.getX() + 10,
+                                 glass.getBottom() - 12 - MovementChip::kHeight,
+                                 movementChip->preferredWidth(), MovementChip::kHeight);
+        sectionRail->setBounds (juce::roundToInt (kBayRoom.getX()) + kBayPad,
+                                juce::roundToInt (kBayRoom.getY()) - kFxChipH / 2,
                                 sectionRail->preferredWidth(), kFxChipH);
         sectionRail->toFront (false);
     }
@@ -596,18 +597,14 @@ void PluginEditor::layoutComponents()
     morphReadout->setBounds (rectOf ("morphReadout"));
     secondaryReadout->setBounds (rectOf ("qReadout"));
     {
-        // TWO ROWS in the wheel column: the gain chain across row 1 in chain
-        // order, the movement picker on row 2. Nothing else.
-        const int x0   = juce::roundToInt (kBayLeft);
-        const int cell = juce::roundToInt ((kBayRight - kBayLeft) / 4.0f);
-        const auto cellAt = [&] (int i)
-        { return juce::Rectangle<int> (x0 + i * cell, kFxRow1Y, cell, kFxRow1H); };
-        preampKnob->setBounds (cellAt (0));
-        chewKnob->setBounds   (cellAt (1));
-        slamKnob->setBounds   (cellAt (2));
-        lowKnob->setBounds    (cellAt (3));
-        movementChip->setBounds (x0, kFxRow2Y,
-                                 movementChip->preferredWidth(), MovementChip::kHeight);
+        const int x0   = juce::roundToInt (kBayRoom.getX()) + kBayPad;
+        const int w    = juce::roundToInt (kBayRoom.getRight()) - kBayPad - x0;
+        const int rowY = juce::roundToInt (kBayRoom.getY()) + kBayPad + kBayRowGap;
+        const auto rowAt = [&] (int i) { return juce::Rectangle<int> (x0, rowY + i * kBayRowH, w, kBayRowH); };
+        preampKnob->setBounds (rowAt (0));
+        chewKnob->setBounds   (rowAt (1));
+        slamKnob->setBounds   (rowAt (2));
+        lowKnob->setBounds    (rowAt (3));
         // DEPTH retired 2026-08-10: travel is part of each preset's record.
         // TRACK retired 2026-08-15 (see the knob's construction site above).
     }
@@ -649,9 +646,12 @@ void PluginEditor::applySectionVisibility()
     preampKnob->setVisible (open);
     chewKnob->setVisible (open);
     slamKnob->setVisible (open);
-    lowKnob->setVisible (open);
-    movementChip->setVisible (open);
-    // -1 reaches the chip as the CLOSED state: quiet pill, bare plate.
+    lowKnob->setVisible (false);
+    {
+        const auto seat = sectionRail->getBounds().toFloat();
+        faceplate->setRoomFrame (open ? kBayRoom : juce::Rectangle<float>(),
+                                 seat.getX() - 4.0f, seat.getRight() + 2.0f);
+    }
     sectionRail->setOpenSection (openSection);
     updateEditorSize();
 }

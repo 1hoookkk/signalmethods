@@ -126,13 +126,13 @@ public:
         // unknowable - never trench imagery, military language or depth
         // claims anywhere on the product.
         layout.elements["brandLabel"].text = "TRENCH";
-        layout.colours["accent"]             = juce::Colour (0xffc96a54);
-        layout.colours["curveColour"]        = juce::Colour (0xffd9d6c9);
-        layout.colours["curveHighlight"]     = juce::Colour (0xffefece2);
-        layout.colours["telemetry"]          = juce::Colour (0xffa39ac0);
-        layout.colours["dashed"]             = juce::Colour (0xffa39ac0);
-        layout.colours["rollerIllumination"] = juce::Colour (0xffc96a54);
-        layout.colours["modulationLamp"]     = juce::Colour (0xffc96a54);
+        layout.colours["accent"]             = juce::Colour (0xffdf5f4a);
+        layout.colours["curveColour"]        = juce::Colour (0xffe73b1d);
+        layout.colours["curveHighlight"]     = juce::Colour (0xffff8c6e);
+        layout.colours["telemetry"]          = juce::Colour (0xff6e7896);
+        layout.colours["dashed"]             = juce::Colour (0xff6e7896);
+        layout.colours["rollerIllumination"] = juce::Colour (0xffdf5f4a);
+        layout.colours["modulationLamp"]     = juce::Colour (0xffdf5f4a);
         layout.colours["phosphor"]           = juce::Colour (0xff1a1624);
         // amber = the SOURCE voice (RESAMPLE/GEN only) - never the trace's value
         layout.colours["amber"]              = juce::Colour (0xffb8862e);
@@ -153,8 +153,8 @@ public:
         layout.params["wellRadius"]        = 9.0;
         layout.params["readoutAliasScale"] = 0.95;
         layout.params["typeArrowExtra"]    = 6.0;
-        layout.params["curveDbTop"]        = 40.0;
-        layout.params["curveDbBottom"]     = -40.0;
+        layout.params["curveDbTop"]        = 48.0;
+        layout.params["curveDbBottom"]     = -48.0;
         layout.params["fontBold"]          = 1.0;
         layout.strings["fontFamily"] = "Arial";
         layout.strings["fontFamilyEmphasis"] = "Arial";

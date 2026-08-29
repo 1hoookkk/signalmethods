@@ -38,8 +38,8 @@ public:
         setInterceptsMouseClicks (true, false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Section");
-        setHelpText ("One door - click FX+ to open the effects room, click it again to shut it");
-        setTooltip ("FX+: click to open the effects room, click again to shut");
+        setHelpText ("One door - click GAIN to open its room, click it again to shut it");
+        setTooltip ("GAIN: click to open the room, click again to shut");
     }
     std::function<void (int)> onToggleSection;   // editor owns the open state
     /// -1 = the bay is CLOSED: the word engraved quiet, no room carved.
@@ -63,25 +63,22 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // THE CHIP SPEAKS MODULATION'S LANGUAGE (Tyson 2026-08-28 "The
-        // Modulation chip is what Fx+ should be"): a lamp and a quiet word on
-        // the glass - no pill. Open = the lamp lit and the word full ink.
+        // THE DOOR-WORD ON THE PLATE (Tyson 2026-08-29 "go back to this"): a
+        // latch triangle and the engraved word, seated in the room's frame break.
         const auto b = getLocalBounds().toFloat();
         for (int i = 0; i < kNumSections; ++i)
         {
             const bool lit = open == i;
-            const float ink = lit ? 0.95f : hoverIdx == i ? 0.80f : 0.55f;
-            const juce::Rectangle<float> lamp { b.getX() + 1.0f, b.getCentreY() - 3.0f, 6.0f, 6.0f };
-            g.setColour (lit ? t.modulationLamp() : t.telemetry().withAlpha (0.45f));
-            g.fillEllipse (lamp);
-            if (hoverIdx == i)
-            {
-                g.setColour ((lit ? t.modulationLamp() : t.telemetry()).withAlpha (0.25f));
-                g.fillEllipse (lamp.expanded (2.0f));
-            }
-            g.setFont (telemetryFont (9.8f));
-            g.setColour (t.telemetry().withAlpha (ink));
-            g.drawText (kNames[i], b.withTrimmedLeft (12.0f).toNearestInt(),
+            const float ink = lit ? 0.92f : hoverIdx == i ? 0.75f : 0.55f;
+            const auto r = wordRect (i);
+            juce::Path tri;
+            const float cx = r.getX() + 4.0f, cy = r.getCentreY();
+            if (lit) tri.addTriangle (cx - 3.0f, cy - 1.5f, cx + 3.0f, cy - 1.5f, cx, cy + 2.5f);
+            else     tri.addTriangle (cx - 1.5f, cy - 3.0f, cx - 1.5f, cy + 3.0f, cx + 2.5f, cy);
+            g.setColour (t.labelInk().withAlpha (ink));
+            g.fillPath (tri);
+            g.setFont (t.smallLabel (true));
+            g.drawText (kNames[i], r.withTrimmedLeft (10.0f).toNearestInt(),
                         juce::Justification::centredLeft, false);
         }
     }
@@ -129,7 +126,7 @@ public:
         }
     };
 private:
-    static constexpr const char* kNames[kNumSections] = { "FX+" };
+    static constexpr const char* kNames[kNumSections] = { "GAIN" };
     // Width sized to the 9.5pt label in its pill.
     static constexpr float kWordW = 48.0f;
     static constexpr int kPreferredWidth = 48;
