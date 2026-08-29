@@ -55,6 +55,7 @@ class MainWindow final : public QMainWindow {
   void refreshInspector();
   void toggleSectionDesk();
   void updateAuditionView();
+  void syncAuditionButton(bool checked);
   void setReference(Reference reference);
   void applyReferenceView();
   [[nodiscard]] trench::audio::MonoClip clipForDevice(
@@ -79,6 +80,7 @@ class MainWindow final : public QMainWindow {
   QPushButton* tilt_button_{};
   QPushButton* analyze_button_{};
   QPushButton* sections_button_{};
+  QPushButton* audition_button_{};
   SectionDesk* section_desk_{};
   std::vector<std::pair<double, double>> proposal_poles_;
   std::vector<std::pair<double, double>> proposal_zeros_;

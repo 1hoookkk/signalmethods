@@ -153,22 +153,32 @@ MainWindow::MainWindow(QWidget* parent)
   analyze_button_->setEnabled(false);
   sections_button_ = new QPushButton(QStringLiteral("SECTIONS"), central);
   auto* projection = new QPushButton(QStringLiteral("F×BW"), central);
+  projection->setObjectName(QStringLiteral("projectionSwitch"));
   projection->setCheckable(true);
   projection->setFixedHeight(28);
+  audition_button_ = new QPushButton(QStringLiteral("AUDITION"), central);
+  audition_button_->setObjectName(QStringLiteral("auditionSwitch"));
+  audition_button_->setCheckable(true);
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
+  reference_label_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+  reference_label_->setMinimumWidth(90);
   tilt_button_ = new QPushButton(QStringLiteral("TILT"), central);
   tilt_button_->setCheckable(true);
   tilt_button_->setObjectName(QStringLiteral("tiltSwitch"));
   tilt_button_->setEnabled(false);
   template_shelf_ = new QComboBox(central);
   template_shelf_->setObjectName(QStringLiteral("templateShelf"));
+  template_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+  template_shelf_->setMinimumContentsLength(9);
   template_shelf_->addItem(QStringLiteral("TEMPLATE"));
   for (const auto& entry : trench::app::kTemplateShelf) {
     template_shelf_->addItem(QString::fromUtf8(entry.name));
   }
   overlay_shelf_ = new QComboBox(central);
   overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
+  overlay_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+  overlay_shelf_->setMinimumContentsLength(9);
   overlay_shelf_->addItem(QStringLiteral("OVERLAY"));
   for (const auto& entry : trench::app::kTemplateShelf) {
     overlay_shelf_->addItem(QString::fromUtf8(entry.name));
@@ -187,13 +197,15 @@ MainWindow::MainWindow(QWidget* parent)
   analyze_button_->setFont(captionFont(analyze_button_));
   sections_button_->setFont(captionFont(sections_button_));
   projection->setFont(captionFont(projection));
+  audition_button_->setFont(captionFont(audition_button_));
   tilt_button_->setFont(captionFont(tilt_button_));
   template_shelf_->setFont(captionFont(template_shelf_));
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
   reference_label_->setFont(valueFont(reference_label_));
   for (QWidget* chrome : std::initializer_list<QWidget*>{
            load, save, export_body, analyze_button_, sections_button_,
-           projection, tilt_button_, keep, template_shelf_, overlay_shelf_}) {
+           projection, tilt_button_, keep, template_shelf_, overlay_shelf_,
+           audition_button_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
   }
   top->addWidget(load);
@@ -203,6 +215,7 @@ MainWindow::MainWindow(QWidget* parent)
   top->addWidget(tilt_button_);
   top->addWidget(overlay_shelf_);
   top->addStretch(1);
+  top->addWidget(audition_button_);
   top->addWidget(projection);
   top->addWidget(sections_button_);
   top->addWidget(analyze_button_);
@@ -214,6 +227,7 @@ MainWindow::MainWindow(QWidget* parent)
   // patent"): the aggregate curve owns the height, the plane is a compact
   // roots pane below.
   cascade_plot_ = new CascadePlot(central);
+  cascade_plot_->setObjectName(QStringLiteral("cascadePlot"));
   morph_pad_ = new MorphPad(&state_, central);
   auto* interior = new QHBoxLayout;
   interior->setSpacing(12);
@@ -225,6 +239,7 @@ MainWindow::MainWindow(QWidget* parent)
   layout->addWidget(candidate_lane_);
 
   armadillo_editor_ = new ArmadilloEditor(&state_, central);
+  armadillo_editor_->setObjectName(QStringLiteral("armadilloEditor"));
   armadillo_editor_->setFixedHeight(230);
   layout->addWidget(armadillo_editor_);
 
@@ -337,6 +352,8 @@ MainWindow::MainWindow(QWidget* parent)
                 z_plane ? ArmadilloEditor::Projection::kZPlane
                         : ArmadilloEditor::Projection::kArmadillo);
           });
+  connect(audition_button_, &QPushButton::toggled, this,
+          [this](bool open) { setAudition(open); });
   connect(save, &QPushButton::clicked, this, &MainWindow::saveDocument);
   connect(export_body, &QPushButton::clicked, this, &MainWindow::exportBody240);
   connect(analyze_button_, &QPushButton::clicked, this,
@@ -883,15 +900,22 @@ trench::audio::MonoClip MainWindow::clipForDevice(
   return result;
 }
 
+void MainWindow::syncAuditionButton(bool checked) {
+  const QSignalBlocker blocker(audition_button_);
+  audition_button_->setChecked(checked);
+}
+
 void MainWindow::setAudition(bool enabled) {
   if (!enabled) {
     audition_->setGate(false);
     audition_->stop();
+    syncAuditionButton(false);
     status_label_->setText(QStringLiteral("AUDITION CLOSED"));
     return;
   }
   const std::string error = audition_->start();
   if (!error.empty()) {
+    syncAuditionButton(false);
     status_label_->setText(QStringLiteral("AUDIO DEVICE · %1")
                                .arg(QString::fromStdString(error)));
     return;
@@ -903,12 +927,15 @@ void MainWindow::setAudition(bool enabled) {
     audition_->setSaw(73.42, 0.18F);
   }
   audition_->setGate(true);
-  status_label_->setText(QStringLiteral("AUDITION OPEN · %1 Hz")
+  syncAuditionButton(true);
+  status_label_->setText(QStringLiteral("AUDITION OPEN · %1 · %2 Hz")
+                             .arg(QString::fromStdString(audition_->deviceName()).toUpper())
                              .arg(audition_->sampleRateHz(), 0, 'f', 0));
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
   audition_->setGate(false);
   audition_->stop();
+  syncAuditionButton(false);
   QMainWindow::closeEvent(event);
 }
