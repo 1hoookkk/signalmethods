@@ -452,6 +452,7 @@ void MainWindow::openFile() {
       this, QStringLiteral("Open sound or data"), QString(),
       QStringLiteral("Sound (*.wav *.aif *.aiff *.flac);;Poles (*.fbw);;"
                      "Response table (*.csv *.txt);;"
+                     "Praat formant table (*.Table);;"
                      "TRENCH document (*.trenchbody);;"
                      "Packed body (*.body240 *.bin);;All files (*)"));
   if (chosen.isEmpty()) return;
@@ -472,6 +473,20 @@ void MainWindow::openFile() {
       status_label_->setText(
           QStringLiteral("POLES · %1 SECTIONS")
               .arg(std::min(rows->size(), trench::core::native::kSections)));
+      return;
+    }
+    case trench::app::ImportKind::kFormantTrack: {
+      const auto track = trench::app::read_formant_track(path);
+      if (!track || track->median.empty()) {
+        status_label_->setText(
+            QStringLiteral("FORMANT TABLE REJECTED · %1").arg(name));
+        return;
+      }
+      state_.loadPoles(track->median);
+      status_label_->setText(
+          QStringLiteral("PRAAT · %1 FORMANTS · MEDIAN OF %2 FRAMES")
+              .arg(std::min(track->median.size(), trench::core::native::kSections))
+              .arg(track->frames));
       return;
     }
     case trench::app::ImportKind::kResponseTable: {

@@ -25,8 +25,9 @@ same index). Commit native work with explicit pathspecs only:
   flags, corner gain, editing corner, Morph/Q) atomically; OPEN restores it
   as the editable document. `.body240` is an explicitly labelled EXPORT.
 - Imports route by extension only (`.fbw` poles, sound, `.csv/.txt` response
-  tables with a validated schema, `.trenchbody`, `.body240/.bin` reference).
-  An all-positive response table can never become pole material.
+  tables with a validated schema and REW `*` headers, `.Table` Praat formant
+  tracks as median poles of the voiced frames, `.trenchbody`, `.body240/.bin`
+  reference). An all-positive response table can never become pole material.
 - AUDITION is a checkable button; device-start failures land in the status
   line; ears redesign the same packed view at the actual device rate; the
   device is released on stop and on close.

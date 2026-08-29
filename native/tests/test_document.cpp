@@ -200,6 +200,34 @@ TRENCH_TEST(import_classification_by_extension) {
   CHECK(trench::app::classify_import("x") == ImportKind::kUnknown);
 }
 
+TRENCH_TEST(praat_formant_table_opens_as_median_poles) {
+  QTemporaryDir dir;
+  CHECK(dir.isValid());
+  const QString path = dir.filePath(QStringLiteral("vowel.Table"));
+  writeAll(path,
+           QByteArrayLiteral(
+               "time(s),nformants,F1(Hz),B1(Hz),F2(Hz),B2(Hz),F3(Hz),B3(Hz),F4(Hz),B4(Hz),F5(Hz),B5(Hz)\r\n"
+               "0.025000,2,700.0,80.0,1100.0,90.0,--undefined--,--undefined--,--undefined--,--undefined--,--undefined--,--undefined--\r\n"
+               "0.031250,4,690.0,70.0,1090.0,100.0,2500.0,150.0,3500.0,200.0,--undefined--,--undefined--\r\n"
+               "0.037500,5,710.0,90.0,1110.0,110.0,2520.0,170.0,3520.0,220.0,4500.0,300.0\r\n"
+               "0.043750,4,700.0,80.0,1100.0,120.0,2480.0,160.0,3480.0,210.0,--undefined--,--undefined--\r\n"));
+  CHECK(trench::app::classify_import(native_path(path)) == ImportKind::kFormantTrack);
+  const auto track = trench::app::read_formant_track(native_path(path));
+  CHECK(track.has_value());
+  CHECK(track->frames == 3);
+  CHECK(track->median.size() == 5);
+  CHECK(track->median[0].first == 700.0);
+  CHECK(track->median[0].second == 80.0);
+  CHECK(track->median[1].first == 1100.0);
+  CHECK(track->median[1].second == 110.0);
+  CHECK(track->median[2].first == 2500.0);
+  CHECK(track->median[4].first == 4500.0);
+
+  const QString junk = dir.filePath(QStringLiteral("junk.Table"));
+  writeAll(junk, QByteArrayLiteral("time(s),nformants\r\n0.01,0\r\n"));
+  CHECK(!trench::app::read_formant_track(native_path(junk)).has_value());
+}
+
 TRENCH_TEST(positive_response_table_is_not_pole_material) {
   QTemporaryDir dir;
   CHECK(dir.isValid());

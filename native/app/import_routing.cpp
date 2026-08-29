@@ -4,8 +4,10 @@
 #include <cctype>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 namespace trench::app {
 namespace {
@@ -51,6 +53,7 @@ ImportKind classify_import(const std::filesystem::path& path) {
   if (extension == ".csv" || extension == ".txt") {
     return ImportKind::kResponseTable;
   }
+  if (extension == ".table") return ImportKind::kFormantTrack;
   if (extension == ".trenchbody") return ImportKind::kDocument;
   if (extension == ".body240" || extension == ".bin") {
     return ImportKind::kPackedBody;
@@ -84,6 +87,98 @@ std::optional<PoleRows> read_pole_material(const std::filesystem::path& path) {
     if (!(row.first > 0.0) || !(row.second > 0.0)) return std::nullopt;
   }
   return rows;
+}
+
+namespace {
+
+std::vector<std::string> splitCommas(std::string line) {
+  while (!line.empty() && (line.back() == '\r' || line.back() == '\n')) line.pop_back();
+  std::vector<std::string> cells;
+  std::string cell;
+  for (const char letter : line) {
+    if (letter == ',') {
+      cells.push_back(cell);
+      cell.clear();
+    } else {
+      cell.push_back(letter);
+    }
+  }
+  cells.push_back(cell);
+  return cells;
+}
+
+std::optional<double> numericCell(const std::vector<std::string>& cells, std::size_t index) {
+  if (index >= cells.size()) return std::nullopt;
+  const std::string& text = cells[index];
+  if (text.empty() || text == "--undefined--") return std::nullopt;
+  char* end = nullptr;
+  const double value = std::strtod(text.c_str(), &end);
+  if (end == text.c_str() || !std::isfinite(value)) return std::nullopt;
+  return value;
+}
+
+double median(std::vector<double> values) {
+  std::sort(values.begin(), values.end());
+  const std::size_t middle = values.size() / 2;
+  return values.size() % 2 == 1 ? values[middle]
+                                : 0.5 * (values[middle - 1] + values[middle]);
+}
+
+}  // namespace
+
+std::optional<FormantTrack> read_formant_track(const std::filesystem::path& path) {
+  std::ifstream stream(path);
+  if (!stream) return std::nullopt;
+  std::string line;
+  if (!std::getline(stream, line)) return std::nullopt;
+  const auto header = splitCommas(line);
+  std::vector<std::pair<std::size_t, std::size_t>> columns;
+  for (std::size_t k = 1;; ++k) {
+    const std::string f = "F" + std::to_string(k) + "(Hz)";
+    const std::string b = "B" + std::to_string(k) + "(Hz)";
+    const auto fi = std::find(header.begin(), header.end(), f);
+    const auto bi = std::find(header.begin(), header.end(), b);
+    if (fi == header.end() || bi == header.end()) break;
+    columns.emplace_back(static_cast<std::size_t>(fi - header.begin()),
+                         static_cast<std::size_t>(bi - header.begin()));
+  }
+  if (columns.empty()) return std::nullopt;
+  std::vector<std::vector<std::pair<double, double>>> frames;
+  while (std::getline(stream, line)) {
+    const auto cells = splitCommas(line);
+    std::vector<std::pair<double, double>> pairs;
+    for (const auto& [fi, bi] : columns) {
+      const auto f = numericCell(cells, fi);
+      const auto b = numericCell(cells, bi);
+      if (!f || !b || !(*f > 0.0) || !(*b > 0.0)) break;
+      pairs.emplace_back(*f, *b);
+    }
+    if (!pairs.empty()) frames.push_back(std::move(pairs));
+  }
+  if (frames.empty()) return std::nullopt;
+  std::size_t deepest = 0;
+  for (const auto& frame : frames) deepest = std::max(deepest, frame.size());
+  const std::size_t needed = std::min<std::size_t>(4, deepest);
+  std::vector<const std::vector<std::pair<double, double>>*> voiced;
+  for (const auto& frame : frames) {
+    if (frame.size() >= needed) voiced.push_back(&frame);
+  }
+  FormantTrack track;
+  track.frames = voiced.size();
+  const std::size_t depth = std::min<std::size_t>(6, deepest);
+  for (std::size_t k = 0; k < depth; ++k) {
+    std::vector<double> hz;
+    std::vector<double> bw;
+    for (const auto* frame : voiced) {
+      if (frame->size() > k) {
+        hz.push_back((*frame)[k].first);
+        bw.push_back((*frame)[k].second);
+      }
+    }
+    if (hz.empty()) break;
+    track.median.emplace_back(median(hz), median(bw));
+  }
+  return track;
 }
 
 }  // namespace trench::app

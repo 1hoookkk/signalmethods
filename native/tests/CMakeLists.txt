@@ -24,6 +24,7 @@ set(TRENCH_NATIVE_TEST_CASES
   off_section_exports_identity
   pole_material_rejects_negative_rows
   positive_response_table_is_not_pole_material
+  praat_formant_table_opens_as_median_poles
   s6_zero_export_law_is_the_existing_one
   window_smoke_at_minimum_and_normal_size
   zplane_circle_and_labels_fit_compact_pane
