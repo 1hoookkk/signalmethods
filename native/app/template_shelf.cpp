@@ -80,7 +80,13 @@ TemplateEntry withTalkingHedzEnds(TemplateEntry entry) {
     }
     shaped.poles[0] = corpus.poles[0];
     shaped.zeros[0] = corpus.zeros[0];
-    for (std::size_t index = 0; index < 4; ++index) shaped.poles[index + 1] = entry.poles[index];
+    const double ratio[4] = {3.24, 1.29, 1.08, 1.74};
+    const double width[4] = {782.0, 571.0, 691.0, 1146.0};
+    for (std::size_t index = 0; index < 4; ++index) {
+      shaped.poles[index + 1] = entry.poles[index];
+      if (!entry.poles[index].present) continue;
+      shaped.zeros[index + 1] = {entry.poles[index].hz * ratio[index], width[index], true};
+    }
     shaped.poles[5] = corpus.poles[5];
     shaped.zeros[5] = corpus.zeros[5];
     return shaped;
@@ -125,11 +131,13 @@ std::vector<ShelfGroup> buildShelf() {
   groups.push_back(std::move(female));
 
   ShelfGroup s1{QStringLiteral("MOUTHS S1"), {}};
-  appendFitted(s1.entries, "MOUTHS S1");
+  appendByType(s1.entries, "MOUTHS S1", QStringLiteral("s1 "));
+  hedzEnds(s1);
   groups.push_back(std::move(s1));
 
   ShelfGroup s2{QStringLiteral("MOUTHS S2"), {}};
-  appendFitted(s2.entries, "MOUTHS S2");
+  appendByType(s2.entries, "MOUTHS S2", QStringLiteral("s2 "));
+  hedzEnds(s2);
   groups.push_back(std::move(s2));
 
   ShelfGroup poses{QStringLiteral("POSES"), {}};
