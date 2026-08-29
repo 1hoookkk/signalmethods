@@ -228,11 +228,22 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   marker_font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
   marker_font.setWeight(QFont::DemiBold);
   marker_font.setPixelSize(9);
+  // DORMANT INK (Tyson 2026-08-29 "why are they on the plot if theres no
+  // current curve"): a bell whose pole still sits on its zero claims no gain,
+  // so its marks go faint until the pair separates.
+  const auto dormant = [this](std::size_t section) {
+    if (!state_->rootPresent(section, EditorState::Lane::kZero)) return false;
+    const auto& pole = rootOf(*state_, section, EditorState::Lane::kPole);
+    const auto& zero = rootOf(*state_, section, EditorState::Lane::kZero);
+    return std::abs(std::log2(pole.hz / zero.hz)) < 0.01 &&
+           std::abs(std::log2(pole.bw_hz / zero.bw_hz)) < 0.01;
+  };
   for (const Handle& handle : handles()) {
     const bool addressed = handle.section == state_->selectedSection();
     const bool selected_root =
         addressed && handle.lane == state_->selectedLane();
-    const QColor color = addressed ? kAccent : kInk;
+    const QColor color = addressed ? kAccent
+                                   : faded(kInk, dormant(handle.section) ? 70 : 255);
     if (selected_root && drag_) {
       painter.setPen(QPen(faded(kAccent, 90), 1.0));
       painter.drawLine(QPointF{handle.position.x(), bounds.top()},
