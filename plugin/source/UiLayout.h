@@ -30,7 +30,7 @@ public:
         layout.elements["morphReadout"] = { { 591.7f, 697.0f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
         layout.elements["qReadout"]     = { { 591.7f, 864.3f, 142.5f, 55.7f },  12.0f, juce::Colour (0xff2a2722) };
 
-        layout.elements["spectrumGrid"] = { { 126.9f, 232.3f, 769.7f, 374.7f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 126.9f, 227.8f, 769.7f, 383.7f }, {}, {} };
 
         layout.elements["typeLabel"]    = { { 126.9f, 139.0f, 97.0f, 68.0f },  15.0f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
