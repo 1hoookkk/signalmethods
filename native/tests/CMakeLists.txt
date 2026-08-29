@@ -3,6 +3,7 @@ find_package(Qt6 6.11.1 EXACT REQUIRED COMPONENTS Gui Test)
 add_executable(trench_native_tests
   harness.hpp
   test_main.cpp
+  test_analyze.cpp
   test_audition.cpp
   test_smoke.cpp
   test_cascade.cpp
@@ -10,9 +11,12 @@ add_executable(trench_native_tests
   test_zplane.cpp
 )
 target_link_libraries(trench_native_tests PRIVATE trench_native_ui Qt6::Test)
+target_compile_definitions(trench_native_tests PRIVATE TRENCH_SOURCE_ROOT="${PROJECT_SOURCE_DIR}")
 
 set(TRENCH_NATIVE_TEST_CASES
   absent_zero_exports_flat
+  analyze_finds_the_recorded_ah_formants
+  analyze_recovers_nasal_poles_and_antiformant
   audition_button_reports_device_state
   audition_device_opens_streams_and_closes
   cascade_parity_graph_ears_export

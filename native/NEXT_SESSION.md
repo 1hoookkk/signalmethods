@@ -44,6 +44,23 @@ same index). Commit native work with explicit pathspecs only:
   sorted into S1..S6; `--mode peaks|bands|lpc` forces; writes `.fbw` that
   OPEN takes into a corner, plus .json/.csv/C++ initializer.
 
+- ANALYZE is now a pole-zero envelope fit in the Atal-Schroeder sense: f0
+  from the core comb (octave errors resolved by harmonic share over the first
+  twelve harmonics, divisors 2-8), the envelope sampled at the harmonics
+  (cubic between them) when voiced or peak-hold smoothed otherwise, a
+  minimum-phase impulse response through the cepstrum, Prony-Shanks 12/12 on
+  it, then pruning by detail signature (0.5 dB, half-octave baseline) and the
+  M0-corpus gate (a seat below 700 Hz needs Q >= 1.5, a formant above needs
+  Q >= 5; roots above 4.4 kHz are band-edge artefacts). Proof: a synthetic
+  nasal (280/60, 1250/120, 2300/160, 3300/250 + antiformant 900/150) returns
+  292/99, 1252/155, 2305/166, 3306/253 and 901/106; the recorded /ah/ returns
+  644/138, 1079/119, 2649/196. `TRENCH_ANALYZE_DEBUG=1` prints the f0 search,
+  the unpruned fit and every pruning step.
+- Queued from this pass: the "Configurable_PEQ" analyzer text (cuts -> poles,
+  boosts -> zeros; Frequency / Bandwidth(Hz) columns) as an OPEN route; the
+  scrub ribbon so ANALYZE fits one chosen moment per corner (VV2 recipe:
+  ~30 ms steady state, onset and offset of a diphthong = corners A and B).
+
 ## Measured contract facts (report, not fixed — Tyson's call)
 - Lattice quantisation of the core exporter: an authored 250 Hz / 250 Hz pole
   exports as 233.68 Hz / 251.03 Hz (`export_p2k_corner`, native_body.cpp).
@@ -62,7 +79,7 @@ same index). Commit native work with explicit pathspecs only:
 
 ## Evidence classes produced
 - Build: fresh `cmake --preset app` configure + build, then incremental.
-- Tests: 19 CTest cases under `native.*`, all passing headless;
+- Tests: 22 CTest cases under `native.*`, all passing headless;
   the two audible cases pass live with `TRENCH_AUDIBLE=1` and skip otherwise.
 - Packed parity: graph vs export re-import 0 dB delta over 3 rates x 8
   positions x 240 grid points; exported words legal (`p2k::is_legal`,
