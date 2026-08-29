@@ -111,4 +111,4 @@ double dc_gain_db(const PackedCorner& corner) {
   return 20.0 * std::log10(std::max(std::abs(h), 1e-30));
 }
 
-}  // namespace trench::core::p2k
+}

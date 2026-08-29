@@ -22,4 +22,4 @@ struct AudioClip {
 std::optional<AudioClip> decode_audio(const std::filesystem::path& path);
 std::optional<MonoClip> decode_mono(const std::filesystem::path& path);
 
-}  // namespace trench::audio
+}

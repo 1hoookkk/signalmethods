@@ -71,6 +71,4 @@ struct PosturePole {
 
 std::vector<PosturePole> pole_words_from_posture(const Posture& posture);
 
-
-
-}  // namespace trench::core::p2k
+}

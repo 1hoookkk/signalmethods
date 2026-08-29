@@ -19,7 +19,7 @@ std::string number(double value) {
   return out.str();
 }
 
-}  // namespace
+}
 
 double knob_of_point(std::size_t point) {
   return static_cast<double>(point + 1) / 8.0;
@@ -124,4 +124,4 @@ std::string curve_json(const std::string& axis, const std::string& body,
   return out.str();
 }
 
-}  // namespace trench::core::bisect
+}

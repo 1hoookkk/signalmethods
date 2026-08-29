@@ -4,7 +4,6 @@
 #include <cmath>
 #include <vector>
 
-
 namespace trench::core::p2k {
 
 namespace {
@@ -17,7 +16,7 @@ double cost_of(const Rows& rows, const CornerWords& held, std::uint32_t mask,
 
 double clamp_fc(double hz) { return std::clamp(hz, 20.0, kRootHiHz); }
 
-}  // namespace
+}
 
 bool row_held(std::size_t section, std::uint32_t mask) {
   return (mask & pole_bit(section)) == 0U || (mask & zero_bit(section)) == 0U;
@@ -216,4 +215,4 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
   return fit;
 }
 
-}  // namespace trench::core::p2k
+}

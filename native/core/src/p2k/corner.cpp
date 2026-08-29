@@ -67,4 +67,4 @@ std::vector<double> Corner::total() const {
   return out;
 }
 
-}  // namespace trench::core::p2k
+}

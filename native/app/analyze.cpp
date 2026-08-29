@@ -462,7 +462,7 @@ Fit pruned(Fit fit, const std::vector<double>& grid_hz,
   return fit;
 }
 
-}  // namespace
+}
 
 AnalyzeProposal analyzeSound(std::span<const float> samples,
                              double sample_rate_hz) {
@@ -540,4 +540,4 @@ AnalyzeProposal analyzeSound(std::span<const float> samples,
   return proposal;
 }
 
-}  // namespace trench::app
+}

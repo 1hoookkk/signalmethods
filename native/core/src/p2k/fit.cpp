@@ -138,4 +138,4 @@ StoredCorner packed_as_words(const PackedCorner& packed) {
   return out;
 }
 
-}  // namespace trench::core::p2k
+}

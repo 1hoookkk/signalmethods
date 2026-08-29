@@ -21,4 +21,4 @@ Biquad transpose_section(const Biquad& section, double ratio, double sample_rate
 
 Cascade transpose_cascade(const Cascade& cascade, double ratio, double sample_rate_hz);
 
-}  // namespace trench::core
+}

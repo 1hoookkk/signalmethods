@@ -82,8 +82,6 @@ double cascade_response_db(std::span<const Biquad> sections, double frequency_hz
 
 Cascade unity_dc(const Cascade& cascade);
 
-// This deliberately evaluates the full cascade and the leave-one-out cascade.
-// It remains correct if the displayed response path later adds column reduction.
 std::vector<double> marginal_contribution_db(
     std::span<const Biquad> sections,
     std::size_t section_index,
@@ -98,4 +96,4 @@ std::vector<std::vector<double>> marginal_contributions_db(
 std::vector<double> logarithmic_frequency_grid(double low_hz, double high_hz,
                                                std::size_t point_count);
 
-}  // namespace trench::core
+}

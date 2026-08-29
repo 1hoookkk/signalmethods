@@ -29,7 +29,7 @@ constexpr double kMiniLowDb = -120.0;
 constexpr double kMiniHighDb = 24.0;
 constexpr int kCurvePoints = 96;
 
-}  // namespace
+}
 
 SectionStrip::SectionStrip(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {
@@ -150,17 +150,12 @@ void SectionStrip::paintEvent(QPaintEvent*) {
                      Qt::AlignLeft | Qt::AlignTop,
                      QString::number(index + 1));
 
-    // A LAMP, NOT A WORD (Tyson 2026-08-28 "fewer labels"): the same hit zone
-    // now reads as lit, live, or dark.
     const QRectF toggle = toggleRect(index);
     const QPointF lamp = toggle.center();
     painter.setPen(QPen(enabled ? kInk : kLampOff, 1.0));
     painter.setBrush(enabled ? QBrush(kInk) : QBrush(Qt::NoBrush));
     painter.drawEllipse(lamp, 3.0, 3.0);
 
-
-    // An OFF slot claims nothing (Tyson 2026-08-28 "make it transparent to
-    // whats happening"): no curve until the stage exists in the cascade.
     if (!enabled) continue;
     const QRectF plot = bounds.adjusted(8.0, 24.0, -8.0, -10.0);
     painter.setPen(QPen(kRule, 1.0));

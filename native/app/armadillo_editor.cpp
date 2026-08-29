@@ -2,7 +2,6 @@
 
 #include <QMouseEvent>
 #include <QPainter>
-#include <QPainterPath>
 #include <QLineF>
 #include <QShortcut>
 #include <QToolTip>
@@ -47,7 +46,7 @@ QColor faded(QColor color, int alpha) {
   return color;
 }
 
-}  // namespace
+}
 
 ArmadilloEditor::ArmadilloEditor(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {
@@ -56,7 +55,7 @@ ArmadilloEditor::ArmadilloEditor(EditorState* state, QWidget* parent)
   setMouseTracking(true);
   setCursor(Qt::CrossCursor);
   setFocusPolicy(Qt::ClickFocus);
-  setAccessibleName(QStringLiteral("ARMAdillo frequency and bandwidth root editor"));
+  setAccessibleName(QStringLiteral("ARMAdillo pole editor"));
   connect(state_, &EditorState::changed, this,
           qOverload<>(&ArmadilloEditor::update));
   connect(state_, &EditorState::selectionChanged, this,
@@ -66,11 +65,6 @@ ArmadilloEditor::ArmadilloEditor(EditorState* state, QWidget* parent)
     groupPrimaryOnly();
     update();
   });
-  for (const auto key : {Qt::Key_Delete, Qt::Key_Backspace}) {
-    auto* drop_zero = new QShortcut(QKeySequence(key), this);
-    drop_zero->setContext(Qt::WidgetShortcut);
-    connect(drop_zero, &QShortcut::activated, state_, &EditorState::removeZero);
-  }
 }
 
 QRectF ArmadilloEditor::field() const {
@@ -105,30 +99,19 @@ std::pair<double, double> ArmadilloEditor::dragTargetAt(
                   y_fraction)};
 }
 
-// THE WHOLE CORNER IS ON THE PLANE (Tyson 2026-08-28 "direct armadillo
-// editor"): every live root of the editing corner is drawn and grabbable, so
-// what is seen is what is picked.
 std::vector<ArmadilloEditor::Handle> ArmadilloEditor::handles() const {
   std::vector<Handle> result;
-  result.reserve(2 * trench::core::native::kSections);
+  result.reserve(trench::core::native::kSections);
   for (std::size_t section = 0; section < trench::core::native::kSections;
        ++section) {
     if (!state_->sectionEnabled(section)) continue;
     const auto& pole = rootOf(*state_, section, EditorState::Lane::kPole);
     result.push_back(Handle{section, EditorState::Lane::kPole,
                             pointFor(pole.hz, pole.bw_hz)});
-    if (!state_->rootPresent(section, EditorState::Lane::kZero)) continue;
-    const auto& zero = rootOf(*state_, section, EditorState::Lane::kZero);
-    result.push_back(
-        Handle{section, EditorState::Lane::kZero,
-               pointFor(zero.hz, zero.bw_hz)});
   }
   return result;
 }
 
-// THE OVERLAY LIVES WHERE THE EDITING LIVES (Tyson 2026-08-29): the compared
-// posture is drawn on the same plane, under the live roots, and cannot be
-// grabbed - it is a target to move onto, not a thing to move.
 void ArmadilloEditor::setGhost(std::vector<std::pair<double, double>> poles) {
   ghost_ = std::move(poles);
   update();
@@ -214,9 +197,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     painter.drawEllipse(pointFor(ghost.first, ghost.second), 4.0, 4.0);
   }
 
-  // DORMANT INK (Tyson 2026-08-29 "why are they on the plot if theres no
-  // current curve"): a bell whose pole still sits on its zero claims no gain,
-  // so its marks go faint until the pair separates.
   const auto dormant = [this](std::size_t section) {
     if (!state_->rootPresent(section, EditorState::Lane::kZero)) return false;
     const auto& pole = rootOf(*state_, section, EditorState::Lane::kPole);
@@ -224,22 +204,11 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     return std::abs(std::log2(pole.hz / zero.hz)) < 0.01 &&
            std::abs(std::log2(pole.bw_hz / zero.bw_hz)) < 0.01;
   };
-  const auto drawMark = [&](EditorState::Lane lane, const QPointF& at,
-                            bool addressed, const QColor& color,
-                            double radius) {
+  const auto drawMark = [&](const QPointF& at, bool addressed,
+                            const QColor& color, double radius) {
     painter.setPen(addressed ? QPen(Qt::NoPen) : QPen(color, 1.0));
     painter.setBrush(addressed ? QBrush(kAccent) : QBrush(Qt::NoBrush));
-    if (lane == EditorState::Lane::kPole) {
-      painter.drawEllipse(at, radius, radius);
-    } else {
-      QPainterPath diamond;
-      diamond.moveTo(at + QPointF{0.0, -radius});
-      diamond.lineTo(at + QPointF{radius, 0.0});
-      diamond.lineTo(at + QPointF{0.0, radius});
-      diamond.lineTo(at + QPointF{-radius, 0.0});
-      diamond.closeSubpath();
-      painter.drawPath(diamond);
-    }
+    painter.drawEllipse(at, radius, radius);
   };
 
   for (const Handle& handle : handles()) {
@@ -257,29 +226,13 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     }
 
     const double radius = addressed ? 6.5 : 4.5;
-    drawMark(handle.lane, handle.position, addressed, color, radius);
+    drawMark(handle.position, addressed, color, radius);
 
     painter.setBrush(Qt::NoBrush);
     if (group_.count(Key{handle.section, handle.lane}) > 0) {
       painter.setPen(QPen(kAccent, 1.2));
       painter.drawEllipse(handle.position, radius + 3.0, radius + 3.0);
     }
-
-    painter.setPen(color);
-    const QString tag = handle.lane == EditorState::Lane::kPole
-                            ? QStringLiteral("P")
-                            : QStringLiteral("Z");
-    const bool parked = handle.position.x() > bounds.right() - 24.0;
-    const double label_y = handle.position.y() - 9.0;
-    const double label_gap = radius + 4.0;
-    const QRectF label_bounds =
-        parked
-            ? QRectF{handle.position.x() - label_gap - 16.0, label_y, 16.0, 18.0}
-            : QRectF{handle.position.x() + label_gap, label_y, 16.0, 18.0};
-    painter.drawText(label_bounds,
-                     (parked ? Qt::AlignRight : Qt::AlignLeft) |
-                         Qt::AlignVCenter,
-                     tag);
   }
 }
 
@@ -288,9 +241,6 @@ void ArmadilloEditor::groupPrimaryOnly() {
   group_.insert(Key{state_->selectedSection(), state_->selectedLane()});
 }
 
-// A GROUP MOVES AS ONE (Tyson 2026-08-28 "ctrl click to select multiple and
-// drag multiple"): every member is carried by the same log-plane delta, so the
-// shape held between the roots survives the drag.
 void ArmadilloEditor::beginDrag(const QPointF& position) {
   state_->beginUndoGroup();
   members_.clear();
@@ -338,13 +288,6 @@ void ArmadilloEditor::mousePressEvent(QMouseEvent* event) {
   update();
 }
 
-void ArmadilloEditor::mouseDoubleClickEvent(QMouseEvent* event) {
-  if (event->button() != Qt::LeftButton || hitHandle(event->position())) return;
-  const auto placement = dragTargetAt(event->position());
-  state_->addZeroAt(placement.first,
-                    std::max(kMinDragBandwidthHz, placement.second));
-}
-
 void ArmadilloEditor::mouseMoveEvent(QMouseEvent* event) {
   if (drag_) {
     applyPointer(event->position());
@@ -356,10 +299,8 @@ void ArmadilloEditor::mouseMoveEvent(QMouseEvent* event) {
     const auto& root = rootOf(*state_, hit->section, hit->lane);
     QToolTip::showText(
         event->globalPosition().toPoint(),
-        QStringLiteral("S%1 %2  ·  %3 Hz  ·  %4 Hz BW")
+        QStringLiteral("S%1 POLE  ·  %2 Hz  ·  %3 Hz BW")
             .arg(hit->section + 1)
-            .arg(hit->lane == EditorState::Lane::kPole ? QStringLiteral("POLE")
-                                                       : QStringLiteral("ZERO"))
             .arg(root.hz, 0, 'f', 2)
             .arg(root.bw_hz, 0, 'f', 2),
         this);

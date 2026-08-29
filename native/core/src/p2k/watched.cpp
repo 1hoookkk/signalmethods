@@ -136,7 +136,7 @@ WatchedRun watched_polish(const CornerWords& words, std::span<const double> targ
   return run;
 }
 
-}  // namespace
+}
 
 std::optional<WatchedFit> fit_corner_watched(std::span<const double> target,
                                              std::span<const Seed> seeds, const FitOptions& opts,
@@ -228,4 +228,4 @@ std::optional<WatchedFit> fit_corner_watched(std::span<const double> target,
   return fit;
 }
 
-}  // namespace trench::core::p2k
+}

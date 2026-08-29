@@ -27,7 +27,7 @@ constexpr std::array<Posture, 8> kCompiledVowels{{
     {"VOW OohToAah M100Q100", "VOW", 3, {{{1243.4000, 29.2000}, {3203.0000, 117.4000}, {4479.3000, 117.4000}}}},
 }};
 
-}  // namespace
+}
 
 std::span<const Posture> postures() { return kPostures; }
 
@@ -46,4 +46,4 @@ const Posture* posture(std::string_view name) {
   return nullptr;
 }
 
-}  // namespace trench::core::p2k
+}

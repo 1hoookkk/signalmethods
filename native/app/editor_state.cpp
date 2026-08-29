@@ -44,7 +44,7 @@ const Resonant& resonant(const Roots& roots) {
   return *value;
 }
 
-}  // namespace
+}
 
 EditorState::EditorState(QObject* parent) : QObject(parent) {
   corners_ = blank().corners;

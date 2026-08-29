@@ -19,7 +19,7 @@ void load_base(Scratch& s, const Corner& c, std::size_t si) {
   }
 }
 
-}  // namespace
+}
 
 bool intent_admits(const RoleIntent& intent, std::size_t si, const StageWords& candidate) {
   if (!intent[si]) {
@@ -346,4 +346,4 @@ double polish_fine(Corner& c, std::span<const double> target, std::size_t max_pa
   return best;
 }
 
-}  // namespace trench::core::p2k
+}

@@ -340,4 +340,4 @@ std::array<StoredCorner, 4> body_corners(std::span<const std::uint8_t> body);
 StoredCorner interpolate_body(std::span<const std::uint8_t> body, float morph, float q);
 StoredCorner packed_as_words(const PackedCorner& packed);
 
-}  // namespace trench::core::p2k
+}

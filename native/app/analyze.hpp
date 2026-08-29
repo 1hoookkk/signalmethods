@@ -14,4 +14,4 @@ struct AnalyzeProposal {
 [[nodiscard]] AnalyzeProposal analyzeSound(std::span<const float> samples,
                                            double sample_rate_hz);
 
-}  // namespace trench::app
+}

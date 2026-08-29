@@ -46,4 +46,4 @@ struct PeqList {
     const std::filesystem::path& path);
 [[nodiscard]] std::optional<PeqList> read_peq_list(const std::filesystem::path& path);
 
-}  // namespace trench::app
+}

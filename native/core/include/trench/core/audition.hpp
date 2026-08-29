@@ -51,4 +51,4 @@ class SawSource {
   float level_{};
 };
 
-}  // namespace trench::core
+}

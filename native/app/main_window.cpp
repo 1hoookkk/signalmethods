@@ -26,8 +26,10 @@
 #include <QPushButton>
 #include <QShortcut>
 #include <QSignalBlocker>
+#include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QVBoxLayout>
+#include <QVariant>
 
 #include <algorithm>
 #include <array>
@@ -91,6 +93,17 @@ QFont captionFont(const QWidget* base) { return base->font(); }
 
 QFont valueFont(const QWidget* base) { return base->font(); }
 
+void markShelfHeader(QComboBox* combo) {
+  auto* model = qobject_cast<QStandardItemModel*>(combo->model());
+  if (model == nullptr) return;
+  QStandardItem* item = model->item(combo->count() - 1);
+  if (item == nullptr) return;
+  item->setFlags(Qt::NoItemFlags);
+  QFont bold = captionFont(combo);
+  bold.setBold(true);
+  item->setData(bold, Qt::FontRole);
+}
+
 QDoubleSpinBox* physicalEditor(double low, double high, QWidget* parent) {
   auto* editor = new QDoubleSpinBox(parent);
   editor->setRange(low, high);
@@ -117,7 +130,7 @@ QWidget* labelledEditor(const QString& label, QDoubleSpinBox* editor,
   return widget;
 }
 
-}  // namespace
+}
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), audition_(std::make_unique<trench::audio::Audition>()) {
@@ -162,26 +175,40 @@ MainWindow::MainWindow(QWidget* parent)
   tilt_button_->setCheckable(true);
   tilt_button_->setObjectName(QStringLiteral("tiltSwitch"));
   tilt_button_->setEnabled(false);
+  const std::vector<trench::app::ShelfGroup> groups = trench::app::buildShelf();
+  for (const auto& group : groups) {
+    for (const auto& entry : group.entries) shelf_.push_back(entry);
+  }
+  auto fill = [this, &groups](QComboBox* combo, const QString& placeholder) {
+    combo->addItem(placeholder);
+    std::size_t flat = 0;
+    for (const auto& group : groups) {
+      combo->addItem(group.title);
+      markShelfHeader(combo);
+      for (const auto& entry : group.entries) {
+        combo->addItem(QStringLiteral("  ") + entry.name,
+                       QVariant::fromValue(static_cast<qulonglong>(flat)));
+        ++flat;
+      }
+    }
+    combo->addItem(QStringLiteral("MINE"));
+    markShelfHeader(combo);
+    for (const auto& kept : user_shelf_) {
+      combo->addItem(QStringLiteral("  ") + kept.first,
+                     QVariant::fromValue(static_cast<qulonglong>(flat)));
+      ++flat;
+    }
+  };
   template_shelf_ = new QComboBox(central);
   template_shelf_->setObjectName(QStringLiteral("templateShelf"));
   template_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  template_shelf_->setMinimumContentsLength(9);
-  template_shelf_->addItem(QStringLiteral("TEMPLATE"));
-  for (const auto& entry : trench::app::kTemplateShelf) {
-    template_shelf_->addItem(QString::fromUtf8(entry.name));
-  }
+  template_shelf_->setMinimumContentsLength(14);
+  fill(template_shelf_, QStringLiteral("TEMPLATE"));
   overlay_shelf_ = new QComboBox(central);
   overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
   overlay_shelf_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  overlay_shelf_->setMinimumContentsLength(9);
-  overlay_shelf_->addItem(QStringLiteral("OVERLAY"));
-  for (const auto& entry : trench::app::kTemplateShelf) {
-    overlay_shelf_->addItem(QString::fromUtf8(entry.name));
-  }
-  for (const auto& kept : user_shelf_) {
-    template_shelf_->addItem(kept.first);
-    overlay_shelf_->addItem(kept.first);
-  }
+  overlay_shelf_->setMinimumContentsLength(14);
+  fill(overlay_shelf_, QStringLiteral("OVERLAY"));
   auto* keep = new QPushButton(QStringLiteral("+"), central);
   keep->setObjectName(QStringLiteral("keepTemplate"));
   keep->setFixedSize(28, 28);
@@ -224,10 +251,7 @@ MainWindow::MainWindow(QWidget* parent)
   actions->addWidget(save);
   layout->addLayout(actions);
 
-  // THE RESPONSE TAKES THE THRONE (Tyson 2026-08-29 "i agree with the
-  // patent"): the aggregate curve owns the height, the plane is a compact
-  // roots pane below.
-  cascade_plot_ = new CascadePlot(central);
+  cascade_plot_ = new CascadePlot(&state_, central);
   cascade_plot_->setObjectName(QStringLiteral("cascadePlot"));
   morph_pad_ = new MorphPad(&state_, central);
   auto* interior = new QHBoxLayout;
@@ -342,16 +366,17 @@ MainWindow::MainWindow(QWidget* parent)
       armadillo_editor_->clearGhost();
       return;
     }
-    const std::size_t compiled = trench::app::kTemplateShelf.size();
-    const std::size_t slot = static_cast<std::size_t>(index) - 1;
+    const QVariant held = overlay_shelf_->itemData(index);
+    if (!held.isValid()) return;
+    const std::size_t slot = static_cast<std::size_t>(held.toULongLong());
     std::vector<std::pair<double, double>> ghost;
-    if (slot < compiled) {
-      for (const auto& pole : trench::app::kTemplateShelf[slot].poles) {
+    if (slot < shelf_.size()) {
+      for (const auto& pole : shelf_[slot].poles) {
         if (pole.present) ghost.emplace_back(pole.hz, pole.bw_hz);
       }
     } else {
-      if (slot - compiled >= user_shelf_.size()) return;
-      ghost = user_shelf_[slot - compiled].second;
+      if (slot - shelf_.size() >= user_shelf_.size()) return;
+      ghost = user_shelf_[slot - shelf_.size()].second;
     }
     std::vector<double> marks;
     marks.reserve(ghost.size());
@@ -361,13 +386,14 @@ MainWindow::MainWindow(QWidget* parent)
   });
   connect(template_shelf_, &QComboBox::activated, this, [this](int index) {
     if (index < 1) return;
-    const std::size_t compiled = trench::app::kTemplateShelf.size();
-    const std::size_t slot = static_cast<std::size_t>(index) - 1;
-    if (slot < compiled) {
-      state_.loadTemplate(trench::app::kTemplateShelf[slot]);
+    const QVariant held = template_shelf_->itemData(index);
+    if (!held.isValid()) return;
+    const std::size_t slot = static_cast<std::size_t>(held.toULongLong());
+    if (slot < shelf_.size()) {
+      state_.loadTemplate(shelf_[slot]);
     } else {
-      if (slot - compiled >= user_shelf_.size()) return;
-      state_.loadPoles(user_shelf_[slot - compiled].second);
+      if (slot - shelf_.size() >= user_shelf_.size()) return;
+      state_.loadPoles(user_shelf_[slot - shelf_.size()].second);
     }
     template_shelf_->setCurrentIndex(0);
   });
@@ -576,9 +602,6 @@ void MainWindow::exportBody240() {
           : refusal);
 }
 
-// A POSTURE FOUND IS A POSTURE KEPT (Tyson 2026-08-29): the shelf takes what
-// the hands made, in the same two-column form OPEN already reads, so a kept
-// corner returns as a template and as an overlay.
 void MainWindow::loadUserShelf() {
   const QDir folder(templatesFolder());
   if (!folder.exists()) return;
@@ -635,15 +658,13 @@ void MainWindow::keepTemplate() {
     kept->second = std::move(poles);
   } else {
     user_shelf_.emplace_back(name, std::move(poles));
-    template_shelf_->addItem(name);
-    overlay_shelf_->addItem(name);
+    const auto slot = static_cast<qulonglong>(shelf_.size() + user_shelf_.size() - 1);
+    template_shelf_->addItem(QStringLiteral("  ") + name, QVariant::fromValue(slot));
+    overlay_shelf_->addItem(QStringLiteral("  ") + name, QVariant::fromValue(slot));
   }
   status_label_->setText(QStringLiteral("KEPT · %1").arg(name.toUpper()));
 }
 
-// ANALYZE IS A PROPOSAL, NOT A VERDICT (Tyson 2026-08-29): the Prony-Shanks
-// reading of the loaded sound arrives as the plane's ghost, and only a second
-// press writes it into the corner the hands are editing.
 void MainWindow::analyzeReference() {
   if (!proposal_poles_.empty()) {
     adoptProposal();
@@ -767,9 +788,6 @@ void MainWindow::setReference(Reference reference) {
   }
 }
 
-// TILT (Tyson 2026-08-28): whitening lives in the response domain - the
-// overlay switches, so what is seen is what is picked. The stored reference
-// stays true.
 void MainWindow::applyReferenceView() {
   if (!reference_) return;
   const auto& hz = reference_->frequency_hz;
@@ -862,8 +880,6 @@ void MainWindow::refreshInspector() {
   armadillo_editor_->update();
 }
 
-// THE PARAMETRIC VOICE IS ITS OWN PANEL (Tyson 2026-08-29): sections read as
-// FC / BW / GAIN in a window beside the app; the inspector below stays raw.
 void MainWindow::toggleSectionDesk() {
   if (!section_desk_) {
     section_desk_ = new SectionDesk(&state_, this);

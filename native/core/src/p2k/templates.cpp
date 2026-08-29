@@ -106,8 +106,8 @@ constexpr std::array<Posture, 99> kTemplates{{
     {"1BndPrmtrcD +2", "CUBES", 2, {{{0.3000, 48.6622}, {1620.6500, 1230.6031}}}},
 }};
 
-}  // namespace
+}
 
 std::span<const Posture> templates() { return kTemplates; }
 
-}  // namespace trench::core::p2k
+}

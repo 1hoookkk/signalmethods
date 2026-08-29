@@ -66,7 +66,7 @@ bool readRoot(const QJsonValue& value, Resonant* out) {
   return true;
 }
 
-}  // namespace
+}
 
 QString saveBody240(const EditorState& state, const QString& path) {
   const auto& packed = state.packed();
@@ -230,4 +230,4 @@ std::optional<EditorState::Document> loadDocument(const QString& path,
   return document;
 }
 
-}  // namespace trench::app
+}

@@ -44,4 +44,4 @@ InteriorAudit interior_audit(std::span<const std::uint8_t> body, const Grid& g =
 InteriorAudit interior_audit(const native::Body& body, const Grid& g = grid(),
                              std::size_t morph_steps = 21, std::size_t q_steps = 5);
 
-}  // namespace trench::core::p2k
+}

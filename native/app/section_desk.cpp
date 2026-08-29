@@ -57,11 +57,8 @@ QWidget* column(const QString& caption, QDoubleSpinBox* editor,
   return widget;
 }
 
-}  // namespace
+}
 
-// SECTIONS ARE THEIR OWN PANEL (Tyson 2026-08-29): the parametric voice opens
-// beside the app the way the UltraProteus filter page does, one FC / BW / GAIN
-// row per section, while the main window keeps the raw pole and zero.
 SectionDesk::SectionDesk(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {
   setWindowFlag(Qt::Tool);

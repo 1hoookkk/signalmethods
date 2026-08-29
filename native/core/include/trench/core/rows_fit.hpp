@@ -56,4 +56,4 @@ std::optional<RowsFit> fit_rows_watched(std::span<const double> target, Rows see
                                         const std::function<bool()>& stop_requested,
                                         const std::function<void(const RowsStep&)>& on_step);
 
-}  // namespace trench::core::p2k
+}

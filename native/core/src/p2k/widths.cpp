@@ -100,7 +100,7 @@ std::pair<double, bool> sweep_width(Corner& c, std::span<const double> target, s
   return {best_v, moved};
 }
 
-}  // namespace
+}
 
 std::optional<WidthFit> fit_pole_widths(std::span<const double> target, const CornerWords& words,
                                         std::uint32_t live, std::size_t max_passes,
@@ -150,4 +150,4 @@ std::optional<WidthFit> fit_pole_widths(std::span<const double> target, const Co
   return fit;
 }
 
-}  // namespace trench::core::p2k
+}

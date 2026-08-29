@@ -34,7 +34,7 @@ std::optional<PoleRows> readRows(const std::filesystem::path& path) {
   return rows;
 }
 
-}  // namespace
+}
 
 std::string lower_extension(const std::filesystem::path& path) {
   std::string result = path.extension().string();
@@ -124,7 +124,7 @@ double median(std::vector<double> values) {
                                 : 0.5 * (values[middle - 1] + values[middle]);
 }
 
-}  // namespace
+}
 
 std::optional<FormantTrack> read_formant_track(const std::filesystem::path& path) {
   std::ifstream stream(path);
@@ -205,7 +205,7 @@ std::optional<std::size_t> columnOf(const std::vector<std::string>& header,
   return static_cast<std::size_t>(found - header.begin());
 }
 
-}  // namespace
+}
 
 std::optional<PeqList> read_peq_list(const std::filesystem::path& path) {
   std::ifstream stream(path);
@@ -266,4 +266,4 @@ std::optional<PeqList> read_peq_list(const std::filesystem::path& path) {
   return list;
 }
 
-}  // namespace trench::app
+}

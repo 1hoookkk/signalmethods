@@ -73,7 +73,7 @@ double comb_score(const std::vector<double>& db, double bin_hz, double f0) {
   return total;
 }
 
-}  // namespace
+}
 
 HarmonicEnvelope harmonic_envelope(std::span<const float> mono, double sample_rate_hz,
                                    Source source, const Options& options) {
@@ -544,4 +544,4 @@ ErrorReport score_words(std::span<const std::uint16_t> words, double sample_rate
   return weighted_error(target_db, model, weight);
 }
 
-}  // namespace trench::core::measure
+}

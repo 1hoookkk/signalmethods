@@ -77,7 +77,7 @@ std::array<std::uint16_t, 4> roots_from(double pole_hz, double pole_r, double ze
   return {zero_mag, rsq, pole_mag, pole_rsq};
 }
 
-}  // namespace
+}
 
 double trench_floor_radius() { return s6_zero_radius(); }
 
@@ -115,7 +115,7 @@ double trench_of(const SectionParam& param, double pole_hz) {
   return std::clamp(wanted, std::min(lo, hi), hi);
 }
 
-}  // namespace
+}
 
 std::array<std::uint16_t, 4> words_from_param(const SectionParam& param,
                                               const std::array<std::uint16_t, 4>& current,
@@ -352,4 +352,4 @@ std::array<std::uint16_t, 4> words_from_mask(const MaskParam& mask,
   return {zero_mag, rsq, current[2], current[3]};
 }
 
-}  // namespace trench::core::p2k
+}

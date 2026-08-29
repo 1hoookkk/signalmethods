@@ -31,7 +31,7 @@ double pink_power_db(std::span<const double> weight, std::span<const double> res
   return 10.0 * std::log10(std::max(acc, 1e-30));
 }
 
-}  // namespace
+}
 
 std::vector<double> morph_response_db(std::span<const std::uint8_t> body, float morph, float q,
                                       const Grid& g) {
@@ -237,4 +237,4 @@ InteriorAudit interior_audit(const CascadeAt& at, const Grid& g, std::size_t mor
   return out;
 }
 
-}  // namespace trench::core::p2k
+}

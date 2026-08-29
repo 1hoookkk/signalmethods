@@ -51,4 +51,4 @@ std::optional<MonoClip> decode_mono(const std::filesystem::path& path) {
   return clip;
 }
 
-}  // namespace trench::audio
+}

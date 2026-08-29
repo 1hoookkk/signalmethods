@@ -175,7 +175,7 @@ std::pair<std::uint16_t, std::uint16_t> seat_root(std::uint16_t w_mag, std::uint
   return {w_mag, w_rsq};
 }
 
-}  // namespace
+}
 
 CornerWords enter(const CornerWords& words) {
   CornerWords out = words;
@@ -191,4 +191,4 @@ CornerWords enter(const CornerWords& words) {
   return out;
 }
 
-}  // namespace trench::core::p2k
+}

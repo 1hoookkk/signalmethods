@@ -11,7 +11,7 @@ constexpr double kDecodedFloor = 1.0e-30;
 
 double logged(double decoded) { return std::log(std::max(decoded, kDecodedFloor)); }
 
-}  // namespace
+}
 
 EncodedSection encode_section(const Biquad& section) {
   const double b0 = section[0];
@@ -110,4 +110,4 @@ float SawSource::next() {
   return out;
 }
 
-}  // namespace trench::core
+}

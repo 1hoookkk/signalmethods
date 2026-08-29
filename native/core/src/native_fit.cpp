@@ -250,7 +250,7 @@ void notify(const StepObserver& observer, const Corner& corner, std::size_t sect
   if (observer) observer(FitStep{corner, section, stage, loss});
 }
 
-}  // namespace
+}
 
 double fit_loss(const FitTarget& target, const Corner& corner,
                 double sample_rate_hz) {
@@ -467,4 +467,4 @@ FitResult fit_corner(const FitTarget& target, const Corner& seed,
   return result;
 }
 
-}  // namespace trench::core::native
+}

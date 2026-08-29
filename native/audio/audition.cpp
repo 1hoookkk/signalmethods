@@ -187,4 +187,4 @@ void Audition::setClip(MonoClip clip) {
 
 void Audition::setGate(bool open) { impl_->gate.store(open); }
 
-}  // namespace trench::audio
+}

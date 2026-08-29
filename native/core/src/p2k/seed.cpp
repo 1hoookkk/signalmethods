@@ -15,7 +15,7 @@ namespace {
 constexpr std::size_t kMaxIters = 400;
 constexpr std::size_t kNvar = 4 * kStageCount - 1;
 
-}  // namespace
+}
 
 std::uint64_t Rng::next_u64() {
   state_ += 0x9E37'79B9'7F4A'7C15ULL;
@@ -338,7 +338,7 @@ Vars random_start(Rng& rng) {
   return x0;
 }
 
-}  // namespace
+}
 
 std::pair<ContinuousCorner, double> continuous_from(std::span<const double> target,
                                                     const ContinuousCorner& start,
@@ -471,7 +471,7 @@ std::vector<std::pair<double, double>> peaks_of(const Grid& g, std::span<const d
   return found;
 }
 
-}  // namespace
+}
 
 std::vector<std::pair<std::string_view, ContinuousCorner>> topological_seeds(
     std::span<const double> target, const Grid& g) {
@@ -626,4 +626,4 @@ CornerWords peel_seed_by(std::span<const double> target, Cost cost, const Grid& 
   return enter(c.w);
 }
 
-}  // namespace trench::core::p2k
+}

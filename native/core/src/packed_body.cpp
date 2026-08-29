@@ -54,7 +54,7 @@ RootPair pair_geometry(double encoded_magnitude, double encoded_radius_squared,
   return RealPair{(-p + root) / 2.0, (-p - root) / 2.0};
 }
 
-}  // namespace
+}
 
 double decode_word(std::uint16_t word) {
   const std::uint32_t u = static_cast<std::uint32_t>(word) + 1U;
@@ -248,4 +248,4 @@ Cascade PackedBody::interpolate_biquads(float morph, float q, float z) const {
   return result;
 }
 
-}  // namespace trench::core
+}

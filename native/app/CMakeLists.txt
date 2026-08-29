@@ -27,6 +27,8 @@ add_library(trench_native_ui STATIC
   section_desk.hpp
   section_strip.cpp
   section_strip.hpp
+  template_shelf.cpp
+  template_shelf.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_link_libraries(trench_native_ui PRIVATE Eigen3::Eigen)

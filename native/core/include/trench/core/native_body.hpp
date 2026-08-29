@@ -93,4 +93,4 @@ Corner packed_interior_corner(const PackedBody& packed, double morph, double q,
 std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(
     const Body& body, double datum_hz = kP2kDatumHz);
 
-}  // namespace trench::core::native
+}

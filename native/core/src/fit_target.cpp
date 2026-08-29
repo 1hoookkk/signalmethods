@@ -62,7 +62,7 @@ struct Row {
   double weight{1.0};
 };
 
-}  // namespace
+}
 
 bool FitTarget::valid() const noexcept {
   const auto size = frequency_hz.size();
@@ -190,4 +190,4 @@ std::vector<double> magnitude_on_grid(const FitTarget& target,
   return out;
 }
 
-}  // namespace trench::core
+}

@@ -25,4 +25,4 @@ std::optional<FitTarget> read_fit_target(const std::filesystem::path& path);
 std::vector<double> magnitude_on_grid(const FitTarget& target,
                                       std::span<const double> frequency_hz);
 
-}  // namespace trench::core
+}

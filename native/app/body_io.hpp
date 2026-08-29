@@ -15,4 +15,4 @@ QString saveDocument(const EditorState::Document& document, const QString& path)
 std::optional<EditorState::Document> loadDocument(const QString& path,
                                                   QString* error);
 
-}  // namespace trench::app
+}

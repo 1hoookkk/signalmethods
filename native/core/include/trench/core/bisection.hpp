@@ -50,4 +50,4 @@ class Session {
     const std::array<double, kPointCount>& points,
     const std::array<std::vector<double>, kPointCount>& repeats, bool monotone);
 
-}  // namespace trench::core::bisect
+}

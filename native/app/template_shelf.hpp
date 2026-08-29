@@ -1,7 +1,10 @@
 #pragma once
 
+#include <QString>
+
 #include <array>
 #include <cstddef>
+#include <vector>
 
 namespace trench::app {
 
@@ -12,13 +15,11 @@ struct TemplatePole {
 };
 
 struct TemplateEntry {
-  const char* name;
+  QString name;
   std::array<TemplatePole, 6> poles;
 };
 
-// Factory medoids (33-bank decode), Klatt 1980 Typ, STK modal tables,
-// and Hillenbrand 1995 population medians (bandwidths per Klatt Typ B).
-inline constexpr std::array<TemplateEntry, 41> kTemplateShelf{{
+inline const std::array<TemplateEntry, 41> kTemplateShelf{{
     {"SPREAD RESONANT", {{{16553.86, 180.43, true}, {14075.31, 152.35, true}, {11752.72, 131.37, true}, {9515.86, 103.53, true}, {7114.29, 79.23, true}, {4097.51, 145.35, true}}}},
     {"KLANG", {{{1987.19, 660.38, true}, {16336.23, 812.63, true}, {14059.91, 452.81, true}, {11842.17, 293.78, true}, {9367.44, 308.09, true}, {7055.42, 351.19, true}}}},
     {"BASS CLOSED", {{{13750.57, 1062.94, true}, {22050.00, 1000000000.00, false}, {1031.05, 251.03, true}, {17806.12, 82.70, true}, {4955.04, 293.78, true}, {12206.95, 1389.42, true}}}},
@@ -61,5 +62,12 @@ inline constexpr std::array<TemplateEntry, 41> kTemplateShelf{{
     {"MOUTH ER M", {{{450.00, 50.00, true}, {1424.00, 70.00, true}, {1698.00, 110.00, true}, {3338.50, 250.00, true}, {22050.00, 1000000000.00, false}, {22050.00, 1000000000.00, false}}}},
     {"MOUTH ER W", {{{506.00, 50.00, true}, {1580.00, 70.00, true}, {1934.00, 110.00, true}, {3902.00, 250.00, true}, {22050.00, 1000000000.00, false}, {22050.00, 1000000000.00, false}}}},
 }};
+
+struct ShelfGroup {
+  QString title;
+  std::vector<TemplateEntry> entries;
+};
+
+std::vector<ShelfGroup> buildShelf();
 
 }

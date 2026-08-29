@@ -114,7 +114,7 @@ void box_smooth(std::span<const double> in, std::span<double> out, std::size_t h
   }
 }
 
-}  // namespace
+}
 
 void Grid::factor_db(double p, double q, std::span<double> out) const {
   for (std::size_t i = 0; i < kNpts; ++i) {
@@ -212,4 +212,4 @@ AbsoluteError absolute_error(std::span<const double> target, std::span<const dou
   return out;
 }
 
-}  // namespace trench::core::p2k
+}

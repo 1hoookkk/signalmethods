@@ -22,7 +22,7 @@ double shape_dc_db(const CornerWords& w) {
   return db;
 }
 
-}  // namespace
+}
 
 std::optional<ZeroFit> fit_zeros_under(std::span<const double> ceiling_db,
                                        const CornerWords& start, std::uint32_t live,
@@ -117,4 +117,4 @@ std::optional<ZeroFit> fit_zeros_under(std::span<const double> ceiling_db,
   return fit;
 }
 
-}  // namespace trench::core::p2k
+}

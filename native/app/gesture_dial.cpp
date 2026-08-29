@@ -18,7 +18,7 @@ constexpr QColor kAccent{196, 103, 79};
 
 constexpr double kFineScale = 0.2;
 
-}  // namespace
+}
 
 GestureDial::GestureDial(QString label, double units_per_pixel,
                          std::function<QString(double)> formatter,
@@ -48,9 +48,6 @@ void GestureDial::paintEvent(QPaintEvent*) {
                    Qt::AlignRight | Qt::AlignVCenter,
                    formatter_ ? formatter_(total_) : QString());
 
-  // MIXER FADER, pitch-wheel law (Tyson 2026-08-29 "it should be mixer
-  // faders"): a horizontal track with a centre detent; deflection applies the
-  // gesture, release bakes it into the corner and the handle snaps home.
   const double track_y = 30.0;
   painter.setPen(QPen(kRule, 2.0, Qt::SolidLine, Qt::RoundCap));
   painter.drawLine(QPointF{4.0, track_y}, QPointF{span - 4.0, track_y});

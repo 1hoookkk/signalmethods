@@ -49,4 +49,4 @@ FitResult fit_corner(const FitTarget& target, const Corner& seed,
                      StopRequested stop_requested = {},
                      StepObserver observer = {}, const FitOptions& options = {});
 
-}  // namespace trench::core::native
+}

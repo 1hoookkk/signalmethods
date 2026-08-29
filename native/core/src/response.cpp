@@ -23,7 +23,7 @@ double to_db(const std::complex<double>& response) {
   return 20.0 * std::log10(std::abs(response));
 }
 
-}  // namespace
+}
 
 double section_response_db(const Biquad& section, double frequency_hz,
                            double sample_rate_hz) {
@@ -116,4 +116,4 @@ std::vector<double> logarithmic_frequency_grid(double low_hz, double high_hz,
   return result;
 }
 
-}  // namespace trench::core
+}

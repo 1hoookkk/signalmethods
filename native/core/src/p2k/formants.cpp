@@ -62,7 +62,7 @@ constexpr std::array<NamedRecipe, 8> kManualRecipes{{
     {"wah", {{peak(590), kParked, kParked, kParked, kParked, low(1200, 9600)}}},
 }};
 
-}  // namespace
+}
 
 std::span<const VowelFormants> klatt_vowels() { return kKlattTableII; }
 
@@ -118,7 +118,6 @@ std::vector<PosturePole> pole_words_from_posture(const Posture& posture) {
   return out;
 }
 
-
 std::vector<SpectralPeak> peaks_of_envelope(std::span<const double> hz, std::span<const double> db,
                                             std::size_t max_peaks) {
   std::vector<SpectralPeak> found;
@@ -140,4 +139,4 @@ std::vector<SpectralPeak> peaks_of_envelope(std::span<const double> hz, std::spa
   return found;
 }
 
-}  // namespace trench::core::p2k
+}

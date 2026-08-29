@@ -6,6 +6,7 @@
 #include "morph_pad.hpp"
 #include "section_desk.hpp"
 #include "section_strip.hpp"
+#include "template_shelf.hpp"
 #include "trench/audio/audition.hpp"
 
 #include <QMainWindow>
@@ -84,6 +85,7 @@ class MainWindow final : public QMainWindow {
   SectionDesk* section_desk_{};
   std::vector<std::pair<double, double>> proposal_poles_;
   std::vector<std::pair<double, double>> proposal_zeros_;
+  std::vector<trench::app::TemplateEntry> shelf_;
   std::vector<std::pair<QString, std::vector<std::pair<double, double>>>>
       user_shelf_;
   std::optional<Reference> reference_;

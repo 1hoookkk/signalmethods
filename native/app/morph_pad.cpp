@@ -21,7 +21,7 @@ double morphOf(std::size_t index) {
 
 double qOf(std::size_t index) { return index >= 2 ? 1.0 : 0.0; }
 
-}  // namespace
+}
 
 MorphPad::MorphPad(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {

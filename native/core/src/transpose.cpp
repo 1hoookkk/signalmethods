@@ -30,7 +30,7 @@ bool lane_travels(double c1, double c2, double sample_rate_hz, double ratio, boo
   return root_travels(*hz, std::sqrt(c2), ratio, sample_rate_hz, is_zero);
 }
 
-}  // namespace
+}
 
 std::optional<double> conjugate_pair_hz(double c1, double c2, double sample_rate_hz) {
   const double discriminant = c1 * c1 - 4.0 * c2;
@@ -72,4 +72,4 @@ Cascade transpose_cascade(const Cascade& cascade, double ratio, double sample_ra
   return out;
 }
 
-}  // namespace trench::core
+}

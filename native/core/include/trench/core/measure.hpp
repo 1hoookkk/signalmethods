@@ -100,4 +100,4 @@ ErrorReport score_words(std::span<const std::uint16_t> words, double sample_rate
                         std::span<const double> grid_hz, std::span<const double> weight,
                         std::span<const double> target_db);
 
-}  // namespace trench::core::measure
+}

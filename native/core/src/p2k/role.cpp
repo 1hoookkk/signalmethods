@@ -51,7 +51,7 @@ constexpr RoleEnvelope kEnvelopes[] = {
     {0.0, 22050.0, 0.0, 1.0, 0.0, 10.0, 0.0, 1.0},
 };
 
-}  // namespace
+}
 
 Role role_of(const SectionGeometry& geometry) {
   const auto r = roots_of(geometry);
@@ -150,4 +150,4 @@ std::array<std::uint16_t, 4> seat_words(Role role, const std::array<std::uint16_
   return out;
 }
 
-}  // namespace trench::core::p2k
+}

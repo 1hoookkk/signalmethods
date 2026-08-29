@@ -40,7 +40,7 @@ std::pair<double, double> pole_coefficients(const Roots& roots, double sample_ra
   return {-(a + b), a * b};
 }
 
-}  // namespace
+}
 
 Roots roots_from_coefficients(double p, double q, double sample_rate_hz) {
   const double discriminant = p * p - 4.0 * q;
@@ -87,7 +87,6 @@ std::array<double, kCorners> corner_weights(double morph, double q) {
   const double qq = std::clamp(q, 0.0, 1.0);
   return {(1.0 - m) * (1.0 - qq), m * (1.0 - qq), (1.0 - m) * qq, m * qq};
 }
-
 
 constexpr double kAngleZeroHz = 20.0;
 constexpr double kAnglePiHz = 20'000.0;
@@ -184,7 +183,7 @@ Roots blend_roots(const std::array<const Roots*, kCorners>& corner,
                                       sample_rate_hz)};
 }
 
-}  // namespace
+}
 
 Design blend_roots_log_2019(const Body& body, double morph, double q, double sample_rate_hz) {
   const auto weight = corner_weights(morph, q);
@@ -382,4 +381,4 @@ std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(const Body& body,
   return export_p2k_body(body, datum_hz).legacy_bytes();
 }
 
-}  // namespace trench::core::native
+}
