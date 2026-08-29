@@ -20,6 +20,13 @@ struct TemplateEntry {
   std::array<TemplatePole, 6> zeros{};
 };
 
+inline const TemplateEntry kEqTemplate{
+    QStringLiteral("EQ"),
+    {{{80.00, 160.00, true}, {150.00, 75.00, true}, {400.00, 200.00, true},
+      {1000.00, 500.00, true}, {2500.00, 1250.00, true}, {22050.00, 1000000000.00, false}}},
+    {{{160.00, 320.00, true}, {150.00, 75.00, true}, {400.00, 200.00, true},
+      {1000.00, 500.00, true}, {2500.00, 1250.00, true}, {22050.00, 1000000000.00, false}}}};
+
 inline const std::array<TemplateEntry, 41> kTemplateShelf{{
     {"SPREAD RESONANT", {{{16553.86, 180.43, true}, {14075.31, 152.35, true}, {11752.72, 131.37, true}, {9515.86, 103.53, true}, {7114.29, 79.23, true}, {4097.51, 145.35, true}}}},
     {"KLANG", {{{1987.19, 660.38, true}, {16336.23, 812.63, true}, {14059.91, 452.81, true}, {11842.17, 293.78, true}, {9367.44, 308.09, true}, {7055.42, 351.19, true}}}},

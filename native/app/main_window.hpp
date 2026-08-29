@@ -34,7 +34,6 @@ class MainWindow final : public QMainWindow {
   void setAudition(bool enabled);
   void applyAuditionSource();
   void chooseOverlay(std::optional<std::size_t> slot);
-  void chooseTemplate(std::size_t slot);
 
  protected:
   void closeEvent(QCloseEvent* event) override;
@@ -80,9 +79,8 @@ class MainWindow final : public QMainWindow {
   SectionStrip* section_strip_{};
   QLabel* reference_label_{};
   QLabel* status_label_{};
-  QToolButton* template_shelf_{};
+  QPushButton* template_shelf_{};
   QToolButton* overlay_shelf_{};
-  QMenu* template_mine_{};
   QMenu* overlay_mine_{};
   QDoubleSpinBox* pole_frequency_{};
   QDoubleSpinBox* pole_bandwidth_{};

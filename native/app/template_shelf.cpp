@@ -2,6 +2,8 @@
 
 #include "corpus_shelf.hpp"
 
+#include "corpus_shelf.hpp"
+
 #include "trench/core/formants.hpp"
 
 #include <array>
@@ -54,6 +56,29 @@ void appendByType(std::vector<TemplateEntry>& entries, std::string_view type,
   }
 }
 
+TemplateEntry withTalkingHedzEnds(TemplateEntry entry) {
+  for (const auto& corpus : kCorpusShelf) {
+    if (std::string_view(corpus.name) != "talking hedz M0Q0") continue;
+    TemplateEntry shaped;
+    shaped.name = entry.name;
+    for (std::size_t index = 0; index < 6; ++index) {
+      shaped.poles[index] = {22050.0, 1000000000.0, false};
+      shaped.zeros[index] = {22050.0, 1000000000.0, false};
+    }
+    shaped.poles[0] = corpus.poles[0];
+    shaped.zeros[0] = corpus.zeros[0];
+    for (std::size_t index = 0; index < 4; ++index) shaped.poles[index + 1] = entry.poles[index];
+    shaped.poles[5] = corpus.poles[5];
+    shaped.zeros[5] = corpus.zeros[5];
+    return shaped;
+  }
+  return entry;
+}
+
+void hedzEnds(ShelfGroup& group) {
+  for (TemplateEntry& entry : group.entries) entry = withTalkingHedzEnds(entry);
+}
+
 }
 
 std::vector<ShelfGroup> buildShelf() {
@@ -61,6 +86,7 @@ std::vector<ShelfGroup> buildShelf() {
 
   ShelfGroup ipa{QString::fromUtf8("VOWELS \xc2\xb7 IPA"), {}};
   appendByType(ipa.entries, "VOWELS", QString());
+  hedzEnds(ipa);
   groups.push_back(std::move(ipa));
 
   static const std::array<QString, 12> kVowelKeys{
@@ -72,20 +98,24 @@ std::vector<ShelfGroup> buildShelf() {
   for (const QString& key : kVowelKeys) {
     appendCompiled(male.entries, QStringLiteral("MOUTH %1 M").arg(key), key);
   }
+  hedzEnds(male);
   groups.push_back(std::move(male));
 
   ShelfGroup female{QString::fromUtf8("VOWELS \xc2\xb7 FEMALE"), {}};
   for (const QString& key : kVowelKeys) {
     appendCompiled(female.entries, QStringLiteral("MOUTH %1 W").arg(key), key);
   }
+  hedzEnds(female);
   groups.push_back(std::move(female));
 
   ShelfGroup s1{QStringLiteral("MOUTHS S1"), {}};
   appendByType(s1.entries, "MOUTHS S1", QStringLiteral("s1 "));
+  hedzEnds(s1);
   groups.push_back(std::move(s1));
 
   ShelfGroup s2{QStringLiteral("MOUTHS S2"), {}};
   appendByType(s2.entries, "MOUTHS S2", QStringLiteral("s2 "));
+  hedzEnds(s2);
   groups.push_back(std::move(s2));
 
   ShelfGroup poses{QStringLiteral("POSES"), {}};
