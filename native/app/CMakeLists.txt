@@ -5,12 +5,20 @@ qt_standard_project_setup()
 add_library(trench_native_ui STATIC
   armadillo_editor.cpp
   armadillo_editor.hpp
+  body_io.cpp
+  body_io.hpp
+  candidate_lane.cpp
+  candidate_lane.hpp
   cascade_plot.cpp
   cascade_plot.hpp
   editor_state.cpp
   editor_state.hpp
+  gesture_dial.cpp
+  gesture_dial.hpp
   main_window.cpp
   main_window.hpp
+  morph_pad.cpp
+  morph_pad.hpp
   section_strip.cpp
   section_strip.hpp
 )

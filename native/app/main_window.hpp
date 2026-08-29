@@ -2,7 +2,9 @@
 
 #include "cascade_plot.hpp"
 #include "armadillo_editor.hpp"
+#include "candidate_lane.hpp"
 #include "editor_state.hpp"
+#include "morph_pad.hpp"
 #include "section_strip.hpp"
 #include "trench/audio/audition.hpp"
 
@@ -13,6 +15,7 @@
 #include <optional>
 #include <vector>
 
+class QComboBox;
 class QDoubleSpinBox;
 class QLabel;
 class QPushButton;
@@ -36,29 +39,33 @@ class MainWindow final : public QMainWindow {
     std::optional<trench::audio::MonoClip> clip;
   };
 
-  void chooseReference();
+  void openFile();
+  void saveBody();
   void refresh();
   void refreshInspector();
   void updateAuditionView();
   void setReference(Reference reference);
+  void applyReferenceView();
   [[nodiscard]] trench::audio::MonoClip clipForDevice(
       const trench::audio::MonoClip& clip) const;
 
   EditorState state_;
   CascadePlot* cascade_plot_{};
+  CandidateLane* candidate_lane_{};
+  MorphPad* morph_pad_{};
   ArmadilloEditor* armadillo_editor_{};
   SectionStrip* section_strip_{};
   QLabel* reference_label_{};
   QLabel* status_label_{};
-  QPushButton* audition_button_{};
+  QComboBox* template_shelf_{};
+  QComboBox* overlay_shelf_{};
   QDoubleSpinBox* pole_frequency_{};
   QDoubleSpinBox* pole_bandwidth_{};
   QDoubleSpinBox* zero_frequency_{};
   QDoubleSpinBox* zero_bandwidth_{};
   QWidget* zero_frequency_group_{};
   QWidget* zero_bandwidth_group_{};
-  QLabel* zero_state_label_{};
-  QPushButton* add_zero_button_{};
+  QPushButton* tilt_button_{};
   std::optional<Reference> reference_;
   std::unique_ptr<trench::audio::Audition> audition_;
 };

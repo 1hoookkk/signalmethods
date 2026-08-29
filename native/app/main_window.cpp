@@ -1,15 +1,23 @@
 #include "main_window.hpp"
 
+#include "body_io.hpp"
+#include "gesture_dial.hpp"
+#include "template_shelf.hpp"
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
 
 #include <QCloseEvent>
+#include <QComboBox>
+#include <QDir>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
+#include <QFileInfo>
+#include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QSignalBlocker>
+#include <QStandardPaths>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -18,7 +26,9 @@
 #include <cstdint>
 #include <cctype>
 #include <fstream>
+#include <functional>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <span>
 #include <sstream>
@@ -89,6 +99,61 @@ std::optional<ResponseCurve> readResponseCurve(
   return result;
 }
 
+using NumericRow = std::array<double, 2>;
+
+std::vector<NumericRow> readNumericRows(const std::filesystem::path& path) {
+  std::ifstream stream(path);
+  if (!stream) return {};
+  std::vector<NumericRow> rows;
+  std::string line;
+  while (std::getline(stream, line)) {
+    const auto first = line.find_first_not_of(" \t\r");
+    if (first == std::string::npos) continue;
+    if (line[first] == '#' || line[first] == ';') continue;
+    std::replace(line.begin(), line.end(), ',', ' ');
+    std::stringstream row(line);
+    double column_one = 0.0;
+    double column_two = 0.0;
+    if (!(row >> column_one >> column_two)) continue;
+    if (!std::isfinite(column_one) || !std::isfinite(column_two)) return {};
+    rows.push_back({column_one, column_two});
+  }
+  return rows;
+}
+
+bool isResponseTable(const std::vector<NumericRow>& rows) {
+  if (rows.size() < 2) return false;
+  for (std::size_t index = 0; index < rows.size(); ++index) {
+    if (!(rows[index][0] > 0.0)) return false;
+    if (index > 0 && !(rows[index][0] > rows[index - 1][0])) return false;
+  }
+  return std::any_of(rows.begin(), rows.end(),
+                     [](const NumericRow& row) { return row[1] < 0.0; });
+}
+
+bool isPoleMaterial(const std::vector<NumericRow>& rows) {
+  return !rows.empty() &&
+         std::all_of(rows.begin(), rows.end(), [](const NumericRow& row) {
+           return row[0] > 0.0 && row[1] > 0.0;
+         });
+}
+
+QFont captionFont(const QWidget* base) {
+  QFont font = base->font();
+  font.setPixelSize(10);
+  font.setWeight(QFont::DemiBold);
+  font.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
+  return font;
+}
+
+QFont valueFont(const QWidget* base) {
+  QFont font = base->font();
+  font.setPixelSize(13);
+  font.setWeight(QFont::Normal);
+  font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
+  return font;
+}
+
 QDoubleSpinBox* physicalEditor(double low, double high, QWidget* parent) {
   auto* editor = new QDoubleSpinBox(parent);
   editor->setRange(low, high);
@@ -97,6 +162,7 @@ QDoubleSpinBox* physicalEditor(double low, double high, QWidget* parent) {
   editor->setSuffix(QStringLiteral(" Hz"));
   editor->setKeyboardTracking(true);
   editor->setMinimumWidth(150);
+  editor->setFont(valueFont(editor));
   return editor;
 }
 
@@ -108,6 +174,7 @@ QWidget* labelledEditor(const QString& label, QDoubleSpinBox* editor,
   layout->setSpacing(4);
   auto* name = new QLabel(label, widget);
   name->setObjectName(QStringLiteral("fieldName"));
+  name->setFont(captionFont(name));
   layout->addWidget(name);
   layout->addWidget(editor);
   return widget;
@@ -123,25 +190,101 @@ MainWindow::MainWindow(QWidget* parent)
 
   auto* central = new QWidget(this);
   auto* layout = new QVBoxLayout(central);
-  layout->setContentsMargins(18, 16, 18, 16);
+  layout->setContentsMargins(16, 16, 16, 16);
   layout->setSpacing(12);
 
   auto* top = new QHBoxLayout;
   top->setSpacing(10);
-  auto* load = new QPushButton(QStringLiteral("LOAD REFERENCE"), central);
+  auto* load = new QPushButton(QStringLiteral("OPEN"), central);
+  auto* save = new QPushButton(QStringLiteral("SAVE"), central);
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
-  audition_button_ = new QPushButton(QStringLiteral("AUDITION"), central);
-  audition_button_->setCheckable(true);
-  audition_button_->setObjectName(QStringLiteral("audition"));
+  tilt_button_ = new QPushButton(QStringLiteral("TILT"), central);
+  tilt_button_->setCheckable(true);
+  tilt_button_->setObjectName(QStringLiteral("tiltSwitch"));
+  tilt_button_->setEnabled(false);
+  template_shelf_ = new QComboBox(central);
+  template_shelf_->setObjectName(QStringLiteral("templateShelf"));
+  template_shelf_->addItem(QStringLiteral("TEMPLATE"));
+  for (const auto& entry : trench::app::kTemplateShelf) {
+    template_shelf_->addItem(QString::fromUtf8(entry.name));
+  }
+  overlay_shelf_ = new QComboBox(central);
+  overlay_shelf_->setObjectName(QStringLiteral("overlayShelf"));
+  overlay_shelf_->addItem(QStringLiteral("OVERLAY"));
+  for (const auto& entry : trench::app::kTemplateShelf) {
+    overlay_shelf_->addItem(QString::fromUtf8(entry.name));
+  }
+  load->setFont(captionFont(load));
+  save->setFont(captionFont(save));
+  tilt_button_->setFont(captionFont(tilt_button_));
+  template_shelf_->setFont(captionFont(template_shelf_));
+  overlay_shelf_->setFont(captionFont(overlay_shelf_));
+  reference_label_->setFont(valueFont(reference_label_));
   top->addWidget(load);
+  top->addWidget(template_shelf_);
   top->addWidget(reference_label_);
+  top->addWidget(tilt_button_);
+  top->addWidget(overlay_shelf_);
   top->addStretch(1);
-  top->addWidget(audition_button_);
+  top->addWidget(save);
   layout->addLayout(top);
 
+  // THE EDITOR IS THE SURFACE (Tyson 2026-08-28 "direct armadillo editor"):
+  // the cascade is a fixed monitor above, the plane below owns the height.
   cascade_plot_ = new CascadePlot(central);
-  layout->addWidget(cascade_plot_, 1);
+  cascade_plot_->setFixedHeight(170);
+  morph_pad_ = new MorphPad(&state_, central);
+  auto* interior = new QHBoxLayout;
+  interior->setSpacing(12);
+  interior->addWidget(cascade_plot_, 3);
+  interior->addWidget(morph_pad_, 0, Qt::AlignTop);
+  layout->addLayout(interior);
+
+  candidate_lane_ = new CandidateLane(central);
+  layout->addWidget(candidate_lane_);
+
+  armadillo_editor_ = new ArmadilloEditor(&state_, central);
+  layout->addWidget(armadillo_editor_, 1);
+
+  auto* gestures = new QHBoxLayout;
+  gestures->setSpacing(10);
+  auto* transpose = new GestureDial(
+      QStringLiteral("TRANSPOSE"), 0.03,
+      [](double total) { return QString::asprintf("%+.1f st", total); },
+      central);
+  transpose->onDelta = [this](double delta) {
+    state_.applyAffine(delta, 1.0, 1.0, 1.0);
+  };
+  gestures->addWidget(transpose);
+  const auto addRatioDial = [central, gestures](
+                                const QString& label, double units_per_pixel,
+                                int decimals, std::function<void(double)> apply) {
+    auto product = std::make_shared<double>(1.0);
+    auto* dial = new GestureDial(
+        label, units_per_pixel,
+        [product, decimals](double total) {
+          if (total == 0.0) *product = 1.0;
+          return QStringLiteral("x") + QString::number(*product, 'f', decimals);
+        },
+        central);
+    dial->onDelta = [product, apply = std::move(apply)](double delta) {
+      *product *= 1.0 + delta;
+      apply(delta);
+    };
+    gestures->addWidget(dial);
+  };
+  addRatioDial(QStringLiteral("TRACT"), 0.0015, 3, [this](double delta) {
+    state_.applyAffine(0.0, 1.0 + delta, 1.0, 1.0);
+  });
+  addRatioDial(QStringLiteral("CHARACTER"), 0.002, 2, [this](double delta) {
+    state_.applyAffine(0.0, 1.0, 1.0 + delta, 1.0);
+  });
+  addRatioDial(QStringLiteral("EXAGGERATE"), 0.002, 2, [this](double delta) {
+    state_.applyAffine(0.0, 1.0, 1.0, 1.0 + delta);
+  });
+  gestures->addStretch(1);
+  layout->addLayout(gestures);
 
   section_strip_ = new SectionStrip(&state_, central);
   layout->addWidget(section_strip_);
@@ -164,43 +307,69 @@ MainWindow::MainWindow(QWidget* parent)
                                          zero_bandwidth_, central);
   inspector->addWidget(zero_frequency_group_);
   inspector->addWidget(zero_bandwidth_group_);
-  zero_state_label_ = new QLabel(QStringLiteral("ZERO OFF"), central);
-  zero_state_label_->setObjectName(QStringLiteral("zeroState"));
-  add_zero_button_ = new QPushButton(QStringLiteral("ADD ZERO AT NYQUIST"), central);
-  inspector->addWidget(zero_state_label_, 0, Qt::AlignBottom);
-  inspector->addWidget(add_zero_button_, 0, Qt::AlignBottom);
   status_label_ = new QLabel(QStringLiteral("44,100 Hz DSP"), central);
   status_label_->setObjectName(QStringLiteral("status"));
+  status_label_->setFont(captionFont(status_label_));
   inspector->addStretch(1);
   inspector->addWidget(status_label_, 0, Qt::AlignBottom);
   layout->addLayout(inspector);
 
-  armadillo_editor_ = new ArmadilloEditor(&state_, central);
-  layout->addWidget(armadillo_editor_, 1);
-
   setCentralWidget(central);
   setStyleSheet(QStringLiteral(R"(
-    QMainWindow, QWidget { background: #0c0f11; color: #b2bec1; }
-    QPushButton { background: #171d20; border: 1px solid #354044;
-                  border-radius: 2px; padding: 7px 13px; color: #dce5e7; }
-    QPushButton:hover { border-color: #42e0cf; }
-    QPushButton:checked { background: #173c3a; border-color: #42e0cf;
-                          color: #42e0cf; }
-    QPushButton#audition:checked { background: #5b3423; border-color: #dd8e55;
-                                   color: #dd8e55; }
-    QLabel#referenceName { color: #dd8e55; }
-    QLabel#fieldName { color: #758286; font-size: 10px; letter-spacing: 1px; }
-    QLabel#zeroState { color: #758286; padding: 7px 4px; letter-spacing: 1px; }
-    QLabel#status { color: #758286; }
-    QDoubleSpinBox { background: #111619; border: 1px solid #354044;
-                     padding: 6px; color: #e5edef; selection-background-color: #245b56; }
+    QMainWindow, QWidget { background: #edebe6; color: #26241f; }
+    QPushButton, QComboBox, QDoubleSpinBox {
+        background: #f6f4ef; border: 1px solid #c9c4b8; border-radius: 4px;
+        padding: 0px 12px; min-height: 26px; color: #26241f; }
+    QPushButton:hover, QComboBox:hover, QDoubleSpinBox:hover {
+        border-color: #a8a296; }
+    QPushButton:focus, QComboBox:focus, QDoubleSpinBox:focus {
+        border-color: #c4674f; }
+    QPushButton:disabled, QDoubleSpinBox:disabled {
+        color: #a8a296; border-color: #ddd9cf; }
+    QPushButton:checked { border-color: #c4674f; color: #c4674f; }
+    QPushButton#tiltSwitch:checked { background: #f6f4ef;
+                                     border-color: #c4674f; color: #c4674f; }
+    QComboBox::drop-down { border: none; width: 18px; }
+    QComboBox QAbstractItemView { background: #f6f4ef; border: 1px solid #c9c4b8;
+                                  color: #26241f; outline: none;
+                                  selection-background-color: #c4674f;
+                                  selection-color: #ffffff; }
+    QDoubleSpinBox { padding-right: 20px;
+                     selection-background-color: #c4674f;
+                     selection-color: #f6f4ef; }
+    QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+        width: 16px; border: none; background: transparent; }
+    QLabel#referenceName { color: #26241f; }
+    QLabel#fieldName { color: #8b877c; }
+    QLabel#status { color: #8b877c; }
   )"));
 
-  connect(load, &QPushButton::clicked, this, &MainWindow::chooseReference);
-  connect(audition_button_, &QPushButton::toggled, this,
-          &MainWindow::setAudition);
-  connect(add_zero_button_, &QPushButton::clicked, &state_,
-          &EditorState::addZeroAtNyquist);
+  connect(load, &QPushButton::clicked, this, &MainWindow::openFile);
+  connect(save, &QPushButton::clicked, this, &MainWindow::saveBody);
+  connect(tilt_button_, &QPushButton::toggled, this,
+          [this] { applyReferenceView(); });
+  connect(overlay_shelf_, &QComboBox::activated, this, [this](int index) {
+    if (index <= 0) {
+      cascade_plot_->clearFormantMarks();
+      return;
+    }
+    const auto& entry = trench::app::kTemplateShelf[std::size_t(index) - 1];
+    std::vector<double> marks;
+    for (const auto& pole : entry.poles) {
+      if (pole.present) marks.push_back(pole.hz);
+    }
+    cascade_plot_->setFormantMarks(std::move(marks));
+  });
+  connect(template_shelf_, &QComboBox::activated, this, [this](int index) {
+    if (index < 1) return;
+    state_.loadTemplate(trench::app::kTemplateShelf[static_cast<std::size_t>(index - 1)]);
+    template_shelf_->setCurrentIndex(0);
+  });
+  candidate_lane_->onPick = [this](double hz, double bw_hz) {
+    const std::size_t section = state_.selectedSection();
+    if (!state_.sectionEnabled(section)) state_.toggleSection(section);
+    state_.setRoot(section, EditorState::Lane::kPole, hz, bw_hz);
+  };
   connect(&state_, &EditorState::changed, this, &MainWindow::refresh);
   connect(&state_, &EditorState::selectionChanged, this,
           [this] { refresh(); });
@@ -237,13 +406,60 @@ MainWindow::~MainWindow() {
   if (audition_) audition_->stop();
 }
 
-void MainWindow::chooseReference() {
+void MainWindow::openFile() {
   const QString chosen = QFileDialog::getOpenFileName(
-      this, QStringLiteral("Load one response reference"), QString(),
-      QStringLiteral("Response reference (*.csv *.txt *.wav *.aif *.aiff *.flac *.body240 *.bin)"));
-  if (!chosen.isEmpty()) {
-    loadReference(std::filesystem::path(chosen.toStdWString()));
+      this, QStringLiteral("Open sound or data"), QString(),
+      QStringLiteral("Sound or data (*.wav *.txt *.csv *.fbw);;All files (*)"));
+  if (chosen.isEmpty()) return;
+  const std::filesystem::path path(chosen.toStdWString());
+  if (isAudio(lowerExtension(path))) {
+    loadReference(path);
+    return;
   }
+  const auto rows = readNumericRows(path);
+  if (isResponseTable(rows)) {
+    Reference reference;
+    reference.name = QString::fromStdWString(path.filename().wstring());
+    for (const auto& row : rows) {
+      reference.frequency_hz.push_back(row[0]);
+      reference.magnitude_db.push_back(row[1]);
+    }
+    setReference(std::move(reference));
+    status_label_->setText(
+        QStringLiteral("RESPONSE · %1 POINTS").arg(rows.size()));
+    return;
+  }
+  if (isPoleMaterial(rows)) {
+    std::vector<std::pair<double, double>> poles;
+    poles.reserve(rows.size());
+    for (const auto& row : rows) poles.emplace_back(row[0], row[1]);
+    state_.loadPoles(poles);
+    status_label_->setText(
+        QStringLiteral("POLES · %1 SECTIONS")
+            .arg(std::min(poles.size(), trench::core::native::kSections)));
+    return;
+  }
+  loadReference(path);
+}
+
+void MainWindow::saveBody() {
+  const QString folder =
+      QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
+      QStringLiteral("/TRENCH/bodies");
+  QDir().mkpath(folder);
+  QString chosen = QFileDialog::getSaveFileName(
+      this, QStringLiteral("Save one packed body"),
+      folder + QStringLiteral("/untitled.body240"),
+      QStringLiteral("Packed body (*.body240)"));
+  if (chosen.isEmpty()) return;
+  if (!chosen.endsWith(QStringLiteral(".body240"), Qt::CaseInsensitive)) {
+    chosen += QStringLiteral(".body240");
+  }
+  const QString refusal = trench::app::saveBody240(state_, chosen);
+  status_label_->setText(
+      refusal.isEmpty()
+          ? QStringLiteral("SAVED · %1").arg(QFileInfo(chosen).fileName().toUpper())
+          : refusal);
 }
 
 bool MainWindow::loadReference(const std::filesystem::path& path) {
@@ -306,17 +522,49 @@ bool MainWindow::loadReference(const std::filesystem::path& path) {
 void MainWindow::setReference(Reference reference) {
   reference_ = std::move(reference);
   reference_label_->setText(reference_->name.toUpper());
-  cascade_plot_->setReference(reference_->name, reference_->frequency_hz,
-                              reference_->magnitude_db);
+  tilt_button_->setEnabled(true);
+  applyReferenceView();
   status_label_->setText(QStringLiteral("REFERENCE LOADED · %1 POINTS")
                              .arg(reference_->frequency_hz.size()));
-  if (audition_button_->isChecked()) {
+  if (audition_->running()) {
     if (reference_->clip) {
       audition_->setClip(clipForDevice(*reference_->clip));
     } else {
       audition_->setSaw(73.42, 0.18F);
     }
   }
+}
+
+// TILT (Tyson 2026-08-28): whitening lives in the response domain - the
+// overlay and the candidates switch together, so what is seen is what is
+// picked. The stored reference stays true.
+void MainWindow::applyReferenceView() {
+  if (!reference_) return;
+  const auto& hz = reference_->frequency_hz;
+  std::vector<double> view = reference_->magnitude_db;
+  if (tilt_button_->isChecked() && hz.size() > 2) {
+    double sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+    std::size_t count = 0;
+    for (std::size_t i = 0; i < hz.size(); ++i) {
+      if (hz[i] <= 0.0) continue;
+      const double lx = std::log2(hz[i]);
+      sx += lx;
+      sy += view[i];
+      sxx += lx * lx;
+      sxy += lx * view[i];
+      ++count;
+    }
+    const double denom = double(count) * sxx - sx * sx;
+    if (count > 2 && std::abs(denom) > 1e-12) {
+      const double slope = (double(count) * sxy - sx * sy) / denom;
+      const double mean_lx = sx / double(count);
+      for (std::size_t i = 0; i < hz.size(); ++i) {
+        if (hz[i] > 0.0) view[i] -= slope * (std::log2(hz[i]) - mean_lx);
+      }
+    }
+  }
+  cascade_plot_->setReference(hz, view);
+  candidate_lane_->setReference(hz, view);
 }
 
 void MainWindow::refresh() {
@@ -361,11 +609,6 @@ void MainWindow::refreshInspector() {
   zero_bandwidth_group_->setVisible(zero_present);
   zero_frequency_->setEnabled(enabled && zero_present);
   zero_bandwidth_->setEnabled(enabled && zero_present);
-  zero_state_label_->setVisible(!zero_present);
-  zero_state_label_->setText(enabled ? QStringLiteral("ZERO OFF")
-                                     : QStringLiteral("SECTION OFF"));
-  add_zero_button_->setVisible(!zero_present);
-  add_zero_button_->setEnabled(enabled);
   section_strip_->update();
   armadillo_editor_->update();
 }
@@ -410,8 +653,6 @@ void MainWindow::setAudition(bool enabled) {
   }
   const std::string error = audition_->start();
   if (!error.empty()) {
-    const QSignalBlocker blocker(audition_button_);
-    audition_button_->setChecked(false);
     status_label_->setText(QStringLiteral("AUDIO DEVICE · %1")
                                .arg(QString::fromStdString(error)));
     return;

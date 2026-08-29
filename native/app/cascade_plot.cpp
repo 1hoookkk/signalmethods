@@ -2,6 +2,7 @@
 
 #include "trench/core/native_body.hpp"
 
+#include <QFont>
 #include <QFontMetrics>
 #include <QPainter>
 #include <QPainterPath>
@@ -18,15 +19,14 @@ namespace {
 constexpr double kLowHz = 20.0;
 constexpr double kHighHz = 20'000.0;
 
-QColor kBackground{12, 15, 17};
-QColor kPanel{20, 23, 26};
-QColor kGrid{45, 52, 56};
-QColor kText{151, 163, 166};
-QColor kResponse{185, 236, 224};
-QColor kReference{184, 134, 46};
-constexpr std::array<QColor, trench::core::native::kSections> kSectionColors{
-    QColor{66, 224, 207}, QColor{231, 158, 76}, QColor{226, 210, 90},
-    QColor{224, 99, 151}, QColor{92, 170, 238}, QColor{155, 213, 96}};
+constexpr QColor kChassis{237, 235, 230};
+constexpr QColor kCard{30, 34, 38};
+constexpr QColor kHairline{50, 55, 59};
+constexpr QColor kGrid{52, 58, 63};
+constexpr QColor kText{139, 139, 132};
+constexpr QColor kResponse{210, 207, 198};
+constexpr QColor kAddressed{196, 103, 79};
+constexpr QColor kReference{184, 134, 46};
 
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -120.0 : 120.0;
@@ -36,8 +36,8 @@ double finiteDb(double value) {
 }  // namespace
 
 CascadePlot::CascadePlot(QWidget* parent) : QWidget(parent) {
-  setMinimumHeight(320);
-  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  setMinimumHeight(160);
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   grid_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
 }
 
@@ -72,17 +72,25 @@ void CascadePlot::setCascade(
   update();
 }
 
-void CascadePlot::setReference(QString name, std::vector<double> frequency_hz,
+void CascadePlot::setReference(std::vector<double> frequency_hz,
                                std::vector<double> magnitude_db) {
-  reference_name_ = std::move(name);
   reference_hz_ = std::move(frequency_hz);
   reference_db_ = std::move(magnitude_db);
   for (double& db : reference_db_) db = finiteDb(db);
   update();
 }
 
+void CascadePlot::setFormantMarks(std::vector<double> frequency_hz) {
+  formant_hz_ = std::move(frequency_hz);
+  update();
+}
+
+void CascadePlot::clearFormantMarks() {
+  formant_hz_.clear();
+  update();
+}
+
 void CascadePlot::clearReference() {
-  reference_name_.clear();
   reference_hz_.clear();
   reference_db_.clear();
   update();
@@ -103,10 +111,16 @@ double CascadePlot::yForDb(double db, const QRectF& plot, double low_db,
 void CascadePlot::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), kBackground);
+  painter.fillRect(rect(), kChassis);
+  const QRectF card = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+  painter.setPen(Qt::NoPen);
+  painter.setBrush(kCard);
+  painter.drawRoundedRect(card, 6.0, 6.0);
+  painter.setPen(QPen(kHairline, 1.0));
+  painter.setBrush(Qt::NoBrush);
+  painter.drawRoundedRect(card, 6.0, 6.0);
 
-  const QRectF plot = QRectF(rect()).adjusted(62.0, 42.0, -22.0, -38.0);
-  painter.fillRect(plot, kPanel);
+  const QRectF plot = QRectF(rect()).adjusted(62.0, 14.0, -22.0, -38.0);
 
   double low_db = -24.0;
   double high_db = 24.0;
@@ -124,6 +138,11 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   const double half_span = std::max(24.0, 0.5 * (high_db - low_db) + 4.0);
   low_db = std::floor((centre - half_span) / 6.0) * 6.0;
   high_db = std::ceil((centre + half_span) / 6.0) * 6.0;
+
+  QFont scale_font = painter.font();
+  scale_font.setPixelSize(9);
+  scale_font.setWeight(QFont::Normal);
+  painter.setFont(scale_font);
 
   painter.setPen(QPen(kGrid, 1.0));
   constexpr std::array<double, 10> frequency_lines{
@@ -145,7 +164,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
     const double y = yForDb(static_cast<double>(db), plot, low_db, high_db);
     painter.drawLine(QPointF{plot.left(), y}, QPointF{plot.right(), y});
     painter.setPen(kText);
-    painter.drawText(QRectF{4.0, y - 9.0, 50.0, 18.0},
+    painter.drawText(QRectF{8.0, y - 9.0, 46.0, 18.0},
                      Qt::AlignRight | Qt::AlignVCenter,
                      QStringLiteral("%1 dB").arg(db));
     painter.setPen(QPen(kGrid, 1.0));
@@ -175,6 +194,18 @@ void CascadePlot::paintEvent(QPaintEvent*) {
     painter.drawPath(path);
   };
 
+  painter.setBrush(Qt::NoBrush);
+
+  for (const double hz : formant_hz_) {
+    if (hz < kLowHz || hz > kHighHz) continue;
+    const double x = xForFrequency(hz, plot);
+    painter.setPen(QPen(kReference, 1.0));
+    painter.drawLine(QPointF{x, plot.top()}, QPointF{x, plot.top() + 9.0});
+    painter.setBrush(kReference);
+    painter.drawEllipse(QPointF{x, plot.top() + 11.5}, 2.2, 2.2);
+    painter.setBrush(Qt::NoBrush);
+  }
+
   QPen reference_pen(kReference, 1.0, Qt::DashLine);
   reference_pen.setCosmetic(true);
   reference_pen.setCapStyle(Qt::FlatCap);
@@ -183,35 +214,13 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   // one line other than when you select a stage"): the complete cascade is
   // the plot; selecting a stage overlays exactly that stage's own curve.
   if (enabled_[selected_section_]) {
-    QColor color = kSectionColors[selected_section_];
-    color.setAlpha(205);
-    QPen section_pen(color, 1.2);
+    QPen section_pen(kAddressed, 1.1);
     section_pen.setCosmetic(true);
     section_pen.setCapStyle(Qt::FlatCap);
     draw_curve(grid_hz_, section_db_[selected_section_], section_pen);
   }
-  QPen response_pen(kResponse, 1.0);
+  QPen response_pen(kResponse, 1.5);
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
   draw_curve(grid_hz_, response_db_, response_pen);
-
-  painter.setPen(QColor{220, 229, 231});
-  QFont title_font = painter.font();
-  title_font.setBold(true);
-  title_font.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
-  painter.setFont(title_font);
-  painter.drawText(QRectF{plot.left(), 12.0, plot.width(), 22.0},
-                   Qt::AlignLeft | Qt::AlignVCenter,
-                   QStringLiteral("COMPLETE CASCADE"));
-
-  QFont legend_font = painter.font();
-  legend_font.setBold(false);
-  legend_font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
-  painter.setFont(legend_font);
-  if (!reference_name_.isEmpty()) {
-    painter.setPen(kReference);
-    painter.drawText(QRectF{plot.right() - 150.0, 12.0, 150.0, 22.0},
-                     Qt::AlignRight | Qt::AlignVCenter,
-                     reference_name_);
-  }
 }

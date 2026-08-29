@@ -4,8 +4,6 @@
 
 #include <QWidget>
 
-#include <QString>
-
 #include <array>
 #include <cstddef>
 #include <vector>
@@ -21,9 +19,11 @@ class CascadePlot final : public QWidget {
       const std::array<bool, trench::core::native::kSections>& enabled,
       std::size_t selected_section, double selected_frequency_hz,
       double sample_rate_hz);
-  void setReference(QString name, std::vector<double> frequency_hz,
+  void setReference(std::vector<double> frequency_hz,
                     std::vector<double> magnitude_db);
   void clearReference();
+  void setFormantMarks(std::vector<double> frequency_hz);
+  void clearFormantMarks();
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -34,7 +34,6 @@ class CascadePlot final : public QWidget {
   [[nodiscard]] double yForDb(double db, const QRectF& plot,
                               double low_db, double high_db) const;
 
-  QString reference_name_;
   std::vector<double> grid_hz_;
   std::vector<double> response_db_;
   std::array<std::vector<double>, trench::core::native::kSections>
@@ -42,6 +41,7 @@ class CascadePlot final : public QWidget {
   std::array<bool, trench::core::native::kSections> enabled_{};
   std::size_t selected_section_{};
   double selected_frequency_hz_{20.0};
+  std::vector<double> formant_hz_;
   std::vector<double> reference_hz_;
   std::vector<double> reference_db_;
 };

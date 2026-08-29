@@ -8,24 +8,26 @@
 #include <QPainterPath>
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <span>
 
 namespace {
 
-constexpr std::array<QColor, trench::core::native::kSections> kSectionColors{
-    QColor{66, 224, 207}, QColor{231, 158, 76}, QColor{226, 210, 90},
-    QColor{224, 99, 151}, QColor{92, 170, 238}, QColor{155, 213, 96}};
+constexpr QColor kChassis{237, 235, 230};
+constexpr QColor kCell{30, 34, 38};
+constexpr QColor kCellOff{26, 29, 33};
+constexpr QColor kHairline{50, 55, 59};
+constexpr QColor kInk{210, 207, 198};
+constexpr QColor kQuiet{210, 207, 198, 105};
+constexpr QColor kAccent{196, 103, 79};
 
-constexpr double kCellGap = 14.0;
+constexpr double kCellGap = 12.0;
 
 }  // namespace
 
 SectionStrip::SectionStrip(EditorState* state, QWidget* parent)
     : QWidget(parent), state_(state) {
-  setMinimumHeight(72);
-  setMaximumHeight(82);
+  setFixedHeight(64);
   setFocusPolicy(Qt::StrongFocus);
   setAccessibleName(QStringLiteral("Six addressable filter sections"));
   connect(state_, &EditorState::changed, this,
@@ -40,7 +42,7 @@ QRectF SectionStrip::toggleRect(std::size_t index) const {
 }
 
 QRectF SectionStrip::cell(std::size_t index) const {
-  const QRectF bounds = QRectF(rect()).adjusted(0.0, 3.0, 0.0, -3.0);
+  const QRectF bounds = QRectF(rect());
   const double width =
       (bounds.width() - kCellGap * (trench::core::native::kSections - 1)) /
       trench::core::native::kSections;
@@ -51,39 +53,40 @@ QRectF SectionStrip::cell(std::size_t index) const {
 void SectionStrip::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), QColor{12, 15, 17});
+  painter.fillRect(rect(), kChassis);
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
     const QRectF bounds = cell(index);
     const bool enabled = state_->sectionEnabled(index);
     const bool selected = index == state_->selectedSection();
-    const QColor color = kSectionColors[index];
-    painter.fillRect(bounds, QColor{enabled ? 20 : 15, enabled ? 23 : 18,
-                                    enabled ? 26 : 20});
-    painter.setPen(QPen(selected ? color : QColor{42, 48, 51}, 1.0));
-    painter.drawRect(bounds.adjusted(0.5, 0.5, -0.5, -0.5));
+    const QColor color = selected ? kAccent : (enabled ? kInk : kQuiet);
+    const QRectF card = bounds.adjusted(0.5, 0.5, -0.5, -0.5);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(enabled ? kCell : kCellOff);
+    painter.drawRoundedRect(card, 4.0, 4.0);
+    painter.setPen(QPen(selected ? kAccent : kHairline, 1.0));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawRoundedRect(card, 4.0, 4.0);
 
     QFont number_font = painter.font();
-    number_font.setBold(true);
-    number_font.setPointSizeF(8.5);
+    number_font.setWeight(QFont::DemiBold);
+    number_font.setPixelSize(11);
     painter.setFont(number_font);
-    painter.setPen(selected || enabled ? color : QColor{79, 87, 90});
+    painter.setPen(color);
     painter.drawText(bounds.adjusted(7.0, 5.0, -7.0, 0.0),
                      Qt::AlignLeft | Qt::AlignTop,
                      QString::number(index + 1));
 
+    // A LAMP, NOT A WORD (Tyson 2026-08-28 "fewer labels"): the same hit zone
+    // now reads as lit, live, or dark.
     const QRectF toggle = toggleRect(index);
-    painter.fillRect(toggle, enabled ? color.darker(310) : QColor{24, 29, 31});
-    painter.setPen(QPen(enabled ? color : QColor{83, 93, 96}, 1.0));
-    painter.drawRect(toggle.adjusted(0.5, 0.5, -0.5, -0.5));
-    QFont state_font = painter.font();
-    state_font.setBold(true);
-    state_font.setPointSizeF(7.0);
-    painter.setFont(state_font);
-    painter.drawText(toggle, Qt::AlignCenter,
-                     enabled ? QStringLiteral("ON") : QStringLiteral("OFF"));
+    const QPointF lamp = toggle.center();
+    painter.setPen(QPen(color, 1.0));
+    painter.setBrush(enabled ? QBrush(selected ? kAccent : kInk)
+                             : QBrush(Qt::NoBrush));
+    painter.drawEllipse(lamp, 3.0, 3.0);
 
-    painter.setPen(QPen(enabled ? color : QColor{70, 79, 82}, 1.0));
+    painter.setPen(QPen(color, 1.0));
     painter.setBrush(Qt::NoBrush);
     const QPointF pole_mark{bounds.left() + 29.0, bounds.top() + 13.0};
     painter.drawEllipse(pole_mark, 3.0, 3.0);
@@ -101,8 +104,8 @@ void SectionStrip::paintEvent(QPaintEvent*) {
     // An OFF slot claims nothing (Tyson 2026-08-28 "make it transparent to
     // whats happening"): no curve until the stage exists in the cascade.
     if (!enabled) continue;
-    const QRectF plot = bounds.adjusted(8.0, 22.0, -8.0, -8.0);
-    painter.setPen(QPen(QColor{44, 50, 53}, 1.0));
+    const QRectF plot = bounds.adjusted(8.0, 24.0, -8.0, -10.0);
+    painter.setPen(QPen(kHairline, 1.0));
     constexpr double kMiniLowDb = -120.0;
     constexpr double kMiniHighDb = 24.0;
     const double zero_y = plot.top() +
