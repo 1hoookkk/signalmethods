@@ -225,28 +225,4 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
   draw_curve(grid_hz_, response_db_, response_pen);
-
-  if (!response_db_.empty()) {
-    std::size_t peak = 0;
-    std::size_t trough = 0;
-    for (std::size_t index = 0; index < response_db_.size(); ++index) {
-      if (response_db_[index] > response_db_[peak]) peak = index;
-      if (response_db_[index] < response_db_[trough]) trough = index;
-    }
-    const bool over = response_db_[peak] > high_db;
-    const bool under = response_db_[trough] < low_db;
-    if (over || under) {
-      const std::size_t index = over ? peak : trough;
-      const double hz = grid_hz_[index];
-      const QString where = hz >= 1000.0 ? QStringLiteral("%1k").arg(hz / 1000.0, 0, 'f', 1)
-                                         : QStringLiteral("%1").arg(hz, 0, 'f', 0);
-      painter.setPen(kText);
-      painter.drawText(QRectF{plot.right() - 220.0, plot.top() + 4.0, 216.0, 16.0},
-                       Qt::AlignRight | Qt::AlignVCenter,
-                       QStringLiteral("%1 %2 dB @ %3 Hz")
-                           .arg(over ? QStringLiteral("PEAK") : QStringLiteral("TROUGH"))
-                           .arg(response_db_[index], 0, 'f', 1)
-                           .arg(where));
-    }
-  }
 }

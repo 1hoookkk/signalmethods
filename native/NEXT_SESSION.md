@@ -4,8 +4,7 @@ Branch `face/ship-candidate-fx`. Everything below assumes the committed state
 through `30315f5`. Launcher:
 `TRENCH Workstation.bat` at repo root (points at
 `out\build\app\native\app\trench_native.exe`); build: `TRENCH Build App.bat`
-or `cmake --preset app && cmake --build --preset app`; tests:
-`ctest --preset app -R native` (headless, offscreen). Never run two
+or `cmake --preset app && cmake --build --preset app`. Never run two
 vcpkg-configuring builds at once; `out/build/app` has
 `VCPKG_MANIFEST_INSTALL=OFF` pinned so ninja's cmake re-runs stay out of vcpkg.
 
@@ -13,7 +12,7 @@ The checkout is shared live with other chats (one stages `plugin/` work in the
 same index). Commit native work with explicit pathspecs only:
 `git commit -F msg -- <paths>`.
 
-## What this session closed (all native, all tested)
+## What this session closed
 - One cascade. Graph and ears consume `design_audition(view, rate)` = the
   core's patent-law blend of the authored body; `.body240` export is the
   packed body (`export_p2k_body`) of the same document. The editor-local
@@ -54,8 +53,7 @@ same index). Commit native work with explicit pathspecs only:
   Q >= 5; roots above 4.4 kHz are band-edge artefacts). Proof: a synthetic
   nasal (280/60, 1250/120, 2300/160, 3300/250 + antiformant 900/150) returns
   292/99, 1252/155, 2305/166, 3306/253 and 901/106; the recorded /ah/ returns
-  644/138, 1079/119, 2649/196. `TRENCH_ANALYZE_DEBUG=1` prints the f0 search,
-  the unpruned fit and every pruning step.
+  644/138, 1079/119, 2649/196.
 - Queued from this pass: the "Configurable_PEQ" analyzer text (cuts -> poles,
   boosts -> zeros; Frequency / Bandwidth(Hz) columns) as an OPEN route; the
   scrub ribbon so ANALYZE fits one chosen moment per corner (VV2 recipe:

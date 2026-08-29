@@ -2,7 +2,6 @@
 
 #include "cascade_plot.hpp"
 #include "armadillo_editor.hpp"
-#include "candidate_lane.hpp"
 #include "editor_state.hpp"
 #include "morph_pad.hpp"
 #include "section_desk.hpp"
@@ -65,7 +64,6 @@ class MainWindow final : public QMainWindow {
 
   EditorState state_;
   CascadePlot* cascade_plot_{};
-  CandidateLane* candidate_lane_{};
   MorphPad* morph_pad_{};
   ArmadilloEditor* armadillo_editor_{};
   SectionStrip* section_strip_{};

@@ -150,10 +150,6 @@ MainWindow::MainWindow(QWidget* parent)
   sections_button_ = new QPushButton(QStringLiteral("SECTIONS"), central);
   auto* zeros = new QPushButton(QStringLiteral("ZEROS"), central);
   zeros->setObjectName(QStringLiteral("zeroHabits"));
-  auto* projection = new QPushButton(QStringLiteral("F×BW"), central);
-  projection->setObjectName(QStringLiteral("projectionSwitch"));
-  projection->setCheckable(true);
-  projection->setFixedHeight(28);
   audition_button_ = new QPushButton(QStringLiteral("AUDITION"), central);
   audition_button_->setObjectName(QStringLiteral("auditionSwitch"));
   audition_button_->setCheckable(true);
@@ -197,7 +193,6 @@ MainWindow::MainWindow(QWidget* parent)
   analyze_button_->setFont(captionFont(analyze_button_));
   sections_button_->setFont(captionFont(sections_button_));
   zeros->setFont(captionFont(zeros));
-  projection->setFont(captionFont(projection));
   audition_button_->setFont(captionFont(audition_button_));
   tilt_button_->setFont(captionFont(tilt_button_));
   template_shelf_->setFont(captionFont(template_shelf_));
@@ -205,7 +200,7 @@ MainWindow::MainWindow(QWidget* parent)
   reference_label_->setFont(valueFont(reference_label_));
   for (QWidget* chrome : std::initializer_list<QWidget*>{
            load, reset, save, export_body, analyze_button_, sections_button_, zeros,
-           projection, tilt_button_, keep, template_shelf_, overlay_shelf_,
+           tilt_button_, keep, template_shelf_, overlay_shelf_,
            audition_button_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
   }
@@ -221,7 +216,6 @@ MainWindow::MainWindow(QWidget* parent)
   auto* actions = new QHBoxLayout;
   actions->setSpacing(10);
   actions->addWidget(audition_button_);
-  actions->addWidget(projection);
   actions->addWidget(sections_button_);
   actions->addWidget(analyze_button_);
   actions->addWidget(zeros);
@@ -241,9 +235,6 @@ MainWindow::MainWindow(QWidget* parent)
   interior->addWidget(cascade_plot_, 3);
   interior->addWidget(morph_pad_, 0, Qt::AlignTop);
   layout->addLayout(interior, 1);
-
-  candidate_lane_ = new CandidateLane(central);
-  layout->addWidget(candidate_lane_);
 
   armadillo_editor_ = new ArmadilloEditor(&state_, central);
   armadillo_editor_->setObjectName(QStringLiteral("armadilloEditor"));
@@ -335,14 +326,6 @@ MainWindow::MainWindow(QWidget* parent)
   connect(redo_shift, &QShortcut::activated, this, [this] { state_.redo(); });
   connect(sections_button_, &QPushButton::clicked, this,
           &MainWindow::toggleSectionDesk);
-  connect(projection, &QPushButton::toggled, this,
-          [this, projection](bool z_plane) {
-            projection->setText(z_plane ? QStringLiteral("Z-PLANE")
-                                        : QStringLiteral("F×BW"));
-            armadillo_editor_->setProjection(
-                z_plane ? ArmadilloEditor::Projection::kZPlane
-                        : ArmadilloEditor::Projection::kArmadillo);
-          });
   connect(audition_button_, &QPushButton::toggled, this,
           [this](bool open) { setAudition(open); });
   connect(save, &QPushButton::clicked, this, &MainWindow::saveDocument);
@@ -388,11 +371,6 @@ MainWindow::MainWindow(QWidget* parent)
     }
     template_shelf_->setCurrentIndex(0);
   });
-  candidate_lane_->onPick = [this](double hz, double bw_hz) {
-    const std::size_t section = state_.selectedSection();
-    if (!state_.sectionEnabled(section)) state_.toggleSection(section);
-    state_.setRoot(section, EditorState::Lane::kPole, hz, bw_hz);
-  };
   auto* toggle_addressed = new QShortcut(QKeySequence(Qt::Key_Space), this);
   connect(toggle_addressed, &QShortcut::activated, this, [this] {
     QWidget* focused = qApp->focusWidget();
@@ -790,8 +768,8 @@ void MainWindow::setReference(Reference reference) {
 }
 
 // TILT (Tyson 2026-08-28): whitening lives in the response domain - the
-// overlay and the candidates switch together, so what is seen is what is
-// picked. The stored reference stays true.
+// overlay switches, so what is seen is what is picked. The stored reference
+// stays true.
 void MainWindow::applyReferenceView() {
   if (!reference_) return;
   const auto& hz = reference_->frequency_hz;
@@ -818,7 +796,6 @@ void MainWindow::applyReferenceView() {
     }
   }
   cascade_plot_->setReference(hz, view);
-  candidate_lane_->setReference(hz, view);
 }
 
 void MainWindow::refresh() {

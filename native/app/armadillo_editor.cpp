@@ -11,7 +11,6 @@
 #include <array>
 #include <cmath>
 #include <limits>
-#include <numbers>
 #include <utility>
 
 namespace {
@@ -24,27 +23,10 @@ constexpr QColor kGrid{230, 230, 230};
 constexpr QColor kText{64, 64, 64};
 constexpr QColor kInk{0, 0, 0};
 constexpr QColor kDormant{160, 160, 160};
-constexpr QColor kConjugate{200, 200, 200};
 constexpr QColor kAccent{196, 103, 79};
 constexpr QColor kOverlay{128, 128, 128};
 
 constexpr double kMinDragBandwidthHz = 4.0;
-constexpr double kLowAngle =
-    2.0 * std::numbers::pi * EditorState::kLowHz / EditorState::kDatumHz;
-constexpr double kHighAngle = std::numbers::pi;
-constexpr double kAngleFloor = kLowAngle * (1.0 - 1.0e-9);
-const double kMaxRadius = std::exp(
-    -std::numbers::pi * EditorState::kMinBandwidthHz / EditorState::kDatumHz);
-const double kMinRadius = std::exp(
-    -std::numbers::pi * EditorState::kMaxBandwidthHz / EditorState::kDatumHz);
-
-double frequencyForAngle(double angle) {
-  return angle / (2.0 * std::numbers::pi) * EditorState::kDatumHz;
-}
-
-double bandwidthForRadius(double radius) {
-  return -std::log(radius) * EditorState::kDatumHz / std::numbers::pi;
-}
 
 const Resonant& rootOf(const EditorState& state, std::size_t section,
                        EditorState::Lane lane) {
@@ -95,25 +77,8 @@ QRectF ArmadilloEditor::field() const {
   return QRectF(rect()).adjusted(62.0, 16.0, -22.0, -44.0);
 }
 
-QPointF ArmadilloEditor::discCentre() const {
-  return QRectF(rect()).center();
-}
-
-double ArmadilloEditor::discRadius() const {
-  return std::min(width() * 0.5, height() * 0.5) - 22.0;
-}
-
 QPointF ArmadilloEditor::pointFor(double frequency_hz,
                                   double bandwidth_hz) const {
-  if (projection_ == Projection::kZPlane) {
-    const double radius =
-        std::exp(-std::numbers::pi * bandwidth_hz / EditorState::kDatumHz);
-    const double angle =
-        2.0 * std::numbers::pi * frequency_hz / EditorState::kDatumHz;
-    const double scale = discRadius();
-    return discCentre() + QPointF{radius * std::cos(angle) * scale,
-                                  -radius * std::sin(angle) * scale};
-  }
   const QRectF bounds = field();
   const double x_fraction =
       std::log(frequency_hz / EditorState::kLowHz) /
@@ -125,31 +90,8 @@ QPointF ArmadilloEditor::pointFor(double frequency_hz,
           bounds.top() + std::clamp(y_fraction, 0.0, 1.0) * bounds.height()};
 }
 
-std::optional<std::pair<double, double>> ArmadilloEditor::placementAt(
-    const QPointF& position) const {
-  if (projection_ != Projection::kZPlane) return dragTargetAt(position);
-  const QPointF offset = (position - discCentre()) / discRadius();
-  const double radius = std::hypot(offset.x(), offset.y());
-  const double angle = std::atan2(0.0 - offset.y(), offset.x());
-  if (radius > 1.0 || angle < kAngleFloor || angle > kHighAngle) {
-    return std::nullopt;
-  }
-  return std::pair<double, double>{
-      frequencyForAngle(angle),
-      bandwidthForRadius(std::clamp(radius, kMinRadius, kMaxRadius))};
-}
-
 std::pair<double, double> ArmadilloEditor::dragTargetAt(
     const QPointF& position) const {
-  if (projection_ == Projection::kZPlane) {
-    const QPointF offset = (position - discCentre()) / discRadius();
-    const double angle =
-        std::clamp(std::atan2(std::abs(offset.y()), offset.x()), kLowAngle,
-                   kHighAngle);
-    const double radius = std::clamp(std::hypot(offset.x(), offset.y()),
-                                     kMinRadius, kMaxRadius);
-    return {frequencyForAngle(angle), bandwidthForRadius(radius)};
-  }
   const QRectF bounds = field();
   const double x_fraction = std::clamp(
       (position.x() - bounds.left()) / bounds.width(), 0.0, 1.0);
@@ -197,12 +139,6 @@ void ArmadilloEditor::clearGhost() {
   update();
 }
 
-void ArmadilloEditor::setProjection(Projection projection) {
-  if (projection_ == projection) return;
-  projection_ = projection;
-  update();
-}
-
 std::optional<ArmadilloEditor::Handle> ArmadilloEditor::hitHandle(
     const QPointF& position) const {
   std::optional<Handle> closest;
@@ -229,69 +165,48 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   painter.setBrush(Qt::NoBrush);
   painter.drawRect(card);
   const QRectF bounds = field();
-  const bool z_plane = projection_ == Projection::kZPlane;
 
   painter.setPen(QPen(kGrid, 1.0));
-  if (z_plane) {
-    const QPointF centre = discCentre();
-    const double scale = discRadius();
-    painter.setBrush(Qt::NoBrush);
-    painter.drawEllipse(centre, scale, scale);
-    painter.drawLine(QPointF{centre.x() - scale, centre.y()},
-                     QPointF{centre.x() + scale, centre.y()});
-    painter.drawLine(QPointF{centre.x(), centre.y() - scale},
-                     QPointF{centre.x(), centre.y() + scale});
+  constexpr std::array<double, 10> frequency_lines{
+      20.0, 50.0, 100.0, 200.0, 500.0, 1'000.0, 2'000.0,
+      5'000.0, 10'000.0, EditorState::kNyquistHz};
+  for (const double hz : frequency_lines) {
+    const double x = pointFor(hz, EditorState::kMinBandwidthHz).x();
+    painter.drawLine(QPointF{x, bounds.top()}, QPointF{x, bounds.bottom()});
     painter.setPen(kText);
     painter.drawText(
-        QRectF{centre.x() + scale + 5.0, centre.y() - 9.0, 24.0, 18.0},
-        Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("Re"));
-    painter.drawText(
-        QRectF{centre.x() - 12.0, centre.y() - scale - 20.0, 24.0, 16.0},
-        Qt::AlignHCenter | Qt::AlignBottom, QStringLiteral("Im"));
-  } else {
-    constexpr std::array<double, 10> frequency_lines{
-        20.0, 50.0, 100.0, 200.0, 500.0, 1'000.0, 2'000.0,
-        5'000.0, 10'000.0, EditorState::kNyquistHz};
-    for (const double hz : frequency_lines) {
-      const double x = pointFor(hz, EditorState::kMinBandwidthHz).x();
-      painter.drawLine(QPointF{x, bounds.top()}, QPointF{x, bounds.bottom()});
-      painter.setPen(kText);
-      painter.drawText(
-          QRectF{x - 26.0, bounds.bottom() + 8.0, 52.0, 17.0},
-          Qt::AlignHCenter | Qt::AlignTop,
-          hz == EditorState::kNyquistHz ? QStringLiteral("NYQ")
-                                        : shortValue(hz));
-      painter.setPen(QPen(kGrid, 1.0));
-    }
+        QRectF{x - 26.0, bounds.bottom() + 8.0, 52.0, 17.0},
+        Qt::AlignHCenter | Qt::AlignTop,
+        hz == EditorState::kNyquistHz ? QStringLiteral("NYQ")
+                                      : shortValue(hz));
+    painter.setPen(QPen(kGrid, 1.0));
+  }
 
-    constexpr std::array<double, 6> bandwidth_lines{
-        1.0, 10.0, 100.0, 1'000.0, 10'000.0, 20'000.0};
-    for (const double bandwidth : bandwidth_lines) {
-      const double y = pointFor(EditorState::kLowHz, bandwidth).y();
-      painter.drawLine(QPointF{bounds.left(), y}, QPointF{bounds.right(), y});
-      painter.setPen(kText);
-      painter.drawText(QRectF{8.0, y - 9.0, 46.0, 18.0},
-                       Qt::AlignRight | Qt::AlignVCenter,
-                       shortValue(bandwidth));
-      painter.setPen(QPen(kGrid, 1.0));
-    }
+  constexpr std::array<double, 6> bandwidth_lines{
+      1.0, 10.0, 100.0, 1'000.0, 10'000.0, 20'000.0};
+  for (const double bandwidth : bandwidth_lines) {
+    const double y = pointFor(EditorState::kLowHz, bandwidth).y();
+    painter.drawLine(QPointF{bounds.left(), y}, QPointF{bounds.right(), y});
+    painter.setPen(kText);
+    painter.drawText(QRectF{8.0, y - 9.0, 46.0, 18.0},
+                     Qt::AlignRight | Qt::AlignVCenter,
+                     shortValue(bandwidth));
+    painter.setPen(QPen(kGrid, 1.0));
   }
 
   painter.setBrush(Qt::NoBrush);
 
   painter.setPen(kText);
-  if (!z_plane) {
-    painter.drawText(QRectF{bounds.left(), bounds.bottom() + 25.0,
-                            bounds.width(), 13.0},
-                     Qt::AlignCenter, QStringLiteral("frequency"));
-    painter.save();
-    painter.translate(15.0, bounds.center().y());
-    painter.rotate(-90.0);
-    painter.drawText(QRectF{-bounds.height() * 0.5, -8.0,
-                            bounds.height(), 16.0},
-                     Qt::AlignCenter, QStringLiteral("bandwidth"));
-    painter.restore();
-  }
+  painter.drawText(QRectF{bounds.left(), bounds.bottom() + 25.0,
+                          bounds.width(), 13.0},
+                   Qt::AlignCenter, QStringLiteral("frequency"));
+  painter.save();
+  painter.translate(15.0, bounds.center().y());
+  painter.rotate(-90.0);
+  painter.drawText(QRectF{-bounds.height() * 0.5, -8.0,
+                          bounds.height(), 16.0},
+                   Qt::AlignCenter, QStringLiteral("bandwidth"));
+  painter.restore();
 
   painter.setPen(QPen(kOverlay, 1.0));
   painter.setBrush(Qt::NoBrush);
@@ -312,18 +227,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   const auto drawMark = [&](EditorState::Lane lane, const QPointF& at,
                             bool addressed, const QColor& color,
                             double radius) {
-    if (z_plane) {
-      painter.setPen(QPen(color, 1.0));
-      painter.setBrush(Qt::NoBrush);
-      if (lane == EditorState::Lane::kPole) {
-        constexpr double arm = 3.5;
-        painter.drawLine(at + QPointF{-arm, -arm}, at + QPointF{arm, arm});
-        painter.drawLine(at + QPointF{-arm, arm}, at + QPointF{arm, -arm});
-      } else {
-        painter.drawEllipse(at, radius, radius);
-      }
-      return;
-    }
     painter.setPen(addressed ? QPen(Qt::NoPen) : QPen(color, 1.0));
     painter.setBrush(addressed ? QBrush(kAccent) : QBrush(Qt::NoBrush));
     if (lane == EditorState::Lane::kPole) {
@@ -354,12 +257,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     }
 
     const double radius = addressed ? 6.5 : 4.5;
-    if (z_plane) {
-      drawMark(handle.lane,
-               QPointF{handle.position.x(),
-                       2.0 * discCentre().y() - handle.position.y()},
-               false, kConjugate, radius);
-    }
     drawMark(handle.lane, handle.position, addressed, color, radius);
 
     painter.setBrush(Qt::NoBrush);
@@ -383,12 +280,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                      (parked ? Qt::AlignRight : Qt::AlignLeft) |
                          Qt::AlignVCenter,
                      tag);
-  }
-
-  if (!state_->sectionEnabled(state_->selectedSection())) {
-    painter.setPen(kText);
-    painter.drawText(bounds, Qt::AlignCenter,
-                     QStringLiteral("SECTION OFF"));
   }
 }
 
@@ -449,10 +340,9 @@ void ArmadilloEditor::mousePressEvent(QMouseEvent* event) {
 
 void ArmadilloEditor::mouseDoubleClickEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton || hitHandle(event->position())) return;
-  const auto placement = placementAt(event->position());
-  if (!placement) return;
-  state_->addZeroAt(placement->first,
-                    std::max(kMinDragBandwidthHz, placement->second));
+  const auto placement = dragTargetAt(event->position());
+  state_->addZeroAt(placement.first,
+                    std::max(kMinDragBandwidthHz, placement.second));
 }
 
 void ArmadilloEditor::mouseMoveEvent(QMouseEvent* event) {

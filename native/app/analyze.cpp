@@ -12,8 +12,6 @@
 #include <cmath>
 #include <complex>
 #include <cstddef>
-#include <cstdio>
-#include <cstdlib>
 #include <limits>
 #include <numbers>
 #include <stdexcept>
@@ -201,9 +199,6 @@ std::vector<double> envelopeLogMagnitude(const std::vector<double>& segment,
         const double candidate = harmonic.f0_hz / divisor;
         if (candidate < options.f0_low_hz) continue;
         const double share = share_of(candidate);
-        if (std::getenv("TRENCH_ANALYZE_DEBUG") != nullptr) {
-          std::fprintf(stderr, "  f0 candidate %.2f Hz share %.3f (best %.2f Hz share %.3f)" "\n", candidate, share, best_f0, best_share);
-        }
         if (share > best_share + 0.1) {
           best_f0 = candidate;
           best_share = share;
@@ -219,12 +214,7 @@ std::vector<double> envelopeLogMagnitude(const std::vector<double>& segment,
     }
     if (harmonic.f0_hz > 0.0 && harmonic.hz.size() >= 3) {
       const double share = share_of(harmonic.f0_hz);
-      const double near = share;
-      const double total = 1.0;
       voiced = share >= kVoicedShare;
-      if (std::getenv("TRENCH_ANALYZE_DEBUG") != nullptr) {
-        std::fprintf(stderr, "f0 %.2f Hz, %zu harmonics, harmonic share %.3f, voiced %d" "\n", harmonic.f0_hz, harmonic.hz.size(), total > 0.0 ? near / total : 0.0, voiced ? 1 : 0);
-      }
     }
   } catch (const std::exception&) {
     voiced = false;
@@ -388,25 +378,6 @@ std::vector<double> modelDb(const Fit& fit, const std::vector<double>& grid_hz,
   return model;
 }
 
-double fitError(const Fit& fit, const std::vector<double>& grid_hz,
-                const std::vector<double>& target_db,
-                const std::vector<double>& weight, double sample_rate_hz) {
-  const std::vector<double> model = modelDb(fit, grid_hz, sample_rate_hz);
-  double offset = 0.0;
-  double total = 0.0;
-  for (std::size_t i = 0; i < grid_hz.size(); ++i) {
-    offset += weight[i] * (model[i] - target_db[i]);
-    total += weight[i];
-  }
-  offset /= total;
-  double accumulator = 0.0;
-  for (std::size_t i = 0; i < grid_hz.size(); ++i) {
-    const double diff = model[i] - target_db[i] - offset;
-    accumulator += weight[i] * diff * diff;
-  }
-  return std::sqrt(accumulator / total);
-}
-
 std::vector<double> detail(const std::vector<double>& curve, std::size_t half_window) {
   std::vector<double> out(curve.size());
   for (std::size_t i = 0; i < curve.size(); ++i) {
@@ -486,10 +457,6 @@ Fit pruned(Fit fit, const std::vector<double>& grid_hz,
       continue;
     }
     auto& list = least_is_pole ? fit.poles : fit.zeros;
-    if (std::getenv("TRENCH_ANALYZE_DEBUG") != nullptr) {
-      std::fprintf(stderr, "  drop %s %.1f / %.1f (signature %.2f dB)" "\n", least_is_pole ? "pole" : "zero",
-                   list[least_index].first, list[least_index].second, least);
-    }
     list.erase(list.begin() + static_cast<std::ptrdiff_t>(least_index));
   }
   return fit;
@@ -555,31 +522,17 @@ AnalyzeProposal analyzeSound(std::span<const float> samples,
   const std::vector<double> grid_hz =
       trench::core::logarithmic_frequency_grid(60.0, kHighestHz, kGridPoints);
   std::vector<double> target_db(grid_hz.size());
-  std::vector<double> weight(grid_hz.size());
   const double bin_hz = analysis_hz / kFft;
-  double top_db = -std::numeric_limits<double>::infinity();
   for (std::size_t i = 0; i < grid_hz.size(); ++i) {
     const double position = grid_hz[i] / bin_hz;
     const std::size_t lower = std::min(static_cast<std::size_t>(position), log_magnitude.size() - 2);
     const double fraction = position - static_cast<double>(lower);
     const double value = log_magnitude[lower] + fraction * (log_magnitude[lower + 1] - log_magnitude[lower]);
     target_db[i] = 20.0 * value / std::numbers::ln10;
-    top_db = std::max(top_db, target_db[i]);
-  }
-  for (std::size_t i = 0; i < grid_hz.size(); ++i) {
-    weight[i] = std::clamp(std::pow(10.0, (target_db[i] - top_db) / 20.0), 0.3, 1.0);
-  }
-  if (std::getenv("TRENCH_ANALYZE_DEBUG") != nullptr) {
-    std::fprintf(stderr, "unpruned error %.2f dB\n", fitError(fit, grid_hz, target_db, weight, analysis_hz));
-    for (const Root& pole : fit.poles) std::fprintf(stderr, "  pole %.1f / %.1f\n", pole.first, pole.second);
-    for (const Root& zero : fit.zeros) std::fprintf(stderr, "  zero %.1f / %.1f\n", zero.first, zero.second);
   }
   const std::size_t half_window = kGridPoints / 12;
   const std::vector<double> target_detail = detail(target_db, half_window);
   fit = pruned(std::move(fit), grid_hz, target_detail, half_window, analysis_hz);
-  if (std::getenv("TRENCH_ANALYZE_DEBUG") != nullptr) {
-    std::fprintf(stderr, "pruned error %.2f dB\n", fitError(fit, grid_hz, target_db, weight, analysis_hz));
-  }
 
   AnalyzeProposal proposal;
   proposal.poles = std::move(fit.poles);
