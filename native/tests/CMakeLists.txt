@@ -25,8 +25,9 @@ set(TRENCH_NATIVE_TEST_CASES
   document_load_restores_editable_state_not_overlay
   document_rejects_malformed
   document_roundtrip_is_lossless_and_deterministic
+  armadillo_encoding_round_trips
   import_classification_by_extension
-  interior_follows_the_patent_law
+  interior_is_the_armadillo_word_lerp_within_the_papers_error
   legacy_export_size_and_legality
   off_section_exports_identity
   pole_material_rejects_negative_rows

@@ -132,7 +132,7 @@ const trench::core::PackedBody& EditorState::packed() const noexcept {
 }
 
 trench::audio::AuditionView EditorState::view() const {
-  return {body(), static_cast<float>(morph_pos_), static_cast<float>(q_pos_), 0.0};
+  return {packed_, static_cast<float>(morph_pos_), static_cast<float>(q_pos_), 0.0};
 }
 
 trench::core::Cascade EditorState::cascade(double sample_rate_hz) const {

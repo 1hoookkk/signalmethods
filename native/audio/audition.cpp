@@ -16,11 +16,11 @@ namespace trench::audio {
 
 trench::core::Cascade design_audition(const AuditionView& view,
                                       double device_sample_rate_hz) {
-  const double gain_db =
-      trench::core::native::blend_gain_db(view.body, view.morph, view.q);
+  const auto corner = trench::core::native::packed_interior_corner(
+      view.packed, view.morph, view.q);
+  const double gain_db = corner.gain_db;
   const auto designed = trench::core::native::cascade(
-      trench::core::native::blend(view.body, view.morph, view.q, device_sample_rate_hz),
-      gain_db);
+      trench::core::native::design(corner, device_sample_rate_hz), gain_db);
   if (view.semitones == 0.0) return designed;
 
   auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
