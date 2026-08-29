@@ -80,8 +80,8 @@ TemplateEntry withTalkingHedzEnds(TemplateEntry entry) {
     }
     shaped.poles[0] = corpus.poles[0];
     shaped.zeros[0] = corpus.zeros[0];
-    const double ratio[4] = {3.24, 1.29, 1.08, 1.74};
-    const double width[4] = {782.0, 571.0, 691.0, 1146.0};
+    const double ratio[4] = {1.25, 1.28, 1.27, 1.72};
+    const double width[4] = {782.0, 571.0, 395.0, 4036.0};
     for (std::size_t index = 0; index < 4; ++index) {
       shaped.poles[index + 1] = entry.poles[index];
       if (!entry.poles[index].present) continue;
