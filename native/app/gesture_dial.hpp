@@ -27,6 +27,7 @@ class GestureDial final : public QWidget {
   double units_per_pixel_{};
   std::function<QString(double)> formatter_;
   double total_{};
+  double deflect_ = 0.0;
   double last_y_{};
   bool dragging_{};
 };

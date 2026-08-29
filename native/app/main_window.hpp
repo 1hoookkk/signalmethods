@@ -5,6 +5,7 @@
 #include "candidate_lane.hpp"
 #include "editor_state.hpp"
 #include "morph_pad.hpp"
+#include "section_desk.hpp"
 #include "section_strip.hpp"
 #include "trench/audio/audition.hpp"
 
@@ -44,10 +45,14 @@ class MainWindow final : public QMainWindow {
 
   void openFile();
   void saveBody();
+  void analyzeReference();
+  void adoptProposal();
+  void clearProposal();
   void loadUserShelf();
   void keepTemplate();
   void refresh();
   void refreshInspector();
+  void toggleSectionDesk();
   void updateAuditionView();
   void setReference(Reference reference);
   void applyReferenceView();
@@ -71,6 +76,11 @@ class MainWindow final : public QMainWindow {
   QWidget* zero_frequency_group_{};
   QWidget* zero_bandwidth_group_{};
   QPushButton* tilt_button_{};
+  QPushButton* analyze_button_{};
+  QPushButton* sections_button_{};
+  SectionDesk* section_desk_{};
+  std::vector<std::pair<double, double>> proposal_poles_;
+  std::vector<std::pair<double, double>> proposal_zeros_;
   std::vector<std::pair<QString, std::vector<std::pair<double, double>>>>
       user_shelf_;
   std::optional<Reference> reference_;

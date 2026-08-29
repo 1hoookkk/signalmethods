@@ -2,7 +2,11 @@ find_package(Qt6 6.11.1 EXACT REQUIRED COMPONENTS Widgets)
 
 qt_standard_project_setup()
 
+find_package(Eigen3 5.0.1 EXACT CONFIG REQUIRED)
+
 add_library(trench_native_ui STATIC
+  analyze.cpp
+  analyze.hpp
   armadillo_editor.cpp
   armadillo_editor.hpp
   body_io.cpp
@@ -19,10 +23,13 @@ add_library(trench_native_ui STATIC
   main_window.hpp
   morph_pad.cpp
   morph_pad.hpp
+  section_desk.cpp
+  section_desk.hpp
   section_strip.cpp
   section_strip.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
+target_link_libraries(trench_native_ui PRIVATE Eigen3::Eigen)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(trench_native_ui PRIVATE TRENCH_SOURCE_ROOT="${PROJECT_SOURCE_DIR}")
 

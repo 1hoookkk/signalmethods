@@ -1,7 +1,9 @@
 #include "main_window.hpp"
 
+#include "analyze.hpp"
 #include "body_io.hpp"
 #include "gesture_dial.hpp"
+#include "section_desk.hpp"
 #include "template_shelf.hpp"
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
@@ -228,6 +230,10 @@ MainWindow::MainWindow(QWidget* parent)
   top->setSpacing(10);
   auto* load = new QPushButton(QStringLiteral("OPEN"), central);
   auto* save = new QPushButton(QStringLiteral("SAVE"), central);
+  analyze_button_ = new QPushButton(QStringLiteral("ANALYZE"), central);
+  analyze_button_->setObjectName(QStringLiteral("analyze"));
+  analyze_button_->setEnabled(false);
+  sections_button_ = new QPushButton(QStringLiteral("SECTIONS"), central);
   reference_label_ = new QLabel(QStringLiteral("NO REFERENCE"), central);
   reference_label_->setObjectName(QStringLiteral("referenceName"));
   tilt_button_ = new QPushButton(QStringLiteral("TILT"), central);
@@ -256,6 +262,8 @@ MainWindow::MainWindow(QWidget* parent)
   keep->setFont(captionFont(keep));
   load->setFont(captionFont(load));
   save->setFont(captionFont(save));
+  analyze_button_->setFont(captionFont(analyze_button_));
+  sections_button_->setFont(captionFont(sections_button_));
   tilt_button_->setFont(captionFont(tilt_button_));
   template_shelf_->setFont(captionFont(template_shelf_));
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
@@ -267,6 +275,8 @@ MainWindow::MainWindow(QWidget* parent)
   top->addWidget(tilt_button_);
   top->addWidget(overlay_shelf_);
   top->addStretch(1);
+  top->addWidget(sections_button_);
+  top->addWidget(analyze_button_);
   top->addWidget(save);
   layout->addLayout(top);
 
@@ -386,11 +396,16 @@ MainWindow::MainWindow(QWidget* parent)
   )"));
 
   connect(load, &QPushButton::clicked, this, &MainWindow::openFile);
+  connect(sections_button_, &QPushButton::clicked, this,
+          &MainWindow::toggleSectionDesk);
   connect(save, &QPushButton::clicked, this, &MainWindow::saveBody);
+  connect(analyze_button_, &QPushButton::clicked, this,
+          &MainWindow::analyzeReference);
   connect(tilt_button_, &QPushButton::toggled, this,
           [this] { applyReferenceView(); });
   connect(keep, &QPushButton::clicked, this, &MainWindow::keepTemplate);
   connect(overlay_shelf_, &QComboBox::activated, this, [this](int index) {
+    clearProposal();
     if (index <= 0) {
       cascade_plot_->clearFormantMarks();
       armadillo_editor_->clearGhost();
@@ -471,6 +486,7 @@ void MainWindow::openFile() {
       this, QStringLiteral("Open sound or data"), QString(),
       QStringLiteral("Sound or data (*.wav *.txt *.csv *.fbw);;All files (*)"));
   if (chosen.isEmpty()) return;
+  clearProposal();
   const std::filesystem::path path(chosen.toStdWString());
   if (isAudio(lowerExtension(path))) {
     loadReference(path);
@@ -590,6 +606,59 @@ void MainWindow::keepTemplate() {
   status_label_->setText(QStringLiteral("KEPT · %1").arg(name.toUpper()));
 }
 
+// ANALYZE IS A PROPOSAL, NOT A VERDICT (Tyson 2026-08-29): the Prony-Shanks
+// reading of the loaded sound arrives as the plane's ghost, and only a second
+// press writes it into the corner the hands are editing.
+void MainWindow::analyzeReference() {
+  if (!proposal_poles_.empty()) {
+    adoptProposal();
+    return;
+  }
+  if (!reference_ || !reference_->clip || reference_->clip->samples.empty()) {
+    status_label_->setText(QStringLiteral("ANALYZE NEEDS A SOUND"));
+    return;
+  }
+  const auto proposal = trench::app::analyzeSound(
+      std::span<const float>(reference_->clip->samples),
+      reference_->clip->sample_rate_hz);
+  status_label_->setText(QStringLiteral("PROPOSED · %1 POLES %2 ZEROS")
+                             .arg(proposal.poles.size())
+                             .arg(proposal.zeros.size()));
+  if (proposal.poles.empty()) return;
+  proposal_poles_ = proposal.poles;
+  proposal_zeros_ = proposal.zeros;
+  std::vector<double> marks;
+  marks.reserve(proposal_poles_.size());
+  for (const auto& pole : proposal_poles_) marks.push_back(pole.first);
+  cascade_plot_->setFormantMarks(std::move(marks));
+  armadillo_editor_->setGhost(proposal_poles_);
+  analyze_button_->setText(QStringLiteral("ADOPT"));
+}
+
+void MainWindow::adoptProposal() {
+  state_.loadPoles(proposal_poles_);
+  const std::size_t paired =
+      std::min(proposal_poles_.size(), proposal_zeros_.size());
+  for (std::size_t index = 0; index < paired; ++index) {
+    state_.selectRoot(index, EditorState::Lane::kPole);
+    state_.addZeroAt(proposal_zeros_[index].first,
+                     proposal_zeros_[index].second);
+  }
+  state_.selectRoot(0, EditorState::Lane::kPole);
+  const std::size_t corner = state_.editingCorner();
+  clearProposal();
+  status_label_->setText(QStringLiteral("ADOPTED · CORNER %1").arg(corner + 1));
+}
+
+void MainWindow::clearProposal() {
+  if (proposal_poles_.empty()) return;
+  proposal_poles_.clear();
+  proposal_zeros_.clear();
+  cascade_plot_->clearFormantMarks();
+  armadillo_editor_->clearGhost();
+  analyze_button_->setText(QStringLiteral("ANALYZE"));
+}
+
 bool MainWindow::loadReference(const std::filesystem::path& path) {
   try {
     Reference reference;
@@ -651,6 +720,7 @@ void MainWindow::setReference(Reference reference) {
   reference_ = std::move(reference);
   reference_label_->setText(reference_->name.toUpper());
   tilt_button_->setEnabled(true);
+  analyze_button_->setEnabled(reference_->clip.has_value());
   applyReferenceView();
   status_label_->setText(QStringLiteral("REFERENCE LOADED · %1 POINTS")
                              .arg(reference_->frequency_hz.size()));
@@ -739,6 +809,20 @@ void MainWindow::refreshInspector() {
   zero_bandwidth_->setEnabled(enabled && zero_present);
   section_strip_->update();
   armadillo_editor_->update();
+}
+
+// THE PARAMETRIC VOICE IS ITS OWN PANEL (Tyson 2026-08-29): sections read as
+// FC / BW / GAIN in a window beside the app; the inspector below stays raw.
+void MainWindow::toggleSectionDesk() {
+  if (!section_desk_) {
+    section_desk_ = new SectionDesk(&state_, this);
+    section_desk_->move(frameGeometry().topRight() + QPoint(12, 0));
+  }
+  if (section_desk_->isVisible()) {
+    section_desk_->hide();
+  } else {
+    section_desk_->show();
+  }
 }
 
 void MainWindow::updateAuditionView() {
