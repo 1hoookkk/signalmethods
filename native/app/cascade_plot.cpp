@@ -7,6 +7,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
+#include <QWheelEvent>
 
 #include <algorithm>
 #include <array>
@@ -28,6 +29,15 @@ constexpr QColor kResponse{210, 207, 198};
 constexpr QColor kAddressed{196, 103, 79};
 constexpr QColor kReference{184, 134, 46};
 
+struct Frame {
+  double low_db;
+  double high_db;
+  int step_db;
+};
+
+constexpr Frame kNormalFrame{-48.0, 24.0, 12};
+constexpr Frame kTallFrame{-120.0, 96.0, 24};
+
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -120.0 : 120.0;
   return std::clamp(value, -120.0, 120.0);
@@ -38,7 +48,8 @@ double finiteDb(double value) {
 CascadePlot::CascadePlot(QWidget* parent) : QWidget(parent) {
   setMinimumHeight(160);
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-  grid_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
+  base_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
+  grid_hz_ = base_hz_;
 }
 
 void CascadePlot::setCascade(
@@ -46,11 +57,20 @@ void CascadePlot::setCascade(
     const std::array<trench::core::Biquad,
                      trench::core::native::kSections>& sections,
     const std::array<bool, trench::core::native::kSections>& enabled,
-    std::size_t selected_section, double selected_frequency_hz,
-    double sample_rate_hz) {
+    const std::vector<double>& seed_hz, std::size_t selected_section,
+    double selected_frequency_hz, double sample_rate_hz) {
   enabled_ = enabled;
   selected_section_ = selected_section;
   selected_frequency_hz_ = selected_frequency_hz;
+  grid_hz_ = base_hz_;
+  grid_hz_.insert(grid_hz_.end(), seed_hz.begin(), seed_hz.end());
+  std::sort(grid_hz_.begin(), grid_hz_.end());
+  grid_hz_.erase(
+      std::unique(grid_hz_.begin(), grid_hz_.end(),
+                  [](double left, double right) {
+                    return std::abs(right - left) < 0.01;
+                  }),
+      grid_hz_.end());
   response_db_.clear();
   response_db_.reserve(grid_hz_.size());
   const std::span<const trench::core::Biquad> six_sections{
@@ -122,22 +142,9 @@ void CascadePlot::paintEvent(QPaintEvent*) {
 
   const QRectF plot = QRectF(rect()).adjusted(62.0, 14.0, -22.0, -38.0);
 
-  double low_db = -24.0;
-  double high_db = 24.0;
-  const auto include = [&](const std::vector<double>& values) {
-    for (const double value : values) {
-      if (!std::isfinite(value)) continue;
-      low_db = std::min(low_db, value);
-      high_db = std::max(high_db, value);
-    }
-  };
-  include(response_db_);
-  include(reference_db_);
-  if (enabled_[selected_section_]) include(section_db_[selected_section_]);
-  const double centre = 0.5 * (low_db + high_db);
-  const double half_span = std::max(24.0, 0.5 * (high_db - low_db) + 4.0);
-  low_db = std::floor((centre - half_span) / 6.0) * 6.0;
-  high_db = std::ceil((centre + half_span) / 6.0) * 6.0;
+  const Frame frame = tall_frame_ ? kTallFrame : kNormalFrame;
+  const double low_db = frame.low_db;
+  const double high_db = frame.high_db;
 
   QFont scale_font = painter.font();
   scale_font.setPixelSize(9);
@@ -159,8 +166,10 @@ void CascadePlot::paintEvent(QPaintEvent*) {
                      Qt::AlignHCenter | Qt::AlignTop, label);
     painter.setPen(QPen(kGrid, 1.0));
   }
-  const int first_db = static_cast<int>(std::ceil(low_db / 12.0) * 12.0);
-  for (int db = first_db; db <= static_cast<int>(high_db); db += 12) {
+  const double step = static_cast<double>(frame.step_db);
+  const int first_db = static_cast<int>(std::ceil(low_db / step) * step);
+  for (int db = first_db; db <= static_cast<int>(high_db);
+       db += frame.step_db) {
     const double y = yForDb(static_cast<double>(db), plot, low_db, high_db);
     painter.drawLine(QPointF{plot.left(), y}, QPointF{plot.right(), y});
     painter.setPen(kText);
@@ -223,4 +232,14 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
   draw_curve(grid_hz_, response_db_, response_pen);
+}
+
+void CascadePlot::wheelEvent(QWheelEvent* event) {
+  if (!event->modifiers().testFlag(Qt::ControlModifier)) {
+    QWidget::wheelEvent(event);
+    return;
+  }
+  tall_frame_ = !tall_frame_;
+  event->accept();
+  update();
 }

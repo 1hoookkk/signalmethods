@@ -17,8 +17,8 @@ class CascadePlot final : public QWidget {
       const std::array<trench::core::Biquad,
                        trench::core::native::kSections>& sections,
       const std::array<bool, trench::core::native::kSections>& enabled,
-      std::size_t selected_section, double selected_frequency_hz,
-      double sample_rate_hz);
+      const std::vector<double>& seed_hz, std::size_t selected_section,
+      double selected_frequency_hz, double sample_rate_hz);
   void setReference(std::vector<double> frequency_hz,
                     std::vector<double> magnitude_db);
   void clearReference();
@@ -27,6 +27,7 @@ class CascadePlot final : public QWidget {
 
  protected:
   void paintEvent(QPaintEvent* event) override;
+  void wheelEvent(QWheelEvent* event) override;
 
  private:
   [[nodiscard]] double xForFrequency(double frequency_hz,
@@ -34,6 +35,7 @@ class CascadePlot final : public QWidget {
   [[nodiscard]] double yForDb(double db, const QRectF& plot,
                               double low_db, double high_db) const;
 
+  std::vector<double> base_hz_;
   std::vector<double> grid_hz_;
   std::vector<double> response_db_;
   std::array<std::vector<double>, trench::core::native::kSections>
@@ -44,4 +46,5 @@ class CascadePlot final : public QWidget {
   std::vector<double> formant_hz_;
   std::vector<double> reference_hz_;
   std::vector<double> reference_db_;
+  bool tall_frame_{};
 };

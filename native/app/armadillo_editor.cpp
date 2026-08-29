@@ -26,6 +26,8 @@ constexpr QColor kInk{210, 207, 198};
 constexpr QColor kAccent{196, 103, 79};
 constexpr QColor kOverlay{184, 134, 46};
 
+constexpr double kMinDragBandwidthHz = 4.0;
+
 const Resonant& rootOf(const EditorState& state, std::size_t section,
                        EditorState::Lane lane) {
   const auto& value = state.section(section);
@@ -356,7 +358,8 @@ void ArmadilloEditor::mousePressEvent(QMouseEvent* event) {
 void ArmadilloEditor::mouseDoubleClickEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton || hitHandle(event->position())) return;
   const auto root = rootAt(event->position());
-  state_->addZeroAt(root.first, root.second);
+  state_->addZeroAt(root.first,
+                    std::max(kMinDragBandwidthHz, root.second));
 }
 
 void ArmadilloEditor::mouseMoveEvent(QMouseEvent* event) {
@@ -395,7 +398,8 @@ void ArmadilloEditor::applyPointer(const QPointF& position) {
   const double frequency_ratio = now.first / press_hz_;
   const double bandwidth_ratio = now.second / press_bw_hz_;
   for (const Member& member : members_) {
-    state_->setRoot(member.section, member.lane, member.hz * frequency_ratio,
-                    member.bw_hz * bandwidth_ratio);
+    state_->setRoot(
+        member.section, member.lane, member.hz * frequency_ratio,
+        std::max(kMinDragBandwidthHz, member.bw_hz * bandwidth_ratio));
   }
 }

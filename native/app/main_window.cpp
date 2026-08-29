@@ -8,6 +8,8 @@
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/measure.hpp"
 
+#include <QAbstractSpinBox>
+#include <QApplication>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDir>
@@ -20,6 +22,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QShortcut>
 #include <QSignalBlocker>
 #include <QStandardPaths>
 #include <QVBoxLayout>
@@ -31,6 +34,7 @@
 #include <cctype>
 #include <fstream>
 #include <functional>
+#include <initializer_list>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -268,6 +272,11 @@ MainWindow::MainWindow(QWidget* parent)
   template_shelf_->setFont(captionFont(template_shelf_));
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
   reference_label_->setFont(valueFont(reference_label_));
+  for (QWidget* chrome : std::initializer_list<QWidget*>{
+           load, save, analyze_button_, sections_button_, tilt_button_, keep,
+           template_shelf_, overlay_shelf_}) {
+    chrome->setFocusPolicy(Qt::NoFocus);
+  }
   top->addWidget(load);
   top->addWidget(template_shelf_);
   top->addWidget(keep);
@@ -445,6 +454,16 @@ MainWindow::MainWindow(QWidget* parent)
     if (!state_.sectionEnabled(section)) state_.toggleSection(section);
     state_.setRoot(section, EditorState::Lane::kPole, hz, bw_hz);
   };
+  auto* toggle_addressed = new QShortcut(QKeySequence(Qt::Key_Space), this);
+  connect(toggle_addressed, &QShortcut::activated, this, [this] {
+    QWidget* focused = qApp->focusWidget();
+    if (qobject_cast<QAbstractSpinBox*>(focused) ||
+        qobject_cast<QLineEdit*>(focused)) {
+      return;
+    }
+    state_.toggleSection(state_.selectedSection());
+  });
+
   connect(&state_, &EditorState::changed, this, &MainWindow::refresh);
   connect(&state_, &EditorState::selectionChanged, this,
           [this] { refresh(); });
@@ -768,9 +787,26 @@ void MainWindow::applyReferenceView() {
 void MainWindow::refresh() {
   std::array<trench::core::Biquad, trench::core::native::kSections> sections{};
   std::array<bool, trench::core::native::kSections> enabled{};
+  std::vector<double> seed_hz;
+  const auto seed_root = [&seed_hz](const Resonant& root) {
+    if (!std::isfinite(root.hz) || !std::isfinite(root.bw_hz)) return;
+    if (!(root.hz > 20.0) || !(root.hz < 20'000.0)) return;
+    seed_hz.push_back(root.hz);
+    for (const double share : {0.25, 0.5, 1.0, 2.0}) {
+      seed_hz.push_back(
+          std::clamp(root.hz - share * root.bw_hz, 20.0, 20'000.0));
+      seed_hz.push_back(
+          std::clamp(root.hz + share * root.bw_hz, 20.0, 20'000.0));
+    }
+  };
   for (std::size_t index = 0; index < sections.size(); ++index) {
     sections[index] = state_.sectionBiquad(index);
     enabled[index] = state_.sectionEnabled(index);
+    if (!enabled[index]) continue;
+    seed_root(resonant(state_.section(index).pole));
+    if (state_.rootPresent(index, EditorState::Lane::kZero)) {
+      seed_root(resonant(state_.section(index).zero));
+    }
   }
   const std::size_t selected = state_.selectedSection();
   const auto& selected_section = state_.section(selected);
@@ -779,8 +815,9 @@ void MainWindow::refresh() {
       state_.rootPresent(selected, EditorState::Lane::kZero);
   const double selected_frequency =
       resonant(selected_zero ? selected_section.zero : selected_section.pole).hz;
-  cascade_plot_->setCascade(state_.cascade(), sections, enabled, selected,
-                            selected_frequency, EditorState::kDatumHz);
+  cascade_plot_->setCascade(state_.cascade(), sections, enabled, seed_hz,
+                            selected, selected_frequency,
+                            EditorState::kDatumHz);
   refreshInspector();
   updateAuditionView();
 }

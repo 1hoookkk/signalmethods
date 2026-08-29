@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
+#include <QResizeEvent>
 
 #include <algorithm>
 #include <cmath>
@@ -22,6 +23,9 @@ constexpr QColor kQuiet{210, 207, 198, 105};
 constexpr QColor kAccent{196, 103, 79};
 
 constexpr double kCellGap = 12.0;
+constexpr double kMiniLowDb = -120.0;
+constexpr double kMiniHighDb = 24.0;
+constexpr int kCurvePoints = 96;
 
 }  // namespace
 
@@ -30,10 +34,14 @@ SectionStrip::SectionStrip(EditorState* state, QWidget* parent)
   setFixedHeight(64);
   setFocusPolicy(Qt::StrongFocus);
   setAccessibleName(QStringLiteral("Six addressable filter sections"));
-  connect(state_, &EditorState::changed, this,
-          qOverload<>(&SectionStrip::update));
-  connect(state_, &EditorState::selectionChanged, this,
-          [this] { update(); });
+  connect(state_, &EditorState::changed, this, [this] {
+    curves_dirty_ = true;
+    update();
+  });
+  connect(state_, &EditorState::selectionChanged, this, [this] {
+    curves_dirty_ = true;
+    update();
+  });
 }
 
 QRectF SectionStrip::toggleRect(std::size_t index) const {
@@ -50,7 +58,48 @@ QRectF SectionStrip::cell(std::size_t index) const {
           bounds.top(), width, bounds.height()};
 }
 
+void SectionStrip::rebuildCurves() {
+  for (std::size_t index = 0; index < trench::core::native::kSections;
+       ++index) {
+    QPainterPath path;
+    if (state_->sectionEnabled(index)) {
+      const QRectF plot = cell(index).adjusted(8.0, 24.0, -8.0, -10.0);
+      const auto section = state_->sectionBiquad(index);
+      const std::span<const trench::core::Biquad> one{&section, 1};
+      for (int point = 0; point < kCurvePoints; ++point) {
+        const double fraction =
+            static_cast<double>(point) / (kCurvePoints - 1);
+        const double hz = EditorState::kLowHz *
+                          std::pow(EditorState::kHighHz / EditorState::kLowHz,
+                                   fraction);
+        const double raw_db = trench::core::cascade_response_db(
+            one, hz, EditorState::kDatumHz);
+        const double db =
+            std::clamp(std::isfinite(raw_db) ? raw_db : kMiniLowDb,
+                       kMiniLowDb, kMiniHighDb);
+        const QPointF position{
+            plot.left() + fraction * plot.width(),
+            plot.top() + (kMiniHighDb - db) /
+                             (kMiniHighDb - kMiniLowDb) * plot.height()};
+        if (point == 0) {
+          path.moveTo(position);
+        } else {
+          path.lineTo(position);
+        }
+      }
+    }
+    curves_[index] = std::move(path);
+  }
+  curves_dirty_ = false;
+}
+
+void SectionStrip::resizeEvent(QResizeEvent* event) {
+  curves_dirty_ = true;
+  QWidget::resizeEvent(event);
+}
+
 void SectionStrip::paintEvent(QPaintEvent*) {
+  if (curves_dirty_) rebuildCurves();
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
   painter.fillRect(rect(), kChassis);
@@ -92,43 +141,18 @@ void SectionStrip::paintEvent(QPaintEvent*) {
     if (!enabled) continue;
     const QRectF plot = bounds.adjusted(8.0, 24.0, -8.0, -10.0);
     painter.setPen(QPen(kHairline, 1.0));
-    constexpr double kMiniLowDb = -120.0;
-    constexpr double kMiniHighDb = 24.0;
     const double zero_y = plot.top() +
                           (kMiniHighDb / (kMiniHighDb - kMiniLowDb)) *
                               plot.height();
     painter.drawLine(QPointF{plot.left(), zero_y},
                      QPointF{plot.right(), zero_y});
 
-    QPainterPath path;
-    constexpr int kPoints = 96;
-    for (int point = 0; point < kPoints; ++point) {
-      const double fraction = static_cast<double>(point) / (kPoints - 1);
-      const double hz = EditorState::kLowHz *
-                        std::pow(EditorState::kHighHz / EditorState::kLowHz,
-                                 fraction);
-      const auto section = state_->sectionBiquad(index);
-      const std::span<const trench::core::Biquad> one{&section, 1};
-      const double raw_db = trench::core::cascade_response_db(
-          one, hz, EditorState::kDatumHz);
-      const double db = std::clamp(std::isfinite(raw_db) ? raw_db : kMiniLowDb,
-                                   kMiniLowDb, kMiniHighDb);
-      const QPointF position{
-          plot.left() + fraction * plot.width(),
-          plot.top() + (kMiniHighDb - db) /
-                           (kMiniHighDb - kMiniLowDb) * plot.height()};
-      if (point == 0) {
-        path.moveTo(position);
-      } else {
-        path.lineTo(position);
-      }
-    }
     QPen curve_pen(color, 1.0);
     curve_pen.setCosmetic(true);
     curve_pen.setCapStyle(Qt::FlatCap);
     painter.setPen(curve_pen);
     painter.setBrush(Qt::NoBrush);
-    painter.drawPath(path);
+    painter.drawPath(curves_[index]);
   }
 }
 
@@ -162,10 +186,6 @@ void SectionStrip::keyPressEvent(QKeyEvent* event) {
     const std::size_t wanted =
         static_cast<std::size_t>(event->key() - Qt::Key_1);
     state_->selectSection(wanted);
-    return;
-  }
-  if (event->key() == Qt::Key_Space) {
-    state_->toggleSection(selected);
     return;
   }
   QWidget::keyPressEvent(event);
