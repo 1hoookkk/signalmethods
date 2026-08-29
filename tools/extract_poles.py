@@ -1,12 +1,15 @@
 """One-button all-pole caricature: WAV in, up to six (f, B) stages out.
 
-    python tools/extract_poles.py sound.wav [--out-dir DIR] [--mode peaks|bands|lpc]
+    python tools/extract_poles.py sound.wav [--out-dir DIR] [--mode auto|peaks|bands|lpc]
                                             [--pairs N] [--orders 4,6,8,10,12] [--all]
 
-peaks (default): the six most dominant distinct peaks of the energy-weighted
-peak-hold envelope (at least a quarter octave apart, within 40 dB of the
-loudest), sorted ascending into S1..S6 and labelled with the acoustic band
-they fell in (sub / warmth / vowel-horn / presence / sizzle / air).
+auto (default): bands when the dominant peaks are harmonics of one
+fundamental, otherwise peaks.
+
+peaks: up to six dominant distinct peaks of the energy-weighted peak-hold
+envelope (a quarter octave apart, within 24 dB of the loudest - fewer when
+the sound has fewer), sorted ascending into S1..S6 and labelled with the
+acoustic band they fell in (sub / warmth / vowel-horn / presence / sizzle / air).
 
 bands: one dominant peak per acoustic band, always six stages in band order.
 
@@ -32,6 +35,8 @@ PRUNE_DB = 0.5
 MIN_SMOOTH_HZ = 25.0
 ABSENT_BELOW_DB = 40.0
 MIN_STAGE_OCTAVES = 0.25
+PEAK_FLOOR_DB = 24.0
+PROMINENCE_DB = 6.0
 ENVELOPE_FRAME = 16384
 
 BANDS = [
@@ -286,20 +291,15 @@ def lpc_fit(x, rate, grid, target, orders, max_pairs, exact_pairs=None,
     if not scored:
         return None, []
     scored.sort(key=lambda c: c['penalised'])
-    if exact_pairs is not None:
-        max_pairs = exact_pairs
-        prune_db = 0.0
-        enough = [c for c in scored if len(c['pairs']) >= exact_pairs]
-        if enough:
-            scored = sorted(enough, key=lambda c: c['error']) + [c for c in scored if c not in enough]
-    best = dict(scored[0])
-    pairs = list(best['pairs'])
 
     def error_of(kept):
         return weighted_rms(all_pole_db(poly_from_pairs(kept, rate), rate, grid), target, weight)
 
-    while len(pairs) > max_pairs:
-        pairs.pop(min(range(len(pairs)), key=lambda k: error_of(pairs[:k] + pairs[k + 1:])))
+    def pruned_to(pairs, count):
+        pairs = list(pairs)
+        while len(pairs) > count:
+            pairs.pop(min(range(len(pairs)), key=lambda k: error_of(pairs[:k] + pairs[k + 1:])))
+        return pairs
 
     def contributions(kept):
         base = error_of(kept)
@@ -309,6 +309,23 @@ def lpc_fit(x, rate, grid, target, orders, max_pairs, exact_pairs=None,
             out.append((error_of(without) if without else float('inf')) - base)
         return base, out
 
+    if exact_pairs is not None:
+        best = None
+        for c in scored:
+            if len(c['pairs']) < exact_pairs:
+                continue
+            pairs = pruned_to(c['pairs'], exact_pairs)
+            err = error_of(pairs)
+            if best is None or err < best['error']:
+                best = dict(c, pairs=pairs, error=err)
+        if best is None:
+            best = dict(scored[0])
+        base, contribution = contributions(best['pairs'])
+        best['error'] = base; best['contribution'] = contribution
+        return best, scored
+
+    best = dict(scored[0])
+    pairs = pruned_to(best['pairs'], max_pairs)
     base, contribution = contributions(pairs)
     while len(pairs) > 1 and min(contribution) < prune_db:
         pairs.pop(int(np.argmin(contribution)))
@@ -415,18 +432,31 @@ def stage_caricature(grid, target, power, bins, rate, source, scored=()):
     return stages
 
 
-def dominant_peaks(grid, target, power, bins, rate, source, scored=(), count=6):
+def dominant_peaks(grid, target, power, bins, rate, source, scored=(), count=6,
+                   floor_db=PEAK_FLOOR_DB, prominence_db=PROMINENCE_DB, min_octaves=MIN_STAGE_OCTAVES):
     ceiling = float(np.max(target))
     lo, hi = MIN_HZ, min(20000.0, 0.49 * rate)
     maxima = [i for i in range(len(grid))
               if (i == 0 or target[i] >= target[i - 1]) and (i == len(grid) - 1 or target[i] >= target[i + 1])]
     owned = sorted({int(source[i]) for i in maxima}, key=lambda j: -power[j])
+
+    def rise_of(j):
+        f = bins[j]
+        around = (bins >= f / math.sqrt(2.0)) & (bins <= f * math.sqrt(2.0))
+        baseline = float(np.median(10.0 * np.log10(power[around] + 1e-20)))
+        return 10.0 * math.log10(power[j] + 1e-20) - baseline
+
     chosen = []
+    prominences = {}
     for j in owned:
-        if 10.0 * math.log10(power[j] + 1e-20) < ceiling - ABSENT_BELOW_DB:
+        if 10.0 * math.log10(power[j] + 1e-20) < ceiling - floor_db:
             break
-        if all(abs(math.log2(bins[j] / bins[c])) > MIN_STAGE_OCTAVES for c in chosen):
+        rise = rise_of(j)
+        if rise < prominence_db:
+            continue
+        if all(abs(math.log2(bins[j] / bins[c])) > min_octaves for c in chosen):
             chosen.append(j)
+            prominences[j] = rise
         if len(chosen) == count:
             break
     chosen.sort(key=lambda j: bins[j])
@@ -438,7 +468,7 @@ def dominant_peaks(grid, target, power, bins, rate, source, scored=(), count=6):
         level = 10.0 * math.log10(power[j] + 1e-20)
         peaks.append({'stage': n + 1, 'freq_hz': f0, 'bandwidth_hz': bw, 'raw_width_hz': raw,
                       'bandwidth_source': kind, 'level_db': level - ceiling, 'present': True,
-                      'role': BANDS[band][4]})
+                      'prominence_db': prominences[j], 'role': BANDS[band][4]})
     return peaks
 
 
@@ -525,10 +555,14 @@ def main():
     ap.add_argument('--prune-db', type=float, default=PRUNE_DB, help='lpc: drop a pair unless it buys this much fit')
     ap.add_argument('--penalty-db', type=float, default=PAIR_PENALTY_DB, help='lpc: per-pair cost when choosing')
     ap.add_argument('--all', action='store_true', help='print every scored lpc candidate')
+    ap.add_argument('--list', action='store_true', help='print every candidate peak, ungated, numbered')
+    ap.add_argument('--keep', default=None, help='write exactly these numbered candidates from --list, e.g. 1,3,4')
     args = ap.parse_args()
     orders = sorted({int(v) for v in args.orders.split(',') if v.strip()})
     max_pairs = max(1, min(6, args.max_pairs))
     exact = None if args.pairs is None else max(1, min(6, args.pairs))
+    if exact is not None:
+        orders = sorted(set(orders) | {12, 14, 16, 18, 20, 24})
 
     x, rate = load_mono(args.wav)
     grid = log_grid(rate)
@@ -538,6 +572,21 @@ def main():
     peaks = dominant_peaks(grid, target, power, bins, rate, source, scored, max_pairs)
     if args.mode == 'lpc' and lpc is None:
         raise SystemExit('no stable all-pole candidate found')
+    table = dominant_peaks(grid, target, power, bins, rate, source, scored, 24, 40.0, 0.0, 0.1)
+    table.sort(key=lambda s: -s['level_db'])
+    for n, s in enumerate(table, 1):
+        s['stage'] = n
+    if args.list or args.keep:
+        print('Candidate peaks, loudest first (level / prominence over the octave median):')
+        for s in table:
+            print('%2d  %-10s BW %-10s %6.1f dB  +%4.1f dB  %-8s %s' % (s['stage'], fmt_hz(s['freq_hz']),
+                  fmt_hz(s['bandwidth_hz']), s['level_db'], s['prominence_db'], s['bandwidth_source'], s['role']))
+    if args.keep:
+        wanted = {int(v) for v in args.keep.split(',') if v.strip()}
+        peaks = sorted((dict(s) for s in table if s['stage'] in wanted), key=lambda s: s['freq_hz'])
+        for n, s in enumerate(peaks, 1):
+            s['stage'] = n
+        args.mode = 'peaks'
     fundamental = harmonic_fundamental(peaks)
     if args.mode == 'auto':
         args.mode = 'bands' if fundamental is not None else 'peaks'
@@ -554,9 +603,10 @@ def main():
         print('Six-stage caricature (dominant peak per band, -3 dB width):')
     for s in (peaks if args.mode == 'peaks' else stages):
         flag = ' ' if s['present'] else 'x'
-        print('S%d %s %-10s BW %-10s %6.1f dB  %-8s %s' % (s['stage'], flag, fmt_hz(s['freq_hz']),
-                                                           fmt_hz(s['bandwidth_hz']), s['level_db'],
-                                                           s['bandwidth_source'], s['role']))
+        rise = ' +%4.1f dB' % s['prominence_db'] if 'prominence_db' in s else ''
+        print('S%d %s %-10s BW %-10s %6.1f dB%s  %-8s %s' % (s['stage'], flag, fmt_hz(s['freq_hz']),
+                                                             fmt_hz(s['bandwidth_hz']), s['level_db'], rise,
+                                                             s['bandwidth_source'], s['role']))
     if lpc is not None:
         print('LPC check: %s, Burg order %d at %.0f Hz, %d useful pair%s, %.2f dB RMS' % (
             lpc['region'], lpc['order'], lpc['rate'], len(lpc['pairs']),
