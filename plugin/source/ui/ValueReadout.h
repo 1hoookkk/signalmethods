@@ -144,7 +144,7 @@ public:
         // heavy"). Back to the reference weight; legibility is carried by the
         // SIZE, which matches it at 0.55 of the box, and by the black ink.
         drawCrispText (g, textArea, numeric, fs,
-                       t.textColour (id, juce::Colour (0xff4a3520)));
+                       t.textColour (id, juce::Colour (0xff4a3520)), true);
         if (adjustCue && param != nullptr)
         {
             const float cxr = b.getRight() - 7.5f;

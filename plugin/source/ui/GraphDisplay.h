@@ -16,6 +16,7 @@ class GraphDisplay : public juce::Component,
                      private juce::Timer
 {
 public:
+    void setBodyName (const juce::String& s) { if (bodyName != s) { bodyName = s; repaint(); } }
     void playSeedPulse()
     {
         if (traceXs.empty() || traceDbs.size() != traceXs.size())
@@ -252,7 +253,20 @@ public:
                 g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
                 g.drawImage (displayPlate, glass.expanded (1.0f),
                              juce::RectanglePlacement::stretchToFit, false);
-
+            }
+            // TUBE GLASS (Tyson 2026-08-29 "bring that clean glass look back"):
+            // a soft gloss across the top of the window and a faint vignette
+            // pulling the corners down, the way the CRT face read.
+            {
+                juce::ColourGradient vig (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
+                                          juce::Colours::black.withAlpha (0.38f), glass.getX(), glass.getY(), true);
+                g.setGradientFill (vig);
+                g.fillRect (glass.expanded (1.0f));
+                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.13f), 0.0f, glass.getY(),
+                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.42f, false);
+                gloss.addColour (0.55, juce::Colours::white.withAlpha (0.05f));
+                g.setGradientFill (gloss);
+                g.fillRect (glass.withHeight (glass.getHeight() * 0.42f));
             }
             // Restraint law (Tyson 2026-07-30): the coral curve is pristine -
             // no SLAM/GRIT/ceiling effects ever touch it. The glass carries only
@@ -452,6 +466,37 @@ private:
         // opaque stroke. No understroke, no second pass, no bloom.
         g.setOpacity (1.0f);
         strokeTrace (g, responsePath, phos);
+        // PEAKS MARKED (Tyson 2026-08-29, from the first faces): a small cross
+        // on every resonance so the player sees where the vowels sit.
+        {
+            const double dbTop = t.curveDbTop(), dbBot = t.curveDbBottom();
+            const int N = (int) traceDbs.size(), win = juce::jmax (3, N / 40);
+            g.setColour (phos);
+            for (int i = win; i < N - win; ++i)
+            {
+                const float v = traceDbs[(size_t) i];
+                bool peak = true;
+                float floor = v;
+                for (int k = i - win; k <= i + win && peak; ++k)
+                {
+                    if (k != i && traceDbs[(size_t) k] >= v) peak = false;
+                    floor = juce::jmin (floor, traceDbs[(size_t) k]);
+                }
+                if (! peak || v - floor < 2.5f) continue;
+                const float yt = (float) juce::jlimit (0.0, 1.0, (dbTop - v) / (dbTop - dbBot));
+                const float x = traceXs[(size_t) i], y = plot.getY() + yt * plot.getHeight();
+                g.drawLine (x - 3.0f, y, x + 3.0f, y, 1.0f);
+                g.drawLine (x, y - 3.0f, x, y + 3.0f, 1.0f);
+            }
+        }
+        if (bodyName.isNotEmpty())
+        {
+            g.setFont (telemetryFont (9.8f, false));
+            g.setColour (phos.withAlpha (0.70f));
+            g.drawText (bodyName.toUpperCase(),
+                        juce::Rectangle<float> (plot.getRight() - 190.0f, plot.getBottom() - 16.0f, 182.0f, 12.0f),
+                        juce::Justification::centredRight, false);
+        }
     }
     void drawSeedPulseTrace (juce::Graphics& g) const
     {
@@ -514,6 +559,7 @@ private:
     mutable juce::Colour cachedColour;
     std::vector<float> traceXs;
     std::vector<float> traceDbs;
+    juce::String bodyName;
     float lastCoeffs[trench::kUiCoeffCount] = {};
     float lastBoost = -1.0f;
     double lastSr = 0.0;

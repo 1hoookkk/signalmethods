@@ -74,12 +74,15 @@ private:
     std::unique_ptr<trench::ui::BayKnob>          chewKnob;
     std::unique_ptr<trench::ui::BayKnob>          slamKnob;
     std::unique_ptr<trench::ui::BayKnob>          lowKnob;
-    int openSection = -1;
+    int openSection = 0;
     void applySectionVisibility();
     void updateEditorSize();
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;
     std::unique_ptr<trench::ui::WheelControl>     secondaryWheel;
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;
+    std::unique_ptr<trench::ui::BayKnob>          followKnob;
+    std::unique_ptr<juce::Component>              movementBay;
+    std::unique_ptr<juce::Component>              autoTrim;
     std::unique_ptr<trench::ui::ValueReadout>     secondaryReadout;
     std::unique_ptr<trench::ui::Onboarding>       onboarding;
     trench::ui::Onboarding::ReplayHotspot         onboardingReplayHotspot;

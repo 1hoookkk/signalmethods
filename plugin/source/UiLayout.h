@@ -96,8 +96,8 @@ public:
         // BELOW the wheel centre (their 3px of 25) -> y 705 / 873.5; digit
         // cap = 54% of pill height, 1px stems -> fontSize 21, regular.
         // The v2 plate has no readout recesses; the pills float on plate.
-        layout.elements["morphReadout"] = { { 562.6f, 698.0f, 167.3f, 68.1f },  15.0f, juce::Colour (0xff2a2722) };
-        layout.elements["qReadout"]     = { { 562.6f, 865.2f, 167.3f, 68.1f },  15.0f, juce::Colour (0xff2a2722) };
+        layout.elements["morphReadout"] = { { 562.6f, 708.0f, 178.0f, 48.0f },  12.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qReadout"]     = { { 562.6f, 875.0f, 178.0f, 48.0f },  12.0f, juce::Colour (0xff2a2722) };
         // RE-MEASURED with per-axis mapping (2026-08-15 "Re measure all
         // bounds"; plate->source is x*1010/828, y*1557/1280 - NOT one factor).
         // The recess interior in df2_panel_beige.png (luma < 60) is plate px
@@ -126,13 +126,13 @@ public:
         // unknowable - never trench imagery, military language or depth
         // claims anywhere on the product.
         layout.elements["brandLabel"].text = "TRENCH";
-        layout.colours["accent"]             = juce::Colour (0xffc96a54);
-        layout.colours["curveColour"]        = juce::Colour (0xffd9d6c9);
-        layout.colours["curveHighlight"]     = juce::Colour (0xffefece2);
-        layout.colours["telemetry"]          = juce::Colour (0xffa39ac0);
-        layout.colours["dashed"]             = juce::Colour (0xffa39ac0);
-        layout.colours["rollerIllumination"] = juce::Colour (0xffc96a54);
-        layout.colours["modulationLamp"]     = juce::Colour (0xffc96a54);
+        layout.colours["accent"]             = juce::Colour (0xff3cc8be);
+        layout.colours["curveColour"]        = juce::Colour (0xffbef0d7);
+        layout.colours["curveHighlight"]     = juce::Colour (0xffe6fff4);
+        layout.colours["telemetry"]          = juce::Colour (0xff608074);
+        layout.colours["dashed"]             = juce::Colour (0xff608074);
+        layout.colours["rollerIllumination"] = juce::Colour (0xff3cc8be);
+        layout.colours["modulationLamp"]     = juce::Colour (0xff3cc8be);
         layout.colours["phosphor"]           = juce::Colour (0xff1a1624);
         // amber = the SOURCE voice (RESAMPLE/GEN only) - never the trace's value
         layout.colours["amber"]              = juce::Colour (0xffb8862e);
@@ -153,8 +153,8 @@ public:
         layout.params["wellRadius"]        = 9.0;
         layout.params["readoutAliasScale"] = 0.95;
         layout.params["typeArrowExtra"]    = 6.0;
-        layout.params["curveDbTop"]        = 40.0;
-        layout.params["curveDbBottom"]     = -40.0;
+        layout.params["curveDbTop"]        = 48.0;
+        layout.params["curveDbBottom"]     = -48.0;
         layout.params["fontBold"]          = 1.0;
         layout.strings["fontFamily"] = "Arial";
         layout.strings["fontFamilyEmphasis"] = "Arial";

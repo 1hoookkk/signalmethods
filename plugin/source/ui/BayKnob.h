@@ -38,6 +38,7 @@ public:
     /// controls to an absolute minimum"): the knob over its caption, the value
     /// taking the caption's seat while the hand is on it - no bone box.
     void setCompact (bool c) { if (compact != c) { compact = c; repaint(); } }
+    void setScale (float s) { scale = s; repaint(); }
     /// Dimmed = the control is real but has nothing to act on right now
     /// (Tyson 2026-08-09 bay refactor): with PRESET at OFF the MOVEMENT room
     /// stays on screen, and Depth/Follow go quiet and stop taking the mouse
@@ -116,10 +117,11 @@ public:
         const auto b = getLocalBounds().toFloat();
         const float value = currentNormalised();
         const auto* choice = dynamic_cast<const juce::AudioParameterChoice*> (param);
-        const float d = compact ? 26.0f : kBayKnobDiameter;
+        const float d = compact ? 26.0f : kBayKnobDiameter * scale;
+        const float boxWv = (float) kBayValueWidth * scale, boxHv = (float) kBayValueHeight * scale;
         // The knob + caption/value block is ONE unit, centred in the row - the
         // carve's margins stay even on both sides (2026-08-06 proportion verdict).
-        const float blockW = (float) kBayValueWidth + 26.0f;
+        const float blockW = boxWv + 26.0f * scale;
         const float startX = b.getX() + juce::jmax (0.0f, (b.getWidth() - (d + 4.0f + blockW)) * 0.5f);
         const auto knob = compact
             ? juce::Rectangle<float> (d, d).withCentre ({ b.getCentreX(), b.getY() + d * 0.5f + 1.0f })
@@ -130,7 +132,7 @@ public:
         // the restored 503px face without crowding the knob shadows.
         constexpr float captionH = 10.0f;
         constexpr float captionGap = 1.0f;
-        const float contentH = captionH + captionGap + (float) kBayValueHeight;
+        const float contentH = captionH + captionGap + boxHv;
         const float contentTop = b.getCentreY() - contentH * 0.5f;
         const float boxTop = contentTop + captionH + captionGap;
         const float capW = juce::jmin (blockW,
@@ -251,19 +253,18 @@ public:
             // MORPH/Q primaries.
             // sized to stay legible at the small face (verdict 2026-07-31
             // "secondary readouts need to be more visible")
-            const float boxW = juce::jmin ((float) kBayValueWidth, b.getRight() - blockX - 1.0f);
+            const float boxW = juce::jmin (boxWv, b.getRight() - blockX - 1.0f);
             // the box hangs off its own knob, centred under its caption - not
             // centred in the leftover width, which detached it from the control
             const auto box = juce::Rectangle<float> (blockX + (capW - boxW) * 0.5f,
-                                                     boxTop, boxW,
-                                                     (float) kBayValueHeight);
+                                                     boxTop, boxW, boxHv);
             // Same material and same text voice as the MORPH/Q primaries:
             // ValueReadout draws drawMutedBoneReadout + drawCrispText emphasis.
             drawMutedBoneReadout (g, box, box.getHeight() * 0.17f, hover, t);
             drawCrispText (g, box.reduced (4.0f, 1.0f),
                            choice != nullptr ? choice->getCurrentChoiceName()
                                              : juce::String (juce::roundToInt (value * 100.0f)),
-                           kBayValuePt, t.textColour ("morphReadout", juce::Colour (0xff2a2722)));
+                           kBayValuePt * scale, t.textColour ("morphReadout", juce::Colour (0xff2a2722)));
         }
     }
 private:
@@ -274,6 +275,7 @@ private:
     Theme t;
     juce::String label;
     bool compact = false;
+    float scale = 1.0f;
     juce::Image strip;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;

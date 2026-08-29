@@ -73,12 +73,12 @@ inline juce::Font telemetryFont (float height, bool emphasis = false)
 struct Theme
 {
     const trench::UiLayout& layout;
-    juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xffc96a54)); }
-    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xffd9d6c9)); }
-    juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffefece2)); }
-    juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xffa39ac0)); }
-    juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xffc96a54)); }
-    juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xffc96a54)); }
+    juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xff3cc8be)); }
+    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xffbef0d7)); }
+    juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffe6fff4)); }
+    juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xff608074)); }
+    juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff3cc8be)); }
+    juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xff3cc8be)); }
     juce::Colour amber()       const { return layout.colour ("amber",       juce::Colour (0xffa9554e)); }
     juce::Colour wellTop()     const { return layout.colour ("wellTop",     juce::Colour (0xffe7dec9)); }
     juce::Colour wellBottom()  const { return layout.colour ("wellBottom",  juce::Colour (0xffc9c0a8)); }
@@ -151,15 +151,15 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                      float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
-    const auto warmth = juce::Colour (0xffe7edf5);
-    const auto top    = juce::Colour (0xffc9d6e2).interpolatedWith (warmth, 0.10f);
-    const auto middle = juce::Colour (0xffb2c4d6).interpolatedWith (warmth, 0.08f);
-    const auto bottom = juce::Colour (0xff94a8c0).interpolatedWith (warmth, 0.06f);
+    const auto warmth = juce::Colour (0xffe7eeea);
+    const auto top    = juce::Colour (0xffc9d0cc).interpolatedWith (warmth, 0.10f);
+    const auto middle = juce::Colour (0xffb4c1be).interpolatedWith (warmth, 0.08f);
+    const auto bottom = juce::Colour (0xff9dadaa).interpolatedWith (warmth, 0.06f);
     const float faceRad = juce::jmax (2.0f, radius - 1.3f);
     {
         juce::ColourGradient edge (juce::Colour (0xffe9eff5), 0.0f, face.getY(),
                                    juce::Colour (0xff5f6e7e), 0.0f, face.getBottom(), false);
-        edge.addColour (0.5, juce::Colour (0xffa6b4c4));
+        edge.addColour (0.5, juce::Colour (0xff9dadaa));
         g.setGradientFill (edge);
         g.fillRoundedRectangle (face, faceRad);
     }

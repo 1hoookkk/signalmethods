@@ -21,11 +21,80 @@ constexpr float kBayRight = 249.0f;   // the readout column's right edge (source
 // compact cells, row 2 the movement picker. No carve, no door word - the
 // chip on the glass is the whole door, and the plate below the rows stays
 // bare to the notch.
-// THE ROOM (Tyson 2026-08-29 "go back to this"): GAIN carves a framed room
-// low-left, the door-word seated in the frame's break, one knob lane per row
-// with its value box. MOVEMENT stays a word on the glass.
-const juce::Rectangle<float> kBayRoom { kBayLeft, 318.0f, 158.5f, 136.0f };
-constexpr int kBayPad = 8, kBayRowGap = 6, kBayRowH = 38;
+// THE DOCK (Tyson 2026-08-29): the instrument above never moves. Under Q
+// sits one permanent rail - GAIN and MOVE - and beneath it two bays with
+// fixed seats: GAIN left, MOVEMENT right. Neither, one, or both may be open;
+// nothing else moves and the face never changes size.
+constexpr int kRailY = 312, kRailH = 13, kBayY = 330, kBayRowH = 32;
+constexpr int kGainX = 35, kGainW = 116, kMoveX = 150, kMoveW = 92;
+namespace
+{
+// A printed state, not a control: the gain stage trims itself.
+struct AutoTrimMark final : juce::Component
+{
+    explicit AutoTrimMark (const trench::ui::Theme& theme) : t (theme) { setInterceptsMouseClicks (false, false); }
+    void paint (juce::Graphics& g) override
+    {
+        const auto b = getLocalBounds().toFloat();
+        g.setColour (t.modulationLamp());
+        g.fillEllipse (b.getX() + 1.0f, b.getCentreY() - 2.5f, 5.0f, 5.0f);
+        g.setFont (trench::ui::telemetryFont (8.5f, false));
+        g.setColour (t.labelInk().withAlpha (0.70f));
+        g.drawText ("AUTO TRIM", b.withTrimmedLeft (10.0f).toNearestInt(), juce::Justification::centredLeft, false);
+    }
+    trench::ui::Theme t;
+};
+// The MOVEMENT bay is preset-first: the phrase with its steppers, then the
+// rate. Deeper parameters stay behind the phrase list.
+struct MovementBay final : juce::Component
+{
+    explicit MovementBay (const trench::ui::Theme& theme) : t (theme) { setMouseCursor (juce::MouseCursor::PointingHandCursor); }
+    std::function<void (int)> onStep;
+    std::function<void()>     onOpenMenu;
+    void setState (const juce::String& n, const juce::String& r, bool a)
+    {
+        if (n == name && r == rate && a == active) return;
+        name = n; rate = r; active = a; repaint();
+    }
+    void mouseUp (const juce::MouseEvent& e) override
+    {
+        const auto b = getLocalBounds().toFloat();
+        if (e.position.y > 26.0f) return;
+        if (e.position.x < 16.0f)                { if (onStep) onStep (-1); }
+        else if (e.position.x > b.getRight() - 16.0f) { if (onStep) onStep (1); }
+        else if (onOpenMenu) onOpenMenu();
+    }
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
+    {
+        if (onStep && ! juce::approximatelyEqual (w.deltaY, 0.0f)) onStep (w.deltaY > 0 ? 1 : -1);
+    }
+    void paint (juce::Graphics& g) override
+    {
+        const auto b = getLocalBounds().toFloat();
+        const auto ink = t.labelInk();
+        g.setFont (trench::ui::telemetryFont (8.0f, false));
+        g.setColour (ink.withAlpha (0.55f));
+        g.drawText ("PRESET", b.withHeight (10.0f).toNearestInt(), juce::Justification::centredLeft, false);
+        const auto row = juce::Rectangle<float> (b.getX(), b.getY() + 11.0f, b.getWidth(), 16.0f);
+        trench::ui::drawMutedBoneReadout (g, row, 3.0f, false, t);
+        g.setColour (juce::Colour (0xff2a2722));
+        juce::Path l, r;
+        l.addTriangle (row.getX() + 9.0f, row.getCentreY() - 3.5f, row.getX() + 9.0f, row.getCentreY() + 3.5f, row.getX() + 4.5f, row.getCentreY());
+        r.addTriangle (row.getRight() - 9.0f, row.getCentreY() - 3.5f, row.getRight() - 9.0f, row.getCentreY() + 3.5f, row.getRight() - 4.5f, row.getCentreY());
+        g.fillPath (l); g.fillPath (r);
+        g.setFont (trench::ui::displayFont (10.0f, false));
+        g.drawText (name, row.reduced (12.0f, 0.0f).toNearestInt(), juce::Justification::centred, false);
+        g.setFont (trench::ui::telemetryFont (8.0f, false));
+        g.setColour (ink.withAlpha (0.55f));
+        g.drawText ("RATE", juce::Rectangle<float> (b.getX(), b.getY() + 33.0f, 30.0f, 10.0f).toNearestInt(), juce::Justification::centredLeft, false);
+        g.setColour (ink.withAlpha (0.85f));
+        g.drawText (rate, juce::Rectangle<float> (b.getX() + 30.0f, b.getY() + 33.0f, b.getWidth() - 30.0f, 10.0f).toNearestInt(), juce::Justification::centredLeft, false);
+    }
+    trench::ui::Theme t;
+    juce::String name { "OFF" }, rate;
+    bool active = false;
+};
+}
 constexpr int kFxChipH = 17;
 #if TRENCH_GOD_MODE || defined (TRENCH_PLAYER_DIAGNOSTICS)
 juce::File layoutWatchFile()
@@ -208,7 +277,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     };
     typeSelector->onSeed       = runSeed;
     typeSelector->onExportBody = [this] { processor.exportCurrentBody(); };
-    typeSelector->onAnnounce   = [this] (const juce::String& s) { graph->announce (s); };
+    typeSelector->onAnnounce   = [this] (const juce::String& s) { graph->announce (s); graph->setBodyName (s); };
     // Hovering or flicking through bodies AUDITIONS them; only a click writes
     // the parameter, so browsing never touches automation or undo.
     // Clicking BODY opens the face's own library, not a system menu.
@@ -234,6 +303,16 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     chewKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::chew,   "Bite");
     slamKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
     lowKnob    = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::lowKeep, "Low");
+    followKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::envAmount, "Follow");
+    for (auto* k : { preampKnob.get(), chewKnob.get(), followKnob.get() })
+        k->setScale (0.75f);
+    autoTrim   = std::make_unique<AutoTrimMark> (theme);
+    {
+        auto bay = std::make_unique<MovementBay> (theme);
+        bay->onStep     = [this] (int dir) { if (movementChip->onStep) movementChip->onStep (dir); };
+        bay->onOpenMenu = [this] { if (movementChip->onOpenMenu) movementChip->onOpenMenu(); };
+        movementBay = std::move (bay);
+    }
     // TRACK retired from the face (Tyson 2026-08-15): the pitch listener was a
     // detector-driven retuner the X3 never had, and E-mu's authored answer to
     // pitch-following is the cube's own third axis. The parameter stays for
@@ -291,7 +370,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     sectionRail->onToggleSection = [this] (int s)
     {
         // Picking the open door's word again shuts the drawer (2026-08-15).
-        openSection = (s == openSection) ? -1 : s;
+        openSection ^= (1 << s);
         applySectionVisibility();
     };
     onboarding = std::make_unique<Onboarding> (theme);
@@ -372,6 +451,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     // glass itself still takes no clicks; the chip is the only thing on it that
     // does.
     addAndMakeVisible (*movementChip);
+    addAndMakeVisible (*followKnob);
+    addAndMakeVisible (*autoTrim);
+    addAndMakeVisible (*movementBay);
     addAndMakeVisible (*typeSelector);
     addAndMakeVisible (*morphWheel);
     addAndMakeVisible (*secondaryWheel);
@@ -577,9 +659,7 @@ void PluginEditor::layoutComponents()
         movementChip->setBounds (glass.getX() + 10,
                                  glass.getBottom() - 12 - MovementChip::kHeight,
                                  movementChip->preferredWidth(), MovementChip::kHeight);
-        sectionRail->setBounds (juce::roundToInt (kBayRoom.getX()) + kBayPad,
-                                juce::roundToInt (kBayRoom.getY()) - kFxChipH / 2,
-                                sectionRail->preferredWidth(), kFxChipH);
+        sectionRail->setBounds (kGainX, kRailY, sectionRail->preferredWidth(), kRailH);
         sectionRail->toFront (false);
     }
     {
@@ -597,14 +677,14 @@ void PluginEditor::layoutComponents()
     morphReadout->setBounds (rectOf ("morphReadout"));
     secondaryReadout->setBounds (rectOf ("qReadout"));
     {
-        const int x0   = juce::roundToInt (kBayRoom.getX()) + kBayPad;
-        const int w    = juce::roundToInt (kBayRoom.getRight()) - kBayPad - x0;
-        const int rowY = juce::roundToInt (kBayRoom.getY()) + kBayPad + kBayRowGap;
-        const auto rowAt = [&] (int i) { return juce::Rectangle<int> (x0, rowY + i * kBayRowH, w, kBayRowH); };
-        preampKnob->setBounds (rowAt (0));
-        chewKnob->setBounds   (rowAt (1));
-        slamKnob->setBounds   (rowAt (2));
-        lowKnob->setBounds    (rowAt (3));
+        const auto laneAt = [&] (int i) { return juce::Rectangle<int> (kGainX, kBayY + i * kBayRowH, kGainW, kBayRowH); };
+        preampKnob->setBounds (laneAt (0));
+        chewKnob->setBounds   (laneAt (1));
+        slamKnob->setBounds   (laneAt (2));
+        lowKnob->setBounds    (laneAt (2));
+        autoTrim->setBounds   (kGainX + 6, kBayY + 2 * kBayRowH + 2, kGainW, 12);
+        movementBay->setBounds (kMoveX, kBayY + 4, kMoveW, 46);
+        followKnob->setBounds  (kMoveX - 6, kBayY + 52, kMoveW + 6, kBayRowH);
         // DEPTH retired 2026-08-10: travel is part of each preset's record.
         // TRACK retired 2026-08-15 (see the knob's construction site above).
     }
@@ -642,17 +722,16 @@ void PluginEditor::layoutComponents()
 void PluginEditor::applySectionVisibility()
 {
     using trench::ui::SectionRail;
-    const bool open = openSection == SectionRail::kDrive;
-    preampKnob->setVisible (open);
-    chewKnob->setVisible (open);
-    slamKnob->setVisible (open);
+    const bool gain = (openSection & (1 << SectionRail::kDrive)) != 0;
+    const bool move = (openSection & (1 << SectionRail::kMovement)) != 0;
+    preampKnob->setVisible (gain);
+    chewKnob->setVisible (gain);
+    slamKnob->setVisible (false);
     lowKnob->setVisible (false);
-    {
-        const auto seat = sectionRail->getBounds().toFloat();
-        faceplate->setRoomFrame (open ? kBayRoom : juce::Rectangle<float>(),
-                                 seat.getX() - 4.0f, seat.getRight() + 2.0f);
-    }
-    sectionRail->setOpenSection (openSection);
+    autoTrim->setVisible (gain);
+    movementBay->setVisible (move);
+    followKnob->setVisible (move);
+    sectionRail->setOpenMask (openSection);
     updateEditorSize();
 }
 void PluginEditor::updateEditorSize()
@@ -695,6 +774,11 @@ void PluginEditor::onFrame()
           : preset == trench::Movement::kGrowlIndex ? juce::String ("GROWL")
                                                     : juce::String ("LIVE");
         movementChip->setState (moveName, processor.isMorphModulatedForUi());
+        juce::String rate;
+        if (auto* div = dynamic_cast<juce::AudioParameterChoice*> (processor.apvts.getParameter (ParamID::moveDivision)))
+            rate = div->getCurrentChoiceName();
+        static_cast<MovementBay*> (movementBay.get())->setState (preset <= 0 ? juce::String ("OFF") : moveName, rate, processor.isMorphModulatedForUi());
+        sectionRail->setStatus (preset <= 0 ? juce::String ("OFF") : moveName + (rate.isNotEmpty() ? "  " + rate : juce::String()));
     }
     const auto read = [this] (const char* paramID)
     {

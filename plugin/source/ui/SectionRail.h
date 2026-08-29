@@ -32,18 +32,21 @@ class SectionRail final : public juce::Component,
 public:
     // SOURCE (the resample room) and MOVEMENT are both gone; GAIN is the whole
     // bay, open or shut.
-    enum Section { kDrive = 0, kNumSections };
+    enum Section { kDrive = 0, kMovement = 1, kNumSections };
     explicit SectionRail (const Theme& theme) : t (theme)
     {
         setInterceptsMouseClicks (true, false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Section");
-        setHelpText ("One door - click GAIN to open its room, click it again to shut it");
-        setTooltip ("GAIN: click to open the room, click again to shut");
+        setHelpText ("The dock rail - 1 AMP and 2 GEN each open their bay, one or both");
+        setTooltip ("1 AMP / 2 GEN: click a section to open its bay, again to shut");
     }
     std::function<void (int)> onToggleSection;   // editor owns the open state
-    /// -1 = the bay is CLOSED: the word engraved quiet, no room carved.
-    void setOpenSection (int s)      { if (open != s)      { open = s; repaint(); } }
+    /// Bit per section. 0 = both bays shut: the rail alone, a clean face.
+    void setOpenMask (int m)         { if (open != m)      { open = m; repaint(); } }
+    /// What MOVE is doing right now, readable while its bay is shut.
+    void setStatus (const juce::String& s) { if (status != s) { status = s; repaint(); } }
+    static constexpr int kWordX[kNumSections] = { 0, 118 };
     /// The word's own width, which the plate's frame break is measured from.
     int preferredWidth() const { return kPreferredWidth; }
 
@@ -63,13 +66,15 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // THE DOOR-WORD ON THE PLATE (Tyson 2026-08-29 "go back to this"): a
-        // latch triangle and the engraved word, seated in the room's frame break.
+        // THE DOCK RAIL (Tyson 2026-08-29): one permanent utility rail under Q.
+        // Two physical section headers - GAIN and MOVE - each a latch triangle
+        // and an engraved word; MOVE carries its live status beside it so the
+        // face says what is moving even with both bays shut.
         const auto b = getLocalBounds().toFloat();
         for (int i = 0; i < kNumSections; ++i)
         {
-            const bool lit = open == i;
-            const float ink = lit ? 0.92f : hoverIdx == i ? 0.75f : 0.55f;
+            const bool lit = (open & (1 << i)) != 0;
+            const float ink = lit ? 0.92f : hoverIdx == i ? 0.75f : 0.58f;
             const auto r = wordRect (i);
             juce::Path tri;
             const float cx = r.getX() + 4.0f, cy = r.getCentreY();
@@ -78,8 +83,15 @@ public:
             g.setColour (t.labelInk().withAlpha (ink));
             g.fillPath (tri);
             g.setFont (t.smallLabel (true));
-            g.drawText (kNames[i], r.withTrimmedLeft (10.0f).toNearestInt(),
+            g.drawText (kNames[i], r.withTrimmedLeft (10.0f).withWidth (44.0f).toNearestInt(),
                         juce::Justification::centredLeft, false);
+            if (i == kMovement && status.isNotEmpty())
+            {
+                g.setFont (telemetryFont (8.5f, false));
+                g.setColour (t.labelInk().withAlpha (0.70f));
+                g.drawText (status, r.withTrimmedLeft (56.0f).toNearestInt(),
+                            juce::Justification::centredLeft, false);
+            }
         }
     }
     // light, plain popup — the E-mu/'95 menu, not the dark glass family.
@@ -126,14 +138,15 @@ public:
         }
     };
 private:
-    static constexpr const char* kNames[kNumSections] = { "GAIN" };
+    static constexpr const char* kNames[kNumSections] = { "1  AMP", "2  GEN" };
     // Width sized to the 9.5pt label in its pill.
-    static constexpr float kWordW = 48.0f;
-    static constexpr int kPreferredWidth = 48;
-    juce::Rectangle<float> wordRect (int) const
+    static constexpr int kPreferredWidth = 214;
+    juce::Rectangle<float> wordRect (int i) const
     {
         const auto b = getLocalBounds().toFloat();
-        return { b.getX(), b.getY(), kWordW, b.getHeight() };
+        const float x0 = b.getX() + (float) kWordX[i];
+        const float x1 = i + 1 < kNumSections ? b.getX() + (float) kWordX[i + 1] : b.getRight();
+        return { x0, b.getY(), x1 - x0, b.getHeight() };
     }
     int wordAt (juce::Point<float> p) const
     {
@@ -147,7 +160,8 @@ private:
     bool selectable (int i) const { return i >= 0 && i < kNumSections; }
     void setHover (int i) { if (hoverIdx != i) { hoverIdx = i; repaint(); } }
     Theme t;
-    int open = kDrive, hoverIdx = -1;
+    int open = 0, hoverIdx = -1;
+    juce::String status;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SectionRail)
 };
 
