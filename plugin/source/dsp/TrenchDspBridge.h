@@ -158,10 +158,10 @@ public:
             return false;
         try
         {
-            const auto body = compileBody (std::span {
-                static_cast<const std::uint8_t*> (bytes), len }, datumRate, runtimeRate);
-            const auto cascade = body.interpolate_biquads (juce::jlimit (0.0f, 1.0f, morph),
-                                                           juce::jlimit (0.0f, 1.0f, q), 0.0f);
+            const auto body = trench::core::PackedBody::from_body_bytes (std::span {
+                static_cast<const std::uint8_t*> (bytes), len });
+            const auto cascade = cascadeAt (body, juce::jlimit (0.0f, 1.0f, morph),
+                                            juce::jlimit (0.0f, 1.0f, q), datumRate, runtimeRate);
             int index = 0;
             for (const auto& section : cascade)
                 for (const double coefficient : section)
@@ -197,8 +197,8 @@ public:
         const double keyRatio = keySnapRatio (params.keySnap);
         for (int sample = 0; sample < samples; ++sample)
         {
-            auto cascade = body.interpolate_biquads (juce::jlimit (0.0f, 1.0f, morphPerSample[sample]),
-                                                      juce::jlimit (0.0f, 1.0f, params.q), 0.0f);
+            auto cascade = cascadeAt (body, juce::jlimit (0.0f, 1.0f, morphPerSample[sample]),
+                                      juce::jlimit (0.0f, 1.0f, params.q), sourceDatumRate, sampleRateHz);
             if (keyRatio != 1.0)
                 cascade = trench::core::transpose_cascade (cascade, keyRatio, sampleRateHz);
             publishCascade (cascade);
@@ -244,25 +244,24 @@ public:
         return trench::core::ratio_of_semitones ((double) semitones);
     }
 private:
-    static trench::core::PackedBody compileBody (std::span<const std::uint8_t> bytes,
-                                                  double datumRate, double runtimeRate)
+    static trench::core::Cascade cascadeAt (const trench::core::PackedBody& packed, float morph, float q,
+                                            double datumRate, double runtimeRate)
     {
-        if (bytes.size() == trench::core::kLegacyBodyBytes && datumRate > 0.0
-            && runtimeRate > 0.0 && ! juce::approximatelyEqual (datumRate, runtimeRate))
+        if (datumRate > 0.0 && runtimeRate > 0.0 && ! juce::approximatelyEqual (datumRate, runtimeRate))
         {
-            const auto physical = trench::core::native::import_p2k (bytes, datumRate);
-            return trench::core::native::export_p2k_body (physical, runtimeRate);
+            const auto corner = trench::core::native::packed_interior_corner (packed, morph, q, datumRate);
+            return trench::core::native::cascade (trench::core::native::design (corner, runtimeRate), corner.gain_db);
         }
-        return trench::core::PackedBody::from_body_bytes (bytes);
+        return packed.interpolate_biquads (morph, q, 0.0f);
     }
 
     bool compileLoadedBody()
     {
         try
         {
-            body = compileBody (sourceBytes, sourceDatumRate, sampleRateHz);
+            body = trench::core::PackedBody::from_body_bytes (sourceBytes);
             bodyLoaded = true;
-            publishCascade (body.interpolate_biquads (0.0f, 0.0f, 0.0f));
+            publishCascade (cascadeAt (body, 0.0f, 0.0f, sourceDatumRate, sampleRateHz));
             return true;
         }
         catch (...)
