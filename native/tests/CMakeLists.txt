@@ -4,14 +4,21 @@ add_executable(trench_native_tests
   harness.hpp
   test_main.cpp
   test_cascade.cpp
+  test_document.cpp
 )
 target_link_libraries(trench_native_tests PRIVATE trench_native_ui Qt6::Test)
 
 set(TRENCH_NATIVE_TEST_CASES
   absent_zero_exports_flat
   cascade_parity_graph_ears_export
+  document_load_restores_editable_state_not_overlay
+  document_rejects_malformed
+  document_roundtrip_is_lossless_and_deterministic
+  import_classification_by_extension
   legacy_export_size_and_legality
   off_section_exports_identity
+  pole_material_rejects_negative_rows
+  positive_response_table_is_not_pole_material
   s6_zero_export_law_is_the_existing_one
 )
 

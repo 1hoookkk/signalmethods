@@ -44,7 +44,8 @@ class MainWindow final : public QMainWindow {
   };
 
   void openFile();
-  void saveBody();
+  void saveDocument();
+  void exportBody240();
   void analyzeReference();
   void adoptProposal();
   void clearProposal();
@@ -84,5 +85,6 @@ class MainWindow final : public QMainWindow {
   std::vector<std::pair<QString, std::vector<std::pair<double, double>>>>
       user_shelf_;
   std::optional<Reference> reference_;
+  QString document_path_;
   std::unique_ptr<trench::audio::Audition> audition_;
 };

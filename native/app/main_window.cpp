@@ -3,6 +3,7 @@
 #include "analyze.hpp"
 #include "body_io.hpp"
 #include "gesture_dial.hpp"
+#include "import_routing.hpp"
 #include "section_desk.hpp"
 #include "template_shelf.hpp"
 #include "trench/audio/audio_boundary.hpp"
@@ -31,7 +32,6 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <cctype>
 #include <fstream>
 #include <functional>
 #include <initializer_list>
@@ -39,7 +39,6 @@
 #include <memory>
 #include <optional>
 #include <span>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -52,98 +51,11 @@ const Resonant& resonant(const trench::core::native::Roots& roots) {
   return std::get<Resonant>(roots);
 }
 
-std::string lowerExtension(const std::filesystem::path& path) {
-  std::string result = path.extension().string();
-  std::transform(result.begin(), result.end(), result.begin(),
-                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-  return result;
-}
-
-bool isAudio(const std::string& extension) {
-  return extension == ".wav" || extension == ".aif" ||
-         extension == ".aiff" || extension == ".flac";
-}
-
 std::vector<std::uint8_t> readBytes(const std::filesystem::path& path) {
   std::ifstream stream(path, std::ios::binary);
   if (!stream) return {};
   return {std::istreambuf_iterator<char>(stream),
           std::istreambuf_iterator<char>()};
-}
-
-struct ResponseCurve {
-  std::vector<double> frequency_hz;
-  std::vector<double> magnitude_db;
-};
-
-std::optional<ResponseCurve> readResponseCurve(
-    const std::filesystem::path& path) {
-  std::ifstream stream(path);
-  if (!stream) return std::nullopt;
-  ResponseCurve result;
-  std::string line;
-  while (std::getline(stream, line)) {
-    if (line.empty() || line.front() == '#') continue;
-    std::replace(line.begin(), line.end(), ',', ' ');
-    std::stringstream row(line);
-    double frequency = 0.0;
-    double magnitude = 0.0;
-    if (!(row >> frequency >> magnitude)) continue;
-    if (!(frequency > 0.0) || !std::isfinite(frequency) ||
-        !std::isfinite(magnitude)) {
-      return std::nullopt;
-    }
-    result.frequency_hz.push_back(frequency);
-    result.magnitude_db.push_back(magnitude);
-  }
-  if (result.frequency_hz.size() < 2 ||
-      !std::is_sorted(result.frequency_hz.begin(),
-                      result.frequency_hz.end()) ||
-      std::adjacent_find(result.frequency_hz.begin(),
-                         result.frequency_hz.end()) !=
-          result.frequency_hz.end()) {
-    return std::nullopt;
-  }
-  return result;
-}
-
-using NumericRow = std::array<double, 2>;
-
-std::vector<NumericRow> readNumericRows(const std::filesystem::path& path) {
-  std::ifstream stream(path);
-  if (!stream) return {};
-  std::vector<NumericRow> rows;
-  std::string line;
-  while (std::getline(stream, line)) {
-    const auto first = line.find_first_not_of(" \t\r");
-    if (first == std::string::npos) continue;
-    if (line[first] == '#' || line[first] == ';') continue;
-    std::replace(line.begin(), line.end(), ',', ' ');
-    std::stringstream row(line);
-    double column_one = 0.0;
-    double column_two = 0.0;
-    if (!(row >> column_one >> column_two)) continue;
-    if (!std::isfinite(column_one) || !std::isfinite(column_two)) return {};
-    rows.push_back({column_one, column_two});
-  }
-  return rows;
-}
-
-bool isResponseTable(const std::vector<NumericRow>& rows) {
-  if (rows.size() < 2) return false;
-  for (std::size_t index = 0; index < rows.size(); ++index) {
-    if (!(rows[index][0] > 0.0)) return false;
-    if (index > 0 && !(rows[index][0] > rows[index - 1][0])) return false;
-  }
-  return std::any_of(rows.begin(), rows.end(),
-                     [](const NumericRow& row) { return row[1] < 0.0; });
-}
-
-bool isPoleMaterial(const std::vector<NumericRow>& rows) {
-  return !rows.empty() &&
-         std::all_of(rows.begin(), rows.end(), [](const NumericRow& row) {
-           return row[0] > 0.0 && row[1] > 0.0;
-         });
 }
 
 QString templatesFolder() {
@@ -234,6 +146,8 @@ MainWindow::MainWindow(QWidget* parent)
   top->setSpacing(10);
   auto* load = new QPushButton(QStringLiteral("OPEN"), central);
   auto* save = new QPushButton(QStringLiteral("SAVE"), central);
+  auto* export_body = new QPushButton(QStringLiteral("EXPORT .BODY240"), central);
+  export_body->setObjectName(QStringLiteral("exportBody240"));
   analyze_button_ = new QPushButton(QStringLiteral("ANALYZE"), central);
   analyze_button_->setObjectName(QStringLiteral("analyze"));
   analyze_button_->setEnabled(false);
@@ -269,6 +183,7 @@ MainWindow::MainWindow(QWidget* parent)
   keep->setFont(captionFont(keep));
   load->setFont(captionFont(load));
   save->setFont(captionFont(save));
+  export_body->setFont(captionFont(export_body));
   analyze_button_->setFont(captionFont(analyze_button_));
   sections_button_->setFont(captionFont(sections_button_));
   projection->setFont(captionFont(projection));
@@ -277,8 +192,8 @@ MainWindow::MainWindow(QWidget* parent)
   overlay_shelf_->setFont(captionFont(overlay_shelf_));
   reference_label_->setFont(valueFont(reference_label_));
   for (QWidget* chrome : std::initializer_list<QWidget*>{
-           load, save, analyze_button_, sections_button_, projection,
-           tilt_button_, keep, template_shelf_, overlay_shelf_}) {
+           load, save, export_body, analyze_button_, sections_button_,
+           projection, tilt_button_, keep, template_shelf_, overlay_shelf_}) {
     chrome->setFocusPolicy(Qt::NoFocus);
   }
   top->addWidget(load);
@@ -291,6 +206,7 @@ MainWindow::MainWindow(QWidget* parent)
   top->addWidget(projection);
   top->addWidget(sections_button_);
   top->addWidget(analyze_button_);
+  top->addWidget(export_body);
   top->addWidget(save);
   layout->addLayout(top);
 
@@ -421,7 +337,8 @@ MainWindow::MainWindow(QWidget* parent)
                 z_plane ? ArmadilloEditor::Projection::kZPlane
                         : ArmadilloEditor::Projection::kArmadillo);
           });
-  connect(save, &QPushButton::clicked, this, &MainWindow::saveBody);
+  connect(save, &QPushButton::clicked, this, &MainWindow::saveDocument);
+  connect(export_body, &QPushButton::clicked, this, &MainWindow::exportBody240);
   connect(analyze_button_, &QPushButton::clicked, this,
           &MainWindow::analyzeReference);
   connect(tilt_button_, &QPushButton::toggled, this,
@@ -517,47 +434,108 @@ MainWindow::~MainWindow() {
 void MainWindow::openFile() {
   const QString chosen = QFileDialog::getOpenFileName(
       this, QStringLiteral("Open sound or data"), QString(),
-      QStringLiteral("Sound or data (*.wav *.txt *.csv *.fbw);;All files (*)"));
+      QStringLiteral("Sound (*.wav *.aif *.aiff *.flac);;Poles (*.fbw);;"
+                     "Response table (*.csv *.txt);;"
+                     "TRENCH document (*.trenchbody);;"
+                     "Packed body (*.body240 *.bin);;All files (*)"));
   if (chosen.isEmpty()) return;
   clearProposal();
   const std::filesystem::path path(chosen.toStdWString());
-  if (isAudio(lowerExtension(path))) {
-    loadReference(path);
-    return;
-  }
-  const auto rows = readNumericRows(path);
-  if (isResponseTable(rows)) {
-    Reference reference;
-    reference.name = QString::fromStdWString(path.filename().wstring());
-    for (const auto& row : rows) {
-      reference.frequency_hz.push_back(row[0]);
-      reference.magnitude_db.push_back(row[1]);
+  const QString name = QFileInfo(chosen).fileName().toUpper();
+  switch (trench::app::classify_import(path)) {
+    case trench::app::ImportKind::kSound:
+      loadReference(path);
+      return;
+    case trench::app::ImportKind::kPoleMaterial: {
+      const auto rows = trench::app::read_pole_material(path);
+      if (!rows) {
+        status_label_->setText(QStringLiteral("POLES REJECTED · %1").arg(name));
+        return;
+      }
+      state_.loadPoles(*rows);
+      status_label_->setText(
+          QStringLiteral("POLES · %1 SECTIONS")
+              .arg(std::min(rows->size(), trench::core::native::kSections)));
+      return;
     }
-    setReference(std::move(reference));
-    status_label_->setText(
-        QStringLiteral("RESPONSE · %1 POINTS").arg(rows.size()));
-    return;
+    case trench::app::ImportKind::kResponseTable: {
+      const auto curve = trench::app::read_response_curve(path);
+      if (!curve) {
+        status_label_->setText(
+            QStringLiteral("RESPONSE REJECTED · %1").arg(name));
+        return;
+      }
+      Reference reference;
+      reference.name = QString::fromStdWString(path.filename().wstring());
+      reference.frequency_hz = curve->frequency_hz;
+      reference.magnitude_db = curve->magnitude_db;
+      setReference(std::move(reference));
+      status_label_->setText(QStringLiteral("RESPONSE · %1 POINTS")
+                                 .arg(curve->frequency_hz.size()));
+      return;
+    }
+    case trench::app::ImportKind::kDocument: {
+      QString error;
+      const auto document = trench::app::loadDocument(chosen, &error);
+      if (!document) {
+        status_label_->setText(
+            QStringLiteral("DOCUMENT REJECTED · %1 · %2").arg(name, error));
+        return;
+      }
+      state_.setDocument(*document);
+      document_path_ = chosen;
+      setWindowTitle(
+          QStringLiteral("TRENCH · %1").arg(QFileInfo(chosen).fileName()));
+      status_label_->setText(QStringLiteral("OPENED · %1").arg(name));
+      return;
+    }
+    case trench::app::ImportKind::kPackedBody:
+      loadReference(path);
+      return;
+    case trench::app::ImportKind::kUnknown:
+      status_label_->setText(
+          QStringLiteral("UNSUPPORTED · %1")
+              .arg(QString::fromStdString(trench::app::lower_extension(path))
+                       .toUpper()));
+      return;
   }
-  if (isPoleMaterial(rows)) {
-    std::vector<std::pair<double, double>> poles;
-    poles.reserve(rows.size());
-    for (const auto& row : rows) poles.emplace_back(row[0], row[1]);
-    state_.loadPoles(poles);
-    status_label_->setText(
-        QStringLiteral("POLES · %1 SECTIONS")
-            .arg(std::min(poles.size(), trench::core::native::kSections)));
-    return;
-  }
-  loadReference(path);
 }
 
-void MainWindow::saveBody() {
+void MainWindow::saveDocument() {
+  QString start = document_path_;
+  if (start.isEmpty()) {
+    const QString folder =
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
+        QStringLiteral("/TRENCH/bodies");
+    QDir().mkpath(folder);
+    start = folder + QStringLiteral("/untitled.trenchbody");
+  }
+  QString chosen = QFileDialog::getSaveFileName(
+      this, QStringLiteral("Save TRENCH document"), start,
+      QStringLiteral("TRENCH document (*.trenchbody)"));
+  if (chosen.isEmpty()) return;
+  if (!chosen.endsWith(QStringLiteral(".trenchbody"), Qt::CaseInsensitive)) {
+    chosen += QStringLiteral(".trenchbody");
+  }
+  const QString refusal = trench::app::saveDocument(state_.document(), chosen);
+  if (!refusal.isEmpty()) {
+    status_label_->setText(refusal);
+    return;
+  }
+  document_path_ = chosen;
+  setWindowTitle(
+      QStringLiteral("TRENCH · %1").arg(QFileInfo(chosen).fileName()));
+  status_label_->setText(
+      QStringLiteral("SAVED · %1").arg(QFileInfo(chosen).fileName().toUpper()));
+}
+
+void MainWindow::exportBody240() {
   const QString folder =
       QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
       QStringLiteral("/TRENCH/bodies");
   QDir().mkpath(folder);
   QString chosen = QFileDialog::getSaveFileName(
-      this, QStringLiteral("Save one packed body"),
+      this, QStringLiteral("Export packed body (legacy .body240)"),
       folder + QStringLiteral("/untitled.body240"),
       QStringLiteral("Packed body (*.body240)"));
   if (chosen.isEmpty()) return;
@@ -567,7 +545,8 @@ void MainWindow::saveBody() {
   const QString refusal = trench::app::saveBody240(state_, chosen);
   status_label_->setText(
       refusal.isEmpty()
-          ? QStringLiteral("SAVED · %1").arg(QFileInfo(chosen).fileName().toUpper())
+          ? QStringLiteral("EXPORTED · %1")
+                .arg(QFileInfo(chosen).fileName().toUpper())
           : refusal);
 }
 
@@ -580,12 +559,9 @@ void MainWindow::loadUserShelf() {
   for (const QFileInfo& info : folder.entryInfoList(
            {QStringLiteral("*.fbw")}, QDir::Files, QDir::Name)) {
     const std::filesystem::path path(info.absoluteFilePath().toStdWString());
-    const auto rows = readNumericRows(path);
-    if (!isPoleMaterial(rows)) continue;
-    std::vector<std::pair<double, double>> poles;
-    poles.reserve(rows.size());
-    for (const auto& row : rows) poles.emplace_back(row[0], row[1]);
-    user_shelf_.emplace_back(templateName(path), std::move(poles));
+    auto poles = trench::app::read_pole_material(path);
+    if (!poles) continue;
+    user_shelf_.emplace_back(templateName(path), std::move(*poles));
   }
 }
 
@@ -696,13 +672,13 @@ bool MainWindow::loadReference(const std::filesystem::path& path) {
   try {
     Reference reference;
     reference.name = QString::fromStdWString(path.filename().wstring());
-    const std::string extension = lowerExtension(path);
-    if (extension == ".csv" || extension == ".txt") {
-      const auto curve = readResponseCurve(path);
+    const trench::app::ImportKind kind = trench::app::classify_import(path);
+    if (kind == trench::app::ImportKind::kResponseTable) {
+      const auto curve = trench::app::read_response_curve(path);
       if (!curve) throw std::runtime_error("response file is not readable");
       reference.frequency_hz = curve->frequency_hz;
       reference.magnitude_db = curve->magnitude_db;
-    } else if (isAudio(extension)) {
+    } else if (kind == trench::app::ImportKind::kSound) {
       const auto clip = trench::audio::decode_mono(path);
       if (!clip) throw std::runtime_error("audio file is not readable");
       const std::size_t analysis_frames = std::min(
@@ -719,7 +695,7 @@ bool MainWindow::loadReference(const std::filesystem::path& path) {
       reference.magnitude_db = trench::core::measure::target_on_grid(
           envelope, reference.frequency_hz);
       reference.clip = *clip;
-    } else if (extension == ".body240" || extension == ".bin") {
+    } else if (kind == trench::app::ImportKind::kPackedBody) {
       const auto bytes = readBytes(path);
       if (bytes.size() != trench::core::kLegacyBodyBytes) {
         throw std::runtime_error("packed reference must be 240 bytes");

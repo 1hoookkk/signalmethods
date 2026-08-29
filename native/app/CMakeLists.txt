@@ -19,6 +19,8 @@ add_library(trench_native_ui STATIC
   editor_state.hpp
   gesture_dial.cpp
   gesture_dial.hpp
+  import_routing.cpp
+  import_routing.hpp
   main_window.cpp
   main_window.hpp
   morph_pad.cpp
