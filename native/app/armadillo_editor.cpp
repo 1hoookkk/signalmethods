@@ -18,14 +18,15 @@ namespace {
 
 using Resonant = trench::core::native::Resonant;
 
-constexpr QColor kChassis{237, 235, 230};
-constexpr QColor kCard{30, 34, 38};
-constexpr QColor kHairline{50, 55, 59};
-constexpr QColor kGrid{52, 58, 63};
-constexpr QColor kText{139, 139, 132};
-constexpr QColor kInk{210, 207, 198};
+constexpr QColor kPanel{255, 255, 255};
+constexpr QColor kPanelEdge{200, 200, 200};
+constexpr QColor kGrid{230, 230, 230};
+constexpr QColor kText{64, 64, 64};
+constexpr QColor kInk{0, 0, 0};
+constexpr QColor kDormant{160, 160, 160};
+constexpr QColor kConjugate{200, 200, 200};
 constexpr QColor kAccent{196, 103, 79};
-constexpr QColor kOverlay{184, 134, 46};
+constexpr QColor kOverlay{128, 128, 128};
 
 constexpr double kMinDragBandwidthHz = 4.0;
 constexpr double kLowAngle =
@@ -219,21 +220,16 @@ std::optional<ArmadilloEditor::Handle> ArmadilloEditor::hitHandle(
 void ArmadilloEditor::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), kChassis);
+  painter.fillRect(rect(), palette().window().color());
   const QRectF card = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
   painter.setPen(Qt::NoPen);
-  painter.setBrush(kCard);
-  painter.drawRoundedRect(card, 6.0, 6.0);
-  painter.setPen(QPen(kHairline, 1.0));
+  painter.setBrush(kPanel);
+  painter.drawRect(card);
+  painter.setPen(QPen(kPanelEdge, 1.0));
   painter.setBrush(Qt::NoBrush);
-  painter.drawRoundedRect(card, 6.0, 6.0);
+  painter.drawRect(card);
   const QRectF bounds = field();
   const bool z_plane = projection_ == Projection::kZPlane;
-
-  QFont scale_font = painter.font();
-  scale_font.setPixelSize(9);
-  scale_font.setWeight(QFont::Normal);
-  painter.setFont(scale_font);
 
   painter.setPen(QPen(kGrid, 1.0));
   if (z_plane) {
@@ -284,13 +280,7 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   painter.setBrush(Qt::NoBrush);
 
   painter.setPen(kText);
-  QFont axis_font = painter.font();
-  axis_font.setCapitalization(QFont::AllUppercase);
-  axis_font.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
-  axis_font.setWeight(QFont::DemiBold);
-  axis_font.setPixelSize(10);
   if (!z_plane) {
-    painter.setFont(axis_font);
     painter.drawText(QRectF{bounds.left(), bounds.bottom() + 25.0,
                             bounds.width(), 13.0},
                      Qt::AlignCenter, QStringLiteral("frequency"));
@@ -303,17 +293,12 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     painter.restore();
   }
 
-  painter.setPen(QPen(faded(kOverlay, 165), 1.1));
+  painter.setPen(QPen(kOverlay, 1.0));
   painter.setBrush(Qt::NoBrush);
   for (const auto& ghost : ghost_) {
     painter.drawEllipse(pointFor(ghost.first, ghost.second), 4.0, 4.0);
   }
 
-  QFont marker_font = painter.font();
-  marker_font.setCapitalization(QFont::MixedCase);
-  marker_font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
-  marker_font.setWeight(QFont::DemiBold);
-  marker_font.setPixelSize(9);
   // DORMANT INK (Tyson 2026-08-29 "why are they on the plot if theres no
   // current curve"): a bell whose pole still sits on its zero claims no gain,
   // so its marks go faint until the pair separates.
@@ -328,7 +313,7 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
                             bool addressed, const QColor& color,
                             double radius) {
     if (z_plane) {
-      painter.setPen(QPen(color, addressed ? 1.6 : 1.2));
+      painter.setPen(QPen(color, 1.0));
       painter.setBrush(Qt::NoBrush);
       if (lane == EditorState::Lane::kPole) {
         constexpr double arm = 3.5;
@@ -339,7 +324,7 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
       }
       return;
     }
-    painter.setPen(addressed ? QPen(Qt::NoPen) : QPen(color, 1.2));
+    painter.setPen(addressed ? QPen(Qt::NoPen) : QPen(color, 1.0));
     painter.setBrush(addressed ? QBrush(kAccent) : QBrush(Qt::NoBrush));
     if (lane == EditorState::Lane::kPole) {
       painter.drawEllipse(at, radius, radius);
@@ -358,8 +343,8 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     const bool addressed = handle.section == state_->selectedSection();
     const bool selected_root =
         addressed && handle.lane == state_->selectedLane();
-    const QColor color = addressed ? kAccent
-                                   : faded(kInk, dormant(handle.section) ? 70 : 255);
+    const QColor color =
+        addressed ? kAccent : (dormant(handle.section) ? kDormant : kInk);
     if (selected_root && drag_) {
       painter.setPen(QPen(faded(kAccent, 90), 1.0));
       painter.drawLine(QPointF{handle.position.x(), bounds.top()},
@@ -373,7 +358,7 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
       drawMark(handle.lane,
                QPointF{handle.position.x(),
                        2.0 * discCentre().y() - handle.position.y()},
-               false, faded(color, color.alpha() * 45 / 100), radius);
+               false, kConjugate, radius);
     }
     drawMark(handle.lane, handle.position, addressed, color, radius);
 
@@ -384,7 +369,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
     }
 
     painter.setPen(color);
-    painter.setFont(marker_font);
     const QString tag = handle.lane == EditorState::Lane::kPole
                             ? QStringLiteral("P")
                             : QStringLiteral("Z");
@@ -402,7 +386,6 @@ void ArmadilloEditor::paintEvent(QPaintEvent*) {
   }
 
   if (!state_->sectionEnabled(state_->selectedSection())) {
-    painter.setFont(axis_font);
     painter.setPen(kText);
     painter.drawText(bounds, Qt::AlignCenter,
                      QStringLiteral("SECTION OFF"));

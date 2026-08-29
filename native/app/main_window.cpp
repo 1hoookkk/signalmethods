@@ -87,21 +87,9 @@ QString templateName(const std::filesystem::path& path) {
   return QString::fromStdWString(path.stem().wstring());
 }
 
-QFont captionFont(const QWidget* base) {
-  QFont font = base->font();
-  font.setPixelSize(10);
-  font.setWeight(QFont::DemiBold);
-  font.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
-  return font;
-}
+QFont captionFont(const QWidget* base) { return base->font(); }
 
-QFont valueFont(const QWidget* base) {
-  QFont font = base->font();
-  font.setPixelSize(13);
-  font.setWeight(QFont::Normal);
-  font.setLetterSpacing(QFont::AbsoluteSpacing, 0.0);
-  return font;
-}
+QFont valueFont(const QWidget* base) { return base->font(); }
 
 QDoubleSpinBox* physicalEditor(double low, double high, QWidget* parent) {
   auto* editor = new QDoubleSpinBox(parent);
@@ -335,35 +323,6 @@ MainWindow::MainWindow(QWidget* parent)
   layout->addLayout(inspector);
 
   setCentralWidget(frame);
-  setStyleSheet(QStringLiteral(R"(
-    QMainWindow, QWidget { background: #edebe6; color: #26241f; }
-    QPushButton, QComboBox, QDoubleSpinBox {
-        background: #f6f4ef; border: 1px solid #c9c4b8; border-radius: 4px;
-        padding: 0px 8px; min-height: 26px; color: #26241f; }
-    QPushButton:hover, QComboBox:hover, QDoubleSpinBox:hover {
-        border-color: #a8a296; }
-    QPushButton:focus, QComboBox:focus, QDoubleSpinBox:focus {
-        border-color: #c4674f; }
-    QPushButton:disabled, QDoubleSpinBox:disabled {
-        color: #a8a296; border-color: #ddd9cf; }
-    QPushButton:checked { border-color: #c4674f; color: #c4674f; }
-    QPushButton#tiltSwitch:checked { background: #f6f4ef;
-                                     border-color: #c4674f; color: #c4674f; }
-    QPushButton#keepTemplate { padding: 0px; }
-    QComboBox::drop-down { border: none; width: 18px; }
-    QComboBox QAbstractItemView { background: #f6f4ef; border: 1px solid #c9c4b8;
-                                  color: #26241f; outline: none;
-                                  selection-background-color: #c4674f;
-                                  selection-color: #ffffff; }
-    QDoubleSpinBox { padding-right: 20px;
-                     selection-background-color: #c4674f;
-                     selection-color: #f6f4ef; }
-    QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-        width: 16px; border: none; background: transparent; }
-    QLabel#referenceName { color: #26241f; }
-    QLabel#fieldName { color: #8b877c; }
-    QLabel#status { color: #8b877c; }
-  )"));
 
   connect(load, &QPushButton::clicked, this, &MainWindow::openFile);
   connect(reset, &QPushButton::clicked, this, &MainWindow::resetDocument);

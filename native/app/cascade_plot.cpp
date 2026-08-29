@@ -21,15 +21,14 @@ constexpr double kLowHz = 20.0;
 constexpr double kHighHz = 20'000.0;
 constexpr double kNyquistHz = 22'050.0;
 
-constexpr QColor kChassis{237, 235, 230};
-constexpr QColor kCard{30, 34, 38};
-constexpr QColor kHairline{50, 55, 59};
-constexpr QColor kGrid{52, 58, 63, 140};
-constexpr QColor kGridUnity{52, 58, 63};
-constexpr QColor kText{139, 139, 132};
-constexpr QColor kResponse{210, 207, 198};
+constexpr QColor kPanel{255, 255, 255};
+constexpr QColor kPanelEdge{200, 200, 200};
+constexpr QColor kGrid{230, 230, 230};
+constexpr QColor kGridUnity{176, 176, 176};
+constexpr QColor kText{64, 64, 64};
+constexpr QColor kResponse{0, 0, 0};
 constexpr QColor kAddressed{196, 103, 79};
-constexpr QColor kReference{184, 134, 46};
+constexpr QColor kReference{128, 128, 128};
 
 constexpr double kLowDb = -30.0;
 constexpr double kHighDb = 30.0;
@@ -128,24 +127,19 @@ double CascadePlot::yForDb(double db, const QRectF& plot, double low_db,
 void CascadePlot::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), kChassis);
+  painter.fillRect(rect(), palette().window().color());
   const QRectF card = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
   painter.setPen(Qt::NoPen);
-  painter.setBrush(kCard);
-  painter.drawRoundedRect(card, 6.0, 6.0);
-  painter.setPen(QPen(kHairline, 1.0));
+  painter.setBrush(kPanel);
+  painter.drawRect(card);
+  painter.setPen(QPen(kPanelEdge, 1.0));
   painter.setBrush(Qt::NoBrush);
-  painter.drawRoundedRect(card, 6.0, 6.0);
+  painter.drawRect(card);
 
   const QRectF plot = QRectF(rect()).adjusted(62.0, 14.0, -22.0, -38.0);
 
   const double low_db = kLowDb;
   const double high_db = kHighDb;
-
-  QFont scale_font = painter.font();
-  scale_font.setPixelSize(9);
-  scale_font.setWeight(QFont::Normal);
-  painter.setFont(scale_font);
 
   painter.setPen(QPen(kGrid, 1.0));
   // OCTAVE GRID FROM 20 Hz (US 10,514,883's own display law).
@@ -169,7 +163,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   for (int db = first_db; db <= static_cast<int>(high_db); db += kStepDb) {
     const double y = yForDb(static_cast<double>(db), plot, low_db, high_db);
     const bool unity = db == 0;
-    painter.setPen(QPen(unity ? kGridUnity : kGrid, unity ? 1.5 : 1.0));
+    painter.setPen(QPen(unity ? kGridUnity : kGrid, 1.0));
     painter.drawLine(QPointF{plot.left(), y}, QPointF{plot.right(), y});
     painter.setPen(kText);
     painter.drawText(QRectF{8.0, y - 9.0, 46.0, 18.0},

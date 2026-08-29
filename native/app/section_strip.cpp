@@ -14,12 +14,13 @@
 
 namespace {
 
-constexpr QColor kChassis{237, 235, 230};
-constexpr QColor kCell{30, 34, 38};
-constexpr QColor kCellOff{26, 29, 33};
-constexpr QColor kHairline{50, 55, 59};
-constexpr QColor kInk{210, 207, 198};
-constexpr QColor kQuiet{210, 207, 198, 105};
+constexpr QColor kCell{255, 255, 255};
+constexpr QColor kCellOff{244, 244, 244};
+constexpr QColor kPanelEdge{200, 200, 200};
+constexpr QColor kRule{176, 176, 176};
+constexpr QColor kInk{0, 0, 0};
+constexpr QColor kLampOff{128, 128, 128};
+constexpr QColor kText{64, 64, 64};
 constexpr QColor kAccent{196, 103, 79};
 
 constexpr double kCellGap = 12.0;
@@ -131,26 +132,22 @@ void SectionStrip::paintEvent(QPaintEvent*) {
   if (curves_dirty_) rebuildCurves();
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), kChassis);
+  painter.fillRect(rect(), palette().window().color());
   for (std::size_t index = 0; index < trench::core::native::kSections;
        ++index) {
     const QRectF bounds = cell(index);
     const bool enabled = state_->sectionEnabled(index);
     const bool selected = index == state_->selectedSection();
-    const QColor color = selected ? kAccent : (enabled ? kInk : kQuiet);
+    const QColor color = selected ? kAccent : kInk;
     const QRectF card = bounds.adjusted(0.5, 0.5, -0.5, -0.5);
     painter.setPen(Qt::NoPen);
     painter.setBrush(enabled ? kCell : kCellOff);
-    painter.drawRoundedRect(card, 4.0, 4.0);
-    painter.setPen(QPen(selected ? kAccent : kHairline, 1.0));
+    painter.drawRect(card);
+    painter.setPen(QPen(selected ? kAccent : kPanelEdge, 1.0));
     painter.setBrush(Qt::NoBrush);
-    painter.drawRoundedRect(card, 4.0, 4.0);
+    painter.drawRect(card);
 
-    QFont number_font = painter.font();
-    number_font.setWeight(QFont::DemiBold);
-    number_font.setPixelSize(11);
-    painter.setFont(number_font);
-    painter.setPen(color);
+    painter.setPen(kText);
     painter.drawText(bounds.adjusted(7.0, 5.0, -7.0, 0.0),
                      Qt::AlignLeft | Qt::AlignTop,
                      QString::number(index + 1));
@@ -159,9 +156,8 @@ void SectionStrip::paintEvent(QPaintEvent*) {
     // now reads as lit, live, or dark.
     const QRectF toggle = toggleRect(index);
     const QPointF lamp = toggle.center();
-    painter.setPen(QPen(color, 1.0));
-    painter.setBrush(enabled ? QBrush(selected ? kAccent : kInk)
-                             : QBrush(Qt::NoBrush));
+    painter.setPen(QPen(enabled ? kInk : kLampOff, 1.0));
+    painter.setBrush(enabled ? QBrush(kInk) : QBrush(Qt::NoBrush));
     painter.drawEllipse(lamp, 3.0, 3.0);
 
 
@@ -169,7 +165,7 @@ void SectionStrip::paintEvent(QPaintEvent*) {
     // whats happening"): no curve until the stage exists in the cascade.
     if (!enabled) continue;
     const QRectF plot = bounds.adjusted(8.0, 24.0, -8.0, -10.0);
-    painter.setPen(QPen(kHairline, 1.0));
+    painter.setPen(QPen(kRule, 1.0));
     const double zero_y = plot.top() +
                           (kMiniHighDb / (kMiniHighDb - kMiniLowDb)) *
                               plot.height();

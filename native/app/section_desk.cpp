@@ -26,19 +26,9 @@ bool pairedBell(const EditorState& state, std::size_t index) {
                             resonant(section.zero).hz)) < kPairedOctaves;
 }
 
-QFont captionFont(const QWidget* base) {
-  QFont font = base->font();
-  font.setPixelSize(10);
-  font.setWeight(QFont::DemiBold);
-  font.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
-  return font;
-}
+QFont captionFont(const QWidget* base) { return base->font(); }
 
-QFont valueFont(const QWidget* base) {
-  QFont font = base->font();
-  font.setPixelSize(13);
-  return font;
-}
+QFont valueFont(const QWidget* base) { return base->font(); }
 
 QDoubleSpinBox* deskEditor(double low, double high, double step,
                            const QString& suffix, QWidget* parent) {
@@ -77,7 +67,6 @@ SectionDesk::SectionDesk(EditorState* state, QWidget* parent)
   setWindowFlag(Qt::Tool);
   setWindowTitle(QStringLiteral("SECTIONS"));
   setObjectName(QStringLiteral("sectionDesk"));
-  setStyleSheet(QStringLiteral("QWidget#sectionDesk { background: #edebe6; }"));
 
   auto* layout = new QVBoxLayout(this);
   layout->setContentsMargins(14, 14, 14, 14);

@@ -8,13 +8,12 @@
 namespace {
 
 constexpr double kCornerSize = 12.0;
-constexpr QColor kChassis{237, 235, 230};
-constexpr QColor kCard{30, 34, 38};
-constexpr QColor kHairline{50, 55, 59};
-constexpr QColor kGrid{52, 58, 63};
+constexpr QColor kPanel{255, 255, 255};
+constexpr QColor kPanelEdge{200, 200, 200};
+constexpr QColor kGrid{230, 230, 230};
 constexpr QColor kLive{196, 103, 79};
-constexpr QColor kQuiet{210, 207, 198};
-constexpr QColor kCaption{139, 139, 132};
+constexpr QColor kQuiet{128, 128, 128};
+constexpr QColor kCaption{64, 64, 64};
 
 double morphOf(std::size_t index) {
   return index == 1 || index == 3 ? 1.0 : 0.0;
@@ -52,14 +51,14 @@ QPointF MorphPad::pointFor(double morph, double q) const {
 void MorphPad::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), kChassis);
+  painter.fillRect(rect(), palette().window().color());
   const QRectF card = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
   painter.setPen(Qt::NoPen);
-  painter.setBrush(kCard);
-  painter.drawRoundedRect(card, 6.0, 6.0);
-  painter.setPen(QPen(kHairline, 1.0));
+  painter.setBrush(kPanel);
+  painter.drawRect(card);
+  painter.setPen(QPen(kPanelEdge, 1.0));
   painter.setBrush(Qt::NoBrush);
-  painter.drawRoundedRect(card, 6.0, 6.0);
+  painter.drawRect(card);
   const QRectF bounds = field();
 
   painter.setPen(QPen(kGrid, 1.0));
@@ -80,7 +79,7 @@ void MorphPad::paintEvent(QPaintEvent*) {
       painter.drawRect(seat);
       painter.setBrush(Qt::NoBrush);
     } else {
-      painter.setPen(QPen(kQuiet, 1.2));
+      painter.setPen(QPen(kQuiet, 1.0));
       painter.setBrush(Qt::NoBrush);
       painter.drawRect(seat.adjusted(0.6, 0.6, -0.6, -0.6));
     }
@@ -92,12 +91,6 @@ void MorphPad::paintEvent(QPaintEvent*) {
   painter.drawEllipse(here, 3.0, 3.0);
   painter.setBrush(Qt::NoBrush);
 
-  QFont axis_font = painter.font();
-  axis_font.setCapitalization(QFont::AllUppercase);
-  axis_font.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
-  axis_font.setWeight(QFont::DemiBold);
-  axis_font.setPixelSize(10);
-  painter.setFont(axis_font);
   painter.setPen(kCaption);
   painter.drawText(QRectF{bounds.left(), bounds.bottom() + 4.0, bounds.width(),
                           16.0},

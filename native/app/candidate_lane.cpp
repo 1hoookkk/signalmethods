@@ -20,11 +20,10 @@ constexpr double kFullStemDb = 24.0;
 constexpr std::size_t kMaxCandidates = 12;
 constexpr double kPickSlackPx = 8.0;
 
-constexpr QColor kChassis{237, 235, 230};
-constexpr QColor kCard{30, 34, 38};
-constexpr QColor kHairline{50, 55, 59};
-constexpr QColor kInk{210, 207, 198};
-constexpr QColor kHoverInk{196, 103, 79};
+constexpr QColor kPanel{255, 255, 255};
+constexpr QColor kPanelEdge{200, 200, 200};
+constexpr QColor kInk{128, 128, 128};
+constexpr QColor kHoverInk{0, 0, 0};
 
 double prominenceAt(const std::vector<double>& magnitude_db,
                     std::size_t peak) {
@@ -166,14 +165,14 @@ int CandidateLane::candidateAt(double x) const {
 void CandidateLane::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
-  painter.fillRect(rect(), kChassis);
+  painter.fillRect(rect(), palette().window().color());
   const QRectF card = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
   painter.setPen(Qt::NoPen);
-  painter.setBrush(kCard);
-  painter.drawRoundedRect(card, 6.0, 6.0);
-  painter.setPen(QPen(kHairline, 1.0));
+  painter.setBrush(kPanel);
+  painter.drawRect(card);
+  painter.setPen(QPen(kPanelEdge, 1.0));
   painter.setBrush(Qt::NoBrush);
-  painter.drawRoundedRect(card, 6.0, 6.0);
+  painter.drawRect(card);
 
   const QRectF bounds = lane();
 

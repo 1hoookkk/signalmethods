@@ -85,6 +85,13 @@ TRENCH_TEST(window_smoke_at_minimum_and_normal_size) {
   const QPoint first_card = strip->mapTo(&window, QPoint(strip->width() / 2 - 2 * strip->height(), strip->height() / 2));
   const QColor painted = frame.pixelColor(first_card);
   std::printf("first card pixel %d,%d,%d\n", painted.red(), painted.green(), painted.blue());
-  CHECK(painted.red() < 60 && painted.green() < 60 && painted.blue() < 60);
+  CHECK(painted.red() >= 240 && painted.green() >= 240 && painted.blue() >= 240);
+  const QPoint plot_middle =
+      plot->mapTo(&window, QPoint(plot->width() / 2, plot->height() / 2));
+  const QColor interior = frame.pixelColor(plot_middle);
+  std::printf("plot interior pixel %d,%d,%d\n", interior.red(), interior.green(),
+              interior.blue());
+  CHECK(interior.red() == 255 && interior.green() == 255 &&
+        interior.blue() == 255);
   window.close();
 }
