@@ -9,7 +9,6 @@
 #include "ui/TypeSelectorView.h"
 #include "ui/BodyBrowser.h"
 #include "ui/GlassWords.h"
-#include "ui/BayKnob.h"
 #include "ui/KeySnapBox.h"
 #include "ui/LabelsLayer.h"
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -39,7 +38,6 @@ private:
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
     std::unique_ptr<trench::ui::GlassWords>       glassWords;
     std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
-    std::unique_ptr<trench::ui::BayKnob>          colorKnobs[3];
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;
     std::unique_ptr<trench::ui::WheelControl>     secondaryWheel;
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;

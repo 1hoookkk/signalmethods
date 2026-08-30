@@ -1,7 +1,7 @@
 # TRENCH plugin - next session brief (2026-08-29 wrap)
 
 ## State
-- Face: BODY, glass (Modulation chip), MORPH, Q, COLOR 1/2/3 (bound to bite/follow/track - audio-dead), KEY picker top-right. UI is NOT ship-ready (Tyson).
+- Face (2026-08-30 structural reset): 352x429 fixed. BODY, glass (locked 6x log graticule, 1 px mint X3 trace, legend dot only while Modulation is OFF), MORPH, Q (SS3 master body, lamp re-laid in the curve mint, no glow outside the recess), KEY = OFF with the heard key offered beside it. COLOR placeholders deleted. Plate spliced short (notch kept 22 px under Q). Test knobs: TRENCH_WHEEL_STRIP, TRENCH_SHOT_SCALE, TRENCH_MORPH.
 - Audio path today: y = 1.6107 * H(body, morph, q, key) * x. Hidden INPUT/OUTPUT/LOW are forced neutral in processChunk while off the face. No ceiling is executed.
 - KEY: choice 0 = OFF; 1..12 minor C..B, 13..24 major. Bridge transposes the interpolated cascade by the root's distance from C (authored key assumed C - bodies carry no key). Test: F# shifts Crisp by -5.5 dB at 220 Hz.
 - Bridge must call encode_cascade before CascadeRunner::set_target (runner is in the encoded domain since 072bc86; Cascade and EncodedCascade are the same array type, so a raw cascade compiles and produces garbage).

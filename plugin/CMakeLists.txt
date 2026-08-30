@@ -64,7 +64,7 @@ juce_add_binary_data(TRENCHAssets SOURCES
   assets/df2_panel_beige.png
   assets/trench_roller_strip.png
   assets/trench_knob_strip.png
-  assets/display_bitmap4613.png
+  assets/trench_display_grid.png
   assets/key_model_rtneural.json
   assets/bodies/identity.body240
   ${TRENCH_SHIPPING_PRESET_FILES})

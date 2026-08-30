@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include <cstdlib>
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
 using namespace trench::ui;
@@ -29,6 +30,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
                                                   BinaryData::df2_panel_beige_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_roller_strip_png,
                                                   BinaryData::trench_roller_strip_pngSize);
+    if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
+        strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
@@ -54,9 +57,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
-    colorKnobs[0] = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::chew, "Color 1");
-    colorKnobs[1] = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::envAmount, "Color 2");
-    colorKnobs[2] = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::track, "Color 3");
     glassWords = std::make_unique<GlassWords> (theme);
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders (
@@ -117,7 +117,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*secondaryReadout);
     addAndMakeVisible (*glassWords);
     addAndMakeVisible (*keySnapBox);
-    for (auto& k : colorKnobs) addAndMakeVisible (*k);
     addAndMakeVisible (*labels);
     addChildComponent (*bodyBrowser);
     setResizable (false, false);
@@ -149,11 +148,6 @@ void PluginEditor::resized()
     {
         const auto key = rectOf ("keyBox");
         keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
-    }
-    {
-        const auto row = rectOf ("colorRow");
-        for (int i = 0; i < 3; ++i)
-            colorKnobs[(size_t) i]->setBounds (row.getX() + row.getWidth() * i / 3, row.getY(), row.getWidth() / 3, row.getHeight());
     }
 }
 void PluginEditor::onFrame()

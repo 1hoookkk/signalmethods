@@ -41,6 +41,12 @@ public:
         g.setFont (displayFont (kLabelPt, false));
         g.setColour (ink.withAlpha (0.55f));
         const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
+        if (! active && ! hover && preset == "OFF")
+        {
+            g.setColour (ink.withAlpha (0.30f));
+            g.fillEllipse (lamp);
+            return;
+        }
         g.setColour (active ? t.modulationLamp() : ink.withAlpha (hover ? 0.80f : 0.45f));
         g.fillEllipse (lamp);
         if (hover)

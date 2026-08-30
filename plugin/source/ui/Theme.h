@@ -4,8 +4,8 @@
 #include <cstdlib>
 namespace trench::ui
 {
-inline constexpr int   kEditorWidth        = 326;
-inline constexpr int   kEditorHeight       = 503;
+inline constexpr int   kEditorWidth        = 352;
+inline constexpr int   kEditorHeight       = 429;
 inline constexpr int   kEditorHeightClosed = 361;
 
 inline constexpr int   kBayValueWidth      = 46;
@@ -13,14 +13,14 @@ inline constexpr int   kBaySourceWidth     = 116;
 inline constexpr int   kBaySourceHeight    = 20;
 
 inline constexpr float kLabelPt            = 12.0f;
-inline constexpr float kValuePt            = 13.0f;
+inline constexpr float kValuePt            = 14.0f;
 inline constexpr int   kRowH               = 26;
 inline constexpr float kBayValuePt         = kValuePt;
 inline constexpr int   kBayValueHeight     = 18;
 
 inline constexpr float kBayKnobDiameter    = 32.0f;
 inline constexpr float kPanelSourceWidth   = 1010.0f;
-inline constexpr float kPanelSourceHeight  = 1557.0f;
+inline constexpr float kPanelSourceHeight  = 1232.0f;
 inline juce::Rectangle<float> sourceRectToEditor (juce::Rectangle<float> s)
 {
     return { s.getX() * kEditorWidth  / kPanelSourceWidth,
@@ -53,7 +53,7 @@ inline juce::Font displayFont (float height, bool emphasis = false)
                                           useSyntheticBold ? juce::Font::bold : juce::Font::plain));
 }
 inline constexpr float kPlateWordPt    = kLabelPt;
-inline constexpr float kMicroCaptionPt = 8.6f;
+inline constexpr float kMicroCaptionPt = 10.0f;
 inline juce::Font telemetryFont (float height, bool emphasis = false)
 {
 
@@ -63,7 +63,7 @@ struct Theme
 {
     const trench::UiLayout& layout;
     juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xff3cc8be)); }
-    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xff3cc8be)); }
+    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xffbef0d7)); }
     juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffe6fff4)); }
     juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xff608074)); }
     juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff3cc8be)); }
@@ -113,14 +113,14 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                      float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
-    const auto top    = juce::Colour (0xffc3d1df);
-    const auto middle = juce::Colour (0xffb2c3d5);
-    const auto bottom = juce::Colour (0xffa5b8cc);
+    const auto top    = juce::Colour (0xffcbcdd0);
+    const auto middle = juce::Colour (0xffbabcbf);
+    const auto bottom = juce::Colour (0xffabadb0);
     const float faceRad = juce::jmax (2.0f, radius - 1.3f);
     {
-        juce::ColourGradient edge (juce::Colour (0xffe6eef6), 0.0f, face.getY(),
-                                   juce::Colour (0xff4f545a), 0.0f, face.getBottom(), false);
-        edge.addColour (0.5, juce::Colour (0xff9aabbd));
+        juce::ColourGradient edge (juce::Colour (0xffeceef0), 0.0f, face.getY(),
+                                   juce::Colour (0xff4f5255), 0.0f, face.getBottom(), false);
+        edge.addColour (0.5, juce::Colour (0xffa2a5a9));
         g.setGradientFill (edge);
         g.fillRoundedRectangle (face, faceRad);
     }

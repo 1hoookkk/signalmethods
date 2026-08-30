@@ -18,8 +18,8 @@ public:
         setInterceptsMouseClicks (true, false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Key Snap");
-        setHelpText ("AUTO: listens and applies the detected key live. Click to lock it; click the locked key to return to AUTO.");
-        setTooltip ("KEY is AUTO: the detected key is applied as it is heard. Click to lock, click again for AUTO");
+        setHelpText ("KEY OFF leaves the body as authored. A heard key is offered beside it; click it to lock, click the locked key to return to OFF.");
+        setTooltip ("KEY: OFF by default. Click the heard key to lock it; click again for OFF");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (
                 *param, [this] (float) { repaint(); });
@@ -140,7 +140,7 @@ public:
             const auto ink = juce::Colour (0xff2a2722);
             const bool locked = currentChoice() != 0;
             const auto b = getLocalBounds().toFloat();
-            const auto bigFont   = displayFont (10.4f, false);
+            const auto bigFont   = displayFont (11.8f, false);
             const auto smallFont = displayFont (10.5f, false);
             compactAlt = {};
             float x = b.getRight();
@@ -156,23 +156,21 @@ public:
                 return box;
             };
 
-            if (locked)
             {
-
-                const auto text = shortChoiceText (currentChoice());
+                const auto text = locked ? shortChoiceText (currentChoice()) : juce::String ("OFF");
                 const auto box = valueBox (text, bigFont);
-
                 g.setFont (bigFont);
-                g.setColour (juce::Colour (0xff2a2722));
+                g.setColour (ink.withAlpha (locked ? 1.0f : 0.80f));
                 g.drawText (text, box.toNearestInt(), juce::Justification::centred, false);
             }
-            else if (showingSuggestion)
+            if (! locked && showingSuggestion)
             {
-
+                x -= 4.0f;
                 const auto text = shortSuggestionText (first);
                 const auto box = valueBox (text, bigFont);
+                compactAlt = box;
                 g.setFont (bigFont);
-                g.setColour (juce::Colours::black.withAlpha (hoveredCandidate >= 0 ? 0.95f : 0.55f));
+                g.setColour (ink.withAlpha (hoveredCandidate >= 0 ? 0.95f : 0.45f));
                 g.drawText (text, box.toNearestInt(), juce::Justification::centred, false);
             }
             g.setFont (t.smallLabel());
@@ -274,7 +272,7 @@ private:
         if (currentChoice() != 0 || suggestion (primarySuggestion) < 0)
             return -1;
         if (getHeight() < 26)
-            return ! compactAlt.isEmpty() && compactAlt.contains (point) ? 1 : 0;
+            return ! compactAlt.isEmpty() && compactAlt.contains (point) ? 0 : -1;
         if (juce::Rectangle<float> (8.0f, 11.0f, 33.0f, 26.0f).contains (point))
             return 0;
         if (juce::Rectangle<float> (47.0f, 12.0f, 33.0f, 25.0f).contains (point))

@@ -173,25 +173,43 @@ public:
             juce::Path face = recessPath (glass, 0.0f);
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (face);
-            if (displayPlate.isNull())
-                displayPlate = juce::ImageCache::getFromMemory (BinaryData::display_bitmap4613_png,
-                                                                BinaryData::display_bitmap4613_pngSize);
+            {
+                juce::ColourGradient phosphorBed (juce::Colour (0xff0c1412), 0.0f, glass.getY(),
+                                                  juce::Colour (0xff050908), 0.0f, glass.getBottom(), false);
+                g.setGradientFill (phosphorBed);
+                g.fillRect (glass.expanded (1.0f));
+            }
+            if (gridPlate.isNull())
+                gridPlate = juce::ImageCache::getFromMemory (BinaryData::trench_display_grid_png,
+                                                             BinaryData::trench_display_grid_pngSize);
             {
                 juce::Graphics::ScopedSaveState samplingState (g);
                 g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-                g.drawImage (displayPlate, glass.expanded (1.0f),
-                             juce::RectanglePlacement::stretchToFit, false);
+                g.setOpacity (0.12f);
+                g.drawImage (gridPlate, glass, juce::RectanglePlacement::stretchToFit, false);
             }
             {
                 juce::ColourGradient vig (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
                                           juce::Colours::black.withAlpha (0.38f), glass.getX(), glass.getY(), true);
                 g.setGradientFill (vig);
                 g.fillRect (glass.expanded (1.0f));
-                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.13f), 0.0f, glass.getY(),
-                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.42f, false);
-                gloss.addColour (0.55, juce::Colours::white.withAlpha (0.05f));
+                juce::ColourGradient lip (juce::Colours::black.withAlpha (0.62f), 0.0f, glass.getY(),
+                                          juce::Colours::transparentBlack, 0.0f, glass.getY() + 9.0f, false);
+                g.setGradientFill (lip);
+                g.fillRect (glass.withHeight (9.0f));
+                juce::ColourGradient lipL (juce::Colours::black.withAlpha (0.34f), glass.getX(), 0.0f,
+                                           juce::Colours::transparentBlack, glass.getX() + 6.0f, 0.0f, false);
+                g.setGradientFill (lipL);
+                g.fillRect (glass.withWidth (6.0f));
+                juce::ColourGradient lipR (juce::Colours::black.withAlpha (0.22f), glass.getRight(), 0.0f,
+                                           juce::Colours::transparentBlack, glass.getRight() - 5.0f, 0.0f, false);
+                g.setGradientFill (lipR);
+                g.fillRect (glass.withLeft (glass.getRight() - 5.0f));
+                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.17f), 0.0f, glass.getY(),
+                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.34f, false);
+                gloss.addColour (0.45, juce::Colours::white.withAlpha (0.06f));
                 g.setGradientFill (gloss);
-                g.fillRect (glass.withHeight (glass.getHeight() * 0.42f));
+                g.fillRect (glass.withHeight (glass.getHeight() * 0.34f));
             }
             {
 
@@ -231,7 +249,7 @@ private:
 
     static juce::Path recessPath (juce::Rectangle<float> r, float e)
     {
-        constexpr float rTL = 5.5f, rTR = 2.8f, rBL = 4.3f, rBR = 4.7f;
+        constexpr float rTL = 1.3f, rTR = 1.3f, rBL = 1.3f, rBR = 1.3f;
         const float x0 = r.getX() - e, y0 = r.getY() - e;
         const float x1 = r.getRight() + e, y1 = r.getBottom() + e;
         const auto k = [e] (float rad) { return juce::jmax (0.5f, rad + e); };
@@ -380,7 +398,6 @@ private:
                               juce::PathStrokeType::butt });
     }
     Theme t;
-    mutable juce::Image displayPlate;
     mutable juce::Image gridPlate;
     juce::Path responsePath;
 

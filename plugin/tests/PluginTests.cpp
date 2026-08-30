@@ -4,7 +4,6 @@
 #include "TrenchBodyRoster.h"
 #include "dsp/PreampLaw.h"
 #include "ui/GlassWords.h"
-#include "ui/BayKnob.h"
 #include "ui/KeySnapBox.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cmath>
@@ -224,7 +223,7 @@ int main()
                 int n = 0; trench::bodyRoster (n);
                 for (int i = 0; i < n; ++i)
                     if (trench::bodyDisplayName (i).containsIgnoreCase (std::getenv ("TRENCH_MEASURE"))) { setParam (processor, ParamID::body, (float) i); break; }
-                setParam (processor, ParamID::morph, 0.44f);
+                setParam (processor, ParamID::morph, std::getenv ("TRENCH_MORPH") != nullptr ? (float) std::atof (std::getenv ("TRENCH_MORPH")) : 0.44f);
             }
             else
                 setParam (processor, ParamID::body, (float) trench::kDefaultBodyIndex);
@@ -242,18 +241,19 @@ int main()
     check (editor->getWidth() == trench::ui::kEditorWidth && editor->getHeight() == trench::ui::kEditorHeight,
            "editor is at DAW size", editor->getWidth(), editor->getHeight());
     auto* words = findChild<trench::ui::GlassWords> (*editor);
-    auto* c1 = findChild<trench::ui::BayKnob> (*editor, "Color 1");
-    auto* c3 = findChild<trench::ui::BayKnob> (*editor, "Color 3");
     auto* keyBox = findChild<trench::ui::KeySnapBox> (*editor);
-    check (words != nullptr && c1 != nullptr && c3 != nullptr && keyBox != nullptr && keyBox->isShowing(), "Modulation chip, KEY box, three slots exist");
-    if (words == nullptr || c1 == nullptr || c3 == nullptr)
+    check (words != nullptr && keyBox != nullptr && keyBox->isShowing(), "Modulation chip and KEY box exist");
+    if (words == nullptr)
         return 1;
-    check (words->isShowing() && c1->isShowing() && c3->isShowing(), "Modulation, KEY, and the three slots are always on the face");
-    for (const char* gone : { "Input", "Bite", "Follow", "Movement", "Output", "Low", "Division", "Section", "Generator" })
+    check (words->isShowing(), "Modulation and KEY are always on the face");
+    for (const char* gone : { "Input", "Bite", "Follow", "Color 1", "Color 2", "Color 3", "Movement", "Output", "Low", "Division", "Section", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
-    check (c1->getHeight() >= 24 && words->getHeight() >= 18, "rows are legible", c1->getHeight(), words->getHeight());
+    check (words->getHeight() >= 18, "rows are legible", words->getHeight(), 18);
     pump (150);
-    savePng (holder.createComponentSnapshot (holder.getLocalBounds()), "trench_face_main.png");
+    {
+        const float shotScale = std::getenv ("TRENCH_SHOT_SCALE") != nullptr ? (float) std::atof (std::getenv ("TRENCH_SHOT_SCALE")) : 1.0f;
+        savePng (holder.createComponentSnapshot (holder.getLocalBounds(), true, juce::jmax (1.0f, shotScale)), "trench_face_main.png");
+    }
     setParam (processor, ParamID::movePreset, 1.0f);
     pump (150);
     savePng (holder.createComponentSnapshot (holder.getLocalBounds()), "trench_face_gen_on.png");
