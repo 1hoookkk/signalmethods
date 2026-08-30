@@ -311,8 +311,19 @@ int main()
     if (words == nullptr)
         return 1;
     check (words->isShowing(), "Modulation and KEY are always on the face");
-    for (const char* here : { "Input", "Bite", "Output", "Movement", "Follow" })
+    for (const char* here : { "Input", "Output", "Movement", "Follow" })
         check (anyVisibleOfTitle (*editor, here), (juce::String ("on the face: ") + here).toRawUTF8());
+    check (! anyVisibleOfTitle (*editor, "Z"), "Z (BITE) hidden on No filter");
+    {
+        int n = 0; trench::bodyRoster (n);
+        int pick = n > 1 ? 1 : 0;
+        for (int i = 0; i < n; ++i) if (trench::bodyDisplayName (i).containsIgnoreCase ("Crisp")) { pick = i; break; }
+        setParam (processor, ParamID::body, (float) pick);
+        pump (200);
+        check (anyVisibleOfTitle (*editor, "Z"), "Z (BITE) appears when a body is loaded");
+        setParam (processor, ParamID::body, (float) trench::kDefaultBodyIndex);
+        pump (200);
+    }
     {
         auto* lamp = findChild<trench::ui::FollowLamp> (*editor);
         check (lamp != nullptr, "FOLLOW lamp exists");
@@ -324,7 +335,7 @@ int main()
             check (processor.apvts.getRawParameterValue (ParamID::envAmount)->load() == 0.0f, "FOLLOW lamp off = exactly 0");
         }
     }
-    for (const char* gone : { "Low", "Track", "Division", "Mix", "Section", "Modulation", "Color 1", "Color 2", "Color 3", "Generator" })
+    for (const char* gone : { "Low", "Track", "Division", "Mix", "Section", "Modulation", "Bite", "Color 1", "Color 2", "Color 3", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
     check (words->getHeight() >= 18, "rows are legible", words->getHeight(), 18);
     pump (150);

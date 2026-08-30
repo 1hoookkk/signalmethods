@@ -30,6 +30,7 @@ private:
     double lastProbedRate = 0.0;
     const trench::UiLayout layout { trench::UiLayout::defaults() };
     trench::ui::Theme theme { layout };
+    juce::Component content;
     std::unique_ptr<juce::VBlankAttachment> vblank;
     juce::TooltipWindow tooltipWindow { this, 650 };
     std::unique_ptr<trench::ui::FaceplateView>    faceplate;
@@ -38,12 +39,13 @@ private:
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
     std::unique_ptr<trench::ui::GlassWords>       glassWords;
     std::unique_ptr<trench::ui::FollowLamp>       followLamp;
+    std::unique_ptr<trench::ui::GlassValue>       zWord;
     std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;
     std::unique_ptr<trench::ui::WheelControl>     secondaryWheel;
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;
     std::unique_ptr<trench::ui::ValueReadout>     secondaryReadout;
     std::unique_ptr<trench::ui::LabelsLayer>      labels;
-    std::unique_ptr<trench::ui::BayKnob>          inputKnob, biteKnob, outputKnob;
+    std::unique_ptr<trench::ui::BayKnob>          inputKnob, outputKnob;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

@@ -25,13 +25,11 @@ public:
         layout.elements["typeSelector"] = { { 230.0f, 139.0f, 666.6f, 68.0f },  {}, {} };
 
         layout.elements["keyBox"]       = { { 551.6f, 65.0f, 345.0f, 62.0f }, {}, {} };
-        layout.elements["gainLabel"]    = { { 149.2f, 1015.0f, 126.0f, 49.0f }, 12.5f, juce::Colour (0xff2a2722) };
-        layout.elements["gainLabel"].text = "GAIN";
 
         layout.elements["morphReadout"] = { { 580.0f, 689.0f, 190.0f, 72.0f },  18.0f, juce::Colour (0xff2a2722) };
         layout.elements["qReadout"]     = { { 580.0f, 856.2f, 190.0f, 72.0f },  18.0f, juce::Colour (0xff2a2722) };
 
-        layout.elements["spectrumGrid"] = { { 119.5f, 232.3f, 781.9f, 374.7f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 127.4f, 241.1f, 773.3f, 357.9f }, {}, {} };
 
         layout.elements["typeLabel"]    = { { 126.9f, 139.0f, 97.0f, 68.0f },  14.5f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
@@ -43,11 +41,11 @@ public:
         layout.elements["qLabel"]       = { { 109.8f, 802.35f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
 
-        layout.elements["brandLabel"]   = { { 126.9f, 66.0f, 300.0f, 56.0f }, 29.0f, juce::Colour (0xff0f0c09) };
+        layout.elements["brandLabel"]   = { { 126.9f, 68.0f, 300.0f, 52.0f }, 22.0f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
         layout.colours["accent"]             = juce::Colour (0xff3cc8be);
-        layout.colours["curveColour"]        = juce::Colour (0xffbef0d7);
+        layout.colours["curveColour"]        = juce::Colour (0xffb5e5cd);
         layout.colours["curveHighlight"]     = juce::Colour (0xffe6fff4);
         layout.colours["telemetry"]          = juce::Colour (0xff608074);
         layout.colours["dashed"]             = juce::Colour (0xff608074);

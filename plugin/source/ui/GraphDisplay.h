@@ -174,8 +174,8 @@ public:
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (face);
             {
-                juce::ColourGradient phosphorBed (juce::Colour (0xff0c1412), 0.0f, glass.getY(),
-                                                  juce::Colour (0xff050908), 0.0f, glass.getBottom(), false);
+                juce::ColourGradient phosphorBed (juce::Colour (0xff070c0b), 0.0f, glass.getY(),
+                                                  juce::Colour (0xff020403), 0.0f, glass.getBottom(), false);
                 g.setGradientFill (phosphorBed);
                 g.fillRect (glass.expanded (1.0f));
             }
@@ -185,7 +185,7 @@ public:
             {
                 juce::Graphics::ScopedSaveState samplingState (g);
                 g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-                g.setOpacity (0.12f);
+                g.setOpacity (0.09f);
                 g.drawImage (gridPlate, glass, juce::RectanglePlacement::stretchToFit, false);
             }
             {
@@ -205,9 +205,9 @@ public:
                                            juce::Colours::transparentBlack, glass.getRight() - 5.0f, 0.0f, false);
                 g.setGradientFill (lipR);
                 g.fillRect (glass.withLeft (glass.getRight() - 5.0f));
-                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.17f), 0.0f, glass.getY(),
+                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.10f), 0.0f, glass.getY(),
                                             juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.34f, false);
-                gloss.addColour (0.45, juce::Colours::white.withAlpha (0.06f));
+                gloss.addColour (0.45, juce::Colours::white.withAlpha (0.03f));
                 g.setGradientFill (gloss);
                 g.fillRect (glass.withHeight (glass.getHeight() * 0.34f));
             }
@@ -249,7 +249,7 @@ private:
 
     static juce::Path recessPath (juce::Rectangle<float> r, float e)
     {
-        constexpr float rTL = 1.3f, rTR = 1.3f, rBL = 1.3f, rBR = 1.3f;
+        constexpr float rTL = 3.4f, rTR = 3.4f, rBL = 3.4f, rBR = 3.4f;
         const float x0 = r.getX() - e, y0 = r.getY() - e;
         const float x1 = r.getRight() + e, y1 = r.getBottom() + e;
         const auto k = [e] (float rad) { return juce::jmax (0.5f, rad + e); };
@@ -344,9 +344,30 @@ private:
         }
 
         g.setOpacity (1.0f);
-        strokeTrace (g, responsePath, phos);
+        drawPlottedTrace (g, phos);
         drawPeakMarks (g);
 
+    }
+    void drawPlottedTrace (juce::Graphics& g, juce::Colour colour) const
+    {
+        const auto plot = plotBounds();
+        const double dbTop = t.curveDbTop(), dbBot = t.curveDbBottom();
+        g.setColour (colour);
+        int prevY = 0;
+        bool have = false;
+        for (size_t i = 0; i < traceXs.size(); ++i)
+        {
+            const int x = (int) std::floor (traceXs[i]);
+            const double yt = juce::jlimit (-0.25, 1.25, (dbTop - traceDbs[i]) / (dbTop - dbBot));
+            const int y = (int) std::floor (plot.getY() + yt * plot.getHeight());
+            if (! have) { g.fillRect (x, y, 1, 1); have = true; prevY = y; continue; }
+            const int y0 = juce::jmin (prevY, y), y1 = juce::jmax (prevY, y);
+            if (y1 - y0 <= 1)
+                g.fillRect (x, y, 1, 1);
+            else
+                g.fillRect (x, y0 + (y > prevY ? 1 : 0), 1, y1 - y0);
+            prevY = y;
+        }
     }
     void drawPeakMarks (juce::Graphics& g) const
     {
