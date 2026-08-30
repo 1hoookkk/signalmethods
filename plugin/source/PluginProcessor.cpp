@@ -203,6 +203,7 @@ void PluginProcessor::buildRuntimePresetProbeMirror (int bank)
 void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     dspBridge.prepare (sampleRate, samplesPerBlock);
+    follower.prepare (sampleRate);
     // The selected bank is a function of the host rate: a preset chosen at
     // 44.1k is an octave out once the host moves to 96k. prepare() has just
     // reset the engine, so re-select and re-load whenever the rate moved.
@@ -322,8 +323,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
     const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
     const float chew      = curveMap (Axis::bite,   juce::jlimit (0.0f, 1.0f, pChew->load()));
-    const float slam      = 0.0f;
-    const float preamp    = 0.0f;
+    const float slam      = curveMap (Axis::slam,   juce::jlimit (0.0f, 1.0f, pSlam->load()));
+    const float preamp    = curveMap (Axis::preamp, juce::jlimit (0.0f, 1.0f, pPreamp->load()));
     const float follow    = curveMap (Axis::follow, juce::jlimit (0.0f, 1.0f, pFollow->load()));
     const float track     = curveMap (Axis::track,  juce::jlimit (0.0f, 1.0f, pTrack->load()));
     const int movePreset  = (int) pMovePreset->load();
@@ -372,6 +373,22 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     movement.render (morphBuffer.data(), numSamples, baseMorph, transport, movePreset,
                      live != nullptr ? &live->desc : nullptr,
                      liveRate ? live->stepBeats : trench::Movement::stepBeatsFor (moveDivision));
+    follower.setAmount (follow);
+    if (follower.armed())
+    {
+        const float* dry = buffer.getReadPointer (0);
+        for (int start = 0; start < numSamples; start += trench::EnvFollower::kHop)
+        {
+            const int end = juce::jmin (numSamples, start + trench::EnvFollower::kHop);
+            float peak = 0.0f;
+            for (int i = start; i < end; ++i)
+                peak = juce::jmax (peak, std::abs (dry[i]));
+            follower.advance (peak);
+            const float offset = follower.currentOffset();
+            for (int i = start; i < end; ++i)
+                morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, morphBuffer[(size_t) i] + offset);
+        }
+    }
     // 8. Static controls that changed since last block.
     const bool preampActive = preamp > 0.001f;
     if (preampActive != lastPreampActive)
@@ -379,7 +396,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
         dspBridge.setInputMode (preampActive ? kMackieDeskSlam : kCleanInputMode);
         lastPreampActive = preampActive;
     }
-    dspBridge.setInputPreamp (trench::preampGain (preamp));
+    dspBridge.setInputPreamp (trench::driveTaper (preamp));
     TrenchParams params;
     params.q = q;                       // the static authored second axis
     params.poleDistortion = chew;       // BITE/CHEW, independent of Q
@@ -405,7 +422,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     params.keySnap = keyChoice;
     // 9. LOW KEEP — the floor goes around the machine. A first-order pair sums
     //    back to unity, so at 0 there is no filter in the path at all.
-    const float lowKeep = 0.0f;
+    const float lowKeep = juce::jlimit (0.0f, 1.0f, pLowKeep->load());
     const bool lowKeepActive = lowKeep > 0.0f;
     const int lowKeepChannels = lowKeepActive
                                     ? juce::jmin (kLowKeepMaxChannels, buffer.getNumChannels())

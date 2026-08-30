@@ -5,7 +5,7 @@
 namespace trench::ui
 {
 inline constexpr int   kEditorWidth        = 352;
-inline constexpr int   kEditorHeight       = 429;
+inline constexpr int   kEditorHeight       = 543;
 inline constexpr int   kEditorHeightClosed = 361;
 
 inline constexpr int   kBayValueWidth      = 46;
@@ -16,11 +16,11 @@ inline constexpr float kLabelPt            = 12.0f;
 inline constexpr float kValuePt            = 14.0f;
 inline constexpr int   kRowH               = 26;
 inline constexpr float kBayValuePt         = kValuePt;
-inline constexpr int   kBayValueHeight     = 18;
+inline constexpr int   kBayValueHeight     = 17;
 
-inline constexpr float kBayKnobDiameter    = 32.0f;
+inline constexpr float kBayKnobDiameter    = 36.0f;
 inline constexpr float kPanelSourceWidth   = 1010.0f;
-inline constexpr float kPanelSourceHeight  = 1232.0f;
+inline constexpr float kPanelSourceHeight  = 1557.0f;
 inline juce::Rectangle<float> sourceRectToEditor (juce::Rectangle<float> s)
 {
     return { s.getX() * kEditorWidth  / kPanelSourceWidth,
@@ -113,14 +113,14 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                      float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
-    const auto top    = juce::Colour (0xffcbcdd0);
-    const auto middle = juce::Colour (0xffbabcbf);
-    const auto bottom = juce::Colour (0xffabadb0);
+    const auto top    = juce::Colour (0xffc3d1df);
+    const auto middle = juce::Colour (0xffb2c3d5);
+    const auto bottom = juce::Colour (0xffa5b8cc);
     const float faceRad = juce::jmax (2.0f, radius - 1.3f);
     {
-        juce::ColourGradient edge (juce::Colour (0xffeceef0), 0.0f, face.getY(),
-                                   juce::Colour (0xff4f5255), 0.0f, face.getBottom(), false);
-        edge.addColour (0.5, juce::Colour (0xffa2a5a9));
+        juce::ColourGradient edge (juce::Colour (0xffe6eef6), 0.0f, face.getY(),
+                                   juce::Colour (0xff4f545a), 0.0f, face.getBottom(), false);
+        edge.addColour (0.5, juce::Colour (0xff9aabbd));
         g.setGradientFill (edge);
         g.fillRoundedRectangle (face, faceRad);
     }
@@ -154,7 +154,7 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
     g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.80f));
     g.drawRoundedRectangle (face.reduced (0.35f),
                             juce::jmax (2.0f, radius - 1.5f), 0.9f);
-    g.setColour (juce::Colours::white.withAlpha (isActive ? 0.40f : 0.06f));
+    g.setColour (isActive ? t.accent().withAlpha (0.55f) : juce::Colours::white.withAlpha (0.06f));
     g.drawRoundedRectangle (face.reduced (1.05f),
                             juce::jmax (1.6f, radius - 2.1f), 0.55f);
 }

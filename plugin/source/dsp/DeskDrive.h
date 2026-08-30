@@ -1,0 +1,84 @@
+#pragma once
+#include <algorithm>
+#include <cmath>
+namespace trench
+{
+class DeskDrive
+{
+public:
+    void prepare (double sampleRate)
+    {
+        sr = std::max (8000.0, sampleRate);
+        const double scale = sr / 44100.0;
+        iirAmountA = kIirA / scale;
+        iirAmountB = kIirB / scale;
+        biquadA.setLowpass (sr, kUltrasonicHz, kBiquadAQ);
+        biquadB.setLowpass (sr, kUltrasonicHz, kBiquadBQ);
+        reset();
+    }
+    void setEnabled (bool on)
+    {
+        if (enabled != on) { enabled = on; reset(); }
+    }
+    bool isActive() const noexcept { return enabled; }
+    void reset()
+    {
+        iirA = 0.0; iirB = 0.0;
+        biquadA.reset(); biquadB.reset();
+    }
+    float process (float input, float drive) noexcept
+    {
+        if (! enabled)
+            return input;
+        const double d = std::clamp ((double) drive, 0.0, 1.0);
+        double s = (double) input * (1.0 + d * kSlamToInputGain);
+        iirA = guard (iirA * (1.0 - iirAmountA) + s * iirAmountA);
+        s -= iirA;
+        s = biquadA.process (s);
+        s = saturate (s, d);
+        s = biquadB.process (s);
+        iirB = guard (iirB * (1.0 - iirAmountB) + s * iirAmountB);
+        s -= iirB;
+        return std::isfinite (s) ? (float) std::clamp (s, -8.0, 8.0) : 0.0f;
+    }
+    static double saturate (double sample, double drive) noexcept
+    {
+        const double d = std::clamp (drive, 0.0, 1.0);
+        const double curve = 0.25 * (1.0 - d) * (1.0 - d);
+        const double c = std::clamp (sample, -1.0, 1.0);
+        return c - c * c * c * c * c * curve;
+    }
+private:
+    static constexpr double kUltrasonicHz = 19160.0;
+    static constexpr double kBiquadAQ = 0.431684981684982;
+    static constexpr double kBiquadBQ = 1.1582298;
+    static constexpr double kIirA = 0.001860867;
+    static constexpr double kIirB = 0.000287496;
+    static constexpr double kSlamToInputGain = 99.0;
+    static double guard (double x) noexcept { return std::abs (x) < 1.18e-37 ? 0.0 : x; }
+    struct Biquad
+    {
+        double b0 = 0, b1 = 0, b2 = 0, a1 = 0, a2 = 0, x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+        void setLowpass (double sampleRate, double hz, double q)
+        {
+            const double n = std::clamp (hz / sampleRate, 1.0e-6, 0.49);
+            const double k = std::tan (3.14159265358979323846 * n);
+            const double norm = 1.0 / (1.0 + k / q + k * k);
+            b0 = k * k * norm; b1 = 2.0 * b0; b2 = b0;
+            a1 = 2.0 * (k * k - 1.0) * norm;
+            a2 = (1.0 - k / q + k * k) * norm;
+        }
+        double process (double in) noexcept
+        {
+            const double out = b0 * in + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+            x2 = x1; x1 = in; y2 = y1; y1 = guard (out);
+            return y1;
+        }
+        void reset() { x1 = x2 = y1 = y2 = 0.0; }
+    };
+    bool enabled = false;
+    double sr = 44100.0;
+    double iirAmountA = kIirA, iirAmountB = kIirB, iirA = 0.0, iirB = 0.0;
+    Biquad biquadA, biquadB;
+};
+}

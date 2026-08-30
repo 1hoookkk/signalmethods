@@ -1,4 +1,5 @@
 #pragma once
+#include "DeskDrive.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -102,6 +103,8 @@ public:
     void prepare (double sampleRate, int maxBlockSize)
     {
         sampleRateHz = sampleRate > 0.0 ? sampleRate : 48'000.0;
+        deskL.prepare (sampleRateHz);
+        deskR.prepare (sampleRateHz);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
         left.reset();
         right.reset();
@@ -202,9 +205,9 @@ public:
             if (keyRatio != 1.0)
                 cascade = trench::core::transpose_cascade (cascade, keyRatio, sampleRateHz);
             publishCascade (cascade);
-            processSample (left, buffer.getWritePointer (0)[sample], cascade);
+            processSample (left, deskL, buffer.getWritePointer (0)[sample], cascade);
             if (channels > 1)
-                processSample (right, buffer.getWritePointer (1)[sample], cascade);
+                processSample (right, deskR, buffer.getWritePointer (1)[sample], cascade);
         }
         if (bypass.saturate)
             for (int channel = 0; channel < channels; ++channel)
@@ -213,7 +216,13 @@ public:
     }
 
     void reclaim() noexcept {}
-    void setInputPreamp (float amount) noexcept { inputPreamp = std::max (0.0f, amount); }
+    void setInputPreamp (float drive) noexcept
+    {
+        inputDrive = std::clamp (drive, 0.0f, 1.0f);
+        const bool on = inputDrive > 0.001f;
+        deskL.setEnabled (on);
+        deskR.setEnabled (on);
+    }
     float gritActivity() const noexcept { return 0.0f; }
     float agcReductionDb() const noexcept { return 0.0f; }
     void publishUiSnapshot() noexcept {}
@@ -279,10 +288,10 @@ private:
                 uiCoefficients[index++] = (float) coefficient;
     }
 
-    void processSample (trench::core::CascadeRunner& runner, float& sample,
+    void processSample (trench::core::CascadeRunner& runner, trench::DeskDrive& desk, float& sample,
                         const trench::core::Cascade& cascade)
     {
-        sample *= inputPreamp;
+        sample = desk.process (sample, inputDrive);
         runner.set_target (trench::core::encode_cascade (cascade));
         runner.process (std::span<float> (&sample, 1));
     }
@@ -297,7 +306,8 @@ private:
     std::array<float, trench::kUiCoeffCount> uiCoefficients {};
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
-    float inputPreamp = 1.0f;
+    float inputDrive = 0.0f;
+    trench::DeskDrive deskL, deskR;
     bool bodyLoaded = false;
     Bypass bypass;
 

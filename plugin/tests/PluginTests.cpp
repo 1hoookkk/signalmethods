@@ -107,7 +107,7 @@ int main()
         bridge.prepare (48000.0, 512);
         const bool loaded = bridge.loadCartridgeBytes (BinaryData::identity_body240, (size_t) BinaryData::identity_body240Size);
         check (loaded, "identity body loads into the bridge");
-        bridge.setInputPreamp (trench::preampGain (0.0f));
+        bridge.setInputPreamp (trench::driveTaper (0.0f));
         juce::AudioBuffer<float> buf (2, 64);
         buf.clear();
         buf.setSample (0, 0, 0.25f);
@@ -134,11 +134,57 @@ int main()
 
 
     setParam (processor, ParamID::preamp, 1.0f);
-    setParam (processor, ParamID::slamDrive, 1.0f);
-    const auto hidden = runSine (processor, in);
-    check (std::abs (db (hidden.peak / base.peak)) < 0.2, "hidden INPUT/OUTPUT at saved extremes leave the sound at unity", db (hidden.peak / base.peak), 0.0);
-    setParam (processor, ParamID::slamDrive, 0.0f);
+    const auto driven = runSine (processor, in);
+    check (std::abs (db (driven.peak / base.peak) - 40.0) < 0.5, "INPUT at full adds +40 dB into the filter", db (driven.peak / base.peak), 40.0);
     setParam (processor, ParamID::preamp, 0.0f);
+    {
+        const auto goertzel = [] (const std::vector<float>& x, int bin)
+        {
+            const double w = 2.0 * juce::MathConstants<double>::pi * bin / (double) x.size();
+            double s0 = 0, s1 = 0, s2 = 0;
+            for (float v : x) { s0 = v + 2.0 * std::cos (w) * s1 - s2; s2 = s1; s1 = s0; }
+            return std::sqrt (s1 * s1 + s2 * s2 - 2.0 * std::cos (w) * s1 * s2) / (double) x.size();
+        };
+        const auto capture = [&] (float drive)
+        {
+            setParam (processor, ParamID::preamp, drive);
+            constexpr int n = 4096;
+            std::vector<float> out;
+            juce::MidiBuffer midi;
+            for (int pass = 0; pass < 3; ++pass)
+            {
+                juce::AudioBuffer<float> buf (2, n);
+                for (int i = 0; i < n; ++i)
+                {
+                    const float v = 0.6f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 37.0 * i / n);
+                    buf.setSample (0, i, v); buf.setSample (1, i, v);
+                }
+                for (int start = 0; start < n; start += 512)
+                {
+                    float* chans[2] = { buf.getWritePointer (0) + start, buf.getWritePointer (1) + start };
+                    juce::AudioBuffer<float> slice (chans, 2, 512);
+                    processor.processBlock (slice, midi);
+                }
+                if (pass == 2)
+                    out.assign (buf.getReadPointer (0), buf.getReadPointer (0) + n);
+            }
+            setParam (processor, ParamID::preamp, 0.0f);
+            return out;
+        };
+        const auto driven = capture (0.35f);
+        const double f = goertzel (driven, 37);
+        const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
+        check (f > 0.01 && h / f > 0.02, "INPUT desk adds harmonics before the cascade (harmonic ratio)", h / f, 0.02);
+        const auto clean = capture (0.0f);
+        const double f0 = goertzel (clean, 37);
+        const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
+        check (h0 / f0 < 0.005, "INPUT at 0 is the clean path (harmonic ratio)", h0 / f0, 0.005);
+    }
+    const auto hot = runSine (processor, 0.5f);
+    setParam (processor, ParamID::slamDrive, 1.0f);
+    const auto slammed = runSine (processor, 0.5f);
+    check (slammed.finite && std::abs (db (slammed.peak / hot.peak)) > 1.0, "OUTPUT at full changes the level of a hot signal (dB)", db (slammed.peak / hot.peak), 1.0);
+    setParam (processor, ParamID::slamDrive, 0.0f);
     const auto loud = runSine (processor, 0.9f);
     check (loud.finite && loud.peak > 0.1f, "full-scale input at defaults stays finite and audible", loud.peak, 0.9);
 
@@ -218,6 +264,25 @@ int main()
             const auto snapped = runSine (processor, 0.01f);
             check (snapped.finite && std::abs (db (snapped.peak / off.peak)) > 1.0, "KEY F# audibly shifts the Crisp body at 220 Hz (dB)", db (snapped.peak / off.peak), 1.0);
             setParam (processor, ParamID::keySnap, 0.0f);
+            {
+                processor.setEditorOpen (true);
+                setParam (processor, ParamID::envAmount, 1.0f);
+                runSine (processor, 0.0005f, 60);
+                runSine (processor, 0.5f, 4);
+                const float pushed = processor.getEffectiveMorphForUi();
+                setParam (processor, ParamID::envAmount, 0.0f);
+                runSine (processor, 0.5f, 4);
+                const float still = processor.getEffectiveMorphForUi();
+                processor.setEditorOpen (false);
+                check (std::abs (pushed - still) > 0.05f, "FOLLOW at full pushes MORPH on a transient (wheel units)", pushed - still, 0.05);
+            }
+            {
+                const auto kept0 = runSine (processor, 0.01f);
+                setParam (processor, ParamID::lowKeep, 1.0f);
+                const auto kept1 = runSine (processor, 0.01f);
+                setParam (processor, ParamID::lowKeep, 0.0f);
+                check (kept1.finite && std::abs (db (kept1.peak / kept0.peak)) > 0.5, "LOW at full keeps the 220 Hz floor around the body (dB)", db (kept1.peak / kept0.peak), 0.5);
+            }
             if (std::getenv ("TRENCH_MEASURE") != nullptr)
             {
                 int n = 0; trench::bodyRoster (n);
@@ -246,7 +311,20 @@ int main()
     if (words == nullptr)
         return 1;
     check (words->isShowing(), "Modulation and KEY are always on the face");
-    for (const char* gone : { "Input", "Bite", "Follow", "Color 1", "Color 2", "Color 3", "Movement", "Output", "Low", "Division", "Section", "Generator" })
+    for (const char* here : { "Input", "Bite", "Output", "Movement", "Follow" })
+        check (anyVisibleOfTitle (*editor, here), (juce::String ("on the face: ") + here).toRawUTF8());
+    {
+        auto* lamp = findChild<trench::ui::FollowLamp> (*editor);
+        check (lamp != nullptr, "FOLLOW lamp exists");
+        if (lamp != nullptr)
+        {
+            lamp->toggle();
+            check (std::abs (processor.apvts.getRawParameterValue (ParamID::envAmount)->load() - trench::ui::FollowLamp::kDepth) < 1e-4f, "FOLLOW lamp on = the one depth", processor.apvts.getRawParameterValue (ParamID::envAmount)->load(), trench::ui::FollowLamp::kDepth);
+            lamp->toggle();
+            check (processor.apvts.getRawParameterValue (ParamID::envAmount)->load() == 0.0f, "FOLLOW lamp off = exactly 0");
+        }
+    }
+    for (const char* gone : { "Low", "Track", "Division", "Mix", "Section", "Modulation", "Color 1", "Color 2", "Color 3", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
     check (words->getHeight() >= 18, "rows are legible", words->getHeight(), 18);
     pump (150);

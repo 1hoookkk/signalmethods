@@ -345,7 +345,30 @@ private:
 
         g.setOpacity (1.0f);
         strokeTrace (g, responsePath, phos);
+        drawPeakMarks (g);
 
+    }
+    void drawPeakMarks (juce::Graphics& g) const
+    {
+        const auto plot = plotBounds();
+        const double dbTop = t.curveDbTop(), dbBot = t.curveDbBottom();
+        const int n = (int) traceDbs.size();
+        constexpr int span = 10;
+        g.setColour (t.curveColour().withAlpha (0.85f));
+        for (int i = span; i < n - span; ++i)
+        {
+            const float v = traceDbs[(size_t) i];
+            bool peak = v > -12.0f;
+            for (int k = -span; peak && k <= span; ++k)
+                if (k != 0 && traceDbs[(size_t) (i + k)] >= v)
+                    peak = false;
+            if (! peak || v - juce::jmin (traceDbs[(size_t) (i - span)], traceDbs[(size_t) (i + span)]) < 3.0f)
+                continue;
+            const float x = traceXs[(size_t) i];
+            const float y = std::floor (plot.getY() + (float) ((dbTop - v) / (dbTop - dbBot)) * plot.getHeight()) + 0.5f;
+            g.drawLine (x - 3.0f, y, x + 4.0f, y, 1.0f);
+            g.drawLine (x, y - 3.0f, x, y + 4.0f, 1.0f);
+        }
     }
     void drawSeedPulseTrace (juce::Graphics& g) const
     {
@@ -401,7 +424,7 @@ private:
     mutable juce::Image gridPlate;
     juce::Path responsePath;
 
-    static constexpr float kTraceWidth = 1.1f;
+    static constexpr float kTraceWidth = 1.0f;
     mutable juce::Image traceCache;
     mutable juce::Colour cachedColour;
     std::vector<float> traceXs;

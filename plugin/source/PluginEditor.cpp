@@ -5,18 +5,14 @@
 using namespace trench::ui;
 namespace
 {
-int movePresetIndex (juce::AudioProcessorValueTreeState& apvts)
-{
-    if (auto* v = apvts.getRawParameterValue (ParamID::movePreset))
-        return juce::roundToInt (v->load());
-    return 0;
-}
-juce::String bankPatternName (int presetIndex)
-{
-    if (presetIndex >= 1 && presetIndex <= trench::kNumFuncGenPatterns)
-        return trench::kFuncGenPatterns[presetIndex - 1].name;
-    return {};
-}
+constexpr float kBayLeft   = 44.0f;
+constexpr float kBayRight  = 214.0f;
+constexpr float kBayPad    = 8.0f;
+constexpr float kBayRowGap = 6.0f;
+constexpr int   kBayRowH   = 42;
+const juce::Rectangle<int>   kBayWord { (int) (kBayLeft + kBayPad), 354, 44, 17 };
+const juce::Rectangle<float> kBayRoom { kBayLeft, 363.0f, kBayRight - kBayLeft,
+                                        2.0f * kBayPad + kBayRowGap + 3.0f * (float) kBayRowH };
 }
 PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p),
@@ -57,7 +53,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
-    glassWords = std::make_unique<GlassWords> (theme);
+    glassWords = std::make_unique<GlassWords> (processor.apvts, theme);
+    glassWords->livePhraseProvider = [this] { return processor.hasLivePhraseForUi(); };
+    followLamp = std::make_unique<FollowLamp> (processor.apvts, theme);
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders (
         [this] { return processor.getDetectedKeyForUi(); },
@@ -68,44 +66,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
                            processor.getInputMeterRightForUi().load (std::memory_order_relaxed))
                > 0.0015f;
     });
-    glassWords->onStep = [this] (int dir)
-    {
-        auto* prm = processor.apvts.getParameter (ParamID::movePreset);
-        if (prm == nullptr)
-            return;
-        const int n = trench::kNumFuncGenPatterns;
-        const int now = movePresetIndex (processor.apvts);
-        const int next = (now >= 1 && now <= n) ? ((now - 1 + dir) % n + n) % n + 1
-                                                : (dir > 0 ? 1 : n);
-        prm->beginChangeGesture();
-        prm->setValueNotifyingHost (prm->convertTo0to1 ((float) next));
-        prm->endChangeGesture();
-    };
-    glassWords->onOpenMenu = [this]
-    {
-        auto* prm = processor.apvts.getParameter (ParamID::movePreset);
-        if (prm == nullptr)
-            return;
-        const auto names = prm->getAllValueStrings();
-        const int cur = movePresetIndex (processor.apvts);
-        const bool liveReady = processor.hasLivePhraseForUi();
-        juce::PopupMenu m;
-        m.setLookAndFeel (&movementMenuLnF);
-        m.addItem (1, "OFF", true, cur == 0);
-        m.addSeparator();
-        for (int i = 1; i < names.size(); ++i)
-            m.addItem (i + 2, names[i], names[i] == "LIVE" ? liveReady : true, cur == i);
-        juce::Component::SafePointer<PluginEditor> self (this);
-        m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (glassWords.get()),
-                         [self, prm] (int id)
-                         {
-                             if (self == nullptr || id <= 0)
-                                 return;
-                             prm->beginChangeGesture();
-                             prm->setValueNotifyingHost (prm->convertTo0to1 (id == 1 ? 0.0f : (float) (id - 2)));
-                             prm->endChangeGesture();
-                         });
-    };
+    inputKnob  = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::preamp,    "Input");
+    biteKnob   = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::chew,      "Bite");
+    outputKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
     labels = std::make_unique<LabelsLayer> (theme);
     labels->setRailLabels ("MORPH (%)", "Q (%)");
     addAndMakeVisible (*faceplate);
@@ -118,6 +81,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*glassWords);
     addAndMakeVisible (*keySnapBox);
     addAndMakeVisible (*labels);
+    addAndMakeVisible (*followLamp);
+    for (auto* c : { (juce::Component*) inputKnob.get(), (juce::Component*) biteKnob.get(), (juce::Component*) outputKnob.get() })
+        addAndMakeVisible (*c);
     addChildComponent (*bodyBrowser);
     setResizable (false, false);
     setSize (kEditorWidth, kEditorHeight);
@@ -143,24 +109,28 @@ void PluginEditor::resized()
     secondaryReadout->setBounds (rectOf ("qReadout"));
     {
         const auto glass = rectOf ("spectrumGrid");
-        glassWords->setBounds (glass.getX() + 12, glass.getBottom() - 26, 120, 18);
+        glassWords->setBounds (glass.getX() + 12, glass.getBottom() - 26, 150, 18);
+        followLamp->setBounds (glass.getX() + 12 + 150 + 6, glass.getBottom() - 26, 70, 18);
     }
     {
         const auto key = rectOf ("keyBox");
         keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
     }
+    {
+        const int x0 = juce::roundToInt (kBayLeft + kBayPad);
+        const int x1 = juce::roundToInt (kBayRight - kBayPad);
+        const int w  = x1 - x0;
+        const int rowY = juce::roundToInt (kBayRoom.getY() + kBayPad + kBayRowGap);
+        inputKnob->setBounds  (x0, rowY, w, kBayRowH);
+        biteKnob->setBounds   (x0, rowY + kBayRowH, w, kBayRowH);
+        outputKnob->setBounds (x0, rowY + 2 * kBayRowH, w, kBayRowH);
+        faceplate->setRoomFrame (kBayRoom, (float) kBayWord.getX() - 4.0f, (float) kBayWord.getRight() + 4.0f);
+    }
 }
 void PluginEditor::onFrame()
 {
     {
-        const int preset = movePresetIndex (processor.apvts);
-        const auto bank = bankPatternName (preset);
-        const juce::String moveName =
-            preset <= 0            ? juce::String ("OFF")
-          : bank.isNotEmpty()      ? bank
-          : preset == trench::Movement::kGrowlIndex ? juce::String ("GROWL")
-                                                    : juce::String ("LIVE");
-        glassWords->setState (moveName, processor.isMorphModulatedForUi());
+        glassWords->setActive (processor.isMorphModulatedForUi());
         keySnapBox->refreshSuggestion();
     }
     const auto read = [this] (const char* paramID)

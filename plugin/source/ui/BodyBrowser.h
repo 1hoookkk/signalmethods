@@ -26,7 +26,7 @@ class BodyBrowser final : public juce::Component,
 public:
     // the face's own light-menu palette - do not invent a second one
     static constexpr juce::uint32 kField = 0xfffcfcfd, kBorder = 0xff5a5750,
-                                  kHighlight = 0xff5A91E2, kInk = 0xff2a2722;
+                                  kHighlight = 0xff3cc8be, kInk = 0xff2a2722;
 
     explicit BodyBrowser (const Theme& theme) : t (theme)
     {
@@ -141,9 +141,10 @@ public:
             const bool hot = r == highlight;
             if (hot)
             {
-                // the reference selection: a solid blue bar, white label
-                g.setColour (juce::Colour (kHighlight));
+                g.setColour (juce::Colour (kHighlight).withAlpha (0.16f));
                 g.fillRect (cell);
+                g.setColour (juce::Colour (kHighlight).withAlpha (0.85f));
+                g.fillRect (cell.withWidth (2.0f).translated (1.0f, 0.0f));
             }
             if (rows[(size_t) r].body == current)
             {
@@ -153,11 +154,11 @@ public:
                 check.startNewSubPath (cx - 3.0f, cy);
                 check.lineTo (cx - 1.0f, cy + 2.5f);
                 check.lineTo (cx + 3.5f, cy - 3.0f);
-                g.setColour (hot ? juce::Colours::white : juce::Colour (kInk));
+                g.setColour (juce::Colour (kInk));
                 g.strokePath (check, { 1.3f, juce::PathStrokeType::curved,
                                        juce::PathStrokeType::rounded });
             }
-            g.setColour (hot ? juce::Colours::white : juce::Colour (kInk));
+            g.setColour (juce::Colour (kInk));
             g.drawText (rows[(size_t) r].text,
                         cell.withTrimmedLeft (kGutter).toNearestInt(),
                         juce::Justification::centredLeft, false);

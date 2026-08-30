@@ -183,7 +183,12 @@ public:
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         juce::Graphics::ScopedSaveState slotClip (g);
-        g.reduceClipRegion (wheelRect.reduced (4.7f, 0.0f).toNearestInt());
+        {
+            const auto opening = wheelRect.reduced (0.8f, 2.7f);
+            juce::Path slot;
+            slot.addRoundedRectangle (opening, opening.getHeight() * 0.34f);
+            g.reduceClipRegion (slot);
+        }
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
         const int pw = juce::jmax (1, juce::roundToInt (frameRect.getWidth()  * pixelScale));
@@ -207,28 +212,26 @@ public:
                                                               frameRect.getHeight() / (float) ph)
                                     .translated (frameRect.getX(), frameRect.getY()));
 
-            const float endW = wheel.getWidth() * 0.13f;
-            juce::ColourGradient left (shade.withAlpha (0.80f), wheel.getX(), wheel.getCentreY(),
+            const float endW = wheel.getWidth() * 0.19f;
+            juce::ColourGradient left (shade.withAlpha (0.92f), wheel.getX(), wheel.getCentreY(),
                                        shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);
-            left.addColour (0.40, shade.withAlpha (0.34f));
+            left.addColour (0.30, shade.withAlpha (0.50f));
+            left.addColour (0.65, shade.withAlpha (0.16f));
             g.setGradientFill (left);
             g.fillRect (wheel.withWidth (endW));
 
-            juce::ColourGradient right (shade.withAlpha (0.80f), wheel.getRight(), wheel.getCentreY(),
+            juce::ColourGradient right (shade.withAlpha (0.92f), wheel.getRight(), wheel.getCentreY(),
                                         shade.withAlpha (0.0f), wheel.getRight() - endW, wheel.getCentreY(), false);
-            right.addColour (0.40, shade.withAlpha (0.34f));
+            right.addColour (0.30, shade.withAlpha (0.50f));
+            right.addColour (0.65, shade.withAlpha (0.16f));
             g.setGradientFill (right);
             g.fillRect (wheel.withLeft (wheel.getRight() - endW));
-        }
 
-        if (hovering || pressing)
-        {
-            const auto drumF = wheelRect;
-            juce::ColourGradient lift (juce::Colours::white.withAlpha (pressing ? 0.10f : 0.06f),
-                                       0.0f, drumF.getY() + drumF.getHeight() * 0.30f,
-                                       juce::Colours::transparentBlack, 0.0f, drumF.getBottom(), false);
-            g.setGradientFill (lift);
-            g.fillRect (drumF);
+            const float lipH = wheel.getHeight() * 0.26f;
+            juce::ColourGradient lip (shade.withAlpha (0.48f), wheel.getCentreX(), wheel.getY(),
+                                      shade.withAlpha (0.0f), wheel.getCentreX(), wheel.getY() + lipH, false);
+            g.setGradientFill (lip);
+            g.fillRect (wheel.withHeight (lipH));
         }
 
     }

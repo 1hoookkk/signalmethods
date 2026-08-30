@@ -7,6 +7,7 @@
 #include "dsp/TrenchRuntimePreset.h"
 #include "dsp/Movement.h"
 #include "dsp/KeyDetector.h"
+#include "dsp/EnvFollower.h"
 #include "dsp/TrenchCleanBody.h"
 #include <array>
 #include <atomic>
@@ -122,6 +123,7 @@ private:
     /// the buffers for.
     void processChunk (juce::AudioBuffer<float>& buffer);
     trench::Movement              movement;
+    trench::EnvFollower           follower;
     std::atomic<bool>             morphRetrigger { false };
     std::vector<float>            morphBuffer;   // one authored Morph per sample
     /// What prepareToPlay sized every audio-thread buffer for. JUCE explicitly

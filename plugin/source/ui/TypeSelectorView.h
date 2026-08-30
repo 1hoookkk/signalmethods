@@ -155,20 +155,13 @@ public:
         // monotonically - sitting 3px off the right edge of a 14px bar, with no
         // rule separating it from the name. Ours was a 1.5px stroked V behind a
         // hairline: two marks where the language has one. Same 7:4 aspect here.
-        g.setColour (juce::Colour (0xff6a6256).withAlpha (0.52f));
-        g.drawLine (box.getX() - 3.5f, bar.getY() + 5.0f,
-                    box.getX() - 3.5f, bar.getBottom() - 5.0f, 1.0f);
-        const auto arrow = box.withSizeKeepingCentre (11.0f, 7.0f).translated (0.0f, 0.5f);
+        const auto arrow = box.withSizeKeepingCentre (9.0f, 5.0f).translated (0.0f, 0.5f);
         juce::Path arrowPath;
-        arrowPath.startNewSubPath (arrow.getX(), arrow.getY());
-        arrowPath.lineTo (arrow.getCentreX(), arrow.getBottom());
-        arrowPath.lineTo (arrow.getRight(), arrow.getY());
-        g.setColour (t.arrow());
+        arrowPath.addTriangle (arrow.getX(), arrow.getY(), arrow.getRight(), arrow.getY(), arrow.getCentreX(), arrow.getBottom());
         g.setColour (juce::Colours::white.withAlpha (0.40f));
-        g.strokePath (arrowPath, juce::PathStrokeType (1.5f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt),
-                      juce::AffineTransform::translation (0.0f, 1.0f));
+        g.fillPath (arrowPath, juce::AffineTransform::translation (0.0f, 1.0f));
         g.setColour (ink);
-        g.strokePath (arrowPath, juce::PathStrokeType (1.5f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
+        g.fillPath (arrowPath);
     }
 private:
     void comboBoxChanged (juce::ComboBox*) override

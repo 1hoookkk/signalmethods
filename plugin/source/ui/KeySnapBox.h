@@ -62,11 +62,6 @@ public:
         lastListening = listeningNow;
     }
 
-    bool hitTest (int x, int y) override
-    {
-        juce::ignoreUnused (x, y);
-        return currentChoice() != 0 || suggestion (primarySuggestion) >= 0;
-    }
     void mouseEnter (const juce::MouseEvent&) override { hover = true; repaint(); }
     void mouseExit  (const juce::MouseEvent&) override
     {
