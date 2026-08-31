@@ -88,6 +88,8 @@ Corner import_p2k_corner(const P2kCorner& words, double datum_hz = kP2kDatumHz);
 Body import_p2k(std::span<const std::uint8_t> body, double datum_hz = kP2kDatumHz);
 P2kCorner export_p2k_corner(const Corner& corner, double datum_hz = kP2kDatumHz);
 PackedBody export_p2k_body(const Body& body, double datum_hz = kP2kDatumHz);
+PackedBody rewarp_p2k_body(const PackedBody& body, double datum_hz,
+                           double target_hz);
 Corner packed_interior_corner(const PackedBody& packed, double morph, double q,
                               double datum_hz = kP2kDatumHz);
 std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(

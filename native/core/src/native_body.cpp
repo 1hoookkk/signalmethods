@@ -381,4 +381,47 @@ std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(const Body& body,
   return export_p2k_body(body, datum_hz).legacy_bytes();
 }
 
+PackedBody rewarp_p2k_body(const PackedBody& source, double datum_hz,
+                           double target_hz) {
+  PackedBody out{};
+  for (std::size_t ci = 0; ci < kCornerCount; ++ci) {
+    const auto& src = source.words[ci];
+    auto& dst = out.words[ci];
+    double gain_db = 0.0;
+    double dc_target = 1.0;
+    std::size_t voiced = 0;
+    for (std::size_t si = 0; si < kSectionCount; ++si) {
+      if (src[si] == kIdentitySection) {
+        dst[si] = kIdentitySection;
+        continue;
+      }
+      const auto section = import_section(src[si], datum_hz);
+      const auto c = design(section, target_hz);
+      const double d1 = 1.0 - c.b2;
+      const double d0 = (c.b1 + 2.0 - d1) / 4.0;
+      const double d3 = 1.0 - c.a2;
+      const double d2 = (c.a1 + 2.0 - d3) / 4.0;
+      dst[si] = {encode_word(d0), encode_word(d1), encode_word(d2),
+                 encode_word(d3), 0};
+      const auto b = section_words_to_biquad(src[si]);
+      const double k_datum = dc_scale(design(section, datum_hz));
+      gain_db += 20.0 * (std::log10(std::max(std::abs(b[0]), kPackedScaleFloor)) -
+                         std::log10(std::abs(k_datum)));
+      dc_target *= std::abs(dc_scale(c));
+      ++voiced;
+    }
+    if (voiced == 0) continue;
+    const double total = std::pow(10.0, gain_db / 20.0) * dc_target;
+    const double stage =
+        std::pow(total, 1.0 / static_cast<double>(voiced));
+    const auto scale_word = encode_word(stage / 4.0);
+    for (std::size_t si = 0; si < kSectionCount; ++si) {
+      if (src[si] != kIdentitySection) {
+        dst[si][4] = scale_word;
+      }
+    }
+  }
+  return out;
+}
+
 }
