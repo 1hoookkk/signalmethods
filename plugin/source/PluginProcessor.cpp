@@ -376,13 +376,17 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     follower.setAmount (follow);
     if (follower.armed())
     {
-        const float* dry = buffer.getReadPointer (0);
+        const int followChannels = juce::jmin (2, buffer.getNumChannels());
         for (int start = 0; start < numSamples; start += trench::EnvFollower::kHop)
         {
             const int end = juce::jmin (numSamples, start + trench::EnvFollower::kHop);
             float peak = 0.0f;
-            for (int i = start; i < end; ++i)
-                peak = juce::jmax (peak, std::abs (dry[i]));
+            for (int c = 0; c < followChannels; ++c)
+            {
+                const float* dry = buffer.getReadPointer (c);
+                for (int i = start; i < end; ++i)
+                    peak = juce::jmax (peak, std::abs (dry[i]));
+            }
             follower.advance (peak);
             const float offset = follower.currentOffset();
             for (int i = start; i < end; ++i)
@@ -405,6 +409,12 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     // detected note). The dumb button: selected = on, anything else = off.
     params.growl = movePreset == trench::Movement::kGrowlIndex ? 1.0f : 0.0f;
     params.track = track;               // the Hz axis: geography follows the note
+    // TRACK follows only the ACCEPTED key, only in AUTO, only when the player
+    // turned the knob: off by default, inert under a manual KEY, and the
+    // three-window hysteresis upstream means it moves rarely and deliberately.
+    params.trackKey = keyChoice == 0 && track > 0.001f
+                          ? detectedKeyForUi.load (std::memory_order_relaxed)
+                          : -1;
     // AUTO DETECTS. IT DOES NOT RETUNE.
     //
     // This line used to substitute the DETECTOR'S guess for the player's
@@ -846,6 +856,7 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
     {
         auto tree = juce::ValueTree::fromXml (*xmlState);
         const auto bodyId = tree.getProperty ("bodyId").toString();
+        const auto moveName = tree.getProperty ("movePresetName").toString();
         // The former dry-blend parameter is retired rather than hidden. Discard
         // its old APVTS child so a legacy project cannot carry dead automation
         // back into a newly saved state.
@@ -899,7 +910,6 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
         // MOVEMENT recalls by name: the saved pattern is found in the CURRENT
         // bank, wherever it sits today. A name this build does not have lands
         // on OFF - never on whatever else occupies the saved index.
-        const auto moveName = tree.getProperty ("movePresetName").toString();
         if (moveName.isNotEmpty())
             if (auto* mp = apvts.getParameter (ParamID::movePreset))
             {
