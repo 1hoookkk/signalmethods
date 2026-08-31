@@ -7,6 +7,8 @@ namespace trench::ui
 inline constexpr int   kEditorWidth        = 352;
 inline constexpr int   kEditorHeight       = 543;
 inline constexpr int   kEditorHeightClosed = 361;
+inline constexpr int   kFaceLockedWidth    = 320;
+inline constexpr int   kFaceLockedHeight   = 494;
 
 inline constexpr int   kBayValueWidth      = 46;
 inline constexpr int   kBaySourceWidth     = 116;

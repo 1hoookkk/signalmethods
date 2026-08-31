@@ -110,22 +110,27 @@ public:
             showParamContextMenu (*this, param);
             return;
         }
-        if (armed())
+        if (e.position.x < (float) kToggleZone)
         {
-            lastArmed = shapeIndex();
-            write (0.0f);
+            if (armed())
+            {
+                lastArmed = shapeIndex();
+                write (0.0f);
+            }
+            else
+            {
+                const auto list = selectable();
+                int target = lastArmed;
+                if (target <= 0 && ! list.empty()) target = list.front();
+                if (target > 0) write ((float) target);
+            }
+            return;
         }
-        else
-        {
-            const auto list = selectable();
-            int target = lastArmed;
-            if (target <= 0 && ! list.empty()) target = list.front();
-            if (target > 0) write ((float) target);
-        }
+        showPatternMenu();
     }
-    void mouseDoubleClick (const juce::MouseEvent& e) override
+    void showPatternMenu()
     {
-        if (e.mods.isPopupMenu() || param == nullptr) return;
+        if (param == nullptr) return;
         juce::PopupMenu m;
         m.setLookAndFeel (&menuLnF);
         const bool on = armed();
@@ -148,14 +153,20 @@ public:
         const auto b = getLocalBounds();
         const auto ink = t.curveColour();
         const bool on = armed();
-        const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
+        const juce::Rectangle<float> lamp { (float) b.getX() + 4.0f, (float) b.getCentreY() - 3.0f, 6.0f, 6.0f };
         g.setColour (active ? t.modulationLamp() : ink.withAlpha (on ? 0.70f : 0.30f));
         g.fillEllipse (lamp);
+        if (hover)
+        {
+            g.setColour (ink.withAlpha (0.25f));
+            g.drawEllipse (lamp.expanded (2.5f), 0.8f);
+        }
         g.setFont (displayFont (10.5f, false));
         g.setColour (active ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (on || hover ? 0.85f : 0.55f));
-        g.drawText (stateWord(), b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
+        g.drawText (stateWord(), b.withTrimmedLeft (kToggleZone), juce::Justification::centredLeft, false);
     }
 private:
+    static constexpr int kToggleZone = 17;
     int shapeIndex() const noexcept
     {
         if (param == nullptr) return 0;

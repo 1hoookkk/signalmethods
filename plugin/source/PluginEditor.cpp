@@ -82,10 +82,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     content.addChildComponent (*zWord);
     content.addChildComponent (*bodyBrowser);
     setResizable (true, true);
-    getConstrainer()->setFixedAspectRatio ((double) kEditorWidth / (double) kEditorHeight);
-    setResizeLimits (juce::roundToInt (kEditorWidth * 0.6f), juce::roundToInt (kEditorHeight * 0.6f),
-                     kEditorWidth * 2, kEditorHeight * 2);
-    setSize (kEditorWidth, kEditorHeight);
+    setResizable (false, false);
+    setSize (trench::ui::kFaceLockedWidth, trench::ui::kFaceLockedHeight);
     setWantsKeyboardFocus (false);
     vblank = std::make_unique<juce::VBlankAttachment> (this, [this] { onFrame(); });
 }
@@ -111,9 +109,9 @@ void PluginEditor::resized()
     {
         const auto glass = rectOf ("spectrumGrid");
         const int wordY = glass.getBottom() - 26;
-        glassWords->setBounds (glass.getX() + 12, wordY - 16, 140, 18);
-        followLamp->setBounds (glass.getX() + 12, wordY, 70, 18);
+        glassWords->setBounds (glass.getX() + 12, wordY, 150, 18);
         zWord->setBounds (glass.getRight() - 12 - 48, wordY, 48, 18);
+        followLamp->setBounds (glass.getRight() - 12 - 48 - 8 - 70, wordY, 70, 18);
     }
     {
         const auto key = rectOf ("keyBox");
