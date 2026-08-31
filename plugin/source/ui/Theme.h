@@ -4,11 +4,11 @@
 #include <cstdlib>
 namespace trench::ui
 {
-inline constexpr int   kEditorWidth        = 352;
-inline constexpr int   kEditorHeight       = 543;
+inline constexpr int   kEditorWidth        = 320;
+inline constexpr int   kEditorHeight       = 525;
 inline constexpr int   kEditorHeightClosed = 361;
-inline constexpr int   kFaceLockedWidth    = 320;
-inline constexpr int   kFaceLockedHeight   = 494;
+inline constexpr int   kFaceLockedWidth    = 315;
+inline constexpr int   kFaceLockedHeight   = 516;
 
 inline constexpr int   kBayValueWidth      = 46;
 inline constexpr int   kBaySourceWidth     = 116;
@@ -100,7 +100,8 @@ struct Theme
     float    fontSize (const juce::String& id, float fb) const
     {
         constexpr float fontReferenceWidth = 440.0f;
-        return layout.fontSizeFor (id).value_or (fb) * (float) kEditorWidth / fontReferenceWidth;
+        constexpr float fontDesignWidth = 352.0f;
+        return layout.fontSizeFor (id).value_or (fb) * fontDesignWidth / fontReferenceWidth;
     }
     juce::Font smallLabel (bool micro = false) const
     {
