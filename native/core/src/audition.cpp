@@ -8,6 +8,29 @@ namespace trench::core {
 namespace {
 
 constexpr double kDecodedFloor = 1.0e-30;
+constexpr double kGritCeilingFloor = 0.05;
+constexpr double kGritCeilingWide = 2.0;
+constexpr double kGritThreshFloor = 0.02;
+constexpr double kGritThreshWide = 1.5;
+constexpr double kGritKnee = 0.72;
+
+double grit_state_ceiling(double grit) {
+  return kGritCeilingWide + (kGritCeilingFloor - kGritCeilingWide) * grit;
+}
+
+double grit_distort_threshold(double grit) {
+  return (kGritThreshWide - kGritThreshFloor) * std::exp(-4.0 * grit) +
+         kGritThreshFloor;
+}
+
+double soft_clamp_ceiling(double x, double ceiling) {
+  const double knee = kGritKnee * ceiling;
+  const double a = std::abs(x);
+  if (a <= knee) return x;
+  const double span = ceiling - knee;
+  const double bounded = knee + span * std::tanh((a - knee) / span);
+  return std::copysign(std::min(bounded, ceiling), x);
+}
 
 double logged(double decoded) { return std::log(std::max(decoded, kDecodedFloor)); }
 
@@ -70,6 +93,14 @@ void CascadeRunner::reset() {
   for (auto& s : state_) s = {};
 }
 
+void CascadeRunner::set_pole_distortion(double grit) noexcept {
+  grit_ = std::clamp(grit, 0.0, 1.0);
+}
+
+double CascadeRunner::grit_activity() const noexcept {
+  return std::min(activity_, 1.0);
+}
+
 void CascadeRunner::process(std::span<float> block) {
   for (float& sample : block) {
     if (remaining_ > 0) {
@@ -84,13 +115,42 @@ void CascadeRunner::process(std::span<float> block) {
       decode();
     }
     double x = sample;
-    for (std::size_t si = 0; si < kSectionCount; ++si) {
-      const auto& c = coefficients_[si];
-      auto& s = state_[si];
-      const double y = c[0] * x + s.w1;
-      s.w1 = c[1] * x - c[3] * y + s.w2;
-      s.w2 = c[2] * x - c[4] * y;
-      x = y;
+    if (grit_ <= 0.0) {
+      for (std::size_t si = 0; si < kSectionCount; ++si) {
+        const auto& c = coefficients_[si];
+        auto& s = state_[si];
+        const double y = c[0] * x + s.w1;
+        s.w1 = c[1] * x - c[3] * y + s.w2;
+        s.w2 = c[2] * x - c[4] * y;
+        x = y;
+      }
+    } else {
+      const double ceiling = grit_state_ceiling(grit_);
+      const double vt = grit_distort_threshold(grit_);
+      activity_ *= 0.999;
+      for (std::size_t si = 0; si < kSectionCount; ++si) {
+        const auto& c = coefficients_[si];
+        auto& s = state_[si];
+        double a1 = c[3];
+        double a2 = c[4];
+        const double vg = std::abs(s.y_prev);
+        if (vg > vt && a2 > 1.0e-9) {
+          const double r = std::sqrt(a2);
+          if (r > 1.0e-6 && r < 1.0) {
+            const double cos_theta = std::clamp(-a1 / (2.0 * r), -1.0, 1.0);
+            const double ratio = std::min(vg - vt, 0.5);
+            const double r_new = std::clamp(r + r * (1.0 - r) * ratio, 0.0, 0.9999);
+            a1 = -2.0 * r_new * cos_theta;
+            a2 = r_new * r_new;
+          }
+        }
+        const double y = c[0] * x + s.w1;
+        s.w1 = soft_clamp_ceiling(c[1] * x - a1 * y + s.w2, ceiling);
+        s.w2 = soft_clamp_ceiling(c[2] * x - a2 * y, ceiling);
+        s.y_prev = y;
+        x = y;
+      }
+      if (grit_ > activity_) activity_ = grit_;
     }
     if (!std::isfinite(x)) {
       x = 0.0;

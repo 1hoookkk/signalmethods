@@ -22,6 +22,8 @@ class CascadeRunner {
   void set_target(const EncodedCascade& target);
   void reset();
   void process(std::span<float> block);
+  void set_pole_distortion(double grit) noexcept;
+  [[nodiscard]] double grit_activity() const noexcept;
   [[nodiscard]] const Cascade& coefficients() const noexcept { return coefficients_; }
   [[nodiscard]] std::size_t remaining() const noexcept { return remaining_; }
 
@@ -29,6 +31,7 @@ class CascadeRunner {
   struct Section {
     double w1{};
     double w2{};
+    double y_prev{};
   };
   void decode();
   EncodedCascade current_{};
@@ -37,6 +40,8 @@ class CascadeRunner {
   Cascade coefficients_{};
   std::size_t remaining_{};
   std::array<Section, kSectionCount> state_{};
+  double grit_{};
+  double activity_{};
   bool primed_{};
 };
 

@@ -27,6 +27,7 @@ struct TrenchParams
     float envAmount = 0.0f;
     float growl = 0.0f;
     float track = 0.0f;
+    int trackKey = -1;
 };
 
 namespace trench
@@ -218,7 +219,10 @@ public:
         const int samples = buffer.getNumSamples();
         if (channels <= 0 || samples <= 0)
             return;
-        const double keyRatio = keySnapRatio (params.keySnap);
+        const double keyRatio = transposeRatio (params);
+        const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
+        left.set_pole_distortion (bite);
+        right.set_pole_distortion (bite);
         trench::core::Cascade cascade {};
         for (int sample = 0; sample < samples; ++sample)
         {
@@ -250,7 +254,10 @@ public:
         deskL.setEnabled (on);
         deskR.setEnabled (on);
     }
-    float gritActivity() const noexcept { return 0.0f; }
+    float gritActivity() const noexcept
+    {
+        return (float) std::max (left.grit_activity(), right.grit_activity());
+    }
     float agcReductionDb() const noexcept { return 0.0f; }
     void publishUiSnapshot() noexcept {}
 
@@ -278,6 +285,18 @@ public:
         const int root = (choice - 1) % 12;
         const int semitones = root <= 6 ? root : root - 12;
         return trench::core::ratio_of_semitones ((double) semitones);
+    }
+
+    static double transposeRatio (const TrenchParams& params) noexcept
+    {
+        if (params.keySnap > 0)
+            return keySnapRatio (params.keySnap);
+        if (params.track <= 0.001f || params.trackKey < 0 || params.trackKey > 23)
+            return 1.0;
+        const int root = params.trackKey % 12;
+        const int semitones = root <= 6 ? root : root - 12;
+        return trench::core::ratio_of_semitones (
+            (double) semitones * (double) juce::jlimit (0.0f, 1.0f, params.track));
     }
 private:
     struct Snapshot
