@@ -45,7 +45,7 @@ public:
 
         layout.elements["brandLabel"].text = "TRENCH";
         layout.colours["accent"]             = juce::Colour (0xff3cc8be);
-        layout.colours["curveColour"]        = juce::Colour (0xffb5e5cd);
+        layout.colours["curveColour"]        = juce::Colour (0xff3cc8be);
         layout.colours["curveHighlight"]     = juce::Colour (0xffe6fff4);
         layout.colours["telemetry"]          = juce::Colour (0xff608074);
         layout.colours["dashed"]             = juce::Colour (0xff608074);

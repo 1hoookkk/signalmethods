@@ -154,7 +154,7 @@ public:
         const auto ink = t.curveColour();
         const bool on = armed();
         const juce::Rectangle<float> lamp { (float) b.getX() + 4.0f, (float) b.getCentreY() - 3.0f, 6.0f, 6.0f };
-        g.setColour (active ? t.modulationLamp() : ink.withAlpha (on ? 0.70f : 0.30f));
+        g.setColour (active ? t.modulationLamp() : ink.withAlpha (on ? 0.45f : 0.20f));
         g.fillEllipse (lamp);
         if (hover)
         {
@@ -162,7 +162,7 @@ public:
             g.drawEllipse (lamp.expanded (2.5f), 0.8f);
         }
         g.setFont (displayFont (10.5f, false));
-        g.setColour (active ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (on || hover ? 0.85f : 0.55f));
+        g.setColour (active ? t.modulationLamp().withAlpha (0.80f) : ink.withAlpha (on || hover ? 0.52f : 0.34f));
         g.drawText (stateWord(), b.withTrimmedLeft (kToggleZone), juce::Justification::centredLeft, false);
     }
 private:
@@ -237,10 +237,10 @@ public:
         const auto ink = t.curveColour();
         const bool on = isOn();
         const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
-        g.setColour (on ? ink.withAlpha (0.95f) : ink.withAlpha (0.40f));
+        g.setColour (on ? ink.withAlpha (0.60f) : ink.withAlpha (0.22f));
         g.fillEllipse (lamp);
         g.setFont (displayFont (10.5f, false));
-        g.setColour (on ? ink.withAlpha (0.95f) : ink.withAlpha (hover ? 0.92f : 0.68f));
+        g.setColour (on ? ink.withAlpha (0.58f) : ink.withAlpha (hover ? 0.55f : 0.36f));
         g.drawText ("FOLLOW", b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
     }
 private:
@@ -302,10 +302,10 @@ public:
         const auto ink = t.curveColour();
         const bool on = value() > 0.0f;
         const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
-        g.setColour (ink.withAlpha (on ? 0.85f : 0.30f));
+        g.setColour (ink.withAlpha (on ? 0.52f : 0.20f));
         g.fillEllipse (lamp);
         g.setFont (displayFont (10.5f, false));
-        g.setColour (ink.withAlpha (on || hover ? 0.85f : 0.55f));
+        g.setColour (ink.withAlpha (on || hover ? 0.52f : 0.34f));
         g.drawText (label, b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
     }
 private:

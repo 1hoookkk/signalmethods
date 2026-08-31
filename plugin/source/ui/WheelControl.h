@@ -182,12 +182,13 @@ public:
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-        juce::Graphics::ScopedSaveState slotClip (g);
+        juce::Graphics::ScopedSaveState seatClip (g);
         {
-            const auto opening = wheelRect.reduced (0.8f, 2.7f);
-            juce::Path slot;
-            slot.addRoundedRectangle (opening, opening.getHeight() * 0.34f);
-            g.reduceClipRegion (slot);
+            const auto hole = wheelRect.withTrimmedLeft (2.7f).withTrimmedRight (2.7f).withTrimmedBottom (4.1f);
+            juce::Path seat;
+            seat.addRoundedRectangle (hole.getX(), hole.getY(), hole.getWidth(), hole.getHeight(),
+                                      3.5f, 3.5f, false, false, true, true);
+            g.reduceClipRegion (seat);
         }
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
@@ -226,12 +227,16 @@ public:
             right.addColour (0.65, shade.withAlpha (0.16f));
             g.setGradientFill (right);
             g.fillRect (wheel.withLeft (wheel.getRight() - endW));
+        }
 
-            const float lipH = wheel.getHeight() * 0.26f;
-            juce::ColourGradient lip (shade.withAlpha (0.48f), wheel.getCentreX(), wheel.getY(),
-                                      shade.withAlpha (0.0f), wheel.getCentreX(), wheel.getY() + lipH, false);
-            g.setGradientFill (lip);
-            g.fillRect (wheel.withHeight (lipH));
+        if (hovering || pressing)
+        {
+            const auto drumF = wheelRect;
+            juce::ColourGradient lift (juce::Colours::white.withAlpha (pressing ? 0.10f : 0.06f),
+                                       0.0f, drumF.getY() + drumF.getHeight() * 0.30f,
+                                       juce::Colours::transparentBlack, 0.0f, drumF.getBottom(), false);
+            g.setGradientFill (lift);
+            g.fillRect (drumF);
         }
 
     }

@@ -173,43 +173,25 @@ public:
             juce::Path face = recessPath (glass, 0.0f);
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (face);
-            {
-                juce::ColourGradient phosphorBed (juce::Colour (0xff070c0b), 0.0f, glass.getY(),
-                                                  juce::Colour (0xff020403), 0.0f, glass.getBottom(), false);
-                g.setGradientFill (phosphorBed);
-                g.fillRect (glass.expanded (1.0f));
-            }
-            if (gridPlate.isNull())
-                gridPlate = juce::ImageCache::getFromMemory (BinaryData::trench_display_grid_png,
-                                                             BinaryData::trench_display_grid_pngSize);
+            if (displayPlate.isNull())
+                displayPlate = juce::ImageCache::getFromMemory (BinaryData::display_bitmap4613_png,
+                                                                BinaryData::display_bitmap4613_pngSize);
             {
                 juce::Graphics::ScopedSaveState samplingState (g);
                 g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-                g.setOpacity (0.09f);
-                g.drawImage (gridPlate, glass, juce::RectanglePlacement::stretchToFit, false);
+                g.drawImage (displayPlate, glass.expanded (1.0f),
+                             juce::RectanglePlacement::stretchToFit, false);
             }
             {
                 juce::ColourGradient vig (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
                                           juce::Colours::black.withAlpha (0.38f), glass.getX(), glass.getY(), true);
                 g.setGradientFill (vig);
                 g.fillRect (glass.expanded (1.0f));
-                juce::ColourGradient lip (juce::Colours::black.withAlpha (0.62f), 0.0f, glass.getY(),
-                                          juce::Colours::transparentBlack, 0.0f, glass.getY() + 9.0f, false);
-                g.setGradientFill (lip);
-                g.fillRect (glass.withHeight (9.0f));
-                juce::ColourGradient lipL (juce::Colours::black.withAlpha (0.34f), glass.getX(), 0.0f,
-                                           juce::Colours::transparentBlack, glass.getX() + 6.0f, 0.0f, false);
-                g.setGradientFill (lipL);
-                g.fillRect (glass.withWidth (6.0f));
-                juce::ColourGradient lipR (juce::Colours::black.withAlpha (0.22f), glass.getRight(), 0.0f,
-                                           juce::Colours::transparentBlack, glass.getRight() - 5.0f, 0.0f, false);
-                g.setGradientFill (lipR);
-                g.fillRect (glass.withLeft (glass.getRight() - 5.0f));
-                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.10f), 0.0f, glass.getY(),
-                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.34f, false);
-                gloss.addColour (0.45, juce::Colours::white.withAlpha (0.03f));
+                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.13f), 0.0f, glass.getY(),
+                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.42f, false);
+                gloss.addColour (0.55, juce::Colours::white.withAlpha (0.05f));
                 g.setGradientFill (gloss);
-                g.fillRect (glass.withHeight (glass.getHeight() * 0.34f));
+                g.fillRect (glass.withHeight (glass.getHeight() * 0.42f));
             }
             {
 
@@ -344,8 +326,7 @@ private:
         }
 
         g.setOpacity (1.0f);
-        drawPlottedTrace (g, phos);
-        drawPeakMarks (g);
+        strokeTrace (g, responsePath, phos);
 
     }
     void drawPlottedTrace (juce::Graphics& g, juce::Colour colour) const
@@ -442,10 +423,10 @@ private:
                               juce::PathStrokeType::butt });
     }
     Theme t;
-    mutable juce::Image gridPlate;
+    mutable juce::Image displayPlate;
     juce::Path responsePath;
 
-    static constexpr float kTraceWidth = 1.0f;
+    static constexpr float kTraceWidth = 1.1f;
     mutable juce::Image traceCache;
     mutable juce::Colour cachedColour;
     std::vector<float> traceXs;
