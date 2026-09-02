@@ -7,6 +7,7 @@ add_executable(trench_native_tests
   test_gestures.cpp
   test_recipe_smoke.cpp
   test_rows.cpp
+  test_helpers.cpp
 )
 target_link_libraries(trench_native_tests PRIVATE trench_native_ui Qt6::Test)
 
@@ -33,6 +34,9 @@ set(TRENCH_NATIVE_TEST_CASES
   cuts_and_real_roots_survive_save_and_open
   cut_survives_the_body240_round_trip
   skin_is_system_grey_and_aliased
+  harmonic_helpers_land_root_times_n
+  slot_six_is_always_a_unit_circle_notch
+  path_meter_reports_the_interior_peak
 )
 
 set(TRENCH_NATIVE_TEST_NAMES)

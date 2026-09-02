@@ -94,6 +94,35 @@ copy-and-edit). Morpheus absolute level is unproven (raw product x trim puts
 42% of corners above +20 dB) - plot Morpheus pinned, don't chase; the P2K gain
 law (DC unity split six ways) is proven and ships.
 
+## Harmonic helpers, slot 6, path meter — DONE 2026-09-02 (late)
+
+Rulings: "Include Harmonic Helpers: quick-dial integer harmonic multipliers (1x, 2x,
+3x...) from a base fundamental pitch." "Enforce Slot 6 Invariants: a dedicated
+corrective shape stage (unit-circle notch + free tilt pole)." "Make Trajectory
+Auditing Mandatory: a live interior morph slider with a real-time peak-gain warning
+meter."
+
+- ROOT card at the left of the console (`rootDial` / `rootEntry` / `rootReadout`,
+  caption `rootNote` shows the note name). Per strip a `harm{i}` word: `-`, `1x root`,
+  `2x 8ve`, `3x 8ve+5th` ... `16x 4-8ve`. Picking n lands FREQ on the nearest word to
+  root x n. The shown harmonic is derived (pole within 50 c of root x n), never stored;
+  moving ROOT re-lands every row that sits on a harmonic, in one undo step; a hand move
+  of FREQ drops the row back to `-`.
+- Row 6: shape pinned to NOTCH and disabled, GAIN off, OFFSET column becomes CEIL
+  (`offsetDial5` over the mag words, `offsetEntry5` typed Hz, readout Hz). State
+  enforces it: `lockedZero` forces bw 0 on section 5 for every zero write,
+  `removeZeroAt` and a real-root zero are refused there. The pole is free; moving it
+  does not move the ceiling.
+- `app/path_meter.{hpp,cpp}`: `PathMeter` under the morph pad (`pathMeter`,
+  `pathReadout`). Every change scans a 9x9 morph x Q interior, reports the worst peak
+  of the six-section product on the 20 Hz-20 kHz grid ("PATH +x dB M.. Q.. HERE +x
+  dB"), bar amber from +20 dB and red from +30 dB (off the fixed frame); the pad draws
+  a ring at the worst point when it is over +20. The pad is the live interior slider.
+- Suite 26/26 headless. `row_table_reads_back_the_packed_words` now expects Hz on
+  row 6. Piano ladder copied to four corners then corner 2 up an octave: path worst
+  +29.7 dB at M0.75 Q0.12 against +25.4 / +25.8 at the ends - the interior peak
+  Massie warned about, now visible.
+
 ## Open
 
 Whether Frequency shows note names beside Hz. Whether the Frequency fader

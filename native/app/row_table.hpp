@@ -24,8 +24,14 @@ class RowTable final : public QWidget {
 
   explicit RowTable(EditorState* state, QWidget* parent = nullptr);
 
+  static constexpr std::size_t kCeilingSection = trench::core::native::kSections - 1;
+  static constexpr int kHarmonicCount = 16;
+
   [[nodiscard]] Shape shapeAt(std::size_t corner, std::size_t index) const;
   [[nodiscard]] QWidget* takePicker();
+  [[nodiscard]] double rootHz() const noexcept { return root_hz_; }
+  [[nodiscard]] int harmonicOf(std::size_t index) const;
+  void setRootHz(double hz);
   void refresh();
 
  protected:
@@ -42,6 +48,7 @@ class RowTable final : public QWidget {
 
   struct Strip {
     QCheckBox* on{};
+    QComboBox* harm{};
     QComboBox* shape{};
     Column freq{};
     Column q{};
@@ -53,7 +60,12 @@ class RowTable final : public QWidget {
   Column buildColumn(QBoxLayout* into, const QString& caption, const QString& prefix,
                      std::size_t index, int minimum, int maximum);
   void buildStrip(std::size_t index, QBoxLayout* into);
+  void buildRoot(QBoxLayout* into);
   void buildPicker();
+  [[nodiscard]] int nearestFrequencyDial(std::size_t index, double hz) const;
+  void landHarmonic(std::size_t index, int harmonic);
+  void pushCeiling(std::size_t index);
+  void pushRoot();
   [[nodiscard]] std::size_t corner() const noexcept;
   [[nodiscard]] double offsetNow(std::size_t index) const;
   void seatZero(std::size_t index, double semitones, std::uint16_t rsq);
@@ -66,6 +78,8 @@ class RowTable final : public QWidget {
 
   EditorState* state_{};
   QWidget* picker_{};
+  Column root_{};
+  double root_hz_{64.0};
   std::array<Strip, trench::core::native::kSections> strips_{};
   std::array<QPushButton*, trench::core::native::kCorners> corner_buttons_{};
   bool refreshing_{};

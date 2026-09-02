@@ -3,6 +3,7 @@
 #include "cascade_plot.hpp"
 #include "editor_state.hpp"
 #include "morph_pad.hpp"
+#include "path_meter.hpp"
 #include "row_table.hpp"
 #include "trench/audio/audition.hpp"
 
@@ -32,6 +33,7 @@ class MainWindow final : public QMainWindow {
   void openPath(const QString& chosen);
   [[nodiscard]] EditorState& state() noexcept { return state_; }
   [[nodiscard]] CascadePlot* plot() const noexcept { return cascade_plot_; }
+  [[nodiscard]] PathMeter* pathMeter() const noexcept { return path_meter_; }
 
  protected:
   void closeEvent(QCloseEvent* event) override;
@@ -53,6 +55,7 @@ class MainWindow final : public QMainWindow {
   EditorState state_;
   CascadePlot* cascade_plot_{};
   MorphPad* morph_pad_{};
+  PathMeter* path_meter_{};
   RowTable* row_table_{};
   QLabel* status_label_{};
   QPushButton* audition_button_{};

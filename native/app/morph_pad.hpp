@@ -8,6 +8,8 @@ class MorphPad final : public QWidget {
  public:
   explicit MorphPad(EditorState* state, QWidget* parent = nullptr);
 
+  void setWorst(double morph, double q, double db);
+
  protected:
   void paintEvent(QPaintEvent* event) override;
   void mousePressEvent(QMouseEvent* event) override;
@@ -20,4 +22,7 @@ class MorphPad final : public QWidget {
   void trackTo(const QPointF& position);
 
   EditorState* state_{};
+  double worst_morph_{};
+  double worst_q_{};
+  double worst_db_{-1.0e9};
 };

@@ -28,7 +28,12 @@ constexpr double kCutStepDb = 20.0 * 0.30102999566398120;
 
 Roots absentRoot() { return RealRoots{kInf, kInf}; }
 
-Resonant lockedZero(std::size_t, Resonant zero) { return zero; }
+constexpr std::size_t kCeilingSection = trench::core::native::kSections - 1;
+
+Resonant lockedZero(std::size_t section, Resonant zero) {
+  if (section == kCeilingSection) zero.bw_hz = 0.0;
+  return zero;
+}
 
 Roots lockedZeroRoots(std::size_t section, const Roots& zero) {
   if (const auto* tone = std::get_if<Resonant>(&zero)) return lockedZero(section, *tone);
@@ -419,7 +424,7 @@ void EditorState::removeZeroAt(std::size_t corner, std::size_t section_index) {
     return;
   }
   auto& state = corners_[corner];
-  if (!state.zero_present[section_index]) return;
+  if (!state.zero_present[section_index] || section_index == kCeilingSection) return;
   remember();
   state.corner.sections[section_index].zero = kHiddenRoot;
   state.zero_present[section_index] = false;
@@ -440,7 +445,8 @@ void EditorState::setWordsAt(std::size_t corner, std::size_t section_index, Lane
   auto& state = corners_[corner];
   if (!state.enabled[section_index]) return;
   const auto [p, q] = trench::core::p2k::pq(mag_word, rsq_word);
-  const Roots wanted = trench::core::native::roots_from_coefficients(p, q, kDatumHz);
+  Roots wanted = trench::core::native::roots_from_coefficients(p, q, kDatumHz);
+  if (lane == Lane::kZero) wanted = lockedZeroRoots(section_index, wanted);
   auto& roots = lane == Lane::kPole ? state.corner.sections[section_index].pole
                                     : state.corner.sections[section_index].zero;
   const bool present = lane == Lane::kPole || state.zero_present[section_index];
@@ -530,7 +536,8 @@ void EditorState::setRealRootAt(std::size_t corner, std::size_t section_index, L
   }
   auto& state = corners_[corner];
   if (!state.enabled[section_index] ||
-      (lane == Lane::kZero && !state.zero_present[section_index])) {
+      (lane == Lane::kZero && !state.zero_present[section_index]) ||
+      (lane == Lane::kZero && section_index == kCeilingSection)) {
     return;
   }
   const RealRoots wanted{clampedDecayHz(a_hz), clampedDecayHz(b_hz)};

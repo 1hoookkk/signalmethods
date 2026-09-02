@@ -15,6 +15,8 @@ add_library(trench_native_ui STATIC
   main_window.hpp
   morph_pad.cpp
   morph_pad.hpp
+  path_meter.cpp
+  path_meter.hpp
   row_table.cpp
   row_table.hpp
   skin.cpp

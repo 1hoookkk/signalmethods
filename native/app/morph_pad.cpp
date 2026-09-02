@@ -1,5 +1,7 @@
 #include "morph_pad.hpp"
 
+#include "path_meter.hpp"
+
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -14,6 +16,8 @@ constexpr QColor kGrid{230, 230, 230};
 constexpr QColor kLive{196, 103, 79};
 constexpr QColor kQuiet{128, 128, 128};
 constexpr QColor kCaption{64, 64, 64};
+constexpr QColor kWarn{214, 150, 38};
+constexpr QColor kHot{196, 60, 48};
 
 double morphOf(std::size_t index) {
   return index == 1 || index == 3 ? 1.0 : 0.0;
@@ -29,6 +33,13 @@ MorphPad::MorphPad(EditorState* state, QWidget* parent)
   setAccessibleName(QStringLiteral("Morph and Q interior"));
   connect(state_, &EditorState::changed, this, qOverload<>(&MorphPad::update));
   connect(state_, &EditorState::selectionChanged, this, [this] { update(); });
+}
+
+void MorphPad::setWorst(double morph, double q, double db) {
+  worst_morph_ = morph;
+  worst_q_ = q;
+  worst_db_ = db;
+  update();
 }
 
 QRectF MorphPad::field() const {
@@ -84,6 +95,11 @@ void MorphPad::paintEvent(QPaintEvent*) {
     }
   }
 
+  if (worst_db_ >= PathMeter::kWarnDb) {
+    painter.setPen(QPen(worst_db_ >= PathMeter::kFrameDb ? kHot : kWarn, 1.5));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawEllipse(pointFor(worst_morph_, worst_q_), 6.0, 6.0);
+  }
   const QPointF here = pointFor(state_->morphPos(), state_->qPos());
   painter.setPen(Qt::NoPen);
   painter.setBrush(kLive);

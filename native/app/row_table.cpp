@@ -19,6 +19,7 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -97,6 +98,35 @@ double radiusOf(double bw_hz) {
 const std::array<const char*, 5> kShapeNames{"RESONATOR", "PAIR", "NOTCH", "EDGE HP",
                                              "EDGE LP"};
 
+const std::array<const char*, 16> kHarmonicNames{
+    "1x root",      "2x 8ve",       "3x 8ve+5th",   "4x 2-8ve",
+    "5x 2-8ve+M3",  "6x 2-8ve+5th", "7x 2-8ve+m7",  "8x 3-8ve",
+    "9x 3-8ve+M2",  "10x 3-8ve+M3", "11x 3-8ve+#4", "12x 3-8ve+5th",
+    "13x 3-8ve+m6", "14x 3-8ve+m7", "15x 3-8ve+M7", "16x 4-8ve"};
+
+constexpr double kHarmonicToleranceCents = 50.0;
+constexpr std::size_t kCeiling = RowTable::kCeilingSection;
+
+std::uint16_t rootReferenceRsq() {
+  static const std::uint16_t value = p2k::words_from_root(1'000.0, radiusOf(100.0)).second;
+  return value;
+}
+
+QString noteName(double hz) {
+  if (!(hz > 0.0) || !std::isfinite(hz)) return QString();
+  static const std::array<const char*, 12> kNames{"C",  "C#", "D",  "D#", "E",  "F",
+                                                  "F#", "G",  "G#", "A",  "A#", "B"};
+  const double midi = 69.0 + 12.0 * std::log2(hz / 440.0);
+  const int nearest = static_cast<int>(std::lround(midi));
+  const int cents = static_cast<int>(std::lround((midi - nearest) * 100.0));
+  const int octave = nearest / 12 - 1;
+  return QStringLiteral("%1%2 %3%4")
+      .arg(QString::fromUtf8(kNames[static_cast<std::size_t>(((nearest % 12) + 12) % 12)]))
+      .arg(octave)
+      .arg(cents >= 0 ? QStringLiteral("+") : QString())
+      .arg(cents);
+}
+
 }
 
 RowTable::RowTable(EditorState* state, QWidget* parent)
@@ -110,6 +140,7 @@ RowTable::RowTable(EditorState* state, QWidget* parent)
 
   auto* console = new QHBoxLayout;
   console->setSpacing(6);
+  buildRoot(console);
   for (std::size_t index = 0; index < strips_.size(); ++index) {
     buildStrip(index, console);
   }
@@ -146,6 +177,94 @@ void RowTable::buildPicker() {
       refresh();
     });
   }
+}
+
+void RowTable::buildRoot(QBoxLayout* into) {
+  auto* card = new QWidget(this);
+  card->setObjectName(QStringLiteral("rootCard"));
+  auto* stack = new QVBoxLayout(card);
+  stack->setSpacing(3);
+  stack->setContentsMargins(4, 2, 4, 2);
+  auto* columns = new QHBoxLayout;
+  columns->setContentsMargins(0, 0, 0, 0);
+  root_ = buildColumn(columns, QStringLiteral("ROOT"), QStringLiteral("root"), 0, 0,
+                      static_cast<int>(p2k::kMaxMagByte));
+  root_.dial->setObjectName(QStringLiteral("rootDial"));
+  root_.dial->readout()->setObjectName(QStringLiteral("rootReadout"));
+  root_.entry->setObjectName(QStringLiteral("rootEntry"));
+  root_.caption->setObjectName(QStringLiteral("rootNote"));
+  stack->addLayout(columns);
+  stack->addStretch(1);
+  into->addWidget(card, 0, Qt::AlignTop);
+
+  connect(root_.dial, &WordDial::valueChanged, this, [this](int) {
+    if (refreshing_) return;
+    pushRoot();
+  });
+  connect(root_.entry, &QLineEdit::editingFinished, this, [this] {
+    if (refreshing_) return;
+    bool ok = false;
+    const double typed = root_.entry->text().toDouble(&ok);
+    if (ok && typed > 0.0) setRootHz(typed);
+    refresh();
+  });
+}
+
+void RowTable::pushRoot() {
+  setRootHz(rootOf(p2k::dial_word(static_cast<std::size_t>(root_.dial->value())),
+                   rootReferenceRsq())
+                .hz);
+}
+
+void RowTable::setRootHz(double hz) {
+  if (!(hz > 0.0) || !std::isfinite(hz)) return;
+  std::array<int, trench::core::native::kSections> held{};
+  for (std::size_t index = 0; index < strips_.size(); ++index) held[index] = harmonicOf(index);
+  root_hz_ = std::clamp(hz, EditorState::kLowHz, EditorState::kNyquistHz);
+  state_->beginUndoGroup();
+  for (std::size_t index = 0; index < strips_.size(); ++index) {
+    if (held[index] > 0) landHarmonic(index, held[index]);
+  }
+  state_->endUndoGroup();
+  refresh();
+}
+
+int RowTable::harmonicOf(std::size_t index) const {
+  if (!state_->sectionEnabledAt(corner(), index)) return 0;
+  const auto& words = state_->packed().words[corner()][index];
+  const double hz = rootOf(words[2], words[3]).hz;
+  if (!(hz > 0.0) || !std::isfinite(hz)) return 0;
+  const int harmonic = static_cast<int>(std::lround(hz / root_hz_));
+  if (harmonic < 1 || harmonic > kHarmonicCount) return 0;
+  const double cents = 1200.0 * std::log2(hz / (root_hz_ * harmonic));
+  return std::abs(cents) <= kHarmonicToleranceCents ? harmonic : 0;
+}
+
+int RowTable::nearestFrequencyDial(std::size_t index, double hz) const {
+  const auto& words = state_->packed().words[corner()][index];
+  const double target = std::log2(hz);
+  int best = -1;
+  double best_cost = std::numeric_limits<double>::infinity();
+  for (int dial = 0; dial <= static_cast<int>(p2k::kMaxMagByte); ++dial) {
+    const Root root = rootOf(p2k::dial_word(static_cast<std::size_t>(dial)), words[3]);
+    if (!(root.hz > 0.0) || !std::isfinite(root.hz)) continue;
+    const double cost = std::abs(std::log2(root.hz) - target);
+    if (cost < best_cost) {
+      best_cost = cost;
+      best = dial;
+    }
+  }
+  return best;
+}
+
+void RowTable::landHarmonic(std::size_t index, int harmonic) {
+  if (harmonic < 1 || !state_->sectionEnabledAt(corner(), index)) return;
+  const int dial = nearestFrequencyDial(index, root_hz_ * harmonic);
+  if (dial < 0) return;
+  refreshing_ = true;
+  strips_[index].freq.dial->setValue(dial);
+  refreshing_ = false;
+  pushPole(index);
 }
 
 QWidget* RowTable::takePicker() {
@@ -200,6 +319,12 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
   strip.on->setFont(big);
   head->addWidget(strip.on);
   head->addStretch(1);
+  strip.harm = new QComboBox(card);
+  strip.harm->setObjectName(QStringLiteral("harm%1").arg(index));
+  strip.harm->addItem(QStringLiteral("-"));
+  for (const char* name : kHarmonicNames) strip.harm->addItem(QString::fromUtf8(name));
+  strip.harm->setFocusPolicy(Qt::ClickFocus);
+  head->addWidget(strip.harm);
   strip.shape = new QComboBox(card);
   strip.shape->setObjectName(QStringLiteral("shape%1").arg(index));
   for (const char* name : kShapeNames) strip.shape->addItem(QString::fromUtf8(name));
@@ -216,8 +341,11 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
                         maxPoleRes());
   strip.gain = buildColumn(columns, QStringLiteral("GAIN"), QStringLiteral("gain"), index, 1,
                            kTopDial);
-  strip.offset = buildColumn(columns, QStringLiteral("OFFSET"), QStringLiteral("offset"),
-                             index, -kOffsetSpan, kOffsetSpan);
+  strip.offset = index == kCeiling
+                     ? buildColumn(columns, QStringLiteral("CEIL"), QStringLiteral("offset"),
+                                   index, 0, static_cast<int>(p2k::kMaxMagByte))
+                     : buildColumn(columns, QStringLiteral("OFFSET"), QStringLiteral("offset"),
+                                   index, -kOffsetSpan, kOffsetSpan);
   stack->addLayout(columns);
 
   auto* cut_row = new QHBoxLayout;
@@ -236,6 +364,7 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
   into->addWidget(card);
 
   for (QWidget* control : {static_cast<QWidget*>(strip.on),
+                           static_cast<QWidget*>(strip.harm),
                            static_cast<QWidget*>(strip.shape),
                            static_cast<QWidget*>(strip.freq.dial),
                            static_cast<QWidget*>(strip.freq.entry),
@@ -255,6 +384,11 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
       state_->toggleSectionAt(corner(), index);
     }
   });
+  connect(strip.harm, &QComboBox::currentIndexChanged, this, [this, index](int which) {
+    if (refreshing_) return;
+    if (which > 0) landHarmonic(index, which);
+    refresh();
+  });
   connect(strip.shape, &QComboBox::currentIndexChanged, this, [this, index](int which) {
     if (refreshing_) return;
     pushShape(index, static_cast<Shape>(which));
@@ -273,7 +407,11 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
   });
   connect(strip.offset.dial, &WordDial::valueChanged, this, [this, index](int) {
     if (refreshing_) return;
-    pushOffset(index);
+    if (index == kCeiling) {
+      pushCeiling(index);
+    } else {
+      pushOffset(index);
+    }
   });
   connect(strip.freq.entry, &QLineEdit::editingFinished, this,
           [this, index] { landEntry(index, Kind::kFreq); });
@@ -327,7 +465,7 @@ void RowTable::pushPole(std::size_t index) {
       which, index, EditorState::Lane::kPole,
       p2k::dial_word(static_cast<std::size_t>(strip.freq.dial->value())),
       p2k::dial_word(static_cast<std::size_t>(kTopDial - strip.q.dial->value())));
-  if (shape == Shape::kPair || shape == Shape::kNotch) {
+  if (index != kCeiling && (shape == Shape::kPair || shape == Shape::kNotch)) {
     seatZero(index, semitones, state_->packed().words[which][index][1]);
   }
   state_->endUndoGroup();
@@ -338,6 +476,14 @@ void RowTable::pushGain(std::size_t index) {
   if (shapeAt(corner(), index) != Shape::kPair) return;
   seatZero(index, static_cast<double>(strip.offset.dial->value()),
            p2k::dial_word(static_cast<std::size_t>(strip.gain.dial->value())));
+}
+
+void RowTable::pushCeiling(std::size_t index) {
+  const Strip& strip = strips_[index];
+  if (!state_->sectionEnabledAt(corner(), index)) return;
+  state_->setWordsAt(corner(), index, EditorState::Lane::kZero,
+                     p2k::dial_word(static_cast<std::size_t>(strip.offset.dial->value())),
+                     p2k::kS6ZeroRsqWord);
 }
 
 void RowTable::pushOffset(std::size_t index) {
@@ -444,6 +590,19 @@ void RowTable::landEntry(std::size_t index, Kind kind) {
       consider(dial, std::abs(gainDbOf(candidate) - typed));
     }
     if (best >= 0) strip.gain.dial->setValue(best);
+  } else if (index == kCeiling) {
+    if (!(typed > 0.0)) {
+      refresh();
+      return;
+    }
+    const double target = std::log2(typed);
+    for (int dial = 0; dial <= static_cast<int>(p2k::kMaxMagByte); ++dial) {
+      const double zero_hz =
+          rootOf(p2k::dial_word(static_cast<std::size_t>(dial)), p2k::kS6ZeroRsqWord).hz;
+      if (!(zero_hz > 0.0) || !std::isfinite(zero_hz)) continue;
+      consider(dial, std::abs(std::log2(zero_hz) - target));
+    }
+    if (best >= 0) strip.offset.dial->setValue(best);
   } else {
     if (shape != Shape::kPair && shape != Shape::kNotch) {
       refresh();
@@ -478,7 +637,8 @@ bool RowTable::eventFilter(QObject* watched, QEvent* event) {
       const bool zero = watched == strip.gain.dial || watched == strip.gain.entry ||
                         watched == strip.offset.dial || watched == strip.offset.entry ||
                         watched == strip.shape;
-      if (pole || zero || watched == strip.on || watched == strip.cut) {
+      if (pole || zero || watched == strip.on || watched == strip.cut ||
+          watched == strip.harm) {
         selectFrom(index, pole ? EditorState::Lane::kPole : EditorState::Lane::kZero);
         break;
       }
@@ -495,15 +655,38 @@ void RowTable::refresh() {
     corner_buttons_[index]->setChecked(index == which);
   }
   const std::size_t selected = state_->selectedSection();
+  {
+    const QSignalBlocker root_blocker(root_.dial);
+    const double target = std::log2(root_hz_);
+    int best = 0;
+    double best_cost = std::numeric_limits<double>::infinity();
+    for (int dial = 0; dial <= static_cast<int>(p2k::kMaxMagByte); ++dial) {
+      const double hz =
+          rootOf(p2k::dial_word(static_cast<std::size_t>(dial)), rootReferenceRsq()).hz;
+      if (!(hz > 0.0) || !std::isfinite(hz)) continue;
+      const double cost = std::abs(std::log2(hz) - target);
+      if (cost < best_cost) {
+        best_cost = cost;
+        best = dial;
+      }
+    }
+    root_.dial->setValue(best);
+    root_.dial->readout()->setText(QString::asprintf("%.1f Hz", root_hz_));
+    root_.entry->setText(QString::asprintf("%.1f", root_hz_));
+    root_.caption->setText(QStringLiteral("ROOT %1").arg(noteName(root_hz_)));
+  }
   for (std::size_t index = 0; index < strips_.size(); ++index) {
     Strip& strip = strips_[index];
     const auto& words = state_->packed().words[which][index];
     const bool enabled = state_->sectionEnabledAt(which, index);
     const Shape shape = shapeAt(which, index);
+    const bool ceiling = index == kCeiling;
     const bool paired = enabled && shape == Shape::kPair;
-    const bool offset_live = enabled && (shape == Shape::kPair || shape == Shape::kNotch);
+    const bool offset_live =
+        enabled && (ceiling || shape == Shape::kPair || shape == Shape::kNotch);
 
     const QSignalBlocker on_blocker(strip.on);
+    const QSignalBlocker harm_blocker(strip.harm);
     const QSignalBlocker shape_blocker(strip.shape);
     const QSignalBlocker freq_blocker(strip.freq.dial);
     const QSignalBlocker q_blocker(strip.q.dial);
@@ -515,6 +698,7 @@ void RowTable::refresh() {
     strip.on->setText(index == selected
                           ? QStringLiteral("> %1").arg(index + 1)
                           : QString::number(index + 1));
+    strip.harm->setCurrentIndex(harmonicOf(index));
     strip.shape->setCurrentIndex(static_cast<int>(shape));
     strip.freq.dial->setValue(static_cast<int>(p2k::dial_of_word(words[2])));
     strip.freq.dial->readout()->setText(enabled ? hzText(words[2], words[3])
@@ -524,10 +708,16 @@ void RowTable::refresh() {
                                              : QStringLiteral("—"));
     strip.gain.dial->setValue(paired ? static_cast<int>(p2k::dial_of_word(words[1])) : 1);
     strip.gain.dial->readout()->setText(paired ? gainText(words) : QStringLiteral("—"));
-    const double semitones = offset_live ? semitonesOf(words) : 0.0;
-    strip.offset.dial->setValue(static_cast<int>(std::lround(semitones)));
-    strip.offset.dial->readout()->setText(offset_live ? offsetText(words)
-                                                      : QStringLiteral("—"));
+    const double semitones = offset_live && !ceiling ? semitonesOf(words) : 0.0;
+    if (ceiling) {
+      strip.offset.dial->setValue(static_cast<int>(p2k::dial_of_word(words[0])));
+      strip.offset.dial->readout()->setText(offset_live ? hzText(words[0], words[1])
+                                                        : QStringLiteral("—"));
+    } else {
+      strip.offset.dial->setValue(static_cast<int>(std::lround(semitones)));
+      strip.offset.dial->readout()->setText(offset_live ? offsetText(words)
+                                                        : QStringLiteral("—"));
+    }
     strip.cut->setValue(state_->cutAt(which, index));
 
     const Root pole = rootOf(words[2], words[3]);
@@ -535,10 +725,13 @@ void RowTable::refresh() {
     strip.q.entry->setText(enabled ? QString::asprintf("%.1f", resonanceOf(pole)) : QString());
     strip.gain.entry->setText(paired ? QString::asprintf("%+.1f", gainDbOf(words))
                                      : QString());
-    strip.offset.entry->setText(offset_live ? QString::asprintf("%+.1f", semitones)
-                                            : QString());
+    strip.offset.entry->setText(
+        !offset_live ? QString()
+        : ceiling     ? QString::asprintf("%.1f", rootOf(words[0], words[1]).hz)
+                      : QString::asprintf("%+.1f", semitones));
 
-    strip.shape->setEnabled(enabled);
+    strip.harm->setEnabled(enabled);
+    strip.shape->setEnabled(enabled && !ceiling);
     strip.freq.dial->setEnabled(enabled);
     strip.freq.entry->setEnabled(enabled);
     strip.q.dial->setEnabled(enabled);

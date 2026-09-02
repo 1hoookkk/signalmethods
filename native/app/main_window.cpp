@@ -114,6 +114,8 @@ MainWindow::MainWindow(QWidget* parent)
   cascade_plot_->setObjectName(QStringLiteral("cascadePlot"));
   morph_pad_ = new MorphPad(&state_, central);
   morph_pad_->setObjectName(QStringLiteral("morphPad"));
+  path_meter_ = new PathMeter(central);
+  path_meter_->setObjectName(QStringLiteral("pathMeter"));
   row_table_ = new RowTable(&state_, central);
   row_table_->setObjectName(QStringLiteral("rowTable"));
 
@@ -184,6 +186,7 @@ MainWindow::MainWindow(QWidget* parent)
   corner_block->setSpacing(6);
   corner_block->addWidget(row_table_->takePicker(), 0, Qt::AlignLeft);
   corner_block->addWidget(morph_pad_, 0, Qt::AlignLeft);
+  corner_block->addWidget(path_meter_, 0, Qt::AlignLeft);
   gestures->addLayout(corner_block);
   gestures->addLayout(inspector);
   side->addLayout(gestures);
@@ -418,6 +421,10 @@ void MainWindow::refresh() {
     reading = reading.isEmpty() ? bytes : reading + QStringLiteral(" · ") + bytes;
   }
   if (!reading.isEmpty()) status_label_->setText(reading);
+
+  path_meter_->setBody(state_.packed(), state_.morphPos(), state_.qPos());
+  morph_pad_->setWorst(path_meter_->worstMorph(), path_meter_->worstQ(),
+                       path_meter_->worstDb());
 
   updateAuditionView();
 }

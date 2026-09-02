@@ -350,11 +350,17 @@ TRENCH_TEST(row_table_reads_back_the_packed_words) {
     if (!notch) CHECK(gain->value() == static_cast<int>(p2k::dial_of_word(words[1])));
     const double semitones = 12.0 * std::log2(rootOf(words[0], words[1]).hz /
                                               rootOf(words[2], words[3]).hz);
-    CHECK(offset->value() == static_cast<int>(std::lround(semitones)));
+    const bool ceiling = index == RowTable::kCeilingSection;
+    if (ceiling) {
+      CHECK(offset->value() == static_cast<int>(p2k::dial_of_word(words[0])));
+      CHECK(offset_readout->text() == hzTextOf(words[0], words[1]));
+    } else {
+      CHECK(offset->value() == static_cast<int>(std::lround(semitones)));
+      CHECK(offset_readout->text() == QString::asprintf("%+.1f st", semitones));
+    }
     CHECK(freq_readout->text() == hzTextOf(words[2], words[3]));
     CHECK(q_readout->text() == resonanceTextOf(words[2], words[3]));
     CHECK(gain_readout->text() == (notch ? QStringLiteral("—") : gainTextOf(words)));
-    CHECK(offset_readout->text() == QString::asprintf("%+.1f st", semitones));
     std::printf("row %zu  %-9s %-12s %-8s %-9s %s\n", index + 1,
                 shape->currentText().toUtf8().constData(),
                 freq_readout->text().toUtf8().constData(),
