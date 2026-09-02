@@ -14,12 +14,20 @@ namespace {
 
 constexpr int kPixelsPerWord = 2;
 constexpr int kFinePixelsPerWord = 10;
-constexpr int kBarHeight = 3;
-constexpr int kHeight = 40;
+constexpr int kHeight = 132;
+constexpr int kWidth = 48;
+constexpr int kReadoutHeight = 18;
+constexpr int kTrackWidth = 8;
+constexpr int kKnobWidth = 26;
+constexpr int kKnobHeight = 12;
+constexpr int kMargin = 6;
 constexpr QColor kWell{255, 255, 255};
 constexpr QColor kEdge{128, 128, 128};
-constexpr QColor kBar{0, 0, 0};
-constexpr QColor kBarWell{224, 224, 224};
+constexpr QColor kFocus{196, 103, 79};
+constexpr QColor kTrack{224, 224, 224};
+constexpr QColor kFill{0, 0, 0};
+constexpr QColor kKnob{64, 64, 64};
+constexpr QColor kKnobLine{255, 255, 255};
 
 }
 
@@ -46,10 +54,11 @@ void WordDial::setValue(int value) {
   emit valueChanged(value_);
 }
 
-QSize WordDial::sizeHint() const { return {60, kHeight}; }
+QSize WordDial::sizeHint() const { return {kWidth, kHeight}; }
 
 void WordDial::mousePressEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton) return;
+  setFocus(Qt::MouseFocusReason);
   dragging_ = true;
   press_y_ = event->position().toPoint().y();
   press_value_ = value_;
@@ -90,23 +99,31 @@ void WordDial::keyPressEvent(QKeyEvent* event) {
 }
 
 void WordDial::resizeEvent(QResizeEvent*) {
-  readout_->setGeometry(1, 1, width() - 2, height() - kBarHeight - 4);
+  readout_->setGeometry(1, 1, width() - 2, kReadoutHeight);
 }
 
 void WordDial::paintEvent(QPaintEvent*) {
   QPainter painter(this);
   const QRect well = rect().adjusted(0, 0, -1, -1);
-  painter.setPen(QPen(kEdge, 1.0));
+  painter.setPen(QPen(hasFocus() ? kFocus : kEdge, hasFocus() ? 2.0 : 1.0));
   painter.setBrush(isEnabled() ? kWell : palette().window().color());
   painter.drawRect(well);
-  const QRect track(2, height() - kBarHeight - 2, width() - 4, kBarHeight);
+  const int top = kReadoutHeight + kMargin + kKnobHeight / 2;
+  const int bottom = height() - kMargin - kKnobHeight / 2;
+  if (bottom <= top) return;
+  const QRect track((width() - kTrackWidth) / 2, top, kTrackWidth, bottom - top);
   painter.setPen(Qt::NoPen);
-  painter.setBrush(kBarWell);
+  painter.setBrush(kTrack);
   painter.drawRect(track);
   if (!isEnabled() || maximum_ <= minimum_) return;
   const double fraction =
       static_cast<double>(value_ - minimum_) / static_cast<double>(maximum_ - minimum_);
-  const int filled = static_cast<int>(fraction * track.width() + 0.5);
-  painter.setBrush(kBar);
-  painter.drawRect(QRect(track.left(), track.top(), filled, track.height()));
+  const int y = bottom - static_cast<int>(fraction * (bottom - top) + 0.5);
+  painter.setBrush(kFill);
+  painter.drawRect(QRect(track.left(), y, track.width(), bottom - y));
+  const QRect knob((width() - kKnobWidth) / 2, y - kKnobHeight / 2, kKnobWidth, kKnobHeight);
+  painter.setBrush(kKnob);
+  painter.drawRect(knob);
+  painter.setPen(QPen(kKnobLine, 1.0));
+  painter.drawLine(knob.left() + 3, y, knob.right() - 3, y);
 }

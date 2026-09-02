@@ -85,9 +85,8 @@ overlay, CLIP audition source, FIT button and `--reference` flag. OPEN takes
 .trenchbody / .body240 only. Kept: row_table, cascade_plot, editor_state,
 body_io, main_window, main, skin, morph_pad, gesture_dial. Tests voice a
 hand-set ladder (`tests/ladder.hpp`, the PianoSndBrd numbers) instead of
-templates; suite 18 cases + registry, all green. `core/src/p2k/zeros_fit.cpp`
-(fit_zeros_under) is still in core with no caller - erase when core is next
-touched.
+templates; suite 18 cases + registry, all green. The callerless
+`core/src/p2k/zeros_fit.cpp` (`fit_zeros_under`) has now been erased.
 
 ## Fader console — DONE 2026-09-02 (Tyson: "Faders")
 
@@ -168,6 +167,26 @@ meter."
   +29.7 dB at M0.75 Q0.12 against +25.4 / +25.8 at the ends - the interior peak
   Massie warned about, now visible.
 
+## Operator pass fixes — DONE 2026-09-02 (late; critique from another chat, Tyson: "your job is this")
+
+1. A newly enabled row seats as a locked 1x ROOT resonator: pole at ROOT with Q 35 (or
+   the pole-radius ceiling, Q 21 at 64 Hz), zero on the pole at 4x width (+8 dB bell),
+   through the packed-word seat so it lands on the note. Re-enabling a voiced row keeps
+   its values. Row 6 seats only its pole; the cage stays.
+2. FREQ and Q are independent on the face: a FREQ move re-lands the radius word to hold
+   the displayed Q; a Q move re-lands the angle word to hold the displayed Hz
+   (`pushPole(index, Kind moved)`). Typed entries and the harmonic words go through it.
+3. Shape words: POLE (bare pole), RESONATOR (the bell, zero on the pole, was PAIR),
+   NOTCH, EDGE HP, EDGE LP. A fresh row is RESONATOR with GAIN and OFFSET live.
+4. PATH meter is two lines (`pathReadout` PATH + worst point, `hereReadout` HERE) at
+   170x68 with a 10 px bar; nothing clips. The blank-document contradiction did not
+   reproduce headless; the suite now asserts PATH == HERE == 0 on a blank document
+   before and after a ladder.
+5. WordDial is a vertical fader: 48x132, track + knob, readout on top, drag relative
+   (2 px/word, shift 10), wheel, arrows, PageUp/Down 12; click takes keyboard focus and
+   paints an orange focus ring.
+Suite 27/27 headless.
+
 ## Open
 
 - DONE: each row's FREQ readout carries its note (`302.2 Hz D4+37`); the harmonic word
@@ -176,4 +195,4 @@ meter."
 - Console Hz are decoded at the 44,100 Hz datum; the prediction tests decode P2K at
   39,062.5 Hz. Confirm which datum the readouts should speak before trusting Hz
   against hardware.
-- `core/src/p2k/zeros_fit.cpp` still in core with no caller.
+- DONE: removed callerless `core/src/p2k/zeros_fit.cpp` and its dead public API.

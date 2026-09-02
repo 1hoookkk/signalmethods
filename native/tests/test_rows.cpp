@@ -217,22 +217,38 @@ TRENCH_TEST(row_table_edits_reach_the_state) {
   CHECK(freq->isEnabled());
   CHECK(shape->isEnabled());
   CHECK(shape->currentText() == QStringLiteral("RESONATOR"));
-  freq->setValue(0x90);
-  resonance->setValue(150);
   const auto& words = state.packed().words[0][0];
+  CHECK(state.rootPresent(0, Lane::kZero));
+  CHECK(onTheNote(words));
+  {
+    const Root fresh = rootOf(words[2], words[3]);
+    std::printf("fresh row: %s  %s  gain %s\n", freq_readout->text().toUtf8().constData(),
+                q_readout->text().toUtf8().constData(), gain_readout->text().toUtf8().constData());
+    CHECK(std::abs(std::log2(fresh.hz / table.rootHz())) < 0.05);
+    CHECK(resonanceOf(fresh) > 8.0);
+    CHECK(gain->isEnabled() && offset->isEnabled());
+  }
+  shape->setCurrentIndex(shape->findText(QStringLiteral("POLE")));
+  CHECK(!state.rootPresent(0, Lane::kZero));
+  resonance->setValue(150);
+  {
+    const Root after_q = rootOf(words[2], words[3]);
+    CHECK(words[3] == dial(kTopDial - 150));
+    CHECK(std::abs(std::log2(after_q.hz / table.rootHz())) < 0.05);
+  }
+  const double q_before_freq = resonanceOf(rootOf(words[2], words[3]));
+  freq->setValue(0x90);
   CHECK(words[2] == dial(0x90));
-  CHECK(words[3] == dial(kTopDial - 150));
   CHECK(freq->value() == 0x90);
-  CHECK(resonance->value() == 150);
+  CHECK(std::abs(std::log2(resonanceOf(rootOf(words[2], words[3])) / q_before_freq)) < 0.1);
   CHECK(freq_readout->text().startsWith(hzTextOf(words[2], words[3]) + QStringLiteral(" ")));
   CHECK(q_readout->text() == resonanceTextOf(words[2], words[3]));
-  std::printf("freq %s  q %s\n", freq_readout->text().toUtf8().constData(),
-              q_readout->text().toUtf8().constData());
+  std::printf("freq %s  q %s (Q held across the FREQ move)\n",
+              freq_readout->text().toUtf8().constData(), q_readout->text().toUtf8().constData());
 
-  CHECK(!state.rootPresent(0, Lane::kZero));
   CHECK(!gain->isEnabled());
   CHECK(!offset->isEnabled());
-  shape->setCurrentIndex(shape->findText(QStringLiteral("PAIR")));
+  shape->setCurrentIndex(shape->findText(QStringLiteral("RESONATOR")));
   CHECK(state.rootPresent(0, Lane::kZero));
   CHECK(onTheNote(words));
   CHECK(gain->isEnabled());
@@ -271,7 +287,7 @@ TRENCH_TEST(row_table_edits_reach_the_state) {
   CHECK(!offset->isEnabled());
   CHECK(offset_readout->text() == QStringLiteral("—"));
 
-  shape->setCurrentIndex(shape->findText(QStringLiteral("RESONATOR")));
+  shape->setCurrentIndex(shape->findText(QStringLiteral("POLE")));
   CHECK(!state.rootPresent(0, Lane::kZero));
   CHECK(!gain->isEnabled());
   CHECK(gain_readout->text() == QStringLiteral("—"));
@@ -343,7 +359,7 @@ TRENCH_TEST(row_table_reads_back_the_packed_words) {
     CHECK(offset_readout != nullptr);
     CHECK(state.zeroPresentAt(0, index));
     const bool notch = words[1] == p2k::kS6ZeroRsqWord;
-    CHECK(shape->currentText() == (notch ? QStringLiteral("NOTCH") : QStringLiteral("PAIR")));
+    CHECK(shape->currentText() == (notch ? QStringLiteral("NOTCH") : QStringLiteral("RESONATOR")));
     CHECK(freq->value() == static_cast<int>(p2k::dial_of_word(words[2])));
     CHECK(resonance->value() == kTopDial - static_cast<int>(p2k::dial_of_word(words[3])));
     CHECK(gain->isEnabled() == !notch);

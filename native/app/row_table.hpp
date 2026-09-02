@@ -72,7 +72,8 @@ class RowTable final : public QWidget {
   [[nodiscard]] std::size_t corner() const noexcept;
   [[nodiscard]] double offsetNow(std::size_t index) const;
   void seatZero(std::size_t index, double semitones, std::uint16_t rsq);
-  void pushPole(std::size_t index);
+  void pushPole(std::size_t index, Kind moved);
+  void seatFreshRow(std::size_t index);
   void pushGain(std::size_t index);
   void pushOffset(std::size_t index);
   void pushShape(std::size_t index, Shape shape);

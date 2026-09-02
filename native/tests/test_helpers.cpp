@@ -198,6 +198,9 @@ TRENCH_TEST(path_meter_reports_the_interior_peak) {
   CHECK(meter->worstDb() <= 0.5);
 
   EditorState& state = window.state();
+  state.setDocument(EditorState::blank());
+  CHECK(meter->worstDb() <= 0.5);
+  CHECK(std::abs(meter->worstDb() - meter->hereDb()) < 1e-9);
   voiceLadder(state, 0);
   state.setEditingCorner(0);
   for (std::size_t corner = 1; corner < trench::core::native::kCorners; ++corner) {
@@ -216,6 +219,13 @@ TRENCH_TEST(path_meter_reports_the_interior_peak) {
   const double at_to = meter->hereDb();
   CHECK(meter->worstDb() >= std::max(at_from, at_to) - 0.5);
   CHECK(readout->text().startsWith(QStringLiteral("PATH")));
+  auto* here = window.findChild<QLabel*>(QStringLiteral("hereReadout"));
+  CHECK(here != nullptr && here->text().startsWith(QStringLiteral("HERE")));
+  state.setDocument(EditorState::blank());
+  CHECK(meter->worstDb() <= 0.5);
+  CHECK(std::abs(meter->worstDb() - meter->hereDb()) < 1e-9);
+  std::printf("blank after ladder: %s / %s\n", readout->text().toUtf8().constData(),
+              here->text().toUtf8().constData());
   std::printf("path worst %+.1f dB at M%.2f Q%.2f (from %+.1f, to %+.1f)\n",
               meter->worstDb(), meter->worstMorph(), meter->worstQ(), at_from, at_to);
 }

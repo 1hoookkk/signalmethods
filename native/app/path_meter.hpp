@@ -22,12 +22,14 @@ class PathMeter final : public QWidget {
   [[nodiscard]] double worstQ() const noexcept { return worst_q_; }
   [[nodiscard]] double hereDb() const noexcept { return here_db_; }
   [[nodiscard]] QLabel* readout() const noexcept { return readout_; }
+  [[nodiscard]] QLabel* hereReadout() const noexcept { return here_; }
 
  protected:
   void paintEvent(QPaintEvent* event) override;
 
  private:
   QLabel* readout_{};
+  QLabel* here_{};
   double worst_db_{};
   double worst_morph_{};
   double worst_q_{};

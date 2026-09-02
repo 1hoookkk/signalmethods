@@ -20,7 +20,9 @@ constexpr QColor kWarn{214, 150, 38};
 constexpr QColor kHot{196, 60, 48};
 constexpr QColor kPanel{255, 255, 255};
 constexpr QColor kPanelEdge{200, 200, 200};
-constexpr int kBarHeight = 8;
+constexpr int kBarHeight = 10;
+constexpr int kMeterWidth = 170;
+constexpr int kMeterHeight = 68;
 
 const std::vector<double>& auditGrid() {
   static const std::vector<double> grid =
@@ -51,14 +53,18 @@ QColor toneFor(double db) {
 }
 
 PathMeter::PathMeter(QWidget* parent) : QWidget(parent) {
-  setFixedSize(170, 44);
+  setFixedSize(kMeterWidth, kMeterHeight);
   auto* column = new QVBoxLayout(this);
-  column->setContentsMargins(4, 2, 4, kBarHeight + 6);
-  column->setSpacing(0);
+  column->setContentsMargins(5, 3, 5, kBarHeight + 8);
+  column->setSpacing(1);
   readout_ = new QLabel(this);
   readout_->setObjectName(QStringLiteral("pathReadout"));
   readout_->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  here_ = new QLabel(this);
+  here_->setObjectName(QStringLiteral("hereReadout"));
+  here_->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   column->addWidget(readout_);
+  column->addWidget(here_);
   setBody({}, 0.0, 0.0);
 }
 
@@ -77,8 +83,9 @@ void PathMeter::setBody(const trench::core::PackedBody& packed, double morph, do
     }
   }
   here_db_ = peakDb(packed, morph, q);
-  readout_->setText(QString::asprintf("PATH %+.1f dB  M%.2f Q%.2f   HERE %+.1f dB",
-                                      worst_db_, worst_morph_, worst_q_, here_db_));
+  readout_->setText(QString::asprintf("PATH %+.1f dB  M%.2f Q%.2f", worst_db_, worst_morph_,
+                                      worst_q_));
+  here_->setText(QString::asprintf("HERE %+.1f dB", here_db_));
   update();
 }
 

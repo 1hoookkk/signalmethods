@@ -96,8 +96,10 @@ double radiusOf(double bw_hz) {
   return std::exp(-std::numbers::pi * bw_hz / EditorState::kDatumHz);
 }
 
-const std::array<const char*, 5> kShapeNames{"RESONATOR", "PAIR", "NOTCH", "EDGE HP",
+const std::array<const char*, 5> kShapeNames{"POLE", "RESONATOR", "NOTCH", "EDGE HP",
                                              "EDGE LP"};
+constexpr double kFreshRowQ = 35.0;
+constexpr double kHiddenBandwidthHz = 1.0e8;
 
 const std::array<const char*, 16> kHarmonicNames{
     "1x root",      "2x 8ve",       "3x 8ve+5th",   "4x 2-8ve",
@@ -317,7 +319,18 @@ void RowTable::landHarmonic(std::size_t index, int harmonic) {
   refreshing_ = true;
   strips_[index].freq.dial->setValue(dial);
   refreshing_ = false;
-  pushPole(index);
+  pushPole(index, Kind::kFreq);
+}
+
+void RowTable::seatFreshRow(std::size_t index) {
+  const std::size_t which = corner();
+  const double bw_hz = std::clamp(root_hz_ / kFreshRowQ, EditorState::kMinBandwidthHz,
+                                  EditorState::kMaxBandwidthHz);
+  state_->setRootAt(which, index, EditorState::Lane::kPole, root_hz_, bw_hz);
+  if (index == kCeiling) return;
+  const double zero_bw = std::clamp(bw_hz * kPairWidthRatio, EditorState::kMinBandwidthHz,
+                                    EditorState::kMaxBandwidthHz);
+  seatZero(index, 0.0, p2k::words_from_root(root_hz_, radiusOf(zero_bw)).second);
 }
 
 QWidget* RowTable::takePicker() {
@@ -441,9 +454,14 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
 
   connect(strip.on, &QCheckBox::toggled, this, [this, index](bool checked) {
     if (refreshing_) return;
-    if (checked != state_->sectionEnabledAt(corner(), index)) {
-      state_->toggleSectionAt(corner(), index);
-    }
+    if (checked == state_->sectionEnabledAt(corner(), index)) return;
+    const auto* tone =
+        std::get_if<trench::core::native::Resonant>(&state_->sectionAt(corner(), index).pole);
+    const bool fresh = checked && tone != nullptr && tone->bw_hz >= kHiddenBandwidthHz;
+    state_->beginUndoGroup();
+    state_->toggleSectionAt(corner(), index);
+    if (fresh) seatFreshRow(index);
+    state_->endUndoGroup();
   });
   connect(strip.pole, &QComboBox::currentIndexChanged, this, [this, index](int which) {
     if (refreshing_) return;
@@ -460,11 +478,11 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
   });
   connect(strip.freq.dial, &WordDial::valueChanged, this, [this, index](int) {
     if (refreshing_) return;
-    pushPole(index);
+    pushPole(index, Kind::kFreq);
   });
   connect(strip.q.dial, &WordDial::valueChanged, this, [this, index](int) {
     if (refreshing_) return;
-    pushPole(index);
+    pushPole(index, Kind::kQ);
   });
   connect(strip.gain.dial, &WordDial::valueChanged, this, [this, index](int) {
     if (refreshing_) return;
@@ -537,11 +555,54 @@ void RowTable::seatZero(std::size_t index, double semitones, std::uint16_t rsq) 
                      rsq);
 }
 
-void RowTable::pushPole(std::size_t index) {
-  const Strip& strip = strips_[index];
+void RowTable::pushPole(std::size_t index, Kind moved) {
+  Strip& strip = strips_[index];
   const std::size_t which = corner();
   const Shape shape = shapeAt(which, index);
   const double semitones = static_cast<double>(strip.offset.dial->value());
+  {
+    const auto& before = state_->packed().words[which][index];
+    const Root held = rootOf(before[2], before[3]);
+    const double held_q = resonanceOf(held);
+    if (held.hz > 0.0 && held_q > 0.0 && std::isfinite(held_q)) {
+      int best = -1;
+      double best_cost = std::numeric_limits<double>::infinity();
+      if (moved == Kind::kFreq) {
+        const auto mag = p2k::dial_word(static_cast<std::size_t>(strip.freq.dial->value()));
+        for (int dial = 0; dial <= maxPoleRes(); ++dial) {
+          const Root root = rootOf(mag, p2k::dial_word(static_cast<std::size_t>(kTopDial - dial)));
+          const double q = resonanceOf(root);
+          if (!(q > 0.0) || !std::isfinite(q)) continue;
+          const double cost = std::abs(std::log2(q) - std::log2(held_q));
+          if (cost < best_cost) {
+            best_cost = cost;
+            best = dial;
+          }
+        }
+        if (best >= 0) {
+          refreshing_ = true;
+          strip.q.dial->setValue(best);
+          refreshing_ = false;
+        }
+      } else if (moved == Kind::kQ) {
+        const auto rsq = p2k::dial_word(static_cast<std::size_t>(kTopDial - strip.q.dial->value()));
+        for (int dial = 0; dial <= static_cast<int>(p2k::kMaxMagByte); ++dial) {
+          const Root root = rootOf(p2k::dial_word(static_cast<std::size_t>(dial)), rsq);
+          if (!(root.hz > 0.0) || !std::isfinite(root.hz)) continue;
+          const double cost = std::abs(std::log2(root.hz) - std::log2(held.hz));
+          if (cost < best_cost) {
+            best_cost = cost;
+            best = dial;
+          }
+        }
+        if (best >= 0) {
+          refreshing_ = true;
+          strip.freq.dial->setValue(best);
+          refreshing_ = false;
+        }
+      }
+    }
+  }
   state_->beginUndoGroup();
   state_->setWordsAt(
       which, index, EditorState::Lane::kPole,
