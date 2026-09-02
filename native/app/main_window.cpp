@@ -118,15 +118,19 @@ MainWindow::MainWindow(QWidget* parent)
   cascade_plot_ = new CascadePlot(central);
   cascade_plot_->setObjectName(QStringLiteral("cascadePlot"));
   morph_pad_ = new MorphPad(&state_, central);
+  morph_pad_->setObjectName(QStringLiteral("morphPad"));
   row_table_ = new RowTable(&state_, central);
   row_table_->setObjectName(QStringLiteral("rowTable"));
 
   auto* body = new QHBoxLayout;
   body->setSpacing(8);
-  body->addWidget(cascade_plot_, 1);
+  auto* stack = new QVBoxLayout;
+  stack->setSpacing(8);
+  stack->addWidget(cascade_plot_, 1);
+  stack->addWidget(row_table_, 0);
+  body->addLayout(stack, 1);
   auto* side = new QVBoxLayout;
   side->setSpacing(8);
-  side->addWidget(row_table_);
   body->addLayout(side, 0);
   layout->addLayout(body, 1);
 

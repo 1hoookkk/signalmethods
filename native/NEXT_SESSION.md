@@ -49,16 +49,30 @@ templates; suite 18 cases + registry, all green. `core/src/p2k/zeros_fit.cpp`
 (fit_zeros_under) is still in core with no caller - erase when core is next
 touched.
 
-## Build order after the ruling
+## Fader console — DONE 2026-09-02 (Tyson: "Faders")
 
-1. Row editor to Frequency / Q / Peak Gain: dials-or-faders + typed boxes,
-   zero locked by default, unlock control, packed-word readouts. Tests: typed
-   value lands on the nearest lattice word; locked row is level-neutral to
-   1e-6 dB away from its pitch; PianoSndBrd corner 0 rebuilt from six rows +
-   spare row + trim equals the stored product (script:
-   `evidence/research-results/piano_row_by_row_plot.py`).
-2. Corner gestures (Morph axis = posture, Q axis = sharpen) on morph_pad /
+`app/row_table.{hpp,cpp}` is the console (sizeHint ~1001x247, sits under the
+plot). Corner picker `corner0..3` (0 FROM/Q0, 1 TO/Q0, 2 FROM/Q100, 3 TO/Q100).
+Six strips, each: `on{i}`, columns FREQ / Q / GAIN / ZERO with
+`{col}Fader{i}` (QSlider over the 256 dial words), `{col}Entry{i}` (typed,
+lands on the nearest word), `{col}Readout{i}` (decoded from the packed words
+only), `lock{i}`, `cut{i}`. GAIN fader = zero rsq word (Peak Gain readout =
+section response at the pole hz); ZERO fader = zero mag word, live only when
+unlocked. Lock is derived, never stored: locked = zero present and
+`words[0] == p2k::mag_word_for(decoded pole hz, words[1])` (the zero sits on
+the lattice seat for the pole's note at the zero's own bandwidth); moving a
+locked pole re-seats the zero; clicking LOCK seats it. A ladder voiced through
+`addZeroAt` does not always land on that seat (state encodes from the request,
+not the decoded pole; row 1: pole 64.1 / zero 57.9 Hz), so the tests click
+LOCK first. Suite 21/21 headless.
+
+## Build order
+
+1. Corner gestures (Morph axis = posture, Q axis = sharpen) on morph_pad /
    gesture_dial, which survived the erase.
+2. Seat `addZeroAt` on the decoded pole so a fresh row is locked without a
+   click; PianoSndBrd corner 0 rebuilt from six rows + spare row + trim equals
+   the stored product (script: `evidence/research-results/piano_row_by_row_plot.py`).
 
 ## How to voice a ladder (plain words, for Tyson)
 
@@ -82,5 +96,5 @@ law (DC unity split six ways) is proven and ships.
 
 ## Open
 
-Dials or faders. Whether Frequency shows note names
-beside Hz. Whether the Frequency dial can be told "root x n".
+Whether Frequency shows note names beside Hz. Whether the Frequency fader
+can be told "root x n".

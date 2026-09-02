@@ -7,9 +7,13 @@
 #include <array>
 #include <cstddef>
 
+class QBoxLayout;
 class QCheckBox;
-class QSpinBox;
 class QLabel;
+class QLineEdit;
+class QPushButton;
+class QSlider;
+class QSpinBox;
 
 class RowTable final : public QWidget {
   Q_OBJECT
@@ -23,30 +27,40 @@ class RowTable final : public QWidget {
   bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
-  struct Cell {
-    QCheckBox* on{};
-    QSpinBox* pole_pitch{};
-    QSpinBox* pole_res{};
-    QLabel* pole_readout{};
-    QSpinBox* zero_pitch{};
-    QSpinBox* zero_depth{};
-    QLabel* zero_readout{};
-    QSpinBox* cut{};
+  enum class Kind { kFreq, kQ, kGain, kZero };
+
+  struct Column {
+    QLabel* caption{};
+    QSlider* fader{};
+    QLineEdit* entry{};
+    QLabel* readout{};
   };
 
-  using Group = std::array<Cell, trench::core::native::kSections>;
+  struct Strip {
+    QCheckBox* on{};
+    Column freq{};
+    Column q{};
+    Column gain{};
+    Column zero{};
+    QPushButton* lock{};
+    QSpinBox* cut{};
+    bool unlocked_by_hand{};
+  };
 
-  void buildGroup(std::size_t group, const char* prefix, int first_row,
-                  class QGridLayout* grid);
-  void pushPole(std::size_t group, std::size_t index);
-  void pushZero(std::size_t group, std::size_t index);
-  [[nodiscard]] std::size_t cornerOf(std::size_t group) const noexcept;
+  Column buildColumn(QBoxLayout* into, const QString& caption, const QString& prefix,
+                     std::size_t index, int maximum);
+  void buildStrip(std::size_t index, QBoxLayout* into);
+  void buildPicker(QBoxLayout* into);
+  [[nodiscard]] std::size_t corner() const noexcept;
+  [[nodiscard]] bool lockedNow(std::size_t index) const;
+  void pushPole(std::size_t index, bool carry_zero);
+  void pushGain(std::size_t index);
+  void pushZeroMag(std::size_t index);
+  void landEntry(std::size_t index, Kind kind);
+  void selectFrom(std::size_t index, EditorState::Lane lane);
 
   EditorState* state_{};
-  std::array<QLabel*, trench::core::native::kSections> labels_{};
-  std::array<Group, 2> groups_{};
-  QLabel* from_header_{};
-  QLabel* to_header_{};
-  std::size_t from_corner_{};
+  std::array<Strip, trench::core::native::kSections> strips_{};
+  std::array<QPushButton*, trench::core::native::kCorners> corner_buttons_{};
   bool refreshing_{};
 };

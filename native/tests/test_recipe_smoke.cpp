@@ -5,6 +5,7 @@
 #include "editor_state.hpp"
 #include "ladder.hpp"
 #include "main_window.hpp"
+#include "morph_pad.hpp"
 
 #include <QApplication>
 #include <QDir>
@@ -15,6 +16,7 @@
 #include <QUrl>
 #include <QPixmap>
 #include <QPushButton>
+#include <QSlider>
 #include <QSpinBox>
 #include <QTest>
 
@@ -33,8 +35,8 @@ TRENCH_TEST(recipe_chrome_is_on_the_window) {
   }
   CHECK(window.findChild<QWidget*>(QStringLiteral("zplaneView")) == nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("fitRoom")) == nullptr);
-  CHECK(window.findChild<QSpinBox*>(QStringLiteral("fromPolePitch0")) != nullptr);
-  CHECK(window.findChild<QSpinBox*>(QStringLiteral("toPolePitch0")) != nullptr);
+  CHECK(window.findChild<QSlider*>(QStringLiteral("freqFader0")) != nullptr);
+  CHECK(window.findChild<QPushButton*>(QStringLiteral("corner0")) != nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("cornerLevel")) == nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("armadilloEditor")) == nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("sectionStrip")) == nullptr);
@@ -46,13 +48,17 @@ TRENCH_TEST(recipe_chrome_is_on_the_window) {
   QTest::qWait(60);
   auto* plot = window.findChild<QWidget*>(QStringLiteral("cascadePlot"));
   auto* rows = window.findChild<QWidget*>(QStringLiteral("rowTable"));
+  auto* pad = window.findChild<QWidget*>(QStringLiteral("morphPad"));
   CHECK(plot != nullptr);
   CHECK(rows != nullptr);
-  CHECK(rows->geometry().left() > plot->geometry().right());
-  CHECK(rows->geometry().top() < plot->geometry().bottom());
+  CHECK(pad != nullptr);
+  CHECK(rows->geometry().top() > plot->geometry().bottom());
+  CHECK(plot->geometry().right() < pad->geometry().left());
   std::printf("chrome sizeHint %dx%d\n", window.sizeHint().width(),
               window.sizeHint().height());
-  std::printf("row table width %d\n", rows->width());
+  std::printf("console sizeHint %dx%d\n", rows->sizeHint().width(),
+              rows->sizeHint().height());
+  std::printf("row table %dx%d\n", rows->width(), rows->height());
   const QPixmap frame = window.grab();
   const QString path = folder + QStringLiteral("/recipe_chrome.png");
   CHECK(frame.save(path));

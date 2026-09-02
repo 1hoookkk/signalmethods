@@ -23,8 +23,10 @@ set(TRENCH_NATIVE_TEST_CASES
   pole_dial_words_survive_the_export
   zero_dial_words_survive_the_export_until_the_cage
   row_table_edits_reach_the_state
-  row_table_shows_the_morph_pair_side_by_side
+  corner_picker_moves_the_editing_corner
   row_table_reads_back_the_packed_words
+  typed_frequency_lands_on_the_nearest_word
+  lock_moves_the_zero_with_the_pole
   cuts_and_real_roots_survive_save_and_open
   cut_survives_the_body240_round_trip
   skin_is_system_grey_and_aliased
