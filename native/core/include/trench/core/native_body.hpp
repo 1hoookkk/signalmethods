@@ -43,6 +43,7 @@ struct Section {
   Roots pole{RealRoots{}};
   Roots zero{RealRoots{}};
   bool dc_stabilised{true};
+  double gain_db{};
   bool operator==(const Section&) const = default;
 };
 
@@ -63,6 +64,7 @@ struct Coefficients {
   double a1{};
   double a2{};
   bool dc_stabilised{true};
+  double gain_db{};
 };
 
 using Design = std::array<Coefficients, kSections>;

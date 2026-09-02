@@ -50,7 +50,6 @@ QPointF MorphPad::pointFor(double morph, double q) const {
 
 void MorphPad::paintEvent(QPaintEvent*) {
   QPainter painter(this);
-  painter.setRenderHint(QPainter::Antialiasing);
   painter.fillRect(rect(), palette().window().color());
   const QRectF card = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
   painter.setPen(Qt::NoPen);

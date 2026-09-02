@@ -1,188 +1,86 @@
-# NEXT SESSION — workstation (written 2026-08-29, end of the recovery session)
+# CHECKPOINT 2026-09-02 (evening) — pick up fresh here
 
-Branch `face/ship-candidate-fx`. Everything below assumes the committed state
-through `30315f5`. Launcher:
-`TRENCH Workstation.bat` at repo root (points at
-`out\build\app\native\app\trench_native.exe`); build: `TRENCH Build App.bat`
-or `cmake --preset app && cmake --build --preset app`. Never run two
-vcpkg-configuring builds at once; `out/build/app` has
-`VCPKG_MANIFEST_INSTALL=OFF` pinned so ninja's cmake re-runs stay out of vcpkg.
+Branch `face/ship-candidate-fx`, native tree committed (native suite 19/19
+headless). Launcher `TRENCH Workstation.bat`; build `cmake --preset app &&
+cmake --build --preset app`; tests `--target trench_native_tests`, then
+`ctest -R ^native\.` in `out/build/app`. Never two vcpkg-configuring builds at
+once. Commit native work with explicit pathspecs only (other chats stage
+`plugin/` in the same index).
 
-The checkout is shared live with other chats (one stages `plugin/` work in the
-same index). Commit native work with explicit pathspecs only:
-`git commit -F msg -- <paths>`.
+## Tyson's rulings tonight (his words)
 
-## What this session closed
-- One cascade. Graph and ears consume `design_audition(view, rate)` = the
-  core's patent-law blend of the authored body; `.body240` export is the
-  packed body (`export_p2k_body`) of the same document. The editor-local
-  lerp is gone. OFF sections
-  and absent zeros are the core's identity roots (`RealRoots{inf, inf}`) and
-  export as the identity words; body_io's hand codec is gone.
-- SAVE writes a lossless, versioned `.trenchbody` JSON document (four
-  corners, six ordered sections, pole/zero roots, enabled and zero-present
-  flags, corner gain, editing corner, Morph/Q) atomically; OPEN restores it
-  as the editable document. `.body240` is an explicitly labelled EXPORT.
-- Imports route by extension only (`.fbw` poles, sound, `.csv/.txt` response
-  tables with a validated schema and REW `*` headers, `.Table` Praat formant
-  tracks as median poles of the voiced frames, `.trenchbody`, `.body240/.bin`
-  reference). An all-positive response table can never become pole material.
-- AUDITION is a checkable button; device-start failures land in the status
-  line; ears redesign the same packed view at the actual device rate; the
-  device is released on stop and on close.
-- Display pass finished: expanding response plot, 1 px hairline curves, the
-  Ctrl-wheel diagnostic frame removed, z-plane edits confined to the upper
-  unit semicircle (double-click outside the disc or in the lower half is
-  refused; drags mirror the lower half and stop at the domain boundary), the
-  compact pane fits its circle and labels, the top row no longer forces the
-  window wider than its 1180 default (true minimum 1177x732).
-- `tools/extract_poles.py`: one-button (f, B) caricature of any WAV. Auto
-  mode picks formant bands (one peak per acoustic band: sub / warmth /
-  vowel-horn / presence / sizzle / air) when the dominant peaks are harmonics
-  of one fundamental, otherwise the six most dominant distinct tonal peaks
-  sorted into S1..S6; `--mode peaks|bands|lpc` forces; writes `.fbw` that
-  OPEN takes into a corner, plus .json/.csv/C++ initializer.
+- The row is "Frequency (the harmonic note), Q (pole bandwidth / ring time),
+  and Peak Gain (zero bandwidth / boost in dB)."
+- Zero locked to the pole by default (a locked row is level-neutral; sliding
+  the zero off for a shelf or notch is the exception and keeps a control).
+- "i need dials for the parameters or mixer faders. and to be able to type in
+  each as well."
+- "as close as emu's propietary tool as we can infer" ... "things need to be
+  erased for it to be what it needs to be."
+- Image accepted: harmonic resonators stacked like organ drawbars, one fader
+  per rung.
 
-- ANALYZE is now a pole-zero envelope fit in the Atal-Schroeder sense: f0
-  from the core comb (octave errors resolved by harmonic share over the first
-  twelve harmonics, divisors 2-8), the envelope sampled at the harmonics
-  (cubic between them) when voiced or peak-hold smoothed otherwise, a
-  minimum-phase impulse response through the cepstrum, Prony-Shanks 12/12 on
-  it, then pruning by detail signature (0.5 dB, half-octave baseline) and the
-  M0-corpus gate (a seat below 700 Hz needs Q >= 1.5, a formant above needs
-  Q >= 5; roots above 4.4 kHz are band-edge artefacts). Proof: a synthetic
-  nasal (280/60, 1250/120, 2300/160, 3300/250 + antiformant 900/150) returns
-  292/99, 1252/155, 2305/166, 3306/253 and 901/106; the recorded /ah/ returns
-  644/138, 1079/119, 2649/196.
-- Queued from this pass: the "Configurable_PEQ" analyzer text (cuts -> poles,
-  boosts -> zeros; Frequency / Bandwidth(Hz) columns) as an OPEN route; the
-  scrub ribbon so ANALYZE fits one chosen moment per corner (VV2 recipe:
-  ~30 ms steady state, onset and offset of a diphthong = corners A and B).
+## What the app is
 
-## Verdict pass with Tyson at the screen (2026-08-29 evening)
-- Boot is EMPTY: six sections off, nothing placed ("why have you baked in
-  arbitrary poles and zeros"). A section switched on gets a fresh
-  1 kHz / 100 Hz pole. `EditorState::blank()` is the reset document.
-- Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z: 200-deep document undo; a plane drag or a
-  dial throw is one step (begin/endUndoGroup). RESET button, undoable.
-- ANALYZE is always live and says "NEEDS A SOUND" without one.
-- Chrome in two rows (file row / action row) so nothing truncates; the
-  column is capped at 1040 px and centred; stage cards square (<= 120 px,
-  48 px minimum) with a real sizeHint; default window 1060x940.
-- ZEROS button: the two zero habits on the editing corner - skirt zero half
-  an octave under the lowest seat (< 700 Hz, same width), level-trim zero on
-  every Q >= 10 pole (width x Q / 2 -> peak near +6 dB); S6 is never touched
-  because the packed contract forces any S6 zero to the trench depth.
-- OPEN routes added: `.Table` (Praat formant track -> median poles), `.txt`
-  declaring `Configurable_PEQ` (cuts -> poles, boosts -> zeros, zeros attach
-  to the nearest pole), REW `*` headers on response tables.
-- core fix: export_p2k_corner keeps the forced S6 zero at its authored
-  frequency (was moving 12 kHz -> 8.56 kHz); depth forcing is still the
-  contract and still needs a ruling.
-- Banks baked by `trench_native_tests --bake-shelf <dir> [--zeros]`:
-  `out/bodies/shelf/` (pole only) and `out/bodies/shelf_zeros/` (habits
-  applied, 157 zeros, none on S6): every shelf template as corner 0 with
-  corners 1-3 duplicated, canonical export.
-- Plain-tool skin landed (5c6f9c0): no stylesheet, white panels with 1 px
-  #c8c8c8 borders, #e6e6e6 grid, black 1 px curves, one accent (#c4674f) for
-  the addressed thing only, default fonts. Tyson's verdict on it is pending.
-- INTERIOR LAW, FINAL FOR THIS BANK: Tyson, "I play whatever is not a current
-  patent" - the plugin plays the 1992 ARMAdillo encoding, not the 2019
-  patent's per-root law. k2 = -ln(1 - b2), k1 = -ln((b1 + 1 + b2)/4), linear
-  in (k1, k2), decode after; the P2K words store e^-k2 / e^-k1 in the
-  octave-shift float format, so the packed word-lerp IS that scheme as the
-  hardware does it. Graph and ears run packed_interior_corner (8818bb0 was
-  reverted the same evening). Measured: word-lerp vs exact k-linear differs
-  by <= 0.033 octave in frequency and <= 5% in bandwidth, exact at morph
-  0.5 - so the word-lerp is NOT exact k-linear interpolation; it is the
-  plugin's law and the display previews the plugin. UNPROVEN: that the P2K
-  hardware itself interpolated the raw 16-bit word integers (vs an internal
-  k representation) - Rossum's paper establishes encoded-space interpolation,
-  not the integer arithmetic; the plugin's behaviour is what we ship.
-  native::blend_roots_log_2019 (renamed) stays in core for interior_audit
-  only. This supersedes the 2026-08-23 "Rossum 2019" ruling for the shipped
-  bank.
-- Audition movement is now encoded-domain per sample (core CascadeRunner):
-  the ARMAdillo encoding of the device-rate cascade (ln of the five decoded
-  word values per section) ramps linearly over kApproachSamples = 256 and is
-  decoded every sample; block-size independent. The approach length is a
-  provisional constant - the host-side approach time of US 5,170,369 lives
-  in p2k226.dli and is still undecompiled.
-- S6 zero depth is a proven P2K bank convention (all 132 corners carry rsq
-  word 0x01F0; Morpheus does not) and the editor now locks the S6 zero's
-  bandwidth to the trench depth, so author == export for S6.
-- Frame lie still open: a curve past +-30 dB is pinned to the frame edge
-  (a pole at Nyquist / 4 Hz is really +150 dB). Fix: clip instead of clamp
-  and print the true peak in the plot corner and the strip minis.
+Six rows x four corners (FROM/TO x Q0/Q100). Per row: Frequency, Q, Peak Gain
+on a dial or fader each, with a typed box each; a typed value moves the dial to
+the nearest hardware word; every readout comes from the packed words. One
+zero-unlock per row. CUT per corner, last. The fixed +-30 dB display with the
+hard 0 dB line, showing the corner being edited and the row alone. Export to
+.body240 / .trenchbody; audition. Nothing on the face changes itself.
 
-## Open decisions for Tyson (explained in the 08-29 wrap; nothing built until ruled)
-1. Lattice: export snaps words to E-mu's 271-entry authoring lattice (250 Hz
-   -> 233.7 Hz). The chip decodes any 16-bit word. Full-resolution words
-   would make authored ~= shipped to ~0.05% at zero format cost; hardware
-   parity of the *interpolation* is unaffected. Yes/no.
-2. Neutral C for CHARACTER/EXAGGERATE in k-space: (a) bound pairs collapsed
-   and free widths at their log-mean, or (b) identity. Needs an ear.
-3. Calibration's destination: designer-only measurement/report (recommended
-   while the plugin's law is fixed), or a per-preset control curve the
-   plugin must honour.
+## What the app is not
 
-## Not started (stopped at wrap)
-- The authentic (k1, k2) ARMAdillo view as a third projection, with the
-  boundary + 0..1 trajectory sweep tests: spec written at
-  scratchpad/spec_k1k2_view.md of session 50f8663f (copy below in the
-  next-session prompt). Executor was stopped before it produced anything.
-- REDUCE panel (ANALYZE's ablation scores + FREE/BOUND tags), CHARACTER /
-  EXAGGERATE in k-space, CALIBRATE bisection, MAP - in that order, each
-  behind its decision above.
-- `native/core.zip` appeared untracked in the tree at wrap (not this
-  session's file); leave it for its owner.
+Not a fitter, not an analyzer, not a sound or curve importer, not a z-plane
+editor, not a template browser. E-mu's voicer set positions by ear and eye;
+nothing in either bank was typed as Hz, notes, Q or dB (see the piano cube
+below - musical intent, hand-set values).
 
-## Measured contract facts (report, not fixed — Tyson's call)
-- Lattice quantisation of the core exporter: an authored 250 Hz / 250 Hz pole
-  exports as 233.68 Hz / 251.03 Hz (`export_p2k_corner`, native_body.cpp).
-  The graph now shows the exported truth, so authored marks and the curve
-  can visibly disagree by up to ~6% in frequency.
-- S6 zero rule (`native_body.cpp:324-326`, `kS6ZeroRsqWord`): the boot state's
-  S6 zero (12 kHz / 12 kHz bw, paired with its pole) exports as an
-  8559 Hz / 0.026 Hz-bw needle; corner 0 S6 authored-vs-packed diverges by
-  31.6 dB (test `s6_zero_export_law_is_the_existing_one` prints it). The
-  "boot is a flat EQ" verdict and the packed S6 contract contradict each
-  other whenever S6 carries a zero. Removing the S6 zero exports identity.
-- The audio boundary's old corner special case (continuous native design at
-  exact corners, packed elsewhere) was dropped in favour of the packed law
-  everywhere; corners are now the corner's packed words, so there is no jump
-  between corner and interior.
+## Erase ruling — DONE 2026-09-02 (Tyson: "yes erase them. keep morph and gesture")
 
-## Evidence classes produced
-- Build: fresh `cmake --preset app` configure + build, then incremental.
-- Tests: 31 CTest cases under `native.*`, all passing headless;
-  the two audible cases pass live with `TRENCH_AUDIBLE=1` and skip otherwise.
-- Packed parity: graph vs export re-import 0 dB delta over 3 rates x 8
-  positions x 240 grid points; exported words legal (`p2k::is_legal`,
-  `pole_is_legal`) and stable at 44.1/48/96 kHz; DC gain within 0.005 dB.
-- Audio: device "Primary Sound Driver" at 44100 Hz opened, streamed 1.5 s
-  of the built-in saw through the boot cascade, closed and reopened
-  (`audition_device_opens_streams_and_closes`); the AUDITION button reported
-  `AUDITION OPEN · PRIMARY SOUND DRIVER · 44100 Hz` then `AUDITION CLOSED`.
-  This is signal-presence evidence, not listening acceptance.
-- Visual: offscreen screenshots at the minimum and normal sizes in
-  `out/build/app/smoke/` (offscreen renders glyphs as boxes; geometry only).
-- NOT produced: an on-screen launch through `TRENCH Workstation.bat`, a human
-  listening pass, a human look at the face. Session rule kept everything
-  headless.
+Erased from `native/app/`: fit_room, fitted_shelf, zero_fit, lpc_poles,
+corpus_shelf, mask_shelf, template_shelf, import_routing, zplane_view,
+make_bodies, waveform_strip, section_strip, plus the sound/curve reference
+overlay, CLIP audition source, FIT button and `--reference` flag. OPEN takes
+.trenchbody / .body240 only. Kept: row_table, cascade_plot, editor_state,
+body_io, main_window, main, skin, morph_pad, gesture_dial. Tests voice a
+hand-set ladder (`tests/ladder.hpp`, the PianoSndBrd numbers) instead of
+templates; suite 18 cases + registry, all green. `core/src/p2k/zeros_fit.cpp`
+(fit_zeros_under) is still in core with no caller - erase when core is next
+touched.
 
-## Queue after this (unchanged rulings)
-1. Scrub-ribbon import: `.par` / tracker trajectories (Praat `.Table` such as
-   Downloads/c1r1.Table is exactly this material) in the lane seat, stamp a
-   moment to a corner, stamp A+B to a morph pair.
-2. espeak SPECTSQ2 decoder — 172-language mouth library for the shelf.
-3. Second-wave dials: STRIKE, AIR, FLUTTER, NASAL; selection-scoped
-   transforms.
-4. Shelf audition pass — 41 postures, none ear-judged yet.
-5. OneDrive: Documents/Desktop are redirected into a failing OneDrive; the
-   app's data home is OneDrive\Documents\TRENCH. Fix or unlink before
-   trusting any Documents write.
+## Build order after the ruling
 
-## Known engine-proof divergences (not UI bugs)
-FaceShot's LIMIT and MOVE FOLLOW checks fail against this branch's engine —
-ported-harness expectations, tracked separately, untouched by UI work.
+1. Row editor to Frequency / Q / Peak Gain: dials-or-faders + typed boxes,
+   zero locked by default, unlock control, packed-word readouts. Tests: typed
+   value lands on the nearest lattice word; locked row is level-neutral to
+   1e-6 dB away from its pitch; PianoSndBrd corner 0 rebuilt from six rows +
+   spare row + trim equals the stored product (script:
+   `evidence/research-results/piano_row_by_row_plot.py`).
+2. Corner gestures (Morph axis = posture, Q axis = sharpen) on morph_pad /
+   gesture_dial, which survived the erase.
+
+## How to voice a ladder (plain words, for Tyson)
+
+Pick the root note (the pitch the drum should ring at). Rows = root x 1, x2,
+x3 ... (x2 octave, x3 octave + fifth, x4 two octaves, x5 + major third, x6 + fifth).
+Per row: Q = how long it rings (72 = 2.4 s at 64 Hz, 17 = 0.03 s at 1.4 kHz);
+Peak Gain = how loud that harmonic is (+20 dB root, +4 dB top, like drawbars).
+A spare row with no zero, high and wide, is a treble tilt. CUT last so the
+peak sits on the grid. PianoSndBrd did exactly this: 64 / 129 / 388 / 584 /
+777 / 1430 Hz = C, C, G, D, G, ~F#; Q 72 / 36 / 34 / 35 / 34 / 17; Peak Gain
++20 / +12 / +12 / +6 / +10 / +4 dB; spare pole 17 kHz; trim -7.5 dB.
+
+## Evidence (untracked, `evidence/research-results/`)
+
+piano_row_by_row.png (+ .py) - the ladder built one row at a time, final =
+stored to 1e-6 dB; piano_poles_only.png - poles alone, pinned; piano_ladder.png;
+morpheus_axis_*.png; p2k_axis_order_census.py/.txt (Morph voiced first, Q by
+copy-and-edit). Morpheus absolute level is unproven (raw product x trim puts
+42% of corners above +20 dB) - plot Morpheus pinned, don't chase; the P2K gain
+law (DC unity split six ways) is proven and ships.
+
+## Open
+
+Dials or faders. Whether Frequency shows note names
+beside Hz. Whether the Frequency dial can be told "root x n".

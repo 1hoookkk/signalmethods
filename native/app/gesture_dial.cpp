@@ -34,7 +34,6 @@ GestureDial::GestureDial(QString label, double units_per_pixel,
 
 void GestureDial::paintEvent(QPaintEvent*) {
   QPainter painter(this);
-  painter.setRenderHint(QPainter::Antialiasing);
   painter.fillRect(rect(), palette().window().color());
 
   const double span = static_cast<double>(width());

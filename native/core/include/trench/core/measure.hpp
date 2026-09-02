@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <utility>
 #include <vector>
 
 namespace trench::core::measure {
@@ -54,6 +55,9 @@ struct SpectralOptions {
 
 HarmonicEnvelope spectral_envelope(std::span<const float> mono, double sample_rate_hz,
                                    const SpectralOptions& options = {});
+
+std::pair<std::vector<double>, std::vector<double>> reference_line(
+    std::span<const float> mono, double sample_rate_hz);
 
 std::vector<Formant> envelope_peaks(std::span<const double> hz, std::span<const double> db,
                                     std::size_t max_count = 6,

@@ -69,7 +69,7 @@ std::pair<double, double> coefficients_of(const Roots& roots, double sample_rate
 Coefficients design(const Section& section, double sample_rate_hz) {
   const auto [b1, b2] = coefficients_of(section.zero, sample_rate_hz);
   const auto [a1, a2] = pole_coefficients(section.pole, sample_rate_hz);
-  return {b1, b2, a1, a2, section.dc_stabilised};
+  return {b1, b2, a1, a2, section.dc_stabilised, section.gain_db};
 }
 
 Design design(const Corner& corner, double sample_rate_hz) {
@@ -199,8 +199,13 @@ Design blend_roots_log_2019(const Body& body, double morph, double q, double sam
     for (std::size_t ci = 0; ci < kCorners; ++ci) {
       stabilised = stabilised && body.corners[ci].sections[si].dc_stabilised;
     }
+    double gain_db = 0.0;
+    for (std::size_t ci = 0; ci < kCorners; ++ci) {
+      gain_db += weight[ci] * body.corners[ci].sections[si].gain_db;
+    }
     out[si] = design(Section{blend_roots(poles, weight, sample_rate_hz),
-                             blend_roots(zeros, weight, sample_rate_hz), stabilised},
+                             blend_roots(zeros, weight, sample_rate_hz), stabilised,
+                             gain_db},
                      sample_rate_hz);
   }
   return out;
@@ -220,7 +225,7 @@ double dc_scale(const Coefficients& c) {
 }
 
 Biquad biquad(const Coefficients& c) {
-  const double g = dc_scale(c);
+  const double g = std::pow(10.0, c.gain_db / 20.0);
   return {g, g * c.b1, g * c.b2, c.a1, c.a2};
 }
 
@@ -258,7 +263,9 @@ Section import_section(const PackedSection& words, double datum_hz) {
   };
   const auto b = section_words_to_biquad(words);
   const bool zero_at_dc = std::abs(b[0] + b[1] + b[2]) < kDcZeroEpsilon * std::abs(b[0]);
-  return {pair(2, 3), pair(0, 1), !zero_at_dc};
+  Section out{pair(2, 3), pair(0, 1), !zero_at_dc};
+  out.gain_db = 20.0 * std::log10(std::max(std::abs(b[0]), kPackedScaleFloor));
+  return out;
 }
 
 Corner import_p2k_corner(const P2kCorner& words, double datum_hz) {
@@ -266,14 +273,7 @@ Corner import_p2k_corner(const P2kCorner& words, double datum_hz) {
   for (std::size_t si = 0; si < kSections; ++si) {
     out.sections[si] = import_section(words[si], datum_hz);
   }
-  double gain_db = 0.0;
-  for (std::size_t si = 0; si < kSections; ++si) {
-    const auto b = section_words_to_biquad(words[si]);
-    const double k = dc_scale(design(out.sections[si], datum_hz));
-    gain_db += 20.0 * (std::log10(std::max(std::abs(b[0]), kPackedScaleFloor)) -
-                       std::log10(std::abs(k)));
-  }
-  out.gain_db = gain_db;
+  out.gain_db = 0.0;
   return out;
 }
 
@@ -285,16 +285,19 @@ Body import_p2k(std::span<const std::uint8_t> body, double datum_hz) {
     std::copy_n(packed.words[ci].begin(), kSections, words.begin());
     out.corners[ci] = import_p2k_corner(words, datum_hz);
   }
-  for (std::size_t si = 0; si < kSections; ++si) {
-    bool stabilised = true;
-    for (const auto& corner : out.corners) {
-      stabilised = stabilised && corner.sections[si].dc_stabilised;
-    }
-    for (auto& corner : out.corners) {
-      corner.sections[si].dc_stabilised = stabilised;
-    }
-  }
   return out;
+}
+
+namespace {
+
+std::uint16_t section_scale_word(const Section& section, double corner_gain_db,
+                                 std::size_t voiced) {
+  const double c4 = std::pow(10.0, section.gain_db / 20.0) *
+                    std::pow(10.0, corner_gain_db /
+                                       (20.0 * static_cast<double>(voiced)));
+  return encode_word(c4 / 4.0);
+}
+
 }
 
 P2kCorner export_p2k_corner(const Corner& corner, double datum_hz) {
@@ -320,9 +323,10 @@ P2kCorner export_p2k_corner(const Corner& corner, double datum_hz) {
     const auto* real_zero = std::get_if<RealRoots>(&corner.sections[si].zero);
     const bool zero_is_parked = real_zero != nullptr && !std::isfinite(real_zero->a_hz) &&
                                 !std::isfinite(real_zero->b_hz);
-    if (si == kSections - 1 && !zero_is_parked) {
+    const auto* circle_zero = std::get_if<Resonant>(&corner.sections[si].zero);
+    if (!zero_is_parked && circle_zero != nullptr && circle_zero->bw_hz < 1.0) {
       zero_radius = p2k::kS6ZeroRsqWord;
-      if (const auto* res = std::get_if<Resonant>(&corner.sections[si].zero)) {
+      if (const auto* res = circle_zero) {
         const double d_rsq = decode_word(zero_radius);
         const double p = -2.0 * std::sqrt(1.0 - d_rsq) *
                          std::cos(kTau * res->hz / datum_hz);
@@ -335,23 +339,21 @@ P2kCorner export_p2k_corner(const Corner& corner, double datum_hz) {
   }
   roots = p2k::enter(roots);
 
-  double dc_ratio = 1.0;
-  for (const auto& row : roots) {
-    auto [numerator, denominator] = p2k::dc_terms(row);
-    if (std::abs(numerator) < 1.0e-15) {
-      numerator = std::copysign(1.0e-15, numerator == 0.0 ? 1.0 : numerator);
-    }
-    dc_ratio *= denominator / numerator;
+  std::array<bool, kSections> identity{};
+  std::size_t voiced = 0;
+  for (std::size_t si = 0; si < kSections; ++si) {
+    identity[si] = std::equal(roots[si].begin(), roots[si].end(),
+                              kIdentitySection.begin());
+    if (!identity[si]) ++voiced;
   }
-  const double corner_gain = std::pow(10.0, corner.gain_db / 20.0);
-  const double stage_scale =
-      std::pow(std::abs(dc_ratio * corner_gain), 1.0 / static_cast<double>(kSections));
-  const auto scale_word = p2k::nearest_gain_word(stage_scale);
 
   P2kCorner out{};
+  out.fill(kIdentitySection);
+  if (voiced == 0) return out;
   for (std::size_t si = 0; si < kSections; ++si) {
+    if (identity[si]) continue;
     std::copy(roots[si].begin(), roots[si].end(), out[si].begin());
-    out[si][4] = scale_word;
+    out[si][4] = section_scale_word(corner.sections[si], corner.gain_db, voiced);
   }
   return out;
 }
@@ -387,37 +389,27 @@ PackedBody rewarp_p2k_body(const PackedBody& source, double datum_hz,
   for (std::size_t ci = 0; ci < kCornerCount; ++ci) {
     const auto& src = source.words[ci];
     auto& dst = out.words[ci];
-    double gain_db = 0.0;
-    double dc_target = 1.0;
+    std::array<Section, kSectionCount> sections{};
     std::size_t voiced = 0;
     for (std::size_t si = 0; si < kSectionCount; ++si) {
       if (src[si] == kIdentitySection) {
         dst[si] = kIdentitySection;
         continue;
       }
-      const auto section = import_section(src[si], datum_hz);
-      const auto c = design(section, target_hz);
+      sections[si] = import_section(src[si], datum_hz);
+      const auto c = design(sections[si], target_hz);
       const double d1 = 1.0 - c.b2;
       const double d0 = (c.b1 + 2.0 - d1) / 4.0;
       const double d3 = 1.0 - c.a2;
       const double d2 = (c.a1 + 2.0 - d3) / 4.0;
       dst[si] = {encode_word(d0), encode_word(d1), encode_word(d2),
                  encode_word(d3), 0};
-      const auto b = section_words_to_biquad(src[si]);
-      const double k_datum = dc_scale(design(section, datum_hz));
-      gain_db += 20.0 * (std::log10(std::max(std::abs(b[0]), kPackedScaleFloor)) -
-                         std::log10(std::abs(k_datum)));
-      dc_target *= std::abs(dc_scale(c));
       ++voiced;
     }
     if (voiced == 0) continue;
-    const double total = std::pow(10.0, gain_db / 20.0) * dc_target;
-    const double stage =
-        std::pow(total, 1.0 / static_cast<double>(voiced));
-    const auto scale_word = encode_word(stage / 4.0);
     for (std::size_t si = 0; si < kSectionCount; ++si) {
       if (src[si] != kIdentitySection) {
-        dst[si][4] = scale_word;
+        dst[si][4] = section_scale_word(sections[si], 0.0, voiced);
       }
     }
   }

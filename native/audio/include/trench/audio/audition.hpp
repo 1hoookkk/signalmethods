@@ -14,7 +14,10 @@ struct AuditionView {
   float morph{};
   float q{};
   double semitones{};
+  double trim_db{};
 };
+
+[[nodiscard]] double level_trim_db(const AuditionView& view, double sample_rate_hz);
 
 [[nodiscard]] trench::core::Cascade design_audition(
     const AuditionView& view, double device_sample_rate_hz);

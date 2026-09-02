@@ -97,9 +97,8 @@ std::uint16_t encode_word(double value) {
 std::uint16_t interpolate_word(std::uint16_t a, std::uint16_t b, float fraction) {
   const float difference = static_cast<float>(static_cast<std::int32_t>(b) -
                                                static_cast<std::int32_t>(a));
-  const auto delta_i32 = static_cast<std::int32_t>(difference * fraction);
-  const auto delta_i16 = static_cast<std::int16_t>(delta_i32);
-  return static_cast<std::uint16_t>(static_cast<std::int32_t>(a) + delta_i16);
+  const auto delta = static_cast<std::int32_t>(difference * fraction);
+  return static_cast<std::uint16_t>(static_cast<std::int32_t>(a) + delta);
 }
 
 Biquad section_words_to_biquad(const PackedSection& words) {

@@ -19,6 +19,9 @@ const std::vector<std::uint16_t>& lattice_words() {
     for (std::size_t b = 0xF0; b < 256; ++b) {
       v.push_back(static_cast<std::uint16_t>((b << 8U) | kE15AltLow));
     }
+    for (std::size_t b = 0; b < kDialCount; ++b) {
+      v.push_back(dial_word(b));
+    }
     std::sort(v.begin(), v.end());
     v.erase(std::unique(v.begin(), v.end()), v.end());
     return v;
@@ -189,6 +192,24 @@ CornerWords enter(const CornerWords& words) {
     out[si][3] = pr;
   }
   return out;
+}
+
+std::size_t dial_of_word(std::uint16_t word) {
+  static const std::array<double, kDialCount> decoded = [] {
+    std::array<double, kDialCount> v{};
+    for (std::size_t b = 0; b < kDialCount; ++b) {
+      v[b] = decode_word(dial_word(b));
+    }
+    return v;
+  }();
+  const double want = decode_word(word);
+  std::size_t best = 0;
+  for (std::size_t b = 1; b < kDialCount; ++b) {
+    if (std::abs(decoded[b] - want) < std::abs(decoded[best] - want)) {
+      best = b;
+    }
+  }
+  return best;
 }
 
 }

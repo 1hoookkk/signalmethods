@@ -10,6 +10,7 @@
 
 #include "trench/core/audition.hpp"
 #include "trench/core/native_body.hpp"
+#include "trench/core/packed_body.hpp"
 #include "trench/core/transpose.hpp"
 
 namespace trench::audio {
@@ -19,18 +20,40 @@ trench::core::Cascade design_audition(const AuditionView& view,
   const auto corner = trench::core::native::packed_interior_corner(
       view.packed, view.morph, view.q);
   const double gain_db = corner.gain_db;
-  const auto designed = trench::core::native::cascade(
+  auto designed = trench::core::native::cascade(
       trench::core::native::design(corner, device_sample_rate_hz), gain_db);
-  if (view.semitones == 0.0) return designed;
+  const double trim = std::pow(10.0, view.trim_db / 20.0);
+  if (view.semitones == 0.0) {
+    for (std::size_t coefficient = 0; coefficient < 3; ++coefficient) {
+      designed[0][coefficient] *= trim;
+    }
+    return designed;
+  }
 
   auto transposed = trench::core::unity_dc(trench::core::transpose_cascade(
       designed, trench::core::ratio_of_semitones(view.semitones),
       device_sample_rate_hz));
-  const double gain = std::pow(10.0, gain_db / 20.0);
+  const double gain = std::pow(10.0, gain_db / 20.0) * trim;
   for (std::size_t coefficient = 0; coefficient < 3; ++coefficient) {
     transposed[0][coefficient] *= gain;
   }
   return transposed;
+}
+
+double level_trim_db(const AuditionView& view, double sample_rate_hz) {
+  AuditionView plain = view;
+  plain.trim_db = 0.0;
+  const auto cascade = design_audition(plain, sample_rate_hz);
+  double power = 0.0;
+  std::size_t count = 0;
+  for (double hz = 100.0; hz <= 8'000.0; hz *= 1.02) {
+    const double db = trench::core::cascade_response_db(cascade, hz, sample_rate_hz);
+    if (!std::isfinite(db)) continue;
+    power += std::pow(10.0, db / 10.0);
+    ++count;
+  }
+  if (count == 0 || !(power > 0.0)) return 0.0;
+  return std::clamp(-10.0 * std::log10(power / static_cast<double>(count)), -40.0, 40.0);
 }
 
 struct Audition::Impl final : public juce::AudioIODeviceCallback {

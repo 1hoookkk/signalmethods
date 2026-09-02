@@ -58,6 +58,22 @@ std::uint16_t mag_word_for(double hz, std::uint16_t rsq_word);
 std::uint16_t nearest_gain_word(double scale);
 CornerWords enter(const CornerWords& words);
 
+inline constexpr std::size_t kDialCount = 256;
+
+constexpr std::uint16_t dial_word(std::size_t byte) {
+  if (byte >= 0xE0) {
+    return static_cast<std::uint16_t>(0xF000U | ((byte - 0xE0) << 7U) | kE15AltLow);
+  }
+  const std::size_t e = byte >> 4U;
+  if (e == 0) {
+    const std::uint16_t low = byte == 0 ? 0xF0 : byte <= 5 ? 0xEE : 0xED;
+    return static_cast<std::uint16_t>(((2 * byte + 1) << 8U) | low);
+  }
+  return static_cast<std::uint16_t>(((byte + 0x10) << 8U) | (e >= 4 ? kFiller : kLatticeLow[e + 1]));
+}
+
+std::size_t dial_of_word(std::uint16_t word);
+
 inline constexpr std::size_t kNpts = 512;
 inline constexpr double kLoHz = 20.0;
 inline constexpr double kHiHz = 0.499 * kSr;

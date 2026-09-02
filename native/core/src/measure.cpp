@@ -265,6 +265,113 @@ HarmonicEnvelope spectral_envelope(std::span<const float> mono, double sample_ra
   return envelope;
 }
 
+std::pair<std::vector<double>, std::vector<double>> reference_line(
+    std::span<const float> mono, double sample_rate_hz) {
+  if (mono.size() < 2 || !(sample_rate_hz > 0.0)) {
+    throw std::invalid_argument("reference_line needs samples and a rate");
+  }
+  double mean = 0.0;
+  for (const float sample : mono) mean += sample;
+  mean /= static_cast<double>(mono.size());
+
+  std::vector<double> hz;
+  std::vector<double> power;
+  if (static_cast<double>(mono.size()) <= 2.0 * sample_rate_hz) {
+    std::size_t nfft = 2;
+    while (nfft < mono.size()) nfft *= 2;
+    std::vector<double> frame(nfft, 0.0);
+    for (std::size_t i = 0; i < mono.size(); ++i) {
+      frame[i] = static_cast<double>(mono[i]) - mean;
+    }
+    std::vector<std::complex<double>> spectrum(nfft / 2 + 1);
+    pocketfft::r2c(pocketfft::shape_t{nfft}, pocketfft::stride_t{sizeof(double)},
+                   pocketfft::stride_t{sizeof(std::complex<double>)}, std::size_t{0},
+                   pocketfft::FORWARD, frame.data(), spectrum.data(), 1.0);
+    const double bin_hz = sample_rate_hz / static_cast<double>(nfft);
+    for (std::size_t bin = 1; bin < spectrum.size(); ++bin) {
+      const double value = std::norm(spectrum[bin]);
+      if (!(value > 0.0)) continue;
+      hz.push_back(static_cast<double>(bin) * bin_hz);
+      power.push_back(value);
+    }
+  } else {
+    constexpr std::size_t kSegment = 16384;
+    constexpr std::size_t kHop = 8192;
+    constexpr std::size_t kFft = 65536;
+    std::vector<double> window(kSegment);
+    for (std::size_t i = 0; i < kSegment; ++i) {
+      window[i] = 0.5 - 0.5 * std::cos(kTau * static_cast<double>(i) /
+                                       static_cast<double>(kSegment));
+    }
+    std::vector<double> frame(kFft, 0.0);
+    std::vector<std::complex<double>> spectrum(kFft / 2 + 1);
+    std::vector<double> total(kFft / 2 + 1, 0.0);
+    std::size_t frames = 0;
+    for (std::size_t start = 0; start + kSegment <= mono.size(); start += kHop) {
+      double segment_mean = 0.0;
+      for (std::size_t i = 0; i < kSegment; ++i) segment_mean += mono[start + i];
+      segment_mean /= static_cast<double>(kSegment);
+      std::fill(frame.begin(), frame.end(), 0.0);
+      for (std::size_t i = 0; i < kSegment; ++i) {
+        frame[i] = (static_cast<double>(mono[start + i]) - segment_mean) * window[i];
+      }
+      pocketfft::r2c(pocketfft::shape_t{kFft}, pocketfft::stride_t{sizeof(double)},
+                     pocketfft::stride_t{sizeof(std::complex<double>)}, std::size_t{0},
+                     pocketfft::FORWARD, frame.data(), spectrum.data(), 1.0);
+      for (std::size_t bin = 0; bin < spectrum.size(); ++bin) {
+        total[bin] += std::norm(spectrum[bin]);
+      }
+      ++frames;
+    }
+    if (frames == 0) throw std::invalid_argument("reference_line needs one full segment");
+    const double bin_hz = sample_rate_hz / static_cast<double>(kFft);
+    for (std::size_t bin = 1; bin < total.size(); ++bin) {
+      const double value = total[bin] / static_cast<double>(frames);
+      if (!(value > 0.0)) continue;
+      hz.push_back(static_cast<double>(bin) * bin_hz);
+      power.push_back(value);
+    }
+  }
+  if (hz.empty()) throw std::invalid_argument("reference_line found no spectrum");
+
+  std::vector<double> log_hz(hz.size());
+  for (std::size_t i = 0; i < hz.size(); ++i) log_hz[i] = std::log2(hz[i]);
+  const double sigma = (1.0 / 6.0) / (2.0 * std::sqrt(2.0 * std::log(2.0)));
+  const auto points = static_cast<std::size_t>(
+      std::floor(48.0 * std::log2(20'000.0 / 20.0)));
+  std::pair<std::vector<double>, std::vector<double>> out;
+  out.first.reserve(points + 1);
+  out.second.reserve(points + 1);
+  for (std::size_t k = 0; k <= points; ++k) {
+    const double fc = 20.0 * std::pow(2.0, static_cast<double>(k) / 48.0);
+    const double centre = std::log2(fc);
+    double weighted = 0.0;
+    double weights = 0.0;
+    for (std::size_t i = 0; i < hz.size(); ++i) {
+      const double z = (log_hz[i] - centre) / sigma;
+      const double w = std::exp(-0.5 * z * z);
+      weighted += w * power[i];
+      weights += w;
+    }
+    out.first.push_back(fc);
+    out.second.push_back(
+        10.0 * std::log10(std::max(weighted / weights,
+                                   std::numeric_limits<double>::min())));
+  }
+
+  std::vector<double> band;
+  for (std::size_t i = 0; i < out.first.size(); ++i) {
+    if (out.first[i] >= 40.0 && out.first[i] <= 16'000.0) band.push_back(out.second[i]);
+  }
+  std::sort(band.begin(), band.end());
+  const std::size_t middle = band.size() / 2;
+  const double centre_db = band.size() % 2 == 1
+                               ? band[middle]
+                               : 0.5 * (band[middle - 1] + band[middle]);
+  for (double& value : out.second) value -= centre_db;
+  return out;
+}
+
 std::vector<Formant> envelope_peaks(std::span<const double> hz, std::span<const double> db,
                                     std::size_t max_count, double min_prominence_db) {
   if (hz.size() != db.size() || hz.size() < 3) {
