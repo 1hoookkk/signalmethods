@@ -79,6 +79,11 @@ TRENCH_TEST(harmonic_helpers_land_root_times_n) {
   std::printf("root %.1f Hz  row1 %.1f Hz  row2 %.1f Hz\n", table.rootHz(),
               poleHz(state, 0, 0), poleHz(state, 0, 1));
 
+  auto* freq_readout0 = table.findChild<QLabel*>(QStringLiteral("freqReadout0"));
+  CHECK(freq_readout0 != nullptr);
+  CHECK(freq_readout0->text().contains(QStringLiteral("D4")));
+  std::printf("row1 reads %s\n", freq_readout0->text().toUtf8().constData());
+
   freq0->setValue(freq0->value() + 20);
   CHECK(harm0->currentIndex() == 0);
   CHECK(harm1->currentIndex() == 2);
@@ -174,7 +179,7 @@ TRENCH_TEST(real_pole_word_makes_a_tilt_row) {
   CHECK(std::holds_alternative<Resonant>(state.sectionAt(0, 2).pole));
   CHECK(pole2->currentText() == QStringLiteral("RING"));
   CHECK(harm2->isEnabled());
-  CHECK(freq_readout->text().endsWith(QStringLiteral("Hz")));
+  CHECK(freq_readout->text().contains(QStringLiteral("Hz ")));
 
   state.undo();
   CHECK(pole2->currentText() == QStringLiteral("REAL"));

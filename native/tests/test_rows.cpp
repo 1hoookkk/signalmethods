@@ -224,7 +224,7 @@ TRENCH_TEST(row_table_edits_reach_the_state) {
   CHECK(words[3] == dial(kTopDial - 150));
   CHECK(freq->value() == 0x90);
   CHECK(resonance->value() == 150);
-  CHECK(freq_readout->text() == hzTextOf(words[2], words[3]));
+  CHECK(freq_readout->text().startsWith(hzTextOf(words[2], words[3]) + QStringLiteral(" ")));
   CHECK(q_readout->text() == resonanceTextOf(words[2], words[3]));
   std::printf("freq %s  q %s\n", freq_readout->text().toUtf8().constData(),
               q_readout->text().toUtf8().constData());
@@ -358,7 +358,7 @@ TRENCH_TEST(row_table_reads_back_the_packed_words) {
       CHECK(offset->value() == static_cast<int>(std::lround(semitones)));
       CHECK(offset_readout->text() == QString::asprintf("%+.1f st", semitones));
     }
-    CHECK(freq_readout->text() == hzTextOf(words[2], words[3]));
+    CHECK(freq_readout->text().startsWith(hzTextOf(words[2], words[3]) + QStringLiteral(" ")));
     CHECK(q_readout->text() == resonanceTextOf(words[2], words[3]));
     CHECK(gain_readout->text() == (notch ? QStringLiteral("—") : gainTextOf(words)));
     std::printf("row %zu  %-9s %-12s %-8s %-9s %s\n", index + 1,

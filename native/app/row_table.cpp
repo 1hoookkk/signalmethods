@@ -33,6 +33,7 @@ namespace p2k = trench::core::p2k;
 
 constexpr int kTopDial = static_cast<int>(p2k::kDialCount) - 1;
 constexpr int kEntryWidth = 48;
+constexpr int kFreqWidth = 84;
 constexpr int kOffsetSpan = 48;
 constexpr double kPairWidthRatio = 4.0;
 constexpr double kEdgeDecayHz = 1.0;
@@ -147,7 +148,7 @@ QString noteName(double hz) {
   const int nearest = static_cast<int>(std::lround(midi));
   const int cents = static_cast<int>(std::lround((midi - nearest) * 100.0));
   const int octave = nearest / 12 - 1;
-  return QStringLiteral("%1%2 %3%4")
+  return QStringLiteral("%1%2%3%4")
       .arg(QString::fromUtf8(kNames[static_cast<std::size_t>(((nearest % 12) + 12) % 12)]))
       .arg(octave)
       .arg(cents >= 0 ? QStringLiteral("+") : QString())
@@ -370,6 +371,8 @@ void RowTable::buildStrip(std::size_t index, QBoxLayout* into) {
   columns->setContentsMargins(0, 0, 0, 0);
   strip.freq = buildColumn(columns, QStringLiteral("FREQ"), QStringLiteral("freq"), index, 0,
                            static_cast<int>(p2k::kMaxMagByte));
+  strip.freq.dial->setFixedWidth(kFreqWidth);
+  strip.freq.entry->setFixedWidth(kFreqWidth);
   strip.q = buildColumn(columns, QStringLiteral("Q"), QStringLiteral("q"), index, 0,
                         maxPoleRes());
   strip.gain = buildColumn(columns, QStringLiteral("GAIN"), QStringLiteral("gain"), index, 1,
@@ -762,7 +765,8 @@ void RowTable::refresh() {
     strip.freq.dial->setValue(static_cast<int>(p2k::dial_of_word(words[2])));
     strip.freq.dial->readout()->setText(!enabled    ? QStringLiteral("—")
                                         : real_pole ? QStringLiteral("TILT")
-                                                    : hzText(words[2], words[3]));
+                                                    : hzText(words[2], words[3]) + QStringLiteral(" ") +
+                                                          noteName(rootOf(words[2], words[3]).hz));
     strip.q.dial->setValue(kTopDial - static_cast<int>(p2k::dial_of_word(words[3])));
     strip.q.dial->readout()->setText(!enabled    ? QStringLiteral("—")
                                      : real_pole ? realPoleText(words)
