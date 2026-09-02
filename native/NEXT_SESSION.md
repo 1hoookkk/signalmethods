@@ -118,7 +118,12 @@ meter."
   of the six-section product on the 20 Hz-20 kHz grid ("PATH +x dB M.. Q.. HERE +x
   dB"), bar amber from +20 dB and red from +30 dB (off the fixed frame); the pad draws
   a ring at the worst point when it is over +20. The pad is the live interior slider.
-- Suite 26/26 headless. `row_table_reads_back_the_packed_words` now expects Hz on
+- POLE word per row (`pole{i}`: RING / REAL), derived from the packed words. REAL
+  seeds the census's commonest factory real pair (r 0.02/0.75, DC side) through
+  `setRealRootAt`; the row reads TILT and `r a/b`, typed boxes and the harmonic word
+  go quiet, the two dials still move the hardware words. Nine factory bodies carry
+  real poles; the console can now voice them.
+- Suite 27/27 headless. `row_table_reads_back_the_packed_words` now expects Hz on
   row 6. Piano ladder copied to four corners then corner 2 up an octave: path worst
   +29.7 dB at M0.75 Q0.12 against +25.4 / +25.8 at the ends - the interior peak
   Massie warned about, now visible.

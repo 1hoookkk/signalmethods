@@ -21,6 +21,7 @@ class RowTable final : public QWidget {
 
  public:
   enum class Shape { kResonator, kPair, kNotch, kEdgeHigh, kEdgeLow };
+  enum class Pole { kRing, kReal };
 
   explicit RowTable(EditorState* state, QWidget* parent = nullptr);
 
@@ -28,6 +29,7 @@ class RowTable final : public QWidget {
   static constexpr int kHarmonicCount = 16;
 
   [[nodiscard]] Shape shapeAt(std::size_t corner, std::size_t index) const;
+  [[nodiscard]] Pole poleAt(std::size_t corner, std::size_t index) const;
   [[nodiscard]] QWidget* takePicker();
   [[nodiscard]] double rootHz() const noexcept { return root_hz_; }
   [[nodiscard]] int harmonicOf(std::size_t index) const;
@@ -48,6 +50,7 @@ class RowTable final : public QWidget {
 
   struct Strip {
     QCheckBox* on{};
+    QComboBox* pole{};
     QComboBox* harm{};
     QComboBox* shape{};
     Column freq{};
@@ -73,6 +76,7 @@ class RowTable final : public QWidget {
   void pushGain(std::size_t index);
   void pushOffset(std::size_t index);
   void pushShape(std::size_t index, Shape shape);
+  void pushPoleWord(std::size_t index, Pole pole);
   void landEntry(std::size_t index, Kind kind);
   void selectFrom(std::size_t index, EditorState::Lane lane);
 

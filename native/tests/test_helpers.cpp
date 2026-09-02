@@ -137,6 +137,49 @@ TRENCH_TEST(slot_six_is_always_a_unit_circle_notch) {
               zeroHz(state, 0, kSix), poleHz(state, 0, kSix));
 }
 
+TRENCH_TEST(real_pole_word_makes_a_tilt_row) {
+  EditorState state;
+  RowTable table(&state);
+  table.show();
+  QTest::qWait(30);
+  auto* on2 = table.findChild<QCheckBox*>(QStringLiteral("on2"));
+  auto* pole2 = table.findChild<QComboBox*>(QStringLiteral("pole2"));
+  auto* harm2 = table.findChild<QComboBox*>(QStringLiteral("harm2"));
+  auto* freq_readout = table.findChild<QLabel*>(QStringLiteral("freqReadout2"));
+  auto* q_readout = table.findChild<QLabel*>(QStringLiteral("qReadout2"));
+  auto* freq_entry = table.findChild<QLineEdit*>(QStringLiteral("freqEntry2"));
+  CHECK(on2 != nullptr && pole2 != nullptr && harm2 != nullptr);
+  CHECK(freq_readout != nullptr && q_readout != nullptr && freq_entry != nullptr);
+  CHECK(pole2->count() == 2);
+  CHECK(!pole2->isEnabled());
+
+  on2->click();
+  CHECK(pole2->isEnabled());
+  CHECK(pole2->currentText() == QStringLiteral("RING"));
+  pole2->setCurrentIndex(pole2->findText(QStringLiteral("REAL")));
+  CHECK(std::holds_alternative<trench::core::native::RealRoots>(state.sectionAt(0, 2).pole));
+  const auto& words = state.packed().words[0][2];
+  const auto [p, q] = p2k::pq(words[2], words[3]);
+  CHECK(std::holds_alternative<trench::core::native::RealRoots>(
+      trench::core::native::roots_from_coefficients(p, q, EditorState::kDatumHz)));
+  CHECK(pole2->currentText() == QStringLiteral("REAL"));
+  CHECK(freq_readout->text() == QStringLiteral("TILT"));
+  CHECK(q_readout->text().startsWith(QStringLiteral("r ")));
+  CHECK(!harm2->isEnabled());
+  CHECK(!freq_entry->isEnabled());
+  std::printf("real pole row: %s %s\n", freq_readout->text().toUtf8().constData(),
+              q_readout->text().toUtf8().constData());
+
+  pole2->setCurrentIndex(pole2->findText(QStringLiteral("RING")));
+  CHECK(std::holds_alternative<Resonant>(state.sectionAt(0, 2).pole));
+  CHECK(pole2->currentText() == QStringLiteral("RING"));
+  CHECK(harm2->isEnabled());
+  CHECK(freq_readout->text().endsWith(QStringLiteral("Hz")));
+
+  state.undo();
+  CHECK(pole2->currentText() == QStringLiteral("REAL"));
+}
+
 TRENCH_TEST(path_meter_reports_the_interior_peak) {
   MainWindow window;
   window.show();

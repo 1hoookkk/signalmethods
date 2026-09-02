@@ -37,6 +37,7 @@ set(TRENCH_NATIVE_TEST_CASES
   harmonic_helpers_land_root_times_n
   slot_six_is_always_a_unit_circle_notch
   path_meter_reports_the_interior_peak
+  real_pole_word_makes_a_tilt_row
 )
 
 set(TRENCH_NATIVE_TEST_NAMES)
