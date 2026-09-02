@@ -140,6 +140,30 @@ std::uint16_t rootReferenceRsq() {
   return value;
 }
 
+QString intervalText(double hz, double root_hz) {
+  if (!(hz > 0.0) || !(root_hz > 0.0) || !std::isfinite(hz)) return QStringLiteral("-");
+  static const std::array<const char*, 12> kSteps{"", "m2", "M2", "m3", "M3", "P4",
+                                                  "#4", "5th", "m6", "M6", "m7", "M7"};
+  const int semitones = static_cast<int>(std::lround(12.0 * std::log2(hz / root_hz)));
+  const int magnitude = std::abs(semitones);
+  const int octaves = magnitude / 12;
+  const int step = magnitude % 12;
+  QString name;
+  if (octaves == 1) {
+    name = QStringLiteral("8ve");
+  } else if (octaves > 1) {
+    name = QStringLiteral("%1-8ve").arg(octaves);
+  }
+  if (step > 0) {
+    name += (name.isEmpty() ? QString() : QStringLiteral("+")) + QString::fromUtf8(kSteps[step]);
+  }
+  if (name.isEmpty()) name = QStringLiteral("unison");
+  return QStringLiteral("%1%2st %3")
+      .arg(semitones < 0 ? QStringLiteral("-") : QStringLiteral("+"))
+      .arg(magnitude)
+      .arg(semitones < 0 ? name + QStringLiteral(" below") : name);
+}
+
 QString noteName(double hz) {
   if (!(hz > 0.0) || !std::isfinite(hz)) return QString();
   static const std::array<const char*, 12> kNames{"C",  "C#", "D",  "D#", "E",  "F",
@@ -760,6 +784,9 @@ void RowTable::refresh() {
                           ? QStringLiteral("> %1").arg(index + 1)
                           : QString::number(index + 1));
     strip.pole->setCurrentIndex(static_cast<int>(poleAt(which, index)));
+    strip.harm->setItemText(0, enabled && !real_pole
+                                   ? intervalText(rootOf(words[2], words[3]).hz, root_hz_)
+                                   : QStringLiteral("-"));
     strip.harm->setCurrentIndex(harmonicOf(index));
     strip.shape->setCurrentIndex(static_cast<int>(shape));
     strip.freq.dial->setValue(static_cast<int>(p2k::dial_of_word(words[2])));

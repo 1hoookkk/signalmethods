@@ -86,7 +86,10 @@ TRENCH_TEST(harmonic_helpers_land_root_times_n) {
 
   freq0->setValue(freq0->value() + 20);
   CHECK(harm0->currentIndex() == 0);
+  CHECK(harm0->currentText().contains(QStringLiteral("st ")));
+  CHECK(harm0->currentText().contains(QStringLiteral("8ve")));
   CHECK(harm1->currentIndex() == 2);
+  std::printf("off-grid row reads %s\n", harm0->currentText().toUtf8().constData());
 
   state.undo();
   CHECK(harm0->currentIndex() == 3);

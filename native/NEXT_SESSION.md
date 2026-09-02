@@ -170,8 +170,9 @@ meter."
 
 ## Open
 
-- Row FREQ readouts show Hz only; the ROOT card shows the note name. Whether each row
-  should show its note beside Hz.
+- DONE: each row's FREQ readout carries its note (`302.2 Hz D4+37`); the harmonic word
+  off the overtone grid reads the interval from ROOT (`+27st 2-8ve+m3`, `-7st 5th
+  below`) instead of a dash. Both derived, never stored.
 - Console Hz are decoded at the 44,100 Hz datum; the prediction tests decode P2K at
   39,062.5 Hz. Confirm which datum the readouts should speak before trusting Hz
   against hardware.
