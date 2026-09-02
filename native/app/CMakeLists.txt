@@ -19,6 +19,8 @@ add_library(trench_native_ui STATIC
   row_table.hpp
   skin.cpp
   skin.hpp
+  word_dial.cpp
+  word_dial.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

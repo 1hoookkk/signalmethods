@@ -9,57 +9,63 @@
 
 class QBoxLayout;
 class QCheckBox;
+class QComboBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QSlider;
 class QSpinBox;
+class WordDial;
 
 class RowTable final : public QWidget {
   Q_OBJECT
 
  public:
+  enum class Shape { kResonator, kPair, kNotch, kEdgeHigh, kEdgeLow };
+
   explicit RowTable(EditorState* state, QWidget* parent = nullptr);
 
+  [[nodiscard]] Shape shapeAt(std::size_t corner, std::size_t index) const;
+  [[nodiscard]] QWidget* takePicker();
   void refresh();
 
  protected:
   bool eventFilter(QObject* watched, QEvent* event) override;
 
  private:
-  enum class Kind { kFreq, kQ, kGain, kZero };
+  enum class Kind { kFreq, kQ, kGain, kOffset };
 
   struct Column {
     QLabel* caption{};
-    QSlider* fader{};
+    WordDial* dial{};
     QLineEdit* entry{};
-    QLabel* readout{};
   };
 
   struct Strip {
     QCheckBox* on{};
+    QComboBox* shape{};
     Column freq{};
     Column q{};
     Column gain{};
-    Column zero{};
-    QPushButton* lock{};
+    Column offset{};
     QSpinBox* cut{};
-    bool unlocked_by_hand{};
   };
 
   Column buildColumn(QBoxLayout* into, const QString& caption, const QString& prefix,
-                     std::size_t index, int maximum);
+                     std::size_t index, int minimum, int maximum);
   void buildStrip(std::size_t index, QBoxLayout* into);
-  void buildPicker(QBoxLayout* into);
+  void buildPicker();
   [[nodiscard]] std::size_t corner() const noexcept;
-  [[nodiscard]] bool lockedNow(std::size_t index) const;
-  void pushPole(std::size_t index, bool carry_zero);
+  [[nodiscard]] double offsetNow(std::size_t index) const;
+  void seatZero(std::size_t index, double semitones, std::uint16_t rsq);
+  void pushPole(std::size_t index);
   void pushGain(std::size_t index);
-  void pushZeroMag(std::size_t index);
+  void pushOffset(std::size_t index);
+  void pushShape(std::size_t index, Shape shape);
   void landEntry(std::size_t index, Kind kind);
   void selectFrom(std::size_t index, EditorState::Lane lane);
 
   EditorState* state_{};
+  QWidget* picker_{};
   std::array<Strip, trench::core::native::kSections> strips_{};
   std::array<QPushButton*, trench::core::native::kCorners> corner_buttons_{};
   bool refreshing_{};

@@ -6,6 +6,7 @@
 #include "ladder.hpp"
 #include "main_window.hpp"
 #include "morph_pad.hpp"
+#include "word_dial.hpp"
 
 #include <QApplication>
 #include <QDir>
@@ -16,7 +17,6 @@
 #include <QUrl>
 #include <QPixmap>
 #include <QPushButton>
-#include <QSlider>
 #include <QSpinBox>
 #include <QTest>
 
@@ -27,7 +27,7 @@
 
 TRENCH_TEST(recipe_chrome_is_on_the_window) {
   MainWindow window;
-  window.resize(1400, 820);
+  window.resize(1560, 860);
   window.show();
   QTest::qWait(60);
   for (const char* name : {"copyAcross", "soloStage", "exportBody240"}) {
@@ -35,7 +35,8 @@ TRENCH_TEST(recipe_chrome_is_on_the_window) {
   }
   CHECK(window.findChild<QWidget*>(QStringLiteral("zplaneView")) == nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("fitRoom")) == nullptr);
-  CHECK(window.findChild<QSlider*>(QStringLiteral("freqFader0")) != nullptr);
+  CHECK(window.findChild<WordDial*>(QStringLiteral("freqDial0")) != nullptr);
+  CHECK(window.findChild<QWidget*>(QStringLiteral("shape0")) != nullptr);
   CHECK(window.findChild<QPushButton*>(QStringLiteral("corner0")) != nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("cornerLevel")) == nullptr);
   CHECK(window.findChild<QWidget*>(QStringLiteral("armadilloEditor")) == nullptr);
@@ -53,7 +54,8 @@ TRENCH_TEST(recipe_chrome_is_on_the_window) {
   CHECK(rows != nullptr);
   CHECK(pad != nullptr);
   CHECK(rows->geometry().top() > plot->geometry().bottom());
-  CHECK(plot->geometry().right() < pad->geometry().left());
+  CHECK(pad->geometry().top() > plot->geometry().bottom());
+  CHECK(pad->geometry().left() > rows->geometry().right());
   std::printf("chrome sizeHint %dx%d\n", window.sizeHint().width(),
               window.sizeHint().height());
   std::printf("console sizeHint %dx%d\n", rows->sizeHint().width(),
@@ -68,7 +70,7 @@ TRENCH_TEST(recipe_chrome_is_on_the_window) {
 
 TRENCH_TEST(dropped_file_opens_like_the_open_button) {
   MainWindow window;
-  window.resize(1060, 940);
+  window.resize(1560, 860);
   window.show();
   QTest::qWait(60);
   const char* configured = std::getenv("TRENCH_SMOKE_DIR");

@@ -3,6 +3,7 @@
 #include "body_io.hpp"
 #include "editor_state.hpp"
 #include "row_table.hpp"
+#include "word_dial.hpp"
 #include "skin.hpp"
 #include "ladder.hpp"
 #include "trench/core/native_body.hpp"
@@ -11,6 +12,7 @@
 
 #include <QApplication>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDir>
 #include <QFile>
 #include <QFont>
@@ -21,7 +23,6 @@
 #include <QLineEdit>
 #include <QPalette>
 #include <QPushButton>
-#include <QSlider>
 #include <QSpinBox>
 #include <QStyle>
 #include <QTest>
@@ -191,27 +192,31 @@ TRENCH_TEST(row_table_edits_reach_the_state) {
   table.show();
   QTest::qWait(30);
   auto* on = table.findChild<QCheckBox*>(QStringLiteral("on0"));
-  auto* freq = table.findChild<QSlider*>(QStringLiteral("freqFader0"));
-  auto* resonance = table.findChild<QSlider*>(QStringLiteral("qFader0"));
-  auto* gain = table.findChild<QSlider*>(QStringLiteral("gainFader0"));
-  auto* zero = table.findChild<QSlider*>(QStringLiteral("zeroFader0"));
+  auto* shape = table.findChild<QComboBox*>(QStringLiteral("shape0"));
+  auto* freq = table.findChild<WordDial*>(QStringLiteral("freqDial0"));
+  auto* resonance = table.findChild<WordDial*>(QStringLiteral("qDial0"));
+  auto* gain = table.findChild<WordDial*>(QStringLiteral("gainDial0"));
+  auto* offset = table.findChild<WordDial*>(QStringLiteral("offsetDial0"));
   auto* freq_readout = table.findChild<QLabel*>(QStringLiteral("freqReadout0"));
   auto* q_readout = table.findChild<QLabel*>(QStringLiteral("qReadout0"));
   auto* gain_readout = table.findChild<QLabel*>(QStringLiteral("gainReadout0"));
-  auto* zero_readout = table.findChild<QLabel*>(QStringLiteral("zeroReadout0"));
+  auto* offset_readout = table.findChild<QLabel*>(QStringLiteral("offsetReadout0"));
   auto* cut = table.findChild<QSpinBox*>(QStringLiteral("cut0"));
-  CHECK(on != nullptr);
-  CHECK(freq != nullptr && resonance != nullptr && gain != nullptr && zero != nullptr);
+  CHECK(on != nullptr && shape != nullptr);
+  CHECK(freq != nullptr && resonance != nullptr && gain != nullptr && offset != nullptr);
   CHECK(freq_readout != nullptr && q_readout != nullptr);
-  CHECK(gain_readout != nullptr && zero_readout != nullptr);
+  CHECK(gain_readout != nullptr && offset_readout != nullptr);
   CHECK(cut != nullptr);
   CHECK(!freq->isEnabled());
+  CHECK(!shape->isEnabled());
   CHECK(gain_readout->text() == QStringLiteral("—"));
-  CHECK(zero_readout->text() == QStringLiteral("—"));
+  CHECK(offset_readout->text() == QStringLiteral("—"));
 
   on->click();
   CHECK(state.sectionEnabled(0));
   CHECK(freq->isEnabled());
+  CHECK(shape->isEnabled());
+  CHECK(shape->currentText() == QStringLiteral("RESONATOR"));
   freq->setValue(0x90);
   resonance->setValue(150);
   const auto& words = state.packed().words[0][0];
@@ -225,19 +230,51 @@ TRENCH_TEST(row_table_edits_reach_the_state) {
               q_readout->text().toUtf8().constData());
 
   CHECK(!state.rootPresent(0, Lane::kZero));
-  CHECK(!zero->isEnabled());
-  gain->setValue(100);
+  CHECK(!gain->isEnabled());
+  CHECK(!offset->isEnabled());
+  shape->setCurrentIndex(shape->findText(QStringLiteral("PAIR")));
   CHECK(state.rootPresent(0, Lane::kZero));
-  CHECK(words[0] == dial(0x90));
-  CHECK(words[1] == dial(kTopDial - 100));
+  CHECK(onTheNote(words));
+  CHECK(gain->isEnabled());
+  CHECK(offset->isEnabled());
+  CHECK(gain->value() == static_cast<int>(p2k::dial_of_word(words[1])));
+  CHECK(offset->value() == 0);
+  const Root pole = rootOf(words[2], words[3]);
+  const Root zero = rootOf(words[0], words[1]);
+  CHECK(zero.bw_hz > pole.bw_hz * 3.0);
+  gain->setValue(100);
+  CHECK(words[1] == dial(100));
+  CHECK(onTheNote(words));
   CHECK(gain_readout->text() == gainTextOf(words));
-  CHECK(zero_readout->text() == hzTextOf(words[0], words[1]));
-  std::printf("gain %s  zero %s\n", gain_readout->text().toUtf8().constData(),
-              zero_readout->text().toUtf8().constData());
-  gain->setValue(0);
+  CHECK(std::abs(12.0 * std::log2(rootOf(words[0], words[1]).hz / pole.hz)) < 1.0);
+  CHECK(offset_readout->text().endsWith(QStringLiteral(" st")));
+  std::printf("gain %s  offset %s\n", gain_readout->text().toUtf8().constData(),
+              offset_readout->text().toUtf8().constData());
+
+  offset->setValue(12);
+  CHECK(!onTheNote(words));
+  const double semitones = 12.0 * std::log2(rootOf(words[0], words[1]).hz / pole.hz);
+  CHECK(std::abs(semitones - 12.0) < 1.0);
+  CHECK(words[1] == dial(100));
+  std::printf("offset 12 landed on %s\n", offset_readout->text().toUtf8().constData());
+
+  shape->setCurrentIndex(shape->findText(QStringLiteral("NOTCH")));
+  CHECK(words[1] == p2k::kS6ZeroRsqWord);
+  CHECK(!gain->isEnabled());
+  CHECK(offset->isEnabled());
+  CHECK(std::abs(12.0 * std::log2(rootOf(words[0], words[1]).hz / pole.hz) - 12.0) < 1.0);
+
+  shape->setCurrentIndex(shape->findText(QStringLiteral("EDGE HP")));
+  const auto* edge = std::get_if<trench::core::native::RealRoots>(&state.sectionAt(0, 0).zero);
+  CHECK(edge != nullptr);
+  CHECK(edge->a_hz > 0.0);
+  CHECK(!offset->isEnabled());
+  CHECK(offset_readout->text() == QStringLiteral("—"));
+
+  shape->setCurrentIndex(shape->findText(QStringLiteral("RESONATOR")));
   CHECK(!state.rootPresent(0, Lane::kZero));
-  CHECK(!zero->isEnabled());
-  CHECK(zero_readout->text() == QStringLiteral("—"));
+  CHECK(!gain->isEnabled());
+  CHECK(gain_readout->text() == QStringLiteral("—"));
 
   cut->setValue(2);
   CHECK(state.cutAt(0, 0) == 2);
@@ -260,7 +297,7 @@ TRENCH_TEST(corner_picker_moves_the_editing_corner) {
   auto* corner0 = table.findChild<QPushButton*>(QStringLiteral("corner0"));
   auto* corner3 = table.findChild<QPushButton*>(QStringLiteral("corner3"));
   auto* on = table.findChild<QCheckBox*>(QStringLiteral("on0"));
-  auto* freq = table.findChild<QSlider*>(QStringLiteral("freqFader0"));
+  auto* freq = table.findChild<WordDial*>(QStringLiteral("freqDial0"));
   CHECK(corner0 != nullptr && corner3 != nullptr);
   CHECK(on != nullptr && freq != nullptr);
   CHECK(table.findChild<QPushButton*>(QStringLiteral("corner1")) != nullptr);
@@ -288,37 +325,43 @@ TRENCH_TEST(row_table_reads_back_the_packed_words) {
   QTest::qWait(30);
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
     const auto& words = state.packed().words[0][index];
-    auto* freq = table.findChild<QSlider*>(QStringLiteral("freqFader%1").arg(index));
-    auto* resonance = table.findChild<QSlider*>(QStringLiteral("qFader%1").arg(index));
-    auto* gain = table.findChild<QSlider*>(QStringLiteral("gainFader%1").arg(index));
-    auto* zero = table.findChild<QSlider*>(QStringLiteral("zeroFader%1").arg(index));
+    auto* shape = table.findChild<QComboBox*>(QStringLiteral("shape%1").arg(index));
+    auto* freq = table.findChild<WordDial*>(QStringLiteral("freqDial%1").arg(index));
+    auto* resonance = table.findChild<WordDial*>(QStringLiteral("qDial%1").arg(index));
+    auto* gain = table.findChild<WordDial*>(QStringLiteral("gainDial%1").arg(index));
+    auto* offset = table.findChild<WordDial*>(QStringLiteral("offsetDial%1").arg(index));
     auto* freq_readout =
         table.findChild<QLabel*>(QStringLiteral("freqReadout%1").arg(index));
     auto* q_readout = table.findChild<QLabel*>(QStringLiteral("qReadout%1").arg(index));
     auto* gain_readout =
         table.findChild<QLabel*>(QStringLiteral("gainReadout%1").arg(index));
-    auto* zero_readout =
-        table.findChild<QLabel*>(QStringLiteral("zeroReadout%1").arg(index));
-    CHECK(freq != nullptr && resonance != nullptr && gain != nullptr && zero != nullptr);
+    auto* offset_readout =
+        table.findChild<QLabel*>(QStringLiteral("offsetReadout%1").arg(index));
+    CHECK(shape != nullptr);
+    CHECK(freq != nullptr && resonance != nullptr && gain != nullptr && offset != nullptr);
     CHECK(freq_readout != nullptr && q_readout != nullptr && gain_readout != nullptr);
-    CHECK(zero_readout != nullptr);
+    CHECK(offset_readout != nullptr);
     CHECK(state.zeroPresentAt(0, index));
+    const bool notch = words[1] == p2k::kS6ZeroRsqWord;
+    CHECK(shape->currentText() == (notch ? QStringLiteral("NOTCH") : QStringLiteral("PAIR")));
     CHECK(freq->value() == static_cast<int>(p2k::dial_of_word(words[2])));
     CHECK(resonance->value() == kTopDial - static_cast<int>(p2k::dial_of_word(words[3])));
-    CHECK(gain->value() == kTopDial - static_cast<int>(p2k::dial_of_word(words[1])));
-    CHECK(zero->value() == static_cast<int>(p2k::dial_of_word(words[0])));
+    CHECK(gain->isEnabled() == !notch);
+    if (!notch) CHECK(gain->value() == static_cast<int>(p2k::dial_of_word(words[1])));
+    const double semitones = 12.0 * std::log2(rootOf(words[0], words[1]).hz /
+                                              rootOf(words[2], words[3]).hz);
+    CHECK(offset->value() == static_cast<int>(std::lround(semitones)));
     CHECK(freq_readout->text() == hzTextOf(words[2], words[3]));
     CHECK(q_readout->text() == resonanceTextOf(words[2], words[3]));
-    CHECK(gain_readout->text() == gainTextOf(words));
-    CHECK(zero_readout->text() == hzTextOf(words[0], words[1]));
-    std::printf("row %zu  %-12s %-8s %-9s zero %s\n", index + 1,
+    CHECK(gain_readout->text() == (notch ? QStringLiteral("—") : gainTextOf(words)));
+    CHECK(offset_readout->text() == QString::asprintf("%+.1f st", semitones));
+    std::printf("row %zu  %-9s %-12s %-8s %-9s %s\n", index + 1,
+                shape->currentText().toUtf8().constData(),
                 freq_readout->text().toUtf8().constData(),
                 q_readout->text().toUtf8().constData(),
                 gain_readout->text().toUtf8().constData(),
-                zero_readout->text().toUtf8().constData());
+                offset_readout->text().toUtf8().constData());
   }
-  auto* s6_gain = table.findChild<QSlider*>(QStringLiteral("gainFader5"));
-  CHECK(s6_gain->value() == kTopDial);
   CHECK(state.packed().words[0][5][1] == p2k::kS6ZeroRsqWord);
   table.close();
 }
@@ -329,11 +372,10 @@ TRENCH_TEST(typed_frequency_lands_on_the_nearest_word) {
   RowTable table(&state);
   table.show();
   QTest::qWait(30);
-  auto* lock = table.findChild<QPushButton*>(QStringLiteral("lock2"));
-  CHECK(lock != nullptr);
+  auto* offset_entry = table.findChild<QLineEdit*>(QStringLiteral("offsetEntry2"));
+  CHECK(offset_entry != nullptr);
   const auto& words = state.packed().words[0][2];
-  if (!lock->isChecked()) lock->click();
-  CHECK(lock->isChecked());
+  typeInto(offset_entry, QStringLiteral("0"));
   CHECK(onTheNote(words));
 
   auto* freq_entry = table.findChild<QLineEdit*>(QStringLiteral("freqEntry2"));
@@ -373,15 +415,10 @@ TRENCH_TEST(typed_frequency_lands_on_the_nearest_word) {
   typeInto(gain_entry, QStringLiteral("6"));
   {
     const double landed = std::abs(gainDbOf(words) - 6.0);
-    for (int candidate = 0; candidate <= kTopDial; ++candidate) {
+    for (int candidate = 1; candidate <= kTopDial; ++candidate) {
       trench::core::PackedSection trial = words;
-      if (candidate == 0) {
-        trial[0] = trench::core::kIdentitySection[0];
-        trial[1] = trench::core::kIdentitySection[1];
-      } else {
-        trial[1] = dial(kTopDial - candidate);
-        trial[0] = p2k::mag_word_for(rootOf(words[2], words[3]).hz, trial[1]);
-      }
+      trial[1] = dial(candidate);
+      trial[0] = p2k::mag_word_for(rootOf(words[2], words[3]).hz, trial[1]);
       CHECK(std::abs(gainDbOf(trial) - 6.0) >= landed - 1e-9);
     }
     std::printf("typed 6 dB landed on %.2f dB\n", gainDbOf(words));
@@ -390,37 +427,38 @@ TRENCH_TEST(typed_frequency_lands_on_the_nearest_word) {
   table.close();
 }
 
-TRENCH_TEST(lock_moves_the_zero_with_the_pole) {
+TRENCH_TEST(offset_holds_the_zero_to_the_pole) {
   EditorState state;
   voiceLadder(state, 0);
   RowTable table(&state);
   table.show();
   QTest::qWait(30);
-  auto* lock = table.findChild<QPushButton*>(QStringLiteral("lock1"));
-  auto* freq = table.findChild<QSlider*>(QStringLiteral("freqFader1"));
-  auto* zero = table.findChild<QSlider*>(QStringLiteral("zeroFader1"));
-  CHECK(lock != nullptr && freq != nullptr && zero != nullptr);
+  auto* freq = table.findChild<WordDial*>(QStringLiteral("freqDial1"));
+  auto* offset = table.findChild<WordDial*>(QStringLiteral("offsetDial1"));
+  auto* offset_entry = table.findChild<QLineEdit*>(QStringLiteral("offsetEntry1"));
+  CHECK(freq != nullptr && offset != nullptr && offset_entry != nullptr);
   const auto& words = state.packed().words[0][1];
-  if (!lock->isChecked()) lock->click();
-  CHECK(lock->isChecked());
+  typeInto(offset_entry, QStringLiteral("0"));
   CHECK(onTheNote(words));
-  CHECK(!zero->isEnabled());
+  CHECK(offset->value() == 0);
 
   freq->setValue(freq->value() + 10);
   CHECK(onTheNote(words));
-  CHECK(lock->isChecked());
 
-  lock->click();
-  CHECK(!lock->isChecked());
-  CHECK(zero->isEnabled());
-  zero->setValue(zero->value() - 10);
+  offset->setValue(7);
   CHECK(!onTheNote(words));
-  CHECK(!lock->isChecked());
+  const auto semitones = [&] {
+    return 12.0 * std::log2(rootOf(words[0], words[1]).hz / rootOf(words[2], words[3]).hz);
+  };
+  CHECK(std::abs(semitones() - 7.0) < 1.0);
+  std::printf("offset 7 landed on %+.2f st\n", semitones());
 
-  lock->click();
+  freq->setValue(freq->value() + 10);
+  CHECK(std::abs(semitones() - 7.0) < 1.0);
+  CHECK(offset->value() == 7);
+
+  offset->setValue(0);
   CHECK(onTheNote(words));
-  CHECK(lock->isChecked());
-  CHECK(!zero->isEnabled());
   table.close();
 }
 

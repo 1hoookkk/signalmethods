@@ -65,7 +65,7 @@ QFont captionFont(const QWidget* base) { return base->font(); }
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), audition_(std::make_unique<trench::audio::Audition>()) {
   setWindowTitle(QStringLiteral("TRENCH · 6 × 2P2Z"));
-  resize(1400, 820);
+  resize(1560, 860);
 
   auto* central = new QWidget(this);
   auto* layout = new QVBoxLayout(central);
@@ -103,17 +103,12 @@ MainWindow::MainWindow(QWidget* parent)
   }
   top->addWidget(load);
   top->addWidget(reset);
+  top->addWidget(save);
+  top->addWidget(export_body);
   top->addStretch(1);
+  top->addWidget(audition_button_);
+  top->addWidget(solo_button_);
   layout->addLayout(top);
-  auto* actions = new QHBoxLayout;
-  actions->setSpacing(10);
-  actions->addWidget(audition_button_);
-  actions->addWidget(solo_button_);
-  actions->addWidget(copy_across);
-  actions->addStretch(1);
-  actions->addWidget(export_body);
-  actions->addWidget(save);
-  layout->addLayout(actions);
 
   cascade_plot_ = new CascadePlot(central);
   cascade_plot_->setObjectName(QStringLiteral("cascadePlot"));
@@ -122,17 +117,14 @@ MainWindow::MainWindow(QWidget* parent)
   row_table_ = new RowTable(&state_, central);
   row_table_->setObjectName(QStringLiteral("rowTable"));
 
-  auto* body = new QHBoxLayout;
-  body->setSpacing(8);
-  auto* stack = new QVBoxLayout;
-  stack->setSpacing(8);
-  stack->addWidget(cascade_plot_, 1);
-  stack->addWidget(row_table_, 0);
-  body->addLayout(stack, 1);
+  layout->addWidget(cascade_plot_, 1);
+  auto* bottom = new QHBoxLayout;
+  bottom->setSpacing(8);
+  bottom->addWidget(row_table_, 1, Qt::AlignTop);
   auto* side = new QVBoxLayout;
   side->setSpacing(8);
-  body->addLayout(side, 0);
-  layout->addLayout(body, 1);
+  bottom->addLayout(side, 0);
+  layout->addLayout(bottom, 0);
 
   auto* gestures = new QHBoxLayout;
   gestures->setSpacing(10);
@@ -182,11 +174,17 @@ MainWindow::MainWindow(QWidget* parent)
                                .arg((state_.editingCorner() ^ 2u) + 1));
   };
   auto* inspector = new QVBoxLayout;
-  inspector->setSpacing(8);
-  inspector->addWidget(transpose);
+  inspector->setSpacing(6);
   inspector->addWidget(posture);
   inspector->addWidget(sharpen);
-  gestures->addWidget(morph_pad_, 0, Qt::AlignTop);
+  inspector->addWidget(transpose);
+  inspector->addWidget(copy_across);
+  inspector->addStretch(1);
+  auto* corner_block = new QVBoxLayout;
+  corner_block->setSpacing(6);
+  corner_block->addWidget(row_table_->takePicker(), 0, Qt::AlignLeft);
+  corner_block->addWidget(morph_pad_, 0, Qt::AlignLeft);
+  gestures->addLayout(corner_block);
   gestures->addLayout(inspector);
   side->addLayout(gestures);
 

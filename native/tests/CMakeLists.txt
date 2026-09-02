@@ -27,7 +27,7 @@ set(TRENCH_NATIVE_TEST_CASES
   corner_picker_moves_the_editing_corner
   row_table_reads_back_the_packed_words
   typed_frequency_lands_on_the_nearest_word
-  lock_moves_the_zero_with_the_pole
+  offset_holds_the_zero_to_the_pole
   posture_throw_writes_the_morph_partner_transposed
   sharpen_throw_writes_the_q_partner_with_raised_radii
   cuts_and_real_roots_survive_save_and_open
