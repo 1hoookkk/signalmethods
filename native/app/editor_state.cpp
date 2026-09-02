@@ -544,12 +544,18 @@ void EditorState::setRealRootAt(std::size_t corner, std::size_t section_index, L
 
 void EditorState::applyAffine(double semitones, double tract, double character,
                               double exaggerate) {
+  applyAffineAt(editing_corner_, semitones, tract, character, exaggerate);
+}
+
+void EditorState::applyAffineAt(std::size_t corner, double semitones, double tract,
+                                double character, double exaggerate) {
+  if (corner >= trench::core::native::kCorners) return;
   const bool moves_frequency = semitones != 0.0 || tract != 1.0;
   const bool moves_bandwidth = character != 1.0 || exaggerate != 1.0;
   if (!moves_frequency && !moves_bandwidth) return;
   remember();
 
-  auto& state = editing();
+  auto& state = corners_[corner];
   const auto authored = [&state](std::size_t index, Lane lane) -> Resonant* {
     if (lane == Lane::kZero && !state.zero_present[index]) return nullptr;
     auto& roots = lane == Lane::kPole ? state.corner.sections[index].pole
@@ -633,8 +639,12 @@ void EditorState::copyCornerTo(std::size_t target) {
 }
 
 void EditorState::sharpenPoles(double radius_step) {
-  if (radius_step == 0.0) return;
-  auto& state = editing();
+  sharpenPolesAt(editing_corner_, radius_step);
+}
+
+void EditorState::sharpenPolesAt(std::size_t corner, double radius_step) {
+  if (corner >= trench::core::native::kCorners || radius_step == 0.0) return;
+  auto& state = corners_[corner];
   bool moved = false;
   for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
     if (!state.enabled[index]) continue;

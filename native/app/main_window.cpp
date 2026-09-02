@@ -145,9 +145,47 @@ MainWindow::MainWindow(QWidget* parent)
   };
   transpose->onBegin = [this] { state_.beginUndoGroup(); };
   transpose->onEnd = [this] { state_.endUndoGroup(); };
+  auto* posture = new GestureDial(
+      QStringLiteral("POSTURE"), 0.03,
+      [](double total) { return QString::asprintf("%+.1f st", total); },
+      central);
+  posture->setObjectName(QStringLiteral("posture"));
+  posture->onBegin = [this] {
+    state_.beginUndoGroup();
+    state_.copyCornerTo(state_.editingCorner() ^ 1u);
+  };
+  posture->onDelta = [this](double delta) {
+    state_.applyAffineAt(state_.editingCorner() ^ 1u, delta, 1.0, 1.0, 1.0);
+  };
+  posture->onEnd = [this] {
+    state_.endUndoGroup();
+    status_label_->setText(QStringLiteral("POSTURE · CORNER %1 → CORNER %2")
+                               .arg(state_.editingCorner() + 1)
+                               .arg((state_.editingCorner() ^ 1u) + 1));
+  };
+  auto* sharpen = new GestureDial(
+      QStringLiteral("SHARPEN"), 0.0002,
+      [](double total) { return QString::asprintf("%+.4f r", total); },
+      central);
+  sharpen->setObjectName(QStringLiteral("sharpen"));
+  sharpen->onBegin = [this] {
+    state_.beginUndoGroup();
+    state_.copyCornerTo(state_.editingCorner() ^ 2u);
+  };
+  sharpen->onDelta = [this](double delta) {
+    state_.sharpenPolesAt(state_.editingCorner() ^ 2u, delta);
+  };
+  sharpen->onEnd = [this] {
+    state_.endUndoGroup();
+    status_label_->setText(QStringLiteral("SHARPEN · CORNER %1 → CORNER %2")
+                               .arg(state_.editingCorner() + 1)
+                               .arg((state_.editingCorner() ^ 2u) + 1));
+  };
   auto* inspector = new QVBoxLayout;
   inspector->setSpacing(8);
   inspector->addWidget(transpose);
+  inspector->addWidget(posture);
+  inspector->addWidget(sharpen);
   gestures->addWidget(morph_pad_, 0, Qt::AlignTop);
   gestures->addLayout(inspector);
   side->addLayout(gestures);

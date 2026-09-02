@@ -103,9 +103,12 @@ class EditorState final : public QObject {
   [[nodiscard]] int cutAt(std::size_t corner, std::size_t section) const;
   void applyAffine(double semitones, double tract, double character,
                    double exaggerate);
+  void applyAffineAt(std::size_t corner, double semitones, double tract,
+                     double character, double exaggerate);
   void copyCornerFrom(std::size_t source);
   void copyCornerTo(std::size_t target);
   void sharpenPoles(double radius_step);
+  void sharpenPolesAt(std::size_t corner, double radius_step);
 
  signals:
   void changed();
