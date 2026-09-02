@@ -21,6 +21,7 @@ class QDragEnterEvent;
 class QDropEvent;
 class QLabel;
 class QPushButton;
+class QSplitter;
 
 class MainWindow final : public QMainWindow {
  public:
@@ -57,6 +58,7 @@ class MainWindow final : public QMainWindow {
   MorphPad* morph_pad_{};
   PathMeter* path_meter_{};
   RowTable* row_table_{};
+  QSplitter* splitter_{};
   QLabel* status_label_{};
   QPushButton* audition_button_{};
   QPushButton* solo_button_{};

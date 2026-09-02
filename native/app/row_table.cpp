@@ -248,8 +248,7 @@ void RowTable::buildRoot(QBoxLayout* into) {
   root_.entry->setObjectName(QStringLiteral("rootEntry"));
   root_.caption->setObjectName(QStringLiteral("rootNote"));
   stack->addLayout(columns);
-  stack->addStretch(1);
-  into->addWidget(card, 0, Qt::AlignTop);
+  into->addWidget(card, 0);
 
   connect(root_.dial, &WordDial::valueChanged, this, [this](int) {
     if (refreshing_) return;

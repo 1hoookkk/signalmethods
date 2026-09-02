@@ -13,6 +13,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSplitter>
 #include <QTest>
 
 #include <cmath>
@@ -186,6 +187,29 @@ TRENCH_TEST(real_pole_word_makes_a_tilt_row) {
 
   state.undo();
   CHECK(pole2->currentText() == QStringLiteral("REAL"));
+}
+
+TRENCH_TEST(console_owns_the_lower_pane) {
+  MainWindow window;
+  window.resize(1600, 1000);
+  window.show();
+  QTest::qWait(60);
+  auto* splitter = window.findChild<QSplitter*>(QStringLiteral("workSplitter"));
+  auto* table = window.findChild<RowTable*>(QStringLiteral("rowTable"));
+  auto* fader = window.findChild<WordDial*>(QStringLiteral("freqDial0"));
+  CHECK(splitter != nullptr && table != nullptr && fader != nullptr);
+  CHECK(splitter->orientation() == Qt::Vertical);
+  CHECK(splitter->count() == 2);
+  CHECK(splitter->widget(1) == table);
+  CHECK(table->width() >= window.width() - 40);
+  const int short_fader = fader->height();
+  splitter->setSizes({250, 700});
+  QTest::qWait(60);
+  const int tall_fader = fader->height();
+  std::printf("console pane %d px, fader %d -> %d px\n", table->height(), short_fader, tall_fader);
+  CHECK(table->height() >= 600);
+  CHECK(tall_fader > short_fader);
+  CHECK(tall_fader >= 300);
 }
 
 TRENCH_TEST(path_meter_reports_the_interior_peak) {

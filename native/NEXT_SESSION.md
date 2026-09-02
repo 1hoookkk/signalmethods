@@ -187,6 +187,16 @@ meter."
    paints an orange focus ring.
 Suite 27/27 headless.
 
+## Layout — DONE 2026-09-02 (Tyson: "Do we need to cram everything on one screen" / "Now")
+
+One screen, your split. `workSplitter` (QSplitter, vertical): upper pane = plot with
+the side column (corner picker, morph pad, PATH meter, POSTURE / SHARPEN / TRANSPOSE /
+COPY ACROSS, status) to its right; lower pane = the console at full width. Faders
+(WordDial, vertical Expanding) grow with the pane: 289 px at 1600x1000 by default, 529
+px with the console dragged to 700. The split is remembered in QSettings ("Signal
+Methods" / "TRENCH Workstation" / workSplitter) on every drag. Default split leaves the
+console its sizeHint + 120 px. Suite 28/28 headless.
+
 ## Open
 
 - DONE: each row's FREQ readout carries its note (`302.2 Hz D4+37`); the harmonic word

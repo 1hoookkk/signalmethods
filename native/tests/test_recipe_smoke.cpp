@@ -53,9 +53,13 @@ TRENCH_TEST(recipe_chrome_is_on_the_window) {
   CHECK(plot != nullptr);
   CHECK(rows != nullptr);
   CHECK(pad != nullptr);
-  CHECK(rows->geometry().top() > plot->geometry().bottom());
-  CHECK(pad->geometry().top() > plot->geometry().bottom());
-  CHECK(pad->geometry().left() > rows->geometry().right());
+  const QPoint plot_origin = plot->mapTo(&window, QPoint(0, 0));
+  const QPoint rows_origin = rows->mapTo(&window, QPoint(0, 0));
+  const QPoint pad_origin = pad->mapTo(&window, QPoint(0, 0));
+  CHECK(rows_origin.y() > plot_origin.y() + plot->height());
+  CHECK(pad_origin.x() > plot_origin.x() + plot->width());
+  CHECK(pad_origin.y() + pad->height() <= rows_origin.y());
+  CHECK(rows->width() >= window.width() - 40);
   std::printf("chrome sizeHint %dx%d\n", window.sizeHint().width(),
               window.sizeHint().height());
   std::printf("console sizeHint %dx%d\n", rows->sizeHint().width(),

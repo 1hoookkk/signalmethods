@@ -38,6 +38,7 @@ set(TRENCH_NATIVE_TEST_CASES
   slot_six_is_always_a_unit_circle_notch
   path_meter_reports_the_interior_peak
   real_pole_word_makes_a_tilt_row
+  console_owns_the_lower_pane
 )
 
 set(TRENCH_NATIVE_TEST_NAMES)

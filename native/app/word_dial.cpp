@@ -34,7 +34,7 @@ constexpr QColor kKnobLine{255, 255, 255};
 WordDial::WordDial(QWidget* parent) : QWidget(parent) {
   setFocusPolicy(Qt::ClickFocus);
   setCursor(Qt::SizeVerCursor);
-  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
   readout_ = new QLabel(this);
   readout_->setAlignment(Qt::AlignCenter);
   readout_->setAttribute(Qt::WA_TransparentForMouseEvents);

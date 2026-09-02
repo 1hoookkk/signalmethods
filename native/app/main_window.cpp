@@ -19,8 +19,10 @@
 #include <QLineEdit>
 #include <QMimeData>
 #include <QPushButton>
+#include <QSettings>
 #include <QShortcut>
 #include <QSignalBlocker>
+#include <QSplitter>
 #include <QStandardPaths>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -45,6 +47,10 @@
 namespace {
 
 using Resonant = trench::core::native::Resonant;
+
+constexpr const char* kSettingsOrganisation = "Signal Methods";
+constexpr const char* kSettingsApplication = "TRENCH Workstation";
+constexpr const char* kSplitterKey = "workSplitter";
 
 double frequencyOf(const trench::core::native::Roots& roots) {
   if (const auto* tone = std::get_if<Resonant>(&roots)) return tone->hz;
@@ -119,14 +125,22 @@ MainWindow::MainWindow(QWidget* parent)
   row_table_ = new RowTable(&state_, central);
   row_table_->setObjectName(QStringLiteral("rowTable"));
 
-  layout->addWidget(cascade_plot_, 1);
-  auto* bottom = new QHBoxLayout;
-  bottom->setSpacing(8);
-  bottom->addWidget(row_table_, 1, Qt::AlignTop);
+  auto* upper = new QWidget(central);
+  auto* upper_row = new QHBoxLayout(upper);
+  upper_row->setContentsMargins(0, 0, 0, 0);
+  upper_row->setSpacing(8);
+  upper_row->addWidget(cascade_plot_, 1);
   auto* side = new QVBoxLayout;
   side->setSpacing(8);
-  bottom->addLayout(side, 0);
-  layout->addLayout(bottom, 0);
+  upper_row->addLayout(side, 0);
+  splitter_ = new QSplitter(Qt::Vertical, central);
+  splitter_->setObjectName(QStringLiteral("workSplitter"));
+  splitter_->setChildrenCollapsible(false);
+  splitter_->addWidget(upper);
+  splitter_->addWidget(row_table_);
+  splitter_->setStretchFactor(0, 1);
+  splitter_->setStretchFactor(1, 1);
+  layout->addWidget(splitter_, 1);
 
   auto* gestures = new QHBoxLayout;
   gestures->setSpacing(10);
@@ -229,6 +243,17 @@ MainWindow::MainWindow(QWidget* parent)
 
   refresh();
   setMinimumSize(sizeHint());
+
+  const QSettings settings(kSettingsOrganisation, kSettingsApplication);
+  const QByteArray remembered = settings.value(kSplitterKey).toByteArray();
+  if (remembered.isEmpty() || !splitter_->restoreState(remembered)) {
+    const int console = row_table_->sizeHint().height() + 120;
+    splitter_->setSizes({std::max(200, height() - console), console});
+  }
+  connect(splitter_, &QSplitter::splitterMoved, this, [this](int, int) {
+    QSettings store(kSettingsOrganisation, kSettingsApplication);
+    store.setValue(kSplitterKey, splitter_->saveState());
+  });
 }
 
 MainWindow::~MainWindow() {
