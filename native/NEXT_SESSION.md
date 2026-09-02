@@ -1,12 +1,52 @@
-# CHECKPOINT 2026-09-02 (evening) — pick up fresh here
+# CHECKPOINT 2026-09-02 (late) — pick up fresh here
 
-Branch `face/ship-candidate-fx`, native tree committed (native suite 19/19
-headless). Launcher `TRENCH Workstation.bat`; build `cmake --preset app &&
-cmake --build --preset app`; tests `--target trench_native_tests`, then
-`ctest -R ^native\.` in `out/build/app`. Never two vcpkg-configuring builds at
-once. Commit native work with explicit pathspecs only (other chats stage
-`plugin/` in the same index).
+Branch `face/ship-candidate-fx`, native tree committed at 948d6b6c (native suite 27/27
+headless). Launcher `TRENCH Workstation.bat`; build through the MSVC env only:
+`TRENCH Build App.bat`, or a .cmd that calls VsDevCmd.bat then
+`cmake --build --preset app --target trench_native trench_native_tests`; tests
+`ctest -R ^native\.` in `out/build/app` with QT_QPA_PLATFORM=offscreen. A bare shell
+build fails C1083 and leaves stale binaries. Never two vcpkg-configuring builds at
+once. Commit native work with explicit pathspecs only (other chats stage `plugin/`).
 
+## Rulings 2026-09-02 late (Tyson's words)
+
+- Thesis: "im shipping TRENCH. not this native app. but this app is what im using to
+  make the filters for TRENCH because im not a coder. my standard is basically the cube
+  filter responses and the 33 p2k. today we ship as 240 bytes 4 corners."
+- "im not trying to work towards what they have. i would have shipped by now. im trying
+  to basically infer what sort of tooling they used to make them."
+- "Include Harmonic Helpers", "Enforce Slot 6 Invariants", "Make Trajectory Auditing
+  Mandatory", "add the real pole shape word to the console" - all built, see below.
+- Offline interior audition: dropped (the pad with AUDITION open already is it). Heat
+  map on the pad: deferred until the meter's ring lands somewhere unexplained.
+- Research phase closed. Next: voice bodies end to end and let the first one expose
+  what the tool still needs.
+
+## What the tooling inference settled today
+
+- Rossum US10514883B2: a corner = six parametric EQ bands + a low-pass section; per
+  section pole angle, pole radius, zero angle, zero radius, gain; frequency and
+  resonance encoded independently in log space.
+- Massie JAES 1993 + Bristow-Johnson: the section is an allpass on a 4-multiply
+  normalized ladder plus feedforward; k1 = -cos w0 (frequency only), k2 = pole radius
+  (Q only), K = boost/cut only. The row IS his section. Piano corner verified: zero on
+  the pole angle, peak = 20 log10(zero bw / pole bw) per rung within 0.2 dB.
+- Massie saol-users 1999: parametric bands interpolate legally; 8 basis frames = the
+  cube; cascade never parallel; corners are the only authored thing.
+- Massie SOS Oct 1995: Morpheus tool "too limited" for the voicer David Bristow; the
+  post-1995 tool gave "the parametric filter functions accessed directly".
+- P2K section 6 = the low-pass: zero radius byte always 0 (unit circle), pitch parked
+  at Nyquist 61/127 or pulled down as a ceiling (median 9.5 kHz).
+- Corner relations, all 33 bodies: slot identity 68%; sharpening per row by hand
+  (within-body variance 5.4x between); Morph partner re-voiced (zero/pole slope 0.15);
+  gain words = DC-unity rule only. POSTURE and SHARPEN are seeds, never the finish.
+- Presentation (inference, unconfirmed): Mac app in 1993, Windows at Creative by 1997,
+  Matlab beside both, a separate ROM packer. Witnesses: Dana Massie, David Bristow,
+  Kevin Monahan, the P2K software architect CV, Rossum. DSPx 1994 citation unlocated.
+- Corpus: evidence/research-results/corpus/massie_interpolation_corpus.md;
+  prediction tests evidence/research-results/p2k_prediction_tests.{md,json,csv,py}.
+
+## Earlier tonight (2026-09-02 evening)
 ## Tyson's rulings tonight (his words)
 
 - The row is "Frequency (the harmonic note), Q (pole bandwidth / ring time),
@@ -130,5 +170,9 @@ meter."
 
 ## Open
 
-Whether Frequency shows note names beside Hz. Whether the Frequency fader
-can be told "root x n".
+- Row FREQ readouts show Hz only; the ROOT card shows the note name. Whether each row
+  should show its note beside Hz.
+- Console Hz are decoded at the 44,100 Hz datum; the prediction tests decode P2K at
+  39,062.5 Hz. Confirm which datum the readouts should speak before trusting Hz
+  against hardware.
+- `core/src/p2k/zeros_fit.cpp` still in core with no caller.
