@@ -34,15 +34,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         trench::kBodyParamMaxIndex,
         trench::kDefaultBodyIndex));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::lowKeep, 1 },
-        "Low",
-        juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f, pctAttribs()));
-    layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::slamDrive, 1 },
         "Output",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f));
+        2.0f / 3.0f));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::preamp, 1 },
         "Input",
@@ -58,19 +53,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         // GROWL (verdicted 2026-08-10 "speaker in a trunk"): pitch-locked
         // sub-octave wheel oscillation, rendered inside the engine. One dumb
         // button — no rate, no depth.
-        presetNames.add ("GROWL");
-        presetNames.add ("LIVE");   // the phrase being drawn, followed from disk
         layout.add (std::make_unique<juce::AudioParameterChoice> (
             juce::ParameterID { ParamID::movePreset, 1 },
             "Movement",
             presetNames,
             0));
+        layout.add (std::make_unique<juce::AudioParameterChoice> (
+            juce::ParameterID { ParamID::moveTransition, 1 },
+            "Movement Transition",
+            juce::StringArray { "PATTERN", "STEP", "GLIDE" },
+            0));
     }
-    layout.add (std::make_unique<juce::AudioParameterChoice> (
-        juce::ParameterID { ParamID::moveDivision, 1 },
-        "Division",
-        juce::StringArray { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32", "1/32T" },
-        3));
     // DEPTH retired 2026-08-10 ("it's confusing"): the bank reaches both walls
     // from wherever the wheel rests (Movement::render), never a second dial.
     // Envelope macro depth. Its own parameter rather than
@@ -79,17 +72,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::envAmount, 1 },
         "Follow",
-        juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f, pctAttribs()));
-    // RETIRED FROM THE FACE 2026-08-15 (no knob; the parameter stays so old
-    // sessions keep their saved value and their sound). The cube's authored
-    // third axis is the successor for pitch-following filters.
-    // TRACK — the Hz axis (Tyson 2026-08-10 "wake the hz axis"): the whole
-    // authored geography slides with the played note:
-    // sub-anchors pinned, walls guarded). 1.0 = octave-for-octave.
-    layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::track, 1 },
-        "Track",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterChoice> (

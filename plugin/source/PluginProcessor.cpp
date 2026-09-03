@@ -1,8 +1,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
-#include "dsp/SlamStage.h"
 #include "dsp/PreampLaw.h"
+#include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
 #include "BinaryData.h"
 #include <cmath>
@@ -41,11 +41,9 @@ PluginProcessor::PluginProcessor()
     pChew       = apvts.getRawParameterValue (ParamID::chew);
     pSlam       = apvts.getRawParameterValue (ParamID::slamDrive);
     pPreamp     = apvts.getRawParameterValue (ParamID::preamp);
-    pLowKeep    = apvts.getRawParameterValue (ParamID::lowKeep);
     pFollow     = apvts.getRawParameterValue (ParamID::envAmount);
-    pTrack      = apvts.getRawParameterValue (ParamID::track);
     pMovePreset = apvts.getRawParameterValue (ParamID::movePreset);
-    pMoveDivision = apvts.getRawParameterValue (ParamID::moveDivision);
+    pMoveTransition = apvts.getRawParameterValue (ParamID::moveTransition);
     pKeySnap    = apvts.getRawParameterValue (ParamID::keySnap);
     if (trench::clean_audio::kEnabled())
         forceCleanAudioUiState();
@@ -133,7 +131,7 @@ bool PluginProcessor::isMidiEffect() const
     return false;
    #endif
 }
-double PluginProcessor::getTailLengthSeconds() const { return 0.0; }
+double PluginProcessor::getTailLengthSeconds() const { return dspBridge.tailSeconds(); }
 int PluginProcessor::getNumPrograms() { return 1; }
 int PluginProcessor::getCurrentProgram() { return 0; }
 void PluginProcessor::setCurrentProgram (int index) { juce::ignoreUnused (index); }
@@ -225,18 +223,15 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dspBridge.setInputMode (kCleanInputMode);
     dspBridge.setSpatialMode (kSpatialOff);
     dspBridge.setQSoundFallbackPan (1.0f);
-    lastPreampActive = false;
     movement.prepare (sampleRate);
+    morphSmoother = pMorph->load();
+    morphSmootherPrimed = true;
     // The trajectory buffer is the audio thread's — sized here, never touched
     // by the allocator again.
     morphBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
     effectiveMorphForUi.store (pMorph->load(), std::memory_order_relaxed);
     effectiveQForUi.store (pQ->load(), std::memory_order_relaxed);
     morphModulatedForUi.store (false, std::memory_order_relaxed);
-    lowKeepBand.setSize (kLowKeepMaxChannels, juce::jmax (1, samplesPerBlock), false, true, true);
-    lowKeepState.fill (0.0f);
-    lowKeepCutoffHz = 0.0f;
-    lowKeepSampleRate = sampleRate > 0.0 ? sampleRate : 44'100.0;
     preparedBlockSize = juce::jmax (1, samplesPerBlock);
     // ~1 s analysis windows: the first useful AUTO KEY verdict lands at
     // loop-creation speed instead of the heritage 17.8 s.
@@ -279,7 +274,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         buffer.clear (ch, 0, buffer.getNumSamples());
     const int numSamples = buffer.getNumSamples();
     // 2. A body that failed to load returns DRY audio — never mute the track.
-    if (! lastLoadOk.load (std::memory_order_acquire) || numSamples <= 0)
+    if (! lastLoadOk.load (std::memory_order_acquire) || numSamples <= 0 || morphBuffer.empty())
         return;
     // 3. The engine cannot be freed while this scope is alive. One acquisition
     //    covers every engine touch below, telemetry included.
@@ -305,14 +300,16 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             for (int c = 0; c < channels; ++c)
                 chans[c] = buffer.getWritePointer (c) + start;
             juce::AudioBuffer<float> slice (chans, channels, n);
-            processChunk (slice);
+            processChunk (slice, start);
         }
         return;
     }
     processChunk (buffer);
 }
-static constexpr float kX3VoiceGain = 1.6107f;
-void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
+static constexpr float kInputRangeDb = 24.0f;
+static constexpr float kOutputMinDb = -24.0f;
+static constexpr float kOutputMaxDb = 12.0f;
+void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset)
 {
     const int numSamples = buffer.getNumSamples();
     // 3. Every parameter, read once from the cached atomics.
@@ -323,12 +320,12 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
     const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
     const float chew      = curveMap (Axis::bite,   juce::jlimit (0.0f, 1.0f, pChew->load()));
-    const float slam      = curveMap (Axis::slam,   juce::jlimit (0.0f, 1.0f, pSlam->load()));
+    const float slamKnob  = juce::jlimit (0.0f, 1.0f, pSlam->load());
+    const float slam      = curveMap (Axis::slam, slamKnob);
     const float preamp    = curveMap (Axis::preamp, juce::jlimit (0.0f, 1.0f, pPreamp->load()));
     const float follow    = curveMap (Axis::follow, juce::jlimit (0.0f, 1.0f, pFollow->load()));
-    const float track     = curveMap (Axis::track,  juce::jlimit (0.0f, 1.0f, pTrack->load()));
     const int movePreset  = (int) pMovePreset->load();
-    const int moveDivision = (int) pMoveDivision->load();
+    const int moveTransition = (int) pMoveTransition->load();
     const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
     // 4. THE INPUT METER IS THE INPUT. Taken here from the untouched buffer,
     //    not after the cascade and output stage, where it becomes an output
@@ -362,17 +359,13 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
             if (auto p = pos->getPpqPosition()) transport.ppq = *p;
             transport.playing = pos->getIsPlaying();
         }
+    if (sampleOffset > 0 && transport.ppq >= 0.0 && getSampleRate() > 0.0)
+        transport.ppq += (double) sampleOffset * transport.bpm / 60.0 / getSampleRate();
     // 7. The per-sample Morph trajectory — the ONLY movement law.
-    const LiveSlot* live = livePhraseValid.load (std::memory_order_acquire)
-                               ? &livePhrase[livePhraseSlot.load (std::memory_order_acquire)]
-                               : nullptr;
-    const bool liveRate = live != nullptr && live->stepBeats > 0.0
-                          && movePreset == trench::kNumFuncGenPatterns + 2;
     if (morphRetrigger.exchange (false, std::memory_order_acquire))
         movement.retrigger();
-    movement.render (morphBuffer.data(), numSamples, baseMorph, transport, movePreset,
-                     live != nullptr ? &live->desc : nullptr,
-                     liveRate ? live->stepBeats : trench::Movement::stepBeatsFor (moveDivision));
+    movement.render (morphBuffer.data(), numSamples, baseMorph, transport,
+                     movePreset, moveTransition);
     follower.setAmount (follow);
     if (follower.armed())
     {
@@ -390,31 +383,38 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
             follower.advance (peak);
             const float offset = follower.currentOffset();
             for (int i = start; i < end; ++i)
-                morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, morphBuffer[(size_t) i] + offset);
+                morphBuffer[(size_t) i] += offset;
         }
     }
-    // 8. Static controls that changed since last block.
-    const bool preampActive = preamp > 0.001f;
-    if (preampActive != lastPreampActive)
+    // One and only one modulation smoother. All modulation is an offset from
+    // the manual wheel, then bounded before the filter sees its target.
+    const bool movementOn = movePreset > 0 && movePreset <= trench::kNumFuncGenPatterns;
+    const bool followOn = follow > 0.0005f;
+    if (! movementOn && ! followOn)
     {
-        dspBridge.setInputMode (preampActive ? kMackieDeskSlam : kCleanInputMode);
-        lastPreampActive = preampActive;
+        std::fill (morphBuffer.begin(), morphBuffer.begin() + numSamples, baseMorph);
+        morphSmoother = baseMorph;
+        morphSmootherPrimed = true;
     }
-    dspBridge.setInputPreamp (trench::driveTaper (preamp));
+    else
+    {
+        if (! morphSmootherPrimed) { morphSmoother = baseMorph; morphSmootherPrimed = true; }
+        constexpr float a = 1.0f - 0.9692332344763441f; // exp(-1/32)
+        for (int i = 0; i < numSamples; ++i)
+        {
+            const float target = juce::jlimit (0.0f, 1.0f, baseMorph + morphBuffer[(size_t) i]);
+            morphSmoother += (target - morphSmoother) * a;
+            morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, morphSmoother);
+        }
+    }
+#if TRENCH_DEV_PANEL
+    wheelLoopSource.process (morphBuffer.data(), numSamples, transport.ppq, transport.playing, transport.bpm, getSampleRate());
+#endif
+    // 8. Static controls that changed since last block.
+    dspBridge.setInputPreamp (0.0f);
     TrenchParams params;
     params.q = q;                       // the static authored second axis
     params.poleDistortion = chew;       // BITE/CHEW, independent of Q
-    params.envAmount = follow;          // FOLLOW: the one authoritative detector
-    // GROWL is a movement source rendered inside the engine (it needs the
-    // detected note). The dumb button: selected = on, anything else = off.
-    params.growl = movePreset == trench::Movement::kGrowlIndex ? 1.0f : 0.0f;
-    params.track = track;               // the Hz axis: geography follows the note
-    // TRACK follows only the ACCEPTED key, only in AUTO, only when the player
-    // turned the knob: off by default, inert under a manual KEY, and the
-    // three-window hysteresis upstream means it moves rarely and deliberately.
-    params.trackKey = keyChoice == 0 && track > 0.001f
-                          ? detectedKeyForUi.load (std::memory_order_relaxed)
-                          : -1;
     // AUTO DETECTS. IT DOES NOT RETUNE.
     //
     // This line used to substitute the DETECTOR'S guess for the player's
@@ -430,51 +430,14 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer)
     // (applySuggestedChoice). Snapping is now something the player asks for.
     // 0 = no snap.
     params.keySnap = keyChoice;
-    // 9. LOW KEEP — the floor goes around the machine. A first-order pair sums
-    //    back to unity, so at 0 there is no filter in the path at all.
-    const float lowKeep = juce::jlimit (0.0f, 1.0f, pLowKeep->load());
-    const bool lowKeepActive = lowKeep > 0.0f;
-    const int lowKeepChannels = lowKeepActive
-                                    ? juce::jmin (kLowKeepMaxChannels, buffer.getNumChannels())
-                                    : 0;
-    if (lowKeepActive)
-    {
-        const float targetHz = 20.0f * std::pow (25.0f, lowKeep);
-        lowKeepCutoffHz = lowKeepCutoffHz > 0.0f
-                              ? lowKeepCutoffHz + 0.25f * (targetHz - lowKeepCutoffHz)
-                              : targetHz;
-        const float g = 1.0f - std::exp (-2.0f * juce::MathConstants<float>::pi
-                                         * lowKeepCutoffHz / (float) lowKeepSampleRate);
-        for (int c = 0; c < lowKeepChannels; ++c)
-        {
-            float* d  = buffer.getWritePointer (c);
-            float* lo = lowKeepBand.getWritePointer (c);
-            float s = lowKeepState[(size_t) c];
-            for (int i = 0; i < numSamples; ++i)
-            {
-                s += g * (d[i] - s);
-                lo[i] = s;
-                d[i] -= s;
-            }
-            lowKeepState[(size_t) c] = s;
-        }
-    }
-    // 9b. The wet path — mono and stereo both traverse the real engine.
+    buffer.applyGain (juce::Decibels::decibelsToGain (kInputRangeDb * preamp));
     dspBridge.processTrajectory (buffer, morphBuffer.data(), params);
-    buffer.applyGain (kX3VoiceGain);
-    // 10. OUTPUT/SLAM once, after the filter and before the kept floor rejoins.
     float limitFrac = 0.0f;
-    if (buffer.getNumChannels() >= 2)
-        limitFrac = trench::slamOutputPressureBlockStereo (buffer.getWritePointer (0),
-                                                           buffer.getWritePointer (1),
-                                                           numSamples, slam);
-    else if (buffer.getNumChannels() == 1)
-        limitFrac = trench::slamOutputPressureBlock (buffer.getWritePointer (0),
-                                                     numSamples, slam);
-    // 11. The kept floor rejoins untouched: no engine, no voice gain, no SLAM.
-    if (lowKeepActive)
-        for (int c = 0; c < lowKeepChannels; ++c)
-            buffer.addFrom (c, 0, lowKeepBand, c, 0, numSamples);
+    buffer.applyGain (juce::Decibels::decibelsToGain (kOutputMinDb + (kOutputMaxDb - kOutputMinDb) * slam));
+    limitFrac = trench::finalSafetyCeilingBlockStereo (
+        buffer.getNumChannels() >= 1 ? buffer.getWritePointer (0) : nullptr,
+        buffer.getNumChannels() >= 2 ? buffer.getWritePointer (1) : nullptr,
+        numSamples);
     // 12. Telemetry only while the editor is looking.
     if (editorOpen.load (std::memory_order_relaxed))
     {
@@ -516,7 +479,7 @@ void PluginProcessor::handleAsyncUpdate()
     const int want = pendingBodyIndex.load (std::memory_order_relaxed);
     if (want == loadedBodyIndex.load (std::memory_order_relaxed))
         return;
-    lastLoadOk.store (false, std::memory_order_release);
+    const bool wasLive = lastLoadOk.load (std::memory_order_acquire);
     juce::MemoryBlock raw;
     juce::String json;
     if (! trench::bodyRawBytes (want, raw))
@@ -533,7 +496,7 @@ void PluginProcessor::handleAsyncUpdate()
                 currentBodyDatumRate = 0.0;
             }
             else { loadedRuntimePreset = {}; }
-            lastLoadOk.store (ok, std::memory_order_release);
+            lastLoadOk.store (ok || wasLive, std::memory_order_release);
             loadedBodyIndex.store (want, std::memory_order_relaxed);
             bodyVersionForUi.fetch_add (1, std::memory_order_relaxed);
             return;
@@ -559,7 +522,7 @@ void PluginProcessor::handleAsyncUpdate()
         ok = json.isNotEmpty() && dspBridge.loadCartridge (json);
         captureCurrentBodyBytes (json);
     }
-    lastLoadOk.store (ok, std::memory_order_release);
+    lastLoadOk.store (ok || wasLive, std::memory_order_release);
     loadedBodyIndex.store (want, std::memory_order_relaxed);
     if (trench::bodyIsAudition (want))
         auditionSlotMtime = trench::auditionSlotFile().getLastModificationTime();
@@ -612,7 +575,6 @@ void PluginProcessor::forgeAuditionTyped (const std::vector<double>& cards)
     if (! TrenchDspBridge::compileTypedBody (cards.data(), (int) cards.size(), body)
         || body.getSize() != 240)
     {
-        lastLoadOk.store (false, std::memory_order_release);
         juce::Logger::writeToLog ("FORGE compile FAILED");
         return;
     }
@@ -668,55 +630,14 @@ bool PluginProcessor::probeCurrentBodyForUi (float morph, float q, float outCoef
         captureCurrentBodyBytes (trench::bodyCartridgeJson (loadedBodyIndex.load (std::memory_order_relaxed)));
     if (currentBodyBytes.getSize() != 240)
         return false;
+    const int keyChoice = juce::jlimit (0, 24, (int) pKeySnap->load());
     return TrenchDspBridge::probePackedBody (currentBodyBytes.getData(), currentBodyBytes.getSize(),
                                              morph, q,
                                              getSampleRate() > 0.0 ? getSampleRate() : 48'000.0,
                                              outCoeffs, outBoost,
-                                             currentBodyDatumRate);
+                                             currentBodyDatumRate,
+                                             TrenchDspBridge::keySnapRatio (keyChoice));
 }
-// The live channel: filters/phrase_live.json holds the single phrase being
-// drawn. Parse on the message thread into the slot the audio thread is NOT
-// reading, then publish by flipping the index — no lock, no allocation on the
-// audio thread. Absent file simply means the LIVE slot stays silent.
-void PluginProcessor::pollLivePhrase()
-{
-    if (livePhraseFile == juce::File())
-        livePhraseFile = juce::File (TRENCH_TABLE_STITCH_ROOT)
-                             .getChildFile ("filters").getChildFile ("phrase_live.json");
-    if (! livePhraseFile.existsAsFile())
-        return;
-    const auto stamp = livePhraseFile.getLastModificationTime();
-    if (stamp == livePhraseMtime)
-        return;
-    livePhraseMtime = stamp;
-
-    const auto parsed = juce::JSON::parse (livePhraseFile);
-    const auto* vals = parsed.getProperty ("values", {}).getArray();
-    if (vals == nullptr || vals->isEmpty())
-        return;
-
-    const int idle = 1 - livePhraseSlot.load (std::memory_order_relaxed);
-    auto& dst = livePhrase[idle];
-    const int n = juce::jlimit (1, kLiveCells, (int) vals->size());
-    float peak = 0.0f;
-    for (int i = 0; i < n; ++i)
-        peak = juce::jmax (peak, std::abs ((float) (double) (*vals)[i]));
-    if (peak < 1.0e-6f)
-        return;                                  // no travel: keep what we had
-    for (int i = 0; i < kLiveCells; ++i)
-    {
-        dst.values[i] = i < n ? juce::jlimit (-1.0f, 1.0f, (float) (double) (*vals)[i] / peak) : 0.0f;
-        dst.trigs[i] = 0;
-    }
-    dst.desc.steps = n;
-    dst.desc.direction = juce::jlimit (0, 5, (int) parsed.getProperty ("direction", 0));
-    dst.desc.smooth = (bool) parsed.getProperty ("smooth", true);
-    const double rate = (double) parsed.getProperty ("stepBeats", 0.0);
-    dst.stepBeats = rate > 0.0 && std::isfinite (rate) ? juce::jlimit (1.0 / 64.0, 4.0, rate) : 0.0;
-    livePhraseSlot.store (idle, std::memory_order_release);
-    livePhraseValid.store (true, std::memory_order_release);
-}
-
 // AUTO KEY hysteresis. Runs on the WORKER (never the message thread), editor
 // open or not — a 131,072-point FFT and an RTNeural pass do not belong on the
 // thread that draws the host. candidateKey/candidateCount/acceptedKey are the
@@ -769,7 +690,6 @@ void PluginProcessor::updateAutoKey()
 
 void PluginProcessor::timerCallback()
 {
-    pollLivePhrase();
     dspBridge.reclaim();
     // user bodies hot-reload in place: the Workstation saves, the plugin
     // follows - no TYPE menu round trip. Only disk-loaded .body240 bodies.
@@ -816,9 +736,9 @@ void PluginProcessor::timerCallback()
     const auto json = slot.loadFileAsString();
     if (json.isEmpty())
         return;
-    lastLoadOk.store (false, std::memory_order_release);
     const bool ok = dspBridge.loadCartridge (json);
-    lastLoadOk.store (ok, std::memory_order_release);
+    if (ok)
+        lastLoadOk.store (true, std::memory_order_release);
     captureCurrentBodyBytes (json);
 #endif
 }
@@ -936,6 +856,7 @@ void PluginProcessor::forceCleanAudioUiState()
     setParameterDenormalized (ParamID::chew, 0.0f);
     setParameterDenormalized (ParamID::slamDrive, 0.0f);
     setParameterDenormalized (ParamID::movePreset, 0.0f);
+    setParameterDenormalized (ParamID::moveTransition, 0.0f);
 }
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {

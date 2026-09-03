@@ -10,6 +10,13 @@ if(NOT TARGET trench_native_core)
 endif()
 
 include(FetchContent)
+if(WIN32 AND NOT DEFINED Python3_EXECUTABLE)
+  find_program(TRENCH_PYTHON_COMMAND_FROM_PATH NAMES python python3 NO_CACHE)
+  if(TRENCH_PYTHON_COMMAND_FROM_PATH)
+    set(Python3_EXECUTABLE "${TRENCH_PYTHON_COMMAND_FROM_PATH}")
+  endif()
+endif()
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 if(NOT TARGET juce::juce_audio_processors)
   set(JUCE_BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
   set(JUCE_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -83,7 +90,8 @@ set(TRENCH_PLUGIN_SOURCES
   source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/KeySnapBox.h
   source/ui/BayKnob.h source/ui/ParamInteraction.h
   source/ui/SelectorLookAndFeel.h source/ui/Theme.h
-  source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h)
+  source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h
+  source/ui/Onboarding.h source/ui/DevPanel.h source/dsp/WheelLoop.h)
 
 add_library(TRENCHPluginCommon STATIC ${TRENCH_PLUGIN_SOURCES})
 target_compile_features(TRENCHPluginCommon PUBLIC cxx_std_20)
@@ -105,12 +113,43 @@ juce_add_plugin(TRENCH
   COPY_PLUGIN_AFTER_BUILD FALSE)
 target_link_libraries(TRENCH PRIVATE TRENCHPluginCommon)
 
+add_library(TRENCHPluginCommonDev STATIC ${TRENCH_PLUGIN_SOURCES})
+target_compile_features(TRENCHPluginCommonDev PUBLIC cxx_std_20)
+target_include_directories(TRENCHPluginCommonDev PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCHPluginCommonDev PUBLIC ${TRENCH_COMMON_DEFINITIONS} TRENCH_DEV_PANEL=1)
+target_link_libraries(TRENCHPluginCommonDev PUBLIC
+  TRENCHAssets trench_native_core RTNeural
+  juce::juce_audio_utils juce::juce_audio_processors juce::juce_audio_formats
+  juce::juce_dsp juce::juce_gui_basics juce::juce_gui_extra
+  juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+
+juce_add_plugin(TRENCH_Dev
+  COMPANY_NAME "Signal Methods"
+  BUNDLE_ID "com.signalmethods.trench.dev"
+  PLUGIN_MANUFACTURER_CODE Sgmd
+  PLUGIN_CODE Tr0d
+  FORMATS VST3
+  PRODUCT_NAME "TRENCH Dev"
+  COPY_PLUGIN_AFTER_BUILD FALSE)
+target_link_libraries(TRENCH_Dev PRIVATE TRENCHPluginCommonDev)
+
 juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")
 target_sources(TRENCH_FaceShot PRIVATE tools/FaceShot.cpp)
 target_include_directories(TRENCH_FaceShot PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
 target_compile_definitions(TRENCH_FaceShot PRIVATE ${TRENCH_COMMON_DEFINITIONS}
     JUCE_MODAL_LOOPS_PERMITTED=1)
 target_link_libraries(TRENCH_FaceShot PRIVATE
+    TRENCHPluginCommon
+    juce::juce_audio_formats
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_Stimuli PRODUCT_NAME "TRENCH Stimuli")
+target_sources(TRENCH_Stimuli PRIVATE tools/Stimuli.cpp)
+target_include_directories(TRENCH_Stimuli PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_Stimuli PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_Stimuli PRIVATE
     TRENCHPluginCommon
     juce::juce_audio_formats
     juce::juce_recommended_config_flags
@@ -128,3 +167,19 @@ target_link_libraries(TRENCH_Tests PRIVATE
 
 enable_testing()
 add_test(NAME trench_plugin COMMAND TRENCH_Tests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+set_tests_properties(trench_plugin PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1")
+juce_add_console_app(TRENCH_ReviewTests PRODUCT_NAME "TRENCH Review Tests")
+target_sources(TRENCH_ReviewTests PRIVATE tests/ReviewTests.cpp)
+target_include_directories(TRENCH_ReviewTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_ReviewTests PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_ReviewTests PRIVATE
+    TRENCHPluginCommon
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+add_test(NAME trench_plugin_review COMMAND TRENCH_ReviewTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+set_tests_properties(trench_plugin_review PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 600)
+add_test(NAME trench_gen_curves
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gen_curves.py"
+    WORKING_DIRECTORY "${TRENCH_WORKSPACE_DIR}")
+set_tests_properties(trench_gen_curves PROPERTIES ENVIRONMENT "MPLBACKEND=Agg")

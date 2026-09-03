@@ -42,6 +42,7 @@ public:
         // printed panel text is ink on metal, whatever the body underneath.
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
+        draw ("gainLabel",   t.text ("gainLabel", "GAIN"), true, true);
         {
             const auto br = t.rect ("brandLabel");
             const float bfs = t.fontSize ("brandLabel", 16.5f);
@@ -54,7 +55,7 @@ public:
                 // logos sit almost touching), catch alpha 0.72 - the goal
                 // build's exact call.
                 g.setFont (juce::Font (juce::FontOptions ("Arial", bfs, juce::Font::bold))
-                               .withExtraKerningFactor (0.02f));
+                               .withExtraKerningFactor (-0.012f));
                 const auto text = t.text ("brandLabel", "");
                 const auto box  = br.toNearestInt();
                 if (brandLit)

@@ -110,27 +110,22 @@ public:
             showParamContextMenu (*this, param);
             return;
         }
-        if (e.position.x < (float) kToggleZone)
+        if (armed())
         {
-            if (armed())
-            {
-                lastArmed = shapeIndex();
-                write (0.0f);
-            }
-            else
-            {
-                const auto list = selectable();
-                int target = lastArmed;
-                if (target <= 0 && ! list.empty()) target = list.front();
-                if (target > 0) write ((float) target);
-            }
-            return;
+            lastArmed = shapeIndex();
+            write (0.0f);
         }
-        showPatternMenu();
+        else
+        {
+            const auto list = selectable();
+            int target = lastArmed;
+            if (target <= 0 && ! list.empty()) target = list.front();
+            if (target > 0) write ((float) target);
+        }
     }
-    void showPatternMenu()
+    void mouseDoubleClick (const juce::MouseEvent& e) override
     {
-        if (param == nullptr) return;
+        if (e.mods.isPopupMenu() || param == nullptr) return;
         juce::PopupMenu m;
         m.setLookAndFeel (&menuLnF);
         const bool on = armed();
@@ -153,20 +148,14 @@ public:
         const auto b = getLocalBounds();
         const auto ink = t.curveColour();
         const bool on = armed();
-        const juce::Rectangle<float> lamp { (float) b.getX() + 4.0f, (float) b.getCentreY() - 3.0f, 6.0f, 6.0f };
-        g.setColour (active ? t.modulationLamp() : ink.withAlpha (on ? 0.45f : 0.20f));
+        const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
+        g.setColour (active ? t.modulationLamp() : ink.withAlpha (on ? 0.70f : 0.30f));
         g.fillEllipse (lamp);
-        if (hover)
-        {
-            g.setColour (ink.withAlpha (0.25f));
-            g.drawEllipse (lamp.expanded (2.5f), 0.8f);
-        }
-        g.setFont (displayFont (10.5f, false));
-        g.setColour (active ? t.modulationLamp().withAlpha (0.80f) : ink.withAlpha (on || hover ? 0.52f : 0.34f));
-        g.drawText (stateWord(), b.withTrimmedLeft (kToggleZone), juce::Justification::centredLeft, false);
+        g.setFont (displayFont (kLabelPt, on));
+        g.setColour (active ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (on || hover ? 0.92f : 0.58f));
+        g.drawText (stateWord(), b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
     }
 private:
-    static constexpr int kToggleZone = 17;
     int shapeIndex() const noexcept
     {
         if (param == nullptr) return 0;
@@ -237,10 +226,10 @@ public:
         const auto ink = t.curveColour();
         const bool on = isOn();
         const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
-        g.setColour (on ? ink.withAlpha (0.60f) : ink.withAlpha (0.22f));
+        g.setColour (on ? t.modulationLamp() : ink.withAlpha (0.30f));
         g.fillEllipse (lamp);
-        g.setFont (displayFont (10.5f, false));
-        g.setColour (on ? ink.withAlpha (0.58f) : ink.withAlpha (hover ? 0.55f : 0.36f));
+        g.setFont (displayFont (kLabelPt, on));
+        g.setColour (on ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (hover ? 0.92f : 0.58f));
         g.drawText ("FOLLOW", b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
     }
 private:
@@ -250,7 +239,6 @@ private:
     bool hover = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FollowLamp)
 };
-
 class GlassValue final : public juce::Component,
                          public juce::SettableTooltipClient
 {
@@ -271,20 +259,22 @@ public:
     void mouseDown (const juce::MouseEvent& e) override
     {
         if (e.mods.isPopupMenu()) { showParamContextMenu (*this, param); return; }
-        if (attachment != nullptr) attachment->beginGesture();
+        if (attachment != nullptr) { attachment->beginGesture(); gestureOpen = true; }
         e.source.enableUnboundedMouseMovement (true, false);
         dragStartY = e.position.y;
+        dragStartX = e.position.x;
         valueAtStart = value();
     }
     void mouseDrag (const juce::MouseEvent& e) override
     {
         if (attachment == nullptr || param == nullptr || e.mods.isPopupMenu()) return;
         const float fine = e.mods.isShiftDown() ? 0.25f : 1.0f;
+        const float travel = (e.position.x - dragStartX) + (dragStartY - e.position.y);
         attachment->setValueAsPartOfGesture (param->convertFrom0to1 (
-            juce::jlimit (0.0f, 1.0f, valueAtStart + (dragStartY - e.position.y) / 72.0f * fine)));
+            juce::jlimit (0.0f, 1.0f, valueAtStart + travel / 72.0f * fine)));
         repaint();
     }
-    void mouseUp (const juce::MouseEvent&) override { if (attachment != nullptr) attachment->endGesture(); }
+    void mouseUp (const juce::MouseEvent&) override { if (attachment != nullptr && gestureOpen) attachment->endGesture(); gestureOpen = false; }
     void mouseDoubleClick (const juce::MouseEvent&) override
     {
         if (attachment != nullptr && param != nullptr)
@@ -298,15 +288,26 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        const auto b = getLocalBounds();
+        const auto b = getLocalBounds().toFloat();
         const auto ink = t.curveColour();
-        const bool on = value() > 0.0f;
-        const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
-        g.setColour (ink.withAlpha (on ? 0.52f : 0.20f));
+        const float v = value();
+        const bool on = v > 0.0f;
+        const juce::Rectangle<float> lamp { b.getX() + 1.0f, b.getCentreY() - 2.5f, 5.0f, 5.0f };
+        g.setColour (ink.withAlpha (on ? 0.85f : 0.30f));
         g.fillEllipse (lamp);
+        g.setFont (displayFont (10.5f, true));
+        g.setColour (ink.withAlpha (on || hover ? 0.90f : 0.60f));
+        const auto wordArea = b.withTrimmedLeft (11.0f).withWidth (34.0f);
+        g.drawText (label, wordArea, juce::Justification::centredLeft, false);
+        const juce::Rectangle<float> track { wordArea.getRight() + 2.0f, b.getCentreY() - 2.0f, 30.0f, 4.0f };
+        g.setColour (ink.withAlpha (0.22f));
+        g.fillRoundedRectangle (track, 2.0f);
+        g.setColour (ink.withAlpha (hover ? 0.95f : 0.80f));
+        g.fillRoundedRectangle (track.withWidth (juce::jmax (4.0f, track.getWidth() * v)), 2.0f);
         g.setFont (displayFont (10.5f, false));
-        g.setColour (ink.withAlpha (on || hover ? 0.52f : 0.34f));
-        g.drawText (label, b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
+        g.setColour (ink.withAlpha (on || hover ? 0.90f : 0.60f));
+        g.drawText (juce::String (juce::roundToInt (v * 100.0f)),
+                    b.withLeft (track.getRight() + 4.0f), juce::Justification::centredLeft, false);
     }
 private:
     float value() const noexcept { return param != nullptr ? param->getValue() : 0.0f; }
@@ -314,8 +315,9 @@ private:
     juce::String label;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;
-    float dragStartY = 0.0f, valueAtStart = 0.0f;
+    float dragStartY = 0.0f, dragStartX = 0.0f, valueAtStart = 0.0f;
     bool hover = false;
+    bool gestureOpen = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GlassValue)
 };
 }

@@ -150,7 +150,7 @@ double worstRelative (const trench::core::Cascade& a, const trench::core::Cascad
 }
 
 constexpr double kHostRate = 48000.0;
-constexpr float kVoiceGain = 1.6107f;
+constexpr float kVoiceGain = 1.0f;
 }
 
 int main()

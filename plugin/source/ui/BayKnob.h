@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include "ParamInteraction.h"
 #include "Theme.h"
 #include "BinaryData.h"
@@ -50,7 +51,10 @@ public:
             return;
         }
         if (attachment != nullptr)
+        {
             attachment->beginGesture();
+            gestureOpen = true;
+        }
         e.source.enableUnboundedMouseMovement (true, false);
         dragStartY = e.position.y;
         valueAtStart = currentNormalised();
@@ -67,8 +71,9 @@ public:
     }
     void mouseUp (const juce::MouseEvent&) override
     {
-        if (attachment != nullptr)
+        if (attachment != nullptr && gestureOpen)
             attachment->endGesture();
+        gestureOpen = false;
     }
     void mouseDoubleClick (const juce::MouseEvent&) override
     {
@@ -94,13 +99,13 @@ public:
         const float blockX = startX + d + 4.0f;
         const float boxTop = b.getCentreY() - (float) kBayValueHeight * 0.5f;
         const float capW = juce::jmin (blockW, b.getRight() - blockX);
-        drawBayCaption (g, juce::Rectangle<float> (blockX, boxTop - 12.5f, capW, 12.5f), label, t);
+        drawBayCaption (g, juce::Rectangle<float> (startX, boxTop - 12.5f, d + 4.0f + capW, 12.5f), label, t);
         drawCap (g, c, value);
         const float boxW = juce::jmin ((float) kBayValueWidth, b.getRight() - blockX - 1.0f);
         const auto box = juce::Rectangle<float> (boxW, (float) kBayValueHeight)
                              .withCentre ({ blockX + capW * 0.5f, b.getCentreY() });
         drawMutedBoneReadout (g, box, box.getHeight() * 0.17f, hover, t);
-        drawCrispText (g, box.reduced (4.0f, 1.0f), juce::String (juce::roundToInt (value * 100.0f)),
+        drawCrispText (g, box.reduced (4.0f, 1.0f), formatValue != nullptr ? formatValue (value) : juce::String (juce::roundToInt (value * 100.0f)),
                        kBayValuePt, t.textColour ("morphReadout", juce::Colour (0xff2a2722)));
     }
 private:
@@ -120,6 +125,9 @@ private:
                      (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f), (int) frameD, (int) frameD,
                      frame * frameSize, 0, frameSize, frameSize, false);
     }
+public:
+    std::function<juce::String (float)> formatValue;
+private:
     Theme t;
     juce::String label;
     mutable juce::Image strip;
@@ -127,6 +135,7 @@ private:
     std::unique_ptr<juce::ParameterAttachment> attachment;
     float defaultDenorm = 0.0f;
     float dragStartY = 0.0f;
+    bool gestureOpen = false;
     float valueAtStart = 0.0f;
     bool hover = false;
     bool dimmed = false;

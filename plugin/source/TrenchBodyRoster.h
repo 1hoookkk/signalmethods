@@ -157,14 +157,18 @@ inline RosterStore& rosterStore()
     return store;
 }
 }
-inline void rescanBodyRoster() { detail::buildRosterStore (detail::rosterStore()); }
+inline void rescanBodyRoster() { detail::rosterStore(); }
 inline const BodyEntry* bakedRoster (int& countOut) noexcept
 {
     static const BodyEntry entries[] = {
         { kNoFilterName, "identity", "SYSTEM", (int) TypeBehavior::Static },
 #define TRENCH_PRESET(displayName, resourceStem, categoryName) \
         { displayName, resourceStem, categoryName, (int) TypeBehavior::Static },
+#if TRENCH_DEV_PANEL
+#include "../presets/PresetRosterDev.inc"
+#else
 #include "../presets/PresetRoster.inc"
+#endif
 #undef TRENCH_PRESET
     };
     countOut = (int) (sizeof (entries) / sizeof (entries[0]));

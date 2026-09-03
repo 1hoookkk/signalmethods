@@ -1,12 +1,20 @@
 #include "PluginEditor.h"
+#include "parameters/CurveMap.h"
+#include "ui/Onboarding.h"
 #include <cstdlib>
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
 using namespace trench::ui;
 namespace
 {
-constexpr int kBayX = 44, kBayW = 114, kBayRowH = 42;
-constexpr int kUtilY = 424;
+constexpr float kBayLeft   = 44.0f;
+constexpr float kBayRight  = 214.0f;
+constexpr float kBayPad    = 8.0f;
+constexpr float kBayRowGap = 6.0f;
+constexpr int   kBayRowH   = 42;
+const juce::Rectangle<int>   kBayWord { (int) (kBayLeft + kBayPad), 354, 44, 17 };
+const juce::Rectangle<float> kBayRoom { kBayLeft, 363.0f, kBayRight - kBayLeft,
+                                        2.0f * kBayPad + kBayRowGap + 2.0f * (float) kBayRowH };
 }
 PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p),
@@ -38,9 +46,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     typeSelector->onAnnounce   = [this] (const juce::String& s) { graph->announce (s); };
     bodyBrowser = std::make_unique<BodyBrowser> (theme);
     bodyBrowser->onPreview = [this] (int index) { processor.previewBodyForUi (index); };
-    bodyBrowser->onCommit  = [this] (int index) { typeSelector->setSelectedBody (index); };
+    bodyBrowser->onCommit  = [this] (int index) { typeSelector->setSelectedBody (index); processor.restoreBodyForUi (index); };
     bodyBrowser->onRestore = [this] (int index) { processor.restoreBodyForUi (index); };
-    typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, content.getLocalBounds()); };
+    typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, getLocalBounds()); };
     morphWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::morph, strip, theme);
     secondaryWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::q, strip, theme);
     morphReadout = std::make_unique<ValueReadout> ("morphReadout", theme);
@@ -50,7 +58,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     glassWords = std::make_unique<GlassWords> (processor.apvts, theme);
     glassWords->livePhraseProvider = [this] { return processor.hasLivePhraseForUi(); };
     followLamp = std::make_unique<FollowLamp> (processor.apvts, theme);
-    zWord = std::make_unique<GlassValue> (processor.apvts, theme, ParamID::chew, "Z");
+    zWord = std::make_unique<GlassValue> (processor.apvts, theme, ParamID::chew, "BITE");
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders (
         [this] { return processor.getDetectedKeyForUi(); },
@@ -65,25 +73,47 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     outputKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
     labels = std::make_unique<LabelsLayer> (theme);
     labels->setRailLabels ("MORPH (%)", "Q (%)");
-    addAndMakeVisible (content);
-    content.addAndMakeVisible (*faceplate);
-    content.addAndMakeVisible (*morphWheel);
-    content.addAndMakeVisible (*secondaryWheel);
-    content.addAndMakeVisible (*graph);
-    content.addAndMakeVisible (*typeSelector);
-    content.addAndMakeVisible (*morphReadout);
-    content.addAndMakeVisible (*secondaryReadout);
-    content.addAndMakeVisible (*glassWords);
-    content.addAndMakeVisible (*keySnapBox);
-    content.addAndMakeVisible (*labels);
-    content.addAndMakeVisible (*followLamp);
-    content.addAndMakeVisible (*inputKnob);
-    content.addAndMakeVisible (*outputKnob);
-    content.addChildComponent (*zWord);
-    content.addChildComponent (*bodyBrowser);
-    setResizable (true, true);
+    addAndMakeVisible (*faceplate);
+    addAndMakeVisible (*morphWheel);
+    addAndMakeVisible (*secondaryWheel);
+    addAndMakeVisible (*graph);
+    addAndMakeVisible (*typeSelector);
+    addAndMakeVisible (*morphReadout);
+    addAndMakeVisible (*secondaryReadout);
+    addAndMakeVisible (*glassWords);
+    addAndMakeVisible (*keySnapBox);
+    addAndMakeVisible (*labels);
+    addAndMakeVisible (*followLamp);
+    addChildComponent (*zWord);
+    for (auto* c : { (juce::Component*) inputKnob.get(), (juce::Component*) outputKnob.get() })
+        addAndMakeVisible (*c);
+    addChildComponent (*bodyBrowser);
+    onboarding = std::make_unique<Onboarding> (theme);
+    onboarding->onComplete = [this]
+    {
+        markOnboardingSeen();
+        onboarding->setVisible (false);
+    };
+    addChildComponent (*onboarding);
+    {
+        const bool headless = std::getenv ("TRENCH_HEADLESS") != nullptr;
+        const bool forced = std::getenv ("TRENCH_SHOW_ONBOARDING") != nullptr;
+        onboarding->setVisible (forced || (! headless && ! onboardingSeen()));
+        if (onboarding->isVisible())
+            onboarding->watch (*this);
+        if (const char* hover = std::getenv ("TRENCH_ONBOARDING_HOVER"))
+            onboarding->forceHover (juce::String (hover).getIntValue());
+    }
+#if TRENCH_DEV_PANEL
+    devPanel = std::make_unique<DevPanel> (theme, processor.wheelLoop(),
+                                           juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"));
+    addAndMakeVisible (*devPanel);
     setResizable (false, false);
-    setSize (trench::ui::kFaceLockedWidth, trench::ui::kFaceLockedHeight);
+    setSize (kEditorWidth + kDevPanelWidth, kEditorHeight);
+#else
+    setResizable (false, false);
+    setSize (kEditorWidth, kEditorHeight);
+#endif
     setWantsKeyboardFocus (false);
     vblank = std::make_unique<juce::VBlankAttachment> (this, [this] { onFrame(); });
 }
@@ -95,8 +125,6 @@ PluginEditor::~PluginEditor()
 void PluginEditor::resized()
 {
     const juce::Rectangle<int> base { 0, 0, kEditorWidth, kEditorHeight };
-    content.setTransform (juce::AffineTransform::scale ((float) getWidth() / (float) kEditorWidth));
-    content.setBounds (base);
     const auto rectOf = [this] (const char* id) { return theme.rect (id).getSmallestIntegerContainer(); };
     faceplate->setBounds (base);
     labels->setBounds (base);
@@ -108,26 +136,60 @@ void PluginEditor::resized()
     secondaryReadout->setBounds (rectOf ("qReadout"));
     {
         const auto glass = rectOf ("spectrumGrid");
-        const int wordY = glass.getBottom() - 26;
-        glassWords->setBounds (glass.getX() + 12, wordY, 150, 18);
-        zWord->setBounds (glass.getRight() - 12 - 48, wordY, 48, 18);
-        followLamp->setBounds (glass.getRight() - 12 - 48 - 8 - 70, wordY, 70, 18);
+        glassWords->setBounds (glass.getX() + 12, glass.getBottom() - 26, 150, 18);
+        followLamp->setBounds (glass.getX() + 12 + 150 + 6, glass.getBottom() - 26, 70, 18);
+        zWord->setBounds (glass.getRight() - 12 - 104, glass.getY() + 8, 104, 18);
     }
     {
         const auto key = rectOf ("keyBox");
         keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
     }
-    inputKnob->setBounds  (kBayX, kUtilY, kBayW, kBayRowH);
-    outputKnob->setBounds (kBayX, kUtilY + kBayRowH, kBayW, kBayRowH);
-    faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+    {
+        const int x0 = juce::roundToInt (kBayLeft + kBayPad);
+        const int x1 = juce::roundToInt (kBayRight - kBayPad);
+        const int w  = x1 - x0;
+        const int rowY = juce::roundToInt (kBayRoom.getY() + kBayPad + kBayRowGap * 0.5f);
+        inputKnob->setBounds  (x0, rowY, w, kBayRowH);
+        outputKnob->setBounds (x0, rowY + kBayRowH, w, kBayRowH);
+        faceplate->setRoomFrame (kBayRoom, (float) kBayWord.getX() - 4.0f, (float) kBayWord.getRight() + 4.0f);
+    }
+#if TRENCH_DEV_PANEL
+    devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kEditorHeight);
+#endif
+    onboarding->setBounds (0, 0, kEditorWidth, kEditorHeight);
+    onboarding->setTargets ({
+        { rectOf ("spectrumGrid"), "BITE", "drag up or down for BITE" },
+    });
+
+
+
+    onboarding->toFront (false);
+}
+static juce::PropertiesFile::Options trenchSettingsOptions()
+{
+    juce::PropertiesFile::Options o;
+    o.applicationName = "TRENCH";
+    o.filenameSuffix = "settings";
+    o.folderName = "Signal Methods";
+    o.osxLibrarySubFolder = "Application Support";
+    return o;
+}
+bool PluginEditor::onboardingSeen() const
+{
+    juce::PropertiesFile file (trenchSettingsOptions());
+    return file.getBoolValue ("onboarding.axes", false);
+}
+void PluginEditor::markOnboardingSeen()
+{
+    juce::PropertiesFile file (trenchSettingsOptions());
+    file.setValue ("onboarding.axes", true);
+    file.saveIfNeeded();
 }
 void PluginEditor::onFrame()
 {
     {
         glassWords->setActive (processor.isMorphModulatedForUi());
         keySnapBox->refreshSuggestion();
-        if (auto* body = processor.apvts.getRawParameterValue (ParamID::body))
-            zWord->setVisible (juce::roundToInt (body->load()) != trench::kNoFilterIndex);
     }
     const auto read = [this] (const char* paramID)
     {
@@ -138,8 +200,9 @@ void PluginEditor::onFrame()
     float coeffs[trench::kUiCoeffCount] = {};
     float boost = 1.0f;
     const bool morphMoving = processor.isMorphModulatedForUi();
-    const float baseMorph = morphMoving ? processor.getEffectiveMorphForUi() : read (ParamID::morph);
-    const float baseQ = read (ParamID::q);
+    const float baseMorph = morphMoving ? processor.getEffectiveMorphForUi()
+                                        : trench::curves::curveMap (trench::curves::Axis::morph, read (ParamID::morph));
+    const float baseQ = trench::curves::curveMap (trench::curves::Axis::q, read (ParamID::q));
     const int bodyVersion = processor.bodyVersionForUi.load (std::memory_order_relaxed);
     const double probeRate = processor.getSampleRate();
     if (baseMorph != lastProbedMorph || baseQ != lastProbedQ

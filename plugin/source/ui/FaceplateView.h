@@ -39,12 +39,12 @@ public:
 
         if (! roomFrame.isEmpty())
         {
-            g.setColour (juce::Colour (0xffa6967d).withAlpha (0.40f));
+            g.setColour (juce::Colour (0xffa6967d).withAlpha (0.59f));
             g.strokePath (roomFramePath (roomFrame.reduced (0.8f), 4.7f, roomGapX0, roomGapX1),
-                          juce::PathStrokeType (1.0f));
-            g.setColour (juce::Colour (0xff453424).withAlpha (0.46f));
+                          juce::PathStrokeType (1.2f));
+            g.setColour (juce::Colour (0xff453424).withAlpha (0.67f));
             g.strokePath (roomFramePath (roomFrame, 5.5f, roomGapX0, roomGapX1),
-                          juce::PathStrokeType (1.0f));
+                          juce::PathStrokeType (1.2f));
         }
 
         drawWheelContactShadow (g, t.rect ("morphWheel"));

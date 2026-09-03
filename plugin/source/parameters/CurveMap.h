@@ -5,12 +5,23 @@
 
 namespace trench::curves
 {
-// The dev bisection host drives an axis in its INTERNAL units, so it must not
-// see the table it is being used to measure.
-inline std::atomic<bool>& bypass() noexcept
+// The dev bisection host drives one axis in its INTERNAL units, so that axis
+// must not see the table it is being used to measure. Every other shipping
+// axis remains mapped, including slamTrim while slam is bypassed.
+inline std::atomic<int>& bypassAxis() noexcept
 {
-    static std::atomic<bool> flag { false };
-    return flag;
+    static std::atomic<int> axis { -1 };
+    return axis;
+}
+
+inline void setBypassAxis (Axis axis) noexcept
+{
+    bypassAxis().store ((int) axis, std::memory_order_relaxed);
+}
+
+inline void clearBypassAxis() noexcept
+{
+    bypassAxis().store (-1, std::memory_order_relaxed);
 }
 
 inline float curveMap (const Table& table, float knob) noexcept
@@ -26,7 +37,7 @@ inline float curveMap (const Table& table, float knob) noexcept
 
 inline float curveMap (Axis axis, float knob) noexcept
 {
-    if (bypass().load (std::memory_order_relaxed))
+    if (bypassAxis().load (std::memory_order_relaxed) == (int) axis)
         return knob;
     return curveMap (*kTables[(std::size_t) axis], knob);
 }

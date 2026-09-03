@@ -8,7 +8,9 @@
 #include "dsp/Movement.h"
 #include "dsp/KeyDetector.h"
 #include "dsp/EnvFollower.h"
+#include "dsp/DeskDrive.h"
 #include "dsp/TrenchCleanBody.h"
+#include "dsp/WheelLoop.h"
 #include <array>
 #include <atomic>
 #include <vector>
@@ -62,18 +64,17 @@ public:
     }
     int  getLoadedBodyIndex() const noexcept { return loadedBodyIndex.load (std::memory_order_relaxed); }
     bool getLastLoadOk()      const noexcept { return lastLoadOk.load (std::memory_order_relaxed); }
+    trench::WheelLoop& wheelLoop() noexcept { return wheelLoopSource; }
     bool isCleanGroundTruthAudio() const noexcept { return trench::clean_audio::kEnabled(); }
     float getEffectiveMorphForUi() const noexcept { return effectiveMorphForUi.load (std::memory_order_relaxed); }
     float getEffectiveQForUi() const noexcept     { return effectiveQForUi.load (std::memory_order_relaxed); }
     bool isMorphModulatedForUi() const noexcept   { return morphModulatedForUi.load (std::memory_order_relaxed); }
-    /// The LIVE phrase slot only means something while the Workstation is
-    /// feeding one; the menu greys the entry out otherwise.
-    bool hasLivePhraseForUi() const noexcept { return livePhraseValid.load (std::memory_order_acquire); }
     /// Hover-audition in the BODY menu: load a body for LISTENING only. It does
     /// NOT touch the body parameter, so hovering a menu writes no automation and
     /// leaves no undo step — only a click commits.
     /// Browsing cancelled: the body that was playing comes straight back, with
     /// no travel — nothing was chosen, so nothing should move.
+    bool hasLivePhraseForUi() const noexcept { return false; }
     void restoreBodyForUi (int index)
     {
         if (index < 0 || index >= trench::bodyCount())
@@ -121,9 +122,11 @@ private:
     /// One prepared-size slice of a host block. processBlock walks an oversized
     /// block through this; it never sees more samples than prepareToPlay sized
     /// the buffers for.
-    void processChunk (juce::AudioBuffer<float>& buffer);
+    void processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset = 0);
     trench::Movement              movement;
     trench::EnvFollower           follower;
+    float                         morphSmoother = 0.0f;
+    bool                          morphSmootherPrimed = false;
     std::atomic<bool>             morphRetrigger { false };
     std::vector<float>            morphBuffer;   // one authored Morph per sample
     /// What prepareToPlay sized every audio-thread buffer for. JUCE explicitly
@@ -132,24 +135,6 @@ private:
     /// chunks of this size instead of being dropped to dry.
     int                           preparedBlockSize = 0;
 
-    // LIVE PHRASE — the ear in the loop. The Workstation writes the phrase you
-    // are drawing to filters/phrase_live.json; the timer picks it up and swaps
-    // it in under the audio thread (write the idle slot, then flip the index).
-    // Selecting "LIVE" in the MOVEMENT menu means every stroke is audible at once.
-    static constexpr int kLiveCells = 64;
-    struct LiveSlot
-    {
-        float values[kLiveCells] {};
-        unsigned char trigs[kLiveCells] {};
-        trench::FuncGenPattern desc { "LIVE", 16, 0, true, values, trigs };
-        double stepBeats = 0.0;
-    };
-    LiveSlot livePhrase[2];
-    std::atomic<int> livePhraseSlot { 0 };
-    std::atomic<bool> livePhraseValid { false };
-    juce::File livePhraseFile;
-    juce::Time livePhraseMtime;
-    void pollLivePhrase();
     trench::KeyDetector           keyDetector;
     /// AUTO KEY's worker. analyse() is a 131,072-point FFT plus an RTNeural
     /// forward pass; it used to run in timerCallback, which JUCE runs on the
@@ -199,6 +184,7 @@ private:
     /// the curve has 240 words to probe. Not the engine's copy, not exportable.
     juce::MemoryBlock runtimePresetProbeBytes;
     std::atomic<bool> lastLoadOk { true };
+    trench::WheelLoop wheelLoopSource;
     juce::Time        auditionSlotMtime;
     juce::String      watchedBodyPath;      // in-place reload of a disk-loaded body
     juce::Time        watchedBodyMtime;
@@ -209,11 +195,9 @@ private:
     std::atomic<float>* pChew = nullptr;
     std::atomic<float>* pSlam = nullptr;
     std::atomic<float>* pPreamp = nullptr;
-    std::atomic<float>* pLowKeep = nullptr;
     std::atomic<float>* pFollow = nullptr;
-    std::atomic<float>* pTrack = nullptr;
     std::atomic<float>* pMovePreset = nullptr;
-    std::atomic<float>* pMoveDivision = nullptr;
+    std::atomic<float>* pMoveTransition = nullptr;
     std::atomic<float>* pKeySnap = nullptr;
     std::atomic<float> inputMeterL { 0.0f };
     std::atomic<float> inputMeterR { 0.0f };
@@ -241,11 +225,5 @@ private:
     // reloadCartridgeBytes keeps cascade states alive — no click, no crossfade.
     juce::MemoryBlock uiBodyBytes;
     void captureCurrentBodyBytes (const juce::String& cartridgeJson);
-    static constexpr int kLowKeepMaxChannels = 8;
-    juce::AudioBuffer<float> lowKeepBand;
-    std::array<float, kLowKeepMaxChannels> lowKeepState {};
-    float lowKeepCutoffHz = 0.0f;
-    double lowKeepSampleRate = 44'100.0;
-    bool lastPreampActive = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

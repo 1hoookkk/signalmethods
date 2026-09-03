@@ -32,9 +32,9 @@
 // 32-sample control tick, inside the engine's X3 movement path
 // (X3_MOVEMENT_SPEC.md, FUN_1802c0430). A second smoother here would put
 // the pattern through two different laws depending on where it was summed.
-// A smooth pattern interpolates its authored cells, a one-shot reaches its
-// final authored value and stays there, and a step pattern changes on the
-// exact sample boundary; the engine's block-rate one-pole and kernel ramp
+// PATTERN uses the authored cell law; STEP holds cells and GLIDE linearly
+// interpolates their Morph targets. A one-shot reaches its final authored
+// value and stays there. The engine's one authoritative one-pole and kernel ramp
 // are what keep that edge from landing as a click.
 //
 // Timing law: a bank pattern plays at the rate ITS TEMPLATE was authored at —
@@ -65,6 +65,8 @@ struct MovementTransport
 class Movement
 {
 public:
+    static constexpr int kGrowlIndex = kNumFuncGenPatterns + 1;
+    enum Transition { PatternTransition = 0, StepTransition = 1, GlideTransition = 2 };
     // One function-generator step per 16th note; a 16-step pattern is one bar.
     static constexpr double kStepBeats = 0.25;
 
@@ -79,23 +81,13 @@ public:
         walkCycle = -1;
     }
 
-    // presetIndex: 0 = OFF, 1..kNumFuncGenPatterns = the original bank,
-    // kNumFuncGenPatterns + 1 = GROWL (rendered inside the ENGINE, where the
-    // pitch lives — this renderer passes the base wheel through untouched),
-    // kNumFuncGenPatterns + 2 = LIVE (the workstation phrase, when fed).
-    static constexpr int kGrowlIndex = kNumFuncGenPatterns + 1;
-    static constexpr double kDivisionBeats[7] = { 1.0, 0.5, 1.0 / 3.0, 0.25, 1.0 / 6.0, 0.125, 1.0 / 12.0 };
-    static double stepBeatsFor (int division) noexcept
-    {
-        return division >= 0 && division < 7 ? kDivisionBeats[division] : kStepBeats;
-    }
     /// Restart the pattern from step 0 at the next block — the MORPH wheel is
     /// the key. Audio thread only; the processor relays the gesture through an
     /// atomic.
     void retrigger() noexcept { retriggerRequest = true; }
     void render (float* morphBuffer, int numSamples, float baseMorph,
                  const MovementTransport& t, int presetIndex,
-                 const FuncGenPattern* livePhrase, double stepBeats = kStepBeats) noexcept
+                 int transition = PatternTransition) noexcept
     {
         const float base = clamp01 (baseMorph);
         // OWNERSHIP (X3_MOVEMENT_SPEC.md): this renderer owns WHAT the
@@ -104,25 +96,23 @@ public:
         // per 32-sample tick, the kernel ramp, the one-block lag) is the
         // engine's X3 movement path, applied to the complete summed Morph
         // destination. No base ramp, no hand smoother, no output slew here.
-        const bool live = presetIndex == kNumFuncGenPatterns + 2 && livePhrase != nullptr;
         const bool bank = presetIndex >= 1 && presetIndex <= kNumFuncGenPatterns;
-        if ((! bank && ! live) || numSamples <= 0)
+        if (! bank || numSamples <= 0)
         {
             // OFF (and GROWL, which the engine renders): the pattern
             // contribution is exactly zero — the buffer IS the wheel.
             for (int i = 0; i < numSamples; ++i)
-                morphBuffer[i] = base;
+                morphBuffer[i] = 0.0f;
             prevPreset = presetIndex;
             prevPlaying = t.playing;
             updateClock (t, numSamples);
             return;
         }
 
-        const FuncGenPattern& p = live ? *livePhrase
-                                       : kFuncGenPatterns[presetIndex - 1];
+        const FuncGenPattern& p = kFuncGenPatterns[presetIndex - 1];
 
         const double bpm = t.bpm > 1.0e-6 ? t.bpm : 120.0;
-        const double patternBeats = bank ? bankStepBeats (p, bpm, stepBeats) : stepBeats;
+        const double patternBeats = bankStepBeats (p, bpm, kStepBeats);
         const double beatsPerSample = bpm / 60.0 / sr;
         const bool hostLocked = t.playing && t.ppq >= 0.0;
 
@@ -151,10 +141,12 @@ public:
             int pos, next;
             stepPositions (p, g, pos, next);
             float v = p.values[pos];
-            if (p.smooth)
+            const bool glide = transition == GlideTransition
+                            || (transition == PatternTransition && p.smooth);
+            if (glide)
                 v += (p.values[next] - v) * frac;
             const float span = v >= 0.0f ? 1.0f - base : base;
-            morphBuffer[i] = clamp01 (base + v * span);
+            morphBuffer[i] = v * span;
         }
 
         updateClock (t, numSamples);
@@ -212,7 +204,7 @@ private:
             case 3: // random: any step
             case 4: // brownian: adjacent step, bounce off the ends
             {
-                if (walkCycle < 0)
+                if (walkCycle < 0 || m - walkCycle > kWalkCatchUpLimit)
                 {
                     walkCycle = m;
                     walkPos = (int) (m % n);
@@ -263,6 +255,7 @@ private:
     bool prevPlaying = false;
     int prevPreset = -1;
     // The random/brownian walk — the bank's one necessary state.
+    static constexpr std::int64_t kWalkCatchUpLimit = 64;
     std::int64_t walkCycle = -1;
     int walkPos = 0, walkNext = 0;
     std::uint32_t rngState = 0x54524E43u;   // 'TRNC' — deterministic seed

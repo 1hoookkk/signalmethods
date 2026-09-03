@@ -108,3 +108,190 @@ brushed silver verbatim; otherwise the X3 grammar is fine. Black glass, mint hai
 champagne plate are the identity. Only polish left: dim the MOVEMENT / FOLLOW captions
 in the glass so the curve owns it.
 
+
+## Fix pass 2026-09-03 (all 25 review checks pass, 0 failures; TRENCH_Tests 0 failures; trench_core passes)
+- Dry gate: handleAsyncUpdate no longer clears lastLoadOk before a load; a failed load
+  keeps the previous body live (bridge parses first, swaps only on success). 0 of 32584
+  blocks dry over 200 switches under load.
+- Ramp: CascadeRunner::set_target is a no-op for an unchanged target and re-aims over the
+  remaining countdown instead of restarting it; new set_immediate takes raw coefficients
+  when no ramp is running. Committed to native core as 79ffe61b.
+- Bridge: the cascade is recomputed only when morph, Q, KEY or the body changed; the
+  256-sample encoded ramp runs only on a body switch (snapshot generation counter).
+  Engine 1.3% of real time at 48 kHz with MORPH moving every sample (was 3.9%); KEY on 1.8%.
+- Oversized host block: each prepared-size chunk offsets the transport ppq by its start
+  sample, so MOVEMENT no longer repeats the first chunk. Peak diff 0.
+- KEY graph: probeCurrentBodyForUi transposes the probed cascade with the KEY ratio;
+  worst 8e-5 dB against the audio.
+- transpose_cascade measures each lane once (was twice) to hold KEY under 1.5x.
+- Plugin files still carry the other chat's uncommitted edits; commit together.
+- Still open: 220 Hz level +12.6 dB at 96 kHz vs 44.1 kHz (48k recompile bug, wider).
+- 96 kHz level jump FIXED 2026-09-03 (core commit follows 79ffe61b): rewarp kept the raw
+  scale word b0 while preserving bandwidth in Hz, so a resonant pole's gain rose with the
+  rate (about 6.8 dB per pole per doubling; a bare resonator with real zeros took both).
+  Now each rewarped section is re-levelled at its pole frequency (DC for real poles) against
+  the datum response. 220 Hz peak 0.080 / 0.075 / 0.075 at 44.1 / 48 / 96 kHz (was
+  0.080 / 0.091 / 0.386). Core rewarp test and the plugin 48k test now compare against the
+  datum-rate response, not the un-levelled design; both pass at 0.05 and 0.07 dB.
+- Known residual: MORPH interior is word-space interpolation, so at a foreign rate the
+  interpolated pole lands elsewhere (crisp morph 0.5: section 0 pole 535 Hz at 44.1k,
+  686 Hz at 96k; corners exact). About 1.3 dB at 1 kHz. Inherent to the rewarp-then-
+  interpolate order; fixing it means interpolating at datum and rewarping per sample.
+- Native app audition uses the same un-levelled design(); it plays a body louder at 96k
+  than the datum. Not touched.
+- MORPH interior at foreign rates FIXED 2026-09-03: the bridge snapshot now keeps the
+  datum words; every recompute interpolates at the datum rate and rewarps that one
+  section set to the host rate (rewarp_cascade). Crisp morph 0.5 section 0 pole 534.7 Hz
+  at 44.1 / 48 / 96 kHz; response within 0.1 dB to 4 kHz. Recompute runs on a 32-sample
+  tick with a linear coefficient glide across the tick (the X3's own cadence); body
+  switches keep the 256-sample log ramp. Engine 0.4% of real time with MORPH moving every
+  sample. Chunk-invariance and KEY graph checks still exact.
+- Should-fix pass 2026-09-03, each verified by reading before fixing: preview then
+  re-commit of the same body now reloads it (onCommit also restores); snapshot swap and
+  audio-side load are seq_cst so reclaim() is safe on ARM; random-walk catch-up reseeds
+  past 64 cycles; rescanBodyRoster is a no-op on the fixed roster (no more rebuild under
+  the audio thread); processBlock before prepare returns dry instead of writing an empty
+  morphBuffer; right-click no longer ends a gesture that never began (wheel, knob, glass
+  word); tail length reports the slowest pole's t60; the graph trace image is reused and
+  cleared instead of reallocated every frame. Review 25/25, plugin tests 0 failures,
+  TRENCH_VST3 links. Plugin tree still uncommitted (shared with the other chat).
+
+## Plate asset brief (Tyson, 2026-09-03 evening) — for the next plate render
+Beige plate df2_panel_beige.png stays until a render meets this. A cool-grey grained
+render was tried in the build and rejected ("does not look as good at all").
+Keep the warm golden-grey base tone and the soft, organic light gradient falling from
+top-left to bottom-right. Replace the flat procedural grain with an ultra-fine,
+microscopic horizontal hairline brush, so fine you only see it when a soft specular
+highlight glints off the chamfered channel. A semi-gloss, baked industrial enamel coating
+over a solid cast chassis (warm olive-drab, slate, or warm putty). Zero digital noise or
+sandpaper texture. The surface is silky-smooth to the eye, relying entirely on realistic
+studio rim-lighting and ambient occlusion to show weight. The stamped groove retains
+soft, liquid-like paint buildup in the recesses, giving the impression of physical tooling.
+Build notes for whichever plate lands: same 828 x 1280 geometry as the beige (aperture
+and slot positions), and the build still paints its own glass bezel and slot outlines
+over the plate; those should come off so the asset's recesses show.
+Tightened prompt with the measured geometry lives in plugin/PLATE_PROMPT.md.
+
+## Face ruling 2026-09-03 night (Tyson): the GAIN-bay face is back, verbatim
+Tyson compared the 29/30 August faces and chose the GAIN-bay one ("Bring it back
+verbatim with our current plate"). PluginEditor.cpp/.h, UiLayout.h, ui/FaceplateView.h,
+GlassWords.h, GraphDisplay.h, LabelsLayer.h come from 7884785f; BayKnob.h, Theme.h,
+WheelControl.h from 5b63ef63. Editor 352 x 543 (kFaceLockedWidth/Height in Theme.h).
+INPUT, BITE, OUTPUT in the carved GAIN bay; peak marker on the curve; Rail Switch and
+FOLLOW lamps on the glass. Mint trace and mint lamp locked. Plate = the graded 06:59
+render at 828 x 1280 (geometry within 0.3% of the beige, so the 7884785f layout seats
+without change). Shims: Movement::kGrowlIndex and PluginProcessor::hasLivePhraseForUi
+(returns false). Non-visual fixes re-applied on top: gesture flags (wheel, knob), trace
+image reuse, commit-after-preview reload, probe through the curve tables. Face test now
+expects BITE on the face. Review 25/25, plugin tests 0 failures, VST3 links.
+The other chat's 315 x 516 face rebuild that was in the working tree is preserved at
+evidence/face-rebuild-backup-2026-09-03/ (untracked).
+- GAIN bay polish 2026-09-03 (Tyson "Do it" on the reviewer's two adjustments): captions
+  centred over the knob-plus-pill span (BayKnob.h), rows centred inside the frame
+  (rowY = room top + pad + half the row gap). Knob size left alone. Glass re-seated to the
+  current plate's apertures in the 1010 x 1557 layout space; graticule at 0.45 opacity.
+- Filed: evidence/patents/rossum_making_digital_filters_sound_analog.pdf (the paper behind
+  BITE: saturate the delayed state before the multipliers, headroom in the accumulator).
+- Glass inset 6 x 6.5 layout units inside the plate aperture so the plate's own chamfer
+  frames it ("make it sit in the well a bit"). Knob wells tried and reverted.
+- Tyson, 2026-09-03 night: "Bite is going to be the 3rd axis so it should maybe be a screen
+  interaction." Open: BITE = the cube's Z axis; candidate is the glass word Z (GlassValue on
+  ParamID::chew, as the 29 Aug face had) with the GAIN room keeping INPUT and OUTPUT.
+  Not done; awaiting the ruling.
+- BITE is the third axis, not a gain knob (Tyson, 2026-09-03 night). GAIN bay is INPUT and
+  OUTPUT, two rows. BITE = drag the glass up or down (GraphDisplay owns a ParameterAttachment
+  on chew; shift = fine, wheel steps, double-click resets); a "BITE nn" readout fades in
+  beside the curve's peak during the gesture and fades out after. Nothing on the glass at
+  rest. A glass word/track version was tried and rejected as clutter (GlassValue class kept
+  in GlassWords.h, zWord constructed but hidden).
+- One-time onboarding (ui/Onboarding.h), reworked on Tyson's "Dont grey it out. Just show
+  the controls as you hover them": no scrim; on the first session, hovering the glass, MORPH,
+  Q, the MOVEMENT chip or the FOLLOW lamp shows a small hint card (word + one line). Once
+  all five have been hovered it waits 2.5 s and writes onboarding.axes=true to the TRENCH
+  settings file (Signal Methods app-data). Suppressed under TRENCH_HEADLESS; forced with
+  TRENCH_SHOW_ONBOARDING=1, and TRENCH_ONBOARDING_HOVER=<0..4> pins a card for FaceShot.
+  Face test: BITE not a bay knob. Tyson: "Follow is the only weird control. And modulation
+  isnt clear" - those two carry the longest hints.
+- Onboarding simplified again (Tyson: "Make it simple. No extra text other than telling the
+  user what to do... No text box with filled color", then "Give them a cute little animation
+  drop in"): one mint line under the hovered control, action only ("drag up or down",
+  "roll the wheel", "click"), no box, no outline; it drops in from 14 px above with a small
+  settle over about 220 ms. Same five targets, same completion rule.
+- Hint copy is the gesture plus its name ("drag up or down for BITE", "roll for MORPH",
+  "roll for Q", "click for MOVEMENT", "click for FOLLOW"); 12.5 pt bold mint with a dark
+  halo, no box; sits on the control's own dark surface (glass top, wheel drum, above the
+  chip and lamp on the glass).
+- Onboarding is the glass hint only (Tyson: "I dont like the extra ones. Just have the z
+  axis"): "drag up or down for BITE" drops in on first hover of the glass, first session;
+  once seen it is written and never shown again. MORPH, Q, MOVEMENT, FOLLOW carry no hint.
+- BITE law rewritten 2026-09-03 night (Tyson: "Distortion is jarring"). Measured before:
+  nothing to 0.5 then odd harmonics at one flat level (h3 = h5 at -47 dB), full BITE
+  collapsed the output 12 dB with 32% THD. Now Rossum's law: the delayed state runs through
+  ceiling*tanh(x/ceiling), ceiling 4.0 -> 0.35 across BITE (geometric), threshold 0.6 of the
+  ceiling, and the pole radius is pulled DOWN under drive (r * (1 - 0.25 * excess)) so the
+  resonance flattens and recovers. At 0.3 in: THD 0.4 / 1.2 / 4.0 / 22% at BITE 0.25 / 0.5 /
+  0.75 / 1.0, harmonics falling in order. Hot input at full BITE still drops about 9 dB;
+  that is the ceiling and is for the ear to judge. Core commit 3707640b. Probe:
+  scratchpad bite_probe (sine 220 Hz through the runner, harmonics 1-9).
+- Agent diff x3-clean vs native (2026-09-03 night): OUTPUT lost its dedicated SLAM law
+  (SlamStage.h(A):5-15,49-120) and now reuses DeskDrive (PluginProcessor.cpp(B):484-501);
+  KEY went from per-stage scale-degree snap (engine.rs:790) to whole-cascade ratio
+  transpose (TrenchDspBridge.h(B):321-335); FOLLOW moved JUCE-side with 1 ms/80 ms
+  timing; MIX, GROWL, TRACK, AGC gone; LOW KEEP, voice gain 1.6107, identity curve tables
+  added. Open for Tyson: OUTPUT law, KEY meaning.
+- Voice gain kX3VoiceGain (1.6107, +4.14 dB after the cascade) removed 2026-09-03 night
+  (Tyson: "Its a fudge"). Tests that assumed it now expect unity. KEY stays as it is with
+  the detector suggesting ("Key has real value and the neural network works").
+- 2026-09-04 (Tyson "Yes" to all three): INPUT is clean gain 0..+24 dB into the cascade
+  (readout in dB); OUTPUT is clean gain -24..+12 dB, unity at the knob's two-thirds, which
+  is now the parameter default (readout in dB); the input and output DeskDrive stages and
+  slamTrim are out of the path; LOW KEEP is gone from the path and the parameter list.
+  Tests rewritten accordingly (INPUT +24 dB, OUTPUT +12 dB over unity at 0.1 in, both clean
+  of harmonics). Installed.
+
+## Dev build 2026-09-04 (Tyson: recording, bisection and baking live in a dev panel of a
+separate VST dev build; he tunes shipping params there and has the final say)
+- Target TRENCH_Dev (PLUGIN_CODE Tr0d, "TRENCH Dev.vst3"), built from
+  TRENCHPluginCommonDev = the same sources with TRENCH_DEV_PANEL=1. Installed beside the
+  ship build in Common Files\VST3. Ship build has none of it compiled in.
+- Drawer ui/DevPanel.h (210 px, right of the plate). WHEEL LOOP: choose 1/2/4/8 bars, REC AT
+  NEXT BAR arms; recording starts on the bar line while the host plays, samples the final
+  MORPH trajectory at 96 ticks per beat, and flips to looping when the length is reached.
+  LOOP replays absolute wheel positions locked to the bar it was recorded on (overrides
+  base + MOVEMENT + FOLLOW). STOP hands the wheel back. SAVE writes
+  plugin/patterns/loops/<name>.wheelloop (JSON: name, ticksPerBeat, beats, values); LOAD
+  lists that folder. Engine side: dsp/WheelLoop.h, lock-free, called after the morph
+  smoother in processChunk under #if TRENCH_DEV_PANEL.
+- Not yet: bake step (loops -> shipping pattern table and Movement playing them), taper
+  sessions, BITE law dials. Verdicts pending from Tyson: replace the 8 canned patterns with
+  his loops; INPUT 0..+24 dB and OUTPUT -24..+12 dB ranges; loop resolution kept
+  continuous (96/beat) vs quantised to 16ths at bake.
+
+## Pole templates 2026-09-04 (Tyson: "Just plot the reocurring states pole only" ->
+"Bring their pole templates into the native app" -> "Make them a general type template")
+- evidence/research-results/pole_states_armadillo.py: poles only, binned 1/6 octave x 2 dB
+  of R' on Rossum's ARMAdillo plane; the 33 X3 bodies grouped by the Mo'Phatt manual's
+  types (LPF, EQ+, EQ-, VOW, PHA, FLG, REZ, WAH, DST, SFX; map in the script) read from
+  evidence/factory-data/p2k/bodies/p2k.zip; the 289 Morpheus cubes by their decoded
+  category. Outputs pole_states_by_type.png and pole_templates_by_type.json (states with
+  hz, bw_hz, r, bodies sharing).
+- Native app: native/app/pole_templates.{hpp,cpp} loads native/app/templates/
+  pole_templates_by_type.json (path baked as TRENCH_POLE_TEMPLATES); a TEMPLATE combo at
+  the top of the inspector seeds the editing corner's poles with the type's strongest
+  shared states (top 6 by body count, no two within a quarter octave, sorted low to high),
+  enabling exactly those sections; zeros untouched; one undo group. Morpheus states carry
+  Hz values from the 39,062.5 datum; the app's Hz/bw geometry is rate-free so they seed as-is.
+- Web archaeology (agent): Creative's Aug 2006 Emulator X2 release calls the Morph Filter
+  Designer "filter creation tools that E-MU's sound designers have been using for years";
+  SOS Aug 2006 says the same. New name: Bob Bliss, senior design engineer (SOS Oct 1995).
+  Leads: Gearspace "EMU z-plane filters, that emu sound" thread (403 to fetch, needs a
+  browser), NAMM oral histories (video only), USPTO search for Bliss. Notes in scratchpad.
+- Dev roster 2026-09-04 (Tyson: "The presets in the plugin just suck. Make the dev only
+  build load the 33 p2k"): plugin/presets/p2k/<name>.body240 = the 33 Proteus 2000 / X3
+  bodies extracted from evidence/factory-data/p2k/bodies/p2k.zip (240-byte legacy layout,
+  identical to the roster's); plugin/presets/PresetRosterDev.inc lists them with E-mu names
+  and their Mo'Phatt type as the category, as absolute paths under TRENCH_TABLE_STITCH_ROOT
+  (bodyRawBytes already loads absolute .body240 paths from disk). TrenchBodyRoster.h picks
+  that roster under TRENCH_DEV_PANEL; the ship roster (18 WORKHORSE bodies) is untouched.
+  Measured: roster bodies and the 33 both carry resonance in the high-Q corners only
+  (Crisp at MORPH 68: +3 dB at Q 0, +17 at Q 50, +33 at Q 100; about 7 dB per quarter).

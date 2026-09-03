@@ -12,6 +12,10 @@
 #include "ui/KeySnapBox.h"
 #include "ui/LabelsLayer.h"
 #include "ui/BayKnob.h"
+#include "ui/Onboarding.h"
+#if TRENCH_DEV_PANEL
+#include "ui/DevPanel.h"
+#endif
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <memory>
@@ -30,7 +34,6 @@ private:
     double lastProbedRate = 0.0;
     const trench::UiLayout layout { trench::UiLayout::defaults() };
     trench::ui::Theme theme { layout };
-    juce::Component content;
     std::unique_ptr<juce::VBlankAttachment> vblank;
     juce::TooltipWindow tooltipWindow { this, 650 };
     std::unique_ptr<trench::ui::FaceplateView>    faceplate;
@@ -39,7 +42,6 @@ private:
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
     std::unique_ptr<trench::ui::GlassWords>       glassWords;
     std::unique_ptr<trench::ui::FollowLamp>       followLamp;
-    std::unique_ptr<trench::ui::GlassValue>       zWord;
     std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;
     std::unique_ptr<trench::ui::WheelControl>     secondaryWheel;
@@ -47,5 +49,12 @@ private:
     std::unique_ptr<trench::ui::ValueReadout>     secondaryReadout;
     std::unique_ptr<trench::ui::LabelsLayer>      labels;
     std::unique_ptr<trench::ui::BayKnob>          inputKnob, outputKnob;
+    std::unique_ptr<trench::ui::GlassValue>       zWord;
+    std::unique_ptr<trench::ui::Onboarding>       onboarding;
+#if TRENCH_DEV_PANEL
+    std::unique_ptr<trench::ui::DevPanel>         devPanel;
+#endif
+    bool onboardingSeen() const;
+    void markOnboardingSeen();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

@@ -24,10 +24,6 @@ struct TrenchParams
     float q = 0.0f;
     int keySnap = 0;
     float poleDistortion = 0.0f;
-    float envAmount = 0.0f;
-    float growl = 0.0f;
-    float track = 0.0f;
-    int trackKey = -1;
 };
 
 namespace trench
@@ -114,8 +110,9 @@ public:
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
         left.reset();
         right.reset();
+        tickPhase = 0;
         if (! sourceBytes.empty())
-            publishSnapshot();
+            publishSnapshot (sourceBytes, sourceDatumRate);
     }
 
     void setBypass (const Bypass& value) noexcept { bypass = value; }
@@ -129,9 +126,12 @@ public:
                                  && len != trench::core::kNativeBodyBytes))
             return false;
         const auto* first = static_cast<const std::uint8_t*> (bytes);
-        sourceBytes.assign (first, first + len);
+        std::vector<std::uint8_t> candidate (first, first + len);
+        if (! publishSnapshot (candidate, datumRate))
+            return false;
+        sourceBytes.swap (candidate);
         sourceDatumRate = datumRate;
-        return publishSnapshot();
+        return true;
     }
 
     bool loadCartridgeBytes (const juce::MemoryBlock& bytes)
@@ -161,7 +161,7 @@ public:
     static bool probePackedBody (const void* bytes, size_t len, float morph, float q,
                                  double runtimeRate,
                                  float outCoefficients[trench::kUiCoeffCount], float& outBoost,
-                                 double datumRate = kBodyDatumRate)
+                                 double datumRate = kBodyDatumRate, double keyRatio = 1.0)
     {
         if (bytes == nullptr || outCoefficients == nullptr)
             return false;
@@ -169,9 +169,10 @@ public:
         {
             const auto body = trench::core::PackedBody::from_body_bytes (std::span {
                 static_cast<const std::uint8_t*> (bytes), len });
-            const auto bank = bankFor (body, datumRate, runtimeRate);
-            const auto cascade = bank.interpolate_biquads (juce::jlimit (0.0f, 1.0f, morph),
-                                                           juce::jlimit (0.0f, 1.0f, q), 0.0f);
+            auto cascade = cascadeAt (body, datumRate, runtimeRate,
+                                      juce::jlimit (0.0f, 1.0f, morph), juce::jlimit (0.0f, 1.0f, q));
+            if (keyRatio > 0.0 && keyRatio != 1.0)
+                cascade = trench::core::transpose_cascade (cascade, keyRatio, runtimeRate);
             int index = 0;
             for (const auto& section : cascade)
                 for (const double coefficient : section)
@@ -212,7 +213,7 @@ public:
         AudioScope scope (*this);
         if (retired.load (std::memory_order_relaxed) || morphPerSample == nullptr)
             return;
-        const Snapshot* snapshot = activeSnapshot.load (std::memory_order_acquire);
+        const Snapshot* snapshot = activeSnapshot.load (std::memory_order_seq_cst);
         if (snapshot == nullptr)
             return;
         const int channels = std::min (2, buffer.getNumChannels());
@@ -220,22 +221,52 @@ public:
         if (channels <= 0 || samples <= 0)
             return;
         const double keyRatio = transposeRatio (params);
+        const float q = juce::jlimit (0.0f, 1.0f, params.q);
         const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
         left.set_pole_distortion (bite);
         right.set_pole_distortion (bite);
-        trench::core::Cascade cascade {};
+        const bool switched = snapshot->generation != heardGeneration;
+        heardGeneration = snapshot->generation;
+        float* outL = buffer.getWritePointer (0);
+        float* outR = channels > 1 ? buffer.getWritePointer (1) : nullptr;
         for (int sample = 0; sample < samples; ++sample)
         {
-            cascade = snapshot->bank.interpolate_biquads (
-                juce::jlimit (0.0f, 1.0f, morphPerSample[sample]),
-                juce::jlimit (0.0f, 1.0f, params.q), 0.0f);
-            if (keyRatio != 1.0)
-                cascade = trench::core::transpose_cascade (cascade, keyRatio, sampleRateHz);
-            processSample (left, deskL, buffer.getWritePointer (0)[sample], cascade);
-            if (channels > 1)
-                processSample (right, deskR, buffer.getWritePointer (1)[sample], cascade);
+            const bool first = switched && sample == 0;
+            const bool tick = tickPhase == 0;
+            tickPhase = (tickPhase + 1) % kTickSamples;
+            if (first || tick)
+            {
+                const float morph = juce::jlimit (0.0f, 1.0f, morphPerSample[sample]);
+                if (first || morph != cachedMorph || q != cachedQ || keyRatio != cachedKeyRatio)
+                {
+                    cachedCascade = cascadeAt (snapshot->bank, snapshot->datumRate, snapshot->runtimeRate, morph, q);
+                    if (keyRatio != 1.0)
+                        cachedCascade = trench::core::transpose_cascade (cachedCascade, keyRatio, sampleRateHz);
+                    cachedMorph = morph;
+                    cachedQ = q;
+                    cachedKeyRatio = keyRatio;
+                    if (first)
+                    {
+                        const auto encoded = trench::core::encode_cascade (cachedCascade);
+                        left.set_target (encoded);
+                        right.set_target (encoded);
+                    }
+                    else
+                    {
+                        left.set_glide (cachedCascade, kTickSamples);
+                        right.set_glide (cachedCascade, kTickSamples);
+                    }
+                }
+            }
+            outL[sample] = deskL.process (outL[sample], inputDrive);
+            left.process (std::span<float> (outL + sample, 1));
+            if (outR != nullptr)
+            {
+                outR[sample] = deskR.process (outR[sample], inputDrive);
+                right.process (std::span<float> (outR + sample, 1));
+            }
         }
-        publishCascade (cascade);
+        publishCascade (cachedCascade);
         if (bypass.saturate)
             for (int channel = 0; channel < channels; ++channel)
                 for (int sample = 0; sample < samples; ++sample)
@@ -259,6 +290,15 @@ public:
         return (float) std::max (left.grit_activity(), right.grit_activity());
     }
     float agcReductionDb() const noexcept { return 0.0f; }
+    double tailSeconds() const noexcept
+    {
+        double radius = 0.0;
+        for (int section = 0; section < trench::kUiStageCount; ++section)
+            radius = std::max (radius, std::sqrt (std::max (0.0, (double) uiCoefficients[(size_t) (section * trench::kUiCoeffsPerStage + 4)])));
+        if (radius <= 0.0 || radius >= 1.0)
+            return 0.0;
+        return std::clamp (std::log (1000.0) / (-std::log (radius)) / sampleRateHz, 0.0, 4.0);
+    }
     void publishUiSnapshot() noexcept {}
 
     bool readUiSnapshot (float* outCoefficients, float& outBoost) const noexcept
@@ -291,50 +331,49 @@ public:
     {
         if (params.keySnap > 0)
             return keySnapRatio (params.keySnap);
-        if (params.track <= 0.001f || params.trackKey < 0 || params.trackKey > 23)
-            return 1.0;
-        const int root = params.trackKey % 12;
-        const int semitones = root <= 6 ? root : root - 12;
-        return trench::core::ratio_of_semitones (
-            (double) semitones * (double) juce::jlimit (0.0f, 1.0f, params.track));
+        return 1.0;
     }
 private:
     struct Snapshot
     {
         trench::core::PackedBody bank {};
+        double datumRate = 0.0;
         double runtimeRate = 0.0;
+        std::uint64_t generation = 0;
     };
 
-    static trench::core::PackedBody bankFor (const trench::core::PackedBody& packed,
-                                             double datumRate, double runtimeRate)
+    static trench::core::Cascade cascadeAt (const trench::core::PackedBody& bank, double datumRate,
+                                            double runtimeRate, float morph, float q)
     {
         if (datumRate > 0.0 && runtimeRate > 0.0 && ! juce::approximatelyEqual (datumRate, runtimeRate))
-            return trench::core::native::rewarp_p2k_body (packed, datumRate, runtimeRate);
-        return packed;
+            return trench::core::native::rewarp_cascade (bank.interpolate_words (morph, q, 0.0f),
+                                                         datumRate, runtimeRate);
+        return bank.interpolate_biquads (morph, q, 0.0f);
     }
 
-    bool publishSnapshot()
+    bool publishSnapshot (const std::vector<std::uint8_t>& bytes, double datumRate)
     {
         try
         {
-            const auto packed = trench::core::PackedBody::from_body_bytes (sourceBytes);
+            const auto packed = trench::core::PackedBody::from_body_bytes (bytes);
             auto next = std::make_unique<Snapshot>();
-            next->bank = bankFor (packed, sourceDatumRate, sampleRateHz);
+            next->bank = packed;
+            next->datumRate = datumRate;
             next->runtimeRate = sampleRateHz;
-            publishCascade (next->bank.interpolate_biquads (0.0f, 0.0f, 0.0f));
+            next->generation = ++publishedGeneration;
+            publishCascade (cascadeAt (next->bank, datumRate, sampleRateHz, 0.0f, 0.0f));
             retireSnapshot (next.release());
             return true;
         }
         catch (...)
         {
-            retireSnapshot (nullptr);
             return false;
         }
     }
 
     void retireSnapshot (Snapshot* next)
     {
-        Snapshot* old = activeSnapshot.exchange (next, std::memory_order_acq_rel);
+        Snapshot* old = activeSnapshot.exchange (next, std::memory_order_seq_cst);
         if (old != nullptr)
             graveyard.emplace_back (old);
         reclaim();
@@ -348,14 +387,6 @@ private:
                 uiCoefficients[index++] = (float) coefficient;
     }
 
-    void processSample (trench::core::CascadeRunner& runner, trench::DeskDrive& desk, float& sample,
-                        const trench::core::Cascade& cascade)
-    {
-        sample = desk.process (sample, inputDrive);
-        runner.set_target (trench::core::encode_cascade (cascade));
-        runner.process (std::span<float> (&sample, 1));
-    }
-
     std::atomic<int> inFlight { 0 };
     std::atomic<bool> retired { false };
     std::vector<std::uint8_t> sourceBytes;
@@ -364,6 +395,14 @@ private:
     std::vector<std::unique_ptr<Snapshot>> graveyard;
     trench::core::CascadeRunner left;
     trench::core::CascadeRunner right;
+    static constexpr int kTickSamples = 32;
+    int tickPhase = 0;
+    std::uint64_t publishedGeneration = 0;
+    std::uint64_t heardGeneration = 0;
+    float cachedMorph = -1.0f;
+    float cachedQ = -1.0f;
+    double cachedKeyRatio = 0.0;
+    trench::core::Cascade cachedCascade {};
     std::array<float, trench::kUiCoeffCount> uiCoefficients {};
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
