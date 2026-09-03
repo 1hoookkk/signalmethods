@@ -23,14 +23,17 @@ public:
         g.fillRoundedRectangle (r, 3.0f);
         if (steps.empty())
             return;
+        g.setColour (juce::Colours::white.withAlpha (0.25f));
+        g.drawHorizontalLine ((int) r.getCentreY(), r.getX(), r.getRight());
         const float w = r.getWidth() / (float) steps.size();
         const int quarter = juce::jmax (1, stepsPerBar / 4);
         for (size_t i = 0; i < steps.size(); ++i)
         {
             const float x = r.getX() + w * (float) i;
-            const float h = r.getHeight() * steps[i];
+            const float mid = r.getCentreY();
+            const float y = r.getBottom() - r.getHeight() * steps[i];
             g.setColour (ink.withAlpha ((i % (size_t) stepsPerBar) == 0 ? 0.95f : 0.70f));
-            g.fillRect (x + 0.5f, r.getBottom() - h, juce::jmax (1.0f, w - 1.0f), h);
+            g.fillRect (x + 0.5f, juce::jmin (y, mid), juce::jmax (1.0f, w - 1.0f), juce::jmax (1.0f, std::abs (mid - y)));
             if ((i % (size_t) quarter) == 0)
             {
                 g.setColour (juce::Colours::white.withAlpha ((i % (size_t) stepsPerBar) == 0 ? 0.18f : 0.07f));
@@ -175,7 +178,7 @@ private:
         const double phase = loop.phaseBeats();
         switch (m)
         {
-            case WheelLoop::Mode::Armed: return "armed: move the wheel, recording starts on the bar";
+            case WheelLoop::Mode::Armed: return "armed: move the wheel from where it sits, recording starts on the bar";
             case WheelLoop::Mode::Recording: return "recording  beat " + juce::String (phase, 1);
             case WheelLoop::Mode::Playing: return "looping " + juce::String (beats / 4) + " bar(s)  beat " + juce::String (phase, 1);
             default: return beats > 0 ? juce::String (beats / 4) + " bar(s) held" : "no loop";
