@@ -411,6 +411,22 @@ std::array<std::uint8_t, kLegacyBodyBytes> export_p2k(const Body& body,
   return export_p2k_body(body, datum_hz).legacy_bytes();
 }
 
+Biquad rewarp_section(const PackedSection& words, double datum_hz, double target_hz) {
+  if (words == kIdentitySection) return section_words_to_biquad(words);
+  const auto section = import_section(words, datum_hz);
+  auto c = design(section, target_hz);
+  c.gain_db += rewarp_level_correction_db(words, section, c, datum_hz, target_hz);
+  return biquad(c);
+}
+
+Cascade rewarp_cascade(const CornerWords& words, double datum_hz, double target_hz) {
+  Cascade out{};
+  for (std::size_t si = 0; si < kSectionCount; ++si) {
+    out[si] = rewarp_section(words[si], datum_hz, target_hz);
+  }
+  return out;
+}
+
 PackedBody rewarp_p2k_body(const PackedBody& source, double datum_hz,
                            double target_hz) {
   PackedBody out{};

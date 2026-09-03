@@ -83,6 +83,7 @@ void CascadeRunner::set_target(const EncodedCascade& target) {
     return;
   }
   if (remaining_ == 0) {
+    glide_remaining_ = 0;
     if (encoded_stale_) {
       current_ = encode_cascade(coefficients_);
       encoded_stale_ = false;
@@ -108,8 +109,28 @@ void CascadeRunner::set_immediate(const Cascade& coefficients) {
     set_target(encode_cascade(coefficients));
     return;
   }
+  glide_remaining_ = 0;
   coefficients_ = coefficients;
   primed_ = true;
+  encoded_stale_ = true;
+}
+
+void CascadeRunner::set_glide(const Cascade& coefficients, std::size_t samples) {
+  if (!primed_ || samples == 0) {
+    set_immediate(coefficients);
+    return;
+  }
+  if (remaining_ > 0) {
+    set_target(encode_cascade(coefficients));
+    return;
+  }
+  glide_target_ = coefficients;
+  for (std::size_t si = 0; si < kSectionCount; ++si) {
+    for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) {
+      glide_step_[si][ci] = (coefficients[si][ci] - coefficients_[si][ci]) / static_cast<double>(samples);
+    }
+  }
+  glide_remaining_ = samples;
   encoded_stale_ = true;
 }
 
@@ -137,6 +158,15 @@ void CascadeRunner::process(std::span<float> block) {
         }
       }
       decode();
+    } else if (glide_remaining_ > 0) {
+      --glide_remaining_;
+      if (glide_remaining_ == 0) {
+        coefficients_ = glide_target_;
+      } else {
+        for (std::size_t si = 0; si < kSectionCount; ++si) {
+          for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) coefficients_[si][ci] += glide_step_[si][ci];
+        }
+      }
     }
     double x = sample;
     if (grit_ <= 0.0) {

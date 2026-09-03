@@ -21,6 +21,7 @@ class CascadeRunner {
  public:
   void set_target(const EncodedCascade& target);
   void set_immediate(const Cascade& coefficients);
+  void set_glide(const Cascade& coefficients, std::size_t samples);
   void reset();
   void process(std::span<float> block);
   void set_pole_distortion(double grit) noexcept;
@@ -43,6 +44,9 @@ class CascadeRunner {
   std::array<Section, kSectionCount> state_{};
   double grit_{};
   double activity_{};
+  Cascade glide_target_{};
+  Cascade glide_step_{};
+  std::size_t glide_remaining_{};
   bool primed_{};
   bool encoded_stale_{};
 };
