@@ -8,28 +8,21 @@ namespace trench::core {
 namespace {
 
 constexpr double kDecodedFloor = 1.0e-30;
-constexpr double kGritCeilingFloor = 0.05;
-constexpr double kGritCeilingWide = 2.0;
-constexpr double kGritThreshFloor = 0.02;
-constexpr double kGritThreshWide = 1.5;
-constexpr double kGritKnee = 0.72;
+constexpr double kGritCeilingFloor = 0.35;
+constexpr double kGritCeilingWide = 4.0;
+constexpr double kGritThreshFraction = 0.6;
+constexpr double kGritPullDepth = 0.25;
 
 double grit_state_ceiling(double grit) {
-  return kGritCeilingWide + (kGritCeilingFloor - kGritCeilingWide) * grit;
+  return kGritCeilingWide * std::pow(kGritCeilingFloor / kGritCeilingWide, grit);
 }
 
 double grit_distort_threshold(double grit) {
-  return (kGritThreshWide - kGritThreshFloor) * std::exp(-4.0 * grit) +
-         kGritThreshFloor;
+  return kGritThreshFraction * grit_state_ceiling(grit);
 }
 
 double soft_clamp_ceiling(double x, double ceiling) {
-  const double knee = kGritKnee * ceiling;
-  const double a = std::abs(x);
-  if (a <= knee) return x;
-  const double span = ceiling - knee;
-  const double bounded = knee + span * std::tanh((a - knee) / span);
-  return std::copysign(std::min(bounded, ceiling), x);
+  return ceiling * std::tanh(x / ceiling);
 }
 
 double logged(double decoded) { return std::log(std::max(decoded, kDecodedFloor)); }
@@ -192,8 +185,8 @@ void CascadeRunner::process(std::span<float> block) {
           const double r = std::sqrt(a2);
           if (r > 1.0e-6 && r < 1.0) {
             const double cos_theta = std::clamp(-a1 / (2.0 * r), -1.0, 1.0);
-            const double ratio = std::min(vg - vt, 0.5);
-            const double r_new = std::clamp(r + r * (1.0 - r) * ratio, 0.0, 0.9999);
+            const double excess = std::min((vg - vt) / ceiling, 1.0);
+            const double r_new = std::clamp(r * (1.0 - kGritPullDepth * excess), 0.0, 0.9999);
             a1 = -2.0 * r_new * cos_theta;
             a2 = r_new * r_new;
           }
