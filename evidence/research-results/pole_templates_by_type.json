@@ -5414,6 +5414,35 @@
     0.85
    ],
    "note": "each rung = pole with its zero on the same angle; zero bw = pole bw x ratio (0 = no zero, the fundamental)"
+  },
+  "soundboard": {
+   "source": "Morpheus cube 237 PianoSndBrd, corner 1 (Transform on) at 39062.5 Hz",
+   "default_root_hz": 116.8,
+   "ratios": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "bw_fraction": [
+    4.1,
+    4.1,
+    4.1,
+    4.1,
+    4.1,
+    4.1
+   ],
+   "zero_bw_ratio": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "note": "all sections stacked on one pitch, wide: a fourteenth-order body bump; Morph partner sits at 464.8 Hz with bw/f 5.3; idle sections park at 9381.8 Hz r 0.125"
   }
  }
 }
