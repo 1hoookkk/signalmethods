@@ -306,7 +306,6 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     }
     processChunk (buffer);
 }
-static constexpr float kInputRangeDb = 24.0f;
 static constexpr float kOutputMinDb = -24.0f;
 static constexpr float kOutputMaxDb = 12.0f;
 void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset)
@@ -411,7 +410,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     wheelLoopSource.process (morphBuffer.data(), numSamples, transport.ppq, transport.playing, transport.bpm, getSampleRate());
 #endif
     // 8. Static controls that changed since last block.
-    dspBridge.setInputPreamp (0.0f);
+    dspBridge.setInputPreamp (trench::driveTaper (preamp));
     TrenchParams params;
     params.q = q;                       // the static authored second axis
     params.poleDistortion = chew;       // BITE/CHEW, independent of Q
@@ -430,7 +429,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     // (applySuggestedChoice). Snapping is now something the player asks for.
     // 0 = no snap.
     params.keySnap = keyChoice;
-    buffer.applyGain (juce::Decibels::decibelsToGain (kInputRangeDb * preamp));
     dspBridge.processTrajectory (buffer, morphBuffer.data(), params);
     float limitFrac = 0.0f;
     buffer.applyGain (juce::Decibels::decibelsToGain (kOutputMinDb + (kOutputMaxDb - kOutputMinDb) * slam));

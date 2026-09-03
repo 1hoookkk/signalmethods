@@ -330,7 +330,7 @@ int main()
 
     setParam (processor, ParamID::preamp, 1.0f);
     const auto driven = runSine (processor, in);
-    check (std::abs (db (driven.peak / base.peak) - 24.0) < 0.5, "INPUT at full adds +24 dB into the filter", db (driven.peak / base.peak), 24.0);
+    check (db (driven.peak / base.peak) > 20.0, "INPUT at full drives the filter hard (dB over unity)", db (driven.peak / base.peak), 20.0);
     setParam (processor, ParamID::preamp, 0.0f);
     {
         setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
@@ -373,7 +373,7 @@ int main()
         const auto driven = capture (0.35f, 0.0f);
         const double f = goertzel (driven, 37);
         const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
-        check (f > 0.01 && h / f < 0.005, "INPUT is clean gain, no harmonics of its own (harmonic ratio)", h / f, 0.005);
+        check (f > 0.01 && h / f > 0.02, "INPUT desk adds harmonics before the cascade (harmonic ratio)", h / f, 0.02);
         const auto clean = capture (0.0f, 0.0f);
         const double f0 = goertzel (clean, 37);
         const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
@@ -404,7 +404,7 @@ int main()
     check (loud.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "safety ceiling bounds a full-scale input at -0.1 dBFS", loud.peak, trench::kFinalSafetyCeiling);
     setParam (processor, ParamID::preamp, 1.0f);
     const auto ceilinged = runSine (processor, 0.9f);
-    check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at +24 dB", ceilinged.peak, trench::kFinalSafetyCeiling);
+    check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at full", ceilinged.peak, trench::kFinalSafetyCeiling);
     check (ceilinged.peak > 0.5f, "ceiling limits, it does not mute", ceilinged.peak, 0.5);
     setParam (processor, ParamID::preamp, 0.0f);
 

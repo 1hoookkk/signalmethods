@@ -314,3 +314,7 @@ separate VST dev build; he tunes shipping params there and has the final say)
   per sample. Lives in TrenchDspBridge::processTrajectory behind bypass.agc (default on);
   agcReductionDb() is real telemetry again. Safety ceiling kept as the silent guard.
   Engine 1.2% with MORPH moving; suites clean. Installed.
+- INPUT desk back 2026-09-04 (Tyson "yes" to the desk on INPUT): the Mackie DeskDrive
+  before the cascade again, driveTaper on the curve-mapped preamp, the clean +24 dB gain
+  gone. OUTPUT stays clean gain -24..+12 dB. Tests: INPUT at full > +20 dB over unity and
+  adds harmonics; INPUT at 0 clean.
