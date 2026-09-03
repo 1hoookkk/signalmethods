@@ -29,7 +29,7 @@ engine rewarps to the host rate from that datum.
   own per-corner gains; do not apply the P2K DC-unity rule to them.
 - 18 `xml_*` WORKHORSE bodies in `plugin/presets/bodies/`: Emulator X Morph Filter
   Designer compiles, one-dimensional (Q corners are copies). Sketches, not the standard.
-- The Morpheus is the only hardware in the room. Hardware truth means Morpheus captures.
+- There is no E-mu hardware in the room: the Morpheus material is its firmware and the 289 cubes. Level truth comes from code (firmware gain path, the X DLL H-chip table, the proven P2K rule), never from captures.
 
 ## Builds and tests
 - Every cmake build must run through MSVC vcvars64; a bare shell fails with C1083. Use a

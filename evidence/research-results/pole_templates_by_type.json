@@ -5384,5 +5384,27 @@
     }
    ]
   }
+ },
+ "ladders": {
+  "piano": {
+   "source": "Morpheus cube 236 Piano LP.4, corner 0 at 39062.5 Hz",
+   "default_root_hz": 64.3,
+   "ratios": [
+    1.0,
+    2.0,
+    6.04,
+    9.08,
+    12.07,
+    22.2
+   ],
+   "bw_fraction": [
+    0.014,
+    0.028,
+    0.029,
+    0.029,
+    0.029,
+    0.058
+   ]
+  }
  }
 }

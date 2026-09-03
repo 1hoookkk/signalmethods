@@ -21,6 +21,10 @@ struct PoleTemplate {
   double datum_hz{};
   std::vector<QString> bodies;
   std::vector<PoleState> states;
+  bool ladder = false;
+  double root_hz = 0.0;
+  std::vector<double> ratios;
+  std::vector<double> bw_fraction;
   [[nodiscard]] QString label() const { return family + QStringLiteral("  ") + type; }
 };
 

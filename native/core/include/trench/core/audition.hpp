@@ -36,6 +36,8 @@ class CascadeRunner {
     double y_prev{};
   };
   void decode();
+  static Biquad kernel_row(const Biquad& b);
+  static Biquad biquad_of_row(const Biquad& c);
   EncodedCascade current_{};
   EncodedCascade target_{};
   EncodedCascade step_{};
@@ -46,6 +48,7 @@ class CascadeRunner {
   double activity_{};
   Cascade glide_target_{};
   Cascade glide_step_{};
+  Cascade glide_row_{};
   std::size_t glide_remaining_{};
   bool primed_{};
   bool encoded_stale_{};

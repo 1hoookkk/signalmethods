@@ -6,7 +6,66 @@
 
 namespace trench::ui
 {
-inline constexpr int kDevPanelWidth = 210;
+inline constexpr int kDevPanelWidth = 320;
+
+class StepGrid final : public juce::Component
+{
+public:
+    std::vector<float> steps;
+    int stepsPerBar = 16;
+    std::function<void()> onChange;
+    std::function<double()> playhead;
+    juce::Colour ink;
+    void paint (juce::Graphics& g) override
+    {
+        auto r = getLocalBounds().toFloat();
+        g.setColour (juce::Colour (0xff0c1210));
+        g.fillRoundedRectangle (r, 3.0f);
+        if (steps.empty())
+            return;
+        const float w = r.getWidth() / (float) steps.size();
+        const int quarter = juce::jmax (1, stepsPerBar / 4);
+        for (size_t i = 0; i < steps.size(); ++i)
+        {
+            const float x = r.getX() + w * (float) i;
+            const float h = r.getHeight() * steps[i];
+            g.setColour (ink.withAlpha ((i % (size_t) stepsPerBar) == 0 ? 0.95f : 0.70f));
+            g.fillRect (x + 0.5f, r.getBottom() - h, juce::jmax (1.0f, w - 1.0f), h);
+            if ((i % (size_t) quarter) == 0)
+            {
+                g.setColour (juce::Colours::white.withAlpha ((i % (size_t) stepsPerBar) == 0 ? 0.18f : 0.07f));
+                g.drawVerticalLine ((int) x, r.getY(), r.getBottom());
+            }
+        }
+        if (playhead != nullptr)
+        {
+            const double p = playhead();
+            if (p >= 0.0)
+            {
+                g.setColour (juce::Colours::white.withAlpha (0.7f));
+                g.drawVerticalLine ((int) (r.getX() + r.getWidth() * (float) p), r.getY(), r.getBottom());
+            }
+        }
+    }
+    void mouseDown (const juce::MouseEvent& e) override { edit (e); }
+    void mouseDrag (const juce::MouseEvent& e) override { edit (e); }
+private:
+    void edit (const juce::MouseEvent& e)
+    {
+        if (steps.empty())
+            return;
+        const int i = juce::jlimit (0, (int) steps.size() - 1, (int) (e.position.x / (float) getWidth() * (float) steps.size()));
+        float v = juce::jlimit (0.0f, 1.0f, 1.0f - e.position.y / (float) getHeight());
+        if (e.mods.isAltDown())
+            v = juce::Random::getSystemRandom().nextFloat();
+        if (e.mods.isShiftDown())
+            v = std::round (v * 8.0f) / 8.0f;
+        steps[(size_t) i] = v;
+        repaint();
+        if (onChange != nullptr)
+            onChange();
+    }
+};
 
 class DevPanel final : public juce::Component,
                        private juce::Timer
@@ -38,6 +97,19 @@ public:
         addAndMakeVisible (glide);
         grid.onChange = [this] { requantize(); };
         glide.onClick = [this] { requantize(); };
+        stepGrid.ink = t.curveColour();
+        stepGrid.playhead = [this]
+        {
+            const int beats = loop.beatsRecorded();
+            return loop.currentMode() == WheelLoop::Mode::Playing && beats > 0 ? loop.phaseBeats() / (double) beats : -1.0;
+        };
+        stepGrid.onChange = [this] { loop.setSteps (stepGrid.steps, stepsPerBeat(), glide.getToggleState()); };
+        addAndMakeVisible (stepGrid);
+        blankButton.setButtonText ("BLANK");
+        blankButton.setColour (juce::TextButton::buttonColourId, juce::Colour (0xff2a2f2d));
+        blankButton.setColour (juce::TextButton::textColourOffId, t.curveColour());
+        blankButton.onClick = [this] { loop.blank (barsSelected()); pullSteps(); };
+        addAndMakeVisible (blankButton);
         addAndMakeVisible (name);
         name.setText ("loop", juce::dontSendNotification);
         name.setColour (juce::TextEditor::backgroundColourId, juce::Colour (0xff11151a));
@@ -57,16 +129,19 @@ public:
         bars.setBounds (r.removeFromTop (24)); r.removeFromTop (6);
         armButton.setBounds (r.removeFromTop (26)); r.removeFromTop (4);
         auto row = r.removeFromTop (26);
-        stopButton.setBounds (row.removeFromLeft (row.getWidth() / 2 - 2));
+        stopButton.setBounds (row.removeFromLeft (row.getWidth() / 3 - 2));
         row.removeFromLeft (4);
-        playButton.setBounds (row);
+        playButton.setBounds (row.removeFromLeft (row.getWidth() / 2 - 2));
+        row.removeFromLeft (4);
+        blankButton.setBounds (row);
         r.removeFromTop (6);
         row = r.removeFromTop (24);
         grid.setBounds (row.removeFromLeft (row.getWidth() * 3 / 5));
         row.removeFromLeft (4);
         glide.setBounds (row);
         r.removeFromTop (10);
-        r.removeFromTop (60);
+        r.removeFromTop (30);
+        stepGrid.setBounds (r.removeFromTop (110)); r.removeFromTop (8);
         name.setBounds (r.removeFromTop (24)); r.removeFromTop (4);
         row = r.removeFromTop (26);
         saveButton.setBounds (row.removeFromLeft (row.getWidth() / 2 - 2));
@@ -86,11 +161,10 @@ public:
         g.setColour (t.curveColour().withAlpha (0.7f));
         g.drawText ("WHEEL LOOP", r.removeFromTop (22), juce::Justification::centredLeft, false);
         r.removeFromTop (24 + 6 + 26 + 4 + 26 + 6 + 24 + 10);
-        auto status = r.removeFromTop (60);
+        auto status = r.removeFromTop (30);
         g.setFont (displayFont (10.5f, false));
         g.setColour (t.curveColour().withAlpha (0.85f));
-        g.drawFittedText (statusText(), status, juce::Justification::topLeft, 3);
-        drawLoopStrip (g, status.removeFromBottom (18).toFloat());
+        g.drawFittedText (statusText(), status, juce::Justification::topLeft, 2);
     }
 private:
     int barsSelected() const { return 1 << juce::jmax (0, bars.getSelectedId() - 1); }
@@ -163,20 +237,35 @@ private:
             if (auto* arr = v.getProperty ("values", juce::var()).getArray())
                 for (const auto& x : *arr) ticks.push_back ((float) (double) x);
             if (loop.load (ticks, beats))
+            {
                 name.setText (v.getProperty ("name", files[choice - 1].getFileNameWithoutExtension()).toString(), juce::dontSendNotification);
+                pullSteps();
+            }
         });
+    }
+    int stepsPerBeat() const
+    {
+        const int id = grid.getSelectedId();
+        return id <= 1 ? 4 : (id == 2 ? 2 : id == 3 ? 4 : 8);
+    }
+    void pullSteps()
+    {
+        stepGrid.steps = loop.stepLevels (stepsPerBeat());
+        stepGrid.stepsPerBar = stepsPerBeat() * 4;
+        stepGrid.repaint();
     }
     void requantize()
     {
         const int id = grid.getSelectedId();
-        const int stepsPerBeat = id <= 1 ? 0 : (id == 2 ? 2 : id == 3 ? 4 : 8);
-        loop.quantize (stepsPerBeat, glide.getToggleState());
+        loop.quantize (id <= 1 ? 0 : stepsPerBeat(), glide.getToggleState());
+        pullSteps();
         repaint();
     }
     void timerCallback() override
     {
         if (loop.takeRawDirty())
             requantize();
+        stepGrid.repaint();
         repaint();
     }
     Theme t;
@@ -186,6 +275,8 @@ private:
     juce::ComboBox bars;
     juce::ComboBox grid;
     juce::ToggleButton glide;
+    StepGrid stepGrid;
+    juce::TextButton blankButton;
     juce::TextEditor name;
 };
 }

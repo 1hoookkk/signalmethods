@@ -9,6 +9,7 @@
 #include <QJsonObject>
 
 #include <algorithm>
+#include <variant>
 
 #ifndef TRENCH_POLE_TEMPLATES
 #define TRENCH_POLE_TEMPLATES ""
@@ -56,6 +57,20 @@ std::vector<PoleTemplate> loadPoleTemplates() {
   const auto root = doc.object();
   readFamily(root, QStringLiteral("p2k_44100"), QStringLiteral("X3"), 44'100.0, out);
   readFamily(root, QStringLiteral("morpheus_39062_5"), QStringLiteral("MORPHEUS"), 39'062.5, out);
+  const auto ladders = root.value(QStringLiteral("ladders")).toObject();
+  for (auto it = ladders.begin(); it != ladders.end(); ++it) {
+    const auto o = it.value().toObject();
+    PoleTemplate tpl;
+    tpl.family = QStringLiteral("LADDER");
+    tpl.type = it.key();
+    tpl.ladder = true;
+    tpl.root_hz = o.value(QStringLiteral("default_root_hz")).toDouble(64.3);
+    for (const auto& r : o.value(QStringLiteral("ratios")).toArray()) tpl.ratios.push_back(r.toDouble());
+    for (const auto& b : o.value(QStringLiteral("bw_fraction")).toArray()) tpl.bw_fraction.push_back(b.toDouble());
+    for (std::size_t i = 0; i < tpl.ratios.size(); ++i)
+      tpl.states.push_back({tpl.root_hz * tpl.ratios[i], tpl.root_hz * tpl.ratios[i] * (i < tpl.bw_fraction.size() ? tpl.bw_fraction[i] : 0.03), 0.0, 1});
+    if (!tpl.ratios.empty()) out.push_back(std::move(tpl));
+  }
   return out;
 }
 
@@ -76,8 +91,26 @@ std::vector<PoleState> pickPoles(const PoleTemplate& tpl, std::size_t count) {
   return out;
 }
 
+std::vector<PoleState> ladderPoles(EditorState& state, const PoleTemplate& tpl, std::size_t corner) {
+  double root = tpl.root_hz;
+  if (state.sectionEnabledAt(corner, 0)) {
+    if (const auto* res = std::get_if<trench::core::native::Resonant>(&state.sectionAt(corner, 0).pole);
+        res != nullptr && res->hz >= EditorState::kLowHz) {
+      root = res->hz;
+    }
+  }
+  std::vector<PoleState> out;
+  for (std::size_t i = 0; i < tpl.ratios.size() && out.size() < trench::core::native::kSections; ++i) {
+    const double hz = root * tpl.ratios[i];
+    if (hz > 0.45 * EditorState::kDatumHz) break;
+    const double frac = i < tpl.bw_fraction.size() ? tpl.bw_fraction[i] : 0.03;
+    out.push_back({hz, std::max(1.0, hz * frac), 0.0, 1});
+  }
+  return out;
+}
+
 void applyPoleTemplate(EditorState& state, const PoleTemplate& tpl, std::size_t corner) {
-  const auto poles = pickPoles(tpl, trench::core::native::kSections);
+  const auto poles = tpl.ladder ? ladderPoles(state, tpl, corner) : pickPoles(tpl, trench::core::native::kSections);
   if (poles.empty()) return;
   state.beginUndoGroup();
   for (std::size_t i = 0; i < trench::core::native::kSections; ++i) {

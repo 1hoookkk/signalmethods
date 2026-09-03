@@ -295,3 +295,13 @@ separate VST dev build; he tunes shipping params there and has the final say)
   that roster under TRENCH_DEV_PANEL; the ship roster (18 WORKHORSE bodies) is untouched.
   Measured: roster bodies and the 33 both carry resonance in the high-Q corners only
   (Crisp at MORPH 68: +3 dB at Q 0, +17 at Q 50, +33 at Q 100; about 7 dB per quarter).
+- Dev drawer 2026-09-04 (Tyson: "maybe let me draw the modulation"): the step grid is the
+  one surface. StepGrid in ui/DevPanel.h: one bar per 16 steps (or 8/32 by the GRID
+  choice), click or drag sets a step to the mouse height, shift snaps to eighths, alt fills
+  random (E-mu's own tip); BLANK gives an empty 1/2/4/8-bar grid at the wheel's middle.
+  Recording still works and lands in the grid quantised; LOAD fills the grid; every edit
+  rebuilds the loop (hold or GLIDE). Drawer widened to 320 px. WheelLoop gained
+  stepLevels / setSteps / blank; playback is smoothed by the X3's one-pole.
+- Engine: CascadeRunner::set_glide now ramps the kernel row (c0..c4) and rebuilds the
+  biquad per sample, as the X3 spec describes, instead of ramping b/a coefficients.
+- Plugin tree committed as ship candidate 8a0a73e2; CLAUDE.md canonical 663c1498.

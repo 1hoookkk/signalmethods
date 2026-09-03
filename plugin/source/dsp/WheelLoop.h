@@ -106,6 +106,52 @@ public:
         }
     }
     void keepRaw() { raw = values; }
+    std::vector<float> stepLevels (int stepsPerBeat) const
+    {
+        const int beats = recordedBeats.load (std::memory_order_relaxed);
+        std::vector<float> out;
+        if (beats <= 0 || stepsPerBeat <= 0)
+            return out;
+        const int stepTicks = juce::jmax (1, kTicksPerBeat / stepsPerBeat);
+        const int steps = beats * kTicksPerBeat / stepTicks;
+        const auto& src = raw.size() >= values.size() ? raw : values;
+        for (int st = 0; st < steps; ++st)
+        {
+            double sum = 0.0;
+            for (int t = 0; t < stepTicks; ++t)
+                sum += src[(size_t) (st * stepTicks + t)];
+            out.push_back ((float) (sum / stepTicks));
+        }
+        return out;
+    }
+    void setSteps (const std::vector<float>& levels, int stepsPerBeat, bool glide)
+    {
+        if (levels.empty() || stepsPerBeat <= 0)
+            return;
+        const int stepTicks = juce::jmax (1, kTicksPerBeat / stepsPerBeat);
+        const int beats = juce::jlimit (1, kMaxBeats, (int) levels.size() * stepTicks / kTicksPerBeat);
+        const int steps = beats * kTicksPerBeat / stepTicks;
+        for (int st = 0; st < steps; ++st)
+        {
+            const float a = levels[(size_t) juce::jmin (st, (int) levels.size() - 1)];
+            const float b = levels[(size_t) juce::jmin ((st + 1) % steps, (int) levels.size() - 1)];
+            for (int t = 0; t < stepTicks; ++t)
+                values[(size_t) (st * stepTicks + t)] = glide ? a + (b - a) * (float) t / (float) stepTicks : a;
+        }
+        if (raw.size() < values.size())
+            raw = values;
+        else
+            std::copy (values.begin(), values.begin() + beats * kTicksPerBeat, raw.begin());
+        recordedBeats.store (beats, std::memory_order_relaxed);
+    }
+    void blank (int bars)
+    {
+        const int beats = juce::jlimit (1, kMaxBeats, (int) (bars * kBeatsPerBar));
+        std::fill (values.begin(), values.begin() + beats * kTicksPerBeat, 0.5f);
+        raw = values;
+        recordedBeats.store (beats, std::memory_order_relaxed);
+        startBeat = 0.0;
+    }
     std::vector<float> snapshot() const { return std::vector<float> (values.begin(), values.begin() + (size_t) (juce::jmax (1, beatsRecorded()) * kTicksPerBeat)); }
     bool load (const std::vector<float>& ticks, int beats)
     {

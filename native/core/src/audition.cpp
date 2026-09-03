@@ -61,6 +61,15 @@ Biquad decode_section(const EncodedSection& encoded) {
   return {c4, (c0 - 2.0) * c4, (1.0 - d1) * c4, c2 - 2.0, 1.0 - d3};
 }
 
+Biquad CascadeRunner::kernel_row(const Biquad& b) {
+  const double c4 = std::abs(b[0]) > 0.0 ? b[0] : kDecodedFloor;
+  return {b[1] / c4 + 2.0, 1.0 - b[2] / c4, b[3] + 2.0, 1.0 - b[4], c4};
+}
+
+Biquad CascadeRunner::biquad_of_row(const Biquad& c) {
+  return {c[4], (c[0] - 2.0) * c[4], (1.0 - c[1]) * c[4], c[2] - 2.0, 1.0 - c[3]};
+}
+
 void CascadeRunner::decode() {
   for (std::size_t si = 0; si < kSectionCount; ++si) coefficients_[si] = decode_section(current_[si]);
 }
@@ -119,8 +128,11 @@ void CascadeRunner::set_glide(const Cascade& coefficients, std::size_t samples) 
   }
   glide_target_ = coefficients;
   for (std::size_t si = 0; si < kSectionCount; ++si) {
+    const auto from = kernel_row(coefficients_[si]);
+    const auto to = kernel_row(coefficients[si]);
+    glide_row_[si] = from;
     for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) {
-      glide_step_[si][ci] = (coefficients[si][ci] - coefficients_[si][ci]) / static_cast<double>(samples);
+      glide_step_[si][ci] = (to[ci] - from[ci]) / static_cast<double>(samples);
     }
   }
   glide_remaining_ = samples;
@@ -157,7 +169,8 @@ void CascadeRunner::process(std::span<float> block) {
         coefficients_ = glide_target_;
       } else {
         for (std::size_t si = 0; si < kSectionCount; ++si) {
-          for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) coefficients_[si][ci] += glide_step_[si][ci];
+          for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) glide_row_[si][ci] += glide_step_[si][ci];
+          coefficients_[si] = biquad_of_row(glide_row_[si]);
         }
       }
     }

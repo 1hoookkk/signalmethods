@@ -202,7 +202,7 @@ MainWindow::MainWindow(QWidget* parent)
     trench::app::applyPoleTemplate(state_, tpl, state_.editingCorner());
     status_label_->setText(QStringLiteral("TEMPLATE · %1 · %2 poles from %3 bodies → CORNER %4")
                                .arg(tpl.label())
-                               .arg(trench::app::pickPoles(tpl, trench::core::native::kSections).size())
+                               .arg(tpl.ladder ? tpl.ratios.size() : trench::app::pickPoles(tpl, trench::core::native::kSections).size())
                                .arg(tpl.bodies.size())
                                .arg(state_.editingCorner() + 1));
     template_box_->setCurrentIndex(0);
