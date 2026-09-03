@@ -20,6 +20,7 @@ Biquad decode_section(const EncodedSection& encoded);
 class CascadeRunner {
  public:
   void set_target(const EncodedCascade& target);
+  void set_immediate(const Cascade& coefficients);
   void reset();
   void process(std::span<float> block);
   void set_pole_distortion(double grit) noexcept;
@@ -43,6 +44,7 @@ class CascadeRunner {
   double grit_{};
   double activity_{};
   bool primed_{};
+  bool encoded_stale_{};
 };
 
 class SawSource {

@@ -73,20 +73,44 @@ void CascadeRunner::decode() {
 }
 
 void CascadeRunner::set_target(const EncodedCascade& target) {
-  target_ = target;
   if (!primed_) {
     current_ = target;
+    target_ = target;
     remaining_ = 0;
     primed_ = true;
+    encoded_stale_ = false;
     decode();
     return;
   }
+  if (remaining_ == 0) {
+    if (encoded_stale_) {
+      current_ = encode_cascade(coefficients_);
+      encoded_stale_ = false;
+    }
+    if (target == current_) {
+      target_ = target;
+      return;
+    }
+    remaining_ = kApproachSamples;
+  } else if (target == target_) {
+    return;
+  }
+  target_ = target;
   for (std::size_t si = 0; si < kSectionCount; ++si) {
     for (std::size_t ci = 0; ci < kCoefficientCount; ++ci) {
-      step_[si][ci] = (target_[si][ci] - current_[si][ci]) / static_cast<double>(kApproachSamples);
+      step_[si][ci] = (target_[si][ci] - current_[si][ci]) / static_cast<double>(remaining_);
     }
   }
-  remaining_ = kApproachSamples;
+}
+
+void CascadeRunner::set_immediate(const Cascade& coefficients) {
+  if (primed_ && remaining_ > 0) {
+    set_target(encode_cascade(coefficients));
+    return;
+  }
+  coefficients_ = coefficients;
+  primed_ = true;
+  encoded_stale_ = true;
 }
 
 void CascadeRunner::reset() {
