@@ -306,7 +306,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     }
     processChunk (buffer);
 }
-static constexpr float kOutputMinDb = -24.0f;
+static constexpr float kOutputMinDb = -12.0f;
 static constexpr float kOutputMaxDb = 12.0f;
 void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset)
 {

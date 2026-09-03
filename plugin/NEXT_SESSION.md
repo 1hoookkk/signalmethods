@@ -318,3 +318,10 @@ separate VST dev build; he tunes shipping params there and has the final say)
   before the cascade again, driveTaper on the curve-mapped preamp, the clean +24 dB gain
   gone. OUTPUT stays clean gain -24..+12 dB. Tests: INPUT at full > +20 dB over unity and
   adds harmonics; INPUT at 0 clean.
+- 2026-09-04 (Tyson): AGC lookup smoothed, linear between the 16 entries on the fractional
+  index and clamped at 15 (no wrap); threshold stays |x| = 2 (+6.02 dBFS), floor 0.12
+  (-18.4 dB). BITE defaults to 18 %. OUTPUT is -12..+12 dB with unity at 50 (Tyson:
+  "output defaulting at 67" was wrong). Installed, suites clean.
+- Morpheus level law read from the Vulcan firmware by agent; filed as
+  evidence/research-results/morpheus_level_law.md. Corner gain x DC-normalised sections,
+  cascade DC at 0 dB, no trim. The Morpheus import can now be built on it.

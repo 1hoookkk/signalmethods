@@ -277,9 +277,11 @@ public:
             if (bypass.agc)
             {
                 const float magnitude = outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]);
-                const float scaled = agcGain * magnitude;
-                const unsigned index = (scaled >= 0.0f && scaled < 4.0e9f ? (unsigned) scaled : 0u) & 0xFu;
-                const float next = agcGain * agcTable[index];
+                const float scaled = juce::jlimit (0.0f, 15.0f, agcGain * magnitude);
+                const int index = (int) scaled;
+                const float frac = scaled - (float) index;
+                const float step = agcTable[(size_t) index] + (agcTable[(size_t) juce::jmin (15, index + 1)] - agcTable[(size_t) index]) * frac;
+                const float next = agcGain * step;
                 agcGain = next < 1.0f ? next : 1.0f;
                 outL[sample] *= agcGain;
                 if (outR != nullptr)

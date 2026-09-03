@@ -367,7 +367,7 @@ int main()
                     out.assign (buf.getReadPointer (0), buf.getReadPointer (0) + n);
             }
             setParam (processor, ParamID::preamp, 0.0f);
-            setParam (processor, ParamID::slamDrive, 2.0f / 3.0f);
+            setParam (processor, ParamID::slamDrive, 0.5f);
             return out;
         };
         const auto driven = capture (0.35f, 0.0f);
@@ -386,7 +386,7 @@ int main()
         check (outputF > 0.001 && outputH / outputF < 0.005,
                "OUTPUT is clean gain, no harmonics of its own (harmonic ratio)",
                outputH / outputF, 0.005);
-        const auto outputClean = capture (0.0f, 2.0f / 3.0f);
+        const auto outputClean = capture (0.0f, 0.5f);
         const double outputF0 = goertzel (outputClean, 37);
         const double outputH0 = goertzel (outputClean, 74) + goertzel (outputClean, 111)
                               + goertzel (outputClean, 148) + goertzel (outputClean, 185);
@@ -398,7 +398,7 @@ int main()
     setParam (processor, ParamID::slamDrive, 1.0f);
     const auto slammed = runSine (processor, 0.1f);
     check (slammed.finite && std::abs (db (slammed.peak / hot.peak) - 12.0) < 0.5, "OUTPUT at full is +12 dB over unity (dB)", db (slammed.peak / hot.peak), 12.0);
-    setParam (processor, ParamID::slamDrive, 2.0f / 3.0f);
+    setParam (processor, ParamID::slamDrive, 0.5f);
     const auto loud = runSine (processor, 0.9f);
     check (loud.finite && loud.peak > 0.1f, "full-scale input at defaults stays finite and audible", loud.peak, 0.9);
     check (loud.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "safety ceiling bounds a full-scale input at -0.1 dBFS", loud.peak, trench::kFinalSafetyCeiling);

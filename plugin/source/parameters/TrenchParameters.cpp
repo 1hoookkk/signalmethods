@@ -26,7 +26,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ParamID::chew, 1 },
         "Bite",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f, pctAttribs()));
+        0.18f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterInt> (
         juce::ParameterID { ParamID::body, 1 },
         "Body",
@@ -37,7 +37,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ParamID::slamDrive, 1 },
         "Output",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        2.0f / 3.0f));
+        0.5f));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::preamp, 1 },
         "Input",
