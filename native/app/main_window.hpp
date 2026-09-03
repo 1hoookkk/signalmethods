@@ -22,6 +22,8 @@ class QDropEvent;
 class QLabel;
 class QPushButton;
 class QComboBox;
+class QCheckBox;
+class QTimer;
 class QSplitter;
 
 class MainWindow final : public QMainWindow {
@@ -64,6 +66,10 @@ class MainWindow final : public QMainWindow {
   QPushButton* audition_button_{};
   QPushButton* solo_button_{};
   QComboBox* template_box_{};
+  QComboBox* frame_box_{};
+  QCheckBox* slot_box_{};
+  QTimer* slot_timer_{};
+  void pushSlot();
   QString document_path_;
   std::unique_ptr<trench::audio::Audition> audition_;
 };

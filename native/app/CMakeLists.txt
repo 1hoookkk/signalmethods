@@ -29,6 +29,7 @@ add_library(trench_native_ui STATIC
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(trench_native_ui PUBLIC TRENCH_POLE_TEMPLATES="${CMAKE_CURRENT_SOURCE_DIR}/templates/pole_templates_by_type.json")
+target_compile_definitions(trench_native_ui PUBLIC TRENCH_FRAMES_X3="${CMAKE_CURRENT_SOURCE_DIR}/templates/frames_x3.json" TRENCH_AUDITION_SLOT="${CMAKE_CURRENT_SOURCE_DIR}/../../plugin/patterns/audition_slot.body240")
 
 qt_add_executable(trench_native main.cpp)
 set_target_properties(trench_native PROPERTIES OUTPUT_NAME trench_native)

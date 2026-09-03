@@ -325,3 +325,31 @@ separate VST dev build; he tunes shipping params there and has the final say)
 - Morpheus level law read from the Vulcan firmware by agent; filed as
   evidence/research-results/morpheus_level_law.md. Corner gain x DC-normalised sections,
   cascade DC at 0 dB, no trim. The Morpheus import can now be built on it.
+
+## Session close 2026-09-04 ~03:00 (context nearly full; next chat starts here)
+State: ship plugin and TRENCH Dev both installed and committed. Engine: rate-independent,
+X3 AGC after the cascade (smoothed lookup, +6.02 dBFS in, -18.4 dB floor), safety ceiling
+as guard, INPUT = Mackie desk before the cascade (0 = clean unity), OUTPUT clean gain
+-12..+12 dB unity at 50, BITE default 18 % (Rossum law: tanh state, pole pulled down),
+kernel-row glide on the 32-sample tick. Gain path at defaults is clean unity (test
+"PREAMP 0 = unity through the path" passes).
+App (native): TEMPLATE picker (X3 types, Morpheus categories, LADDER piano rungs,
+SOUNDBOARD stack) and now a FRAME picker: native/app/templates/frames_x3.json holds all
+132 corners of the 33 bodies as frames (130 distinct); picking one drops that corner's
+exact words onto the editing corner (applyFrame via import_p2k + documentFrom). "SLOT ->
+TRENCH DEV" checkbox writes the working body to plugin/patterns/audition_slot.body240 on
+every change (120 ms debounce); the dev roster's "Audition Slot" entry (AUTHORING) points
+at that file and the processor's absolute-path hot-reload picks it up: voice in the app,
+hear it in the DAW.
+Rulings this session (all in memory): serial cascade, never parallel; no fitting, overlays
+or RMS; modulation = MORPH only, additive, never locks; earn their keep; E-mu worked in
+frames and intervals; CLAUDE.md canonical; evidence/ the only evidence root; no hardware.
+Evidence filed: fingerprints sweep, Morpheus level law (from firmware), vowel anatomy,
+overlay experiment, pole-state templates, X3 manual, Laroche patent, RBJ paper.
+Next (agreed, not built): frame room + grid room layout in the app (frames as the unit,
+library seeded from all corners; grid assembler with drop-on-corner); eight corners;
+section types LP/HP/EQ/notch; display level-math switch; Morpheus import into the dev
+roster using the firmware level law (560-byte bodies, datum 39062.5, corner gain after
+the cascade, per-section DC normalisation as flagged); frames from Morpheus (needs 7
+sections in the app); taper bisection sessions; bake loops into the ship pattern table;
+Theo Lovejoy contact; C ABI for a Python bench (marimo as bench only, app stays the tool).

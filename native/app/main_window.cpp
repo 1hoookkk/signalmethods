@@ -1,5 +1,9 @@
 #include "main_window.hpp"
 
+#ifndef TRENCH_AUDITION_SLOT
+#define TRENCH_AUDITION_SLOT ""
+#endif
+
 #include "body_io.hpp"
 #include "gesture_dial.hpp"
 #include "pole_templates.hpp"
@@ -10,6 +14,8 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QCheckBox>
+#include <QTimer>
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -207,9 +213,31 @@ MainWindow::MainWindow(QWidget* parent)
                                .arg(state_.editingCorner() + 1));
     template_box_->setCurrentIndex(0);
   });
+  frame_box_ = new QComboBox(central);
+  frame_box_->setObjectName(QStringLiteral("frame"));
+  frame_box_->addItem(QStringLiteral("FRAME"));
+  static const auto frames = trench::app::loadFrames();
+  for (const auto& f : frames) frame_box_->addItem(f.family + QStringLiteral("  ") + f.type);
+  connect(frame_box_, &QComboBox::activated, this, [this](int index) {
+    if (index <= 0 || index > static_cast<int>(frames.size())) return;
+    const auto& f = frames[static_cast<std::size_t>(index - 1)];
+    trench::app::applyFrame(state_, f, state_.editingCorner());
+    status_label_->setText(QStringLiteral("FRAME · %1 %2 → CORNER %3").arg(f.family, f.type).arg(state_.editingCorner() + 1));
+    frame_box_->setCurrentIndex(0);
+  });
+  slot_box_ = new QCheckBox(QStringLiteral("SLOT → TRENCH DEV"), central);
+  slot_box_->setObjectName(QStringLiteral("slot"));
+  slot_timer_ = new QTimer(this);
+  slot_timer_->setSingleShot(true);
+  slot_timer_->setInterval(120);
+  connect(slot_timer_, &QTimer::timeout, this, [this] { pushSlot(); });
+  connect(slot_box_, &QCheckBox::toggled, this, [this](bool on) { if (on) pushSlot(); });
+  connect(&state_, &EditorState::changed, this, [this] { if (slot_box_->isChecked()) slot_timer_->start(); });
   auto* inspector = new QVBoxLayout;
   inspector->setSpacing(6);
+  inspector->addWidget(frame_box_);
   inspector->addWidget(template_box_);
+  inspector->addWidget(slot_box_);
   inspector->addWidget(posture);
   inspector->addWidget(sharpen);
   inspector->addWidget(transpose);
@@ -538,3 +566,10 @@ void MainWindow::closeEvent(QCloseEvent* event) {
   syncAuditionButton(false);
   QMainWindow::closeEvent(event);
 }
+
+void MainWindow::pushSlot() {
+  const QString path = QString::fromUtf8(TRENCH_AUDITION_SLOT);
+  const QString err = trench::app::saveBody240(state_, path);
+  if (!err.isEmpty()) status_label_->setText(QStringLiteral("SLOT · %1").arg(err));
+}
+

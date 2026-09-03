@@ -2,6 +2,7 @@
 
 #include "editor_state.hpp"
 #include "trench/core/native_body.hpp"
+#include "trench/core/packed_body.hpp"
 
 #include <QFile>
 #include <QJsonArray>
@@ -9,10 +10,14 @@
 #include <QJsonObject>
 
 #include <algorithm>
+#include <span>
 #include <variant>
 
 #ifndef TRENCH_POLE_TEMPLATES
 #define TRENCH_POLE_TEMPLATES ""
+#endif
+#ifndef TRENCH_FRAMES_X3
+#define TRENCH_FRAMES_X3 ""
 #endif
 
 namespace trench::app {
@@ -138,4 +143,45 @@ void applyPoleTemplate(EditorState& state, const PoleTemplate& tpl, std::size_t 
   state.endUndoGroup();
 }
 
+
+std::vector<PoleTemplate> loadFrames() {
+  std::vector<PoleTemplate> out;
+  QFile file(QString::fromUtf8(TRENCH_FRAMES_X3));
+  if (!file.open(QIODevice::ReadOnly)) return out;
+  const auto doc = QJsonDocument::fromJson(file.readAll());
+  for (const auto& item : doc.object().value(QStringLiteral("frames")).toArray()) {
+    const auto o = item.toObject();
+    PoleTemplate f;
+    f.frame = true;
+    f.family = o.value(QStringLiteral("type")).toString();
+    f.type = o.value(QStringLiteral("body")).toString() + QStringLiteral(" ") + o.value(QStringLiteral("corner")).toString();
+    f.datum_hz = 44'100.0;
+    const auto sections = o.value(QStringLiteral("sections")).toArray();
+    for (int si = 0; si < 6 && si < sections.size(); ++si) {
+      const auto words = sections[si].toArray();
+      for (int wi = 0; wi < 5 && wi < words.size(); ++wi)
+        f.words[(std::size_t) si][(std::size_t) wi] = static_cast<std::uint16_t>(words[wi].toInt());
+    }
+    out.push_back(std::move(f));
+  }
+  return out;
 }
+
+void applyFrame(EditorState& state, const PoleTemplate& frame, std::size_t corner) {
+  if (!frame.frame || corner >= trench::core::native::kCorners) return;
+  trench::core::PackedBody packed;
+  for (auto& c : packed.words) c.fill(trench::core::kIdentitySection);
+  for (std::size_t c = 0; c < trench::core::kCornerCount; ++c)
+    for (std::size_t si = 0; si < 6; ++si)
+      for (std::size_t wi = 0; wi < 5; ++wi)
+        packed.words[c][si][wi] = frame.words[si][wi];
+  const auto bytes = packed.legacy_bytes();
+  const auto body = trench::core::native::import_p2k(std::span<const std::uint8_t>(bytes.data(), bytes.size()), 44'100.0);
+  const auto seeded = EditorState::documentFrom(body);
+  auto doc = state.document();
+  doc.corners[corner] = seeded.corners[0];
+  state.setDocument(doc);
+}
+
+}
+
