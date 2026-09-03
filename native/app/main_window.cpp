@@ -2,12 +2,14 @@
 
 #include "body_io.hpp"
 #include "gesture_dial.hpp"
+#include "pole_templates.hpp"
 #include "trench/audio/audio_boundary.hpp"
 #include "trench/core/native_body.hpp"
 
 #include <QAbstractSpinBox>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QComboBox>
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -189,8 +191,25 @@ MainWindow::MainWindow(QWidget* parent)
                                .arg(state_.editingCorner() + 1)
                                .arg((state_.editingCorner() ^ 2u) + 1));
   };
+  template_box_ = new QComboBox(central);
+  template_box_->setObjectName(QStringLiteral("template"));
+  template_box_->addItem(QStringLiteral("TEMPLATE"));
+  static const auto templates = trench::app::loadPoleTemplates();
+  for (const auto& tpl : templates) template_box_->addItem(tpl.label());
+  connect(template_box_, &QComboBox::activated, this, [this](int index) {
+    if (index <= 0 || index > static_cast<int>(templates.size())) return;
+    const auto& tpl = templates[static_cast<std::size_t>(index - 1)];
+    trench::app::applyPoleTemplate(state_, tpl, state_.editingCorner());
+    status_label_->setText(QStringLiteral("TEMPLATE · %1 · %2 poles from %3 bodies → CORNER %4")
+                               .arg(tpl.label())
+                               .arg(trench::app::pickPoles(tpl, trench::core::native::kSections).size())
+                               .arg(tpl.bodies.size())
+                               .arg(state_.editingCorner() + 1));
+    template_box_->setCurrentIndex(0);
+  });
   auto* inspector = new QVBoxLayout;
   inspector->setSpacing(6);
+  inspector->addWidget(template_box_);
   inspector->addWidget(posture);
   inspector->addWidget(sharpen);
   inspector->addWidget(transpose);

@@ -39,6 +39,7 @@ set(TRENCH_NATIVE_TEST_CASES
   path_meter_reports_the_interior_peak
   real_pole_word_makes_a_tilt_row
   console_owns_the_lower_pane
+  template_pick_seeds_the_editing_corner_poles
 )
 
 set(TRENCH_NATIVE_TEST_NAMES)

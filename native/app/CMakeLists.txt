@@ -17,6 +17,8 @@ add_library(trench_native_ui STATIC
   morph_pad.hpp
   path_meter.cpp
   path_meter.hpp
+  pole_templates.cpp
+  pole_templates.hpp
   row_table.cpp
   row_table.hpp
   skin.cpp
@@ -26,6 +28,7 @@ add_library(trench_native_ui STATIC
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(trench_native_ui PUBLIC TRENCH_POLE_TEMPLATES="${CMAKE_CURRENT_SOURCE_DIR}/templates/pole_templates_by_type.json")
 
 qt_add_executable(trench_native main.cpp)
 set_target_properties(trench_native PROPERTIES OUTPUT_NAME trench_native)

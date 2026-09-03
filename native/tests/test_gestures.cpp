@@ -4,6 +4,7 @@
 #include "ladder.hpp"
 #include "main_window.hpp"
 
+#include <QComboBox>
 #include <QPoint>
 #include <QTest>
 #include <QWidget>
@@ -79,6 +80,40 @@ TRENCH_TEST(sharpen_throw_writes_the_q_partner_with_raised_radii) {
                std::min(radius(pole(state, 0, section).bw_hz) + 0.01, ceiling), 1e-9);
   }
   CHECK(state.sectionAt(2, 2).zero == state.sectionAt(0, 2).zero);
+  state.undo();
+  CHECK(state.document() == before);
+  window.close();
+}
+
+TRENCH_TEST(template_pick_seeds_the_editing_corner_poles) {
+  MainWindow window;
+  window.show();
+  QTest::qWait(30);
+  auto& state = window.state();
+  auto* box = window.findChild<QComboBox*>(QStringLiteral("template"));
+  CHECK(box != nullptr);
+  CHECK(box->count() > 1);
+  const auto before = state.document();
+  int vow = -1;
+  for (int i = 1; i < box->count(); ++i)
+    if (box->itemText(i).contains(QStringLiteral("VOW"))) vow = i;
+  CHECK(vow > 0);
+  box->setCurrentIndex(vow);
+  emit box->activated(vow);
+  CHECK(state.document() != before);
+  CHECK(state.editingCorner() == 0);
+  double last = 0.0;
+  int enabled = 0;
+  for (std::size_t section = 0; section < 6; ++section) {
+    if (!state.sectionEnabledAt(0, section)) continue;
+    ++enabled;
+    const auto& p = pole(state, 0, section);
+    CHECK(p.hz > last);
+    CHECK(p.hz >= 20.0 && p.hz <= 22'050.0);
+    last = p.hz;
+  }
+  CHECK(enabled >= 4);
+  CHECK(box->currentIndex() == 0);
   state.undo();
   CHECK(state.document() == before);
   window.close();

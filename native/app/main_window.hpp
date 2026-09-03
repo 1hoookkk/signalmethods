@@ -21,6 +21,7 @@ class QDragEnterEvent;
 class QDropEvent;
 class QLabel;
 class QPushButton;
+class QComboBox;
 class QSplitter;
 
 class MainWindow final : public QMainWindow {
@@ -62,6 +63,7 @@ class MainWindow final : public QMainWindow {
   QLabel* status_label_{};
   QPushButton* audition_button_{};
   QPushButton* solo_button_{};
+  QComboBox* template_box_{};
   QString document_path_;
   std::unique_ptr<trench::audio::Audition> audition_;
 };
