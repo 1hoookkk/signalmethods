@@ -25,6 +25,7 @@ struct PoleTemplate {
   double root_hz = 0.0;
   std::vector<double> ratios;
   std::vector<double> bw_fraction;
+  std::vector<double> zero_bw_ratio;
   [[nodiscard]] QString label() const { return family + QStringLiteral("  ") + type; }
 };
 

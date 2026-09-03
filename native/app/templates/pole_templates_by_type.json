@@ -5404,7 +5404,16 @@
     0.029,
     0.029,
     0.058
-   ]
+   ],
+   "zero_bw_ratio": [
+    0.0,
+    2.42,
+    1.2,
+    2.82,
+    1.4,
+    0.85
+   ],
+   "note": "each rung = pole with its zero on the same angle; zero bw = pole bw x ratio (0 = no zero, the fundamental)"
   }
  }
 }

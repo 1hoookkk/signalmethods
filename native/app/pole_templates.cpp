@@ -67,6 +67,7 @@ std::vector<PoleTemplate> loadPoleTemplates() {
     tpl.root_hz = o.value(QStringLiteral("default_root_hz")).toDouble(64.3);
     for (const auto& r : o.value(QStringLiteral("ratios")).toArray()) tpl.ratios.push_back(r.toDouble());
     for (const auto& b : o.value(QStringLiteral("bw_fraction")).toArray()) tpl.bw_fraction.push_back(b.toDouble());
+    for (const auto& z : o.value(QStringLiteral("zero_bw_ratio")).toArray()) tpl.zero_bw_ratio.push_back(z.toDouble());
     for (std::size_t i = 0; i < tpl.ratios.size(); ++i)
       tpl.states.push_back({tpl.root_hz * tpl.ratios[i], tpl.root_hz * tpl.ratios[i] * (i < tpl.bw_fraction.size() ? tpl.bw_fraction[i] : 0.03), 0.0, 1});
     if (!tpl.ratios.empty()) out.push_back(std::move(tpl));
@@ -119,6 +120,19 @@ void applyPoleTemplate(EditorState& state, const PoleTemplate& tpl, std::size_t 
     if (want) {
       state.setRootAt(corner, i, EditorState::Lane::kPole, poles[i].hz,
                       std::max(1.0, poles[i].bw_hz));
+      if (tpl.ladder && i < tpl.zero_bw_ratio.size()) {
+        const double ratio = tpl.zero_bw_ratio[i];
+        if (ratio > 0.0) {
+          const double zbw = std::max(1.0, poles[i].bw_hz * ratio);
+          if (!state.zeroPresentAt(corner, i)) {
+            state.selectSection(i);
+            state.addZeroAt(poles[i].hz, zbw);
+          }
+          state.setZeroAt(corner, i, poles[i].hz, zbw);
+        } else if (state.zeroPresentAt(corner, i)) {
+          state.removeZeroAt(corner, i);
+        }
+      }
     }
   }
   state.endUndoGroup();
