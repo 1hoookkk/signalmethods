@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <complex>
 #include <limits>
 #include <numbers>
 
@@ -290,6 +291,33 @@ Body import_p2k(std::span<const std::uint8_t> body, double datum_hz) {
 
 namespace {
 
+double response_magnitude(const Biquad& c, double hz, double sample_rate_hz) {
+  const double w = kTau * hz / sample_rate_hz;
+  const std::complex<double> z1 = std::polar(1.0, -w);
+  const std::complex<double> z2 = std::polar(1.0, -2.0 * w);
+  return std::abs((c[0] + c[1] * z1 + c[2] * z2) / (1.0 + c[3] * z1 + c[4] * z2));
+}
+
+double level_reference_hz(const Section& section, double ceiling_hz) {
+  if (const auto* res = std::get_if<Resonant>(&section.pole)) {
+    return std::clamp(res->hz, 0.0, ceiling_hz);
+  }
+  return section.dc_stabilised ? 0.0 : std::min(1000.0, ceiling_hz);
+}
+
+double rewarp_level_correction_db(const PackedSection& words, const Section& section,
+                                  const Coefficients& designed, double datum_hz,
+                                  double target_hz) {
+  const double ref_hz = level_reference_hz(section, 0.45 * std::min(datum_hz, target_hz));
+  const double at_datum = response_magnitude(section_words_to_biquad(words), ref_hz, datum_hz);
+  const double at_target = response_magnitude(biquad(designed), ref_hz, target_hz);
+  if (!(at_datum > 0.0) || !(at_target > 0.0) || !std::isfinite(at_datum) ||
+      !std::isfinite(at_target)) {
+    return 0.0;
+  }
+  return 20.0 * std::log10(at_datum / at_target);
+}
+
 std::uint16_t section_scale_word(const Section& section, double corner_gain_db,
                                  std::size_t voiced) {
   const double c4 = std::pow(10.0, section.gain_db / 20.0) *
@@ -398,6 +426,7 @@ PackedBody rewarp_p2k_body(const PackedBody& source, double datum_hz,
       }
       sections[si] = import_section(src[si], datum_hz);
       const auto c = design(sections[si], target_hz);
+      sections[si].gain_db += rewarp_level_correction_db(src[si], sections[si], c, datum_hz, target_hz);
       const double d1 = 1.0 - c.b2;
       const double d0 = (c.b1 + 2.0 - d1) / 4.0;
       const double d3 = 1.0 - c.a2;

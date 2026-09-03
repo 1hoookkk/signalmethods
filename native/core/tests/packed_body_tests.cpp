@@ -118,11 +118,10 @@ int main() {
       double worst = 0.0;
       double worst120 = 0.0;
       for (std::size_t ci = 0; ci < 4; ++ci) {
-        const auto reference = nb::cascade(
-            nb::design(physical.corners[ci], target), physical.corners[ci].gain_db);
+        const auto reference = authored.interpolate_biquads(at[ci].first, at[ci].second, 0.0f);
         const auto measured = bank.interpolate_biquads(at[ci].first, at[ci].second, 0.0f);
         for (const double f : freqs) {
-          const double e = cascade_response_db(reference, f, target);
+          const double e = cascade_response_db(reference, f, datum);
           const double m = cascade_response_db(measured, f, target);
           const double d = std::abs(m - e);
           worst = std::max(worst, d);
