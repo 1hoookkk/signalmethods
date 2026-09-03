@@ -305,3 +305,12 @@ separate VST dev build; he tunes shipping params there and has the final say)
 - Engine: CascadeRunner::set_glide now ramps the kernel row (c0..c4) and rebuilds the
   biquad per sample, as the X3 spec describes, instead of ramping b/a coefficients.
 - Plugin tree committed as ship candidate 8a0a73e2; CLAUDE.md canonical 663c1498.
+- AGC restored 2026-09-04 (Tyson: "thats why the sound was weak. all we need is agc and the
+  0.1db safety limiter"). The X3 leveller verbatim from the DLL notes (runtime_hacks.md):
+  after the cascade, per sample, one shared gain for stereo: index = (uint)(gain * |x|) & 0xF
+  into the 16-float table 1.0001 1.0001 0.996 0.990 0.920 0.500 0.200 0.160 0.120 x8; gain *=
+  table[index], reset to 1 when it would exceed 1; drive unity; table square-rooted once
+  above 65 kHz and twice above 130 kHz. Sleeps below |x| = 2 (+6 dBFS), releases by 1.0001
+  per sample. Lives in TrenchDspBridge::processTrajectory behind bypass.agc (default on);
+  agcReductionDb() is real telemetry again. Safety ceiling kept as the silent guard.
+  Engine 1.2% with MORPH moving; suites clean. Installed.

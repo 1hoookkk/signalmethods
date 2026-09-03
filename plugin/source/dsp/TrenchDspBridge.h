@@ -111,6 +111,15 @@ public:
         left.reset();
         right.reset();
         tickPhase = 0;
+        agcGain = 1.0f;
+        const int roots = sampleRateHz > 130'000.0 ? 2 : (sampleRateHz > 65'000.0 ? 1 : 0);
+        for (size_t i = 0; i < 16; ++i)
+        {
+            float v = kAgcBaseTable[i];
+            for (int r = 0; r < roots; ++r)
+                v = std::sqrt (v);
+            agcTable[i] = v;
+        }
         if (! sourceBytes.empty())
             publishSnapshot (sourceBytes, sourceDatumRate);
     }
@@ -265,6 +274,17 @@ public:
                 outR[sample] = deskR.process (outR[sample], inputDrive);
                 right.process (std::span<float> (outR + sample, 1));
             }
+            if (bypass.agc)
+            {
+                const float magnitude = outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]);
+                const float scaled = agcGain * magnitude;
+                const unsigned index = (scaled >= 0.0f && scaled < 4.0e9f ? (unsigned) scaled : 0u) & 0xFu;
+                const float next = agcGain * agcTable[index];
+                agcGain = next < 1.0f ? next : 1.0f;
+                outL[sample] *= agcGain;
+                if (outR != nullptr)
+                    outR[sample] *= agcGain;
+            }
         }
         publishCascade (cachedCascade);
         if (bypass.saturate)
@@ -289,7 +309,7 @@ public:
     {
         return (float) std::max (left.grit_activity(), right.grit_activity());
     }
-    float agcReductionDb() const noexcept { return 0.0f; }
+    float agcReductionDb() const noexcept { return agcGain < 1.0f && agcGain > 0.0f ? -20.0f * std::log10 (agcGain) : 0.0f; }
     double tailSeconds() const noexcept
     {
         double radius = 0.0;
@@ -396,6 +416,10 @@ private:
     trench::core::CascadeRunner left;
     trench::core::CascadeRunner right;
     static constexpr int kTickSamples = 32;
+    static constexpr std::array<float, 16> kAgcBaseTable { 1.0001f, 1.0001f, 0.996f, 0.990f, 0.920f, 0.500f, 0.200f, 0.160f,
+                                                            0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f };
+    std::array<float, 16> agcTable = kAgcBaseTable;
+    float agcGain = 1.0f;
     int tickPhase = 0;
     std::uint64_t publishedGeneration = 0;
     std::uint64_t heardGeneration = 0;
