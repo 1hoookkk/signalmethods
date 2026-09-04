@@ -214,8 +214,18 @@ juce_add_gui_app(TRENCH_Workstation
   COMPANY_NAME "Signal Methods"
   BUNDLE_ID "com.signalmethods.trench.workstation"
   PRODUCT_NAME "TRENCH Workstation")
+set(TRENCH_WORKSTATION_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
 target_sources(TRENCH_Workstation PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source/Main.cpp")
+  "${TRENCH_WORKSTATION_DIR}/Main.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Frame.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Delaunay.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Timeline.cpp"
+  "${TRENCH_WORKSTATION_DIR}/render/Scene.cpp"
+  "${TRENCH_WORKSTATION_DIR}/render/GLRenderer.cpp"
+  "${TRENCH_WORKSTATION_DIR}/render/SvgRenderer.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/Layout.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/Workstation.cpp")
 target_include_directories(TRENCH_Workstation PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
 target_compile_features(TRENCH_Workstation PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_Workstation PRIVATE ${TRENCH_COMMON_DEFINITIONS}
@@ -224,5 +234,6 @@ target_compile_definitions(TRENCH_Workstation PRIVATE ${TRENCH_COMMON_DEFINITION
 target_link_libraries(TRENCH_Workstation PRIVATE
     trench_native_core
     juce::juce_gui_basics
+    juce::juce_opengl
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)

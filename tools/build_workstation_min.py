@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import numpy as np
-from scipy.spatial import Delaunay
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "native", "python"))
@@ -42,29 +41,42 @@ def strong_poles(frame_words):
     return out
 
 
+def pair(mag, r2):
+    q = 1 - r2
+    pp = 4 * mag + r2 - 2
+    disc = pp * pp - 4 * q
+    if disc < 0 and q > 0:
+        r = q ** 0.5
+        return [round(float(np.arccos(max(-1.0, min(1.0, -pp / (2 * r)))) / (2 * np.pi) * FS), 1), round(float(r), 4)]
+    return None
+
+
+def rows_of(words):
+    out = []
+    for w in words:
+        d = [trench_core.decode_word(x) for x in w]
+        out.append({"p": pair(d[2], d[3]), "z": pair(d[0], d[1])})
+    return out
+
+
 def collect():
     with open(os.path.join(ROOT, "native", "python", "workstation", "frames_3d.json"), "r", encoding="utf-8") as fp:
         raw = json.load(fp)
-    frames = [{"name": f["name"].replace("�", "·"), "words": f["words"][:6]} for f in raw]
-    span = np.log2(HI / LO)
-    pts = []
-    for f in frames:
-        poles = strong_poles(f["words"])
-        if len(poles) >= 2:
-            f1, f2 = poles[0][0], poles[1][0]
-        elif len(poles) == 1:
-            f1 = f2 = poles[0][0]
-        else:
-            curve = response_db(f["words"])
-            f1 = f2 = float(FREQS[int(np.argmax(curve))])
-        u, v = np.log2(f1 / LO) / span, np.log2(f2 / LO) / span
-        f["xy"] = [round(float(u), 4), round(float(v), 4)]
-        f["f12"] = [round(float(f1)), round(float(f2))]
-        pts.append([u, v])
-    pts = np.array(pts)
-    rng = np.random.default_rng(7)
-    tri = Delaunay(pts + rng.normal(0, 1e-4, pts.shape))
-    return frames, tri.simplices.tolist()
+    frames = []
+    for f in raw:
+        name = f["name"].replace("�", "·")
+        words = f["words"][:6]
+        frames.append({"name": name, "words": words, "rows": rows_of(words)})
+    curves = np.array([response_db(f["words"]) for f in frames])
+    mean = curves.mean(axis=0)
+    _, sv, vt = np.linalg.svd(curves - mean, full_matrices=False)
+    pc = (curves - mean) @ vt[:2].T
+    lo, hi = pc.min(axis=0), pc.max(axis=0)
+    for f, p in zip(frames, pc):
+        f["pc"] = [round(float((p[0] - lo[0]) / (hi[0] - lo[0])), 4), round(float((p[1] - lo[1]) / (hi[1] - lo[1])), 4)]
+    var = sv ** 2 / (sv ** 2).sum()
+    print("pca variance", round(float(var[0]), 3), round(float(var[1]), 3))
+    return frames
 
 
 PAGE = r"""<!DOCTYPE html>
@@ -75,39 +87,36 @@ PAGE = r"""<!DOCTYPE html>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-body { background: #000; color: #ddd; font: 11px/1.2 "Courier New", Courier, monospace; user-select: none; overflow: hidden; }
+body { background: #000; color: #ddd; font: 11px/1.2 Consolas, "Lucida Console", Menlo, monospace; user-select: none; overflow: hidden; }
 #stage { width: 100vw; height: 100vh; display: block; touch-action: none; }
-text { font-family: "Courier New", Courier, monospace; font-size: 10px; fill: #bbb; pointer-events: none; }
+text { font-family: Consolas, "Lucida Console", Menlo, monospace; font-size: 11px; fill: #bbb; pointer-events: none; }
 .rule { stroke: #666; shape-rendering: crispEdges; }
 .title { fill: #000; font-weight: bold; }
 .titlebar { fill: #bbb; shape-rendering: crispEdges; }
 .axis { stroke: #bbb; fill: none; shape-rendering: crispEdges; }
 .tick { stroke: #bbb; shape-rendering: crispEdges; }
-.dots { stroke: #444; stroke-dasharray: 1 3; shape-rendering: crispEdges; }
+.dots { stroke: #333; stroke-dasharray: 1 3; shape-rendering: crispEdges; }
 .zero { stroke: #888; shape-rendering: crispEdges; }
-.tri { stroke: #0ff; fill: #0ff; fill-opacity: .08; }
-.node { fill: #aaa; cursor: crosshair; }
-.node.cap { fill: #ff0; }
-.node.held { fill: #fff; }
+.anchor { stroke: none; cursor: grab; }
+.anchor.hot { stroke: #fff; stroke-width: 1.5; }
 .link { stroke: #0ff; }
-.probe { fill: none; stroke: #fff; stroke-width: 1; pointer-events: none; }
-.edge { stroke: #bbb; fill: none; }
-.edge.back { stroke: #555; }
-.floor { stroke: #0ff; stroke-dasharray: 2 2; pointer-events: none; }
-.wheel { fill: #ff0; pointer-events: none; }
-.thumb-box { fill: #000; stroke: #777; shape-rendering: crispEdges; }
-.thumb-box.armed { stroke: #0ff; }
-.thumb-box.hot { stroke: #fff; stroke-width: 2; }
-.thumb { stroke: #ddd; fill: none; }
-.thumb-empty { stroke: #444; fill: none; }
-.curve { stroke: #fff; stroke-width: 1.5; fill: none; pointer-events: none; }
-.ghost { stroke: #0ff; stroke-width: 1; fill: none; pointer-events: none; }
+.tri { fill: #0ff; fill-opacity: .06; stroke: #0ff; stroke-opacity: .5; }
+.probe { fill: #ff0; pointer-events: none; }
+.probe-ring { fill: none; stroke: #ff0; pointer-events: none; }
+.riser { stroke: #f0f; stroke-dasharray: 2 3; pointer-events: none; }
+.curve { stroke: #fff; stroke-width: 1.6; fill: none; pointer-events: none; }
 .bar-box { fill: #000; stroke: #777; shape-rendering: crispEdges; cursor: ew-resize; }
 .bar-f { fill: #f0f; } .bar-m { fill: #0cf; } .bar-t { fill: #f44; }
 .key { fill: #222; stroke: #999; shape-rendering: crispEdges; cursor: pointer; }
+.key-on { fill: #0ff; }
 .key-text { fill: #ddd; }
-.thread { stroke: #0ff; stroke-dasharray: 2 3; pointer-events: none; }
-.drag { fill: none; stroke: #fff; stroke-width: 1.5; pointer-events: none; }
+.list-box { fill: #000; stroke: #777; shape-rendering: crispEdges; }
+.list-item { fill: #aaa; cursor: grab; }
+.list-cap { fill: #ff0; cursor: grab; }
+.layer-item { fill: #aaa; }
+.layer-on { fill: #0ff; }
+.mini { fill: #050505; stroke: #444; cursor: pointer; }
+.mini-on { stroke: #0ff; }
 .status { fill: #0ff; }
 </style>
 </head>
@@ -115,18 +124,34 @@ text { font-family: "Courier New", Courier, monospace; font-size: 10px; fill: #b
 <svg id="stage"></svg>
 <script>
 const FRAMES = __FRAMES__;
-const TRIS = __TRIS__;
 const FS = 44100;
 let captured = [];
 try { captured = JSON.parse(localStorage.getItem('captured') || '[]'); } catch (e) { captured = []; }
-let corners = [null, null, null, null, null, null, null, null];
-let armed = 0;
-let morph = 0.5, q = 0.5, z = 0.5;
-let yaw = -0.55, pitch = 0.42;
+let layers = [], active = 0;
+let lit = null;
 let probe = null;
+let z = 0;
+const groupOf = n => { for (const [g, t] of GROUPS) if (t(n)) return g; return 'INSTRUMENTS'; };
 let status = 'ready';
-const AXES = [['high', 'low'], ['closed', 'open'], ['relaxed', 'stressed']];
-const poseName = i => [AXES[0][i & 1], AXES[1][i & 2 ? 1 : 0], AXES[2][i & 4 ? 1 : 0]].join(' ');
+let bodies = [], loose = [];
+let trayScroll = 0;
+let pan = [0, 0], zoom = 1;
+let auto = [false, false, false], autoT0 = 0;
+let keys = [], playhead = 0, playing_ = false, loop = true, playT0 = 0, playFrom = 0;
+const DUR = 8;
+const AUTO_RATE = [0.35, 0.23, 0.17];
+const POSES = [['high', 'low', 'pitch'], ['closed', 'open', 'spread'], ['relaxed', 'stressed', 'resonance'], ['few', 'many', 'stages'], ['plain', 'carved', 'zeros'], ['dark', 'bright', 'ceiling'], ['-', '+', 'martens 1'], ['-', '+', 'martens 2']];
+let axisX = 0, axisY = 2;
+const TAGS = ['M0 Q0', 'M1 Q0', 'M0 Q1', 'M1 Q1'];
+const GROUPS = [
+  ['P2K', n => / · M[01] Q[01]$/.test(n)],
+  ['MORPHEUS', n => /^MORPHEUS/.test(n)],
+  ['X3', n => /^(X3|LADDER)/.test(n)],
+  ['VOWELS', n => /^(sung|hedz|vowel|[aeiou]{1,3}$)/i.test(n)],
+  ['HEADS', n => /ear az/i.test(n)],
+  ['XL-1', n => /^Aud /.test(n)],
+  ['INSTRUMENTS', n => true],
+];
 
 function decode(w) {
   const u = w + 1;
@@ -140,6 +165,11 @@ function biquad(w) {
   const d = w.map(decode);
   const c0 = 4 * d[0] + d[1], c1 = d[1], c2 = 4 * d[2] + d[3], c3 = d[3], c4 = 4 * d[4];
   return { b0: c4, b1: (c0 - 2) * c4, b2: (1 - c1) * c4, a1: c2 - 2, a2: 1 - c3 };
+}
+function pair(mag, r2) {
+  const qq = 1 - r2, p = 4 * mag + r2 - 2, disc = p * p - 4 * qq;
+  if (disc < 0 && qq > 0) { const r = Math.sqrt(qq); return [Math.acos(Math.max(-1, Math.min(1, -p / (2 * r)))) / (2 * Math.PI) * FS, r]; }
+  return null;
 }
 function magDb(bq, f) {
   const w = 2 * Math.PI * f / FS, c1 = Math.cos(w), s1 = Math.sin(w), c2 = Math.cos(2 * w), s2 = Math.sin(2 * w);
@@ -162,55 +192,118 @@ function blendWords(parents, weights) {
   }
   return out;
 }
-function cubeWeights() {
-  const w = [];
-  for (let i = 0; i < 8; i++) w.push((i & 1 ? morph : 1 - morph) * (i & 2 ? q : 1 - q) * (i & 4 ? z : 1 - z));
-  return w;
+function resDb(r) { return Math.min(60, 20 * Math.log10(1 / Math.max(1e-3, 1 - r))); }
+function rowsFor(f) { if (!f.rows) f.rows = f.words.map(w => { const d = w.map(decode); return { p: pair(d[2], d[3]), z: pair(d[0], d[1]) }; }); return f.rows; }
+function measures(f) {
+  if (f.m) return f.m;
+  const rows = rowsFor(f);
+  const ps = rows.filter(r => r.p).map(r => r.p);
+  const strong = ps.filter(p => p[1] > 0.85);
+  const use = strong.length ? strong : ps;
+  const octs = use.map(p => Math.log2(Math.max(30, Math.min(16000, p[0])) / 30));
+  const pitchOct = octs.length ? octs.reduce((a, b) => a + b, 0) / octs.length : 4.5;
+  const spread = octs.length ? Math.max(...octs) - Math.min(...octs) : 0;
+  const res = ps.length ? ps.reduce((a, p) => a + resDb(p[1]), 0) / ps.length : 0;
+  const stages = rows.filter(r => r.p && r.p[1] > 0.5).length;
+  const zeros = rows.filter(r => r.z && r.z[1] > 0.5 && r.z[0] < 15000).length;
+  const zs = rows.filter(r => r.z).map(r => r.z[0]);
+  const ceiling = zs.length ? Math.log2(Math.max(30, Math.min(16000, Math.max(...zs))) / 30) / 9 : 1;
+  f.m = [pitchOct / 9, Math.min(1, spread / 6), Math.min(1, res / 40), stages / 6, zeros / 6, ceiling, f.pc ? f.pc[0] : 0.5, f.pc ? f.pc[1] : 0.5];
+  return f.m;
 }
-function cubeReady() { return corners.every(c => c); }
-function weightsAt(m, qq, zz) {
-  const w = [];
-  for (let i = 0; i < 8; i++) w.push((i & 1 ? m : 1 - m) * (i & 2 ? qq : 1 - qq) * (i & 4 ? zz : 1 - zz));
-  return w;
+function coordOf(f) { const m = measures(f); return [axisX === 0 ? 1 - m[0] : m[axisX], axisY === 0 ? 1 - m[0] : m[axisY]]; }
+function hueHz(hz) { const t = Math.log2(Math.max(30, Math.min(16000, hz)) / 30) / Math.log2(16000 / 30); return `hsl(${Math.round(t * 270)} 90% 55%)`; }
+function hueOf(f) { return `hsl(${Math.round(measures(f)[0] * 270)} 90% 55%)`; }
+function glyph(f, cx, cy, scale, parent, cls, data) {
+  const rows = rowsFor(f), bw = 3 * scale, gap = 1 * scale, h = 14 * scale;
+  const x0 = cx - (6 * bw + 5 * gap) / 2;
+  const back = el('rect', { x: x0 - 2, y: cy - h / 2 - 2, width: 6 * bw + 5 * gap + 4, height: h + 4, class: 'glyph-back ' + (cls || '') }, parent);
+  if (data) for (const k in data) back.dataset[k] = data[k];
+  rows.forEach((r, s) => {
+    const x = x0 + s * (bw + gap);
+    if (r.p) el('rect', { x, y: cy + h / 2 - Math.max(1.5 * scale, resDb(r.p[1]) / 60 * h), width: bw, height: Math.max(1.5 * scale, resDb(r.p[1]) / 60 * h), fill: hueHz(r.p[0]), 'pointer-events': 'none' }, parent);
+    else el('rect', { x, y: cy + h / 2 - 1, width: bw, height: 1, fill: '#555', 'pointer-events': 'none' }, parent);
+    if (r.z && r.z[1] > 0.5) el('rect', { x, y: cy + h / 2 + 1, width: bw, height: 1.5 * scale, fill: '#888', 'pointer-events': 'none' }, parent);
+  });
 }
-function cubeXYAt(m, qq, zz) {
-  const w = weightsAt(m, qq, zz);
-  return [0, 1].map(k => corners.reduce((a, c, i) => a + c.xy[k] * w[i], 0));
-}
-function solveWheel(u, v) {
-  let best = [morph, q], bd = Infinity;
-  const err = (m, qq) => { const p = cubeXYAt(m, qq, z); return Math.hypot(p[0] - u, p[1] - v); };
-  for (let a = 0; a <= 16; a++) for (let b = 0; b <= 16; b++) {
-    const d = err(a / 16, b / 16);
-    if (d < bd) { bd = d; best = [a / 16, b / 16]; }
-  }
-  let step = 1 / 32;
-  for (let it = 0; it < 30; it++) {
-    let improved = false;
-    for (const [dm, dq] of [[step, 0], [-step, 0], [0, step], [0, -step]]) {
-      const m = Math.max(0, Math.min(1, best[0] + dm)), qq = Math.max(0, Math.min(1, best[1] + dq));
-      const d = err(m, qq);
-      if (d < bd) { bd = d; best = [m, qq]; improved = true; }
+
+function delaunay(pts) {
+  const n = pts.length;
+  if (n < 3) return [];
+  const p = pts.map(q => [q[0] + (Math.random() - 0.5) * 1e-6, q[1] + (Math.random() - 0.5) * 1e-6]);
+  p.push([-10, -10], [10, -10], [0, 10]);
+  const circ = (a, b, c) => {
+    const [ax, ay] = p[a], [bx, by] = p[b], [cx, cy] = p[c];
+    const d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+    if (Math.abs(d) < 1e-18) return { a, b, c, r2: -1 };
+    const ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d;
+    const uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
+    return { a, b, c, ux, uy, r2: (ax - ux) ** 2 + (ay - uy) ** 2 };
+  };
+  let tris = [circ(n, n + 1, n + 2)];
+  for (let i = 0; i < n; i++) {
+    const edges = [], keep = [];
+    for (const t of tris) {
+      if (t.r2 >= 0 && (p[i][0] - t.ux) ** 2 + (p[i][1] - t.uy) ** 2 < t.r2) edges.push([t.a, t.b], [t.b, t.c], [t.c, t.a]);
+      else keep.push(t);
     }
-    if (!improved) step /= 2;
+    tris = keep;
+    for (let e = 0; e < edges.length; e++) {
+      let shared = false;
+      for (let f = 0; f < edges.length; f++) if (e !== f && ((edges[e][0] === edges[f][0] && edges[e][1] === edges[f][1]) || (edges[e][0] === edges[f][1] && edges[e][1] === edges[f][0]))) { shared = true; break; }
+      if (!shared) tris.push(circ(edges[e][0], edges[e][1], i));
+    }
   }
-  return best;
+  return tris.filter(t => t.a < n && t.b < n && t.c < n).map(t => [t.a, t.b, t.c]);
 }
-function bary(p, a, b, c) {
-  const v0 = [b[0] - a[0], b[1] - a[1]], v1 = [c[0] - a[0], c[1] - a[1]], v2 = [p[0] - a[0], p[1] - a[1]];
-  const den = v0[0] * v1[1] - v1[0] * v0[1];
-  if (Math.abs(den) < 1e-12) return null;
-  const v = (v2[0] * v1[1] - v1[0] * v2[1]) / den, w = (v0[0] * v2[1] - v2[0] * v0[1]) / den;
+function bary(px, py, a, b, c) {
+  const v0x = b[0] - a[0], v0y = b[1] - a[1], v1x = c[0] - a[0], v1y = c[1] - a[1], v2x = px - a[0], v2y = py - a[1];
+  const den = v0x * v1y - v1x * v0y;
+  if (Math.abs(den) < 1e-14) return null;
+  const v = (v2x * v1y - v1x * v2y) / den, w = (v0x * v2y - v2x * v0y) / den;
   return [1 - v - w, v, w];
 }
-function planeBlend(u, v) {
-  for (const t of TRIS) {
-    const b = bary([u, v], FRAMES[t[0]].xy, FRAMES[t[1]].xy, FRAMES[t[2]].xy);
-    if (b && b.every(x => x >= -1e-9)) return { parents: t.map(i => FRAMES[i]), weights: b };
+function retri(lay) { lay.tris = delaunay(lay.anchors.map(a => a.p)); }
+function blendOn(k, u, v) {
+  const lay = layers[k];
+  if (!lay || lay.anchors.length < 3) return null;
+  for (const t of lay.tris) {
+    const b = bary(u, v, lay.anchors[t[0]].p, lay.anchors[t[1]].p, lay.anchors[t[2]].p);
+    if (b && b.every(x => x >= -1e-9)) return { idx: t, w: b };
   }
-  const near = FRAMES.map((f, i) => ({ i, d: Math.hypot(f.xy[0] - u, f.xy[1] - v) })).sort((a, b) => a.d - b.d).slice(0, 3);
-  const ws = near.map(n => 1 / (n.d + 1e-6)), sum = ws.reduce((a, b) => a + b, 0);
-  return { parents: near.map(n => FRAMES[n.i]), weights: ws.map(w => w / sum) };
+  return null;
+}
+function column(u, v) { const col = []; for (let k = 0; k < layers.length; k++) if (blendOn(k, u, v)) col.push(k); return col; }
+function columnPos() {
+  if (!probe) return null;
+  const col = column(probe[0], probe[1]);
+  if (!col.length) return null;
+  if (col.length === 1) return { col, a: col[0], b: col[0], t: 0, pos: 0 };
+  const pos = z * (col.length - 1), a = Math.min(col.length - 2, Math.floor(pos));
+  return { col, a: col[a], b: col[a + 1], t: pos - a, pos };
+}
+function playing() {
+  const cp = columnPos();
+  if (!cp) return null;
+  const A = blendOn(cp.a, probe[0], probe[1]), B = blendOn(cp.b, probe[0], probe[1]);
+  const parents = [], weights = [];
+  A.idx.forEach((i, n) => { parents.push(layers[cp.a].anchors[i].f.words); weights.push(A.w[n] * (1 - cp.t)); });
+  if (cp.t > 0) B.idx.forEach((i, n) => { parents.push(layers[cp.b].anchors[i].f.words); weights.push(B.w[n] * cp.t); });
+  return { words: blendWords(parents, weights), A, B, cp };
+}
+function sortLayer(k) { const lay = layers[k]; lay.anchors = lay.frames.map(f => ({ f, p: coordOf(f) })); retri(lay); }
+function buildLibrary() {
+  bodies = []; loose = []; layers = [];
+  const fam = new Map();
+  FRAMES.forEach(f => {
+    const parts = f.name.split(' · ');
+    if (parts.length === 2 && TAGS.includes(parts[1])) { if (!fam.has(parts[0])) fam.set(parts[0], {}); fam.get(parts[0])[parts[1]] = f; }
+    else loose.push(f);
+  });
+  fam.forEach((m, name) => { if (TAGS.every(t => m[t])) bodies.push({ name, corners: TAGS.map(t => m[t]) }); else TAGS.forEach(t => { if (m[t]) loose.push(m[t]); }); });
+  layers.push({ name: 'ALL', frames: FRAMES.concat(captured), anchors: [], tris: [] });
+  captured.forEach(c => loose.unshift(c));
+  layers.forEach((l, k) => sortLayer(k));
 }
 
 const svg = document.getElementById('stage');
@@ -226,28 +319,22 @@ function layout() {
   VW = window.innerWidth; VH = window.innerHeight;
   svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
   const bar = 14;
-  const topH = Math.round(VH * 0.5);
-  const cubeW = Math.round(VW * 0.42);
+  const topH = Math.round(VH * 0.62);
+  const tlH = 120;
+  const respW = Math.round(VW * 0.62);
   L.plane = { x: 0, y: 0, w: VW, h: topH, bar };
-  L.cube = { x: 0, y: topH, w: cubeW, h: VH - topH, bar };
-  L.resp = { x: cubeW, y: topH, w: VW - cubeW, h: Math.round((VH - topH) * 0.62), bar };
-  L.bars = { x: cubeW, y: topH + L.resp.h, w: VW - cubeW, h: VH - topH - L.resp.h, bar };
-  L.planeAx = { x: 44, y: bar + 10, w: VW - 60, h: topH - bar - 34 };
-  L.respAx = { x: cubeW + 44, y: topH + bar + 10, w: VW - cubeW - 60, h: L.resp.h - bar - 34 };
+  L.resp = { x: 0, y: topH, w: respW, h: VH - topH - tlH, bar };
+  L.bars = { x: respW, y: topH, w: VW - respW, h: VH - topH - tlH, bar };
+  L.tl = { x: 0, y: VH - tlH, w: VW, h: tlH, bar };
+  L.tlAx = { x: 90, y: VH - tlH + bar + 22, w: VW - 110, h: tlH - bar - 40 };
+  L.floors = { x: 8, y: bar + 8, w: 120, h: 120 };
+  L.tray = { x: 8, y: bar + 136, w: 180, h: topH - bar - 144 };
+  L.field = { x: 240, y: bar + 44, w: VW - 260, h: topH - bar - 74 };
+  L.respAx = { x: 44, y: topH + bar + 8, w: respW - 60, h: VH - topH - tlH - bar - 30 };
 }
-const pu = u => L.planeAx.x + u * L.planeAx.w, pv = v => L.planeAx.y + (1 - v) * L.planeAx.h;
 const rx = f => L.respAx.x + Math.log10(f / 20) / 3 * L.respAx.w, ry = d => L.respAx.y + (30 - d) / 60 * L.respAx.h;
-function proj(m, qq, zz) {
-  const x = m - 0.5, y = qq - 0.5, d = zz - 0.5;
-  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
-  const x1 = x * cy + d * sy, d1 = -x * sy + d * cy;
-  const y2 = y * cp - d1 * sp, d2 = y * sp + d1 * cp;
-  const c = L.cube, s = Math.min(c.w, c.h - c.bar) * 0.5;
-  return [c.x + c.w * 0.5 + x1 * s, c.y + c.bar + (c.h - c.bar) * 0.5 - y2 * s, d2];
-}
-const cornerXYZ = i => [i & 1 ? 1 : 0, i & 2 ? 1 : 0, i & 4 ? 1 : 0];
-const cornerPos = i => proj(...cornerXYZ(i));
-
+function w2s(u, v) { const F = L.field; return [F.x + (u * F.w) * zoom + pan[0], F.y + F.h - (v * F.h) * zoom + pan[1]]; }
+function s2w(sx, sy) { const F = L.field; return [(sx - F.x - pan[0]) / (F.w * zoom), (F.y + F.h - sy + pan[1]) / (F.h * zoom)]; }
 function panel(r, title, parent) {
   el('rect', { x: r.x + 0.5, y: r.y + 0.5, width: r.w - 1, height: r.h - 1, fill: 'none', class: 'rule' }, parent);
   el('rect', { x: r.x + 1, y: r.y + 1, width: r.w - 2, height: r.bar - 1, class: 'titlebar' }, parent);
@@ -255,205 +342,278 @@ function panel(r, title, parent) {
 }
 function axes(a, xt, yt, parent) {
   el('rect', { x: a.x + 0.5, y: a.y + 0.5, width: a.w, height: a.h, class: 'axis' }, parent);
-  xt.forEach(([px, label]) => {
-    el('line', { x1: px, y1: a.y + a.h, x2: px, y2: a.y + a.h + 4, class: 'tick' }, parent);
-    el('line', { x1: px, y1: a.y, x2: px, y2: a.y + a.h, class: 'dots' }, parent);
-    txt(px - label.length * 3, a.y + a.h + 14, label, parent);
-  });
-  yt.forEach(([py, label, cls]) => {
-    el('line', { x1: a.x - 4, y1: py, x2: a.x, y2: py, class: 'tick' }, parent);
-    el('line', { x1: a.x, y1: py, x2: a.x + a.w, y2: py, class: cls || 'dots' }, parent);
-    txt(a.x - 8 - label.length * 6, py + 3, label, parent);
-  });
+  xt.forEach(([px, label]) => { el('line', { x1: px, y1: a.y + a.h, x2: px, y2: a.y + a.h + 4, class: 'tick' }, parent); el('line', { x1: px, y1: a.y, x2: px, y2: a.y + a.h, class: 'dots' }, parent); txt(px - label.length * 3, a.y + a.h + 14, label, parent); });
+  yt.forEach(([py, label, cls]) => { el('line', { x1: a.x - 4, y1: py, x2: a.x, y2: py, class: 'tick' }, parent); el('line', { x1: a.x, y1: py, x2: a.x + a.w, y2: py, class: cls || 'dots' }, parent); txt(a.x - 8 - label.length * 6, py + 3, label, parent); });
+}
+function key(x, y, w, label, data, parent, on) {
+  const k = el('rect', { x, y, width: w, height: 14, class: 'key' + (on ? ' key-on' : '') }, parent);
+  for (const n in data) k.dataset[n] = data[n];
+  txt(x + 6, y + 11, label, parent, on ? 'title' : 'key-text');
+  return k;
+}
+function axisTicks(which) {
+  const m = which === 'x' ? axisX : axisY;
+  if (m === 0) return [1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => [1 - (Math.log2(32.703 * Math.pow(2, i - 1) / 30) / 9), 'C' + i]);
+  if (m === 1) return [0, 1, 2, 3, 4, 5, 6].map(o => [o / 6, o + ' oct']);
+  if (m === 2) return [0, 10, 20, 30, 40].map(d => [d / 40, d + ' dB']);
+  if (m === 3 || m === 4) return [0, 1, 2, 3, 4, 5, 6].map(n => [n / 6, '' + n]);
+  if (m === 5) return [1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => [Math.log2(32.703 * Math.pow(2, i - 1) / 30) / 9, 'C' + i]);
+  return [0, 0.25, 0.5, 0.75, 1].map(v => [v, v.toFixed(2)]);
 }
 let g = {};
 function build() {
   svg.innerHTML = '';
   layout();
-  ['plane', 'planeLive', 'cube', 'cubeLive', 'resp', 'respLive', 'bars', 'barsLive', 'drag'].forEach(k => { g[k] = el('g', {}, svg); });
+  ['plane', 'planeLive', 'resp', 'respLive', 'bars', 'barsLive', 'tl', 'tlLive', 'drag'].forEach(k => { g[k] = el('g', {}, svg); });
   panel(L.plane, 'FRAME SPACE', g.plane);
-  const a = L.planeAx;
-  const octs = [[32.7, 'C1'], [65.4, 'C2'], [130.8, 'C3'], [261.6, 'C4'], [523.3, 'C5'], [1046.5, 'C6'], [2093, 'C7'], [4186, 'C8'], [8372, 'C9']];
-  const lg = f => Math.log2(f / 30) / Math.log2(16000 / 30);
-  axes(a, octs.map(([f, n]) => [pu(lg(f)), n]), octs.map(([f, n]) => [pv(lg(f)), n]), g.plane);
-  txt(a.x + a.w - 90, a.y + a.h - 6, '1st resonance', g.plane);
-  txt(a.x + 4, a.y + 10, '2nd resonance', g.plane);
-  captured.concat(FRAMES).forEach((f, i) => {
-    const cap = i < captured.length;
-    const n = el('rect', { x: pu(f.xy[0]) - 2, y: pv(f.xy[1]) - 2, width: 4, height: 4, class: 'node' + (cap ? ' cap' : '') }, g.plane);
-    n.dataset.idx = i;
-    n.addEventListener('pointerenter', () => { status = f.name + '  ' + f.f12[0] + ' / ' + f.f12[1] + ' Hz'; drawStatus(); });
-  });
-  panel(L.cube, 'CUBE', g.cube);
   panel(L.resp, 'RESPONSE', g.resp);
+  panel(L.tl, 'TIMELINE', g.tl);
   const r = L.respAx;
   axes(r, [50, 100, 200, 500, 1000, 2000, 5000, 10000].map(f => [rx(f), f >= 1000 ? (f / 1000) + 'k' : '' + f]),
     [[ry(20), '+20'], [ry(10), '+10'], [ry(0), '0', 'zero'], [ry(-10), '-10'], [ry(-20), '-20']], g.resp);
-  panel(L.bars, 'CONTROL', g.bars);
   drawAll();
 }
-function drawStatus() {
-  const old = g.plane.querySelector('.status');
-  if (old) old.remove();
-  txt(L.planeAx.x + L.planeAx.w * 0.55, L.plane.y + L.plane.h - 6, status, g.plane, 'status');
-}
-function thumb(words, x, y, w, h, parent, cls) {
-  const pts = curveOf(words, 28).map(([f, d], i) => (x + i / 28 * w).toFixed(1) + ',' + (y + h - (d + 30) / 60 * h).toFixed(1));
-  el('polyline', { points: pts.join(' '), class: cls }, parent);
-}
-function drawCube() {
-  g.cubeLive.innerHTML = '';
-  const edges = [];
-  for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b)) edges.push([i, i | b]);
-  const P = [];
-  for (let i = 0; i < 8; i++) P.push(cornerPos(i));
-  edges.sort((e1, e2) => (P[e1[0]][2] + P[e1[1]][2]) - (P[e2[0]][2] + P[e2[1]][2]));
-  edges.forEach(([i, j]) => el('line', { x1: P[i][0], y1: P[i][1], x2: P[j][0], y2: P[j][1], class: 'edge' + ((P[i][2] + P[j][2]) < 0 ? ' back' : '') }, g.cubeLive));
-  if (cubeReady()) {
-    const w = proj(morph, q, z), f = proj(morph, q, 0), fl = proj(morph, 0, z), fm = proj(0, q, z);
-    [f, fl, fm].forEach(p => el('line', { x1: w[0], y1: w[1], x2: p[0], y2: p[1], class: 'floor' }, g.cubeLive));
-    el('rect', { x: w[0] - 3, y: w[1] - 3, width: 6, height: 6, class: 'wheel' }, g.cubeLive);
+function drawPlane() {
+  g.planeLive.innerHTML = '';
+  const kx = L.field.x, ky = L.plane.y + L.plane.bar + 4;
+  txt(kx, ky + 11, 'across', g.planeLive);
+  POSES.forEach((p, i) => key(kx + 52 + i * 78, ky, 74, p[2], { ax: i }, g.planeLive, axisX === i));
+  txt(kx, ky + 27, 'up', g.planeLive);
+  POSES.forEach((p, i) => key(kx + 52 + i * 78, ky + 16, 74, p[2], { ay: i }, g.planeLive, axisY === i));
+  key(kx + 700, ky, 52, 'SORT', { key: 'sort' }, g.planeLive);
+  key(kx + 700, ky + 16, 52, 'CLEAR', { key: 'clearlayer' }, g.planeLive);
+  const fl = L.floors;
+  el('rect', { x: fl.x, y: fl.y, width: fl.w, height: fl.h, class: 'list-box' }, g.planeLive);
+  GROUPS.map(gr => gr[0]).forEach((name, n) => {
+    const t = txt(fl.x + 8, fl.y + 12 + n * 13, name, g.planeLive, lit === name ? 'layer-on' : 'layer-item');
+    t.style.pointerEvents = 'auto';
+    t.dataset.lit = name;
+  });
+  const lineH = 13, tr = L.tray;
+  el('rect', { x: tr.x, y: tr.y, width: tr.w, height: tr.h, class: 'list-box' }, g.planeLive);
+  const items = bodies.map(b => ({ body: b })).concat(loose.map(f => ({ frame: f })));
+  const maxRows = Math.floor((tr.h - 4) / lineH);
+  trayScroll = Math.max(0, Math.min(trayScroll, Math.max(0, items.length - maxRows)));
+  items.slice(trayScroll, trayScroll + maxRows).forEach((it, i) => {
+    const y = tr.y + 11 + i * lineH;
+    if (it.body) {
+      [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([a, b], k) => el('rect', { x: tr.x + 5 + a * 5, y: y - 8 + (1 - b) * 5, width: 4, height: 4, fill: hueOf(it.body.corners[k]) }, g.planeLive));
+      const t = txt(tr.x + 18, y, it.body.name.slice(0, 21), g.planeLive, 'list-item');
+      t.style.pointerEvents = 'auto'; t.dataset.body = bodies.indexOf(it.body);
+    } else {
+      el('circle', { cx: tr.x + 9, cy: y - 4, r: 3.5, fill: hueOf(it.frame) }, g.planeLive);
+      const t = txt(tr.x + 18, y, it.frame.name.slice(0, 21), g.planeLive, it.frame.capture ? 'list-cap' : 'list-item');
+      t.style.pointerEvents = 'auto'; t.dataset.loose = loose.indexOf(it.frame);
+    }
+  });
+  const F = L.field;
+  axes(F, axisTicks('x').map(([u, l]) => [w2s(u, 0)[0], l]).filter(([x]) => x >= F.x && x <= F.x + F.w), axisTicks('y').map(([v, l]) => [w2s(0, v)[1], l]).filter(([y]) => y >= F.y && y <= F.y + F.h), g.planeLive);
+  const clip = el('clipPath', { id: 'fieldClip' }, g.planeLive);
+  el('rect', { x: F.x, y: F.y, width: F.w, height: F.h }, clip);
+  const field = el('g', { 'clip-path': 'url(#fieldClip)' }, g.planeLive);
+  const lay = layers[active];
+  const pl = playing();
+  if (pl) {
+    const A = pl.A;
+    const pts = A.idx.map(i => w2s(...lay.anchors[i].p));
+    const tri = el('polygon', { points: pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' '), class: 'tri' }, field);
+    const [px, py] = w2s(...probe);
+    pts.forEach(p => el('line', { x1: px, y1: py, x2: p[0], y2: p[1], class: 'link' }, field));
   }
-  const tw = 54, th = 22;
-  for (let i = 0; i < 8; i++) {
-    const [cx, cy, depth] = P[i];
-    const dx = cx - (L.cube.x + L.cube.w / 2), dy = cy - (L.cube.y + L.cube.bar + (L.cube.h - L.cube.bar) / 2);
-    const len = Math.hypot(dx, dy) || 1;
-    const bx = cx + dx / len * 46 - tw / 2, by = cy + dy / len * 30 - th / 2;
-    const box = el('rect', { x: bx, y: by, width: tw, height: th, class: 'thumb-box' + (i === armed ? ' armed' : '') }, g.cubeLive);
-    box.dataset.corner = i;
-    box.addEventListener('pointerdown', e => { e.stopPropagation(); armed = i; drawAll(); });
-    el('line', { x1: cx, y1: cy, x2: bx + tw / 2, y2: by + th / 2, class: 'edge back' }, g.cubeLive);
-    if (corners[i]) thumb(corners[i].words, bx + 2, by + 2, tw - 4, th - 4, g.cubeLive, 'thumb');
-    else el('line', { x1: bx + 2, y1: by + th / 2, x2: bx + tw - 2, y2: by + th / 2, class: 'thumb-empty' }, g.cubeLive);
-    txt(bx, by - 3, poseName(i), g.cubeLive);
+  lay.anchors.forEach((a, i) => {
+    const [cx, cy] = w2s(...a.p);
+    const on = !lit || groupOf(a.f.name) === lit || a.f.capture;
+    const d = el('circle', { cx, cy, r: hotAnchor === i ? 6 : (on ? 4 : 2.5), fill: a.f.capture ? '#ff0' : hueOf(a.f), 'fill-opacity': on ? 1 : 0.35, class: 'anchor' + (hotAnchor === i ? ' hot' : '') }, field);
+    d.dataset.anchor = i;
+  });
+  const ks = keys.slice().sort((k1, k2) => k1.t - k2.t);
+  for (let i = 0; i < ks.length - 1; i++) { const a1 = w2s(...ks[i].p), b1 = w2s(...ks[i + 1].p); el('line', { x1: a1[0], y1: a1[1], x2: b1[0], y2: b1[1], class: 'riser' }, field); }
+  ks.forEach(k => { const [kx2, ky2] = w2s(...k.p); el('rect', { x: kx2 - 4, y: ky2 - 4, width: 8, height: 8, fill: 'none', stroke: k.color, transform: `rotate(45 ${kx2} ${ky2})`, 'pointer-events': 'none' }, field); });
+  if (probe) {
+    const [px, py] = w2s(...probe);
+    el('circle', { cx: px, cy: py, r: 4, class: 'probe' }, field);
+    el('circle', { cx: px, cy: py, r: 8, class: 'probe-ring' }, field);
   }
+  txt(L.field.x, L.plane.y + L.plane.h - 6, status, g.planeLive, 'status');
 }
 function drawBars() {
   g.barsLive.innerHTML = '';
-  const b = L.bars, x0 = b.x + 34, w = Math.round(b.w * 0.3), h = 10, y0 = b.y + b.bar + 10;
-  [['M', morph, 'bar-m'], ['Q', q, 'bar-f'], ['Z', z, 'bar-t']].forEach(([k, v, cls], i) => {
+  panel(L.bars, 'CONTROL', g.barsLive);
+  const b = L.bars, x0 = b.x + 64, w = Math.round(b.w * 0.42), h = 10, y0 = b.y + b.bar + 12;
+  const cp = columnPos();
+  const names = ['X', 'Y'], vals = [probe ? probe[0] : 0, probe ? probe[1] : 0], cls = ['bar-m', 'bar-f'];
+  const ends = [POSES[axisX], POSES[axisY]];
+  for (let i = 0; i < 2; i++) {
     const y = y0 + i * (h + 8);
-    txt(b.x + 10, y + 9, k, g.barsLive);
+    txt(b.x + 34, y + 9, names[i], g.barsLive);
     const box = el('rect', { x: x0, y, width: w, height: h, class: 'bar-box' }, g.barsLive);
     box.dataset.bar = i;
-    el('rect', { x: x0 + 1, y: y + 1, width: Math.max(0, (w - 2) * v), height: h - 2, class: cls }, g.barsLive);
-    txt(x0 + w + 8, y + 9, v.toFixed(3) + '  ' + AXES[i][0] + ' > ' + AXES[i][1], g.barsLive);
+    el('rect', { x: x0 + 1, y: y + 1, width: Math.max(0, (w - 2) * vals[i]), height: h - 2, class: cls[i] }, g.barsLive);
+    txt(x0 + w + 8, y + 9, vals[i].toFixed(3) + '  ' + ends[i][0] + ' > ' + ends[i][1], g.barsLive);
+    const tick = el('rect', { x: x0 - 14, y, width: 10, height: 10, class: 'key' + (auto[i] ? ' key-on' : '') }, g.barsLive);
+    tick.dataset.auto = i;
+  }
+  key(b.x + 34, y0 + 44, 96, 'CAPTURE', { key: 'capture' }, g.barsLive);
+  key(b.x + 138, y0 + 44, 96, 'CLEAR CAPS', { key: 'clear' }, g.barsLive);
+}
+const tx = t => L.tlAx.x + t / DUR * L.tlAx.w;
+function pathAt(t) {
+  if (!keys.length) return null;
+  const ks = keys.slice().sort((a, b) => a.t - b.t);
+  if (t <= ks[0].t) return ks[0].p.slice();
+  if (t >= ks[ks.length - 1].t) return ks[ks.length - 1].p.slice();
+  for (let i = 0; i < ks.length - 1; i++) if (t >= ks[i].t && t <= ks[i + 1].t) { const f = (t - ks[i].t) / Math.max(1e-9, ks[i + 1].t - ks[i].t); return [ks[i].p[0] + (ks[i + 1].p[0] - ks[i].p[0]) * f, ks[i].p[1] + (ks[i + 1].p[1] - ks[i].p[1]) * f]; }
+  return null;
+}
+function drawTimeline() {
+  g.tlLive.innerHTML = '';
+  const a = L.tlAx;
+  key(L.tl.x + 8, a.y - 4, 44, playing_ ? 'STOP' : 'PLAY', { key: 'play' }, g.tlLive, playing_);
+  key(L.tl.x + 8, a.y + 14, 44, 'LOOP', { key: 'loop' }, g.tlLive, loop);
+  key(L.tl.x + 8, a.y + 32, 44, '+ KEY', { key: 'addkey' }, g.tlLive);
+  key(L.tl.x + 8, a.y + 50, 44, 'CLEAR', { key: 'clearkeys' }, g.tlLive);
+  el('rect', { x: a.x, y: a.y, width: a.w, height: a.h, class: 'list-box' }, g.tlLive);
+  for (let t = 0; t <= DUR; t++) { el('line', { x1: tx(t), y1: a.y, x2: tx(t), y2: a.y + a.h, class: 'dots' }, g.tlLive); txt(tx(t) - 3, a.y + a.h + 12, t + 's', g.tlLive); }
+  const ks = keys.slice().sort((k1, k2) => k1.t - k2.t);
+  for (let i = 0; i < ks.length - 1; i++) el('line', { x1: tx(ks[i].t), y1: a.y + a.h / 2, x2: tx(ks[i + 1].t), y2: a.y + a.h / 2, class: 'link' }, g.tlLive);
+  keys.forEach((k, i) => {
+    const d = el('rect', { x: tx(k.t) - 5, y: a.y + a.h / 2 - 5, width: 10, height: 10, fill: k.color, class: 'anchor' + (dragKey === i ? ' hot' : ''), transform: `rotate(45 ${tx(k.t)} ${a.y + a.h / 2})` }, g.tlLive);
+    d.dataset.tkey = i;
   });
-  const kx = x0 + w + 180, ky = y0;
-  const key = el('rect', { x: kx, y: ky, width: 96, height: 16, class: 'key' }, g.barsLive);
-  key.dataset.key = 'capture';
-  txt(kx + 6, ky + 12, 'CAPTURE', g.barsLive, 'key-text');
-  const key2 = el('rect', { x: kx + 104, y: ky, width: 96, height: 16, class: 'key' }, g.barsLive);
-  key2.dataset.key = 'clear';
-  txt(kx + 110, ky + 12, 'CLEAR CAPS', g.barsLive, 'key-text');
+  const hit = el('rect', { x: a.x, y: a.y, width: a.w, height: a.h, fill: 'transparent' }, g.tlLive);
+  hit.dataset.scrub = 1;
+  el('line', { x1: tx(playhead), y1: a.y, x2: tx(playhead), y2: a.y + a.h, stroke: '#ff0' }, g.tlLive);
+  txt(tx(playhead) + 4, a.y + 10, playhead.toFixed(2) + 's', g.tlLive, 'status');
 }
 function drawAll() {
-  g.planeLive.innerHTML = '';
   g.respLive.innerHTML = '';
-  if (probe && cubeReady()) {
-    const w = cubeXYAt(morph, q, z);
-    corners.forEach(c => el('line', { x1: pu(w[0]), y1: pv(w[1]), x2: pu(c.xy[0]), y2: pv(c.xy[1]), class: 'link' }, g.planeLive));
-    el('rect', { x: pu(w[0]) - 4, y: pv(w[1]) - 4, width: 8, height: 8, class: 'probe' }, g.planeLive);
-    status = 'M ' + morph.toFixed(2) + ' ' + AXES[0][0] + '>' + AXES[0][1] + '   Q ' + q.toFixed(2) + ' ' + AXES[1][0] + '>' + AXES[1][1] + '   Z ' + z.toFixed(2) + ' ' + AXES[2][0] + '>' + AXES[2][1];
-  }
-  else if (probe) {
-    const { parents, weights } = planeBlend(probe[0], probe[1]);
-    el('polygon', { points: parents.map(p => pu(p.xy[0]).toFixed(1) + ',' + pv(p.xy[1]).toFixed(1)).join(' '), class: 'tri' }, g.planeLive);
-    parents.forEach(p => el('line', { x1: pu(probe[0]), y1: pv(probe[1]), x2: pu(p.xy[0]), y2: pv(p.xy[1]), class: 'link' }, g.planeLive));
-    el('rect', { x: pu(probe[0]) - 4, y: pv(probe[1]) - 4, width: 8, height: 8, class: 'probe' }, g.planeLive);
-    const pts = curveOf(blendWords(parents.map(p => p.words), weights), 200).map(([f, d]) => rx(f).toFixed(1) + ',' + ry(d).toFixed(1));
-    el('polyline', { points: pts.join(' '), class: 'ghost' }, g.respLive);
-    status = parents.map((p, i) => Math.round(weights[i] * 100) + '% ' + p.name).join('  |  ');
-  }
-  for (let i = 0; i < 8; i++) if (corners[i]) {
-    const [cx, cy] = cornerPos(i);
-    el('line', { x1: pu(corners[i].xy[0]), y1: pv(corners[i].xy[1]), x2: cx, y2: cy, class: 'thread' }, g.planeLive);
-  }
-  if (cubeReady()) {
-    const pts = curveOf(wheelWords(), 240).map(([f, d]) => rx(f).toFixed(1) + ',' + ry(d).toFixed(1));
-    el('polyline', { points: pts.join(' '), class: 'curve' }, g.respLive);
-  }
-  drawCube();
+  drawTimeline();
+  const pl = playing();
+  if (pl) el('polyline', { points: curveOf(pl.words, 240).map(([f, d]) => rx(f).toFixed(1) + ',' + ry(d).toFixed(1)).join(' '), class: 'curve' }, g.respLive);
+  drawPlane();
   drawBars();
-  drawStatus();
 }
-function setCorner(i, frame) { corners[i] = frame; armed = (i + 1) % 8; status = 'corner ' + i + ' = ' + frame.name; drawAll(); }
 function capture() {
-  if (!cubeReady()) { status = 'fill all eight corners first'; drawStatus(); return; }
-  const words = wheelWords(), w = cubeWeights();
-  const xy = [0, 1].map(k => corners.reduce((a, c, i) => a + c.xy[k] * w[i], 0));
-  const name = 'cap' + (captured.length + 1) + ' m' + morph.toFixed(2) + ' q' + q.toFixed(2) + ' z' + z.toFixed(2);
-  captured.push({ name, words, xy: xy.map(v => Math.round(v * 1e4) / 1e4) });
+  const pl = playing();
+  if (!pl) { status = 'press inside the anchors first'; drawAll(); return; }
+  const name = 'cap' + (captured.length + 1) + ' ' + probe[0].toFixed(2) + ',' + probe[1].toFixed(2);
+  const f = { name, words: pl.words, capture: true };
+  captured.push(f);
   try { localStorage.setItem('captured', JSON.stringify(captured)); } catch (e) {}
+  loose.unshift(f);
+  layers[0].frames.push(f);
+  layers[0].anchors.push({ f, p: probe.slice() });
+  retri(layers[0]);
   status = 'captured ' + name;
-  build();
+  drawAll();
 }
-let mode = null, dragFrame = null, dragPos = null, last = null, barIdx = -1;
+let mode = null, dragFrame = null, dragBody = null, dragAnchor = -1, dragKey = -1, dragPos = null, dragStart = null, last = null, barIdx = -1, hotAnchor = -1;
 function inRect(r, x, y) { return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h; }
 function toSvg(e) { const r = svg.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * VW, (e.clientY - r.top) / r.height * VH]; }
-function nearestCorner(x, y) {
-  let best = -1, bd = 1e9;
-  for (let i = 0; i < 8; i++) { const [cx, cy] = cornerPos(i); const d = Math.hypot(cx - x, cy - y); if (d < bd) { bd = d; best = i; } }
-  return bd < 40 ? best : -1;
-}
 function setProbe(x, y) {
-  probe = [Math.max(0, Math.min(1, (x - L.planeAx.x) / L.planeAx.w)), Math.max(0, Math.min(1, 1 - (y - L.planeAx.y) / L.planeAx.h))];
-  if (cubeReady()) [morph, q] = solveWheel(probe[0], probe[1]);
+  if (!inRect(L.field, x, y)) return;
+  probe = s2w(x, y);
+  const cp = columnPos();
+  const pl = playing();
+  status = pl ? pl.A.idx.map((i, n) => Math.round(pl.A.w[n] * 100) + '% ' + layers[0].anchors[i].f.name).join('   ') : 'outside the anchors';
   drawAll();
 }
 function setBar(x) {
-  const b = L.bars, x0 = b.x + 34, w = Math.round(b.w * 0.3);
+  const b = L.bars, x0 = b.x + 64, w = Math.round(b.w * 0.42);
   const v = Math.max(0, Math.min(1, (x - x0) / w));
-  if (barIdx === 0) morph = v; else if (barIdx === 1) q = v; else z = v;
+  if (!probe) probe = [0.5, 0.5]; probe[barIdx] = v;
   drawAll();
 }
 svg.addEventListener('pointerdown', e => {
   const [x, y] = toSvg(e);
   svg.setPointerCapture(e.pointerId);
-  const t = e.target;
-  if (t.dataset && t.dataset.key === 'capture') { capture(); return; }
-  if (t.dataset && t.dataset.key === 'clear') { captured = []; try { localStorage.removeItem('captured'); } catch (er) {} build(); return; }
-  if (t.dataset && t.dataset.bar !== undefined) { mode = 'bar'; barIdx = +t.dataset.bar; setBar(x); return; }
-  if (t.classList && t.classList.contains('node')) {
-    mode = 'drag'; dragFrame = captured.concat(FRAMES)[+t.dataset.idx]; dragPos = [x, y]; t.classList.add('held'); drawDrag(); return;
-  }
-  if (inRect(L.planeAx, x, y)) { mode = 'probe'; setProbe(x, y); return; }
-  if (inRect(L.cube, x, y)) { mode = 'orbit'; last = [x, y]; return; }
+  const d = (e.target && e.target.dataset) || {};
+  if (d.key === 'capture') { capture(); return; }
+  if (d.key === 'play') { playing_ = !playing_; if (playing_) { playT0 = performance.now(); playFrom = playhead >= DUR ? 0 : playhead; requestAnimationFrame(playStep); } drawTimeline(); return; }
+  if (d.key === 'loop') { loop = !loop; drawTimeline(); return; }
+  if (d.key === 'addkey') { if (!probe) probe = [0.5, 0.5]; keys.push({ t: playhead, p: probe.slice(), color: `hsl(${Math.round(Math.random() * 360)} 80% 60%)` }); drawAll(); return; }
+  if (d.key === 'clearkeys') { keys = []; drawAll(); return; }
+  if (d.tkey !== undefined) { mode = 'tkey'; dragKey = +d.tkey; dragStart = [x, y]; return; }
+  if (d.scrub !== undefined) { mode = 'scrub'; scrubTo(x); return; }
+  if (d.key === 'clear') { captured = []; try { localStorage.removeItem('captured'); } catch (er) {} loose = loose.filter(f => !f.capture); layers[0].frames = layers[0].frames.filter(f => !f.capture); layers[0].anchors = layers[0].anchors.filter(a => !a.f.capture); retri(layers[0]); drawAll(); return; }
+  if (d.key === 'sort') { sortLayer(active); status = 'sorted ' + layers[active].name + ' by ' + POSES[axisX][2] + ' and ' + POSES[axisY][2]; drawAll(); return; }
+  if (d.key === 'clearlayer') { layers[active].anchors = []; layers[active].tris = []; drawAll(); return; }
+  if (d.ax !== undefined) { axisX = +d.ax; drawAll(); return; }
+  if (d.ay !== undefined) { axisY = +d.ay; drawAll(); return; }
+  if (d.lit !== undefined) { lit = lit === d.lit ? null : d.lit; drawAll(); return; }
+  if (d.auto !== undefined) { auto[+d.auto] = !auto[+d.auto]; if (auto.some(a => a) && !autoT0) { autoT0 = performance.now(); requestAnimationFrame(autoStep); } drawBars(); return; }
+  if (d.bar !== undefined) { mode = 'bar'; barIdx = +d.bar; setBar(x); return; }
+  if (d.loose !== undefined) { mode = 'frame'; dragFrame = loose[+d.loose]; dragPos = [x, y]; dragStart = [x, y]; return; }
+  if (d.body !== undefined) { mode = 'body'; dragBody = bodies[+d.body]; dragPos = [x, y]; dragStart = [x, y]; return; }
+  if (d.anchor !== undefined) { mode = 'anchor'; dragAnchor = +d.anchor; dragPos = [x, y]; dragStart = [x, y]; return; }
+  if (inRect(L.field, x, y)) { mode = 'probe'; setProbe(x, y); return; }
 });
+svg.addEventListener('wheel', e => {
+  const [x, y] = toSvg(e);
+  if (inRect(L.tray, x, y)) { trayScroll += e.deltaY > 0 ? 3 : -3; drawPlane(); e.preventDefault(); }
+  else if (inRect(L.field, x, y)) { const [u, v] = s2w(x, y); zoom = Math.max(0.5, Math.min(6, zoom * (e.deltaY > 0 ? 0.9 : 1.1))); const [nx, ny] = w2s(u, v); pan[0] += x - nx; pan[1] += y - ny; drawPlane(); e.preventDefault(); }
+}, { passive: false });
+function scrubTo(x) {
+  playhead = Math.max(0, Math.min(DUR, (x - L.tlAx.x) / L.tlAx.w * DUR));
+  const p = pathAt(playhead);
+  if (p) { probe = p; const pl = playing(); status = pl ? pl.A.idx.map((i, n) => Math.round(pl.A.w[n] * 100) + '% ' + layers[0].anchors[i].f.name).join('   ') : 'outside the anchors'; }
+  drawAll();
+}
+function playStep(now) {
+  if (!playing_) return;
+  let t = playFrom + (now - playT0) / 1000;
+  if (t >= DUR) { if (loop) { playT0 = now; playFrom = 0; t = 0; } else { playing_ = false; t = DUR; } }
+  playhead = t;
+  const p = pathAt(t);
+  if (p) probe = p;
+  drawAll();
+  if (playing_) requestAnimationFrame(playStep);
+}
 function drawDrag() {
   g.drag.innerHTML = '';
   if (!dragPos) return;
-  el('line', { x1: pu(dragFrame.xy[0]), y1: pv(dragFrame.xy[1]), x2: dragPos[0], y2: dragPos[1], class: 'thread' }, g.drag);
-  thumb(dragFrame.words, dragPos[0] - 27, dragPos[1] - 11, 54, 22, g.drag, 'drag');
-  const hot = nearestCorner(dragPos[0], dragPos[1]);
-  g.cubeLive.querySelectorAll('.thumb-box').forEach(r => r.classList.toggle('hot', +r.dataset.corner === hot));
-  status = 'drag ' + dragFrame.name + (hot >= 0 ? '  ->  corner ' + hot : '');
-  drawStatus();
+  if (mode === 'frame') el('circle', { cx: dragPos[0], cy: dragPos[1], r: 6, fill: hueOf(dragFrame), class: 'anchor hot' }, g.drag);
+  else if (mode === 'anchor') el('circle', { cx: dragPos[0], cy: dragPos[1], r: 6, fill: hueOf(layers[active].anchors[dragAnchor].f), class: 'anchor hot' }, g.drag);
+  else if (mode === 'body') [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([a, b], k) => el('circle', { cx: dragPos[0] - 8 + a * 16, cy: dragPos[1] + 8 - b * 16, r: 4, fill: hueOf(dragBody.corners[k]), class: 'anchor hot' }, g.drag));
 }
 svg.addEventListener('pointermove', e => {
   if (!mode) return;
   const [x, y] = toSvg(e);
-  if (mode === 'drag') { dragPos = [x, y]; drawDrag(); }
+  if (mode === 'frame' || mode === 'body' || mode === 'anchor') { dragPos = [x, y]; drawDrag(); }
   else if (mode === 'probe') setProbe(x, y);
-  else if (mode === 'orbit') { yaw += (x - last[0]) * 0.01; pitch = Math.max(-1.4, Math.min(1.4, pitch + (y - last[1]) * 0.01)); last = [x, y]; drawAll(); }
+  else if (mode === 'scrub') scrubTo(x);
+  else if (mode === 'tkey') { keys[dragKey].t = Math.max(0, Math.min(DUR, (x - L.tlAx.x) / L.tlAx.w * DUR)); drawTimeline(); }
   else if (mode === 'bar') setBar(x);
 });
 svg.addEventListener('pointerup', e => {
-  if (mode === 'drag') {
-    const [x, y] = toSvg(e);
-    const hot = nearestCorner(x, y);
-    const moved = Math.hypot(x - pu(dragFrame.xy[0]), y - pv(dragFrame.xy[1])) > 6;
-    if (hot >= 0) setCorner(hot, dragFrame);
-    else if (!moved) setCorner(armed, dragFrame);
-    g.drag.innerHTML = '';
-    g.plane.querySelectorAll('.held').forEach(n => n.classList.remove('held'));
-    dragFrame = null; dragPos = null;
-    drawAll();
+  const [x, y] = toSvg(e);
+  const moved = dragStart && Math.hypot(x - dragStart[0], y - dragStart[1]) > 6;
+  const lay = layers[active];
+  if (mode === 'frame' && inRect(L.field, x, y) && moved) { lay.anchors.push({ f: dragFrame, p: s2w(x, y) }); retri(lay); status = dragFrame.name + ' anchored on ' + lay.name; }
+  else if (mode === 'body' && inRect(L.field, x, y) && moved) { dragBody.corners.forEach(f => lay.anchors.push({ f, p: coordOf(f) })); retri(lay); status = dragBody.name + ' anchored on ' + lay.name + ' at its measures'; }
+  else if (mode === 'anchor') {
+    if (inRect(L.tlAx, x, y) && moved) { keys.push({ t: Math.max(0, Math.min(DUR, (x - L.tlAx.x) / L.tlAx.w * DUR)), p: lay.anchors[dragAnchor].p.slice(), color: hueOf(lay.anchors[dragAnchor].f) }); status = 'key at ' + lay.anchors[dragAnchor].f.name; }
+    else if (inRect(L.field, x, y) && moved) { lay.anchors[dragAnchor].p = s2w(x, y); retri(lay); }
+    else if (!inRect(L.field, x, y) && moved) { lay.anchors.splice(dragAnchor, 1); retri(lay); status = 'anchor removed'; }
   }
+  g.drag.innerHTML = '';
+  if (mode === 'tkey' && !moved) { probe = keys[dragKey].p.slice(); playhead = keys[dragKey].t; }
+  dragFrame = null; dragBody = null; dragAnchor = -1; dragKey = -1; dragPos = null; dragStart = null; hotAnchor = -1;
   mode = null;
+  drawAll();
 });
+function autoStep(now) {
+  if (!auto.some(a => a)) { autoT0 = 0; return; }
+  const t = (now - autoT0) / 1000;
+  if (!probe) probe = [0.5, 0.5];
+  if (auto[0]) probe[0] = 0.5 + 0.45 * Math.sin(t * AUTO_RATE[0]);
+  if (auto[1]) probe[1] = 0.5 + 0.45 * Math.sin(t * AUTO_RATE[1]);
+  drawAll();
+  requestAnimationFrame(autoStep);
+}
 window.addEventListener('resize', build);
+buildLibrary();
+if (location.hash === '#demo') { axisX = 6; axisY = 7; sortLayer(0); const a = layers[0].anchors; probe = [a.reduce((s, x) => s + x.p[0], 0) / a.length, a.reduce((s, x) => s + x.p[1], 0) / a.length]; lit = 'P2K'; keys = [{ t: 0.5, p: [0.3, 0.35], color: '#0cf' }, { t: 3, p: [0.55, 0.6], color: '#f0f' }, { t: 6.5, p: [0.4, 0.75], color: '#ff0' }]; playhead = 2.1; probe = pathAt(playhead); }
 build();
 </script>
 </body>
@@ -462,13 +622,12 @@ build();
 
 
 def build():
-    frames, tris = collect()
-    html = PAGE.replace("__FRAMES__", json.dumps(frames, separators=(",", ":"), ensure_ascii=False)).replace(
-        "__TRIS__", json.dumps(tris, separators=(",", ":")))
+    frames = collect()
+    html = PAGE.replace("__FRAMES__", json.dumps(frames, separators=(",", ":"), ensure_ascii=False))
     out = os.path.join(ROOT, "workstation_min.html")
     with open(out, "w", encoding="utf-8") as fp:
         fp.write(html)
-    print(out, len(html), "bytes", len(frames), "frames", len(tris), "triangles")
+    print(out, len(html), "bytes", len(frames), "frames")
 
 
 if __name__ == "__main__":
