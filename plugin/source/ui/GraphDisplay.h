@@ -295,22 +295,6 @@ public:
                                            juce::Colours::transparentBlack, glass.getRight() - 5.0f, 0.0f, false);
                 g.setGradientFill (lipR);
                 g.fillRect (glass.withLeft (glass.getRight() - 5.0f));
-                juce::ColourGradient gloss (juce::Colours::white.withAlpha (0.17f), 0.0f, glass.getY(),
-                                            juce::Colours::transparentWhite, 0.0f, glass.getY() + glass.getHeight() * 0.34f, false);
-                gloss.addColour (0.45, juce::Colours::white.withAlpha (0.06f));
-                g.setGradientFill (gloss);
-                g.fillRect (glass.withHeight (glass.getHeight() * 0.34f));
-                juce::Path sheen;
-                sheen.startNewSubPath (glass.getX(), glass.getY());
-                sheen.lineTo (glass.getX() + glass.getWidth() * 0.62f, glass.getY());
-                sheen.quadraticTo (glass.getX() + glass.getWidth() * 0.30f, glass.getY() + glass.getHeight() * 0.30f,
-                                   glass.getX(), glass.getY() + glass.getHeight() * 0.58f);
-                sheen.closeSubPath();
-                juce::ColourGradient sheenFill (juce::Colours::white.withAlpha (0.07f), glass.getX(), glass.getY(),
-                                                juce::Colours::white.withAlpha (0.015f),
-                                                glass.getX() + glass.getWidth() * 0.5f, glass.getY() + glass.getHeight() * 0.5f, false);
-                g.setGradientFill (sheenFill);
-                g.fillPath (sheen);
             }
             {
 

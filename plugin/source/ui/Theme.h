@@ -70,8 +70,8 @@ struct Theme
     juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xff608074)); }
     juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff3cc8be)); }
     juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xff3cc8be)); }
-    juce::Colour glassTop()    const { return layout.colour ("glassTop",    juce::Colour (0xff0c1412)); }
-    juce::Colour glassBottom() const { return layout.colour ("glassBottom", juce::Colour (0xff050908)); }
+    juce::Colour glassTop()    const { return layout.colour ("glassTop",    juce::Colour (0xff000000)); }
+    juce::Colour glassBottom() const { return layout.colour ("glassBottom", juce::Colour (0xff000000)); }
     juce::Colour gridTint()    const { return layout.colour ("gridTint",    juce::Colours::white); }
     juce::Colour amber()       const { return layout.colour ("amber",       juce::Colour (0xffa9554e)); }
     juce::Colour wellTop()     const { return layout.colour ("wellTop",     juce::Colour (0xffe7dec9)); }

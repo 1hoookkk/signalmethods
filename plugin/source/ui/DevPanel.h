@@ -74,9 +74,19 @@ class DevPanel final : public juce::Component,
                        private juce::Timer
 {
 public:
-    DevPanel (const Theme& theme, WheelLoop& loopRef, juce::File loopDir)
-        : t (theme), loop (loopRef), dir (std::move (loopDir))
+    DevPanel (const Theme& theme, WheelLoop& loopRef, juce::File loopDir, std::function<void (bool)> agcSwitch, std::function<void (bool)> biteAutoSwitch)
+        : t (theme), loop (loopRef), dir (std::move (loopDir)), onAgc (std::move (agcSwitch)), onBiteAuto (std::move (biteAutoSwitch))
     {
+        agc.setButtonText ("AGC");
+        agc.setColour (juce::ToggleButton::textColourId, t.curveColour());
+        agc.setToggleState (true, juce::dontSendNotification);
+        agc.onClick = [this] { if (onAgc != nullptr) onAgc (agc.getToggleState()); };
+        addAndMakeVisible (agc);
+        biteAuto.setButtonText ("BITE AUTO");
+        biteAuto.setColour (juce::ToggleButton::textColourId, t.curveColour());
+        biteAuto.setToggleState (true, juce::dontSendNotification);
+        biteAuto.onClick = [this] { if (onBiteAuto != nullptr) onBiteAuto (biteAuto.getToggleState()); };
+        addAndMakeVisible (biteAuto);
         for (auto* b : { &armButton, &stopButton, &playButton, &saveButton, &loadButton })
         {
             addAndMakeVisible (*b);
@@ -143,7 +153,11 @@ public:
         row.removeFromLeft (4);
         glide.setBounds (row);
         r.removeFromTop (10);
-        r.removeFromTop (30);
+        row = r.removeFromTop (24);
+        agc.setBounds (row.removeFromLeft (row.getWidth() / 2 - 2));
+        row.removeFromLeft (4);
+        biteAuto.setBounds (row);
+        r.removeFromTop (6);
         stepGrid.setBounds (r.removeFromTop (110)); r.removeFromTop (8);
         name.setBounds (r.removeFromTop (24)); r.removeFromTop (4);
         row = r.removeFromTop (26);
@@ -278,6 +292,8 @@ private:
     juce::ComboBox bars;
     juce::ComboBox grid;
     juce::ToggleButton glide;
+    juce::ToggleButton agc, biteAuto;
+    std::function<void (bool)> onAgc, onBiteAuto;
     StepGrid stepGrid;
     juce::TextButton blankButton;
     juce::TextEditor name;

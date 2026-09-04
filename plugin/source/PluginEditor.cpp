@@ -79,7 +79,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     }
 #if TRENCH_DEV_PANEL
     devPanel = std::make_unique<DevPanel> (theme, processor.wheelLoop(),
-                                           juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"));
+                                           juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"),
+                                           [this] (bool on) { processor.dspBridge.setAgcEnabled (on); },
+                                           [this] (bool on) { processor.dspBridge.setBiteAuto (on); });
     addAndMakeVisible (*devPanel);
     setResizable (false, false);
     setSize (kEditorWidth + kDevPanelWidth, kEditorHeight);

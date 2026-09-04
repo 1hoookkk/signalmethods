@@ -61,19 +61,21 @@ inline float slamOutputMakeupLinear() noexcept
     return 1.0f / slamInputGainLinear();
 }
 constexpr float kSlamPressureKnee = 0.72f;
-constexpr float kFinalSafetyKnee = 0.9440609f;    // -0.5 dBFS
-constexpr float kFinalSafetyCeiling = 0.9885531f; // -0.1 dBFS
+constexpr float kFinalSafetyKnee = 0.9440609f;
+constexpr float kFinalSafetyCeiling = 0.9885531f;
+constexpr float kGuardLinearZone = 0.8f;
 inline float softGuard (float x) noexcept
 {
     if (! std::isfinite (x))
         return 0.0f;
     const float a = std::fabs (x) / kFinalSafetyCeiling;
-    if (a <= 0.5f)
+    if (a <= kGuardLinearZone)
         return x;
-    if (a >= 1.5f)
+    const float top = 2.0f - kGuardLinearZone;
+    if (a >= top)
         return std::copysign (kFinalSafetyCeiling, x);
-    const float remaining = 1.5f - a;
-    return std::copysign (kFinalSafetyCeiling * (1.0f - 0.5f * remaining * remaining), x);
+    const float remaining = top - a;
+    return std::copysign (kFinalSafetyCeiling * (1.0f - remaining * remaining / (4.0f * (1.0f - kGuardLinearZone))), x);
 }
 inline float deskSaturateSample (float sample) noexcept
 {

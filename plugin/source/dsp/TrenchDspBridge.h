@@ -17,6 +17,7 @@
 #include <memory>
 #include <span>
 #include <vector>
+#include "SlamStage.h"
 
 struct TrenchParams
 {
@@ -329,7 +330,7 @@ public:
         }
         {
             const float fromLeveller = agcGain > 0.0f ? juce::jlimit (0.0f, 1.0f, (1.0f / agcGain - 1.0f) / 0.5f) : 1.0f;
-            const float fromLevel = juce::jlimit (0.0f, 1.0f, (blockPeak - 0.5f) / 0.5f);
+            const float fromLevel = juce::jlimit (0.0f, 1.0f, (blockPeak - trench::kGuardLinearZone) / (1.0f - trench::kGuardLinearZone));
             const float target = std::max (fromLeveller, fromLevel);
             autoDrive = target > autoDrive ? target : autoDrive * 0.85f + target * 0.15f;
         }

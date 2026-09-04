@@ -70,6 +70,7 @@ public:
         layout.params["curveDbBottom"]     = -40.0;
         layout.params["fontBold"]          = 1.0;
         layout.params["gridBoost"]         = 3.0;
+        layout.colours["gridTint"]           = juce::Colour (0xff4a4f4c);
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {
