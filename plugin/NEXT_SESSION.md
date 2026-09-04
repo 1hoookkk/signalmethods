@@ -1289,3 +1289,14 @@ Open, in order:
   before the HEADLESS skip so ctest exercises it. trench_plugin still fails on the one deliberate
   case, Low Shape 1.19 % at -12 dBFS (guard zone decision above). Site face PNG re-shot from the 2x
   FaceShot at 489x797; trench-tour.gif still needs a screen recording.
+- Level, ruled by ear in FL: guard linear zone 0.5 -> 0.8 (kGuardLinearZone, SlamStage.h) fixed the
+  roster THD; BITE auto wake moved to the same constant, then switched off by default: the drag IS
+  the threshold (Rossum US10514883, granted 2019-12-24; radius law in core audition.cpp is now
+  r - r(1-r)(|v|-vt)/|v| past the threshold, delayed-state soft clamp kept from the 1992 paper).
+  Leveller: X3 table at scale 1.0 is inaudible (wakes at +6 dBFS on the raw sample); Tyson "lower
+  the hell out of it", then "4-8x is the sweet spot, a bit too low at 8x" -> kLevellerScale 6.0
+  (wakes near -15 dBFS, full scale rides to about 1/6). Two acceptance tests restated to that
+  law: identity impulse now -24 dBFS (below the wake), no-mute floor = 0.9/scale. Drawer: AGC on/
+  off, BITE AUTO, AGC 1x/2x/4x/6x/8x. Mackie desk as limiter: no, it is INPUT drive, host only;
+  cut it if nobody reaches for it. KEY: Tyson "getting rid of key was a mistake"; the box and its
+  wiring are in fbb48875, one commit to restore at the keyBox rect beside BODY, awaiting the word.

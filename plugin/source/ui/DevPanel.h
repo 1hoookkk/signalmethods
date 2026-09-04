@@ -87,9 +87,9 @@ public:
         biteAuto.setToggleState (false, juce::dontSendNotification);
         biteAuto.onClick = [this] { if (onBiteAuto != nullptr) onBiteAuto (biteAuto.getToggleState()); };
         addAndMakeVisible (biteAuto);
-        agcScale.addItemList ({ "AGC 1x", "AGC 2x", "AGC 4x", "AGC 8x" }, 1);
-        agcScale.setSelectedId (2, juce::dontSendNotification);
-        agcScale.onChange = [this] { if (onAgcScale != nullptr) onAgcScale ((float) (1 << (agcScale.getSelectedId() - 1))); };
+        agcScale.addItemList ({ "AGC 1x", "AGC 2x", "AGC 4x", "AGC 6x", "AGC 8x" }, 1);
+        agcScale.setSelectedId (4, juce::dontSendNotification);
+        agcScale.onChange = [this] { static constexpr float scales[] = { 1.0f, 2.0f, 4.0f, 6.0f, 8.0f }; if (onAgcScale != nullptr) onAgcScale (scales[juce::jlimit (0, 4, agcScale.getSelectedId() - 1)]); };
         addAndMakeVisible (agcScale);
         for (auto* b : { &armButton, &stopButton, &playButton, &saveButton, &loadButton })
         {

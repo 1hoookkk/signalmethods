@@ -185,14 +185,14 @@ int main()
         bridge.setInputPreamp (trench::driveTaper (0.0f));
         juce::AudioBuffer<float> buf (2, 64);
         buf.clear();
-        buf.setSample (0, 0, 0.25f);
-        buf.setSample (1, 0, 0.25f);
+        buf.setSample (0, 0, 0.0625f);
+        buf.setSample (1, 0, 0.0625f);
         TrenchParams params;
         bridge.process (buf, params);
         float sum = 0.0f;
         for (int i = 0; i < 64; ++i) sum += buf.getSample (0, i);
-        check (std::abs (buf.getSample (0, 0) - 0.25f) < 1.0e-5f && std::abs (sum - 0.25f) < 1.0e-4f,
-               "PREAMP 0 through identity body returns the impulse unchanged", buf.getSample (0, 0), 0.25);
+        check (std::abs (buf.getSample (0, 0) - 0.0625f) < 1.0e-5f && std::abs (sum - 0.0625f) < 1.0e-4f,
+               "PREAMP 0 through identity body returns a -24 dBFS impulse unchanged, below the leveller wake", buf.getSample (0, 0), 0.0625);
     }
 
     std::printf ("== bridge cost ==\n");
@@ -406,7 +406,7 @@ int main()
     setParam (processor, ParamID::preamp, 1.0f);
     const auto ceilinged = runSine (processor, 0.9f);
     check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at full", ceilinged.peak, trench::kFinalSafetyCeiling);
-    check (ceilinged.peak > 0.5f, "ceiling limits, it does not mute", ceilinged.peak, 0.5);
+    check (ceilinged.peak > 0.9f / TrenchDspBridge::kLevellerScale, "ceiling limits and the leveller rides full scale to its floor, it does not mute", ceilinged.peak, 0.9 / TrenchDspBridge::kLevellerScale);
     setParam (processor, ParamID::preamp, 0.0f);
 
     std::printf ("== guard shape ==\n");
