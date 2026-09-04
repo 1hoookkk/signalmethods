@@ -209,3 +209,20 @@ add_test(NAME trench_gen_curves
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gen_curves.py"
     WORKING_DIRECTORY "${TRENCH_WORKSPACE_DIR}")
 set_tests_properties(trench_gen_curves PROPERTIES ENVIRONMENT "MPLBACKEND=Agg")
+
+juce_add_gui_app(TRENCH_Workstation
+  COMPANY_NAME "Signal Methods"
+  BUNDLE_ID "com.signalmethods.trench.workstation"
+  PRODUCT_NAME "TRENCH Workstation")
+target_sources(TRENCH_Workstation PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source/Main.cpp")
+target_include_directories(TRENCH_Workstation PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
+target_compile_features(TRENCH_Workstation PRIVATE cxx_std_20)
+target_compile_definitions(TRENCH_Workstation PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_APPLICATION_NAME_STRING="TRENCH Workstation"
+    JUCE_APPLICATION_VERSION_STRING="0.1.0")
+target_link_libraries(TRENCH_Workstation PRIVATE
+    trench_native_core
+    juce::juce_gui_basics
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)

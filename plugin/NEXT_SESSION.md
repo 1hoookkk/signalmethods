@@ -1300,3 +1300,14 @@ Open, in order:
   off, BITE AUTO, AGC 1x/2x/4x/6x/8x. Mackie desk as limiter: no, it is INPUT drive, host only;
   cut it if nobody reaches for it. KEY: Tyson "getting rid of key was a mistake"; the box and its
   wiring are in fbb48875, one commit to restore at the keyBox rect beside BODY, awaiting the word.
+- 2026-09-05, the authoring tool: TRENCH Workstation is a JUCE standalone (target TRENCH_Workstation,
+  source native/workstation/, plan native/WORKSTATION_PLAN.md). The HTML model workstation_min.html
+  (tools/build_workstation_min.py, core maths checked to 1e-13 dB) is the spec: frame space on a
+  musical grid (1st resonance across, 2nd up, C octaves), Delaunay play, an orbiting wireframe cube
+  with eight corners each drawn as a crude response, axes named by pose ends (high > low, closed >
+  open, relaxed > stressed), plane drives MORPH and Q once eight corners are set, CAPTURE keeps the
+  wheel's words as a frame. Skeleton built and rendered headlessly (--shot path.png), 304 frames.
+  No sound, no export yet. Leveller: the X3 table is a limiter whose ceiling is 2/scale (6x = -9.5
+  dBFS, hence "quieter with AGC on"); recommendation to cut AGC from ship and keep BITE as the
+  ceiling, awaiting Tyson. Evidence added: timbre-space papers, Massie collection (SOS 1995 full,
+  ICMC 1992 pole-zero paper, patents), UltraProteus manual pages, Martens Palette and PCA pages.
