@@ -1267,3 +1267,11 @@ Open, in order:
   this and the two face cases). Decision for Tyson: keep (the saturator near the ceiling is the law
   he set) or raise the guard's linear zone from 0.5 toward 0.8, which departs from the firmware soft
   clip but keeps quiet-to-moderate signals clean.
+- Tyson (FL screenshot, the installed default face clipped at the OUTPUT knob: the pocket's rows sit
+  at 363..461 in a 440-tall face): "commit with this. needs re measureing. gain is not solved.
+  modulation is not solved." Committed: 1e253886 (native, evidence without emu-sgi-1993 and the
+  102 MB lineage folder, site, this brief) and ed663171 (plugin). Left uncommitted on purpose: root
+  strays from other sessions (workstation.py/html, __marimo__, recipes/, tools/, output/, test_*.py,
+  pngs, Launch bats, design-qa.md), .claude/, and the two big evidence folders. Note: another chat
+  has already started the marimo side (workstation.py, native/core trench_core_c.*, native/python)
+  -> the new-chat prompt should read those first.
