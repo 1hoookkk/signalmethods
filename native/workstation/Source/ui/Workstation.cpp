@@ -41,6 +41,58 @@ void Workstation::demo()
     tl.keys = { { 0.5, { 0.3, 0.35 }, juce::Colour (0xff00ccff) }, { 3.0, { 0.55, 0.6 }, juce::Colour (0xffff00ff) }, { 6.5, { 0.4, 0.75 }, juce::Colours::yellow } };
     tl.playhead = 2.1;
     probe = std::array<double, 2> { pa[0] + (pb[0] - pa[0]) * pairT, pa[1] + (pb[1] - pa[1]) * pairT };
+    body.corner = { 52, 53, 54, 55 };
+    body.rowOn[4] = false;
+    body.morph = 0.35;
+    body.q = 0.6;
+    playBody = true;
+}
+
+bool Workstation::exportBody (const juce::File& file)
+{
+    const bool ok = body.exportTo (lib.frames, file);
+    status = ok ? "wrote " + file.getFileName() : "body needs four corners";
+    redraw();
+    return ok;
+}
+
+Words Workstation::playingWords() const
+{
+    if (playBody && body.ready()) return body.wheelWords (lib.frames);
+    if (const auto b = current()) return lib.wordsOf (*b);
+    return Words {};
+}
+
+void Workstation::setWheel (juce::Point<float> p)
+{
+    body.morph = juce::jlimit (0.0, 1.0, (double) (p.x - L.square.getX()) / L.square.getWidth());
+    body.q = juce::jlimit (0.0, 1.0, (double) (L.square.getBottom() - p.y) / L.square.getHeight());
+    playBody = true;
+    redraw();
+}
+
+void Workstation::assignCorner (int i)
+{
+    if (pickFor >= 0 && pickFor < (int) lib.anchors.size())
+    {
+        body.corner[(size_t) i] = lib.anchors[(size_t) pickFor].frame;
+        pickFor = -1;
+    }
+    else if (pairMode && pairA >= 0 && pairB >= 0)
+    {
+        const int idx = lib.addCapture (lib.wordsOf (*current()), *probe);
+        body.corner[(size_t) i] = idx;
+    }
+    else if (const auto b = current())
+    {
+        int single = -1;
+        for (int k = 0; k < 3; ++k) if (b->w[(size_t) k] > 0.999) single = lib.anchors[(size_t) b->anchors[(size_t) k]].frame;
+        body.corner[(size_t) i] = single >= 0 ? single : lib.addCapture (lib.wordsOf (*b), *probe);
+    }
+    else return;
+    playBody = true;
+    status = "corner " + juce::String (i) + " = " + lib.frames[(size_t) body.corner[(size_t) i]].name;
+    redraw();
 }
 
 void Workstation::redraw()
@@ -76,6 +128,17 @@ void Workstation::layoutKeys()
     keys.push_back ({ "clear", "CLEAR", { kx + kMeasures * 78.0f + 6.0f, 19.0f, 52.0f, 14.0f }, false });
     for (int i = 0; i < kGroups; ++i) keys.push_back ({ "lit" + juce::String (i), kGroupNames[i], { 4.0f, 4.0f + i * 14.0f, L.groups.getWidth() - 8.0f, 13.0f }, lit == i });
     keys.push_back ({ "capture", "CAPTURE", { L.info.getX() + 6.0f, L.info.getY() + 6.0f, 80.0f, 14.0f }, false });
+    static const char* cornerNames[] = { "M0 Q0", "M1 Q0", "M0 Q1", "M1 Q1" };
+    const auto sq = L.square;
+    for (int i = 0; i < 4; ++i)
+    {
+        const float x = (i & 1) ? sq.getRight() + 4.0f : sq.getX() - 44.0f, y = (i & 2) ? sq.getY() - 4.0f : sq.getBottom() - 10.0f;
+        keys.push_back ({ "corner" + juce::String (i), cornerNames[i], { x, y, 40.0f, 14.0f }, body.corner[(size_t) i] >= 0 });
+    }
+    for (int s = 0; s < kRows; ++s)
+        keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { sq.getRight() + 54.0f + (s % 3) * 22.0f, sq.getY() + (s / 3) * 18.0f, 20.0f, 14.0f }, body.rowOn[(size_t) s] });
+    keys.push_back ({ "playbody", "BODY", { sq.getRight() + 54.0f, sq.getY() + 44.0f, 64.0f, 14.0f }, playBody });
+    keys.push_back ({ "export", "EXPORT", { sq.getRight() + 54.0f, sq.getY() + 62.0f, 64.0f, 14.0f }, false });
     keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 6.0f, L.resp.getY() + 4.0f, 52.0f, 14.0f }, showSurface });
     keys.push_back ({ "pair", "PAIR", { kx + kMeasures * 78.0f + 64.0f, 3.0f, 52.0f, 14.0f }, pairMode });
     keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 4.0f, L.tl.getY() + 6.0f, 60.0f, 14.0f }, tl.playing });
@@ -103,6 +166,7 @@ void Workstation::setPairT (juce::Point<float> p)
 void Workstation::setProbe (juce::Point<float> p)
 {
     probe = L.toField (p);
+    playBody = false;
     status = current() ? "" : "outside the anchors";
     redraw();
 }
@@ -123,6 +187,10 @@ void Workstation::press (const juce::String& id)
     else if (id == "clear") { lib.anchors.clear(); lib.tris.clear(); }
     else if (id == "capture") capture();
     else if (id == "surface") showSurface = ! showSurface;
+    else if (id.startsWith ("corner")) assignCorner (id.substring (6).getIntValue());
+    else if (id.startsWith ("row")) { const int s = id.substring (3).getIntValue(); body.rowOn[(size_t) s] = ! body.rowOn[(size_t) s]; }
+    else if (id == "export") exportBody (exportDir.getChildFile ("ws_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".body240"));
+    else if (id == "playbody") playBody = ! playBody;
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two anchors" : ""; }
     else if (id == "play")
     {
@@ -196,6 +264,7 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
     if (L.tlAx.contains (p)) { mode = Mode::scrub; scrubTo (p.x); return; }
     if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
+    if (L.square.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
     if (L.field.contains (p)) { mode = Mode::probe; setProbe (p); return; }
 }
 
@@ -215,6 +284,7 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
         case Mode::scrub: scrubTo (p.x); break;
         case Mode::pickHz: pickHz (p.x); break;
         case Mode::pair: setPairT (p); break;
+        case Mode::wheel: setWheel (p); break;
         case Mode::dragFrame:
         case Mode::dragAnchor: dragPos = p; redraw(); break;
         case Mode::dragKey: tl.keys[(size_t) dragKey].t = L.tAt (p.x); redraw(); break;
@@ -234,7 +304,10 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
     else if (mode == Mode::dragAnchor && moved)
     {
         auto& a = lib.anchors[(size_t) dragAnchor];
-        if (L.tlAx.contains (p)) tl.keys.push_back ({ L.tAt (p.x), a.p, hueOf (lib.frames[(size_t) a.frame].m[0]) });
+        int cornerHit = -1;
+        for (const auto& k : keys) if (k.id.startsWith ("corner") && k.box.contains (p)) cornerHit = k.id.substring (6).getIntValue();
+        if (cornerHit >= 0) { body.corner[(size_t) cornerHit] = a.frame; playBody = true; status = "corner " + juce::String (cornerHit) + " = " + lib.frames[(size_t) a.frame].name; }
+        else if (L.tlAx.contains (p)) tl.keys.push_back ({ L.tAt (p.x), a.p, hueOf (lib.frames[(size_t) a.frame].m[0]) });
         else if (L.field.contains (p)) { a.p = L.toField (p); lib.retriangulate(); }
         else { lib.anchors.erase (lib.anchors.begin() + dragAnchor); lib.retriangulate(); }
     }
@@ -339,9 +412,9 @@ std::vector<Batch> Workstation::scene() const
     marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (-30.0) }, juce::Colour (0xff00ffff), 1.0f));
     out.push_back (marker);
     Batch curve { Batch::strip, false, {} };
-    if (b)
+    if (b || (playBody && body.ready()))
     {
-        const auto cv = curveOf (lib.wordsOf (*b));
+        const auto cv = curveOf (playingWords());
         for (int i = 0; i < kCurvePoints; ++i)
             curve.v.push_back (vertex ({ L.rx (20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.ry (juce::jlimit (-30.0, 30.0, cv[(size_t) i])) }, juce::Colours::white, 1.5f));
     }
@@ -360,9 +433,25 @@ std::vector<Batch> Workstation::scene() const
     }
     for (int o = 0; o <= 10; o += 2) { rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.0), kLine, 1.0f)); rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.999), kLine, 1.0f)); }
     out.push_back (rings);
-    if (b)
+    if (playBody && body.ready())
     {
-        const auto rows = geometryOf (lib.wordsOf (*b));
+        const auto sq = L.square;
+        Batch sqLines { Batch::lines, false, {} };
+        for (int i = 0; i <= 2; ++i)
+        {
+            sqLines.v.push_back (vertex ({ sq.getX() + i * sq.getWidth() / 2, sq.getY() }, kLine, 1.0f)); sqLines.v.push_back (vertex ({ sq.getX() + i * sq.getWidth() / 2, sq.getBottom() }, kLine, 1.0f));
+            sqLines.v.push_back (vertex ({ sq.getX(), sq.getY() + i * sq.getHeight() / 2 }, kLine, 1.0f)); sqLines.v.push_back (vertex ({ sq.getRight(), sq.getY() + i * sq.getHeight() / 2 }, kLine, 1.0f));
+        }
+        out.push_back (sqLines);
+        Batch wheel { Batch::points, true, {} };
+        for (int i = 0; i < 4; ++i)
+            wheel.v.push_back (vertex ({ i & 1 ? sq.getRight() : sq.getX(), i & 2 ? sq.getY() : sq.getBottom() }, hueOf (lib.frames[(size_t) body.corner[(size_t) i]].m[0]), 8.0f));
+        wheel.v.push_back (vertex ({ sq.getX() + (float) body.morph * sq.getWidth(), sq.getBottom() - (float) body.q * sq.getHeight() }, juce::Colours::yellow, 9.0f));
+        out.push_back (wheel);
+    }
+    if (b || (playBody && body.ready()))
+    {
+        const auto rows = geometryOf (playingWords());
         Batch glides { Batch::lines, false, {} };
         Batch poles { Batch::points, false, {} };
         Batch zeros { Batch::points, true, {} };
@@ -371,12 +460,15 @@ std::vector<Batch> Workstation::scene() const
             const auto& r = rows[(size_t) s];
             if (! r.pole) continue;
             const auto here = L.armaXY (r.pHz, r.pR);
-            for (int i = 0; i < 3; ++i)
+            std::vector<std::pair<int, double>> parents;
+            if (playBody && body.ready()) { const auto w = body.weights(); for (int i = 0; i < 4; ++i) parents.push_back ({ body.corner[(size_t) i], w[(size_t) i] }); }
+            else for (int i = 0; i < 3; ++i) parents.push_back ({ lib.anchors[(size_t) b->anchors[(size_t) i]].frame, b->w[(size_t) i] });
+            for (const auto& [frameIdx, weight] : parents)
             {
-                if (b->w[(size_t) i] < 0.08) continue;
-                const auto& pr = lib.frames[(size_t) lib.anchors[(size_t) b->anchors[(size_t) i]].frame].rows[(size_t) s];
+                if (weight < 0.08) continue;
+                const auto& pr = lib.frames[(size_t) frameIdx].rows[(size_t) s];
                 if (! pr.pole) continue;
-                const auto c = kOn.withAlpha ((float) (0.15 + 0.6 * b->w[(size_t) i]));
+                const auto c = kOn.withAlpha ((float) (0.15 + 0.6 * weight));
                 glides.v.push_back (vertex (here, c, 1.0f));
                 glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), c, 1.0f));
                 poles.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kDim, 4.0f));
@@ -470,7 +562,16 @@ void Workstation::paintChrome (juce::Graphics& g)
     g.setColour (kOn);
     g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.rx (fieldHz) + 3, (int) L.resp.getY() + 2, 60, 12, juce::Justification::centredLeft);
     g.setColour (kText);
-    if (b)
+    g.setColour (kLine);
+    g.drawHorizontalLine ((int) L.body.getY(), L.body.getX(), L.body.getRight());
+    g.drawRect (L.square, 1.0f);
+    g.setColour (kDim);
+    g.drawText ("M " + juce::String (body.morph, 2) + "  Q " + juce::String (body.q, 2), (int) L.square.getX(), (int) L.square.getBottom() + 4, (int) L.square.getWidth(), 12, juce::Justification::centred);
+    g.drawText ("rows", (int) L.square.getRight() + 54, (int) L.square.getY() - 14, 40, 12, juce::Justification::centredLeft);
+    for (int i = 0; i < 4; ++i)
+        if (body.corner[(size_t) i] >= 0)
+            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.square.getRight() + 54, (int) L.square.getY() + 84 + i * 13, (int) L.body.getRight() - (int) L.square.getRight() - 58, 12, juce::Justification::centredLeft);
+    if (b && ! playBody)
     {
         for (int i = 0; i < 3; ++i)
         {
@@ -483,7 +584,11 @@ void Workstation::paintChrome (juce::Graphics& g)
             y += 13;
         }
         y += 8;
-        const auto rows = geometryOf (lib.wordsOf (*b));
+    }
+    if (b || (playBody && body.ready()))
+    {
+        if (playBody) y = (int) L.info.getY() + 26;
+        const auto rows = geometryOf (playingWords());
         g.setColour (kDim);
         g.drawText ("row   pole Hz     r     zero Hz     r", (int) L.info.getX() + 8, y, (int) L.info.getWidth() - 12, 13, juce::Justification::centredLeft);
         y += 14;

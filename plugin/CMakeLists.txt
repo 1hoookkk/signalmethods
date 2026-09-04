@@ -221,6 +221,7 @@ target_sources(TRENCH_Workstation PRIVATE
   "${TRENCH_WORKSTATION_DIR}/model/Delaunay.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Timeline.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Body.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/Scene.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/GLRenderer.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/SvgRenderer.cpp"

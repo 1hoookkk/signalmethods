@@ -7,7 +7,7 @@ namespace ws
 {
 struct Layout
 {
-    juce::Rectangle<float> groups, tray, field, resp, info, arma, tl, tlAx, keyRow;
+    juce::Rectangle<float> groups, tray, field, resp, body, square, info, arma, tl, tlAx, keyRow;
     double zoom = 1.0;
     double pan[2] { 0.0, 0.0 };
     double duration = 8.0;

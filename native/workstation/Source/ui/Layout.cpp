@@ -11,8 +11,10 @@ void Layout::compute (float W, float H)
     keyRow = { left, 0.0f, W - left - right, top };
     field = { left, top, W - left - right, H - tlH - top };
     resp = { W - right, 0.0f, right, 150.0f };
-    info = { W - right, 150.0f, right, 150.0f };
-    arma = { W - right, 300.0f, right, H - tlH - 300.0f };
+    body = { W - right, 150.0f, right, 150.0f };
+    square = { W - right + 44.0f, 170.0f, 110.0f, 110.0f };
+    info = { W - right, 300.0f, right, 140.0f };
+    arma = { W - right, 440.0f, right, H - tlH - 440.0f };
     tl = { 0.0f, H - tlH, W, tlH };
     tlAx = { 70.0f, H - tlH + 12.0f, W - 80.0f, tlH - 30.0f };
 }

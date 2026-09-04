@@ -4,6 +4,7 @@
 #include <juce_opengl/juce_opengl.h>
 #include "../model/Library.h"
 #include "../model/Timeline.h"
+#include "../model/Body.h"
 #include "../render/GLRenderer.h"
 #include "Layout.h"
 #include <optional>
@@ -17,6 +18,8 @@ public:
     ~Workstation() override;
 
     void demo();
+    bool exportBody (const juce::File& file);
+    juce::File exportDir;
 
     void paint (juce::Graphics& g) override;
     void newOpenGLContextCreated() override;
@@ -28,11 +31,16 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair };
+    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
 
     Library& lib;
     Timeline tl;
+    Body body;
+    bool playBody = false;
+    void setWheel (juce::Point<float> p);
+    void assignCorner (int i);
+    Words playingWords() const;
     Layout L;
     bool gl;
     juce::OpenGLContext ctx;

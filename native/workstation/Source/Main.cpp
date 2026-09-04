@@ -20,7 +20,9 @@ int shoot (const juce::String& path)
     ws::Library lib;
     loadLibrary (lib);
     ws::Workstation view (lib, false);
+    view.exportDir = workspaceRoot().getChildFile ("plugin/presets/user");
     view.demo();
+    view.exportBody (juce::File (path).getSiblingFile ("ws_demo.body240"));
     juce::Image img (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
     {
         juce::Graphics g (img);
@@ -49,6 +51,7 @@ public:
         if (shot >= 0 && shot + 1 < args.size()) { shoot (args[shot + 1].unquoted()); quit(); return; }
         loadLibrary (library);
         window = std::make_unique<MainWindow> (getApplicationName(), library);
+        if (auto* w = dynamic_cast<ws::Workstation*> (window->getContentComponent())) w->exportDir = workspaceRoot().getChildFile ("plugin/presets/user");
     }
 
     void shutdown() override { window.reset(); }
