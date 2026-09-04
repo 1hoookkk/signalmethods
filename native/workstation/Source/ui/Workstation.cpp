@@ -164,7 +164,15 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     if (const int a = anchorAt (p); a >= 0) { mode = Mode::dragAnchor; dragAnchor = a; dragPos = p; dragStart = p; return; }
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
     if (L.tlAx.contains (p)) { mode = Mode::scrub; scrubTo (p.x); return; }
+    if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
     if (L.field.contains (p)) { mode = Mode::probe; setProbe (p); return; }
+}
+
+void Workstation::pickHz (float x)
+{
+    const double t = juce::jlimit (0.0, 1.0, (double) (x - L.rx (20.0)) / (L.rx (20000.0) - L.rx (20.0)));
+    fieldHz = 20.0 * std::pow (1000.0, t);
+    redraw();
 }
 
 void Workstation::mouseDrag (const juce::MouseEvent& e)
@@ -174,6 +182,7 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
     {
         case Mode::probe: setProbe (p); break;
         case Mode::scrub: scrubTo (p.x); break;
+        case Mode::pickHz: pickHz (p.x); break;
         case Mode::dragFrame:
         case Mode::dragAnchor: dragPos = p; redraw(); break;
         case Mode::dragKey: tl.keys[(size_t) dragKey].t = L.tAt (p.x); redraw(); break;
@@ -227,11 +236,38 @@ void Workstation::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWh
     }
 }
 
+FieldMesh Workstation::fieldMesh() const
+{
+    FieldMesh m;
+    m.hz = fieldHz;
+    for (const auto& t : lib.tris)
+    {
+        const int ids[3] = { t.a, t.b, t.c };
+        for (int k = 0; k < 3; ++k)
+        {
+            const auto p = L.fromField (lib.anchors[(size_t) ids[k]].p);
+            m.v.push_back ({ p.x, p.y, k == 0 ? 1.0f : 0.0f, k == 1 ? 1.0f : 0.0f, k == 2 ? 1.0f : 0.0f, (float) lib.anchors[(size_t) t.a].frame, (float) lib.anchors[(size_t) t.b].frame, (float) lib.anchors[(size_t) t.c].frame });
+        }
+    }
+    return m;
+}
+
 std::vector<Batch> Workstation::scene() const
 {
     std::vector<Batch> out;
     const auto ks = tl.sorted();
     const auto b = current();
+    if (! gl)
+    {
+        Batch surface { Batch::tris, false, {} };
+        for (const auto& t : lib.tris)
+        {
+            const Blend centre { { t.a, t.b, t.c }, { 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0 } };
+            const auto c = levelColour (responseDb (cascadeOf (lib.wordsOf (centre)), fieldHz));
+            for (int id : { t.a, t.b, t.c }) surface.v.push_back (vertex (L.fromField (lib.anchors[(size_t) id].p), c, 1.0f));
+        }
+        out.push_back (surface);
+    }
     Batch grid { Batch::lines, false, {} };
     for (int i = 0; i <= 4; ++i)
     {
@@ -260,6 +296,10 @@ std::vector<Batch> Workstation::scene() const
     if (mode == Mode::dragFrame) pts.v.push_back (vertex (dragPos, hueOf (lib.frames[(size_t) dragFrame].m[0]), 12.0f));
     if (mode == Mode::dragAnchor) pts.v.push_back (vertex (dragPos, juce::Colours::white, 12.0f));
     out.push_back (pts);
+    Batch marker { Batch::lines, false, {} };
+    marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (30.0) }, juce::Colour (0xff00ffff), 1.0f));
+    marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (-30.0) }, juce::Colour (0xff00ffff), 1.0f));
+    out.push_back (marker);
     Batch curve { Batch::strip, false, {} };
     if (b)
     {
@@ -294,7 +334,8 @@ void Workstation::openGLContextClosing() { renderer.destroy(); }
 void Workstation::renderOpenGL()
 {
     layoutKeys();
-    renderer.draw (scene(), (float) getWidth(), (float) getHeight(), (float) ctx.getRenderingScale());
+    renderer.uploadWords (lib.frames);
+    renderer.draw (fieldMesh(), scene(), (float) getWidth(), (float) getHeight(), (float) ctx.getRenderingScale());
 }
 
 void Workstation::paintChrome (juce::Graphics& g)
@@ -346,6 +387,9 @@ void Workstation::paintChrome (juce::Graphics& g)
     int y = (int) L.info.getY() + 26;
     g.setColour (kText);
     if (probe) g.drawText ("x " + juce::String ((*probe)[0], 3) + "  y " + juce::String ((*probe)[1], 3), (int) L.info.getX() + 96, (int) L.info.getY() + 6, 200, 14, juce::Justification::centredLeft);
+    g.setColour (kOn);
+    g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.rx (fieldHz) + 3, (int) L.resp.getY() + 2, 60, 12, juce::Justification::centredLeft);
+    g.setColour (kText);
     if (b)
     {
         for (int i = 0; i < 3; ++i)

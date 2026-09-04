@@ -28,7 +28,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey };
+    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
 
     Library& lib;
@@ -52,12 +52,15 @@ private:
     std::optional<Blend> current() const;
     void setProbe (juce::Point<float> p);
     void scrubTo (float x);
+    void pickHz (float x);
     void press (const juce::String& id);
     void capture();
     int anchorAt (juce::Point<float> p) const;
     int trayAt (juce::Point<float> p) const;
     int keyAt (juce::Point<float> p) const;
     std::vector<Batch> scene() const;
+    FieldMesh fieldMesh() const;
+    double fieldHz = 1000.0;
     void paintChrome (juce::Graphics& g);
 };
 }
