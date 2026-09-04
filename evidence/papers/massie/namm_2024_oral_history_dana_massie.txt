@@ -1,0 +1,42 @@
+NAMM Oral History Program - Dana Massie
+https://www.namm.org/library/oral-history/dana-massie
+
+Oral History Information
+Interview Date
+October 7, 2024
+Job Title
+ Audio Architect
+Company Name
+ Apple Inc.
+Tags
+Apple Inc
+, 
+Pro Audio
+, 
+Product Engineers
+, 
+Music Manufacturers
+, 
+E-MU
+, 
+TASCAM Corporation
+, 
+Don Lewis
+, 
+Software
+, 
+Software Engineers
+, 
+Saul Walker
+, 
+Dave Smith
+, 
+Steve Jobs
+, 
+Artificial Intelligence/AI
+Dana Massie
+ is regarded as one of the chief audio architects of digital signal processing (DSP). His pioneering work in chip design, sound sampling, and algorithm development has profoundly influenced the evolution of audio technology, enhancing the groundbreaking products of E-mu, Waves, Apple Inc., NeXT Computer, Audience Inc., and the 
+Creative Advanced Technology Center, where he served as Director
+. Dana’s deep-rooted love for music and sound stems from his father’s passion for folk music, which inspired him to buy Dana his first guitar at the age of 11. From that pivotal moment, Dana became enamored with the electric guitar during the dawn of the effects pedal boom, sparking a lifelong fascination with the intersection of music and electronic technology. This early intrigue eventually led Dana to delve into microprocessors and a key opportunity to build a mixing console with the legendary Saul Walker. Dave Rossum soon hired him at E-mu to develop innovative programmable computer systems and a cutting-edge sound library for the Emulator II. In 1988, Dana joined Steve Jobs at NeXT Computer, r
+eturning later to Apple Inc. in 2003 as Manager of Audio Hardware for about a year. Then again in 2014, Dana joined Apple as SoC Audio Architect, defining hardware accelerators and algorithms for audio. In between, Dana worked for Waves, the Israeli industry leader in audio plug-ins, and Audience, a chip startup which developed speech enhancement chips based on reverse engineering the human auditory pathway. 
+In this role, which he holds with immense pride, Dana feels it perfectly synthesizes his diverse experiences, fueled by his enduring passion for advancing musical technology to inspire and empower future generations of music creators.

@@ -1,0 +1,197 @@
+Massie, Dana C.; Stonick, Virginia L. The Musical Intrigue of Pole-Zero Pairs. ICMC 1992 Proceedings, pp. 22-25.
+http://hdl.handle.net/2027/spo.bbp2372.1992.007
+OCR text from the Michigan ICMC archive.
+
+The Musical Intrigue of Pole-Zero Pairs
+Dana C. Massie
+dana)emu.com
+E-mu Systems, Inc. Scotts Valley, CA 95067-0015
+Virginia L. Stonick
+[email protected]
+ECE Dept., Carnegie Mellon Univ., Pittsburgh PA 15213
+All-pole filter banks have been used extensively in previous computer music
+analysis-resynthesis applications, but pole-zero filters are somewhat less
+common, except in the emulation of traditional analog filter types such as
+parametric equalizers, Chebyschev filters, etc.
+For a small number of filter coefficients, the perceptually significant features of
+the spectral response of an instrument can be better resolved by including zeros
+as well as poles.
+This paper will review the advantages of pole-zero (ARMA) filters over all-pole
+(AR) filters, and discuss the results of using several existing ARMA filter design
+methods for modeling the spectrum of a guitar body.
+All-Pole filter banks have been used extensively in previous computer music analysis-resynthesis
+applications. All-pole filter banks offer considerable power in manipulating the spectral content of
+a signal. Also, methods are available to fit an all-pole filter bank to a given spectrum. However,
+using both poles and zeros in combination offers considerably more power than using either poles
+or zeros alone, and methods do exist for fitting an pole-zero filter bank to a given spectrum,
+although the reliability of these methods do not yet match the methods available for all-pole
+methods. Nonetheless, the additional control offered by poles and zeros in combination should be
+considered by the computer music system designer, especially when designing real-time systems,
+where processing power is still a very precious resource.
+To review, an n-th order all-pole filter (3) has a transfer function given by
+H(z)=G 1 G
+B(z) 1 + bI z-1 +...+bnz-n
+and an n-th order rational transfer unction (3) (with both poles and zeros) is given by
+H(z)= A(z) _ a0+alz-1 +...+anz-n
+B(z) 1+blz-1 +...+bnz-n.
+Transfer functions have many implementations of course, with parallel and cascade forms being
+the most common (followed by lattices and waveguides). Typically, transfer functions higher than
+second order are not implemented in the direct form due to finite precision coefficient problems,
+except for fairly low Q filters. Instead, they are factored into first and second order sections and
+then either they are connected in series (cascade form decomposition) or their outputs are summed
+together in parallel (parallel form decomposition).
+The partial fraction decomposition (3) given by
+k....a liz-1
+C+ a0i +aliz
+i=l I + biiz-' + bican implement any rational transfer function, but has a disadvantage of lacking independent
+parameters for the position of the zeros. The poles are independently controlled by each separate
+denominator but the zeros are determined by how the second order sections add together.
+This may be easier to see by summing together two all-pole transfer functions with no zeros (only
+the constant gain terms A and C) and second order terms B(z) and D(z):
+22
+Page 23
++ _.. _ = A D(z) + C B(z)
+B(z) D(z) B(z) D(z)
+In order to obtain a common denominator, the numerator A D(z) + C B(z) is required which
+introduces zeros. While it looks at first like A and C are independent gain terms for each pole pair,
+they actually vary the position of the zeros! The parallel form is widely used, typically ignoring the
+effects of the zeros introduced. In practice, if the zeros cause problems with undesired
+cancellation, they are sometimes moved to reduce their undesired cancellation, but not to explicitly
+make use of the zeros in controlling spectral response (8,9). Quantization error in any coefficient,
+including the pole coefficients, can also cause the zeros to move.
+The cascade form (3) has a transfer function of
+k l+a1z-1 +a2iz-2
+i=1 1+bliz-l+b2iz-2
+and is also known as series connection of second order sections. The i-th zero pair location is
+explicitly controlled by the a 1i, a2i coefficient pair. The cascade form has disadvantages of course,
+such as ordering and pairing constraints (see below).
+The standard parametric equalizer (figure 1), also known as the presence filter, illustrates many of
+the advantages of combining poles and zeros. First, the parametric equalizer offers independent
+control of frequency, bandwidth, and boost or cut amplitude. Second, it offers very localized
+control over spectral amplitude. Third, very high Q peaks and notches are possible.
+A very simplified qualitative description of the parametric equalizer design is to put a pole and zero
+on the same radial line at pi/2. The boost or cut amplitude is controlled by varying the radius of the
+poles and zeros; the equalizer will boost the amplitude if the pole is closer to the unit circle than the
+zero, and the equalizer will cut the amplitude (produce a notch) if the zero is closer to the unit
+circle. The closer to each other the pole and zero are, the more localized their effect is. Farther
+away from the boost/cut region, the pole and zero cancel each other out. The filter design equations
+are very simple, and well documented in a number of references (5,6,7).
+Localized control of spectral magnitude is simple with this filter since outside of the boost/cut
+region, the parametric equalizer magnitude is unity. This result is hard to achieve with low order
+all-pole or all-zero realizations. A pole pair produces gain in one region, but falls off at 12 dB per
+octave, affecting the spectrum across the whole frequency range. So if a boost is desired at some
+low frequency band, loss at higher frequencies is unavoidable, and vice-versa. Pairing poles and
+zeros can circumvent this problem.
+Very high Q peaks, notches, and spectral transitions can be produced with this filter type. It is
+easy to produce 40 to 50 dB peaks and deep notches with a second order parametric equalizer,
+while keeping the response flat away from the boost cut region.
+One problem with low order all-pole modeling is passing high frequencies. As an example, five
+formants in the range of 0 to 5000 Hertz are often used to model speech vowels. Five complex
+poles produce a response falling off at 5 * 12 dB = 60 dB per octave above 5000 iz, essentially
+eliminating high frequencies. In computer music applications where arbitrary excitations might be
+desired for such a filter bank, passing high frequencies is quite desirable. Pairing poles and zeros
+together allows easy tailoring of the high frequency response.
+One intuitive suggestion to allow better high frequency transmission with high order all-pole filter
+banks is to mix back in some of the original signal. This technique works, of course, but looking
+at the transfer function of this operation we see that
+1-. I B(z) +--j--B(z)+ l...
+B z) B(z) B(z) B(z)
+23
+Page 24
+which means that adding in the original signal to an all-pole system adds zeros! These zeros also
+decrease the Q of the poles, which suggests that a better approach is to explicitly exploit zeros to
+achieve desired goals.
+While the cascade form decomposition for transfer functions makes using zeros easier, using zeros
+also makes the cascade form easier to use! By pairing each pole pair with the zero pair closest to it,
+the overall dynamic range of the filter cascade can be minimized, which improves signal to noise
+and overflow risk substantially. All-pole cascades require careful ordering in order to optimize
+signal to noise ratio (11). High Q Poles can amplify noise,(quantization error) introduced by the
+attenuation of earlier low-frequency poles. In contrast, paired poles and zeros reduce or eliminate
+the need to order cascade sections, since the pole-zero pair only tends to affect a limited spectral
+region. Each zero should precede its associated pole (Direct Form I (3)). The pole will then boost
+the signal attenuated by the preceeding zero, balancing the overall dynamic range. The peak
+frequency response magnitude (the Lao frequency response norm) of the overall second order
+section is known a priori from the Boost parameter, and the norms of the internal nodes of the
+individual second order section are easy to compute, simplifying scaling.
+Analysis Methods
+It seems that pole-zero filters have not been used much in analysis-resynthesis applications because
+this problem is still considered unsolved. Well-developed analysis methods are available to fit an
+all-pole filter to a given signal or response curve, such as Linear Predictive Coding (LPC)
+methods. The problem of pole-zero filter design, however, is not straightforward (1, 2,4,10).
+Finding LPC coefficients is relatively easy because the prediction error performance surface is
+quadratic and hence has a unique global minimum. The LPC coefficients can be computed by
+simply solving a system of only linear equations. In contrast, pole-zero filter coefficients can not
+be computed by simply solving a system of only linear equations (2).
+Iterative numerical techniques must then be employed to compute these coefficients. Since the
+equations are non-linear, the performance surface may have multiple local minima, thus these
+iterative techniques may yield sub-optimal solutions. Worse yet, the-number of local minima can
+be infinite (2), making exhaustive search problematic (4).
+Figure 2 shows the results of experiments to compare several pole-zero modelling methods. More
+specific details of this work are presented elsewhere (1,10), but to summarize, the goal was to
+model a guitar body impulse response with a low order (16th poles, 16th zeros) pole zero filter.
+The FFT of the guitar body impulse response was pre-processed to enhance perceptually
+significant features. The low-order filter was then fit to this pre-processed data.
+Four methods were compared; Hankel Method, Least Squares Modified Yule-Walker Equations,
+an Auto-Regressive method (Yule-Walker equations, using the Levinson-Durbin recursion), and
+Steiglitz-McBride (Jackson). The equation error methods (LSMYWE) tend to underestimate the Q
+of poles close to the unit circle, but seem to fit the overall shape of the desired spectrum fairly well.
+The Hankel Norm method (2) works surprisingly well, yielding a better fit for the high Q low
+frequency poles, and actually producing a much better least square error than the other methods.
+Conclusions
+Poles and zeros in combination offer substantial benefits to the computer music designer, and
+methods to analytically fit pole-zero filters do exist, although this is still an active area of research.
+Acknowledgements
+24
+Page 25
+Frans Coetzee at CMU performed most of the experiments with pole-zero analysis methods. Many
+thanks to Julius 0. Smith, Perry Cook, and Andy Moorer for their help regarding pole-zero filters.
+This research was funded in part by the National Science Foundation Grant number MIP-9157221.
+References
+1. V.L. Stonick, D. Massie, "ARMA Filter Design for Music Analysis/Synthesis," Proc. of the
+IEEE Conference on Acoustics, Speech, and Signal Processing, March 1992, San Francisco CA
+2. Julius 0. Smith, "Techniques for Digital FIlter Design and System Identification with
+Application to the Violin," Report No. STAN-M-14, Ph.D. Dissertation, CCRMA, Dept. of
+Music, Stanford University, Stanford California 1983
+3. Rabiner, Gold, "Theory and Application of Digital Signal Processing," 1975 Prentice-Hall,
+Englewood Cliffs, N.J.
+4. V.L. Stonick, "Global Methods of Pole/Zero Modeling for Digital Signal Processing using
+Homotopy Continuation Methods," Ph.D. Dissertation, Dept. of Elec. and Computer Engineering,
+North Carolina State University, Raleigh, North Carolina 1989
+5. J.A. Moorer, "The Manifold Joys of Conformal Mapping," J. Audio Eng. Soc. Vol 31 #11,
+1983 November
+6. Phillip A. Regailia, Sanjit K. Mitra, "Tunable Digital Frequency Response Equalization Filters,"
+IEEE Trans. Acoustics, Speech, Signal Processing, Vol. ASSP-35, No. 1 January 1987
+7. Stanley White, "Design of a Digital Biquadratic Peaking or Notch Filter for Digital Audio
+Equalization," Presented at the 78th Convention of the AES, Anaheim, CA, 1985 May 3-6
+8. X. Rodet, Y. Potard, J. Barriere, "The CHANT Project: From Synthesis of the Singing Voice
+to Synthesis in General," Computer Music Journal, Vol. 8, No.3
+9. Xavier Rodet, "Time-Domain Formant Wave-Function Synthesis," CMJ, Vol. 8, No.3
+10. V.L. Stonick, D. Massie, "Optimal LS HR Filter Design for Music Analysis/Synthesis,"
+Proceedings of the International Symposium on Circuits and Systems, San Diego CA, May 1992
+11. Leland B. Jackson, "Roundoff-Noise Analysis for Fixed Point Digital Filters Realized in
+Cascade or Parallel Form," reprinted in Digital Signal Processing, 1972 IEEE Press Reprint
+Series, page 413, IEEE, New York
+Figure 1 - Parametric Equalizer Figure 2. Poleero Analysis Results perceptually smoothed)
+Center Frequency.,_,kc_-.y ''............. t.SM,W E
+BandWidth!A14
+00
+0......-0
+Boost / Cut 10
+a
+Log Frequency 0 500 100)0 1500 2000 2500K 3(XK:35(I,(KX) 4500
+jflanke Â~j4'.'280"e-U05 1 2
+JLSMYWEJ2.6743 e-03j j " Ih' ) -14d~t(n) - ]
+AR. 12.6283 e-031n~
+LMM 382-04J
+25
+Top of page
+ Hosted by 
+Michigan Publishing
+, a division of the 
+University of Michigan Library
+.
+ For more information please contact 
+[email protected]
+.
+Online ISSN: 
+ 2223-3881

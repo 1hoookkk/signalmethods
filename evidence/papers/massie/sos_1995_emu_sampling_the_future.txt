@@ -1,0 +1,152 @@
+Interview | Manufacturer 
+
+ Industry TalkBy Paul White
+ 
+ Published October 1995 
+Paul White trips off to California to discover the inside track on sampling, resynthesis, Darwin, and the future power generation of musical instruments from industry pioneers, Emu Systems.
+
+Most MIDI musicians know of Emu Systems through their E-series samplers and Proteus synth modules, but what may be less well known is that Emu started out as a development company and was responsible for many of the innovations that turned up in other manufacturers' instruments. For example, the keyboard scanning system used in the first generation of analogue polysynths was developed by Emu, as was the SSM analogue filter chip utilised in the late Sequential Circuit's legendary Prophet 5.
+
+Emu then moved into building their own analogue synths and digital samplers, but were taken rather off guard in the mid-Eighties by Akai's low cost S900 sampler and almost went out of business. From what Emu tell me, it was a pretty close thing, but the company bounced back with the Proteus 1, which was a huge success story, and put Emu firmly back on the map.
+
+Since the company was bought out by Creative Labs (the Far Eastern company responsible for the SoundBlaster range of PC soundcards), Emu Systems has been able to expand its R&D team even further. The company has already established new frontiers in both sampling and synthesis technology, not the least because of their immensely powerful chip, which implements the Z-plane filtering. This filter is the secret behind the amazingly versatile Morpheus synthesizer, and the same chip is being used in their latest generation of samplers.
+
+I met up with Emu's team leaders at their Scotts Valley offices in California to try to persuade them to tell me what they were going to do next. I left feeling that I had been at least partially successful. The following comments were picked out of a long conversation held over a noisy lunch, with Emu's Dave Bristow acting as spokesman. After lunch I managed to record a brief interview with Dana Massie, Emu's DSP Research Manager, Matt Ward, who is responsible for Digital Audio Systems and looks after the hard disk recording side of the operation, and Dave Bristow, Electronic Musical Instruments Product Marketing Manager, who most UK readers will remember from his days at Yamaha as an FM synthesis specialist.
+
+My first question was to ask if Emu had any new ideas for making samplers easy to use.
+
+Multi-sampling instruments, creating loops and keygroups, is so difficult and time-consuming that most sampler owners now seem to rely on library material or sampled snatches of other people's material. Do you have any plans to make sampling easier?
+
+"There are two ways to make sampling easier. Currently, you load your samples in, you place them across the keyboard, loop them and so on, and our design engineers are always considering ways to make that sort of housekeeping a lot easier. Bob Bliss, a senior design engineer who has been associated with Emu's Emulator series for a very long time and responsible for many of its innovative features, has always believed that many aspects of sampling can be made more automatic, useful and user-friendly. You'll notice on the latest EIV software, for example, that the automatic placement of samples is becoming more efficient, and it will also automatically loop samples for you. Bob's developed many algorithms which we hope to introduce to the market later on in the form of upgrade software for EIV and e64.
+
+"On the other side of sampling is analysis, for which you need a special analysis engine at the front end. You might say, for example, 'Here is a high velocity sound at a high pitch'. Then you'd give it another sound and say 'This is a low sound at a high velocity, or low velocity, or whatever'. You'd feed it maybe three or four samples and have the analysis engine work out the in-between stages and regenerate intermediate samples where necessary. As yet, I don't know of any instruments that incorporate an analysis front end, but in principle this is one way to go."
+
+This sounds like a half-way house between sampling and full resynthesis, something that many of us have been discussing on and off for the past few years.
+
+"That's right, but before you can do resynthesis, you have to develop the analysis engine. Many people still don't realise that a good piano sample isn't just a matter of pointing a microphone at a piano and sampling it. A good piano preset might contain many different samples, painstakingly laid out in layers with different dynamics."
+
+Emu isn't short of creative ideas; it's choosing which ones to use that is the difficult task!
+I could argue that traditional instruments such as the piano might best be left to specialist sound designers to produce -- what interests me more is the creative use of samplers to shape new sounds or to use existing sounds in new ways.
+
+"That's the thing about resynthesis -- the more resynthesis you can do, the more real-time control you have and the more knobs you can give the user. You also use less memory, because you're not storing loads of different samples. While the EIV is presented to the market place as a sampler (and that's naturally what people are buying it for at first), nonetheless it's also an incredibly powerful synthesizer and great sound creation instrument."
+
+I guess a practical half-way stage would be to resynthesize your sounds off-line, ie. in non-real-time, and then put the results back into memory like a conventional sampler.
+
+"One of the things we're talking about now is sample editing. The EIV currently has a Wave Editing module, which is a tremendous off-line audio editor. You can do all sorts of really cool things, though admittedly some of the more off-the-wall things, such as Transform Multiplication, can take quite a long time to crunch through, and we're looking at ways of extending and speeding up these processes. I think if you go through the EIV with a fine tooth comb, you can see the elements of these ideas, and over the next six to 12 months, we're looking to produce EIV/e64 software and hardware upgrades, along with some new products, that will extend both our sample editing and sound creation capability."
+
+With samplers starting to include more synth-like features, and in the future resynthesis capabilities, does this mean that in years to come the sampler and synthesizer will become one instrument?
+
+"I think that for source/filter types of synthesis, you're right. The sampler is supreme for that kind of work, so long as there's no real-time audio wave file manipulation needed. The distinction between samplers and synths is really becoming a make-believe line. However, pure synthesis is certainly out there, and there are lots of models, and at Emu we do have some strong cards to play"
+
+But surely with the DSP power you have in your current samplers, you can tackle just about any type of digital synthesis?
+
+"Our real-time synthesis is already very good; the parametric synthesis is very flexible and ideal for real-time control. You can even use an Emulator now as an additive synthesizer, by using the many layers of polyphony to provide a series of sine wave partials. When you've created your sound using these partials, you hit the Resample button to create one new sample and then switch back into real time, but with all the polyphony available again. If you want to then add real-time controls -- for example, you want the sound to be brighter when you play harder -- you can use the Z-plane filter from the parametric synthesis section; Voice Edit, in Emulator terminology."
+
+The long-term implication of this is whether we'll continue to see new Proteus models or whether the future belongs to a hybrid box with the words 'synth' and 'sampler' stamped on it?
+
+"To be quite honest, there is a fundamental cost issue here -- you can produce a playback module a lot cheaper than you can produce a sampler. But in answer to your question, we would like to contribute to the wider use of samplers by expanding and applying our technology and embedding our know-how in products to make them easier to use and suitable for ever more various music or audio applications."
+
+How much further can you take cost-effective synth modules to make them more attractive to the market place?
+
+"We believe that we have a couple of kernels of technology that enable us to do some things that nobody else can do. Not only do we have 128-note polyphony at a price point nobody else can equal, but we also have patent protection on the method. Filtering technology is another technology kernel, and our ASIC [application-specific integrated circuit] has been proven in the Morpheus, Ultra Proteus, EIV, and e64.
+
+"We're not looking to become the budget tone module leader at this point, but we are looking to address the next level, where quality and flexibility are important. Our last two modules were the Morpheus and Ultra Proteus, and since then we've really concentrated on samplers for the last couple of products, but we have other synth-like sound module ideas that are imminent and we would like to combine the strengths of our polyphony and our filtering into those modules."
+
+General MIDI
+Is there any strategic reason why Emu haven't brought out a General MIDI module?
+
+"We haven't consciously avoided it, it's really that the GM market exploded at a time when Emu was resource limited. Our architecture at that time didn't lend itself readily to the GM structure -- and to be honest, there's also a certain stigma attached to GM amongst serious users here in the States. We could certainly produce a really nice GM module, and we haven't ignored the issue; in fact, our sound design department have developed sampler banks of extremely high quality GM sounds already. But the concern is that if we made a professional GM machine something like Ultra Proteus with everything on-board, including Z-plane filtering and 128-note polyphony, just because there was a GM badge on it, some people might see it as inferior in some way. In Germany and the UK, General MIDI is a positive thing, but in the USA that's really not yet the case."
+
+How about building the machine without a GM badge and then sell an inexpensive plug-in card to switch on the GM side of things? That way you could sell the stigma as an option!
+
+"That's a great idea -- pay him money!"
+
+Evolution Of Darwin
+On returning to the company's headquarters after lunch, I had a chance to study Emu's latest key product. At the Frankfurt Music Messe earlier this year, Emu unveiled the prototype of an 8-track hard disk recording system, codenamed Buckeye, which appeared to be largely based on their existing EIV sampler hardware. Matt Ward, Emu's Product Marketing Manager for Digital Studio Systems, gave me a run through the product, due to be released under the name Darwin, and explained Emu's approach to hard disk recording.
+
+We all know that sampling has expressivity limitations, but it still dominates the current synth market because it is relatively easy to use.
+Matt Ward: "While there is, conceptually, a lot of similarity between hard disk recording and sampling, there's a lot of technical work involved in getting the material onto and off hard disk in real time that has necessitated us developing our own disk engine. However, now it's been done, it can be used in future products. So, some of what's in the recorder is common to the EIV, but there's a lot of new stuff in there as well, including the user interface.
+
+"What we have is an 8-track hard disk recording system that can have an internal or external disk drive. We're currently planning to ship a basic version without a drive, as well as a version with an internal 1 Gigabyte hard drive -- which will give you around 22 minutes of 8-track recording time. The system comes with four analogue inputs and eight analogue outputs, but is expandable to eight analogue inputs. There is S/PDIF digital I/O and SCSI as standard, as well as a card option for a SCSI connection to a PC computer (separate to the data SCSI connector). There are three other options, including an ADAT digital I/O card.
+
+"We feel that there are three basic customers for Darwin:
+
+Someone who hasn't yet bought a tape-based multitrack and is interested in an affordable yet powerful random access alternative to the DA88 and ADAT.Someone who currently owns an ADAT or DA88 that wants to expand their system. Darwin is a powerful 8-channel expander for an ADAT or DA88.The third group are computer sequencer users who want to affordably integrate a powerful HD recorder into their system. Currently this means upgrading from Vision to Studio Vision or from Performer to Digital Performer, adding Pro Tools hardware and learning a new interface. With Darwin's MMC and MTC support, a user gets 90% of what he wants in an integrated sequencer hard disk recording package for less money, and without having to learn a complicated software package.
+"Darwin is designed to be simple to use: it has a basic tape machine transport, eight track arm buttons, and eight meters. There's a 10-key pad that can be used to access locate points, and the display is a large 240 x 64 LCD with six soft buttons. Part of the plan was to come up with a system that didn't have as steep a learning curve as computer-based systems, but which still provided you with all the necessary visual feedback for full-featured digital editing. It had to be accessible to the hard disk novice and I think our interface comes nearer to being like a tape recorder than a computer-based system.
+
+"We have a feature which I think is really important: you can make 99 different versions of the same project without creating any new audio data -- it just creates pointers to the file. You can try out many versions of a song, or you can even bounce six tracks down onto two, then put the bounced tracks back into your original project. We're calling that the 'Virtual Slave Reel' feature, because it's very much like using slave reels in an analogue multitrack context."
+
+And everything is non-destructive, unless you decide you need to erase something to free up disk space?
+
+"Once you create a new version, you can do anything to it without affecting previous versions, but recording is of course a destructive act -- there are up to five levels of undo, and if you don't have another version, and you record over something more than five times, you can't get the original back.
+
+"The routing screen lets you route any of the inputs to any of the disk tracks, but we also provide three useful preset routing patches. The 1-buss preset takes anything that's routed into input 1 and sends it to all eight tracks, so you can record it on any track you like without repatching. The 2-buss setting sends the two inputs to even- and odd-numbered tracks, while the 4-buss setting feeds the inputs to 1/5, 2/6 and so on.
+
+"We have separate +4 and -10 inputs and outputs, and the internal 8-channel mixer provides control over pan and gain. It's really like a headphone cue mixer, but you can use it to do an internal digital bounce.
+
+"All the tracks can be named on the edit screen and they are graphically represented as physical tracks on the screen. The whole idea is to make the unit as easy to operate as a tape machine, but with the added benefit of cut/copy/paste editing and random access. The aim is to make a system that appeals to those users who want a hardware platform rather than a computer-based system, but where they want more visual information than they can get from a machine that has only a numeric display."
+
+Z-Plane Filtering
+Next, I was lead to the newly-created Tech Center, a joint research enterprise between Creative Labs and Emu. There I was introduced to Dana Massie, the company's DSP Research Manager, who explained where the Z-plane filtering idea had come from.
+
+Dana Massie: "Dave Rossum, Emu's founder, deserves the credit for that. He decided in about 1989 that he was going to design a digital filter chip -- he has a lot of experience designing filters and designed one of the first analogue filters on a chip. His chip went into Sequential's first Prophet 5 synth. When he came to do the digital filter chip, he decided that it should be powerful enough to be able to talk -- it should be able to do phonemes and arbitrary formants. That chip came out in 1989 and was used in the Emax II sampler, but there it was only doing simple 2-pole resonant filtering. The problem was that it was so powerful, people weren't sure how to control it. It could handle 14th-order filters, which meant there were 28 different parameters to control, and my contribution was to come up with a simple method of using them in a musical way by putting them into what we call the 'filter cube', as used in the Morpheus. The cube is just a way of mapping musical dimensions onto synthesizer dimensions. For example, you can map things like velocity, keyboard position and a controller position onto the three axes of the filter cube.
+
+What musicians seem to want is traditional, acoustic expressivity, and that's the hardest thing to produce.
+Because of the way the filters behave, I understand that you decided to present the filters as predefined sets, rather than leaving everything open-ended, to avoid overwhelming the end user?
+
+"The chip is amazingly powerful, but as with all filters, there are lots of little quirks. And then there are more basic things, like if you have a filter with a 12dB peak and another with a 10dB peak and they cross, you end up with a 24dB peak -- which makes it really easy to create something that overloads. By pre-packaging the filters, we could keep those intermediate peaks from getting out of control."
+
+Couldn't you have built software limiting into the filters to prevent overload?
+
+"Well, we could, but detecting the peaks becomes complicated. I think with what we've learned, we could do it now, but it takes a lot of CPU power. We see a great future for source/filter synthesizer models and the Morpheus was just the first step."
+
+Would it be possible to manage a series of filter squares and have these morph from one into the other without overload problems? This would still retain operational simplicity but would allow the user to define the start and end characteristics of the filter morph, rather than being bound by the characteristics of a preset cube?
+
+"That's conceivable and we have been looking at a number of schemes. Since we designed the Morpheus, the company was bought by Creative Labs and Creative has invested in setting up the Tech Center, so we went out and hired a bunch of people -- we hired two PhDs, two Masters degree candidates, and we're planning to hire more. These guys are a lot smarter than I am and they have taken the filter design problem much further. We are still in the research phase, but I'd say there were possibilities for multi-dimensional cubes. Instead of interpolating between preset filter types, you give the user access to higher level parameters -- the parametric filter functions could be accessed directly, while other functions could be mapped to multiple controllers.
+
+"The idea of filter squares is a very good one, and at a higher level the four corners of a square could be full instrument families. We're looking at control schemes where all the control parameters might be interpolated, including envelopes, but if you go too far you get back to the complexity problem."
+
+Being realistic, aren't you always going to have to present the filter characteristics as a series of presets, whether they're cubes, squares, frames or whatever, because if you didn't, virtually nobody would be able to work with the complexity of it?
+
+"We learned a lot from customer feedback after we launched the Morpheus, and though most people thought the machine was very powerful, some of them still found it too hard to programme. Why is it that sampling has become the dominant synthesis model? We all know that sampling has expressivity limitations, but it still dominates the current synth market because it is relatively easy to use. That's not true of any other synthesis model we've got today. But I believe that sampling is effectively analysis/resynthesis. When you record you're also analysing, even though what you're analysing it into isn't really all that flexible. While physical modelling is really exciting, it suffers from the complexity barrier problem and I think that it's gradually moving towards where we're moving. We're moving towards greater expressivity in sampling while physical modelling is moving towards greater accuracy -- we're at opposite ends of the same spectrum. The way we want to move sampling is through analysis/resynthesis.
+
+Analysis/Resynthesis
+Dana Massie: "When you look at the libraries on filter bank analysis, it looks like a solved problem, but what you discover is that the total problems involved in making something musical end up being very large. We've discovered that full-bore analysis/resynthesis with source/filter models is a hard problem. There are rumours that Yamaha put something like 500 man years into physical modelling and Korg has put maybe 50 man years into their physical modelling program. Our approach is to see how we can incrementally release powerful but simple tools that people can learn to use a piece at a time."
+
+Is it possible to take a hybrid approach to resynthesis, where you combine existing sampling technology with resynthesis? For example, can you envisage a sampler type of instrument where you sample perhaps one low note and one high note from the instrument, and then analyse them with a view to synthesizing all the in-between notes? By auto-correlating the two samples, it may be possible to separate out those elements which simply vary in pitch as the note is changed, from the filter formants, and frequency components that don't relate to the note being played. It may then be possible to reconstruct the desired sound by using traditional sampling to create part of the sound and resynthesis to create the other components. This may not sound quite as accurate as a good multi-sample, but it would be quick, easy, and there'd be no changes of tone at the end of a keygroup. Furthermore, you could do all kinds of creative things -- like feeding in a low note from a piano and a high note from a vibe to create a new instrument that morphed from one sound to the other across the width of the keyboard.
+
+"We have looked at some ideas that are very close to what you describe, and what we're finding is that we can get back the note we started with, no problem. But to create the variations, the musicality of the instrument, we need to be able to vary the sound across the keyboard and vary it according to things like velocity and other real-time dimensions of control. We have to find a way to breath life into it. It's characterising the variations in sound and keeping them under control that causes the difficulty. People are going to love it when this kind of thing comes on-line. What we discovered with Morpheus is that people want expressivity, but at the same time they're not willing to give up the realism. What musicians seem to want is traditional, acoustic expressivity, and that's the hardest thing to produce."
+
+I imagine there's a lot Emu could do to create expressivity by the subtle use of Z-plane filters in a fairly conventional sample-based synthesizer?
+
+"Oh yes, there's no question about it. What we have found is that there's a tremendous amount of work involved in harnessing it, keeping it under control, and making it efficient enough to produce sound sets. We can play something that represents a piano through a filter which illuminates all the different partials, and that is very exciting, but we don't know how far we can take that. We're looking at lots of ways of taking Morpheus to the next step. Nobody has ever had a filter chip that is this efficient for this low a cost, and we're convinced we can go a long way with it."
+
+In Morpheus, you're using the filter chip in almost a Vocoder mode, but I imagine you could do a lot more?
+
+"Yes, and some of the most interesting Morpheus sounds are the very subtle ones, but David [Bristow] was one of the most talented people for voicing it, and he'd get frustrated at times because the tools we had were too limited for what he wanted to do. But we shouldn't overlook the fact that even with its limitations, many of which were necessary to make it relatively easy to use, Morpheus is a remarkable instrument and I'm constantly amazed at what I can get out of it. To this day, nobody has come out with a machine with that kind of horsepower for modifying the musical spectrum."
+
+More On MorpheusBefore leaving Emu HQ, I returned to Dave Bristow's office where he was working on a very interesting new development that looks likely to find its way into a future product. He said that he could tell me all about it if I wanted, but then he'd, sadly, have to kill me -- so I tactfully changed the subject to the Morpheus and its position in the market place.
+
+Although successful, Morpheus doesn't seem to have sold in such large quantities as more conventional synths, yet when you consider what people are prepared to spend on a digital instrument designed to imitate an analogue synth, my own feeling is that there might be a large number of prospective purchasers out there who haven't yet appreciated what Morpheus is about or what it can do. After all, it offers all the classic analogue waveforms and filter types as well as a huge number of sampled sounds and complex filter types.
+
+Dave: "I think there's a lot of truth in what you say, and all the popular percussive filter sounds are so easy to do using Morpheus. You just have to listen to some of the stuff on our Dance/Rage voice card to appreciate what's possible. Standard filter sweeps are almost undertaxing the Z-plane filter, but they're in there waiting to be used and brought to life. What's more, Morpheus is 16-part multitimbral so you get a lot more than you would from a single-voice lead synth.
+
+"The trick with Morpheus is to explore each corner of the filter cube to find out where the really resonant stuff is. Treat Morpheus as a mono synth and it gives you as good a honking lead sound as the dedicated mono units out there. Presentation seems to have a great influence on what synths are popular, and perhaps Morpheus in its understated 1U rackmount box doesn't have the same visual appeal as some of the lead synths currently on the market."
+
+For me, the exciting thing about Morpheus is when you get away from the traditional filter sounds and start to impose things like changing vowel sounds on a sample, which gives it a very organic quality.
+
+Dave: "Absolutely, and like any musical instrument, you have to take care how you use it. The sound cards are there now for the users who don't want to programme everything from scratch, and of course you should use MIDI real-time controllers to really bring the sounds to life. In some ways it's a pity that Morpheus wasn't available in a keyboard, so that we could supply all the right controllers."
+
+Most keyboards offer just a couple of wiggly wheels on the left-hand side, and that's about it. How would you suggest people add more performance control to Morpheus?
+
+Dave: "I've successfully demonstrated a breath controller with Morpheus to really control expression, but a lot of people find these devices a little strange to use. Don't forget that up to four freely assignable real-time control sources can be brought in to Morpheus and mapped to filters in each individual preset. A footpedal is always a useful control source, as it leaves both of your hands free to play. Part of my mission with Emu is to make sure that as much real-time control is built into new products as possible. Emu has very powerful synth engines, and what you said in an SOS article quite a few months ago about people wanting more physical controllers and knobs is very true."
+
+One thing a lot of people fail to realise is that when you're using a sequencer, you can use the same physical controller to overdub several tracks of control data on different controller numbers. So with an instrument like Morpheus, you can do a lot to articulate the sound after you've recorded the basic track.
+
+Dave: "Absolutely. Sometimes I like to do what I call 'timbral sequencing' -- in any sequencer, you can take a simple chord and then play with the timbre of it, rather than changing notes, using controller information on appropriate presets. If you want to have fun with ambient music, that's one way to do it."
+
+Have you tried building pressure controllers under modulation wheels, so you can press at the same time as you bend?
+
+Dave: "We've tried a number of things like that, but not every good idea finds its way into a product, for various reasons. The comforting thing here is that Emu isn't short of creative ideas; it's choosing which ones to use that is the difficult task!
+
+"Now we have Z-plane filtering in the EIV and e64, making it a very powerful engine both for sampling and synthesis, so it makes sense to use this hardware as the platform for our next generation of instruments. One important feature of our EIV system is that it is software updatable, allowing it to grow. We have plenty of ideas, but ultimately, we have to decide which ones will both satisfy our customers and pay the bills."

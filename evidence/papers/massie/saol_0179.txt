@@ -1,0 +1,260 @@
+MPEG-4 Structured Audio  Mailing List Archive: saol-users:
+
+Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic
+
+From: Dana Massie (dana@beadgame.com)
+Date: Tue Nov 23 1999 - 13:44:36 EST
+
+Next message: Sampo A Syreeni: "Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic"
+Previous message: Eric Scheirer: "Re: [slightly OT] Re: Calculation of filter coefficients given characteristic"
+In reply to: Eric Scheirer: "Re: [slightly OT] Re: Calculation of filter coefficients given characteristic"
+
+Next in thread: Sampo A Syreeni: "Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic"
+Reply: Sampo A Syreeni: "Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic"
+
+Messages sorted by: 
+[ date ]
+[ thread ]
+[ subject ]
+[ author ]
+
+Eric -
+Wow!  That was fast coding for the interpolation.  This is
+exactly what I was thinking.
+ 
+ 
+Eric Scheirer wrote:
+ 
+I wonder how many applications truly need filter re-design to happen
+at the k-rate.  At least in the one I had in mind, I'm happy to
+have
+the filters designed at the i-rate, or even at orchestra startup.
+Excellent point.
+People have been looking at this for decades, I have discovered. 
+Apparently this has been considered a hard problem forever.
+If you have the luxury of infinite calculation speed, then it is nice
+to have an arbitrary mapping of user parameters to physical synth parameters. 
+This is a nice general idea in block diagram form:
+   UserParameters --> Mapping -> PhysicalParameters
+Of course, this is a many-to-many transformation, and it is usually
+non-linear.
+In the case of filter design, we have dozens (actually, zillions) of
+choices for this mapping.  In my opinion, Julius Smith has written
+the most comprehensive study of all of the math behind the mappings for
+filter design in his thesis.  He really needs to be given a year or
+so to turn this into a book.  It is better than any of the other filter
+design books that I have, except that it is a bit hard.  He could
+add a few sections for implementation details, perhaps.
+Short of that, Matlab is my second choice.
+Clearly, in practice, it is overkill to have a complete filter design
+calculation at K-rate, or even maybe I-rate, as Interpolate Table lookup
+works so well in so many cases.
+ 
+ 
+Past the issue of how often the filter is changing,
+there's the issue
+of zipper noise that comes from changing parameters on the fly.
+
+Re: Zippering
+Here I would argue that the case is clear.  Filter coefficients
+must be ramped at the sample rate.  OK - i have seen people ramp filter
+coefficients at some lower rate, and in many cases you cannot hear the
+zippering.  The filter itself can provide some filtering of the coefficients
+as they are ramped.
+But the only certain way to avoid zipper noise is to ramp the coefficients
+at the sample rate.  The same goes for amplitude multipliers - actually,
+they are even more important to ramp.
+If you cannot afford to ramp filter coefficients at the sample rate,
+then you really have to make sure that the coefficients are not changing
+very fast, and you need to test them with suitable program material. 
+I have found that when you try to cheat here, you can get burned when a
+composer tries something you did not test.  They come back and complain
+that there is something wrong.
+ 
+ 
+How stable are traditional (ie, bilinear transform) methods of
+filter design as you change the input parameters?  For example,
+if I smoothly vary the cutoff frequency of a bandpass designed
+with ellip() in Matlab, will the pole/zero locations smoothly
+vary?
+
+There are two questions here:
+1. Stability when the filter coefficients are changing.
+There are at least two definitions of stability.
+A. the most traditional definition of filter stability is to constrain
+the filter poles to remain inside the unit circle.  This is necessary
+and sufficient for time-invariant filters, I think.  For this definition
+of filter stability, you need to consider each filter topology separately,
+when you are interpolating coefficients.
+One of the most popular topologies is the Direct Form II biquad. 
+With this filter, if you start with a coefficient set that is stable, and
+you end with a coefficient set that is stable, all linear interpolated
+values in between are also stable.  This comes from a wonderful simple
+proof that I learned about from Andy Moorer.  There is a nice drawing
+(see Jackson's text) that shows the 'triangle of stability', which is a
+plot of the recursive coefficients a1 versus a2.  All stable filters
+fall within a triangle in this plane, and it is trivial to see that linear
+interpolations between different a1's or a2's all fall on lines within
+this triangle, therefore, all intermediate values are stable.
+For various ladder filters, interpolated filter coefficients can also
+be shown to be stable, as long as the coefficients are on the unit interval.
+For Direct Form filters of order greater than 2, I am not sure what
+the case is.
+B.  Energy Stability definition
+This definition is that the energy output of the filter is bounded when
+the input is bounded.  I believe that this is a bit different than
+requiring that the poles remain inside the unit circle.  Actually,
+I think that the constraint that the poles remain inside the unit circle
+comes from this initial constraint, but in the time varying case, there
+are more considerations.
+Here I frankly do not understand the math.  Sadly, I fell behind
+in my studies.  However, I know that Jean Laroche independently discovered
+a fundamental proof that can show whether a filter is stable under time
+varying conditions using the state variable representation of the filter,
+and some amazing eigenvalue / linear algebra tricks that I could only marvel
+at from a distance.  He then found that his proof was published in
+a European signal processing journal some years ago, but I think that Jean
+should re-publish this result in more understandable engineering terms.
+Basically, he found that there are several filter topologies that are
+unconditionally stable under time varying conditions, and that the direct
+form is not one of them.
+This does not mean that you cannot use the direct form for time varying
+filters.  In fact, it behaves very well.  You have to get very
+extreme cases to make the output 'blow up'.
+I believe that the normal form for filters is stable under time varying
+conditions.
+Still, I would advise using the direct form if you are comfortable with
+this structure, unless you plan on some extreme sweeps.
+2. Interpolate Filters - do they satisfy the basis filter design constraints?
+OK, there is a second major issue in whether the "poles smoothly vary".
+What is the intermediate filter shape?  Do the interpolated filters
+still satisfy the desired design constraints of the initial filter prototypes
+(or 'basis' filters - a nice concept).
+For example, a low pass filter design constraints are pretty easy to
+summarize in text:  the filter should be unity gain up to the cutoff
+frequency, and the zero gain above that in the stop band.  Of course,
+real world filters have pass band ripple, transition band width, and stop
+band ripple, but the prototype constraints are as above.
+Here, I have not seen much published, but I have discovered a couple
+of things empirically.
+First, the parametric eq, when implemented with a 5-multiply direct
+form biquad, interpolates perfectly.  All of the intermediate filters
+still satisfy the design constraints of a parametric eq, which is nice. 
+You apparently only need 8 basis filters to generate all intermediate parametric
+eq filters.  Note that a 4 multiply bi quad does *NOT* interpolate
+properly.  Again, I can show why they are different with simple algebra,
+but I cannot show in closed form why the 5-multiply form works so well.
+Second, I have found, also empirically, that other filter designs will
+interpolate very nicely, using linear interpolation of the filter coefficients. 
+What do I mean by 'very nicely'?  I plotted the intermediate shapes
+using Matlab, and the shapes all looked like I wanted them to... 
+Not a precise definition, of course.  Still, I was amazed that so
+many filters worked so well.
+Here, I would suggest just taking a couple of basis filters, and then
+interpolating the coefficients and looking at 16 intermediate filters.
+It is usually easy to inspect the intermediate filters to determine if
+they satisfy the design constraints.  It is also pretty easy to create
+a matlab script to test the interpolated filters to see if they still satisfy
+the constraints.
+I can show some cases where this technique fails.  In fact, the
+technique does not work 'properly' with FIR filters.  F. Richard Moore
+shows an excellent example in his Intro to Computer Music book.  If
+you take an FIR filter for a lowpass at say 100 Hz, and linear interpolate
+the coefficients with the same order filter that has a cutoff of 100 Hz,
+the intermediate value looks like a sum of the outputs of two filters in
+parallel - not a low pass filter at all, but a low pass with a funny step
+in the response.  What you probably want is actually a lowpass with
+a cutoff at an intermediate frequency, which does not happen with an FIR.
+What is happening is probably just that the high order FIR filter represents
+a high order polynomial, and the coefficients do not map simply onto filter
+parameters.
+With a second order direct form filter, the coefficients have simple
+relationships to the filter parameters.
+Is this why the interpolate ok?
+ 
+>3. Table lookup with Interpolation
+Particularly in the complex plane, it's very straightforward, as
+the poles and zeros are being interpolated, I think.  You're right
+that this is a good trick.
+I tried looking empirically at what happens to the poles and zeros of filters
+whose parameters are being interpolated, and they follow arcs on the z-plane. 
+I did not try to study analytically what was happening.  In the case
+of the parametric eq, amazing weird things happen.  I found a number
+of filters where the poles move smoothly from complex poles to become real
+poles.  Then the real poles would move along the real axis. 
+The movements in the z-plane can be rather complex, actually.
+ 
+And a further generalization of this is
+some kind of "basis filter" method, where you have a set of
+prototypes and use linear combinations to get the desired
+filter as a reconstruction from the set of prototypes, which
+acts as a basis for "filter space".
+3-D audio people use this trick for data reduction on sets of HRTF
+filters, I believe.  They get the prototype functions from a Karhunen-
+Loeve expansion (principal components analysis) of the set of HRTF
+vectors itself.  Bill Gardner also showed in his WASPAA paper
+this
+year that you can do nearly as well more efficiently by simply choosing
+a good subset of the original HRTF set as your basis set.
+ 
+
+I wonder if the perspective of filter basis sets could help in understanding
+how linear interpolation of direct form coefficients works.  See above
+regarding FIR coefficient interpolation.
+
+kopcode interpfilter(table a, table b, ksig p[2], ksig order) {
+
+This is exactly the way to test interpolation inside of Matlab, I believe,
+if I understand the SAOL syntax correctly.  I would argue that the
+best way to try this out is to take a couple of prototype filter parameter
+sets, for a 2nd order direct form filter, for example, and then interpolate
+the coefficients, and then plot the results to see what they look like
+compared to the original filter.
+By the way, I would not advise using a higher order direct form filter. 
+I do not believe that this will interpolate correctly.
+However, lattice filters behave well under interpolation.  The
+all pole case has been used extensively in speech synthesis, with a lot
+of different filter topologies, and these results are widely published.
+In general, outside of the lattice/ladder filters, I would suggest using
+cascaded second order sections, whether they are direct form or otherwise,
+for interpolation.
+Another filter type that interpolates very badly is the parallel form. 
+(See Jackson, Rabiner Gold, etc.).  The parallel form decomposes a
+higher order transfer function into a parallel combination of second order
+sections.  In this form, a variation in any coefficient causes *all*
+of the zeros to shift in unpredictable ways.  This filter may have
+nice noise properties, but it is useless for any time varying applications,
+as far as I can tell.  There is no way to get independent parameter
+variation.
+Actually, time varying filters are a huge topic.  I wish that I
+had the time (and the skills) to really study the behavior of various classes
+of time varying filters analytically.  i actually suspect that the
+math may be intractable for many general cases.
+The goal is to design a filter structure that satisfies some design
+constraint for all values of the parameters under interpolation. 
+Is this tractable?
+Anyway, thanks for the engaging discussion.
+Cheers -
+-dana
+---
+Dana Massie
+dana@beadgame.com
+102 Bradley Drive
+Santa Cruz, CA 95060
+ 
+
+Next message: Sampo A Syreeni: "Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic"
+Previous message: Eric Scheirer: "Re: [slightly OT] Re: Calculation of filter coefficients given characteristic"
+In reply to: Eric Scheirer: "Re: [slightly OT] Re: Calculation of filter coefficients given characteristic"
+
+Next in thread: Sampo A Syreeni: "Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic"
+Reply: Sampo A Syreeni: "Re: [slightly OT] Re: Calculation of filter coefficients given  characteristic"
+
+Messages sorted by: 
+[ date ]
+[ thread ]
+[ subject ]
+[ author ]
+
+This archive was generated by hypermail 2b29 
+: Mon Jan 28 2002 - 11:46:36 EST
