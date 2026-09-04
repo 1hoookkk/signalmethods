@@ -48,7 +48,7 @@ private:
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;
     std::unique_ptr<trench::ui::ValueReadout>     secondaryReadout;
     std::unique_ptr<trench::ui::LabelsLayer>      labels;
-    std::unique_ptr<trench::ui::BayKnob>          inputKnob, outputKnob;
+    std::unique_ptr<trench::ui::BayKnob>          inputKnob, outputKnob, followKnob;
     std::unique_ptr<trench::ui::GlassValue>       zWord;
     std::unique_ptr<trench::ui::Onboarding>       onboarding;
 #if TRENCH_DEV_PANEL

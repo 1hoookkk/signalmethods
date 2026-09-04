@@ -18,11 +18,40 @@ public:
 
     static constexpr int kStripFrameWidth = 417;
 
+    static juce::Image recolourGlow (const juce::Image& source, juce::Colour target)
+    {
+        juce::Image out = source.createCopy();
+        juce::Image::BitmapData data (out, juce::Image::BitmapData::readWrite);
+        const float mintHue = juce::Colour (0xff3cc8be).getHue();
+        const float mintSat = juce::Colour (0xff3cc8be).getSaturation();
+        const float targetHue = target.getHue();
+        const float targetSat = target.getSaturation();
+        for (int y = 0; y < data.height; ++y)
+        {
+            for (int x = 0; x < data.width; ++x)
+            {
+                const juce::Colour c = data.getPixelColour (x, y);
+                const float sat = c.getSaturation();
+                if (sat < 0.18f || c.getAlpha() == 0)
+                    continue;
+                float dh = std::abs (c.getHue() - mintHue);
+                dh = juce::jmin (dh, 1.0f - dh);
+                if (dh > 0.09f)
+                    continue;
+                const float scaled = juce::jlimit (0.0f, 1.0f, targetSat * juce::jmin (1.0f, sat / mintSat));
+                data.setPixelColour (x, y, juce::Colour::fromHSV (targetHue, scaled, c.getBrightness(), c.getFloatAlpha()));
+            }
+        }
+        return out;
+    }
+
     WheelControl (juce::AudioProcessorValueTreeState& apvts, juce::String paramID,
                   juce::Image filmstrip, const Theme& theme)
         : strip (std::move (filmstrip)), t (theme)
     {
         numFrames = juce::jmax (1, strip.getWidth() / kStripFrameWidth);
+        if (strip.isValid() && t.rollerIllumination() != juce::Colour (0xff3cc8be))
+            strip = recolourGlow (strip, t.rollerIllumination());
         jassert (! strip.isValid() || strip.getWidth() % kStripFrameWidth == 0);
         isQControl = paramID.containsIgnoreCase ("q") || paramID.containsIgnoreCase ("slam");
         param = apvts.getParameter (paramID);

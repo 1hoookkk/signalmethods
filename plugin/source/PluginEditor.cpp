@@ -71,8 +71,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     });
     inputKnob  = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::preamp,    "Input");
     outputKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
+    followKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::envAmount, "Follow");
     labels = std::make_unique<LabelsLayer> (theme);
-    labels->setRailLabels ("MORPH (%)", "Q (%)");
+    labels->setRailLabels ("MORPH", "Q");
     addAndMakeVisible (*faceplate);
     addAndMakeVisible (*morphWheel);
     addAndMakeVisible (*secondaryWheel);
@@ -85,7 +86,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*labels);
     addAndMakeVisible (*followLamp);
     addChildComponent (*zWord);
-    for (auto* c : { (juce::Component*) inputKnob.get(), (juce::Component*) outputKnob.get() })
+    for (auto* c : { (juce::Component*) inputKnob.get(), (juce::Component*) outputKnob.get(), (juce::Component*) followKnob.get() })
         addAndMakeVisible (*c);
     addChildComponent (*bodyBrowser);
     onboarding = std::make_unique<Onboarding> (theme);
@@ -140,18 +141,87 @@ void PluginEditor::resized()
         followLamp->setBounds (glass.getX() + 12 + 150 + 6, glass.getBottom() - 26, 70, 18);
         zWord->setBounds (glass.getRight() - 12 - 104, glass.getY() + 8, 104, 18);
     }
+    const bool lean = std::getenv ("TRENCH_FACE") != nullptr && juce::String (std::getenv ("TRENCH_FACE")).toLowerCase() == "lean";
+    glassWords->setVisible (! lean);
+    followLamp->setVisible (! lean);
+    keySnapBox->setVisible (! lean);
     {
         const auto key = rectOf ("keyBox");
         keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
     }
     {
-        const int x0 = juce::roundToInt (kBayLeft + kBayPad);
-        const int x1 = juce::roundToInt (kBayRight - kBayPad);
-        const int w  = x1 - x0;
-        const int rowY = juce::roundToInt (kBayRoom.getY() + kBayPad + kBayRowGap * 0.5f);
-        inputKnob->setBounds  (x0, rowY, w, kBayRowH);
-        outputKnob->setBounds (x0, rowY + kBayRowH, w, kBayRowH);
-        faceplate->setRoomFrame (kBayRoom, (float) kBayWord.getX() - 4.0f, (float) kBayWord.getRight() + 4.0f);
+        const char* gainEnv = std::getenv ("TRENCH_GAIN");
+        const juce::String gainMode = gainEnv != nullptr ? juce::String (gainEnv).toLowerCase() : juce::String ("pocket");
+        const bool boxOnly = gainMode == "numbers";
+        inputKnob->boxOnly = boxOnly;
+        outputKnob->boxOnly = boxOnly;
+        faceplate->setDeck (gainMode);
+        inputKnob->setVisible (gainMode != "rig" && ! lean);
+        outputKnob->setVisible (gainMode != "rig" && ! lean);
+        if (lean)
+            faceplate->setDeck (juce::String());
+        inputKnob->deckStyle = gainMode == "deck";
+        outputKnob->deckStyle = gainMode == "deck";
+        followKnob->deckStyle = true;
+        followKnob->setVisible (false);
+        followKnob->setBounds (0, 0, 0, 0);
+        if (gainMode == "deck")
+        {
+            inputKnob->setBounds  (26, 356, 88, 108);
+            outputKnob->setBounds (126, 356, 88, 108);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else if (gainMode == "rig")
+        {
+            inputKnob->setBounds (0, 0, 0, 0);
+            outputKnob->setBounds (0, 0, 0, 0);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else if (gainMode == "bay")
+        {
+            inputKnob->setBounds  (28, 382, 100, kBayRowH);
+            outputKnob->setBounds (28, 382 + 34, 100, kBayRowH);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else if (gainMode == "bench")
+        {
+            inputKnob->setBounds  (52, 390, 112, kBayRowH);
+            outputKnob->setBounds (52, 432, 112, kBayRowH);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else if (gainMode == "row" || gainMode == "numbers")
+        {
+            const int y = 336;
+            inputKnob->setBounds  (18, y, 132, kBayRowH);
+            outputKnob->setBounds (150, y, 132, kBayRowH);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else if (gainMode == "corners")
+        {
+            const int y = 418;
+            inputKnob->setBounds  (18, y, 132, kBayRowH);
+            outputKnob->setBounds (150, y, 132, kBayRowH);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else if (gainMode == "stack")
+        {
+            const auto wheel = rectOf ("morphWheel");
+            const int x0 = juce::roundToInt (wheel.getX()) - 4;
+            const int w  = 150;
+            inputKnob->setBounds  (x0, 352, w, kBayRowH);
+            outputKnob->setBounds (x0, 352 + kBayRowH + 6, w, kBayRowH);
+            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
+        }
+        else
+        {
+            const int x0 = juce::roundToInt (kBayLeft + kBayPad);
+            const int x1 = juce::roundToInt (kBayRight - kBayPad);
+            const int w  = x1 - x0;
+            const int rowY = juce::roundToInt (kBayRoom.getY() + kBayPad + kBayRowGap * 0.5f);
+            inputKnob->setBounds  (x0, rowY, w, kBayRowH);
+            outputKnob->setBounds (x0, rowY + kBayRowH, w, kBayRowH);
+            faceplate->setRoomFrame (kBayRoom, (float) kBayWord.getX() - 4.0f, (float) kBayWord.getRight() + 4.0f);
+        }
     }
 #if TRENCH_DEV_PANEL
     devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kEditorHeight);

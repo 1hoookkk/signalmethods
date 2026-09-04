@@ -29,13 +29,12 @@ public:
             const float fs = t.fontSize (id, 11.0f);
             if (r.getWidth() < 1.0f || r.getHeight() < 1.0f || fs < 0.5f || text.isEmpty())
                 return;
-            // E-mu's labels are compact Tahoma with native spacing. The added
-            // tracking was what made short anchors like BODY / Q look loose.
             g.setFont (displayFont (fs, strong));
+            const auto just = centred ? juce::Justification::centred : juce::Justification::centredLeft;
+            g.setColour (juce::Colours::white.withAlpha (0.4f * alpha));
+            g.drawFittedText (text.toUpperCase(), r.toNearestInt().translated (0, 1), just, 1);
             g.setColour (t.textColour (id, t.labelInk()).withMultipliedAlpha (alpha));
-            g.drawFittedText (text.toUpperCase(), r.toNearestInt(),
-                              centred ? juce::Justification::centred
-                                       : juce::Justification::centredLeft, 1);
+            g.drawFittedText (text.toUpperCase(), r.toNearestInt(), just, 1);
         };
         draw ("typeLabel",   t.text ("typeLabel",   "BODY"), true, true);
         // Silkscreen never fades (Tyson 2026-08-15 "No fucking fade") — the

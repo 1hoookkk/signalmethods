@@ -74,6 +74,10 @@ juce_add_binary_data(TRENCHAssets SOURCES
   assets/trench_display_grid.png
   assets/display_bitmap4613.png
   assets/key_model_rtneural.json
+  assets/svg/knob_body.svg
+  assets/svg/knob_body_cream.svg
+  assets/svg/knob_pointer.svg
+  assets/svg/tick_ring.svg
   assets/bodies/identity.body240
   ${TRENCH_SHIPPING_PRESET_FILES})
 
@@ -151,6 +155,28 @@ target_compile_definitions(TRENCH_Stimuli PRIVATE ${TRENCH_COMMON_DEFINITIONS}
     JUCE_MODAL_LOOPS_PERMITTED=1)
 target_link_libraries(TRENCH_Stimuli PRIVATE
     TRENCHPluginCommon
+    juce::juce_audio_formats
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_Render PRODUCT_NAME "TRENCH Render")
+target_sources(TRENCH_Render PRIVATE tools/Render.cpp)
+target_include_directories(TRENCH_Render PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_Render PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_Render PRIVATE
+    TRENCHPluginCommon
+    juce::juce_audio_formats
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_RenderDev PRODUCT_NAME "TRENCH Render Dev")
+target_sources(TRENCH_RenderDev PRIVATE tools/Render.cpp)
+target_include_directories(TRENCH_RenderDev PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_RenderDev PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1 TRENCH_DEV_PANEL=1)
+target_link_libraries(TRENCH_RenderDev PRIVATE
+    TRENCHPluginCommonDev
     juce::juce_audio_formats
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)

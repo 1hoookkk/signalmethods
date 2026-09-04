@@ -63,6 +63,18 @@ inline float slamOutputMakeupLinear() noexcept
 constexpr float kSlamPressureKnee = 0.72f;
 constexpr float kFinalSafetyKnee = 0.9440609f;    // -0.5 dBFS
 constexpr float kFinalSafetyCeiling = 0.9885531f; // -0.1 dBFS
+inline float softGuard (float x) noexcept
+{
+    if (! std::isfinite (x))
+        return 0.0f;
+    const float a = std::fabs (x) / kFinalSafetyCeiling;
+    if (a <= 0.5f)
+        return x;
+    if (a >= 1.5f)
+        return std::copysign (kFinalSafetyCeiling, x);
+    const float remaining = 1.5f - a;
+    return std::copysign (kFinalSafetyCeiling * (1.0f - 0.5f * remaining * remaining), x);
+}
 inline float deskSaturateSample (float sample) noexcept
 {
     const float clipped = internalClip (sample);
@@ -126,15 +138,7 @@ inline float slamOutputPressureBlockStereo (float* left, float* right, int n, fl
 }
 inline float finalSafetyCeilingSample (float x) noexcept
 {
-    if (! std::isfinite (x))
-        return 0.0f;
-    const float a = std::fabs (x);
-    if (a <= kFinalSafetyKnee)
-        return x;
-    const float span = kFinalSafetyCeiling - kFinalSafetyKnee;
-    const float bounded = kFinalSafetyKnee
-                        + span * std::tanh ((a - kFinalSafetyKnee) / span);
-    return std::copysign (std::fmin (bounded, kFinalSafetyCeiling), x);
+    return softGuard (x);
 }
 inline float finalSafetyCeilingBlockStereo (
     float* left, float* right, int n) noexcept

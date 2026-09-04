@@ -226,6 +226,7 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     movement.prepare (sampleRate);
     morphSmoother = pMorph->load();
     morphSmootherPrimed = true;
+    wheelRampFrom = -1.0f;
     // The trajectory buffer is the audio thread's — sized here, never touched
     // by the allocator again.
     morphBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
@@ -306,7 +307,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     }
     processChunk (buffer);
 }
-static constexpr float kOutputMinDb = -12.0f;
+static constexpr float kOutputMinDb = 0.0f;
 static constexpr float kOutputMaxDb = 12.0f;
 void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset)
 {
@@ -391,7 +392,11 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     const bool followOn = follow > 0.0005f;
     if (! movementOn && ! followOn)
     {
-        std::fill (morphBuffer.begin(), morphBuffer.begin() + numSamples, baseMorph);
+        const float from = wheelRampFrom < 0.0f ? baseMorph : wheelRampFrom;
+        const float step = (baseMorph - from) / (float) juce::jmax (1, numSamples);
+        for (int i = 0; i < numSamples; ++i)
+            morphBuffer[(size_t) i] = from + step * (float) (i + 1);
+        wheelRampFrom = baseMorph;
         morphSmoother = baseMorph;
         morphSmootherPrimed = true;
     }

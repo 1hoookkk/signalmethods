@@ -127,6 +127,7 @@ private:
     trench::EnvFollower           follower;
     float                         morphSmoother = 0.0f;
     bool                          morphSmootherPrimed = false;
+    float                         wheelRampFrom = -1.0f;
     std::atomic<bool>             morphRetrigger { false };
     std::vector<float>            morphBuffer;   // one authored Morph per sample
     /// What prepareToPlay sized every audio-thread buffer for. JUCE explicitly

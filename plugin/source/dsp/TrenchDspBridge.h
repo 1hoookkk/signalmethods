@@ -108,10 +108,17 @@ public:
         deskL.prepare (sampleRateHz);
         deskR.prepare (sampleRateHz);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+        left.set_sample_rate (sampleRateHz);
+        right.set_sample_rate (sampleRateHz);
         left.reset();
         right.reset();
         tickPhase = 0;
         agcGain = 1.0f;
+        heldSamples = 0;
+        holdShort = juce::jmax (1, (int) std::lround (sampleRateHz * 0.05));
+        levelEnv = 0.0f;
+        envReleaseSlow = (float) std::exp (-1.0 / (0.15 * sampleRateHz));
+        envReleaseFast = (float) std::exp (-1.0 / (0.02 * sampleRateHz));
         const int roots = sampleRateHz > 130'000.0 ? 2 : (sampleRateHz > 65'000.0 ? 1 : 0);
         for (size_t i = 0; i < 16; ++i)
         {
@@ -123,6 +130,19 @@ public:
         if (! sourceBytes.empty())
             publishSnapshot (sourceBytes, sourceDatumRate);
     }
+
+    void setRingLeveller (bool enabled) noexcept
+    {
+        left.set_ring_leveller (enabled);
+        right.set_ring_leveller (enabled);
+    }
+
+    void setGlide (bool enabled) noexcept { glideOn = enabled; }
+    void setPerSample (bool enabled) noexcept { perSample = enabled; }
+    void setBiteAuto (bool enabled) noexcept { biteAuto = enabled; }
+    float biteDrive() const noexcept { return autoDrive; }
+    void setLevellerKnee (bool enabled) noexcept { levellerKnee = enabled; }
+    void setLevellerScale (float scale) noexcept { levellerScale = juce::jlimit (0.25f, 8.0f, scale); }
 
     void setBypass (const Bypass& value) noexcept { bypass = value; }
     Bypass getBypass() const noexcept { return bypass; }
@@ -231,9 +251,11 @@ public:
             return;
         const double keyRatio = transposeRatio (params);
         const float q = juce::jlimit (0.0f, 1.0f, params.q);
-        const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
+        const double biteCeiling = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
+        const double bite = biteAuto ? biteCeiling * (double) autoDrive : biteCeiling;
         left.set_pole_distortion (bite);
         right.set_pole_distortion (bite);
+        float blockPeak = 0.0f;
         const bool switched = snapshot->generation != heardGeneration;
         heardGeneration = snapshot->generation;
         float* outL = buffer.getWritePointer (0);
@@ -241,14 +263,15 @@ public:
         for (int sample = 0; sample < samples; ++sample)
         {
             const bool first = switched && sample == 0;
-            const bool tick = tickPhase == 0;
+            const bool tick = perSample || tickPhase == 0;
             tickPhase = (tickPhase + 1) % kTickSamples;
             if (first || tick)
             {
                 const float morph = juce::jlimit (0.0f, 1.0f, morphPerSample[sample]);
                 if (first || morph != cachedMorph || q != cachedQ || keyRatio != cachedKeyRatio)
                 {
-                    cachedCascade = cascadeAt (snapshot->bank, snapshot->datumRate, snapshot->runtimeRate, morph, q);
+                    cachedCascade = perSample ? cascadeAtFloat (snapshot->bank, snapshot->datumRate, snapshot->runtimeRate, morph, q)
+                                              : cascadeAt (snapshot->bank, snapshot->datumRate, snapshot->runtimeRate, morph, q);
                     if (keyRatio != 1.0)
                         cachedCascade = trench::core::transpose_cascade (cachedCascade, keyRatio, sampleRateHz);
                     cachedMorph = morph;
@@ -260,10 +283,15 @@ public:
                         left.set_target (encoded);
                         right.set_target (encoded);
                     }
-                    else
+                    else if (glideOn && ! perSample)
                     {
                         left.set_glide (cachedCascade, kTickSamples);
                         right.set_glide (cachedCascade, kTickSamples);
+                    }
+                    else
+                    {
+                        left.set_immediate (cachedCascade);
+                        right.set_immediate (cachedCascade);
                     }
                 }
             }
@@ -277,16 +305,33 @@ public:
             if (bypass.agc)
             {
                 const float magnitude = outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]);
-                const float scaled = juce::jlimit (0.0f, 15.0f, agcGain * magnitude);
-                const int index = (int) scaled;
-                const float frac = scaled - (float) index;
-                const float step = agcTable[(size_t) index] + (agcTable[(size_t) juce::jmin (15, index + 1)] - agcTable[(size_t) index]) * frac;
-                const float next = agcGain * step;
-                agcGain = next < 1.0f ? next : 1.0f;
+                blockPeak = std::max (blockPeak, magnitude);
+                if (levellerKnee)
+                {
+                    heldSamples = magnitude < 0.5f ? heldSamples + 1 : 0;
+                    const float release = heldSamples > holdShort ? envReleaseFast : envReleaseSlow;
+                    levelEnv = magnitude > levelEnv ? magnitude : levelEnv * release;
+                    agcGain = levelEnv > kLevellerHold ? 1.0f / (1.0f + kLevellerSlope * (levelEnv - kLevellerHold)) : 1.0f;
+                }
+                else
+                {
+                    const float scaled = juce::jlimit (0.0f, 15.0f, levellerScale * agcGain * magnitude);
+                    const int index = (int) scaled;
+                    const float frac = scaled - (float) index;
+                    const float step = agcTable[(size_t) index] + (agcTable[(size_t) juce::jmin (15, index + 1)] - agcTable[(size_t) index]) * frac;
+                    const float next = agcGain * step;
+                    agcGain = next < 1.0f ? next : 1.0f;
+                }
                 outL[sample] *= agcGain;
                 if (outR != nullptr)
                     outR[sample] *= agcGain;
             }
+        }
+        {
+            const float fromLeveller = agcGain > 0.0f ? juce::jlimit (0.0f, 1.0f, (1.0f / agcGain - 1.0f) / 0.5f) : 1.0f;
+            const float fromLevel = juce::jlimit (0.0f, 1.0f, (blockPeak - 0.5f) / 0.5f);
+            const float target = std::max (fromLeveller, fromLevel);
+            autoDrive = target > autoDrive ? target : autoDrive * 0.85f + target * 0.15f;
         }
         publishCascade (cachedCascade);
         if (bypass.saturate)
@@ -364,6 +409,14 @@ private:
         std::uint64_t generation = 0;
     };
 
+    static trench::core::Cascade cascadeAtFloat (const trench::core::PackedBody& bank, double datumRate,
+                                                 double runtimeRate, float morph, float q)
+    {
+        if (datumRate > 0.0 && runtimeRate > 0.0 && ! juce::approximatelyEqual (datumRate, runtimeRate))
+            return cascadeAt (bank, datumRate, runtimeRate, morph, q);
+        return bank.interpolate_biquads_float (morph, q, 0.0f);
+    }
+
     static trench::core::Cascade cascadeAt (const trench::core::PackedBody& bank, double datumRate,
                                             double runtimeRate, float morph, float q)
     {
@@ -420,9 +473,23 @@ private:
     static constexpr int kTickSamples = 32;
     static constexpr std::array<float, 16> kAgcBaseTable { 1.0001f, 1.0001f, 0.996f, 0.990f, 0.920f, 0.500f, 0.200f, 0.160f,
                                                             0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f };
+    static constexpr float kLevellerScale = 1.0f;
+    float levellerScale = kLevellerScale;
     std::array<float, 16> agcTable = kAgcBaseTable;
     float agcGain = 1.0f;
     int tickPhase = 0;
+    bool glideOn = true;
+    bool perSample = true;
+    bool biteAuto = true;
+    float autoDrive = 0.0f;
+    bool levellerKnee = false;
+    int heldSamples = 0;
+    int holdShort = 882;
+    float levelEnv = 0.0f;
+    float envReleaseSlow = 0.99985f;
+    float envReleaseFast = 0.9989f;
+    static constexpr float kLevellerHold = 0.56f;
+    static constexpr float kLevellerSlope = 1.6f;
     std::uint64_t publishedGeneration = 0;
     std::uint64_t heardGeneration = 0;
     float cachedMorph = -1.0f;

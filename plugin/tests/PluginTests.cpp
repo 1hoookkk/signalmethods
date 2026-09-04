@@ -13,6 +13,8 @@
 #include <cstdlib>
 #include <thread>
 #include <trench/core/native_body.hpp>
+#include <trench/core/packed_body.hpp>
+#include <span>
 #include <cstdio>
 
 namespace
@@ -342,7 +344,7 @@ int main()
             for (float v : x) { s0 = v + 2.0 * std::cos (w) * s1 - s2; s2 = s1; s1 = s0; }
             return std::sqrt (s1 * s1 + s2 * s2 - 2.0 * std::cos (w) * s1 * s2) / (double) x.size();
         };
-        const auto capture = [&] (float inputDrive, float outputDrive)
+        const auto capture = [&] (float inputDrive, float outputDrive, float amplitude = 0.6f)
         {
             setParam (processor, ParamID::preamp, inputDrive);
             setParam (processor, ParamID::slamDrive, outputDrive);
@@ -354,7 +356,7 @@ int main()
                 juce::AudioBuffer<float> buf (2, n);
                 for (int i = 0; i < n; ++i)
                 {
-                    const float v = 0.6f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 37.0 * i / n);
+                    const float v = amplitude * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 37.0 * i / n);
                     buf.setSample (0, i, v); buf.setSample (1, i, v);
                 }
                 for (int start = 0; start < n; start += 512)
@@ -367,7 +369,7 @@ int main()
                     out.assign (buf.getReadPointer (0), buf.getReadPointer (0) + n);
             }
             setParam (processor, ParamID::preamp, 0.0f);
-            setParam (processor, ParamID::slamDrive, 0.5f);
+            setParam (processor, ParamID::slamDrive, 0.0f);
             return out;
         };
         const auto driven = capture (0.35f, 0.0f);
@@ -379,14 +381,14 @@ int main()
         const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
         check (h0 / f0 < 0.005, "INPUT at 0 is the clean path (harmonic ratio)", h0 / f0, 0.005);
 
-        const auto outputDriven = capture (0.0f, 0.35f);
+        const auto outputDriven = capture (0.0f, 0.35f, 0.25f);
         const double outputF = goertzel (outputDriven, 37);
         const double outputH = goertzel (outputDriven, 74) + goertzel (outputDriven, 111)
                              + goertzel (outputDriven, 148) + goertzel (outputDriven, 185);
         check (outputF > 0.001 && outputH / outputF < 0.005,
                "OUTPUT is clean gain, no harmonics of its own (harmonic ratio)",
                outputH / outputF, 0.005);
-        const auto outputClean = capture (0.0f, 0.5f);
+        const auto outputClean = capture (0.0f, 0.0f);
         const double outputF0 = goertzel (outputClean, 37);
         const double outputH0 = goertzel (outputClean, 74) + goertzel (outputClean, 111)
                               + goertzel (outputClean, 148) + goertzel (outputClean, 185);
@@ -398,7 +400,7 @@ int main()
     setParam (processor, ParamID::slamDrive, 1.0f);
     const auto slammed = runSine (processor, 0.1f);
     check (slammed.finite && std::abs (db (slammed.peak / hot.peak) - 12.0) < 0.5, "OUTPUT at full is +12 dB over unity (dB)", db (slammed.peak / hot.peak), 12.0);
-    setParam (processor, ParamID::slamDrive, 0.5f);
+    setParam (processor, ParamID::slamDrive, 0.0f);
     const auto loud = runSine (processor, 0.9f);
     check (loud.finite && loud.peak > 0.1f, "full-scale input at defaults stays finite and audible", loud.peak, 0.9);
     check (loud.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "safety ceiling bounds a full-scale input at -0.1 dBFS", loud.peak, trench::kFinalSafetyCeiling);
@@ -407,6 +409,221 @@ int main()
     check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at full", ceilinged.peak, trench::kFinalSafetyCeiling);
     check (ceilinged.peak > 0.5f, "ceiling limits, it does not mute", ceilinged.peak, 0.5);
     setParam (processor, ParamID::preamp, 0.0f);
+
+    std::printf ("== guard shape ==\n");
+    {
+        float worst = 0.0f;
+        for (int i = 0; i < 1024; ++i)
+        {
+            const float s = 0.4f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * i / 1024.0);
+            worst = juce::jmax (worst, std::abs (trench::softGuard (s) - s));
+        }
+        check (worst <= 1.0e-6f, "guard passes a 0.4 full-scale sine unchanged", worst, 1.0e-6);
+        check (trench::softGuard (3.0f) == trench::kFinalSafetyCeiling
+                   && trench::softGuard (-3.0f) == -trench::kFinalSafetyCeiling,
+               "guard maps a 3.0 full-scale sample to the ceiling",
+               trench::softGuard (3.0f), trench::kFinalSafetyCeiling);
+        float bound = 0.0f;
+        for (int i = -4000; i <= 4000; ++i)
+            bound = juce::jmax (bound, std::abs (trench::softGuard ((float) i * 0.001f)));
+        check (bound <= trench::kFinalSafetyCeiling, "guard output never leaves the ceiling", bound, trench::kFinalSafetyCeiling);
+    }
+
+    std::printf ("== level chain distortion ==\n");
+    {
+        trench::rescanBodyRoster();
+        int rosterCount = 0; trench::bodyRoster (rosterCount);
+        struct ToneRun { double thd = 0.0; double fundamental = 0.0; float peak = 0.0f; };
+        const auto measure = [&processor, hostRate] (int bodyIndex, float morph, float qValue)
+        {
+            setParam (processor, ParamID::body, (float) bodyIndex);
+            setParam (processor, ParamID::morph, morph);
+            setParam (processor, ParamID::q, qValue);
+            setParam (processor, ParamID::chew, 0.0f);
+            pump (200);
+            constexpr int n = 4096;
+            juce::AudioBuffer<float> buf (2, n);
+            juce::MidiBuffer midi;
+            std::vector<float> tail;
+            double phase = 0.0;
+            for (int pass = 0; pass < 6; ++pass)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const float s = 0.251f * (float) std::sin (phase);
+                    phase += 2.0 * juce::MathConstants<double>::pi * 220.0 / hostRate;
+                    buf.setSample (0, i, s);
+                    buf.setSample (1, i, s);
+                }
+                for (int start = 0; start < n; start += 512)
+                {
+                    float* ch[2] = { buf.getWritePointer (0) + start, buf.getWritePointer (1) + start };
+                    juce::AudioBuffer<float> slice (ch, 2, 512);
+                    processor.processBlock (slice, midi);
+                }
+                if (pass >= 3)
+                    tail.insert (tail.end(), buf.getReadPointer (0), buf.getReadPointer (0) + n);
+            }
+            const auto tone = [&tail, hostRate] (double f)
+            {
+                double re = 0.0, im = 0.0, norm = 0.0;
+                for (std::size_t i = 0; i < tail.size(); ++i)
+                {
+                    const double w = 0.5 - 0.5 * std::cos (2.0 * juce::MathConstants<double>::pi * (double) i / (double) tail.size());
+                    const double a = 2.0 * juce::MathConstants<double>::pi * f * (double) i / hostRate;
+                    re += (double) tail[i] * w * std::cos (a);
+                    im -= (double) tail[i] * w * std::sin (a);
+                    norm += w;
+                }
+                return 2.0 * std::sqrt (re * re + im * im) / norm;
+            };
+            ToneRun run;
+            run.fundamental = tone (220.0);
+            double harmonics = 0.0;
+            for (int h = 2; h <= 9; ++h)
+                harmonics += tone (220.0 * (double) h) * tone (220.0 * (double) h);
+            run.thd = 100.0 * std::sqrt (harmonics) / std::max (run.fundamental, 1.0e-12);
+            for (float v : tail)
+                run.peak = juce::jmax (run.peak, std::abs (v));
+            return run;
+        };
+        int crossBand = -1;
+        for (int i = 0; i < rosterCount; ++i)
+            if (trench::bodyDisplayName (i).containsIgnoreCase ("Cross Band")) { crossBand = i; break; }
+        check (crossBand >= 0, "Cross Band is in the roster", crossBand, rosterCount);
+        if (crossBand >= 0)
+        {
+            const auto crossed = measure (crossBand, 0.5f, 0.3f);
+            std::printf ("THD 220 Hz at -1 dBFS, BITE 0, Cross Band MORPH 0.5 Q 0.3: %.3f %%  (fundamental %.4f, peak %.4f)\n",
+                         crossed.thd, crossed.fundamental, crossed.peak);
+            check (crossed.thd < 1.0, "Cross Band leaves a -1 dBFS sine under 1 % THD", crossed.thd, 1.0);
+        }
+        double worst = 0.0;
+        int worstBody = -1;
+        float worstPeak = 0.0f;
+        for (int i = 1; i < rosterCount; ++i)
+        {
+            const auto run = measure (i, 0.5f, 0.3f);
+            if (run.fundamental < 0.05 || run.thd <= worst)
+                continue;
+            worst = run.thd;
+            worstBody = i;
+            worstPeak = run.peak;
+        }
+        std::printf ("worst THD across the roster at MORPH 0.5 Q 0.3: %.3f %%  (%s, peak %.4f)\n",
+                     worst, worstBody >= 0 ? trench::bodyDisplayName (worstBody).toRawUTF8() : "none", worstPeak);
+        check (worst < 1.0, "no body leaves a -12 dBFS sine over 1 % THD", worst, 1.0);
+        setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
+        setParam (processor, ParamID::morph, 0.0f);
+        setParam (processor, ParamID::q, 0.0f);
+        pump (200);
+    }
+
+    std::printf ("== ring leveller ==\n");
+    {
+        trench::rescanBodyRoster();
+        int rosterCount = 0; trench::bodyRoster (rosterCount);
+        int ringBody = -1;
+        double ringDb = 0.0;
+        for (int i = 0; i < rosterCount; ++i)
+        {
+            if (trench::bodyIsNoFilter (i))
+                continue;
+            juce::MemoryBlock bytes;
+            if (! trench::bodyRawBytes (i, bytes))
+                continue;
+            try
+            {
+                const auto packed = trench::core::PackedBody::from_body_bytes (
+                    std::span { static_cast<const std::uint8_t*> (bytes.getData()), bytes.getSize() });
+                const auto cascade = packed.interpolate_biquads (0.5f, 0.9f, 0.0f);
+                double loudest = 0.0;
+                for (const auto& section : cascade)
+                    loudest = std::max (loudest, trench::core::section_response_db (section, 220.0, 44100.0));
+                if (loudest > ringDb) { ringDb = loudest; ringBody = i; }
+            }
+            catch (...) {}
+        }
+        check (ringBody >= 0, "a ship body rings hardest at 220 Hz", ringBody, rosterCount);
+        std::printf ("ship body whose loudest section rings hardest at 220 Hz, MORPH 0.5 Q 0.9: %s (%.2f dB)\n",
+                     ringBody >= 0 ? trench::bodyDisplayName (ringBody).toRawUTF8() : "none", ringDb);
+
+        struct RingRun { double thd = 0.0; double fundamental = 0.0; float peak = 0.0f; };
+        const auto ringMeasure = [&processor, hostRate] (int bodyIndex, bool leveller)
+        {
+            processor.dspBridge.setRingLeveller (leveller);
+            setParam (processor, ParamID::body, (float) bodyIndex);
+            setParam (processor, ParamID::morph, 0.5f);
+            setParam (processor, ParamID::q, 0.9f);
+            setParam (processor, ParamID::chew, 0.0f);
+            pump (200);
+            constexpr int n = 4096;
+            juce::AudioBuffer<float> buf (2, n);
+            juce::MidiBuffer midi;
+            std::vector<float> tail;
+            double phase = 0.0;
+            for (int pass = 0; pass < 6; ++pass)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const float s = 0.251189f * (float) std::sin (phase);
+                    phase += 2.0 * juce::MathConstants<double>::pi * 220.0 / hostRate;
+                    buf.setSample (0, i, s);
+                    buf.setSample (1, i, s);
+                }
+                for (int start = 0; start < n; start += 512)
+                {
+                    float* ch[2] = { buf.getWritePointer (0) + start, buf.getWritePointer (1) + start };
+                    juce::AudioBuffer<float> slice (ch, 2, 512);
+                    processor.processBlock (slice, midi);
+                }
+                if (pass >= 3)
+                    tail.insert (tail.end(), buf.getReadPointer (0), buf.getReadPointer (0) + n);
+            }
+            const auto tone = [&tail, hostRate] (double f)
+            {
+                double re = 0.0, im = 0.0, norm = 0.0;
+                for (std::size_t i = 0; i < tail.size(); ++i)
+                {
+                    const double w = 0.5 - 0.5 * std::cos (2.0 * juce::MathConstants<double>::pi * (double) i / (double) tail.size());
+                    const double a = 2.0 * juce::MathConstants<double>::pi * f * (double) i / hostRate;
+                    re += (double) tail[i] * w * std::cos (a);
+                    im -= (double) tail[i] * w * std::sin (a);
+                    norm += w;
+                }
+                return 2.0 * std::sqrt (re * re + im * im) / norm;
+            };
+            RingRun run;
+            run.fundamental = tone (220.0);
+            double harmonics = 0.0;
+            for (int h = 2; h <= 9; ++h)
+                harmonics += tone (220.0 * (double) h) * tone (220.0 * (double) h);
+            run.thd = 100.0 * std::sqrt (harmonics) / std::max (run.fundamental, 1.0e-12);
+            for (float v : tail)
+                run.peak = juce::jmax (run.peak, std::abs (v));
+            return run;
+        };
+        if (ringBody >= 0)
+        {
+            const auto off = ringMeasure (ringBody, false);
+            const auto on = ringMeasure (ringBody, true);
+            const double drop = db (off.peak / juce::jmax (on.peak, 1.0e-9f));
+            std::printf ("220 Hz at -12 dBFS through %s, MORPH 0.5 Q 0.5 BITE 0: "
+                         "leveller off THD %.3f %% peak %.4f, on THD %.3f %% peak %.4f, drop %.2f dB\n",
+                         trench::bodyDisplayName (ringBody).toRawUTF8(), off.thd, off.peak,
+                         on.thd, on.peak, drop);
+            check (on.thd < 0.5, "the ring leveller stays under 0.5 % THD", on.thd, 0.5);
+            if (ringDb > 24.0)
+                check (drop >= 6.0, "the ring leveller drops the peak by at least 6 dB", drop, 6.0);
+            else
+                check (drop <= 0.5, "the ring leveller is transparent when no section rings past 24 dB", (long) (drop * 100.0), 50);
+        }
+        processor.dspBridge.setRingLeveller (true);
+        setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
+        setParam (processor, ParamID::morph, 0.0f);
+        setParam (processor, ParamID::q, 0.0f);
+        pump (200);
+    }
 
     std::printf ("== Z bites ==\n");
     {

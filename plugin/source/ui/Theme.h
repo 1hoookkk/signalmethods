@@ -4,8 +4,8 @@
 #include <cstdlib>
 namespace trench::ui
 {
-inline constexpr int   kEditorWidth        = 352;
-inline constexpr int   kEditorHeight       = 543;
+inline constexpr int   kEditorWidth        = 270;
+inline constexpr int   kEditorHeight       = 440;
 inline constexpr int   kFaceLockedWidth    = kEditorWidth;
 inline constexpr int   kFaceLockedHeight   = kEditorHeight;
 inline constexpr int   kEditorHeightClosed = 361;
@@ -70,6 +70,9 @@ struct Theme
     juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xff608074)); }
     juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff3cc8be)); }
     juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xff3cc8be)); }
+    juce::Colour glassTop()    const { return layout.colour ("glassTop",    juce::Colour (0xff0c1412)); }
+    juce::Colour glassBottom() const { return layout.colour ("glassBottom", juce::Colour (0xff050908)); }
+    juce::Colour gridTint()    const { return layout.colour ("gridTint",    juce::Colours::white); }
     juce::Colour amber()       const { return layout.colour ("amber",       juce::Colour (0xffa9554e)); }
     juce::Colour wellTop()     const { return layout.colour ("wellTop",     juce::Colour (0xffe7dec9)); }
     juce::Colour wellBottom()  const { return layout.colour ("wellBottom",  juce::Colour (0xffc9c0a8)); }
@@ -83,6 +86,8 @@ struct Theme
     juce::Colour phosphor()    const { return layout.colour ("phosphor",    juce::Colour (0xff1a1624)); }
     juce::Colour spectrumGhost() const { return layout.colour ("spectrumGhost", juce::Colour (0xff9fcfc4)); }
     float  wellRadius()        const { return (float) layout.param ("wellRadius", 9.0); }
+    float  gridBoost()         const { return (float) layout.param ("gridBoost", 6.0); }
+    double themeParam (const juce::String& name, double fallback) const { return layout.param (name, fallback); }
     float  componentRadius()   const { return (float) layout.param ("componentRadius", 2.5); }
     float  readoutAliasScale() const { return (float) juce::jlimit (0.3, 1.0, layout.param ("readoutAliasScale", 0.72)); }
     float  typeArrowExtra()    const { return (float) layout.param ("typeArrowExtra", 6.0); }
@@ -115,9 +120,9 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                      float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
-    const auto top    = juce::Colour (0xffc3d1df);
+    const auto top    = juce::Colour (0xffcbd8e6);
     const auto middle = juce::Colour (0xffb2c3d5);
-    const auto bottom = juce::Colour (0xffa5b8cc);
+    const auto bottom = juce::Colour (0xff9db0c4);
     const float faceRad = juce::jmax (2.0f, radius - 1.3f);
     {
         juce::ColourGradient edge (juce::Colour (0xffe6eef6), 0.0f, face.getY(),
@@ -137,7 +142,7 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
         juce::Path clip;
         clip.addRoundedRectangle (body, juce::jmax (1.5f, faceRad - 1.2f));
         g.reduceClipRegion (clip);
-        g.setColour (juce::Colours::white.withAlpha (0.55f));
+        g.setColour (juce::Colours::white.withAlpha (0.78f));
         g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
         juce::ColourGradient frost (juce::Colours::white.withAlpha (0.18f),
                                     0.0f, body.getY() + 1.6f,
@@ -190,6 +195,8 @@ inline void drawBayCaption (juce::Graphics& g, juce::Rectangle<float> r,
                             const juce::String& text, const Theme& t)
 {
     g.setFont (t.smallLabel (true));
+    g.setColour (juce::Colours::white.withAlpha (0.4f));
+    g.drawFittedText (text.toUpperCase(), r.toNearestInt().translated (0, 1), juce::Justification::centred, 1);
     g.setColour (t.labelInk());
     g.drawFittedText (text.toUpperCase(), r.toNearestInt(), juce::Justification::centred, 1);
 }

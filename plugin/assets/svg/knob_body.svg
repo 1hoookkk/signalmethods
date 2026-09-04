@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="skirt" cx="50%" cy="42%" r="60%">
+      <stop offset="0" stop-color="#3a3c40"/>
+      <stop offset="0.75" stop-color="#1c1d20"/>
+      <stop offset="1" stop-color="#0c0c0e"/>
+    </radialGradient>
+    <linearGradient id="cap" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#4a4d53"/>
+      <stop offset="0.5" stop-color="#2b2d31"/>
+      <stop offset="1" stop-color="#17181b"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8b8f96"/>
+      <stop offset="1" stop-color="#2a2c30"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="104" r="96" fill="#000000" fill-opacity="0.35"/>
+  <circle cx="100" cy="100" r="94" fill="url(#skirt)"/>
+  <g stroke="#0a0a0c" stroke-width="3" stroke-linecap="round">
+    <path d="M100 8v10M131.5 13.2l-3.1 9.5M158.4 27.6l-5.9 8.1M178.4 51.6l-8.1 5.9M190 80.5l-9.5 3.1M192 112h-10M186.8 143.5l-9.5-3.1M172.4 170.4l-8.1-5.9M148.4 190.4l-5.9-8.1M119.5 198l-3.1-9.5M80.5 198l3.1-9.5M51.6 190.4l5.9-8.1M27.6 170.4l8.1-5.9M13.2 143.5l9.5-3.1M8 112h10M10 80.5l9.5 3.1M21.6 51.6l8.1 5.9M41.6 27.6l5.9 8.1M68.5 13.2l3.1 9.5"/>
+  </g>
+  <circle cx="100" cy="100" r="72" fill="url(#rim)"/>
+  <circle cx="100" cy="100" r="68" fill="url(#cap)"/>
+  <circle cx="100" cy="100" r="66" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2"/>
+  <path d="M46 76 A62 62 0 0 1 84 38" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+</svg>

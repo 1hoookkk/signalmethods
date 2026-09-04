@@ -37,7 +37,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ParamID::slamDrive, 1 },
         "Output",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.5f));
+        0.0f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::preamp, 1 },
         "Input",
