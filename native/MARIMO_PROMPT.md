@@ -6,7 +6,10 @@ runs through a .cmd wrapper that calls
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"; all tests
 headless; never open windows on my screen; commit native work with explicit pathspecs only, other chats stage
 plugin/. Read plugin/NEXT_SESSION.md (the running brief, newest entries at the bottom) and native/REWRITE_PLAN.md.
-Then read native/app (the Qt workstation) for what it does, not how.
+Then read native/app (the Qt workstation) for what it does, not how. A start on this rewrite already
+exists from another chat: workstation.py and __marimo__/ at the repo root, native/core/include/trench/core/
+trench_core_c.h with native/core/src/trench_core_c.cpp, and native/python/. Read those before writing
+anything and continue them rather than starting over.
 
 ## The idea the tool exists for
 A TRENCH body is a small set of snapshots. Each snapshot is a frame: a complex filter response, six
