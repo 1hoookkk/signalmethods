@@ -6,7 +6,7 @@
 namespace ws
 {
 const char* const kGroupNames[kGroups] = { "P2K", "MORPHEUS", "X3", "VOWELS", "HEADS", "XL-1", "INSTRUMENTS" };
-const char* const kMeasureNames[kMeasures] = { "pitch", "spread", "resonance", "stages", "zeros", "ceiling", "martens 1", "martens 2" };
+const char* const kMeasureNames[kMeasures] = { "pitch", "spread", "res dB", "stages", "zeros", "ceiling", "martens1", "martens2" };
 const char* const kPoseEnds[kMeasures][2] = { { "high", "low" }, { "closed", "open" }, { "relaxed", "stressed" }, { "few", "many" }, { "plain", "carved" }, { "dark", "bright" }, { "-", "+" }, { "-", "+" } };
 
 int groupOf (const juce::String& n)

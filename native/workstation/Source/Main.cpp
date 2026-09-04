@@ -32,6 +32,16 @@ int shoot (const juce::String& path)
     out.deleteFile();
     juce::FileOutputStream os (out);
     juce::PNGImageFormat().writeImageToStream (img, os);
+    view.closeEditor();
+    juce::Image img2 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
+    {
+        juce::Graphics g (img2);
+        view.paintEntireComponent (g, false);
+    }
+    auto out2 = out.getSiblingFile (out.getFileNameWithoutExtension() + "_field.png");
+    out2.deleteFile();
+    juce::FileOutputStream os2 (out2);
+    juce::PNGImageFormat().writeImageToStream (img2, os2);
     std::printf ("wrote %s  %dx%d  frames %d  anchors %d  triangles %d\n", out.getFullPathName().toRawUTF8(), img.getWidth(), img.getHeight(), (int) lib.frames.size(), (int) lib.anchors.size(), (int) lib.tris.size());
     return 0;
 }

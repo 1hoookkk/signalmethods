@@ -7,7 +7,8 @@ namespace ws
 namespace
 {
 juce::Font mono (float h) { return juce::Font (juce::FontOptions ("Consolas", h, juce::Font::plain)); }
-const juce::Colour kLine (0xff444444), kText (0xffbbbbbb), kOn (0xff00ffff), kDim (0xff777777);
+const juce::Colour kLine (0xff383838), kText (0xffc8c8c8), kOn (0xff00e5ff), kDim (0xff7a7a7a), kKey (0xff161616), kKeyLine (0xff4a4a4a);
+juce::Rectangle<int> px (juce::Rectangle<float> r) { return r.toNearestInt(); }
 }
 
 Workstation::Workstation (Library& library, bool useGL) : lib (library), gl (useGL)
@@ -174,33 +175,35 @@ void Workstation::layoutKeys()
 {
     L.compute ((float) getWidth(), (float) getHeight());
     keys.clear();
-    const float kx = L.keyRow.getX() + 46.0f;
+    const float kx = L.field.getX() + 48.0f, kw = 62.0f, kh = 14.0f;
     for (int i = 0; i < kMeasures; ++i)
     {
-        keys.push_back ({ "ax" + juce::String (i), kMeasureNames[i], { kx + i * 78.0f, 3.0f, 74.0f, 14.0f }, lib.axisX == i });
-        keys.push_back ({ "ay" + juce::String (i), kMeasureNames[i], { kx + i * 78.0f, 19.0f, 74.0f, 14.0f }, lib.axisY == i });
+        keys.push_back ({ "ax" + juce::String (i), kMeasureNames[i], { kx + i * (kw + 3.0f), 6.0f, kw, kh }, lib.axisX == i });
+        keys.push_back ({ "ay" + juce::String (i), kMeasureNames[i], { kx + i * (kw + 3.0f), 22.0f, kw, kh }, lib.axisY == i });
     }
-    keys.push_back ({ "sort", "SORT", { kx + kMeasures * 78.0f + 6.0f, 3.0f, 52.0f, 14.0f }, false });
-    keys.push_back ({ "clear", "CLEAR", { kx + kMeasures * 78.0f + 6.0f, 19.0f, 52.0f, 14.0f }, false });
-    for (int i = 0; i < kGroups; ++i) keys.push_back ({ "lit" + juce::String (i), kGroupNames[i], { 4.0f, 4.0f + i * 14.0f, L.groups.getWidth() - 8.0f, 13.0f }, lit == i });
-    keys.push_back ({ "capture", "CAPTURE", { L.info.getX() + 6.0f, L.info.getY() + 6.0f, 80.0f, 14.0f }, false });
+    const float rightKeys = L.field.getRight();
+    keys.push_back ({ "sort", "SORT", { rightKeys - 56.0f, 6.0f, 56.0f, kh }, false });
+    keys.push_back ({ "clear", "CLEAR", { rightKeys - 56.0f, 22.0f, 56.0f, kh }, false });
+    for (int i = 0; i < kGroups; ++i) keys.push_back ({ "lit" + juce::String (i), kGroupNames[i], { 8.0f, 8.0f + i * 16.0f, L.groups.getWidth() - 16.0f, kh }, lit == i });
+    keys.push_back ({ "capture", "CAPTURE", { L.info.getX() + 8.0f, L.info.getY() + 8.0f, 76.0f, kh }, false });
     static const char* cornerNames[] = { "M0 Q0", "M1 Q0", "M0 Q1", "M1 Q1" };
     const auto sq = L.square;
     for (int i = 0; i < 4; ++i)
     {
-        const float x = (i & 1) ? sq.getRight() + 4.0f : sq.getX() - 44.0f, y = (i & 2) ? sq.getY() - 4.0f : sq.getBottom() - 10.0f;
-        keys.push_back ({ "corner" + juce::String (i), cornerNames[i], { x, y, 40.0f, 14.0f }, body.corner[(size_t) i] >= 0 });
+        const float x = (i & 1) ? sq.getRight() + 8.0f : sq.getX() - 52.0f, y = (i & 2) ? sq.getY() : sq.getBottom() - kh;
+        keys.push_back ({ "corner" + juce::String (i), cornerNames[i], { x, y, 44.0f, kh }, body.corner[(size_t) i] >= 0 });
     }
+    const float bx = sq.getRight() + 64.0f;
     for (int s = 0; s < kRows; ++s)
-        keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { sq.getRight() + 54.0f + (s % 3) * 22.0f, sq.getY() + (s / 3) * 18.0f, 20.0f, 14.0f }, body.rowOn[(size_t) s] });
-    keys.push_back ({ "playbody", "BODY", { sq.getRight() + 54.0f, sq.getY() + 44.0f, 64.0f, 14.0f }, playBody });
-    keys.push_back ({ "export", "EXPORT", { sq.getRight() + 54.0f, sq.getY() + 62.0f, 64.0f, 14.0f }, false });
-    keys.push_back ({ editing >= 0 ? "close" : "edit", editing >= 0 ? "CLOSE" : "EDIT", { sq.getRight() + 122.0f, sq.getY() + 44.0f, 56.0f, 14.0f }, editing >= 0 });
-    keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 6.0f, L.resp.getY() + 4.0f, 52.0f, 14.0f }, showSurface });
-    keys.push_back ({ "pair", "PAIR", { kx + kMeasures * 78.0f + 64.0f, 3.0f, 52.0f, 14.0f }, pairMode });
-    keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 4.0f, L.tl.getY() + 6.0f, 60.0f, 14.0f }, tl.playing });
-    keys.push_back ({ "loop", "LOOP", { 4.0f, L.tl.getY() + 24.0f, 60.0f, 14.0f }, tl.loop });
-    keys.push_back ({ "addkey", "+ KEY", { 4.0f, L.tl.getY() + 42.0f, 60.0f, 14.0f }, false });
+        keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + s * 24.0f, sq.getY(), 20.0f, kh }, body.rowOn[(size_t) s] });
+    keys.push_back ({ "playbody", "BODY", { bx, sq.getY() + 24.0f, 68.0f, kh }, playBody });
+    keys.push_back ({ editing >= 0 ? "close" : "edit", editing >= 0 ? "CLOSE" : "EDIT", { bx + 72.0f, sq.getY() + 24.0f, 68.0f, kh }, editing >= 0 });
+    keys.push_back ({ "export", "EXPORT", { bx, sq.getY() + 48.0f, 68.0f, kh }, false });
+    keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 8.0f, L.resp.getY() + 6.0f, 56.0f, kh }, showSurface });
+    keys.push_back ({ "pair", "PAIR", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 56.0f, kh }, pairMode });
+    keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 8.0f, L.tl.getY() + 8.0f, 64.0f, kh }, tl.playing });
+    keys.push_back ({ "loop", "LOOP", { 8.0f, L.tl.getY() + 26.0f, 64.0f, kh }, tl.loop });
+    keys.push_back ({ "addkey", "+ KEY", { 8.0f, L.tl.getY() + 44.0f, 64.0f, kh }, false });
 }
 
 std::optional<Blend> Workstation::current() const
@@ -484,7 +487,7 @@ std::vector<Batch> Workstation::scene() const
         out.push_back (surface);
     }
     Batch grid { Batch::lines, false, {} };
-    for (int i = 0; i <= 4; ++i)
+    for (int i = 1; i < 4; ++i)
     {
         const auto a = L.fromField ({ i / 4.0, 0.0 }), c = L.fromField ({ i / 4.0, 1.0 }), d = L.fromField ({ 0.0, i / 4.0 }), f = L.fromField ({ 1.0, i / 4.0 });
         grid.v.push_back (vertex (a, kLine, 1.0f)); grid.v.push_back (vertex (c, kLine, 1.0f));
@@ -623,38 +626,40 @@ void Workstation::renderOpenGL()
 
 void Workstation::paintChrome (juce::Graphics& g)
 {
-    g.setColour (pickFor >= 0 ? kOn : kLine);
-    g.drawRect (L.tray, 1.0f);
+    if (pickFor >= 0) { g.setColour (kOn); g.drawRect (px (L.tray).reduced (1), 1); }
     g.setColour (kLine);
-    g.drawVerticalLine ((int) L.field.getX(), 0.0f, L.tl.getY());
+    g.drawVerticalLine ((int) L.groups.getRight() - 1, 0.0f, L.tl.getY());
     g.drawVerticalLine ((int) L.resp.getX(), 0.0f, L.tl.getY());
     g.drawHorizontalLine ((int) L.tl.getY(), 0.0f, (float) getWidth());
-    g.drawHorizontalLine ((int) L.field.getY(), L.field.getX(), L.field.getRight());
     g.drawHorizontalLine ((int) L.tray.getY(), 0.0f, L.tray.getRight());
     g.drawHorizontalLine ((int) L.resp.getBottom(), L.resp.getX(), L.resp.getRight());
-    g.drawRect (L.tlAx, 1.0f);
+    g.drawHorizontalLine ((int) L.body.getBottom(), L.body.getX(), L.body.getRight());
+    g.drawHorizontalLine ((int) L.info.getBottom(), L.info.getX(), L.info.getRight());
+    g.drawRect (px (L.field), 1);
+    g.drawRect (px (L.tlAx), 1);
     for (const auto& k : keys)
     {
-        g.setColour (k.on ? kOn : juce::Colour (0xff1c1c1c));
-        g.fillRect (k.box);
-        g.setColour (k.on ? kOn : juce::Colour (0xff555555));
-        g.drawRect (k.box, 1.0f);
+        const auto r = px (k.box);
+        g.setColour (k.on ? kOn : kKey);
+        g.fillRect (r);
+        g.setColour (k.on ? kOn : kKeyLine);
+        g.drawRect (r, 1);
         g.setColour (k.on ? juce::Colours::black : kText);
-        g.drawText (k.label, k.box.toNearestInt().reduced (5, 0), juce::Justification::centredLeft);
+        g.drawText (k.label, r.reduced (6, 0), juce::Justification::centredLeft);
     }
     g.setColour (kDim);
-    g.drawText ("across", (int) L.keyRow.getX() + 4, 3, 40, 14, juce::Justification::centredLeft);
-    g.drawText ("up", (int) L.keyRow.getX() + 4, 19, 40, 14, juce::Justification::centredLeft);
-    const int maxRows = (int) ((L.tray.getHeight() - 4.0f) / 13.0f);
+    g.drawText ("across", (int) L.field.getX(), 6, 44, 14, juce::Justification::centredLeft);
+    g.drawText ("up", (int) L.field.getX(), 22, 44, 14, juce::Justification::centredLeft);
+    const int maxRows = (int) ((L.tray.getHeight() - 8.0f) / 14.0f);
     trayScroll = juce::jlimit (0, std::max (0, (int) lib.frames.size() - maxRows), trayScroll);
     for (int r = 0; r < maxRows && r + trayScroll < (int) lib.frames.size(); ++r)
     {
         const auto& f = lib.frames[(size_t) (r + trayScroll)];
-        const float y = L.tray.getY() + 2.0f + r * 13.0f;
+        const float y = L.tray.getY() + 6.0f + r * 14.0f;
         g.setColour (f.capture ? juce::Colours::yellow : hueOf (f.m[0]));
-        g.fillEllipse (L.tray.getX() + 5.0f, y + 4.0f, 5.0f, 5.0f);
+        g.fillEllipse (L.tray.getX() + 9.0f, y + 4.5f, 5.0f, 5.0f);
         g.setColour (lit < 0 || f.group == lit || f.capture ? kText : kDim);
-        g.drawText (f.name, (int) L.tray.getX() + 14, (int) y, (int) L.tray.getWidth() - 16, 13, juce::Justification::centredLeft);
+        g.drawText (f.name, (int) L.tray.getX() + 20, (int) y, (int) L.tray.getWidth() - 28, 14, juce::Justification::centredLeft);
     }
     g.setColour (kDim);
     if (editing >= 0 && body.corner[(size_t) editing] >= 0)
@@ -707,32 +712,31 @@ void Workstation::paintChrome (juce::Graphics& g)
     }
     else
     {
-        g.drawText (kMeasureNames[lib.axisX], (int) L.field.getRight() - 96, (int) L.field.getBottom() - 14, 92, 12, juce::Justification::centredRight);
-        g.drawText (kMeasureNames[lib.axisY], (int) L.field.getX() + 4, (int) L.field.getY() + 2, 92, 12, juce::Justification::centredLeft);
+        g.drawText (kMeasureNames[lib.axisX], (int) L.field.getRight() - 100, (int) L.field.getBottom() - 16, 92, 12, juce::Justification::centredRight);
+        g.drawText (kMeasureNames[lib.axisY], (int) L.field.getX() + 8, (int) L.field.getY() + 4, 92, 12, juce::Justification::centredLeft);
     }
     g.setColour (kLine);
-    for (double f : { 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0, 10000.0 }) g.drawVerticalLine ((int) L.rx (f), L.ry (30.0), L.ry (-30.0));
-    for (double d : { -20.0, -10.0, 10.0, 20.0 }) g.drawHorizontalLine ((int) L.ry (d), L.rx (20.0), L.rx (20000.0));
+    g.drawRect (juce::Rectangle<int> ((int) L.rx (20.0), (int) L.ry (30.0), (int) (L.rx (20000.0) - L.rx (20.0)), (int) (L.ry (-30.0) - L.ry (30.0))), 1);
+    for (double f : { 100.0, 1000.0, 10000.0 }) g.drawVerticalLine ((int) L.rx (f), L.ry (30.0), L.ry (-30.0));
+    for (double d : { -20.0, 20.0 }) g.drawHorizontalLine ((int) L.ry (d), L.rx (20.0), L.rx (20000.0));
     g.setColour (kDim);
     g.drawHorizontalLine ((int) L.ry (0.0), L.rx (20.0), L.rx (20000.0));
-    for (double f : { 100.0, 1000.0, 10000.0 }) g.drawText (f >= 1000.0 ? juce::String (f / 1000.0, 0) + "k" : juce::String (f, 0), (int) L.rx (f) - 14, (int) L.ry (-30.0) + 2, 28, 12, juce::Justification::centred);
-    for (double d : { 20.0, 0.0, -20.0 }) g.drawText (juce::String (d, 0), (int) L.resp.getX() + 2, (int) L.ry (d) - 6, 28, 12, juce::Justification::centredRight);
+    for (double f : { 100.0, 1000.0, 10000.0 }) g.drawText (f >= 1000.0 ? juce::String (f / 1000.0, 0) + "k" : juce::String (f, 0), (int) L.rx (f) - 14, (int) L.ry (-30.0) + 4, 28, 12, juce::Justification::centred);
+    for (double d : { 20.0, 0.0, -20.0 }) g.drawText (juce::String (d, 0), (int) L.resp.getX() + 6, (int) L.ry (d) - 6, 28, 12, juce::Justification::centredRight);
     const auto b = current();
-    int y = (int) L.info.getY() + 26;
+    int y = (int) L.info.getY() + 30;
     g.setColour (kText);
-    if (probe) g.drawText ("x " + juce::String ((*probe)[0], 3) + "  y " + juce::String ((*probe)[1], 3), (int) L.info.getX() + 96, (int) L.info.getY() + 6, 200, 14, juce::Justification::centredLeft);
+    if (probe) g.drawText ("x " + juce::String ((*probe)[0], 3) + "   y " + juce::String ((*probe)[1], 3), (int) L.info.getX() + 96, (int) L.info.getY() + 8, 200, 14, juce::Justification::centredLeft);
     g.setColour (kOn);
-    g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.rx (fieldHz) + 3, (int) L.resp.getY() + 2, 60, 12, juce::Justification::centredLeft);
+    g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.rx (fieldHz) + 4, (int) L.resp.getY() + 8, 60, 12, juce::Justification::centredLeft);
     g.setColour (kText);
     g.setColour (kLine);
-    g.drawHorizontalLine ((int) L.body.getY(), L.body.getX(), L.body.getRight());
-    g.drawRect (L.square, 1.0f);
+    g.drawRect (px (L.square), 1);
     g.setColour (kDim);
-    g.drawText ("M " + juce::String (body.morph, 2) + "  Q " + juce::String (body.q, 2), (int) L.square.getX(), (int) L.square.getBottom() + 4, (int) L.square.getWidth(), 12, juce::Justification::centred);
-    g.drawText ("rows", (int) L.square.getRight() + 54, (int) L.square.getY() - 14, 40, 12, juce::Justification::centredLeft);
+    g.drawText ("M " + juce::String (body.morph, 2) + "   Q " + juce::String (body.q, 2), (int) L.square.getX(), (int) L.square.getBottom() + 6, (int) L.square.getWidth(), 12, juce::Justification::centred);
     for (int i = 0; i < 4; ++i)
         if (body.corner[(size_t) i] >= 0)
-            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.square.getRight() + 54, (int) L.square.getY() + 84 + i * 13, (int) L.body.getRight() - (int) L.square.getRight() - 58, 12, juce::Justification::centredLeft);
+            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.square.getRight() + 64, (int) L.square.getY() + 70 + i * 13, (int) L.body.getRight() - (int) L.square.getRight() - 72, 12, juce::Justification::centredLeft);
     if (b && ! playBody)
     {
         for (int i = 0; i < 3; ++i)
@@ -784,9 +788,9 @@ void Workstation::paintChrome (juce::Graphics& g)
     g.setColour (kLine);
     g.drawHorizontalLine ((int) L.arma.getY(), L.arma.getX(), L.arma.getRight());
     g.setColour (kDim);
-    for (int t = 0; t <= (int) tl.duration; ++t) g.drawText (juce::String (t), (int) L.tx (t) - 8, (int) L.tlAx.getBottom() + 2, 20, 12, juce::Justification::centred);
-    g.drawText (juce::String (tl.playhead, 2) + " s", (int) L.tlAx.getRight() - 60, (int) L.tlAx.getY() - 12, 58, 12, juce::Justification::centredRight);
+    for (int t = 0; t <= (int) tl.duration; ++t) g.drawText (juce::String (t), (int) L.tx (t) - 8, (int) L.tlAx.getBottom() + 4, 20, 12, juce::Justification::centred);
+    g.drawText (juce::String (tl.playhead, 2) + " s", (int) L.tlAx.getRight() - 60, (int) L.tlAx.getY() - 14, 58, 12, juce::Justification::centredRight);
     g.setColour (kOn);
-    g.drawText (status, (int) L.field.getX() + 4, (int) L.field.getBottom() - 14, (int) L.field.getWidth() - 100, 12, juce::Justification::centredLeft);
+    g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 120, 12, juce::Justification::centredLeft);
 }
 }

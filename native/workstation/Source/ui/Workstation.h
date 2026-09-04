@@ -18,6 +18,7 @@ public:
     ~Workstation() override;
 
     void demo();
+    void closeEditor() { editing = -1; }
     bool exportBody (const juce::File& file);
     juce::File exportDir;
 
