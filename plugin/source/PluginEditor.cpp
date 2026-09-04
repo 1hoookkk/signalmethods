@@ -5,17 +5,6 @@
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
 using namespace trench::ui;
-namespace
-{
-constexpr float kBayLeft   = 44.0f;
-constexpr float kBayRight  = 214.0f;
-constexpr float kBayPad    = 8.0f;
-constexpr float kBayRowGap = 6.0f;
-constexpr int   kBayRowH   = 42;
-const juce::Rectangle<int>   kBayWord { (int) (kBayLeft + kBayPad), 354, 44, 17 };
-const juce::Rectangle<float> kBayRoom { kBayLeft, 363.0f, kBayRight - kBayLeft,
-                                        2.0f * kBayPad + kBayRowGap + 2.0f * (float) kBayRowH };
-}
 PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p),
       processor (p)
@@ -28,8 +17,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
                                                   BinaryData::df2_panel_beige_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_roller_strip_png,
                                                   BinaryData::trench_roller_strip_pngSize);
+#if TRENCH_DEV_PANEL
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
+#endif
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
@@ -55,23 +46,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
-    glassWords = std::make_unique<GlassWords> (processor.apvts, theme);
-    glassWords->livePhraseProvider = [this] { return processor.hasLivePhraseForUi(); };
-    followLamp = std::make_unique<FollowLamp> (processor.apvts, theme);
+    modulationChip = std::make_unique<ModulationChip> (theme);
     zWord = std::make_unique<GlassValue> (processor.apvts, theme, ParamID::chew, "BITE");
-    keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
-    keySnapBox->setSuggestionProviders (
-        [this] { return processor.getDetectedKeyForUi(); },
-        [this] { return processor.getDetectedAltKeyForUi(); });
-    keySnapBox->setListeningProvider ([this]
-    {
-        return juce::jmax (processor.getInputMeterLeftForUi().load (std::memory_order_relaxed),
-                           processor.getInputMeterRightForUi().load (std::memory_order_relaxed))
-               > 0.0015f;
-    });
-    inputKnob  = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::preamp,    "Input");
-    outputKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::slamDrive, "Output");
-    followKnob = std::make_unique<BayKnob> (processor.apvts, theme, ParamID::envAmount, "Follow");
     labels = std::make_unique<LabelsLayer> (theme);
     labels->setRailLabels ("MORPH", "Q");
     addAndMakeVisible (*faceplate);
@@ -81,13 +57,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*typeSelector);
     addAndMakeVisible (*morphReadout);
     addAndMakeVisible (*secondaryReadout);
-    addAndMakeVisible (*glassWords);
-    addAndMakeVisible (*keySnapBox);
+    addAndMakeVisible (*modulationChip);
     addAndMakeVisible (*labels);
-    addAndMakeVisible (*followLamp);
     addChildComponent (*zWord);
-    for (auto* c : { (juce::Component*) inputKnob.get(), (juce::Component*) outputKnob.get(), (juce::Component*) followKnob.get() })
-        addAndMakeVisible (*c);
     addChildComponent (*bodyBrowser);
     onboarding = std::make_unique<Onboarding> (theme);
     onboarding->onComplete = [this]
@@ -137,91 +109,8 @@ void PluginEditor::resized()
     secondaryReadout->setBounds (rectOf ("qReadout"));
     {
         const auto glass = rectOf ("spectrumGrid");
-        glassWords->setBounds (glass.getX() + 12, glass.getBottom() - 26, 150, 18);
-        followLamp->setBounds (glass.getX() + 12 + 150 + 6, glass.getBottom() - 26, 70, 18);
+        modulationChip->setBounds (glass.getX() + 12, glass.getBottom() - 26, 110, 18);
         zWord->setBounds (glass.getRight() - 12 - 104, glass.getY() + 8, 104, 18);
-    }
-    const bool lean = std::getenv ("TRENCH_FACE") != nullptr && juce::String (std::getenv ("TRENCH_FACE")).toLowerCase() == "lean";
-    glassWords->setVisible (! lean);
-    followLamp->setVisible (! lean);
-    keySnapBox->setVisible (! lean);
-    {
-        const auto key = rectOf ("keyBox");
-        keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
-    }
-    {
-        const char* gainEnv = std::getenv ("TRENCH_GAIN");
-        const juce::String gainMode = gainEnv != nullptr ? juce::String (gainEnv).toLowerCase() : juce::String ("pocket");
-        const bool boxOnly = gainMode == "numbers";
-        inputKnob->boxOnly = boxOnly;
-        outputKnob->boxOnly = boxOnly;
-        faceplate->setDeck (gainMode);
-        inputKnob->setVisible (gainMode != "rig" && ! lean);
-        outputKnob->setVisible (gainMode != "rig" && ! lean);
-        if (lean)
-            faceplate->setDeck (juce::String());
-        inputKnob->deckStyle = gainMode == "deck";
-        outputKnob->deckStyle = gainMode == "deck";
-        followKnob->deckStyle = true;
-        followKnob->setVisible (false);
-        followKnob->setBounds (0, 0, 0, 0);
-        if (gainMode == "deck")
-        {
-            inputKnob->setBounds  (26, 356, 88, 108);
-            outputKnob->setBounds (126, 356, 88, 108);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else if (gainMode == "rig")
-        {
-            inputKnob->setBounds (0, 0, 0, 0);
-            outputKnob->setBounds (0, 0, 0, 0);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else if (gainMode == "bay")
-        {
-            inputKnob->setBounds  (28, 382, 100, kBayRowH);
-            outputKnob->setBounds (28, 382 + 34, 100, kBayRowH);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else if (gainMode == "bench")
-        {
-            inputKnob->setBounds  (52, 390, 112, kBayRowH);
-            outputKnob->setBounds (52, 432, 112, kBayRowH);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else if (gainMode == "row" || gainMode == "numbers")
-        {
-            const int y = 336;
-            inputKnob->setBounds  (18, y, 132, kBayRowH);
-            outputKnob->setBounds (150, y, 132, kBayRowH);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else if (gainMode == "corners")
-        {
-            const int y = 418;
-            inputKnob->setBounds  (18, y, 132, kBayRowH);
-            outputKnob->setBounds (150, y, 132, kBayRowH);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else if (gainMode == "stack")
-        {
-            const auto wheel = rectOf ("morphWheel");
-            const int x0 = juce::roundToInt (wheel.getX()) - 4;
-            const int w  = 150;
-            inputKnob->setBounds  (x0, 352, w, kBayRowH);
-            outputKnob->setBounds (x0, 352 + kBayRowH + 6, w, kBayRowH);
-            faceplate->setRoomFrame ({}, 0.0f, 0.0f);
-        }
-        else
-        {
-            const int x0 = juce::roundToInt (kBayLeft + kBayPad);
-            const int x1 = juce::roundToInt (kBayRight - kBayPad);
-            const int w  = x1 - x0;
-            const int rowY = juce::roundToInt (kBayRoom.getY() + kBayPad + kBayRowGap * 0.5f);
-            inputKnob->setBounds  (x0, rowY, w, kBayRowH);
-            outputKnob->setBounds (x0, rowY + kBayRowH, w, kBayRowH);
-            faceplate->setRoomFrame (kBayRoom, (float) kBayWord.getX() - 4.0f, (float) kBayWord.getRight() + 4.0f);
-        }
     }
 #if TRENCH_DEV_PANEL
     devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kEditorHeight);
@@ -257,10 +146,7 @@ void PluginEditor::markOnboardingSeen()
 }
 void PluginEditor::onFrame()
 {
-    {
-        glassWords->setActive (processor.isMorphModulatedForUi());
-        keySnapBox->refreshSuggestion();
-    }
+    modulationChip->setActive (processor.isMorphModulatedForUi());
     const auto read = [this] (const char* paramID)
     {
         if (auto* v = processor.apvts.getRawParameterValue (paramID))

@@ -91,8 +91,8 @@ set(TRENCH_PLUGIN_SOURCES
   source/dsp/Movement.h source/dsp/SlamStage.h source/dsp/DeskDrive.h source/dsp/EnvFollower.h
   source/dsp/TrenchCleanBody.h source/dsp/TrenchDspBridge.h
   source/dsp/TrenchRuntimePreset.h source/dsp/FuncGenPatterns.h source/dsp/PreampLaw.h
-  source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/KeySnapBox.h
-  source/ui/BayKnob.h source/ui/ParamInteraction.h
+  source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/ModulationChip.h
+  source/ui/ParamInteraction.h
   source/ui/SelectorLookAndFeel.h source/ui/Theme.h
   source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h
   source/ui/Onboarding.h source/ui/DevPanel.h source/dsp/WheelLoop.h)

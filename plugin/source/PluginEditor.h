@@ -9,9 +9,8 @@
 #include "ui/TypeSelectorView.h"
 #include "ui/BodyBrowser.h"
 #include "ui/GlassWords.h"
-#include "ui/KeySnapBox.h"
+#include "ui/ModulationChip.h"
 #include "ui/LabelsLayer.h"
-#include "ui/BayKnob.h"
 #include "ui/Onboarding.h"
 #if TRENCH_DEV_PANEL
 #include "ui/DevPanel.h"
@@ -40,15 +39,12 @@ private:
     std::unique_ptr<trench::ui::GraphDisplay>     graph;
     std::unique_ptr<trench::ui::TypeSelectorView> typeSelector;
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
-    std::unique_ptr<trench::ui::GlassWords>       glassWords;
-    std::unique_ptr<trench::ui::FollowLamp>       followLamp;
-    std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
+    std::unique_ptr<trench::ui::ModulationChip>   modulationChip;
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;
     std::unique_ptr<trench::ui::WheelControl>     secondaryWheel;
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;
     std::unique_ptr<trench::ui::ValueReadout>     secondaryReadout;
     std::unique_ptr<trench::ui::LabelsLayer>      labels;
-    std::unique_ptr<trench::ui::BayKnob>          inputKnob, outputKnob, followKnob;
     std::unique_ptr<trench::ui::GlassValue>       zWord;
     std::unique_ptr<trench::ui::Onboarding>       onboarding;
 #if TRENCH_DEV_PANEL

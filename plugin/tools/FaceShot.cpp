@@ -55,7 +55,7 @@ int main()
     set (ParamID::movePreset, 1.0f);
     set (ParamID::preamp, 0.35f);
     set (ParamID::slamDrive, 0.70f);
-    set (ParamID::envAmount, trench::ui::FollowLamp::kDepth);
+    set (ParamID::envAmount, 0.6f);
     set (ParamID::chew, 0.25f);
     juce::MessageManager::getInstance()->runDispatchLoopUntil (700);
     shoot ("trench_face_active");

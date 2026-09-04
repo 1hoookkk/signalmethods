@@ -26,8 +26,6 @@ public:
         layout.elements["typeSelector"] = { { 230.0f, 139.0f, 666.6f, 68.0f },  {}, {} };
 
         layout.elements["keyBox"]       = { { 551.6f, 65.0f, 345.0f, 62.0f }, {}, {} };
-        layout.elements["gainLabel"]    = { { 149.2f, 1015.0f, 126.0f, 49.0f }, 12.5f, juce::Colour (0xff2a2722) };
-        layout.elements["gainLabel"].text = "GAIN";
 
         layout.elements["morphReadout"] = { { 588.0f, 694.0f, 172.0f, 62.0f },  16.0f, juce::Colour (0xff3f3a33) };
         layout.elements["qReadout"]     = { { 588.0f, 861.2f, 172.0f, 62.0f },  16.0f, juce::Colour (0xff3f3a33) };
@@ -72,6 +70,7 @@ public:
         layout.params["curveDbBottom"]     = -40.0;
         layout.params["fontBold"]          = 1.0;
         layout.params["gridBoost"]         = 3.0;
+#if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {
             if (juce::String (themeName).toLowerCase() == "methods")
@@ -88,7 +87,7 @@ public:
                 layout.colours["modulationLamp"]     = mint;
                 layout.colours["accent"]             = mint;
                 layout.colours["labelInk"]           = bone;
-                for (const char* id : { "typeLabel", "morphLabel", "qLabel", "gainLabel", "brandLabel" })
+                for (const char* id : { "typeLabel", "morphLabel", "qLabel", "brandLabel" })
                     layout.elements[id].textColour = bone;
                 layout.params["plateDark"]         = 1.0;
                 layout.params["knobSvg"]           = 1.0;
@@ -110,7 +109,7 @@ public:
                 layout.colours["modulationLamp"]     = juce::Colour (0xff5a9cff);
                 layout.colours["accent"]             = blue;
                 layout.colours["labelInk"]           = ink;
-                for (const char* id : { "typeLabel", "morphLabel", "qLabel", "gainLabel", "morphReadout", "qReadout", "typeName" })
+                for (const char* id : { "typeLabel", "morphLabel", "qLabel", "morphReadout", "qReadout", "typeName" })
                     layout.elements[id].textColour = ink;
                 layout.elements["brandLabel"].textColour = blue;
                 layout.params["plateSilver"]       = 1.0;
@@ -130,12 +129,6 @@ public:
             if (style == "cream") { layout.params["knobSvg"] = 1.0; layout.params["knobStyle"] = 2.0; }
             if (style == "dark")  { layout.params["knobSvg"] = 1.0; layout.params["knobStyle"] = 1.0; }
         }
-        if (const char* gainMode = std::getenv ("TRENCH_GAIN"))
-            if (juce::String (gainMode).toLowerCase() != "pocket")
-                layout.elements["gainLabel"].text = juce::String();
-        if (const char* face = std::getenv ("TRENCH_FACE"))
-            if (juce::String (face).toLowerCase() == "lean")
-                layout.elements["gainLabel"].text = juce::String();
         if (const char* glowHex = std::getenv ("TRENCH_GLOW"))
         {
             const juce::String hex = juce::String (glowHex).trimCharactersAtStart ("#");
@@ -185,6 +178,7 @@ public:
             layout.colours["modulationLamp"]     = wheel;
             layout.colours["accent"]             = wheel;
         }
+#endif
         layout.strings["fontFamily"] = "Arial";
         layout.strings["fontFamilyEmphasis"] = "Arial";
         return layout;

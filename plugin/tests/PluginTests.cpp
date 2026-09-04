@@ -5,8 +5,7 @@
 #include "dsp/PreampLaw.h"
 #include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
-#include "ui/GlassWords.h"
-#include "ui/KeySnapBox.h"
+#include "ui/ModulationChip.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cmath>
 #include <complex>
@@ -847,6 +846,33 @@ int main()
             pump (400);
         }
     }
+    {
+        std::printf ("== face containment ==\n");
+        auto* editor = processor.createEditorIfNeeded();
+        pump (50);
+        const juce::Rectangle<int> frame { 0, 0, trench::ui::kEditorWidth, trench::ui::kEditorHeight };
+        int outside = 0;
+        for (auto* c : editor->getChildren())
+        {
+            if (! c->isVisible()) continue;
+            const auto b = c->getBounds();
+            if (frame.contains (b)) continue;
+            ++outside;
+            const auto who = c->getTitle().isNotEmpty() ? c->getTitle() : c->getName();
+            std::printf ("      OUTSIDE  %s  %d,%d %dx%d\n", who.toRawUTF8(),
+                         b.getX(), b.getY(), b.getWidth(), b.getHeight());
+        }
+        check (outside == 0, "every visible child sits inside the face", outside, 0);
+        const trench::UiLayout faceLayout { trench::UiLayout::defaults() };
+        const trench::ui::Theme faceTheme { faceLayout };
+        const auto glass = faceTheme.rect ("spectrumGrid").getSmallestIntegerContainer();
+        auto* chip = findChild<trench::ui::ModulationChip> (*editor);
+        check (chip != nullptr, "Modulation chip exists");
+        if (chip != nullptr)
+            check (glass.contains (chip->getBounds()), "Modulation chip sits inside the glass");
+        processor.editorBeingDeleted (editor);
+        delete editor;
+    }
     if (std::getenv ("TRENCH_HEADLESS") != nullptr)
     {
         std::printf ("SKIP  == face == (TRENCH_HEADLESS)\n");
@@ -863,29 +889,15 @@ int main()
     pump (600);
     check (editor->getWidth() == trench::ui::kFaceLockedWidth && editor->getHeight() == trench::ui::kFaceLockedHeight,
            "editor is locked at the ruled DAW size", editor->getWidth(), editor->getHeight());
-    auto* words = findChild<trench::ui::GlassWords> (*editor);
-    auto* keyBox = findChild<trench::ui::KeySnapBox> (*editor);
-    check (words != nullptr && keyBox != nullptr && keyBox->isShowing(), "Modulation chip and KEY box exist");
-    if (words == nullptr)
+    auto* faceChip = findChild<trench::ui::ModulationChip> (*editor);
+    check (faceChip != nullptr, "Modulation chip exists");
+    if (faceChip == nullptr)
         return 1;
-    check (words->isShowing(), "Modulation and KEY are always on the face");
-    for (const char* here : { "Input", "Output", "Movement", "Follow" })
-        check (anyVisibleOfTitle (*editor, here), (juce::String ("on the face: ") + here).toRawUTF8());
+    check (faceChip->isShowing(), "Modulation is always on the glass");
     check (! anyVisibleOfTitle (*editor, "Bite"), "BITE is not a third gain knob");
-    {
-        auto* lamp = findChild<trench::ui::FollowLamp> (*editor);
-        check (lamp != nullptr, "FOLLOW lamp exists");
-        if (lamp != nullptr)
-        {
-            lamp->toggle();
-            check (std::abs (processor.apvts.getRawParameterValue (ParamID::envAmount)->load() - trench::ui::FollowLamp::kDepth) < 1e-4f, "FOLLOW lamp on = the one depth", processor.apvts.getRawParameterValue (ParamID::envAmount)->load(), trench::ui::FollowLamp::kDepth);
-            lamp->toggle();
-            check (processor.apvts.getRawParameterValue (ParamID::envAmount)->load() == 0.0f, "FOLLOW lamp off = exactly 0");
-        }
-    }
-    for (const char* gone : { "Low", "Track", "Division", "Mix", "Section", "Modulation", "Bite", "Color 1", "Color 2", "Color 3", "Generator" })
+    for (const char* gone : { "Input", "Output", "Follow", "Movement", "Key Snap", "Low", "Track", "Division", "Mix", "Section", "Bite", "Color 1", "Color 2", "Color 3", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
-    check (words->getHeight() >= 18, "rows are legible", words->getHeight(), 18);
+    check (faceChip->getHeight() >= 18, "rows are legible", faceChip->getHeight(), 18);
     pump (150);
     {
         const float shotScale = std::getenv ("TRENCH_SHOT_SCALE") != nullptr ? (float) std::atof (std::getenv ("TRENCH_SHOT_SCALE")) : 1.0f;

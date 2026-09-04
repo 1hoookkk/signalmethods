@@ -1275,3 +1275,17 @@ Open, in order:
   pngs, Launch bats, design-qa.md), .claude/, and the two big evidence folders. Note: another chat
   has already started the marimo side (workstation.py, native/core trench_core_c.*, native/python)
   -> the new-chat prompt should read those first.
+- 2026-09-04 late, face locked as the lean face. Tyson: "the filter is the gain" -> INPUT and OUTPUT
+  are host parameters only; no gain knobs on the face. The clip was the pocket: rows from y 363, 100
+  tall, in a 440-tall face, never fitted. Deleted rather than fitted: kBay* constants, the TRENCH_GAIN
+  eight-mode chain, TRENCH_FACE, BayKnob.h, KeySnapBox.h, GlassWords, FollowLamp, LightMenuLnF, the
+  gainLabel element and its LabelsLayer draw, FaceplateView deck and room frame (1226 lines out, 49
+  in). New: ui/ModulationChip.h, paint only, dot + "Modulation" at glass x+12, bottom-26, 110x18,
+  lit by isMorphModulatedForUi; from his 2026-07-24 screenshot. No click yet; the door to MOVEMENT /
+  FOLLOW / KEY is its own session with his spec. Env switches TRENCH_THEME/PLATE/KNOB/GLOW/GLASS/
+  GRID/CURVE/WHEEL/GRID_BOOST/WHEEL_STRIP now sit behind #if TRENCH_DEV_PANEL; the ship lib reads
+  only TRENCH_HEADLESS, TRENCH_SHOW_ONBOARDING, TRENCH_ONBOARDING_HOVER. Tests: every visible child
+  must sit inside 270x440 (would have caught the clip), chip exists and sits inside the glass; runs
+  before the HEADLESS skip so ctest exercises it. trench_plugin still fails on the one deliberate
+  case, Low Shape 1.19 % at -12 dBFS (guard zone decision above). Site face PNG re-shot from the 2x
+  FaceShot at 489x797; trench-tour.gif still needs a screen recording.

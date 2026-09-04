@@ -41,7 +41,6 @@ public:
         // printed panel text is ink on metal, whatever the body underneath.
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
-        draw ("gainLabel",   t.text ("gainLabel", "GAIN"), true, true);
         {
             const auto br = t.rect ("brandLabel");
             const float bfs = t.fontSize ("brandLabel", 16.5f);
