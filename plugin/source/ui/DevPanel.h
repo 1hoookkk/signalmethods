@@ -84,7 +84,7 @@ public:
         addAndMakeVisible (agc);
         biteAuto.setButtonText ("BITE AUTO");
         biteAuto.setColour (juce::ToggleButton::textColourId, t.curveColour());
-        biteAuto.setToggleState (true, juce::dontSendNotification);
+        biteAuto.setToggleState (false, juce::dontSendNotification);
         biteAuto.onClick = [this] { if (onBiteAuto != nullptr) onBiteAuto (biteAuto.getToggleState()); };
         addAndMakeVisible (biteAuto);
         for (auto* b : { &armButton, &stopButton, &playButton, &saveButton, &loadButton })

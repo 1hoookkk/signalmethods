@@ -481,7 +481,7 @@ private:
     int tickPhase = 0;
     bool glideOn = true;
     bool perSample = true;
-    bool biteAuto = true;
+    bool biteAuto = false;
     float autoDrive = 0.0f;
     bool levellerKnee = false;
     int heldSamples = 0;
