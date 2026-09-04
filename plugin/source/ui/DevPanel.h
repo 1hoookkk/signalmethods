@@ -74,8 +74,8 @@ class DevPanel final : public juce::Component,
                        private juce::Timer
 {
 public:
-    DevPanel (const Theme& theme, WheelLoop& loopRef, juce::File loopDir, std::function<void (bool)> agcSwitch, std::function<void (bool)> biteAutoSwitch)
-        : t (theme), loop (loopRef), dir (std::move (loopDir)), onAgc (std::move (agcSwitch)), onBiteAuto (std::move (biteAutoSwitch))
+    DevPanel (const Theme& theme, WheelLoop& loopRef, juce::File loopDir, std::function<void (bool)> agcSwitch, std::function<void (bool)> biteAutoSwitch, std::function<void (float)> agcScaleSwitch)
+        : t (theme), loop (loopRef), dir (std::move (loopDir)), onAgc (std::move (agcSwitch)), onBiteAuto (std::move (biteAutoSwitch)), onAgcScale (std::move (agcScaleSwitch))
     {
         agc.setButtonText ("AGC");
         agc.setColour (juce::ToggleButton::textColourId, t.curveColour());
@@ -87,6 +87,10 @@ public:
         biteAuto.setToggleState (false, juce::dontSendNotification);
         biteAuto.onClick = [this] { if (onBiteAuto != nullptr) onBiteAuto (biteAuto.getToggleState()); };
         addAndMakeVisible (biteAuto);
+        agcScale.addItemList ({ "AGC 1x", "AGC 2x", "AGC 4x", "AGC 8x" }, 1);
+        agcScale.setSelectedId (2, juce::dontSendNotification);
+        agcScale.onChange = [this] { if (onAgcScale != nullptr) onAgcScale ((float) (1 << (agcScale.getSelectedId() - 1))); };
+        addAndMakeVisible (agcScale);
         for (auto* b : { &armButton, &stopButton, &playButton, &saveButton, &loadButton })
         {
             addAndMakeVisible (*b);
@@ -157,8 +161,10 @@ public:
         agc.setBounds (row.removeFromLeft (row.getWidth() / 2 - 2));
         row.removeFromLeft (4);
         biteAuto.setBounds (row);
+        r.removeFromTop (4);
+        agcScale.setBounds (r.removeFromTop (24));
         r.removeFromTop (6);
-        stepGrid.setBounds (r.removeFromTop (110)); r.removeFromTop (8);
+        stepGrid.setBounds (r.removeFromTop (82)); r.removeFromTop (8);
         name.setBounds (r.removeFromTop (24)); r.removeFromTop (4);
         row = r.removeFromTop (26);
         saveButton.setBounds (row.removeFromLeft (row.getWidth() / 2 - 2));
@@ -293,7 +299,9 @@ private:
     juce::ComboBox grid;
     juce::ToggleButton glide;
     juce::ToggleButton agc, biteAuto;
+    juce::ComboBox agcScale;
     std::function<void (bool)> onAgc, onBiteAuto;
+    std::function<void (float)> onAgcScale;
     StepGrid stepGrid;
     juce::TextButton blankButton;
     juce::TextEditor name;

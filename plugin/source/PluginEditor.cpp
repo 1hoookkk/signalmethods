@@ -81,7 +81,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     devPanel = std::make_unique<DevPanel> (theme, processor.wheelLoop(),
                                            juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"),
                                            [this] (bool on) { processor.dspBridge.setAgcEnabled (on); },
-                                           [this] (bool on) { processor.dspBridge.setBiteAuto (on); });
+                                           [this] (bool on) { processor.dspBridge.setBiteAuto (on); },
+                                           [this] (float scale) { processor.dspBridge.setLevellerScale (scale); });
     addAndMakeVisible (*devPanel);
     setResizable (false, false);
     setSize (kEditorWidth + kDevPanelWidth, kEditorHeight);

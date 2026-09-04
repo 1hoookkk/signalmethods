@@ -474,7 +474,7 @@ private:
     static constexpr int kTickSamples = 32;
     static constexpr std::array<float, 16> kAgcBaseTable { 1.0001f, 1.0001f, 0.996f, 0.990f, 0.920f, 0.500f, 0.200f, 0.160f,
                                                             0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f, 0.120f };
-    static constexpr float kLevellerScale = 1.0f;
+    static constexpr float kLevellerScale = 2.0f;
     float levellerScale = kLevellerScale;
     std::array<float, 16> agcTable = kAgcBaseTable;
     float agcGain = 1.0f;
