@@ -1311,3 +1311,14 @@ Open, in order:
   dBFS, hence "quieter with AGC on"); recommendation to cut AGC from ship and keep BITE as the
   ceiling, awaiting Tyson. Evidence added: timbre-space papers, Massie collection (SOS 1995 full,
   ICMC 1992 pole-zero paper, patents), UltraProteus manual pages, Martens Palette and PCA pages.
+- 2026-09-05, TRENCH Workstation (native/workstation, target TRENCH_Workstation, JUCE 9 + OpenGL,
+  SVG through lunasvg for --shot): the frame space is anchors on Martens' plane (first two
+  principal components of the response set, computed in C++), eight sort measures, triangle blend
+  in word space, PAIR mode for a straight slot-to-slot morph between two chosen anchors, the
+  ARMAdillo plot of the blend with slot glides, a timeline with keys and play, the BODY block
+  (four corners round a square with the wheel, six row switches, EXPORT to
+  plugin/presets/user/*.body240, verified word for word against the bank), and the corner editor
+  (six stage rows, each with its own magnitude and pole and zero handles, OPEN as Klatt's F1).
+  Not yet: sound in the workstation, FROM AUDIO, loading a user body in the plugin drawer. Rules
+  from Tyson this session: no glow, no sentences on the surface, no stock widgets, no chrome, a
+  stage is a row, pairing is slot to slot only, one response curve.
