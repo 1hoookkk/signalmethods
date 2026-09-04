@@ -31,13 +31,22 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel };
+    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel, dragPole, dragZero, open };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
 
     Library& lib;
     Timeline tl;
     Body body;
     bool playBody = false;
+    int editCorner = 0;
+    int editing = -1;
+    int dragStage = -1;
+    double openAmount = 0.5;
+    juce::Rectangle<float> openBar;
+    void setOpen (float x);
+    int f1Row (const Frame& f) const;
+    void openEditor (int corner);
+    void dragHandle (juce::Point<float> p);
     void setWheel (juce::Point<float> p);
     void assignCorner (int i);
     Words playingWords() const;

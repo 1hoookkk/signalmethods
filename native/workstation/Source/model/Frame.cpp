@@ -94,6 +94,28 @@ void measure (Frame& f)
     f.m = { pitch / 9.0, std::min (1.0, spread / 6.0), std::min (1.0, meanRes / 40.0), stages / 6.0, zeros / 6.0, ceiling, 0.5, 0.5 };
 }
 
+namespace
+{
+void setPair (Words& words, int row, bool pole, double hz, double radius)
+{
+    auto& r = words[(size_t) row];
+    auto geom = trench::core::geometry_from_words ({ r[0], r[1], r[2], r[3], r[4] }, kDatumHz);
+    const trench::core::ConjugatePair pair { juce::jlimit (20.0, kDatumHz * 0.495, hz), juce::jlimit (0.0, 0.9995, radius) };
+    if (pole) geom.pole = pair; else geom.zero = pair;
+    const auto out = trench::core::words_from_geometry (geom, kDatumHz);
+    for (int k = 0; k < kWords; ++k) r[(size_t) k] = out[(size_t) k];
+}
+}
+
+void setPole (Words& words, int row, double hz, double radius) { setPair (words, row, true, hz, radius); }
+void setZero (Words& words, int row, double hz, double radius) { setPair (words, row, false, hz, radius); }
+
+double sectionDb (const Words& words, int row, double hz)
+{
+    const auto& r = words[(size_t) row];
+    return trench::core::section_response_db (trench::core::section_words_to_biquad ({ r[0], r[1], r[2], r[3], r[4] }), hz, kDatumHz);
+}
+
 juce::Colour hueOf (double t)
 {
     return juce::Colour::fromHSV ((float) (juce::jlimit (0.0, 1.0, t) * 0.75), 0.9f, 0.9f, 1.0f);

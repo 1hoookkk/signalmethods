@@ -34,6 +34,17 @@ float Layout::ry (double db) const { return resp.getY() + 12.0f + (float) ((30.0
 float Layout::tx (double t) const { return tlAx.getX() + (float) (t / duration) * tlAx.getWidth(); }
 double Layout::tAt (float x) const { return juce::jlimit (0.0, duration, (x - tlAx.getX()) / tlAx.getWidth() * duration); }
 
+juce::Rectangle<float> Layout::cascadeRect() const { return { field.getX() + 40.0f, field.getY() + 16.0f, field.getWidth() - 56.0f, 120.0f }; }
+juce::Rectangle<float> Layout::stageRect (int s) const
+{
+    const float top = field.getY() + 160.0f, h = (field.getHeight() - 170.0f) / 6.0f;
+    return { field.getX() + 300.0f, top + s * h + 4.0f, field.getWidth() - 316.0f, h - 10.0f };
+}
+float Layout::sx (juce::Rectangle<float> r, double hz) const { return r.getX() + (float) (std::log10 (hz / 20.0) / 3.0) * r.getWidth(); }
+float Layout::sy (juce::Rectangle<float> r, double db) const { return r.getY() + (float) ((30.0 - db) / 60.0) * r.getHeight(); }
+double Layout::hzAt (juce::Rectangle<float> r, float x) const { return 20.0 * std::pow (1000.0, juce::jlimit (0.0, 1.0, (double) (x - r.getX()) / r.getWidth())); }
+double Layout::dbAt (juce::Rectangle<float> r, float y) const { return 30.0 - juce::jlimit (0.0, 1.0, (double) (y - r.getY()) / r.getHeight()) * 60.0; }
+
 juce::Point<float> Layout::armaXY (double hz, double r) const
 {
     const double oct = juce::jlimit (0.0, 10.0, std::log2 (std::max (hz, 20.0) / 20.0));

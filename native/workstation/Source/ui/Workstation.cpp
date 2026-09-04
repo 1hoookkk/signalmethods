@@ -46,6 +46,7 @@ void Workstation::demo()
     body.morph = 0.35;
     body.q = 0.6;
     playBody = true;
+    openEditor (1);
 }
 
 bool Workstation::exportBody (const juce::File& file)
@@ -71,8 +72,63 @@ void Workstation::setWheel (juce::Point<float> p)
     redraw();
 }
 
+void Workstation::openEditor (int corner)
+{
+    if (body.corner[(size_t) corner] < 0) { status = "corner is empty"; redraw(); return; }
+    const auto& src = lib.frames[(size_t) body.corner[(size_t) corner]];
+    if (! src.capture)
+    {
+        Frame f = src;
+        f.capture = true;
+        f.name = "edit " + src.name;
+        f.group = kGroups - 1;
+        lib.frames.push_back (f);
+        body.corner[(size_t) corner] = (int) lib.frames.size() - 1;
+    }
+    editing = corner;
+    playBody = true;
+    status = "editing " + lib.frames[(size_t) body.corner[(size_t) corner]].name;
+    redraw();
+}
+
+void Workstation::dragHandle (juce::Point<float> p)
+{
+    auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+    const auto r = L.stageRect (dragStage);
+    const double hz = L.hzAt (r, p.x);
+    const double db = L.dbAt (r, p.y);
+    if (mode == Mode::dragPole) setPole (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, db + 30.0) / 20.0));
+    else setZero (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, 30.0 - db) / 20.0));
+    measure (f);
+    redraw();
+}
+
+int Workstation::f1Row (const Frame& f) const
+{
+    int best = -1;
+    double lo = 1e9;
+    for (int s = 0; s < kRows; ++s)
+        if (f.rows[(size_t) s].pole && f.rows[(size_t) s].pR > 0.85 && f.rows[(size_t) s].pHz < lo) { lo = f.rows[(size_t) s].pHz; best = s; }
+    return best;
+}
+
+void Workstation::setOpen (float x)
+{
+    openAmount = juce::jlimit (0.0, 1.0, (double) (x - openBar.getX()) / openBar.getWidth());
+    auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+    const int row = f1Row (f);
+    if (row < 0) { status = "no F1 pole in this frame"; redraw(); return; }
+    const double f1 = 250.0 * std::pow (900.0 / 250.0, openAmount);
+    const double b1 = 60.0 + 60.0 * openAmount;
+    setPole (f.words, row, f1, std::exp (-juce::MathConstants<double>::pi * b1 / kDatumHz));
+    measure (f);
+    status = "F1 " + juce::String ((int) std::round (f1)) + " Hz  B1 " + juce::String ((int) std::round (b1)) + " Hz  row " + juce::String (row + 1);
+    redraw();
+}
+
 void Workstation::assignCorner (int i)
 {
+    editCorner = i;
     if (pickFor >= 0 && pickFor < (int) lib.anchors.size())
     {
         body.corner[(size_t) i] = lib.anchors[(size_t) pickFor].frame;
@@ -139,6 +195,7 @@ void Workstation::layoutKeys()
         keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { sq.getRight() + 54.0f + (s % 3) * 22.0f, sq.getY() + (s / 3) * 18.0f, 20.0f, 14.0f }, body.rowOn[(size_t) s] });
     keys.push_back ({ "playbody", "BODY", { sq.getRight() + 54.0f, sq.getY() + 44.0f, 64.0f, 14.0f }, playBody });
     keys.push_back ({ "export", "EXPORT", { sq.getRight() + 54.0f, sq.getY() + 62.0f, 64.0f, 14.0f }, false });
+    keys.push_back ({ editing >= 0 ? "close" : "edit", editing >= 0 ? "CLOSE" : "EDIT", { sq.getRight() + 122.0f, sq.getY() + 44.0f, 56.0f, 14.0f }, editing >= 0 });
     keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 6.0f, L.resp.getY() + 4.0f, 52.0f, 14.0f }, showSurface });
     keys.push_back ({ "pair", "PAIR", { kx + kMeasures * 78.0f + 64.0f, 3.0f, 52.0f, 14.0f }, pairMode });
     keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 4.0f, L.tl.getY() + 6.0f, 60.0f, 14.0f }, tl.playing });
@@ -191,6 +248,8 @@ void Workstation::press (const juce::String& id)
     else if (id.startsWith ("row")) { const int s = id.substring (3).getIntValue(); body.rowOn[(size_t) s] = ! body.rowOn[(size_t) s]; }
     else if (id == "export") exportBody (exportDir.getChildFile ("ws_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".body240"));
     else if (id == "playbody") playBody = ! playBody;
+    else if (id == "edit") openEditor (editCorner);
+    else if (id == "close") editing = -1;
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two anchors" : ""; }
     else if (id == "play")
     {
@@ -265,6 +324,21 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     if (L.tlAx.contains (p)) { mode = Mode::scrub; scrubTo (p.x); return; }
     if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
     if (L.square.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
+    if (editing >= 0 && openBar.contains (p)) { mode = Mode::open; setOpen (p.x); return; }
+    if (editing >= 0 && L.field.contains (p))
+    {
+        const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+        for (int s = 0; s < kRows; ++s)
+        {
+            const auto r = L.stageRect (s);
+            if (! r.contains (p)) continue;
+            const auto& g = f.rows[(size_t) s];
+            if (g.pole && juce::Point<float> (L.sx (r, g.pHz), L.sy (r, sectionDb (f.words, s, g.pHz))).getDistanceFrom (p) < 10.0f) { mode = Mode::dragPole; dragStage = s; return; }
+            if (g.zero && juce::Point<float> (L.sx (r, g.zHz), L.sy (r, sectionDb (f.words, s, g.zHz))).getDistanceFrom (p) < 10.0f) { mode = Mode::dragZero; dragStage = s; return; }
+            mode = Mode::dragPole; dragStage = s; dragHandle (p); return;
+        }
+        return;
+    }
     if (L.field.contains (p)) { mode = Mode::probe; setProbe (p); return; }
 }
 
@@ -285,6 +359,9 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
         case Mode::pickHz: pickHz (p.x); break;
         case Mode::pair: setPairT (p); break;
         case Mode::wheel: setWheel (p); break;
+        case Mode::dragPole:
+        case Mode::dragZero: dragHandle (p); break;
+        case Mode::open: setOpen (p.x); break;
         case Mode::dragFrame:
         case Mode::dragAnchor: dragPos = p; redraw(); break;
         case Mode::dragKey: tl.keys[(size_t) dragKey].t = L.tAt (p.x); redraw(); break;
@@ -362,6 +439,39 @@ std::vector<Batch> Workstation::scene() const
     std::vector<Batch> out;
     const auto ks = tl.sorted();
     const auto b = current();
+    const bool inEditor = editing >= 0 && body.corner[(size_t) editing] >= 0;
+    if (inEditor)
+    {
+        const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+        Batch grids { Batch::lines, false, {} };
+        Batch curves { Batch::strip, false, {} };
+        const auto cr = L.cascadeRect();
+        const auto cv = curveOf (f.words);
+        for (int i = 0; i < kCurvePoints; ++i) curves.v.push_back (vertex ({ L.sx (cr, 20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.sy (cr, juce::jlimit (-30.0, 30.0, cv[(size_t) i])) }, juce::Colours::white, 1.5f));
+        out.push_back (curves);
+        Batch handles { Batch::points, false, {} };
+        Batch zeroHandles { Batch::points, true, {} };
+        for (int s = 0; s < kRows; ++s)
+        {
+            const auto r = L.stageRect (s);
+            const auto& g = f.rows[(size_t) s];
+            const bool on = body.rowOn[(size_t) s];
+            Batch sc { Batch::strip, false, {} };
+            for (int i = 0; i < kCurvePoints; ++i)
+            {
+                const double hz = 20.0 * std::pow (1000.0, i / double (kCurvePoints - 1));
+                sc.v.push_back (vertex ({ L.sx (r, hz), L.sy (r, juce::jlimit (-30.0, 30.0, sectionDb (f.words, s, hz))) }, on ? juce::Colours::white : kDim, 1.2f));
+            }
+            out.push_back (sc);
+            if (g.pole) handles.v.push_back (vertex ({ L.sx (r, g.pHz), L.sy (r, juce::jlimit (-30.0, 30.0, sectionDb (f.words, s, g.pHz))) }, juce::Colours::white, 7.0f));
+            if (g.zero) zeroHandles.v.push_back (vertex ({ L.sx (r, g.zHz), L.sy (r, juce::jlimit (-30.0, 30.0, sectionDb (f.words, s, g.zHz))) }, kOn, 6.0f));
+        }
+        out.push_back (grids);
+        out.push_back (handles);
+        out.push_back (zeroHandles);
+    }
+    if (! inEditor)
+    {
     if (! gl && showSurface)
     {
         Batch surface { Batch::tris, false, {} };
@@ -407,6 +517,7 @@ std::vector<Batch> Workstation::scene() const
     if (mode == Mode::dragFrame) pts.v.push_back (vertex (dragPos, hueOf (lib.frames[(size_t) dragFrame].m[0]), 12.0f));
     if (mode == Mode::dragAnchor) pts.v.push_back (vertex (dragPos, juce::Colours::white, 12.0f));
     out.push_back (pts);
+    }
     Batch marker { Batch::lines, false, {} };
     marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (30.0) }, juce::Colour (0xff00ffff), 1.0f));
     marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (-30.0) }, juce::Colour (0xff00ffff), 1.0f));
@@ -546,8 +657,59 @@ void Workstation::paintChrome (juce::Graphics& g)
         g.drawText (f.name, (int) L.tray.getX() + 14, (int) y, (int) L.tray.getWidth() - 16, 13, juce::Justification::centredLeft);
     }
     g.setColour (kDim);
-    g.drawText (kMeasureNames[lib.axisX], (int) L.field.getRight() - 96, (int) L.field.getBottom() - 14, 92, 12, juce::Justification::centredRight);
-    g.drawText (kMeasureNames[lib.axisY], (int) L.field.getX() + 4, (int) L.field.getY() + 2, 92, 12, juce::Justification::centredLeft);
+    if (editing >= 0 && body.corner[(size_t) editing] >= 0)
+    {
+        const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+        const auto cr = L.cascadeRect();
+        const auto gridOf = [&] (juce::Rectangle<float> r, bool labels)
+        {
+            g.setColour (kLine);
+            g.drawRect (r, 1.0f);
+            const bool full = r.getHeight() > 100.0f;
+            for (double hz : { 100.0, 1000.0, 10000.0 }) g.drawVerticalLine ((int) L.sx (r, hz), r.getY(), r.getBottom());
+            if (full) for (double hz : { 50.0, 200.0, 500.0, 2000.0, 5000.0 }) g.drawVerticalLine ((int) L.sx (r, hz), r.getY(), r.getBottom());
+            if (full) for (double db : { -20.0, -10.0, 10.0, 20.0 }) g.drawHorizontalLine ((int) L.sy (r, db), r.getX(), r.getRight());
+            g.setColour (kDim);
+            g.drawHorizontalLine ((int) L.sy (r, 0.0), r.getX(), r.getRight());
+            if (labels)
+            {
+                for (double hz : { 100.0, 1000.0, 10000.0 }) g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 0) + "k" : juce::String (hz, 0), (int) L.sx (r, hz) - 14, (int) r.getBottom() + 2, 28, 12, juce::Justification::centred);
+                for (double db : { 20.0, 0.0, -20.0 }) g.drawText (juce::String (db, 0), (int) r.getX() - 34, (int) L.sy (r, db) - 6, 30, 12, juce::Justification::centredRight);
+            }
+        };
+        gridOf (cr, true);
+        g.setColour (kOn);
+        g.drawText (f.name, (int) cr.getX(), (int) cr.getY() - 14, (int) cr.getWidth() / 2, 12, juce::Justification::centredLeft);
+        openBar = { cr.getRight() - 220.0f, cr.getY() - 13.0f, 160.0f, 10.0f };
+        g.setColour (kDim);
+        g.drawText ("open", (int) openBar.getX() - 40, (int) openBar.getY() - 2, 36, 14, juce::Justification::centredRight);
+        g.setColour (juce::Colours::black);
+        g.fillRect (openBar);
+        g.setColour (juce::Colour (0xff777777));
+        g.drawRect (openBar, 1.0f);
+        g.setColour (kOn);
+        g.fillRect (openBar.getX() + 1.0f, openBar.getY() + 1.0f, (openBar.getWidth() - 2.0f) * (float) openAmount, openBar.getHeight() - 2.0f);
+        g.setColour (kDim);
+        g.drawText (juce::String ((int) std::round (250.0 * std::pow (900.0 / 250.0, openAmount))) + " Hz", (int) openBar.getRight() + 4, (int) openBar.getY() - 2, 56, 14, juce::Justification::centredLeft);
+        for (int s = 0; s < kRows; ++s)
+        {
+            const auto r = L.stageRect (s);
+            gridOf (r, s == kRows - 1);
+            const auto& gm = f.rows[(size_t) s];
+            const int x0 = (int) L.field.getX() + 8, y0 = (int) r.getY() + 2;
+            g.setColour (body.rowOn[(size_t) s] ? kText : kDim);
+            g.drawText (juce::String (s + 1) + (body.rowOn[(size_t) s] ? "" : "  off"), x0, y0, 60, 13, juce::Justification::centredLeft);
+            g.setColour (gm.pole ? kText : kDim);
+            g.drawText (gm.pole ? "pole  " + juce::String ((int) std::round (gm.pHz)).paddedLeft (' ', 6) + " Hz   r " + juce::String (gm.pR, 3) + "   " + juce::String (resDb (gm.pR), 1) + " dB" : "pole  real", x0 + 40, y0, 240, 13, juce::Justification::centredLeft);
+            g.setColour (gm.zero ? kText : kDim);
+            g.drawText (gm.zero ? "zero  " + juce::String ((int) std::round (gm.zHz)).paddedLeft (' ', 6) + " Hz   r " + juce::String (gm.zR, 3) : "zero  real", x0 + 40, y0 + 14, 240, 13, juce::Justification::centredLeft);
+        }
+    }
+    else
+    {
+        g.drawText (kMeasureNames[lib.axisX], (int) L.field.getRight() - 96, (int) L.field.getBottom() - 14, 92, 12, juce::Justification::centredRight);
+        g.drawText (kMeasureNames[lib.axisY], (int) L.field.getX() + 4, (int) L.field.getY() + 2, 92, 12, juce::Justification::centredLeft);
+    }
     g.setColour (kLine);
     for (double f : { 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0, 10000.0 }) g.drawVerticalLine ((int) L.rx (f), L.ry (30.0), L.ry (-30.0));
     for (double d : { -20.0, -10.0, 10.0, 20.0 }) g.drawHorizontalLine ((int) L.ry (d), L.rx (20.0), L.rx (20000.0));
@@ -614,7 +776,7 @@ void Workstation::paintChrome (juce::Graphics& g)
         const auto rows = geometryOf (lib.wordsOf (*b));
         for (int s = 0; s < kRows; ++s) if (rows[(size_t) s].pole) { const auto p = L.armaXY (rows[(size_t) s].pHz, rows[(size_t) s].pR); g.setColour (kText); g.drawText (juce::String (s + 1), (int) p.x + 6, (int) p.y - 13, 12, 12, juce::Justification::centredLeft); }
     }
-    if (pairMode && pairA >= 0 && pairB >= 0)
+    if (pairMode && pairA >= 0 && pairB >= 0 && editing < 0)
     {
         g.setColour (kOn);
         g.drawText (lib.frames[(size_t) lib.anchors[(size_t) pairA].frame].name + "  >  " + lib.frames[(size_t) lib.anchors[(size_t) pairB].frame].name + "   " + juce::String (pairT, 3), (int) L.field.getX() + 100, (int) L.field.getY() + 2, (int) L.field.getWidth() - 200, 12, juce::Justification::centred);

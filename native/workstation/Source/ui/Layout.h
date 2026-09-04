@@ -20,5 +20,11 @@ struct Layout
     float tx (double t) const;
     double tAt (float x) const;
     juce::Point<float> armaXY (double hz, double r) const;
+    juce::Rectangle<float> cascadeRect() const;
+    juce::Rectangle<float> stageRect (int s) const;
+    float sx (juce::Rectangle<float> r, double hz) const;
+    float sy (juce::Rectangle<float> r, double db) const;
+    double hzAt (juce::Rectangle<float> r, float x) const;
+    double dbAt (juce::Rectangle<float> r, float y) const;
 };
 }

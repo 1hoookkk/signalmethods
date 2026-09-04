@@ -51,4 +51,7 @@ Curve curveOf (const Words& words);
 void measure (Frame& frame);
 juce::Colour hueOf (double t);
 Words blend (const std::vector<const Words*>& parents, const std::vector<double>& weights);
+void setPole (Words& words, int row, double hz, double radius);
+void setZero (Words& words, int row, double hz, double radius);
+double sectionDb (const Words& words, int row, double hz);
 }
