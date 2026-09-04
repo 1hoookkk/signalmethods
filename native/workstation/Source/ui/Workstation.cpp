@@ -35,9 +35,12 @@ void Workstation::demo()
     lib.axisY = 7;
     lib.sort();
     lit = 0;
+    pairMode = true; pairA = 52; pairB = 53; pairT = 0.35;
+    const auto& pa = lib.anchors[(size_t) pairA].p;
+    const auto& pb = lib.anchors[(size_t) pairB].p;
     tl.keys = { { 0.5, { 0.3, 0.35 }, juce::Colour (0xff00ccff) }, { 3.0, { 0.55, 0.6 }, juce::Colour (0xffff00ff) }, { 6.5, { 0.4, 0.75 }, juce::Colours::yellow } };
     tl.playhead = 2.1;
-    probe = tl.pathAt (tl.playhead);
+    probe = std::array<double, 2> { pa[0] + (pb[0] - pa[0]) * pairT, pa[1] + (pb[1] - pa[1]) * pairT };
 }
 
 void Workstation::redraw()
@@ -74,6 +77,7 @@ void Workstation::layoutKeys()
     for (int i = 0; i < kGroups; ++i) keys.push_back ({ "lit" + juce::String (i), kGroupNames[i], { 4.0f, 4.0f + i * 14.0f, L.groups.getWidth() - 8.0f, 13.0f }, lit == i });
     keys.push_back ({ "capture", "CAPTURE", { L.info.getX() + 6.0f, L.info.getY() + 6.0f, 80.0f, 14.0f }, false });
     keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 6.0f, L.resp.getY() + 4.0f, 52.0f, 14.0f }, showSurface });
+    keys.push_back ({ "pair", "PAIR", { kx + kMeasures * 78.0f + 64.0f, 3.0f, 52.0f, 14.0f }, pairMode });
     keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 4.0f, L.tl.getY() + 6.0f, 60.0f, 14.0f }, tl.playing });
     keys.push_back ({ "loop", "LOOP", { 4.0f, L.tl.getY() + 24.0f, 60.0f, 14.0f }, tl.loop });
     keys.push_back ({ "addkey", "+ KEY", { 4.0f, L.tl.getY() + 42.0f, 60.0f, 14.0f }, false });
@@ -81,7 +85,19 @@ void Workstation::layoutKeys()
 
 std::optional<Blend> Workstation::current() const
 {
+    if (pairMode && pairA >= 0 && pairB >= 0) return Blend { { pairA, pairB, pairA }, { 1.0 - pairT, pairT, 0.0 } };
     return probe ? lib.blendAt ((*probe)[0], (*probe)[1]) : std::nullopt;
+}
+
+void Workstation::setPairT (juce::Point<float> p)
+{
+    const auto a = L.fromField (lib.anchors[(size_t) pairA].p), b = L.fromField (lib.anchors[(size_t) pairB].p);
+    const float dx = b.x - a.x, dy = b.y - a.y, len2 = std::max (1e-6f, dx * dx + dy * dy);
+    pairT = juce::jlimit (0.0, 1.0, (double) (((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+    const auto& pa = lib.anchors[(size_t) pairA].p;
+    const auto& pb = lib.anchors[(size_t) pairB].p;
+    probe = std::array<double, 2> { pa[0] + (pb[0] - pa[0]) * pairT, pa[1] + (pb[1] - pa[1]) * pairT };
+    redraw();
 }
 
 void Workstation::setProbe (juce::Point<float> p)
@@ -107,6 +123,7 @@ void Workstation::press (const juce::String& id)
     else if (id == "clear") { lib.anchors.clear(); lib.tris.clear(); }
     else if (id == "capture") capture();
     else if (id == "surface") showSurface = ! showSurface;
+    else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two anchors" : ""; }
     else if (id == "play")
     {
         tl.playing = ! tl.playing;
@@ -163,7 +180,19 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
         if (pickFor >= 0 && pickFor < (int) lib.anchors.size()) { lib.anchors[(size_t) pickFor].frame = t; pickFor = -1; lib.retriangulate(); redraw(); return; }
         mode = Mode::dragFrame; dragFrame = t; dragPos = p; dragStart = p; return;
     }
-    if (const int a = anchorAt (p); a >= 0) { mode = Mode::dragAnchor; dragAnchor = a; dragPos = p; dragStart = p; return; }
+    if (const int a = anchorAt (p); a >= 0)
+    {
+        if (pairMode)
+        {
+            if (pairA < 0) { pairA = a; status = "pick the far anchor"; }
+            else if (pairB < 0 && a != pairA) { pairB = a; pairT = 0.0; probe = lib.anchors[(size_t) pairA].p; status = ""; }
+            else { pairA = a; pairB = -1; status = "pick the far anchor"; }
+            redraw();
+            return;
+        }
+        mode = Mode::dragAnchor; dragAnchor = a; dragPos = p; dragStart = p; return;
+    }
+    if (pairMode && pairA >= 0 && pairB >= 0 && L.field.contains (p)) { mode = Mode::pair; setPairT (p); return; }
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
     if (L.tlAx.contains (p)) { mode = Mode::scrub; scrubTo (p.x); return; }
     if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
@@ -185,6 +214,7 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
         case Mode::probe: setProbe (p); break;
         case Mode::scrub: scrubTo (p.x); break;
         case Mode::pickHz: pickHz (p.x); break;
+        case Mode::pair: setPairT (p); break;
         case Mode::dragFrame:
         case Mode::dragAnchor: dragPos = p; redraw(); break;
         case Mode::dragKey: tl.keys[(size_t) dragKey].t = L.tAt (p.x); redraw(); break;
@@ -280,7 +310,12 @@ std::vector<Batch> Workstation::scene() const
     out.push_back (grid);
     Batch links { Batch::lines, false, {} };
     for (size_t i = 0; i + 1 < ks.size(); ++i) { links.v.push_back (vertex (L.fromField (ks[i].p), juce::Colour (0xaaff00ff), 1.0f)); links.v.push_back (vertex (L.fromField (ks[i + 1].p), juce::Colour (0xaaff00ff), 1.0f)); }
-    if (b)
+    if (pairMode && pairA >= 0 && pairB >= 0)
+    {
+        links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) pairA].p), juce::Colours::white, 1.5f));
+        links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) pairB].p), juce::Colours::white, 1.5f));
+    }
+    else if (b)
         for (int i = 0; i < 3; ++i) { links.v.push_back (vertex (L.fromField (*probe), kOn, 1.0f)); links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) b->anchors[(size_t) i]].p), kOn, 1.0f)); }
     out.push_back (links);
     Batch pts { Batch::points, true, {} };
@@ -288,10 +323,11 @@ std::vector<Batch> Workstation::scene() const
     {
         const auto& a = lib.anchors[(size_t) i];
         const auto& f = lib.frames[(size_t) a.frame];
-        const bool on = lit < 0 || f.group == lit || f.capture;
+        const bool chosen = i == pairA || i == pairB;
+        const bool on = (lit < 0 || f.group == lit || f.capture) && (! pairMode || pairB < 0 || chosen);
         auto c = f.capture ? juce::Colours::yellow : hueOf (f.m[0]);
-        if (! on) c = c.withAlpha (0.3f);
-        pts.v.push_back (vertex (L.fromField (a.p), c, i == dragAnchor || i == pickFor ? 12.0f : (on ? 8.0f : 5.0f)));
+        if (! on) c = c.withAlpha (0.25f);
+        pts.v.push_back (vertex (L.fromField (a.p), c, chosen || i == dragAnchor || i == pickFor ? 12.0f : (on ? 8.0f : 5.0f)));
     }
     for (const auto& k : ks) pts.v.push_back (vertex (L.fromField (k.p), k.colour, 9.0f));
     if (probe) pts.v.push_back (vertex (L.fromField (*probe), juce::Colours::yellow, 9.0f));
@@ -311,7 +347,7 @@ std::vector<Batch> Workstation::scene() const
     }
     out.push_back (curve);
     Batch rings { Batch::lines, false, {} };
-    for (double db : { 12.0, 24.0, 36.0, 48.0, 60.0 })
+    for (double db : { 20.0, 40.0, 60.0 })
     {
         const double rr = 1.0 - std::pow (10.0, -db / 20.0);
         juce::Point<float> prev;
@@ -322,7 +358,7 @@ std::vector<Batch> Workstation::scene() const
             prev = p;
         }
     }
-    for (int o = 0; o <= 10; ++o) { rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.0), kLine, 1.0f)); rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.999), kLine, 1.0f)); }
+    for (int o = 0; o <= 10; o += 2) { rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.0), kLine, 1.0f)); rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.999), kLine, 1.0f)); }
     out.push_back (rings);
     if (b)
     {
@@ -337,6 +373,7 @@ std::vector<Batch> Workstation::scene() const
             const auto here = L.armaXY (r.pHz, r.pR);
             for (int i = 0; i < 3; ++i)
             {
+                if (b->w[(size_t) i] < 0.08) continue;
                 const auto& pr = lib.frames[(size_t) lib.anchors[(size_t) b->anchors[(size_t) i]].frame].rows[(size_t) s];
                 if (! pr.pole) continue;
                 const auto c = kOn.withAlpha ((float) (0.15 + 0.6 * b->w[(size_t) i]));
@@ -344,8 +381,8 @@ std::vector<Batch> Workstation::scene() const
                 glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), c, 1.0f));
                 poles.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kDim, 4.0f));
             }
-            poles.v.push_back (vertex (here, juce::Colours::white, 7.0f));
-            if (r.zero) zeros.v.push_back (vertex (L.armaXY (r.zHz, r.zR), kOn, 6.0f));
+            poles.v.push_back (vertex (here, juce::Colours::white, 8.0f));
+            if (r.zero) zeros.v.push_back (vertex (L.armaXY (r.zHz, r.zR), kOn, 7.0f));
         }
         out.push_back (glides);
         out.push_back (poles);
@@ -437,6 +474,7 @@ void Workstation::paintChrome (juce::Graphics& g)
     {
         for (int i = 0; i < 3; ++i)
         {
+            if (b->w[(size_t) i] <= 0.0) continue;
             const auto& f = lib.frames[(size_t) lib.anchors[(size_t) b->anchors[(size_t) i]].frame];
             g.setColour (hueOf (f.m[0]));
             g.fillEllipse (L.info.getX() + 8.0f, (float) y + 4.0f, 5.0f, 5.0f);
@@ -464,12 +502,17 @@ void Workstation::paintChrome (juce::Graphics& g)
         }
     }
     g.setColour (kDim);
-    for (double db : { 12.0, 24.0, 36.0, 48.0, 60.0 }) { const auto p = L.armaXY (20.0 * std::pow (2.0, 5.0), 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (juce::String ((int) db), (int) p.x + 3, (int) p.y - 6, 24, 12, juce::Justification::centredLeft); }
-    for (int o = 0; o <= 10; o += 2) { const double hz = 20.0 * std::pow (2.0, o); const auto p = L.armaXY (hz, 0.9995); g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 0) + "k" : juce::String (hz, 0), (int) p.x - 14, (int) p.y - 14, 28, 12, juce::Justification::centred); }
+    for (double db : { 20.0, 40.0, 60.0 }) { const auto p = L.armaXY (20.0, 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (juce::String ((int) db) + " dB", (int) p.x - 44, (int) p.y - 6, 40, 12, juce::Justification::centredRight); }
+    for (int o = 0; o <= 10; o += 2) { const double hz = 20.0 * std::pow (2.0, o); const auto p = L.armaXY (hz, 0.9995); g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 1) + "k" : juce::String (hz, 0), (int) p.x - 16, (int) p.y - 15, 32, 12, juce::Justification::centred); }
     if (b)
     {
         const auto rows = geometryOf (lib.wordsOf (*b));
-        for (int s = 0; s < kRows; ++s) if (rows[(size_t) s].pole) { const auto p = L.armaXY (rows[(size_t) s].pHz, rows[(size_t) s].pR); g.setColour (kText); g.drawText (juce::String (s + 1), (int) p.x + 5, (int) p.y - 12, 12, 12, juce::Justification::centredLeft); }
+        for (int s = 0; s < kRows; ++s) if (rows[(size_t) s].pole) { const auto p = L.armaXY (rows[(size_t) s].pHz, rows[(size_t) s].pR); g.setColour (kText); g.drawText (juce::String (s + 1), (int) p.x + 6, (int) p.y - 13, 12, 12, juce::Justification::centredLeft); }
+    }
+    if (pairMode && pairA >= 0 && pairB >= 0)
+    {
+        g.setColour (kOn);
+        g.drawText (lib.frames[(size_t) lib.anchors[(size_t) pairA].frame].name + "  >  " + lib.frames[(size_t) lib.anchors[(size_t) pairB].frame].name + "   " + juce::String (pairT, 3), (int) L.field.getX() + 100, (int) L.field.getY() + 2, (int) L.field.getWidth() - 200, 12, juce::Justification::centred);
     }
     g.setColour (kLine);
     g.drawHorizontalLine ((int) L.arma.getY(), L.arma.getX(), L.arma.getRight());

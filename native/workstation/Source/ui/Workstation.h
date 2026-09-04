@@ -28,7 +28,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz };
+    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
 
     Library& lib;
@@ -62,6 +62,10 @@ private:
     FieldMesh fieldMesh() const;
     double fieldHz = 1000.0;
     bool showSurface = false;
+    bool pairMode = false;
+    int pairA = -1, pairB = -1;
+    double pairT = 0.0;
+    void setPairT (juce::Point<float> p);
     void paintChrome (juce::Graphics& g);
 };
 }

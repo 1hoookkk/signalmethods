@@ -5,14 +5,14 @@ namespace ws
 {
 void Layout::compute (float W, float H)
 {
-    const float left = 200.0f, right = 340.0f, tlH = 76.0f, top = 36.0f;
+    const float left = 200.0f, right = 430.0f, tlH = 76.0f, top = 36.0f;
     groups = { 0.0f, 0.0f, left, 106.0f };
     tray = { 0.0f, 106.0f, left, H - tlH - 106.0f };
     keyRow = { left, 0.0f, W - left - right, top };
     field = { left, top, W - left - right, H - tlH - top };
-    resp = { W - right, 0.0f, right, 190.0f };
-    info = { W - right, 190.0f, right, 170.0f };
-    arma = { W - right, 360.0f, right, H - tlH - 360.0f };
+    resp = { W - right, 0.0f, right, 150.0f };
+    info = { W - right, 150.0f, right, 150.0f };
+    arma = { W - right, 300.0f, right, H - tlH - 300.0f };
     tl = { 0.0f, H - tlH, W, tlH };
     tlAx = { 70.0f, H - tlH + 12.0f, W - 80.0f, tlH - 30.0f };
 }
