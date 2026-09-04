@@ -73,6 +73,7 @@ void Workstation::layoutKeys()
     keys.push_back ({ "clear", "CLEAR", { kx + kMeasures * 78.0f + 6.0f, 19.0f, 52.0f, 14.0f }, false });
     for (int i = 0; i < kGroups; ++i) keys.push_back ({ "lit" + juce::String (i), kGroupNames[i], { 4.0f, 4.0f + i * 14.0f, L.groups.getWidth() - 8.0f, 13.0f }, lit == i });
     keys.push_back ({ "capture", "CAPTURE", { L.info.getX() + 6.0f, L.info.getY() + 6.0f, 80.0f, 14.0f }, false });
+    keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 6.0f, L.resp.getY() + 4.0f, 52.0f, 14.0f }, showSurface });
     keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 4.0f, L.tl.getY() + 6.0f, 60.0f, 14.0f }, tl.playing });
     keys.push_back ({ "loop", "LOOP", { 4.0f, L.tl.getY() + 24.0f, 60.0f, 14.0f }, tl.loop });
     keys.push_back ({ "addkey", "+ KEY", { 4.0f, L.tl.getY() + 42.0f, 60.0f, 14.0f }, false });
@@ -105,6 +106,7 @@ void Workstation::press (const juce::String& id)
     else if (id == "sort") lib.sort();
     else if (id == "clear") { lib.anchors.clear(); lib.tris.clear(); }
     else if (id == "capture") capture();
+    else if (id == "surface") showSurface = ! showSurface;
     else if (id == "play")
     {
         tl.playing = ! tl.playing;
@@ -257,7 +259,7 @@ std::vector<Batch> Workstation::scene() const
     std::vector<Batch> out;
     const auto ks = tl.sorted();
     const auto b = current();
-    if (! gl)
+    if (! gl && showSurface)
     {
         Batch surface { Batch::tris, false, {} };
         for (const auto& t : lib.tris)
@@ -308,6 +310,47 @@ std::vector<Batch> Workstation::scene() const
             curve.v.push_back (vertex ({ L.rx (20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.ry (juce::jlimit (-30.0, 30.0, cv[(size_t) i])) }, juce::Colours::white, 1.5f));
     }
     out.push_back (curve);
+    Batch rings { Batch::lines, false, {} };
+    for (double db : { 12.0, 24.0, 36.0, 48.0, 60.0 })
+    {
+        const double rr = 1.0 - std::pow (10.0, -db / 20.0);
+        juce::Point<float> prev;
+        for (int i = 0; i <= 40; ++i)
+        {
+            const auto p = L.armaXY (20.0 * std::pow (2.0, 10.0 * i / 40.0), rr);
+            if (i > 0) { rings.v.push_back (vertex (prev, kLine, 1.0f)); rings.v.push_back (vertex (p, kLine, 1.0f)); }
+            prev = p;
+        }
+    }
+    for (int o = 0; o <= 10; ++o) { rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.0), kLine, 1.0f)); rings.v.push_back (vertex (L.armaXY (20.0 * std::pow (2.0, o), 0.999), kLine, 1.0f)); }
+    out.push_back (rings);
+    if (b)
+    {
+        const auto rows = geometryOf (lib.wordsOf (*b));
+        Batch glides { Batch::lines, false, {} };
+        Batch poles { Batch::points, false, {} };
+        Batch zeros { Batch::points, true, {} };
+        for (int s = 0; s < kRows; ++s)
+        {
+            const auto& r = rows[(size_t) s];
+            if (! r.pole) continue;
+            const auto here = L.armaXY (r.pHz, r.pR);
+            for (int i = 0; i < 3; ++i)
+            {
+                const auto& pr = lib.frames[(size_t) lib.anchors[(size_t) b->anchors[(size_t) i]].frame].rows[(size_t) s];
+                if (! pr.pole) continue;
+                const auto c = kOn.withAlpha ((float) (0.15 + 0.6 * b->w[(size_t) i]));
+                glides.v.push_back (vertex (here, c, 1.0f));
+                glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), c, 1.0f));
+                poles.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kDim, 4.0f));
+            }
+            poles.v.push_back (vertex (here, juce::Colours::white, 7.0f));
+            if (r.zero) zeros.v.push_back (vertex (L.armaXY (r.zHz, r.zR), kOn, 6.0f));
+        }
+        out.push_back (glides);
+        out.push_back (poles);
+        out.push_back (zeros);
+    }
     Batch tline { Batch::lines, false, {} };
     for (size_t i = 0; i + 1 < ks.size(); ++i) { tline.v.push_back (vertex ({ L.tx (ks[i].t), L.tlAx.getCentreY() }, kOn, 1.0f)); tline.v.push_back (vertex ({ L.tx (ks[i + 1].t), L.tlAx.getCentreY() }, kOn, 1.0f)); }
     tline.v.push_back (vertex ({ L.tx (tl.playhead), L.tlAx.getY() }, juce::Colours::yellow, 1.0f));
@@ -335,7 +378,7 @@ void Workstation::renderOpenGL()
 {
     layoutKeys();
     renderer.uploadWords (lib.frames);
-    renderer.draw (fieldMesh(), scene(), (float) getWidth(), (float) getHeight(), (float) ctx.getRenderingScale());
+    renderer.draw (showSurface ? fieldMesh() : FieldMesh {}, scene(), (float) getWidth(), (float) getHeight(), (float) ctx.getRenderingScale());
 }
 
 void Workstation::paintChrome (juce::Graphics& g)
@@ -420,6 +463,16 @@ void Workstation::paintChrome (juce::Graphics& g)
             y += 13;
         }
     }
+    g.setColour (kDim);
+    for (double db : { 12.0, 24.0, 36.0, 48.0, 60.0 }) { const auto p = L.armaXY (20.0 * std::pow (2.0, 5.0), 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (juce::String ((int) db), (int) p.x + 3, (int) p.y - 6, 24, 12, juce::Justification::centredLeft); }
+    for (int o = 0; o <= 10; o += 2) { const double hz = 20.0 * std::pow (2.0, o); const auto p = L.armaXY (hz, 0.9995); g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 0) + "k" : juce::String (hz, 0), (int) p.x - 14, (int) p.y - 14, 28, 12, juce::Justification::centred); }
+    if (b)
+    {
+        const auto rows = geometryOf (lib.wordsOf (*b));
+        for (int s = 0; s < kRows; ++s) if (rows[(size_t) s].pole) { const auto p = L.armaXY (rows[(size_t) s].pHz, rows[(size_t) s].pR); g.setColour (kText); g.drawText (juce::String (s + 1), (int) p.x + 5, (int) p.y - 12, 12, 12, juce::Justification::centredLeft); }
+    }
+    g.setColour (kLine);
+    g.drawHorizontalLine ((int) L.arma.getY(), L.arma.getX(), L.arma.getRight());
     g.setColour (kDim);
     for (int t = 0; t <= (int) tl.duration; ++t) g.drawText (juce::String (t), (int) L.tx (t) - 8, (int) L.tlAx.getBottom() + 2, 20, 12, juce::Justification::centred);
     g.drawText (juce::String (tl.playhead, 2) + " s", (int) L.tlAx.getRight() - 60, (int) L.tlAx.getY() - 12, 58, 12, juce::Justification::centredRight);

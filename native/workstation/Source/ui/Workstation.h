@@ -61,6 +61,7 @@ private:
     std::vector<Batch> scene() const;
     FieldMesh fieldMesh() const;
     double fieldHz = 1000.0;
+    bool showSurface = false;
     void paintChrome (juce::Graphics& g);
 };
 }
