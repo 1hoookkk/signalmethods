@@ -28,18 +28,6 @@ constexpr double kCutStepDb = 20.0 * 0.30102999566398120;
 
 Roots absentRoot() { return RealRoots{kInf, kInf}; }
 
-constexpr std::size_t kCeilingSection = trench::core::native::kSections - 1;
-
-Resonant lockedZero(std::size_t section, Resonant zero) {
-  if (section == kCeilingSection) zero.bw_hz = 0.0;
-  return zero;
-}
-
-Roots lockedZeroRoots(std::size_t section, const Roots& zero) {
-  if (const auto* tone = std::get_if<Resonant>(&zero)) return lockedZero(section, *tone);
-  return zero;
-}
-
 bool isHiddenRoot(const Roots& roots) {
   const auto* tone = std::get_if<Resonant>(&roots);
   return tone != nullptr && *tone == kHiddenRoot;
@@ -88,7 +76,7 @@ EditorState::Document EditorState::documentFrom(const trench::core::native::Body
       const auto pole = editable(section.pole);
       const auto zero = pole ? editable(section.zero) : std::nullopt;
       state.corner.sections[index] = {pole ? *pole : Roots{kHiddenRoot},
-                                      zero ? lockedZeroRoots(index, *zero) : Roots{kHiddenRoot},
+                                      zero ? *zero : Roots{kHiddenRoot},
                                       true};
       state.enabled[index] = pole.has_value();
       state.zero_present[index] = zero.has_value();
@@ -177,7 +165,7 @@ bool EditorState::zeroPresentAt(std::size_t corner, std::size_t index) const {
 }
 
 EditorState::Document EditorState::document() const {
-  return {corners_, editing_corner_, morph_pos_, q_pos_};
+  return {corners_, editing_corner_, morph_pos_, q_pos_, morph_axis_, q_axis_};
 }
 
 trench::core::native::Body EditorState::body() const {
@@ -289,6 +277,8 @@ void EditorState::restore(const Document& document) {
   editing_corner_ = std::min(document.editing_corner, trench::core::native::kCorners - 1);
   morph_pos_ = std::clamp(document.morph, 0.0, 1.0);
   q_pos_ = std::clamp(document.q, 0.0, 1.0);
+  morph_axis_ = document.morph_axis;
+  q_axis_ = document.q_axis;
   if (!rootPresent(selected_section_, selected_lane_)) selected_lane_ = Lane::kPole;
   commit();
   emit selectionChanged(selected_section_);
@@ -392,7 +382,7 @@ void EditorState::toggleSectionAt(std::size_t corner, std::size_t index) {
   }
   if (state.enabled[index] && index + 1 == trench::core::native::kSections &&
       !state.zero_present[index]) {
-    state.corner.sections[index].zero = lockedZero(index, Resonant{kCageWallHz, 0.0});
+    state.corner.sections[index].zero = Resonant{kCageWallHz, 0.0};
     state.zero_present[index] = true;
   }
   commit();
@@ -405,9 +395,9 @@ void EditorState::addZeroAt(double hz, double bw_hz) {
     return;
   }
   remember();
-  state.corner.sections[selected_section_].zero = lockedZero(
-      selected_section_, Resonant{std::clamp(hz, kLowHz, kNyquistHz),
-                                  std::clamp(bw_hz, kMinBandwidthHz, kMaxBandwidthHz)});
+  state.corner.sections[selected_section_].zero =
+      Resonant{std::clamp(hz, kLowHz, kNyquistHz),
+               std::clamp(bw_hz, kMinBandwidthHz, kMaxBandwidthHz)};
   state.zero_present[selected_section_] = true;
   selected_lane_ = Lane::kZero;
   commit();
@@ -424,7 +414,7 @@ void EditorState::removeZeroAt(std::size_t corner, std::size_t section_index) {
     return;
   }
   auto& state = corners_[corner];
-  if (!state.zero_present[section_index] || section_index == kCeilingSection) return;
+  if (!state.zero_present[section_index]) return;
   remember();
   state.corner.sections[section_index].zero = kHiddenRoot;
   state.zero_present[section_index] = false;
@@ -445,8 +435,7 @@ void EditorState::setWordsAt(std::size_t corner, std::size_t section_index, Lane
   auto& state = corners_[corner];
   if (!state.enabled[section_index]) return;
   const auto [p, q] = trench::core::p2k::pq(mag_word, rsq_word);
-  Roots wanted = trench::core::native::roots_from_coefficients(p, q, kDatumHz);
-  if (lane == Lane::kZero) wanted = lockedZeroRoots(section_index, wanted);
+  const Roots wanted = trench::core::native::roots_from_coefficients(p, q, kDatumHz);
   auto& roots = lane == Lane::kPole ? state.corner.sections[section_index].pole
                                     : state.corner.sections[section_index].zero;
   const bool present = lane == Lane::kPole || state.zero_present[section_index];
@@ -494,10 +483,9 @@ void EditorState::setRootAt(std::size_t corner, std::size_t section_index, Lane 
       (lane == Lane::kZero && !state.zero_present[section_index])) {
     return;
   }
-  Resonant wanted{
+  const Resonant wanted{
       std::clamp(frequency_hz, kLowHz, kNyquistHz),
       std::clamp(bandwidth_hz, kMinBandwidthHz, kMaxBandwidthHz)};
-  if (lane == Lane::kZero) wanted = lockedZero(section_index, wanted);
   auto& roots = lane == Lane::kPole ? state.corner.sections[section_index].pole
                                     : state.corner.sections[section_index].zero;
   if (roots == Roots{wanted}) return;
@@ -514,10 +502,8 @@ void EditorState::setZeroAt(std::size_t corner, std::size_t section_index,
   }
   auto& state = corners_[corner];
   if (!state.enabled[section_index]) return;
-  const Resonant wanted = lockedZero(
-      section_index,
-      Resonant{std::clamp(frequency_hz, kLowHz, kNyquistHz),
-               std::clamp(bandwidth_hz, kMinBandwidthHz, kMaxBandwidthHz)});
+  const Resonant wanted{std::clamp(frequency_hz, kLowHz, kNyquistHz),
+                        std::clamp(bandwidth_hz, kMinBandwidthHz, kMaxBandwidthHz)};
   if (state.zero_present[section_index] &&
       state.corner.sections[section_index].zero == Roots{wanted}) {
     return;
@@ -536,8 +522,7 @@ void EditorState::setRealRootAt(std::size_t corner, std::size_t section_index, L
   }
   auto& state = corners_[corner];
   if (!state.enabled[section_index] ||
-      (lane == Lane::kZero && !state.zero_present[section_index]) ||
-      (lane == Lane::kZero && section_index == kCeilingSection)) {
+      (lane == Lane::kZero && !state.zero_present[section_index])) {
     return;
   }
   const RealRoots wanted{clampedDecayHz(a_hz), clampedDecayHz(b_hz)};
@@ -643,6 +628,151 @@ void EditorState::copyCornerTo(std::size_t target) {
   remember();
   corners_[target] = editing();
   commit();
+}
+
+std::optional<double> EditorState::poleHzAt(std::size_t corner, std::size_t index) const {
+  if (corner >= kCorners || index >= kSections) return std::nullopt;
+  const CornerState& state = corners_[corner];
+  if (!state.enabled[index]) return std::nullopt;
+  const auto* tone = std::get_if<Resonant>(&state.corner.sections[index].pole);
+  if (tone == nullptr) return std::nullopt;
+  if (!std::isfinite(tone->hz) || !(tone->hz > 0.0)) return std::nullopt;
+  if (!std::isfinite(tone->bw_hz) || tone->bw_hz > kMaxBandwidthHz) return std::nullopt;
+  return tone->hz;
+}
+
+EditorState::AnchorPlan EditorState::planAnchorsAgainst(
+    std::size_t corner,
+    const std::array<std::optional<double>, kSections>& incoming_pole_hz,
+    bool include_q) const {
+  AnchorPlan plan;
+  plan.slot_for_row.fill(kSections);
+  if (corner >= kCorners) {
+    for (std::size_t row = 0; row < kSections; ++row) plan.slot_for_row[row] = row;
+    return plan;
+  }
+  std::array<std::array<std::optional<double>, kSections>, 2> partner_hz{};
+  for (std::size_t slot = 0; slot < kSections; ++slot) {
+    partner_hz[0][slot] = poleHzAt(corner ^ 1u, slot);
+    if (include_q) partner_hz[1][slot] = poleHzAt(corner ^ 2u, slot);
+  }
+  std::array<bool, kSections> row_taken{};
+  std::array<bool, kSections> slot_taken{};
+  for (std::size_t slot = 0; slot < kSections; ++slot) {
+    if (!partner_hz[0][slot] && !partner_hz[1][slot]) continue;
+    std::size_t best = kSections;
+    double best_cost = std::numeric_limits<double>::infinity();
+    for (std::size_t row = 0; row < kSections; ++row) {
+      if (row_taken[row] || !incoming_pole_hz[row]) continue;
+      if (!(*incoming_pole_hz[row] > 0.0)) continue;
+      double total = 0.0;
+      std::size_t terms = 0;
+      for (const auto& held : partner_hz) {
+        if (!held[slot]) continue;
+        total += std::abs(std::log2(*incoming_pole_hz[row] / *held[slot]));
+        ++terms;
+      }
+      const double cost = total / static_cast<double>(terms);
+      if (!(cost <= kAnchorOctaves) || !(cost < best_cost)) continue;
+      best_cost = cost;
+      best = row;
+    }
+    if (best >= kSections) continue;
+    plan.slot_for_row[best] = slot;
+    row_taken[best] = true;
+    slot_taken[slot] = true;
+    ++plan.paired;
+  }
+  std::vector<std::size_t> loose;
+  for (std::size_t row = 0; row < kSections; ++row) {
+    if (row_taken[row] || !incoming_pole_hz[row]) continue;
+    loose.push_back(row);
+  }
+  std::stable_sort(loose.begin(), loose.end(), [&](std::size_t left, std::size_t right) {
+    return *incoming_pole_hz[left] < *incoming_pole_hz[right];
+  });
+  std::vector<std::size_t> free_slots;
+  for (std::size_t slot = 0; slot < kSections; ++slot) {
+    if (!slot_taken[slot]) free_slots.push_back(slot);
+  }
+  std::size_t next = 0;
+  for (const std::size_t row : loose) plan.slot_for_row[row] = free_slots[next++];
+  for (std::size_t row = 0; row < kSections; ++row) {
+    if (plan.slot_for_row[row] < kSections) continue;
+    plan.slot_for_row[row] = free_slots[next++];
+  }
+  return plan;
+}
+
+EditorState::AnchorPlan EditorState::planAnchors(
+    std::size_t corner,
+    const std::array<std::optional<double>, kSections>& incoming_pole_hz) const {
+  return planAnchorsAgainst(corner, incoming_pole_hz, false);
+}
+
+EditorState::AnchorPlan EditorState::planSquareAnchors(
+    std::size_t corner,
+    const std::array<std::optional<double>, kSections>& incoming_pole_hz) const {
+  return planAnchorsAgainst(corner, incoming_pole_hz, true);
+}
+
+std::pair<QString, QString> EditorState::axisNames() const {
+  return {morph_axis_, q_axis_};
+}
+
+void EditorState::setAxisNames(const QString& morph, const QString& q) {
+  if (morph_axis_ == morph && q_axis_ == q) return;
+  remember();
+  morph_axis_ = morph;
+  q_axis_ = q;
+  commit();
+}
+
+void EditorState::anchorCornerToPartner(std::size_t corner) {
+  anchorCornerAgainst(corner, false);
+}
+
+void EditorState::anchorCornerToSquare(std::size_t corner) {
+  anchorCornerAgainst(corner, true);
+}
+
+void EditorState::anchorSquare() {
+  beginUndoGroup();
+  for (std::size_t corner = 1; corner < kCorners; ++corner) {
+    anchorCornerAgainst(corner, true);
+  }
+  endUndoGroup();
+}
+
+void EditorState::anchorCornerAgainst(std::size_t corner, bool include_q) {
+  if (corner >= kCorners) return;
+  bool anchored = false;
+  for (std::size_t slot = 0; slot < kSections; ++slot) {
+    if (poleHzAt(corner ^ 1u, slot)) anchored = true;
+    if (include_q && poleHzAt(corner ^ 2u, slot)) anchored = true;
+  }
+  if (!anchored) return;
+  std::array<std::optional<double>, kSections> incoming{};
+  for (std::size_t row = 0; row < kSections; ++row) incoming[row] = poleHzAt(corner, row);
+  const AnchorPlan plan = planAnchorsAgainst(corner, incoming, include_q);
+  bool identity = true;
+  for (std::size_t row = 0; row < kSections; ++row) {
+    if (plan.slot_for_row[row] != row) identity = false;
+  }
+  if (identity) return;
+  beginUndoGroup();
+  remember();
+  const CornerState held = corners_[corner];
+  CornerState& state = corners_[corner];
+  for (std::size_t row = 0; row < kSections; ++row) {
+    const std::size_t slot = plan.slot_for_row[row];
+    state.corner.sections[slot] = held.corner.sections[row];
+    state.enabled[slot] = held.enabled[row];
+    state.zero_present[slot] = held.zero_present[row];
+    state.cut[slot] = held.cut[row];
+  }
+  commit();
+  endUndoGroup();
 }
 
 void EditorState::sharpenPoles(double radius_step) {

@@ -5,6 +5,7 @@
 #include "trench/core/packed_body.hpp"
 
 #include <QObject>
+#include <QString>
 
 #include <array>
 #include <cstddef>
@@ -32,9 +33,20 @@ class EditorState final : public QObject {
     std::size_t editing_corner{};
     double morph{};
     double q{};
+    QString morph_axis;
+    QString q_axis;
     bool operator==(const Document&) const = default;
   };
 
+  static constexpr std::size_t kSections = trench::core::native::kSections;
+  static constexpr std::size_t kCorners = trench::core::native::kCorners;
+
+  struct AnchorPlan {
+    std::array<std::size_t, kSections> slot_for_row{};
+    std::size_t paired{};
+  };
+
+  static constexpr double kAnchorOctaves = 1.0;
   static constexpr double kDatumHz = 44'100.0;
   static constexpr double kLowHz = 20.0;
   static constexpr double kNyquistHz = kDatumHz * 0.5;
@@ -70,6 +82,14 @@ class EditorState final : public QObject {
   [[nodiscard]] std::size_t editingCorner() const noexcept;
   [[nodiscard]] double morphPos() const noexcept;
   [[nodiscard]] double qPos() const noexcept;
+  [[nodiscard]] std::optional<double> poleHzAt(std::size_t corner, std::size_t index) const;
+  [[nodiscard]] AnchorPlan planAnchors(
+      std::size_t corner,
+      const std::array<std::optional<double>, kSections>& incoming_pole_hz) const;
+  [[nodiscard]] AnchorPlan planSquareAnchors(
+      std::size_t corner,
+      const std::array<std::optional<double>, kSections>& incoming_pole_hz) const;
+  [[nodiscard]] std::pair<QString, QString> axisNames() const;
 
   void setDocument(const Document& document);
   void setSourceWords(const trench::core::PackedBody& words);
@@ -109,6 +129,10 @@ class EditorState final : public QObject {
   void copyCornerTo(std::size_t target);
   void sharpenPoles(double radius_step);
   void sharpenPolesAt(std::size_t corner, double radius_step);
+  void anchorCornerToPartner(std::size_t corner);
+  void anchorCornerToSquare(std::size_t corner);
+  void anchorSquare();
+  void setAxisNames(const QString& morph, const QString& q);
 
  signals:
   void changed();
@@ -117,6 +141,11 @@ class EditorState final : public QObject {
  private:
   [[nodiscard]] CornerState& editing() noexcept;
   [[nodiscard]] const CornerState& editing() const noexcept;
+  [[nodiscard]] AnchorPlan planAnchorsAgainst(
+      std::size_t corner,
+      const std::array<std::optional<double>, kSections>& incoming_pole_hz,
+      bool include_q) const;
+  void anchorCornerAgainst(std::size_t corner, bool include_q);
   void render();
   void commit();
   void remember();
@@ -130,6 +159,8 @@ class EditorState final : public QObject {
   std::size_t editing_corner_{};
   double morph_pos_{};
   double q_pos_{};
+  QString morph_axis_;
+  QString q_axis_;
   std::size_t selected_section_{};
   Lane selected_lane_{Lane::kPole};
   trench::core::PackedBody packed_{};

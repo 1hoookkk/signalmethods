@@ -12,6 +12,17 @@ constexpr double kGritCeilingFloor = 0.35;
 constexpr double kGritCeilingWide = 4.0;
 constexpr double kGritThreshFraction = 0.6;
 constexpr double kGritPullDepth = 0.25;
+constexpr double kRingCeilingDb = 24.0;
+constexpr double kRingFloor = 1.0e-4;
+constexpr double kRingAttackSeconds = 0.001;
+constexpr double kRingReleaseSeconds = 0.120;
+constexpr double kRingDenominatorFloor = 1.0e-9;
+const double kRingCeilingLinear = std::pow(10.0, kRingCeilingDb / 20.0);
+
+double one_pole_coefficient(double seconds, double sample_rate_hz) {
+  if (!(seconds > 0.0) || !(sample_rate_hz > 0.0)) return 0.0;
+  return std::exp(-1.0 / (seconds * sample_rate_hz));
+}
 
 double grit_state_ceiling(double grit) {
   return kGritCeilingWide * std::pow(kGritCeilingFloor / kGritCeilingWide, grit);
@@ -59,6 +70,37 @@ Biquad decode_section(const EncodedSection& encoded) {
   const double c2 = 4.0 * d2 + d3;
   const double c4 = 4.0 * d4;
   return {c4, (c0 - 2.0) * c4, (1.0 - d1) * c4, c2 - 2.0, 1.0 - d3};
+}
+
+CascadeRunner::CascadeRunner() { update_ring_coefficients(); }
+
+void CascadeRunner::update_ring_coefficients() noexcept {
+  ring_decay_ = one_pole_coefficient(kRingReleaseSeconds, sample_rate_hz_);
+  ring_attack_ = one_pole_coefficient(kRingAttackSeconds, sample_rate_hz_);
+  ring_release_ = ring_decay_;
+}
+
+void CascadeRunner::set_sample_rate(double sample_rate_hz) noexcept {
+  sample_rate_hz_ = sample_rate_hz > 0.0 ? sample_rate_hz : 44100.0;
+  update_ring_coefficients();
+}
+
+void CascadeRunner::set_ring_leveller(bool enabled) noexcept { ring_on_ = enabled; }
+
+double CascadeRunner::ring_level(Section& section, double in, double y) const noexcept {
+  const double magnitude_in = std::abs(in);
+  const double magnitude_out = std::abs(y);
+  const double faded_in = section.e_in * ring_decay_;
+  const double faded_out = section.e_out * ring_decay_;
+  section.e_in = magnitude_in > faded_in ? magnitude_in : faded_in;
+  section.e_out = magnitude_out > faded_out ? magnitude_out : faded_out;
+  const double allowed = section.e_in * kRingCeilingLinear + kRingFloor;
+  const double denominator = section.e_out + kRingDenominatorFloor;
+  const double target = denominator > allowed ? allowed / denominator : 1.0;
+  if (target >= 1.0 && section.ring_gain >= 1.0) return y;
+  const double coefficient = target < section.ring_gain ? ring_attack_ : ring_release_;
+  section.ring_gain = target + (section.ring_gain - target) * coefficient;
+  return y * section.ring_gain;
 }
 
 Biquad CascadeRunner::kernel_row(const Biquad& b) {
@@ -182,7 +224,7 @@ void CascadeRunner::process(std::span<float> block) {
         const double y = c[0] * x + s.w1;
         s.w1 = c[1] * x - c[3] * y + s.w2;
         s.w2 = c[2] * x - c[4] * y;
-        x = y;
+        x = ring_on_ ? ring_level(s, x, y) : y;
       }
     } else {
       const double ceiling = grit_state_ceiling(grit_);
@@ -208,7 +250,7 @@ void CascadeRunner::process(std::span<float> block) {
         s.w1 = soft_clamp_ceiling(c[1] * x - a1 * y + s.w2, ceiling);
         s.w2 = soft_clamp_ceiling(c[2] * x - a2 * y, ceiling);
         s.y_prev = y;
-        x = y;
+        x = ring_on_ ? ring_level(s, x, y) : y;
       }
       if (grit_ > activity_) activity_ = grit_;
     }

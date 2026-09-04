@@ -2,6 +2,10 @@
 
 #include "path_meter.hpp"
 
+#include <QEvent>
+#include <QFontMetrics>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -42,8 +46,36 @@ void MorphPad::setWorst(double morph, double q, double db) {
   update();
 }
 
+QString MorphPad::morphLabel() const {
+  const QString name = state_->axisNames().first;
+  return name.isEmpty() ? QStringLiteral("MORPH") : name.toUpper();
+}
+
+QString MorphPad::qLabel() const {
+  const QString name = state_->axisNames().second;
+  return name.isEmpty() ? QStringLiteral("Q") : name.toUpper();
+}
+
+void MorphPad::renameMorphAxis(const QString& name) {
+  state_->setAxisNames(name.trimmed(), state_->axisNames().second);
+}
+
+void MorphPad::renameQAxis(const QString& name) {
+  state_->setAxisNames(state_->axisNames().first, name.trimmed());
+}
+
 QRectF MorphPad::field() const {
   return QRectF(rect()).adjusted(22.0, 12.0, -12.0, -22.0);
+}
+
+QRectF MorphPad::morphNameRect() const {
+  const QRectF bounds = field();
+  return {bounds.left(), bounds.bottom() + 4.0, bounds.width(), 16.0};
+}
+
+QRectF MorphPad::qNameRect() const {
+  const QRectF bounds = field();
+  return {4.0, bounds.top(), 16.0, bounds.height()};
 }
 
 QRectF MorphPad::cornerRect(std::size_t index) const {
@@ -107,14 +139,18 @@ void MorphPad::paintEvent(QPaintEvent*) {
   painter.setBrush(Qt::NoBrush);
 
   painter.setPen(kCaption);
-  painter.drawText(QRectF{bounds.left(), bounds.bottom() + 4.0, bounds.width(),
-                          16.0},
-                   Qt::AlignCenter, QStringLiteral("MORPH"));
+  const QFontMetrics metrics(painter.font());
+  const QRectF morph_seat = morphNameRect();
+  painter.drawText(morph_seat, Qt::AlignCenter,
+                   metrics.elidedText(morphLabel(), Qt::ElideRight,
+                                      static_cast<int>(morph_seat.width())));
   painter.save();
   painter.translate(12.0, bounds.center().y());
   painter.rotate(-90.0);
-  painter.drawText(QRectF{-20.0, -8.0, 40.0, 16.0}, Qt::AlignCenter,
-                   QStringLiteral("Q"));
+  const QRectF q_seat{-0.5 * bounds.height(), -8.0, bounds.height(), 16.0};
+  painter.drawText(q_seat, Qt::AlignCenter,
+                   metrics.elidedText(qLabel(), Qt::ElideRight,
+                                      static_cast<int>(q_seat.width())));
   painter.restore();
 }
 
@@ -125,8 +161,70 @@ void MorphPad::trackTo(const QPointF& position) {
                          (bounds.bottom() - position.y()) / bounds.height());
 }
 
+void MorphPad::openEditor(Axis axis) {
+  if (editor_ == nullptr) {
+    editor_ = new QLineEdit(this);
+    editor_->setObjectName(QStringLiteral("axisEntry"));
+    editor_->setAlignment(Qt::AlignCenter);
+    editor_->installEventFilter(this);
+    connect(editor_, &QLineEdit::returnPressed, this, [this] { commitEditor(); });
+  }
+  editing_ = axis;
+  const QRectF seat = axis == Axis::kMorph ? morphNameRect() : field();
+  editor_->setGeometry(axis == Axis::kMorph
+                           ? seat.toRect()
+                           : QRectF(seat.left(), seat.center().y() - 9.0, seat.width(),
+                                    18.0)
+                                 .toRect());
+  editor_->setText(axis == Axis::kMorph ? state_->axisNames().first
+                                        : state_->axisNames().second);
+  editor_->selectAll();
+  editor_->show();
+  editor_->raise();
+  editor_->setFocus(Qt::MouseFocusReason);
+}
+
+void MorphPad::commitEditor() {
+  if (editor_ == nullptr || editing_ == Axis::kNone) return;
+  const QString typed = editor_->text();
+  const Axis axis = editing_;
+  closeEditor();
+  if (axis == Axis::kMorph) {
+    renameMorphAxis(typed);
+  } else {
+    renameQAxis(typed);
+  }
+}
+
+void MorphPad::closeEditor() {
+  editing_ = Axis::kNone;
+  if (editor_ == nullptr) return;
+  editor_->hide();
+  editor_->clearFocus();
+}
+
+bool MorphPad::eventFilter(QObject* watched, QEvent* event) {
+  if (watched == editor_ && event->type() == QEvent::KeyPress) {
+    auto* key = static_cast<QKeyEvent*>(event);
+    if (key->key() == Qt::Key_Escape) {
+      closeEditor();
+      return true;
+    }
+  }
+  return QWidget::eventFilter(watched, event);
+}
+
 void MorphPad::mousePressEvent(QMouseEvent* event) {
   if (event->button() != Qt::LeftButton) return;
+  if (morphNameRect().contains(event->position())) {
+    openEditor(Axis::kMorph);
+    return;
+  }
+  if (qNameRect().contains(event->position())) {
+    openEditor(Axis::kQ);
+    return;
+  }
+  closeEditor();
   for (std::size_t index = 0; index < trench::core::native::kCorners; ++index) {
     if (!cornerRect(index).contains(event->position())) continue;
     state_->setEditingCorner(index);

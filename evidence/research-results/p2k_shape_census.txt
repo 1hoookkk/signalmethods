@@ -1,0 +1,79 @@
+P2K shape census - authored corners only (33 families x FROM/TO x Q0/Q100 = 132 frames x 6 stages = 792 stages)
+shape = the zero's relation to its own pole, in the hardware bytes; 'same note' = within 0.5 semitone
+
+  339   42.8%  2P2Z · zero ABOVE the note
+            zero-pole offset semitones: min +0.6  median +10.6  max +95.0;  zero/pole bandwidth ratio median 4.52;  same freq byte 3/339
+  198   25.0%  2P2Z · zero BELOW the note
+            zero-pole offset semitones: min -90.6  median -7.9  max -0.5;  zero/pole bandwidth ratio median 3.30;  same freq byte 0/198
+  122   15.4%  2P2Z · NOTCH off the note
+            zero-pole offset semitones: min -28.6  median +27.7  max +87.8;  zero/pole bandwidth ratio median 0.00;  same freq byte 1/122
+   40    5.1%  2-POLE · no zero (RESONATOR / TILT)
+   28    3.5%  2P2Z · PEAK (zero on the note, wider)
+            zero-pole offset semitones: min -0.5  median +0.2  max +0.5;  zero/pole bandwidth ratio median 6.62;  same freq byte 5/28
+   15    1.9%  2-POLE · zero real at DC (highpass edge)
+    8    1.0%  2-POLE · zero real pair r=0.10/0.75
+    7    0.9%  2P2Z · DIP (zero on the note, tighter)
+            zero-pole offset semitones: min -0.5  median -0.1  max +0.3;  zero/pole bandwidth ratio median 0.82;  same freq byte 1/7
+    5    0.6%  2P2Z · NOTCH on the note
+            zero-pole offset semitones: min -0.4  median -0.1  max +0.1;  zero/pole bandwidth ratio median 0.00;  same freq byte 1/5
+    4    0.5%  1-POLE real at DC (highpass edge) · complex zero
+    4    0.5%  2-POLE · zero real pair r=0.00/0.80
+    2    0.3%  2-POLE · zero real at NYQ (lowpass edge)
+    2    0.3%  1-POLE real pair r=0.02/0.65 · complex zero
+    2    0.3%  1-POLE real pair r=0.02/0.75 · complex zero
+    2    0.3%  2-POLE · zero real pair r=0.25/0.37
+    2    0.3%  2-POLE · zero real pair r=0.00/0.59
+    2    0.3%  2-POLE · zero real pair r=0.02/0.80
+    1    0.1%  1-POLE real pair r=-0.77/-0.45 · complex zero
+    1    0.1%  1-POLE real pair r=0.00/0.75 · complex zero
+    1    0.1%  1-POLE real pair r=0.00/0.89 · complex zero
+    1    0.1%  2-POLE · zero real pair r=-0.90/-0.38
+    1    0.1%  1-POLE real pair r=0.02/0.89 · complex zero
+    1    0.1%  1-POLE real pair r=0.00/0.93 · zero real at DC (highpass edge)
+    1    0.1%  2-POLE · zero real pair r=0.62/0.94
+    1    0.1%  2-POLE · zero real pair r=0.94/0.95
+    1    0.1%  1-POLE real pair r=0.03/0.91 · complex zero
+    1    0.1%  1-POLE real pair r=0.05/0.93 · complex zero
+
+=== by stage (S1..S6) ===
+S1: 2P2Z · zero ABOVE the note 19; 2P2Z · zero BELOW the note 70; 2-POLE · no zero (RESONATOR / TILT) 8; 2P2Z · PEAK (zero on the note, wider) 5; 2-POLE · zero real at DC (highpass edge) 8; 2-POLE · zero real pair r=0.10/0.75 8; 2P2Z · DIP (zero on the note, tighter) 1; 1-POLE real at DC (highpass edge) · complex zero 1; 2-POLE · zero real pair r=0.00/0.80 1; 2-POLE · zero real at NYQ (lowpass edge) 1; 1-POLE real pair r=0.02/0.65 · complex zero 1; 2-POLE · zero real pair r=0.25/0.37 2; 2-POLE · zero real pair r=0.00/0.59 2; 2-POLE · zero real pair r=0.02/0.80 2; 1-POLE real pair r=-0.77/-0.45 · complex zero 1; 1-POLE real pair r=0.00/0.75 · complex zero 1; 2-POLE · zero real pair r=0.62/0.94 1
+S2: 2P2Z · zero ABOVE the note 79; 2P2Z · zero BELOW the note 33; 2-POLE · no zero (RESONATOR / TILT) 8; 2P2Z · PEAK (zero on the note, wider) 5; 2-POLE · zero real at DC (highpass edge) 4; 1-POLE real at DC (highpass edge) · complex zero 2; 1-POLE real pair r=0.00/0.93 · zero real at DC (highpass edge) 1
+S3: 2P2Z · zero ABOVE the note 95; 2P2Z · zero BELOW the note 24; 2-POLE · no zero (RESONATOR / TILT) 8; 2P2Z · PEAK (zero on the note, wider) 2; 2P2Z · DIP (zero on the note, tighter) 2; 1-POLE real at DC (highpass edge) · complex zero 1
+S4: 2P2Z · zero ABOVE the note 60; 2P2Z · zero BELOW the note 52; 2-POLE · no zero (RESONATOR / TILT) 8; 2P2Z · PEAK (zero on the note, wider) 6; 2P2Z · DIP (zero on the note, tighter) 3; 1-POLE real pair r=0.02/0.65 · complex zero 1; 1-POLE real pair r=0.00/0.89 · complex zero 1; 2-POLE · zero real pair r=-0.90/-0.38 1
+S5: 2P2Z · zero ABOVE the note 86; 2P2Z · zero BELOW the note 19; 2-POLE · no zero (RESONATOR / TILT) 8; 2P2Z · PEAK (zero on the note, wider) 10; 2-POLE · zero real at DC (highpass edge) 3; 2P2Z · DIP (zero on the note, tighter) 1; 2-POLE · zero real pair r=0.00/0.80 3; 2-POLE · zero real at NYQ (lowpass edge) 1; 2-POLE · zero real pair r=0.94/0.95 1
+S6: 2P2Z · NOTCH off the note 122; 2P2Z · NOTCH on the note 5; 1-POLE real pair r=0.02/0.75 · complex zero 2; 1-POLE real pair r=0.02/0.89 · complex zero 1; 1-POLE real pair r=0.03/0.91 · complex zero 1; 1-POLE real pair r=0.05/0.93 · complex zero 1
+
+=== by family (shape vocabulary each body was voiced with) ===
+00 ace_of_bass        2P2Z · zero ABOVE the note x12; 2P2Z · zero BELOW the note x6; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 1-POLE real at DC (highpass edge) · complex zero x1
+01 megasweepz         2P2Z · zero ABOVE the note x11; 2P2Z · zero BELOW the note x7; 2P2Z · NOTCH off the note x4; 2P2Z · DIP (zero on the note, tighter) x1; 2-POLE · zero real at NYQ (lowpass edge) x1
+02 early_rizer        2P2Z · zero ABOVE the note x14; 2P2Z · zero BELOW the note x6; 2P2Z · NOTCH off the note x4
+03 millennium         2P2Z · zero ABOVE the note x13; 2P2Z · zero BELOW the note x5; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 1-POLE real pair r=-0.77/-0.45 · complex zero x1
+04 meaty_gizmo        2P2Z · zero ABOVE the note x12; 2P2Z · zero BELOW the note x7; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1
+05 klub_klassik       2P2Z · zero ABOVE the note x10; 2P2Z · zero BELOW the note x8; 2P2Z · NOTCH off the note x4; 2-POLE · zero real pair r=0.00/0.80 x2
+06 bassbox_303        2P2Z · zero ABOVE the note x15; 2P2Z · zero BELOW the note x1; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real at DC (highpass edge) x2; 1-POLE real pair r=0.00/0.75 · complex zero x1
+07 fuzzi_face         2P2Z · NOTCH off the note x4; 2-POLE · no zero (RESONATOR / TILT) x20
+08 dead_ringer        2P2Z · zero ABOVE the note x8; 2P2Z · zero BELOW the note x11; 2P2Z · NOTCH off the note x3; 2P2Z · NOTCH on the note x1; 1-POLE real at DC (highpass edge) · complex zero x1
+09 tb_or_not_tb       2P2Z · zero ABOVE the note x7; 2P2Z · zero BELOW the note x7; 2P2Z · NOTCH off the note x3; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real at DC (highpass edge) x2; 2P2Z · NOTCH on the note x1; 1-POLE real pair r=0.02/0.65 · complex zero x1; 1-POLE real pair r=0.00/0.89 · complex zero x1; 2-POLE · zero real pair r=-0.90/-0.38 x1
+10 ooh_to_eee         2P2Z · zero ABOVE the note x14; 2P2Z · zero BELOW the note x4; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x2
+11 boland_bass        2P2Z · zero ABOVE the note x14; 2P2Z · zero BELOW the note x3; 2P2Z · NOTCH off the note x2; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real at DC (highpass edge) x2; 1-POLE real pair r=0.02/0.75 · complex zero x1; 1-POLE real pair r=0.02/0.89 · complex zero x1
+12 multi_q_vox        2P2Z · zero ABOVE the note x6; 2P2Z · zero BELOW the note x12; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x2
+13 talking_hedz       2P2Z · zero ABOVE the note x14; 2P2Z · zero BELOW the note x5; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1
+14 zoom_peaks         2P2Z · zero ABOVE the note x9; 2P2Z · zero BELOW the note x6; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x4; 2-POLE · zero real at DC (highpass edge) x1
+15 dj_alkaline        2P2Z · zero ABOVE the note x14; 2P2Z · zero BELOW the note x2; 2P2Z · NOTCH off the note x3; 2-POLE · zero real pair r=0.10/0.75 x4; 2P2Z · NOTCH on the note x1
+16 bass_tracer        2P2Z · zero ABOVE the note x7; 2P2Z · zero BELOW the note x6; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x4; 2-POLE · zero real at DC (highpass edge) x1; 2P2Z · DIP (zero on the note, tighter) x1; 1-POLE real pair r=0.00/0.93 · zero real at DC (highpass edge) x1
+17 rogue_hertz        2P2Z · zero ABOVE the note x10; 2P2Z · zero BELOW the note x4; 2P2Z · NOTCH off the note x4; 2-POLE · zero real at DC (highpass edge) x2; 1-POLE real at DC (highpass edge) · complex zero x2; 2-POLE · zero real pair r=0.25/0.37 x2
+18 razor_blades       2P2Z · zero ABOVE the note x11; 2P2Z · zero BELOW the note x6; 2P2Z · NOTCH off the note x3; 2P2Z · NOTCH on the note x1; 2-POLE · zero real pair r=0.00/0.59 x2; 2-POLE · zero real pair r=0.62/0.94 x1
+19 radio_craze        2P2Z · zero ABOVE the note x11; 2P2Z · zero BELOW the note x9; 2P2Z · NOTCH off the note x4
+20 eeh_to_aah         2P2Z · zero ABOVE the note x12; 2P2Z · zero BELOW the note x8; 2P2Z · NOTCH off the note x3; 2P2Z · NOTCH on the note x1
+21 ubu_orator         2P2Z · zero ABOVE the note x14; 2P2Z · zero BELOW the note x6; 2P2Z · NOTCH off the note x4
+22 deep_bouche        2P2Z · zero ABOVE the note x3; 2P2Z · zero BELOW the note x15; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real pair r=0.94/0.95 x1
+23 freak_shifta       2P2Z · zero ABOVE the note x12; 2P2Z · zero BELOW the note x7; 2P2Z · NOTCH off the note x4; 2-POLE · zero real at DC (highpass edge) x1
+24 cruz_pusher        2P2Z · NOTCH off the note x4; 2-POLE · no zero (RESONATOR / TILT) x20
+25 angelz_hairz       2P2Z · zero ABOVE the note x14; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x2; 2-POLE · zero real pair r=0.10/0.75 x4
+26 dream_weava        2P2Z · zero ABOVE the note x11; 2P2Z · zero BELOW the note x8; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1
+27 acid_ravage        2P2Z · zero ABOVE the note x8; 2P2Z · zero BELOW the note x9; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real pair r=0.00/0.80 x1; 2-POLE · zero real pair r=0.02/0.80 x1
+28 bass_o_matic       2P2Z · zero ABOVE the note x11; 2P2Z · zero BELOW the note x2; 2P2Z · NOTCH off the note x2; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real at DC (highpass edge) x3; 2P2Z · DIP (zero on the note, tighter) x2; 1-POLE real pair r=0.02/0.65 · complex zero x1; 1-POLE real pair r=0.03/0.91 · complex zero x1; 1-POLE real pair r=0.05/0.93 · complex zero x1
+29 lucifer_s_q        2P2Z · zero ABOVE the note x10; 2P2Z · zero BELOW the note x7; 2P2Z · NOTCH off the note x3; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real at DC (highpass edge) x1; 2P2Z · DIP (zero on the note, tighter) x1; 1-POLE real pair r=0.02/0.75 · complex zero x1
+30 tooth_comb         2P2Z · zero ABOVE the note x9; 2P2Z · zero BELOW the note x8; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 2-POLE · zero real pair r=0.00/0.80 x1; 2-POLE · zero real pair r=0.02/0.80 x1
+31 ear_bender         2P2Z · zero ABOVE the note x13; 2P2Z · zero BELOW the note x3; 2P2Z · NOTCH off the note x4; 2P2Z · PEAK (zero on the note, wider) x1; 2P2Z · DIP (zero on the note, tighter) x2; 2-POLE · zero real at NYQ (lowpass edge) x1
+32 klang_kling        2P2Z · zero ABOVE the note x10; 2P2Z · zero BELOW the note x10; 2P2Z · NOTCH off the note x4

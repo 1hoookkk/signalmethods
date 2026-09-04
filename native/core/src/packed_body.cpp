@@ -101,12 +101,27 @@ std::uint16_t interpolate_word(std::uint16_t a, std::uint16_t b, float fraction)
   return static_cast<std::uint16_t>(static_cast<std::int32_t>(a) + delta);
 }
 
+double decode_fractional(double word) {
+  const double clamped = std::clamp(word, 0.0, 65'535.0);
+  const double floor_word = std::floor(clamped);
+  const auto lo = static_cast<std::uint16_t>(floor_word);
+  const auto hi = static_cast<std::uint16_t>(std::min(floor_word + 1.0, 65'535.0));
+  const double fraction = clamped - floor_word;
+  return decode_word(lo) + (decode_word(hi) - decode_word(lo)) * fraction;
+}
+
 Biquad section_words_to_biquad(const PackedSection& words) {
-  const double d0 = decode_word(words[0]);
-  const double d1 = decode_word(words[1]);
-  const double d2 = decode_word(words[2]);
-  const double d3 = decode_word(words[3]);
-  const double d4 = decode_word(words[4]);
+  return section_values_to_biquad({decode_word(words[0]), decode_word(words[1]),
+                                   decode_word(words[2]), decode_word(words[3]),
+                                   decode_word(words[4])});
+}
+
+Biquad section_values_to_biquad(const std::array<double, kCoefficientCount>& decoded) {
+  const double d0 = decoded[0];
+  const double d1 = decoded[1];
+  const double d2 = decoded[2];
+  const double d3 = decoded[3];
+  const double d4 = decoded[4];
   const double c0 = 4.0 * d0 + d1;
   const double c1 = d1;
   const double c2 = 4.0 * d2 + d3;
@@ -243,6 +258,32 @@ Cascade PackedBody::interpolate_biquads(float morph, float q, float z) const {
   Cascade result{};
   for (std::size_t i = 0; i < kSectionCount; ++i) {
     result[i] = section_words_to_biquad(packed[i]);
+  }
+  return result;
+}
+
+Cascade PackedBody::interpolate_biquads_float(float morph, float q, float z) const {
+  const double m = std::clamp(static_cast<double>(morph), 0.0, 1.0);
+  const double qq = std::clamp(static_cast<double>(q), 0.0, 1.0);
+  const double zz = std::clamp(static_cast<double>(z), 0.0, 1.0);
+  Cascade result{};
+  for (std::size_t section = 0; section < kSectionCount; ++section) {
+    std::array<double, kCoefficientCount> decoded{};
+    for (std::size_t word = 0; word < kCoefficientCount; ++word) {
+      std::array<double, 2> plane{};
+      for (std::size_t zi = 0; zi < 2; ++zi) {
+        const std::size_t base = zi * kLegacyCornerCount;
+        const double w00 = words[base][section][word];
+        const double w10 = words[base + 1][section][word];
+        const double w01 = words[base + 2][section][word];
+        const double w11 = words[base + 3][section][word];
+        const double edge0 = w00 + (w10 - w00) * m;
+        const double edge1 = w01 + (w11 - w01) * m;
+        plane[zi] = edge0 + (edge1 - edge0) * qq;
+      }
+      decoded[word] = decode_fractional(plane[0] + (plane[1] - plane[0]) * zz);
+    }
+    result[section] = section_values_to_biquad(decoded);
   }
   return result;
 }

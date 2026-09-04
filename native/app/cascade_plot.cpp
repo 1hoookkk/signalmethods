@@ -8,12 +8,14 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
+#include <QWheelEvent>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <limits>
 #include <span>
+#include <utility>
 
 namespace {
 
@@ -35,9 +37,25 @@ constexpr double kLowDb = -30.0;
 constexpr double kHighDb = 30.0;
 constexpr int kStepDb = 10;
 
+constexpr double kGlideTick = 1.5;
+constexpr double kGlideDot = 2.5;
+
+constexpr double kHandleRadius = 9.0;
+constexpr double kHandleGrab = 13.0;
+constexpr double kHandlePen = 2.0;
+constexpr double kRingPixelsPerWord = 3.0;
+constexpr int kShiftRingSteps = 4;
+
+constexpr std::size_t kSections = trench::core::native::kSections;
+
 double finiteDb(double value) {
   if (!std::isfinite(value)) return value < 0.0 ? -400.0 : 400.0;
   return std::clamp(value, -400.0, 400.0);
+}
+
+double cascadeDb(const trench::core::Cascade& cascade, double hz, double sample_rate_hz) {
+  const std::span<const trench::core::Biquad> six{cascade.data(), kSections};
+  return finiteDb(trench::core::cascade_response_db(six, hz, sample_rate_hz));
 }
 
 }
@@ -45,64 +63,195 @@ double finiteDb(double value) {
 CascadePlot::CascadePlot(QWidget* parent) : QWidget(parent) {
   setMinimumHeight(160);
   setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  setMouseTracking(false);
   base_hz_ = trench::core::logarithmic_frequency_grid(kLowHz, kHighHz, 640);
   grid_hz_ = base_hz_;
 }
 
-void CascadePlot::setCascade(
-    const trench::core::Cascade& cascade,
-    const std::array<trench::core::Biquad,
-                     trench::core::native::kSections>& sections,
-    const std::array<bool, trench::core::native::kSections>& enabled,
-    const std::vector<double>& seed_hz, std::size_t selected_section,
-    double selected_frequency_hz, double sample_rate_hz) {
-  enabled_ = enabled;
-  selected_frequency_hz_ = selected_frequency_hz;
+void CascadePlot::setView(const View& view) {
+  enabled_ = view.enabled;
+  peaked_ = view.peaked;
+  selected_ = view.selected;
+  pad_at_corner_ = view.pad_at_corner;
   grid_hz_ = base_hz_;
-  grid_hz_.insert(grid_hz_.end(), seed_hz.begin(), seed_hz.end());
+  grid_hz_.insert(grid_hz_.end(), view.seed_hz.begin(), view.seed_hz.end());
   std::sort(grid_hz_.begin(), grid_hz_.end());
-  grid_hz_.erase(
-      std::unique(grid_hz_.begin(), grid_hz_.end(),
-                  [](double left, double right) {
-                    return std::abs(right - left) < 0.01;
-                  }),
-      grid_hz_.end());
-  response_db_.clear();
-  response_db_.reserve(grid_hz_.size());
-  const std::span<const trench::core::Biquad> six_sections{
-      cascade.data(), trench::core::native::kSections};
+  grid_hz_.erase(std::unique(grid_hz_.begin(), grid_hz_.end(),
+                             [](double left, double right) {
+                               return std::abs(right - left) < 0.01;
+                             }),
+                 grid_hz_.end());
+  pad_cascade_ = view.pad;
+  sample_rate_hz_ = view.sample_rate_hz;
+  pad_db_.clear();
+  pad_db_.reserve(grid_hz_.size());
   for (const double hz : grid_hz_) {
-    response_db_.push_back(finiteDb(trench::core::cascade_response_db(
-        six_sections, hz, sample_rate_hz)));
+    pad_db_.push_back(cascadeDb(pad_cascade_, hz, sample_rate_hz_));
   }
-  row_db_.clear();
-  for (std::size_t index = 0; index < trench::core::native::kSections; ++index) {
-    rung_db_[index].clear();
-    if (!enabled[index]) continue;
-    const std::span<const trench::core::Biquad> rung{&sections[index], 1};
-    rung_db_[index].reserve(grid_hz_.size());
-    for (const double hz : grid_hz_) {
-      rung_db_[index].push_back(
-          finiteDb(trench::core::cascade_response_db(rung, hz, sample_rate_hz)));
-    }
+  glide_lo_ = view.lo_pole_hz;
+  glide_hi_ = view.hi_pole_hz;
+  glide_now_ = view.now_pole_hz;
+  for (std::size_t index = 0; index < kSections; ++index) {
+    edit_pole_hz_[index] = view.pole_hz[index];
+    const double blended = view.now_pole_hz[index];
+    handle_hz_[index] = blended > 0.0 && std::isfinite(blended) ? blended
+                                                                : view.pole_hz[index];
+    handle_db_[index] = enabled_[index] && handle_hz_[index] > 0.0
+                            ? cascadeDb(pad_cascade_, handle_hz_[index], sample_rate_hz_)
+                            : 0.0;
   }
-  if (selected_section < trench::core::native::kSections) row_db_ = rung_db_[selected_section];
-
   update();
+}
+
+double CascadePlot::curveDbAt(double hz) const {
+  return cascadeDb(pad_cascade_, hz, sample_rate_hz_);
+}
+
+double CascadePlot::xForFrequency(double frequency_hz) const {
+  return xForFrequency(frequency_hz, plotRect());
 }
 
 const std::vector<double>& CascadePlot::gridHz() const { return grid_hz_; }
 
+bool CascadePlot::glided(std::size_t slot) const {
+  if (slot >= kSections) return false;
+  return glide_lo_[slot] > 0.0 && std::isfinite(glide_lo_[slot]) &&
+         glide_hi_[slot] > 0.0 && std::isfinite(glide_hi_[slot]);
+}
+
+int CascadePlot::glideCount() const {
+  int count = 0;
+  for (std::size_t slot = 0; slot < kSections; ++slot) {
+    if (glided(slot)) ++count;
+  }
+  return count;
+}
+
+std::optional<double> CascadePlot::glideNowHz(std::size_t slot) const {
+  if (!glided(slot)) return std::nullopt;
+  if (!(glide_now_[slot] > 0.0) || !std::isfinite(glide_now_[slot])) return std::nullopt;
+  return glide_now_[slot];
+}
+
+void CascadePlot::setReference(std::vector<double> db_on_grid) {
+  reference_db_ = std::move(db_on_grid);
+  update();
+}
+
+void CascadePlot::clearReference() {
+  reference_db_.clear();
+  update();
+}
+
+bool CascadePlot::hasReference() const { return !reference_db_.empty(); }
+
+QRectF CascadePlot::plotRect() const {
+  return QRectF(rect()).adjusted(62.0, kTopMargin, -22.0, -38.0);
+}
+
 double CascadePlot::xForFrequency(double frequency_hz, const QRectF& plot) const {
-  const double fraction = std::log(frequency_hz / kLowHz) /
-                          std::log(kHighHz / kLowHz);
+  const double fraction = std::log(frequency_hz / kLowHz) / std::log(kHighHz / kLowHz);
   return plot.left() + std::clamp(fraction, 0.0, 1.0) * plot.width();
 }
 
-double CascadePlot::yForDb(double db, const QRectF& plot, double low_db,
-                           double high_db) const {
-  const double fraction = (db - low_db) / (high_db - low_db);
+double CascadePlot::yForDb(double db, const QRectF& plot) const {
+  const double fraction = (db - kLowDb) / (kHighDb - kLowDb);
   return plot.bottom() - fraction * plot.height();
+}
+
+double CascadePlot::frequencyForX(double x, const QRectF& plot) const {
+  if (plot.width() <= 0.0) return kLowHz;
+  const double fraction = std::clamp((x - plot.left()) / plot.width(), 0.0, 1.0);
+  return kLowHz * std::pow(kHighHz / kLowHz, fraction);
+}
+
+double CascadePlot::dbForY(double y, const QRectF& plot) const {
+  if (plot.height() <= 0.0) return 0.0;
+  const double fraction = (plot.bottom() - y) / plot.height();
+  return kLowDb + fraction * (kHighDb - kLowDb);
+}
+
+std::optional<QPointF> CascadePlot::handleCentre(std::size_t section) const {
+  if (section >= kSections || !enabled_[section]) return std::nullopt;
+  if (!(handle_hz_[section] > 0.0) || !std::isfinite(handle_hz_[section])) return std::nullopt;
+  const QRectF plot = plotRect();
+  return QPointF{xForFrequency(handle_hz_[section], plot),
+                 yForDb(std::clamp(handle_db_[section], kLowDb, kHighDb), plot)};
+}
+
+std::size_t CascadePlot::handleAt(const QPointF& point) const {
+  std::size_t found = kSections;
+  double best = kHandleGrab;
+  for (std::size_t index = 0; index < kSections; ++index) {
+    const auto centre = handleCentre(index);
+    if (!centre) continue;
+    const double distance = std::hypot(centre->x() - point.x(), centre->y() - point.y());
+    if (distance <= best) {
+      best = distance;
+      found = index;
+    }
+  }
+  return found;
+}
+
+void CascadePlot::mousePressEvent(QMouseEvent* event) {
+  if (event->button() != Qt::LeftButton) return;
+  const std::size_t found = handleAt(event->position());
+  if (found >= kSections) return;
+  drag_ = found;
+  press_ = event->position();
+  press_hz_ = frequencyForX(press_.x(), plotRect());
+  press_pole_hz_ = edit_pole_hz_[found];
+  if (onSelect) onSelect(found);
+  if (onDragBegin) onDragBegin(found);
+  event->accept();
+}
+
+void CascadePlot::mouseMoveEvent(QMouseEvent* event) {
+  if (drag_ >= kSections) return;
+  const QRectF plot = plotRect();
+  const QPointF at = event->position();
+  const double dx = at.x() - press_.x();
+  const double dy = at.y() - press_.y();
+  if (std::abs(dx) >= 1.0 && onNote) {
+    const double under = frequencyForX(at.x(), plot);
+    const bool ratioed = press_hz_ > 0.0 && press_pole_hz_ > 0.0;
+    onNote(drag_, ratioed ? press_pole_hz_ * (under / press_hz_) : under);
+  }
+  if (std::abs(dy) >= 1.0) {
+    if (peaked_[drag_]) {
+      if (onHeight) onHeight(drag_, dbForY(at.y(), plot));
+    } else if (onRingSteps) {
+      onRingSteps(drag_, static_cast<int>(std::lround(-dy / kRingPixelsPerWord)));
+    }
+  }
+  event->accept();
+}
+
+void CascadePlot::mouseReleaseEvent(QMouseEvent* event) {
+  if (drag_ >= kSections) return;
+  drag_ = kSections;
+  if (onDragEnd) onDragEnd();
+  event->accept();
+}
+
+void CascadePlot::mouseDoubleClickEvent(QMouseEvent* event) {
+  if (handleAt(event->position()) < kSections) return;
+  const QRectF plot = plotRect();
+  if (!plot.contains(event->position())) return;
+  if (onCreate) onCreate(frequencyForX(event->position().x(), plot), dbForY(event->position().y(), plot));
+  event->accept();
+}
+
+void CascadePlot::wheelEvent(QWheelEvent* event) {
+  const std::size_t found = handleAt(event->position());
+  if (found >= kSections) return;
+  const int notches = event->angleDelta().y() / 120;
+  if (notches == 0) return;
+  const int steps =
+      (event->modifiers() & Qt::ShiftModifier) != 0 ? notches * kShiftRingSteps : notches;
+  if (onWheelRing) onWheelRing(found, steps);
+  event->accept();
 }
 
 void CascadePlot::paintEvent(QPaintEvent*) {
@@ -116,11 +265,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
   painter.setBrush(Qt::NoBrush);
   painter.drawRect(card);
 
-  const QRectF plot = QRectF(rect()).adjusted(62.0, kTopMargin, -22.0, -38.0);
-
-  const double low_db = kLowDb;
-  const double high_db = kHighDb;
-  const int step_db = kStepDb;
+  const QRectF plot = plotRect();
 
   painter.setPen(QPen(kGrid, 1.0));
 
@@ -139,10 +284,9 @@ void CascadePlot::paintEvent(QPaintEvent*) {
                      Qt::AlignHCenter | Qt::AlignTop, label);
     painter.setPen(QPen(kGrid, 1.0));
   }
-  const double step = static_cast<double>(step_db);
-  const int first_db = static_cast<int>(std::ceil(low_db / step) * step);
-  for (int db = first_db; db <= static_cast<int>(high_db); db += step_db) {
-    const double y = yForDb(static_cast<double>(db), plot, low_db, high_db);
+  const int first_db = static_cast<int>(std::ceil(kLowDb / kStepDb) * kStepDb);
+  for (int db = first_db; db <= static_cast<int>(kHighDb); db += kStepDb) {
+    const double y = yForDb(static_cast<double>(db), plot);
     const bool unity = db == 0;
     painter.setPen(QPen(unity ? kResponse : kGrid, 1.0));
     painter.drawLine(QPointF{plot.left(), y}, QPointF{plot.right(), y});
@@ -164,8 +308,7 @@ void CascadePlot::paintEvent(QPaintEvent*) {
           !std::isfinite(db[index])) {
         continue;
       }
-      const QPointF point{xForFrequency(hz[index], plot),
-                          yForDb(db[index], plot, low_db, high_db)};
+      const QPointF point{xForFrequency(hz[index], plot), yForDb(db[index], plot)};
       if (!started) {
         path.moveTo(point);
         started = true;
@@ -182,20 +325,44 @@ void CascadePlot::paintEvent(QPaintEvent*) {
 
   painter.setBrush(Qt::NoBrush);
 
-  QPen rung_pen(kGhost, 1.0);
-  rung_pen.setCosmetic(true);
-  for (const auto& rung : rung_db_) {
-    if (rung.size() == grid_hz_.size()) draw_curve(grid_hz_, rung, rung_pen);
-  }
-  if (row_db_.size() == grid_hz_.size() && !grid_hz_.empty()) {
-    QPen row_pen(kAddressed, 2.0);
-    row_pen.setCosmetic(true);
-    row_pen.setCapStyle(Qt::FlatCap);
-    draw_curve(grid_hz_, row_db_, row_pen);
+  if (reference_db_.size() == grid_hz_.size() && !grid_hz_.empty()) {
+    QPen reference_pen(kGhost, 1.0);
+    reference_pen.setCosmetic(true);
+    reference_pen.setStyle(Qt::DashLine);
+    draw_curve(grid_hz_, reference_db_, reference_pen);
   }
 
   QPen response_pen(kResponse, 2.5);
   response_pen.setCosmetic(true);
   response_pen.setCapStyle(Qt::FlatCap);
-  draw_curve(grid_hz_, response_db_, response_pen);
+  draw_curve(grid_hz_, pad_db_, response_pen);
+
+  if (selected_ < kSections && glided(selected_)) {
+    painter.save();
+    const double y = static_cast<double>(rect().bottom()) - 7.0;
+    const double lo = xForFrequency(glide_lo_[selected_], plot);
+    const double hi = xForFrequency(glide_hi_[selected_], plot);
+    painter.setBrush(Qt::NoBrush);
+    painter.setPen(QPen(kGhost, 1.0));
+    painter.drawLine(QPointF{lo, y}, QPointF{hi, y});
+    painter.drawLine(QPointF{lo, y - kGlideTick}, QPointF{lo, y + kGlideTick});
+    painter.drawLine(QPointF{hi, y - kGlideTick}, QPointF{hi, y + kGlideTick});
+    if (const auto now = glideNowHz(selected_)) {
+      painter.setPen(Qt::NoPen);
+      painter.setBrush(kAddressed);
+      painter.drawEllipse(QPointF{xForFrequency(*now, plot), y}, kGlideDot, kGlideDot);
+    }
+    painter.restore();
+  }
+
+  painter.save();
+  painter.setClipRect(plot.adjusted(-kHandleRadius, -kHandleRadius, kHandleRadius, kHandleRadius));
+  painter.setBrush(kPanel);
+  for (std::size_t index = 0; index < kSections; ++index) {
+    const auto centre = handleCentre(index);
+    if (!centre) continue;
+    painter.setPen(QPen(index == selected_ ? kAddressed : kResponse, kHandlePen));
+    painter.drawEllipse(*centre, kHandleRadius, kHandleRadius);
+  }
+  painter.restore();
 }

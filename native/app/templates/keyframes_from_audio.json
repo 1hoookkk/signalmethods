@@ -1,0 +1,4379 @@
+{
+ "schema": "trench-keyframes-v1",
+ "datum_hz": 44100.0,
+ "rows_are": "TYPE/hz/bw_hz/gain_db in the Morph Designer grammar; EQ = zero on the pole with bw x 10^(gain/20); POLE = bare pole; compile with applyTypeRows",
+ "frames": [
+  {
+   "group": "INSTRUMENT",
+   "name": "sung ah",
+   "source": "recipes/recordings/test-vowel-ah.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 642.6,
+     "bw_hz": 64.3,
+     "gain_db": 21.1
+    },
+    {
+     "type": "EQ",
+     "hz": 1066.4,
+     "bw_hz": 106.6,
+     "gain_db": 18.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL",
+   "name": "sung ah (speech)",
+   "source": "recipes/recordings/test-vowel-ah.wav",
+   "mode": "speech",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 642.0,
+     "bw_hz": 112.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 853.2,
+     "bw_hz": 1319.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1074.1,
+     "bw_hz": 112.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2315.1,
+     "bw_hz": 1571.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2656.0,
+     "bw_hz": 195.6,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "INSTRUMENT",
+   "name": "bassoon",
+   "source": "recipes/08_clean_instruments/uiowa_bassoon_mf.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 492.7,
+     "bw_hz": 49.3,
+     "gain_db": 11.2
+    }
+   ]
+  },
+  {
+   "group": "INSTRUMENT",
+   "name": "trombone",
+   "source": "recipes/08_clean_instruments/uiowa_tenor_trombone_mf.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 522.1,
+     "bw_hz": 52.2,
+     "gain_db": 8.0
+    }
+   ]
+  },
+  {
+   "group": "INSTRUMENT",
+   "name": "double bass",
+   "source": "recipes/08_clean_instruments/uiowa_double_bass_mf.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 138.6,
+     "bw_hz": 13.9,
+     "gain_db": 40.0
+    }
+   ]
+  },
+  {
+   "group": "INSTRUMENT",
+   "name": "tuba",
+   "source": "recipes/08_clean_instruments/uiowa_tuba_mf.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 445.8,
+     "bw_hz": 44.6,
+     "gain_db": 17.4
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "China Cymbal Contact Damped",
+   "source": "evidence\\measured-bodies\\ir_library\\cymbals\\China Cymbal Contact Damped.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 960.1,
+     "bw_hz": 96.0,
+     "gain_db": 6.9
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Glockenspiel Sweep 1",
+   "source": "evidence\\measured-bodies\\ir_library\\misc\\Glockenspiel Sweep 1.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 1229.2,
+     "bw_hz": 122.9,
+     "gain_db": 12.0
+    },
+    {
+     "type": "EQ",
+     "hz": 2611.9,
+     "bw_hz": 137.0,
+     "gain_db": 25.7
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Kalimba Resonance Full",
+   "source": "evidence\\measured-bodies\\ir_library\\misc\\Kalimba Resonance Full.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 578.6,
+     "bw_hz": 57.9,
+     "gain_db": 13.6
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Steel Pan Medium Sweep 1",
+   "source": "evidence\\measured-bodies\\ir_library\\misc\\Steel Pan Medium Sweep 1.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 1568.0,
+     "bw_hz": 156.8,
+     "gain_db": 8.9
+    },
+    {
+     "type": "EQ",
+     "hz": 2967.6,
+     "bw_hz": 296.8,
+     "gain_db": 7.1
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Winter Upright Open Sustain",
+   "source": "evidence\\measured-bodies\\ir_library\\piano_upright\\Winter Upright Open Sustain.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 97.6,
+     "bw_hz": 9.8,
+     "gain_db": 32.9
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Winter Upright Sympathetic Resonance",
+   "source": "evidence\\measured-bodies\\ir_library\\piano_upright\\Winter Upright Sympathetic Resonance.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 505.9,
+     "bw_hz": 50.6,
+     "gain_db": 11.5
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Concert Ukulele Contact Mic",
+   "source": "evidence\\measured-bodies\\ir_library\\ukulele\\Concert Ukulele Contact Mic.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 591.4,
+     "bw_hz": 59.1,
+     "gain_db": 20.9
+    }
+   ]
+  },
+  {
+   "group": "BODY",
+   "name": "Violin Sweep",
+   "source": "evidence\\measured-bodies\\ir_library\\violin\\Violin Sweep.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 889.8,
+     "bw_hz": 89.0,
+     "gain_db": 9.4
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Bell 1 F3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Bell 1 F3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 518.8,
+     "bw_hz": 8.4,
+     "gain_db": 37.0
+    },
+    {
+     "type": "EQ",
+     "hz": 2270.3,
+     "bw_hz": 65.6,
+     "gain_db": 21.6
+    },
+    {
+     "type": "EQ",
+     "hz": 3325.3,
+     "bw_hz": 24.4,
+     "gain_db": 28.3
+    },
+    {
+     "type": "EQ",
+     "hz": 3377.2,
+     "bw_hz": 337.7,
+     "gain_db": 15.3
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Bell 2 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Bell 2 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 254.5,
+     "bw_hz": 25.4,
+     "gain_db": 28.7
+    },
+    {
+     "type": "EQ",
+     "hz": 2107.4,
+     "bw_hz": 60.3,
+     "gain_db": 6.5
+    },
+    {
+     "type": "EQ",
+     "hz": 3929.6,
+     "bw_hz": 45.7,
+     "gain_db": 11.5
+    },
+    {
+     "type": "EQ",
+     "hz": 6292.9,
+     "bw_hz": 12.0,
+     "gain_db": 26.5
+    },
+    {
+     "type": "EQ",
+     "hz": 6781.6,
+     "bw_hz": 44.4,
+     "gain_db": 13.1
+    },
+    {
+     "type": "EQ",
+     "hz": 10708.9,
+     "bw_hz": 19.2,
+     "gain_db": 16.7
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Bell 3 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Bell 3 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 286.3,
+     "bw_hz": 28.6,
+     "gain_db": 13.1
+    },
+    {
+     "type": "EQ",
+     "hz": 1076.4,
+     "bw_hz": 96.7,
+     "gain_db": 8.1
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Bell 4 G#3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Bell 4 G#3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 836.3,
+     "bw_hz": 28.5,
+     "gain_db": 17.8
+    },
+    {
+     "type": "EQ",
+     "hz": 2289.8,
+     "bw_hz": 18.7,
+     "gain_db": 6.7
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Bell 5 G#3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Bell 5 G#3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 202.8,
+     "bw_hz": 7.3,
+     "gain_db": 39.4
+    },
+    {
+     "type": "EQ",
+     "hz": 1765.5,
+     "bw_hz": 41.3,
+     "gain_db": 20.1
+    },
+    {
+     "type": "EQ",
+     "hz": 2324.3,
+     "bw_hz": 111.8,
+     "gain_db": 10.1
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Blend G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Blend G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 5897.0,
+     "bw_hz": 589.7,
+     "gain_db": 7.2
+    },
+    {
+     "type": "EQ",
+     "hz": 6206.2,
+     "bw_hz": 620.6,
+     "gain_db": 14.0
+    },
+    {
+     "type": "EQ",
+     "hz": 6410.7,
+     "bw_hz": 139.4,
+     "gain_db": 21.5
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Edge 1 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Edge 1 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 416.5,
+     "bw_hz": 41.7,
+     "gain_db": 6.4
+    },
+    {
+     "type": "EQ",
+     "hz": 2333.4,
+     "bw_hz": 233.3,
+     "gain_db": 6.0
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Edge 3 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Edge 3 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 432.5,
+     "bw_hz": 43.3,
+     "gain_db": 12.7
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Lead 10 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Lead 10 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 280.5,
+     "bw_hz": 28.0,
+     "gain_db": 21.5
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Lead 11 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Lead 11 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 420.7,
+     "bw_hz": 42.1,
+     "gain_db": 13.8
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Lead 2 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Lead 2 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 1077.5,
+     "bw_hz": 107.7,
+     "gain_db": 14.9
+    },
+    {
+     "type": "EQ",
+     "hz": 1553.9,
+     "bw_hz": 49.8,
+     "gain_db": 36.4
+    },
+    {
+     "type": "EQ",
+     "hz": 2433.8,
+     "bw_hz": 243.4,
+     "gain_db": 9.3
+    },
+    {
+     "type": "EQ",
+     "hz": 9983.3,
+     "bw_hz": 340.9,
+     "gain_db": 12.4
+    },
+    {
+     "type": "EQ",
+     "hz": 10554.2,
+     "bw_hz": 365.1,
+     "gain_db": 15.4
+    },
+    {
+     "type": "EQ",
+     "hz": 11141.0,
+     "bw_hz": 308.7,
+     "gain_db": 12.3
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Lead 6 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Lead 6 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 224.3,
+     "bw_hz": 22.4,
+     "gain_db": 22.2
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Lead 8 A#3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Lead 8 A#3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 11102.9,
+     "bw_hz": 286.1,
+     "gain_db": 9.9
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Lead 9 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Lead 9 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 437.4,
+     "bw_hz": 43.7,
+     "gain_db": 7.9
+    },
+    {
+     "type": "EQ",
+     "hz": 1264.4,
+     "bw_hz": 126.4,
+     "gain_db": 8.0
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Srq G5",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Srq G5.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 805.8,
+     "bw_hz": 29.3,
+     "gain_db": 28.7
+    },
+    {
+     "type": "EQ",
+     "hz": 2342.9,
+     "bw_hz": 41.6,
+     "gain_db": 17.7
+    },
+    {
+     "type": "EQ",
+     "hz": 3886.9,
+     "bw_hz": 36.7,
+     "gain_db": 14.0
+    },
+    {
+     "type": "EQ",
+     "hz": 5492.5,
+     "bw_hz": 40.6,
+     "gain_db": 11.4
+    },
+    {
+     "type": "EQ",
+     "hz": 7008.9,
+     "bw_hz": 35.0,
+     "gain_db": 10.8
+    },
+    {
+     "type": "EQ",
+     "hz": 8604.5,
+     "bw_hz": 33.7,
+     "gain_db": 9.6
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Syhth 4 C5",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Syhth 4 C5.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 726.8,
+     "bw_hz": 72.7,
+     "gain_db": 7.9
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Sync 2 G2",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Sync 2 G2.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 1279.6,
+     "bw_hz": 128.0,
+     "gain_db": 6.5
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 1 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 1 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 355.6,
+     "bw_hz": 35.6,
+     "gain_db": 9.2
+    },
+    {
+     "type": "EQ",
+     "hz": 1560.2,
+     "bw_hz": 89.1,
+     "gain_db": 10.1
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 10 C3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 10 C3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 700.9,
+     "bw_hz": 70.1,
+     "gain_db": 9.9
+    },
+    {
+     "type": "EQ",
+     "hz": 1589.3,
+     "bw_hz": 102.0,
+     "gain_db": 7.8
+    },
+    {
+     "type": "EQ",
+     "hz": 2311.4,
+     "bw_hz": 51.4,
+     "gain_db": 7.9
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 11 C5",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 11 C5.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 1042.5,
+     "bw_hz": 7.6,
+     "gain_db": 40.0
+    },
+    {
+     "type": "EQ",
+     "hz": 2117.3,
+     "bw_hz": 102.9,
+     "gain_db": 24.5
+    },
+    {
+     "type": "EQ",
+     "hz": 3133.8,
+     "bw_hz": 99.2,
+     "gain_db": 25.4
+    },
+    {
+     "type": "EQ",
+     "hz": 4184.1,
+     "bw_hz": 29.2,
+     "gain_db": 34.6
+    },
+    {
+     "type": "EQ",
+     "hz": 8337.6,
+     "bw_hz": 833.8,
+     "gain_db": 28.2
+    },
+    {
+     "type": "EQ",
+     "hz": 8400.7,
+     "bw_hz": 38.1,
+     "gain_db": 39.6
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 12 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 12 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 327.2,
+     "bw_hz": 32.7,
+     "gain_db": 7.4
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 14 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 14 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 523.0,
+     "bw_hz": 4.5,
+     "gain_db": 40.0
+    },
+    {
+     "type": "EQ",
+     "hz": 1582.0,
+     "bw_hz": 24.5,
+     "gain_db": 27.7
+    },
+    {
+     "type": "EQ",
+     "hz": 2639.9,
+     "bw_hz": 54.5,
+     "gain_db": 19.9
+    },
+    {
+     "type": "EQ",
+     "hz": 3700.0,
+     "bw_hz": 56.6,
+     "gain_db": 18.1
+    },
+    {
+     "type": "EQ",
+     "hz": 5871.1,
+     "bw_hz": 179.3,
+     "gain_db": 6.4
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 2 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 2 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 601.0,
+     "bw_hz": 60.1,
+     "gain_db": 6.4
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 7 G3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 7 G3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 435.0,
+     "bw_hz": 43.5,
+     "gain_db": 10.9
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Synth 9 C3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Synth 9 C3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 306.2,
+     "bw_hz": 30.6,
+     "gain_db": 11.0
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Wall 1 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Wall 1 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 305.7,
+     "bw_hz": 30.6,
+     "gain_db": 13.7
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Wall 2 C#4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Wall 2 C#4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 830.5,
+     "bw_hz": 42.7,
+     "gain_db": 20.1
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Wall 4 C4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Wall 4 C4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 586.3,
+     "bw_hz": 58.6,
+     "gain_db": 16.4
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Wall 5 B3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Wall 5 B3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 620.4,
+     "bw_hz": 62.0,
+     "gain_db": 9.6
+    },
+    {
+     "type": "EQ",
+     "hz": 1326.2,
+     "bw_hz": 132.6,
+     "gain_db": 8.5
+    },
+    {
+     "type": "EQ",
+     "hz": 2093.1,
+     "bw_hz": 209.3,
+     "gain_db": 10.4
+    },
+    {
+     "type": "EQ",
+     "hz": 2834.7,
+     "bw_hz": 283.5,
+     "gain_db": 13.1
+    },
+    {
+     "type": "EQ",
+     "hz": 3452.0,
+     "bw_hz": 345.2,
+     "gain_db": 12.1
+    },
+    {
+     "type": "EQ",
+     "hz": 4164.2,
+     "bw_hz": 416.4,
+     "gain_db": 7.4
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Wall 6 A4",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Wall 6 A4.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 1351.7,
+     "bw_hz": 36.6,
+     "gain_db": 40.0
+    },
+    {
+     "type": "EQ",
+     "hz": 2154.3,
+     "bw_hz": 161.8,
+     "gain_db": 35.9
+    },
+    {
+     "type": "EQ",
+     "hz": 2876.4,
+     "bw_hz": 287.6,
+     "gain_db": 27.1
+    },
+    {
+     "type": "EQ",
+     "hz": 3753.8,
+     "bw_hz": 375.4,
+     "gain_db": 25.7
+    },
+    {
+     "type": "EQ",
+     "hz": 4402.1,
+     "bw_hz": 440.2,
+     "gain_db": 27.4
+    },
+    {
+     "type": "EQ",
+     "hz": 5321.1,
+     "bw_hz": 532.1,
+     "gain_db": 21.9
+    }
+   ]
+  },
+  {
+   "group": "XL-1 AUD",
+   "name": "Aud Wall 7 A#3",
+   "source": "evidence\\factory-data\\xl1-dsf-aud\\Aud Wall 7 A#3.wav",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 796.3,
+     "bw_hz": 79.6,
+     "gain_db": 23.7
+    },
+    {
+     "type": "EQ",
+     "hz": 1465.4,
+     "bw_hz": 146.5,
+     "gain_db": 20.6
+    },
+    {
+     "type": "EQ",
+     "hz": 2676.4,
+     "bw_hz": 267.6,
+     "gain_db": 11.4
+    },
+    {
+     "type": "EQ",
+     "hz": 2704.2,
+     "bw_hz": 270.4,
+     "gain_db": 11.2
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-a bahn s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-01-bahn-tense-a\\s1-01-bahn-tense-a-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 519.4,
+     "bw_hz": 58.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1123.2,
+     "bw_hz": 72.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2327.0,
+     "bw_hz": 85.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3298.6,
+     "bw_hz": 75.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3831.2,
+     "bw_hz": 702.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4855.2,
+     "bw_hz": 411.8,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-e beet s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-02-beet-tense-e\\s1-02-beet-tense-e-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 253.4,
+     "bw_hz": 20.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1791.1,
+     "bw_hz": 36.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2357.5,
+     "bw_hz": 131.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2987.6,
+     "bw_hz": 139.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3585.2,
+     "bw_hz": 144.8,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-i tiere s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-03-tiere-tense-i\\s1-03-tiere-tense-i-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 187.7,
+     "bw_hz": 23.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1807.5,
+     "bw_hz": 28.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2642.6,
+     "bw_hz": 50.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3108.0,
+     "bw_hz": 42.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4246.7,
+     "bw_hz": 596.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-o boote s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-04-boote-tense-o\\s1-04-boote-tense-o-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 507.2,
+     "bw_hz": 206.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2257.7,
+     "bw_hz": 448.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2875.4,
+     "bw_hz": 525.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3791.4,
+     "bw_hz": 82.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-u bude s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-05-bude-tense-u\\s1-05-bude-tense-u-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 402.6,
+     "bw_hz": 221.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1924.7,
+     "bw_hz": 1334.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2197.2,
+     "bw_hz": 839.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3097.3,
+     "bw_hz": 422.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3792.0,
+     "bw_hz": 218.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-ae laehmung s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-06-laehmung-tense-ae\\s1-06-laehmung-tense-ae-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 437.1,
+     "bw_hz": 26.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1606.4,
+     "bw_hz": 44.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2288.7,
+     "bw_hz": 125.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3029.1,
+     "bw_hz": 81.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3738.5,
+     "bw_hz": 953.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-oe hoehle s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-07-hoehle-tense-oe\\s1-07-hoehle-tense-oe-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 230.6,
+     "bw_hz": 193.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1341.7,
+     "bw_hz": 220.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1849.2,
+     "bw_hz": 193.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2848.9,
+     "bw_hz": 106.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3521.9,
+     "bw_hz": 196.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4876.0,
+     "bw_hz": 382.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-y guete s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-08-guete-tense-y\\s1-08-guete-tense-y-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 147.3,
+     "bw_hz": 124.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1383.7,
+     "bw_hz": 198.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1805.8,
+     "bw_hz": 159.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2825.9,
+     "bw_hz": 118.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3688.9,
+     "bw_hz": 82.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-a bass s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-15-bass-lax-a\\s1-15-bass-lax-a-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 526.1,
+     "bw_hz": 64.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 984.1,
+     "bw_hz": 65.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2393.1,
+     "bw_hz": 84.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3045.3,
+     "bw_hz": 197.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3448.3,
+     "bw_hz": 197.4,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-ae bett s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-16-bett-lax-ae\\s1-16-bett-lax-ae-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 431.9,
+     "bw_hz": 24.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1535.9,
+     "bw_hz": 46.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2237.1,
+     "bw_hz": 98.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2959.0,
+     "bw_hz": 242.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3121.8,
+     "bw_hz": 178.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4865.7,
+     "bw_hz": 283.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-i mit s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-17-mit-lax-i\\s1-17-mit-lax-i-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 297.8,
+     "bw_hz": 36.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1486.7,
+     "bw_hz": 109.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2079.0,
+     "bw_hz": 94.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3007.4,
+     "bw_hz": 127.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3426.8,
+     "bw_hz": 182.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-o offen s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-18-offen-lax-o\\s1-18-offen-lax-o-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 376.0,
+     "bw_hz": 162.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 773.8,
+     "bw_hz": 201.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2399.4,
+     "bw_hz": 150.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3135.9,
+     "bw_hz": 193.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3996.4,
+     "bw_hz": 74.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4480.7,
+     "bw_hz": 299.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-u butter s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-19-butter-lax-u\\s1-19-butter-lax-u-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 274.7,
+     "bw_hz": 522.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 510.6,
+     "bw_hz": 397.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2260.8,
+     "bw_hz": 262.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2933.6,
+     "bw_hz": 161.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3871.4,
+     "bw_hz": 21.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4585.0,
+     "bw_hz": 73.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-y muetter s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-20-muetter-lax-y\\s1-20-muetter-lax-y-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 305.3,
+     "bw_hz": 61.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1191.1,
+     "bw_hz": 116.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2079.2,
+     "bw_hz": 87.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2896.8,
+     "bw_hz": 79.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4119.6,
+     "bw_hz": 18.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4902.6,
+     "bw_hz": 420.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-oe goetter s1",
+   "source": "recipes\\vocal\\dvtd\\subject-1\\s1-21-goetter-lax-oe\\s1-21-goetter-lax-oe-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 395.6,
+     "bw_hz": 53.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1229.1,
+     "bw_hz": 75.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2099.7,
+     "bw_hz": 102.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3230.2,
+     "bw_hz": 94.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3703.7,
+     "bw_hz": 169.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4717.5,
+     "bw_hz": 109.6,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-a bahn s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-01-bahn-tense-a\\s2-01-bahn-tense-a-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 752.3,
+     "bw_hz": 38.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1417.0,
+     "bw_hz": 89.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2085.2,
+     "bw_hz": 2951.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3154.7,
+     "bw_hz": 89.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3989.1,
+     "bw_hz": 180.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4342.1,
+     "bw_hz": 186.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-e beet s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-02-beet-tense-e\\s2-02-beet-tense-e-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 319.7,
+     "bw_hz": 21.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2022.4,
+     "bw_hz": 5761.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2483.8,
+     "bw_hz": 49.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2964.5,
+     "bw_hz": 164.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4328.2,
+     "bw_hz": 145.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4803.6,
+     "bw_hz": 385.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-i tiere s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-03-tiere-tense-i\\s2-03-tiere-tense-i-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 218.6,
+     "bw_hz": 25.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2498.6,
+     "bw_hz": 38.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3496.4,
+     "bw_hz": 166.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4197.6,
+     "bw_hz": 237.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4545.3,
+     "bw_hz": 313.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-o boote s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-04-boote-tense-o\\s2-04-boote-tense-o-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 416.5,
+     "bw_hz": 25.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 906.8,
+     "bw_hz": 37.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3167.8,
+     "bw_hz": 57.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4073.4,
+     "bw_hz": 82.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4904.1,
+     "bw_hz": 213.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-u bude s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-05-bude-tense-u\\s2-05-bude-tense-u-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 336.5,
+     "bw_hz": 26.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 876.8,
+     "bw_hz": 46.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2724.4,
+     "bw_hz": 42.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3948.7,
+     "bw_hz": 88.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4657.0,
+     "bw_hz": 45.6,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-ae laehmung s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-06-laehmung-tense-ae\\s2-06-laehmung-tense-ae-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 677.6,
+     "bw_hz": 46.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1889.7,
+     "bw_hz": 94.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2057.4,
+     "bw_hz": 3761.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2835.1,
+     "bw_hz": 175.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4068.9,
+     "bw_hz": 206.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-oe hoehle s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-07-hoehle-tense-oe\\s2-07-hoehle-tense-oe-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 388.2,
+     "bw_hz": 28.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1603.8,
+     "bw_hz": 30.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2323.6,
+     "bw_hz": 39.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3645.7,
+     "bw_hz": 49.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "tense-y guete s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-08-guete-tense-y\\s2-08-guete-tense-y-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 300.4,
+     "bw_hz": 21.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1710.9,
+     "bw_hz": 33.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2261.8,
+     "bw_hz": 36.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3799.4,
+     "bw_hz": 57.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4942.1,
+     "bw_hz": 138.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-a bass s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-15-bass-lax-a\\s2-15-bass-lax-a-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 695.1,
+     "bw_hz": 38.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1216.5,
+     "bw_hz": 63.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2189.8,
+     "bw_hz": 3780.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2992.1,
+     "bw_hz": 94.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3946.4,
+     "bw_hz": 285.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4351.6,
+     "bw_hz": 166.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-ae bett s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-16-bett-lax-ae\\s2-16-bett-lax-ae-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 578.4,
+     "bw_hz": 26.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1716.8,
+     "bw_hz": 35.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2704.0,
+     "bw_hz": 102.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3950.9,
+     "bw_hz": 158.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4180.6,
+     "bw_hz": 229.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-i mit s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-17-mit-lax-i\\s2-17-mit-lax-i-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 363.9,
+     "bw_hz": 15.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1973.3,
+     "bw_hz": 44.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2624.6,
+     "bw_hz": 145.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3728.8,
+     "bw_hz": 132.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3972.2,
+     "bw_hz": 129.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-o offen s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-18-offen-lax-o\\s2-18-offen-lax-o-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 467.8,
+     "bw_hz": 22.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1080.7,
+     "bw_hz": 56.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3075.5,
+     "bw_hz": 148.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4096.8,
+     "bw_hz": 134.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4336.9,
+     "bw_hz": 2695.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4576.1,
+     "bw_hz": 218.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-u butter s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-19-butter-lax-u\\s2-19-butter-lax-u-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 378.7,
+     "bw_hz": 12.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1097.5,
+     "bw_hz": 49.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2987.9,
+     "bw_hz": 91.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3865.7,
+     "bw_hz": 158.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4200.9,
+     "bw_hz": 1187.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4578.7,
+     "bw_hz": 58.4,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-y muetter s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-20-muetter-lax-y\\s2-20-muetter-lax-y-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 415.4,
+     "bw_hz": 17.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1720.0,
+     "bw_hz": 34.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2448.0,
+     "bw_hz": 41.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3787.0,
+     "bw_hz": 77.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4788.4,
+     "bw_hz": 130.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL DVTD",
+   "name": "lax-oe goetter s2",
+   "source": "recipes\\vocal\\dvtd\\subject-2\\s2-21-goetter-lax-oe\\s2-21-goetter-lax-oe-vvtf-measured.txt",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 533.0,
+     "bw_hz": 11.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1474.2,
+     "bw_hz": 36.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2410.3,
+     "bw_hz": 64.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3906.2,
+     "bw_hz": 192.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 4046.2,
+     "bw_hz": 502.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 0 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 1",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 2788.0,
+     "bw_hz": 278.8,
+     "gain_db": 8.0
+    },
+    {
+     "type": "EQ",
+     "hz": 4192.3,
+     "bw_hz": 419.2,
+     "gain_db": 8.0
+    },
+    {
+     "type": "EQ",
+     "hz": 10714.9,
+     "bw_hz": 415.3,
+     "gain_db": 10.8
+    },
+    {
+     "type": "EQ",
+     "hz": 11521.6,
+     "bw_hz": 429.0,
+     "gain_db": 10.4
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 0 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 4",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3230.1,
+     "bw_hz": 323.0,
+     "gain_db": 9.3
+    },
+    {
+     "type": "EQ",
+     "hz": 4377.8,
+     "bw_hz": 437.8,
+     "gain_db": 10.2
+    },
+    {
+     "type": "EQ",
+     "hz": 10403.6,
+     "bw_hz": 756.8,
+     "gain_db": 10.6
+    },
+    {
+     "type": "EQ",
+     "hz": 11210.0,
+     "bw_hz": 992.7,
+     "gain_db": 12.8
+    },
+    {
+     "type": "EQ",
+     "hz": 11992.2,
+     "bw_hz": 919.2,
+     "gain_db": 9.1
+    },
+    {
+     "type": "EQ",
+     "hz": 14547.9,
+     "bw_hz": 446.0,
+     "gain_db": 8.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 0 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 7",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3254.8,
+     "bw_hz": 325.5,
+     "gain_db": 9.2
+    },
+    {
+     "type": "EQ",
+     "hz": 4294.4,
+     "bw_hz": 429.4,
+     "gain_db": 10.8
+    },
+    {
+     "type": "EQ",
+     "hz": 5549.7,
+     "bw_hz": 555.0,
+     "gain_db": 8.6
+    },
+    {
+     "type": "EQ",
+     "hz": 10613.5,
+     "bw_hz": 674.7,
+     "gain_db": 7.0
+    },
+    {
+     "type": "EQ",
+     "hz": 11543.4,
+     "bw_hz": 575.0,
+     "gain_db": 9.7
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 0 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 9",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3207.7,
+     "bw_hz": 320.8,
+     "gain_db": 7.4
+    },
+    {
+     "type": "EQ",
+     "hz": 4436.2,
+     "bw_hz": 443.6,
+     "gain_db": 9.7
+    },
+    {
+     "type": "EQ",
+     "hz": 5623.7,
+     "bw_hz": 562.4,
+     "gain_db": 7.6
+    },
+    {
+     "type": "EQ",
+     "hz": 11756.9,
+     "bw_hz": 810.1,
+     "gain_db": 8.6
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 30 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 681",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3111.3,
+     "bw_hz": 311.1,
+     "gain_db": 8.9
+    },
+    {
+     "type": "EQ",
+     "hz": 4245.2,
+     "bw_hz": 424.5,
+     "gain_db": 6.1
+    },
+    {
+     "type": "EQ",
+     "hz": 7197.7,
+     "bw_hz": 535.7,
+     "gain_db": 7.1
+    },
+    {
+     "type": "EQ",
+     "hz": 11197.6,
+     "bw_hz": 570.8,
+     "gain_db": 10.6
+    },
+    {
+     "type": "EQ",
+     "hz": 12056.9,
+     "bw_hz": 929.7,
+     "gain_db": 8.5
+    },
+    {
+     "type": "EQ",
+     "hz": 14539.7,
+     "bw_hz": 546.8,
+     "gain_db": 7.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 30 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 678",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3516.1,
+     "bw_hz": 351.6,
+     "gain_db": 12.4
+    },
+    {
+     "type": "EQ",
+     "hz": 4392.6,
+     "bw_hz": 439.3,
+     "gain_db": 12.2
+    },
+    {
+     "type": "EQ",
+     "hz": 5443.5,
+     "bw_hz": 544.4,
+     "gain_db": 11.6
+    },
+    {
+     "type": "EQ",
+     "hz": 11150.0,
+     "bw_hz": 582.8,
+     "gain_db": 10.8
+    },
+    {
+     "type": "EQ",
+     "hz": 11937.1,
+     "bw_hz": 710.1,
+     "gain_db": 11.5
+    },
+    {
+     "type": "EQ",
+     "hz": 13205.6,
+     "bw_hz": 716.8,
+     "gain_db": 6.7
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 30 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 675",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3143.4,
+     "bw_hz": 314.3,
+     "gain_db": 9.3
+    },
+    {
+     "type": "EQ",
+     "hz": 4204.9,
+     "bw_hz": 420.5,
+     "gain_db": 14.1
+    },
+    {
+     "type": "EQ",
+     "hz": 5437.0,
+     "bw_hz": 543.7,
+     "gain_db": 11.9
+    },
+    {
+     "type": "EQ",
+     "hz": 10866.2,
+     "bw_hz": 506.9,
+     "gain_db": 9.2
+    },
+    {
+     "type": "EQ",
+     "hz": 11810.5,
+     "bw_hz": 645.5,
+     "gain_db": 9.8
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 30 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 673",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3378.8,
+     "bw_hz": 337.9,
+     "gain_db": 8.0
+    },
+    {
+     "type": "EQ",
+     "hz": 4371.2,
+     "bw_hz": 437.1,
+     "gain_db": 9.5
+    },
+    {
+     "type": "EQ",
+     "hz": 5661.3,
+     "bw_hz": 566.1,
+     "gain_db": 6.4
+    },
+    {
+     "type": "EQ",
+     "hz": 11923.1,
+     "bw_hz": 807.4,
+     "gain_db": 9.3
+    },
+    {
+     "type": "EQ",
+     "hz": 13200.9,
+     "bw_hz": 651.4,
+     "gain_db": 8.9
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 60 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 549",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3935.7,
+     "bw_hz": 393.6,
+     "gain_db": 8.3
+    },
+    {
+     "type": "EQ",
+     "hz": 5029.0,
+     "bw_hz": 502.9,
+     "gain_db": 8.4
+    },
+    {
+     "type": "EQ",
+     "hz": 7502.3,
+     "bw_hz": 506.0,
+     "gain_db": 8.5
+    },
+    {
+     "type": "EQ",
+     "hz": 11764.2,
+     "bw_hz": 734.5,
+     "gain_db": 6.2
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 60 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 546",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4287.9,
+     "bw_hz": 428.8,
+     "gain_db": 12.8
+    },
+    {
+     "type": "EQ",
+     "hz": 5289.4,
+     "bw_hz": 528.9,
+     "gain_db": 12.6
+    },
+    {
+     "type": "EQ",
+     "hz": 6422.6,
+     "bw_hz": 642.3,
+     "gain_db": 7.6
+    },
+    {
+     "type": "EQ",
+     "hz": 10664.3,
+     "bw_hz": 898.3,
+     "gain_db": 6.9
+    },
+    {
+     "type": "EQ",
+     "hz": 11823.3,
+     "bw_hz": 914.3,
+     "gain_db": 7.9
+    },
+    {
+     "type": "EQ",
+     "hz": 13171.1,
+     "bw_hz": 873.1,
+     "gain_db": 6.8
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 60 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 543",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3166.6,
+     "bw_hz": 316.7,
+     "gain_db": 8.6
+    },
+    {
+     "type": "EQ",
+     "hz": 4544.4,
+     "bw_hz": 454.4,
+     "gain_db": 12.0
+    },
+    {
+     "type": "EQ",
+     "hz": 5773.0,
+     "bw_hz": 577.3,
+     "gain_db": 9.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 60 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 541",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3248.4,
+     "bw_hz": 324.8,
+     "gain_db": 7.3
+    },
+    {
+     "type": "EQ",
+     "hz": 4241.1,
+     "bw_hz": 424.1,
+     "gain_db": 8.6
+    },
+    {
+     "type": "EQ",
+     "hz": 5553.2,
+     "bw_hz": 555.3,
+     "gain_db": 7.2
+    },
+    {
+     "type": "EQ",
+     "hz": 11879.7,
+     "bw_hz": 996.2,
+     "gain_db": 8.1
+    },
+    {
+     "type": "EQ",
+     "hz": 13204.7,
+     "bw_hz": 760.6,
+     "gain_db": 8.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 90 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 417",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4554.8,
+     "bw_hz": 455.5,
+     "gain_db": 7.4
+    },
+    {
+     "type": "EQ",
+     "hz": 5579.3,
+     "bw_hz": 557.9,
+     "gain_db": 7.8
+    },
+    {
+     "type": "EQ",
+     "hz": 7840.4,
+     "bw_hz": 702.1,
+     "gain_db": 6.7
+    },
+    {
+     "type": "EQ",
+     "hz": 9117.4,
+     "bw_hz": 783.6,
+     "gain_db": 9.4
+    },
+    {
+     "type": "EQ",
+     "hz": 10135.3,
+     "bw_hz": 603.2,
+     "gain_db": 9.6
+    },
+    {
+     "type": "EQ",
+     "hz": 11979.6,
+     "bw_hz": 579.9,
+     "gain_db": 6.5
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 90 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 414",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4606.6,
+     "bw_hz": 460.7,
+     "gain_db": 9.2
+    },
+    {
+     "type": "EQ",
+     "hz": 5627.4,
+     "bw_hz": 562.7,
+     "gain_db": 11.1
+    },
+    {
+     "type": "EQ",
+     "hz": 6839.9,
+     "bw_hz": 684.0,
+     "gain_db": 6.5
+    },
+    {
+     "type": "EQ",
+     "hz": 11417.1,
+     "bw_hz": 1141.7,
+     "gain_db": 8.2
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 90 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 411",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3561.5,
+     "bw_hz": 356.1,
+     "gain_db": 8.7
+    },
+    {
+     "type": "EQ",
+     "hz": 5038.3,
+     "bw_hz": 503.8,
+     "gain_db": 8.7
+    },
+    {
+     "type": "EQ",
+     "hz": 5598.8,
+     "bw_hz": 559.9,
+     "gain_db": 8.3
+    },
+    {
+     "type": "EQ",
+     "hz": 13486.1,
+     "bw_hz": 1054.0,
+     "gain_db": 6.2
+    },
+    {
+     "type": "EQ",
+     "hz": 14731.6,
+     "bw_hz": 831.7,
+     "gain_db": 7.7
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 90 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 409",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3079.8,
+     "bw_hz": 308.0,
+     "gain_db": 6.2
+    },
+    {
+     "type": "EQ",
+     "hz": 4330.7,
+     "bw_hz": 433.1,
+     "gain_db": 9.0
+    },
+    {
+     "type": "EQ",
+     "hz": 11813.9,
+     "bw_hz": 968.4,
+     "gain_db": 6.4
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 120 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 285",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 9155.1,
+     "bw_hz": 886.4,
+     "gain_db": 8.3
+    },
+    {
+     "type": "EQ",
+     "hz": 10183.5,
+     "bw_hz": 588.7,
+     "gain_db": 9.8
+    },
+    {
+     "type": "EQ",
+     "hz": 12021.1,
+     "bw_hz": 579.8,
+     "gain_db": 6.6
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 120 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 282",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 5673.6,
+     "bw_hz": 567.4,
+     "gain_db": 7.8
+    },
+    {
+     "type": "EQ",
+     "hz": 6814.1,
+     "bw_hz": 665.2,
+     "gain_db": 7.4
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 120 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 279",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4111.0,
+     "bw_hz": 411.1,
+     "gain_db": 8.6
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 120 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 277",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3219.8,
+     "bw_hz": 322.0,
+     "gain_db": 6.7
+    },
+    {
+     "type": "EQ",
+     "hz": 4417.8,
+     "bw_hz": 441.8,
+     "gain_db": 8.8
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 150 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 153",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 10072.5,
+     "bw_hz": 670.3,
+     "gain_db": 7.3
+    },
+    {
+     "type": "EQ",
+     "hz": 11925.1,
+     "bw_hz": 506.2,
+     "gain_db": 6.1
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 150 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 147",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4011.5,
+     "bw_hz": 401.1,
+     "gain_db": 8.1
+    },
+    {
+     "type": "EQ",
+     "hz": 4984.6,
+     "bw_hz": 498.5,
+     "gain_db": 7.5
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 150 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 145",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3331.9,
+     "bw_hz": 333.2,
+     "gain_db": 7.6
+    },
+    {
+     "type": "EQ",
+     "hz": 4517.5,
+     "bw_hz": 451.7,
+     "gain_db": 8.5
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 180 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 21",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 2411.4,
+     "bw_hz": 241.1,
+     "gain_db": 6.1
+    },
+    {
+     "type": "EQ",
+     "hz": 3597.0,
+     "bw_hz": 359.7,
+     "gain_db": 8.4
+    },
+    {
+     "type": "EQ",
+     "hz": 11726.7,
+     "bw_hz": 445.5,
+     "gain_db": 6.7
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 180 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 18",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4012.7,
+     "bw_hz": 401.3,
+     "gain_db": 7.6
+    },
+    {
+     "type": "EQ",
+     "hz": 5113.8,
+     "bw_hz": 511.4,
+     "gain_db": 6.3
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 180 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 15",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3997.9,
+     "bw_hz": 399.8,
+     "gain_db": 6.7
+    },
+    {
+     "type": "EQ",
+     "hz": 5011.2,
+     "bw_hz": 501.1,
+     "gain_db": 7.4
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 180 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 13",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3354.4,
+     "bw_hz": 335.4,
+     "gain_db": 6.5
+    },
+    {
+     "type": "EQ",
+     "hz": 4557.7,
+     "bw_hz": 455.8,
+     "gain_db": 7.2
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 210 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 662",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3482.4,
+     "bw_hz": 348.2,
+     "gain_db": 7.7
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 210 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 665",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3940.9,
+     "bw_hz": 394.1,
+     "gain_db": 7.1
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 240 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 530",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 657.4,
+     "bw_hz": 65.7,
+     "gain_db": 6.5
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 240 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 533",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3649.4,
+     "bw_hz": 364.9,
+     "gain_db": 7.3
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 330 el -30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 134",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 4021.0,
+     "bw_hz": 402.1,
+     "gain_db": 6.4
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 330 el 0",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 137",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3744.5,
+     "bw_hz": 374.5,
+     "gain_db": 8.0
+    },
+    {
+     "type": "EQ",
+     "hz": 11262.3,
+     "bw_hz": 552.6,
+     "gain_db": 9.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 330 el 30",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 140",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3632.0,
+     "bw_hz": 363.2,
+     "gain_db": 8.9
+    },
+    {
+     "type": "EQ",
+     "hz": 4811.7,
+     "bw_hz": 481.2,
+     "gain_db": 8.0
+    }
+   ]
+  },
+  {
+   "group": "HEAD",
+   "name": "left ear az 330 el 60",
+   "source": "evidence\\measured-bodies\\hrtf\\P0001_FreeFieldComp_48kHz.sofa index 142",
+   "mode": "six bells",
+   "rows": [
+    {
+     "type": "EQ",
+     "hz": 3489.5,
+     "bw_hz": 348.9,
+     "gain_db": 7.1
+    },
+    {
+     "type": "EQ",
+     "hz": 3679.2,
+     "bw_hz": 367.9,
+     "gain_db": 7.2
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ee heed man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 134 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 338.0,
+     "bw_hz": 66.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2319.0,
+     "bw_hz": 165.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2959.0,
+     "bw_hz": 197.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ee heed woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 226 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 436.0,
+     "bw_hz": 71.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2762.0,
+     "bw_hz": 188.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3351.5,
+     "bw_hz": 217.6,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ee heed boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 244 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 441.0,
+     "bw_hz": 72.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3024.0,
+     "bw_hz": 201.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3578.0,
+     "bw_hz": 228.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ee heed girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 239 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 466.0,
+     "bw_hz": 73.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3225.0,
+     "bw_hz": 211.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3761.0,
+     "bw_hz": 238.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ih hid man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 133 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 433.0,
+     "bw_hz": 71.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2013.0,
+     "bw_hz": 150.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2687.0,
+     "bw_hz": 184.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ih hid woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 224 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 486.0,
+     "bw_hz": 74.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2370.0,
+     "bw_hz": 168.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3027.5,
+     "bw_hz": 201.4,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ih hid boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 231 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 520.0,
+     "bw_hz": 76.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2492.0,
+     "bw_hz": 174.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3330.0,
+     "bw_hz": 216.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ih hid girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 242 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 506.0,
+     "bw_hz": 75.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2634.0,
+     "bw_hz": 181.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3502.0,
+     "bw_hz": 225.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ay hayed man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 131 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 482.0,
+     "bw_hz": 74.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2082.0,
+     "bw_hz": 154.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2660.0,
+     "bw_hz": 183.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ay hayed woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 216 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 512.0,
+     "bw_hz": 75.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2503.0,
+     "bw_hz": 175.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3063.5,
+     "bw_hz": 203.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ay hayed boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 235 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 564.0,
+     "bw_hz": 78.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2620.0,
+     "bw_hz": 181.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3286.0,
+     "bw_hz": 214.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ay hayed girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 240 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 558.0,
+     "bw_hz": 77.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2687.0,
+     "bw_hz": 184.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3413.0,
+     "bw_hz": 220.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "eh head man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 126 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 574.0,
+     "bw_hz": 78.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1805.0,
+     "bw_hz": 140.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2603.0,
+     "bw_hz": 180.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "eh head woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 214 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 718.0,
+     "bw_hz": 85.9,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2049.0,
+     "bw_hz": 152.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2931.5,
+     "bw_hz": 196.6,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "eh head boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 227 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 710.0,
+     "bw_hz": 85.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2202.0,
+     "bw_hz": 160.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3243.0,
+     "bw_hz": 212.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "eh head girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 228 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 762.0,
+     "bw_hz": 88.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2349.0,
+     "bw_hz": 167.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3448.0,
+     "bw_hz": 222.4,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ae had man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 123 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 590.0,
+     "bw_hz": 79.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1934.0,
+     "bw_hz": 146.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2574.0,
+     "bw_hz": 178.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ae had woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 215 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 670.0,
+     "bw_hz": 83.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2329.0,
+     "bw_hz": 166.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2928.5,
+     "bw_hz": 196.4,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ae had boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 220 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 697.0,
+     "bw_hz": 84.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2503.0,
+     "bw_hz": 175.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3166.0,
+     "bw_hz": 208.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ae had girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 230 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 729.0,
+     "bw_hz": 86.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2523.0,
+     "bw_hz": 176.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3450.0,
+     "bw_hz": 222.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ah hod man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 124 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 748.0,
+     "bw_hz": 87.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1315.0,
+     "bw_hz": 115.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2522.0,
+     "bw_hz": 176.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ah hod woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 212 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 916.0,
+     "bw_hz": 95.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1524.0,
+     "bw_hz": 126.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2822.0,
+     "bw_hz": 191.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ah hod boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 227 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 951.0,
+     "bw_hz": 97.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1604.0,
+     "bw_hz": 130.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2860.0,
+     "bw_hz": 193.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "ah hod girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 233 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 1021.0,
+     "bw_hz": 101.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1749.0,
+     "bw_hz": 137.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3055.0,
+     "bw_hz": 202.8,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "aw hawed man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 121 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 648.0,
+     "bw_hz": 82.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1019.0,
+     "bw_hz": 101.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2507.0,
+     "bw_hz": 175.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "aw hawed woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 212 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 805.0,
+     "bw_hz": 90.2,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1176.0,
+     "bw_hz": 108.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2816.0,
+     "bw_hz": 190.8,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "aw hawed boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 220 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 802.0,
+     "bw_hz": 90.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1268.0,
+     "bw_hz": 113.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2918.0,
+     "bw_hz": 195.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "aw hawed girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 233 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 888.0,
+     "bw_hz": 94.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1366.0,
+     "bw_hz": 118.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3131.0,
+     "bw_hz": 206.6,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oh hoed man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 133 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 499.0,
+     "bw_hz": 75.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 900.0,
+     "bw_hz": 95.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2465.0,
+     "bw_hz": 173.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oh hoed woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 218 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 573.0,
+     "bw_hz": 78.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1025.5,
+     "bw_hz": 101.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2858.0,
+     "bw_hz": 192.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oh hoed boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 237 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 591.0,
+     "bw_hz": 79.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1117.0,
+     "bw_hz": 105.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2924.0,
+     "bw_hz": 196.2,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oh hoed girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 239 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 577.0,
+     "bw_hz": 78.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1151.0,
+     "bw_hz": 107.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3140.0,
+     "bw_hz": 207.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hood man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 132 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 468.0,
+     "bw_hz": 73.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1106.0,
+     "bw_hz": 105.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2459.0,
+     "bw_hz": 172.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hood woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 231 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 505.5,
+     "bw_hz": 75.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1188.5,
+     "bw_hz": 109.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2806.5,
+     "bw_hz": 190.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hood boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 237 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 570.0,
+     "bw_hz": 78.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1495.0,
+     "bw_hz": 124.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2993.0,
+     "bw_hz": 199.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hood girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 243 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 571.0,
+     "bw_hz": 78.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1577.0,
+     "bw_hz": 128.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3220.0,
+     "bw_hz": 211.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oo who'd man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 143 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 377.0,
+     "bw_hz": 68.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 980.0,
+     "bw_hz": 99.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2378.0,
+     "bw_hz": 168.9,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oo who'd woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 237 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 459.5,
+     "bw_hz": 73.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1066.5,
+     "bw_hz": 103.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2721.5,
+     "bw_hz": 186.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oo who'd boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 249 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 502.0,
+     "bw_hz": 75.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1296.0,
+     "bw_hz": 114.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2976.0,
+     "bw_hz": 198.8,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "oo who'd girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 244 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 496.0,
+     "bw_hz": 74.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1533.0,
+     "bw_hz": 126.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3067.0,
+     "bw_hz": 203.3,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hud man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 128 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 622.0,
+     "bw_hz": 81.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1168.0,
+     "bw_hz": 108.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2560.0,
+     "bw_hz": 178.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hud woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 217 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 762.5,
+     "bw_hz": 88.1,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1408.5,
+     "bw_hz": 120.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2920.5,
+     "bw_hz": 196.0,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hud boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 220 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 697.0,
+     "bw_hz": 84.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1454.0,
+     "bw_hz": 122.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3070.0,
+     "bw_hz": 203.5,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "uh hud girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 234 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 754.0,
+     "bw_hz": 87.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1614.0,
+     "bw_hz": 130.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 3254.0,
+     "bw_hz": 212.7,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "er heard man",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 45 tokens, f0 130 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 477.0,
+     "bw_hz": 73.8,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1386.0,
+     "bw_hz": 119.3,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1701.0,
+     "bw_hz": 135.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "er heard woman",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 48 tokens, f0 218 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 511.0,
+     "bw_hz": 75.5,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1568.5,
+     "bw_hz": 128.4,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1921.5,
+     "bw_hz": 146.1,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "er heard boy",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 27 tokens, f0 230 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 573.0,
+     "bw_hz": 78.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1691.0,
+     "bw_hz": 134.6,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2069.0,
+     "bw_hz": 153.4,
+     "gain_db": 0.0
+    }
+   ]
+  },
+  {
+   "group": "VOWEL H95",
+   "name": "er heard girl",
+   "source": "evidence/factory-data/hillenbrand-1995/h95.csv medians, 19 tokens, f0 230 Hz",
+   "mode": "poles",
+   "rows": [
+    {
+     "type": "POLE",
+     "hz": 620.0,
+     "bw_hz": 81.0,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 1694.0,
+     "bw_hz": 134.7,
+     "gain_db": 0.0
+    },
+    {
+     "type": "POLE",
+     "hz": 2246.0,
+     "bw_hz": 162.3,
+     "gain_db": 0.0
+    }
+   ]
+  }
+ ]
+}

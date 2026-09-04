@@ -1,12 +1,12 @@
 #pragma once
 
+#include "editor_state.hpp"
+
 #include <QString>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
-
-class EditorState;
 
 namespace trench::app {
 
@@ -33,10 +33,47 @@ struct PoleTemplate {
   [[nodiscard]] QString label() const { return family + QStringLiteral("  ") + type; }
 };
 
+enum class RowType { kEq, kLowPass, kHighPass, kPole };
+
+struct TypeRow {
+  RowType type{RowType::kEq};
+  double hz{};
+  double bw_hz{};
+  double gain_db{};
+};
+
+struct Keyframe {
+  QString group;
+  QString name;
+  QString source;
+  QString mode;
+  std::vector<TypeRow> rows;
+};
+
+inline constexpr double kTypeRowSeedGainDb = 12.0;
+inline constexpr std::size_t kTypeRowMinStates = 3;
+
 [[nodiscard]] std::vector<PoleTemplate> loadPoleTemplates();
 [[nodiscard]] std::vector<PoleState> pickPoles(const PoleTemplate& tpl, std::size_t count);
-void applyPoleTemplate(EditorState& state, const PoleTemplate& tpl, std::size_t corner);
+[[nodiscard]] std::vector<TypeRow> typeRowsFor(const PoleTemplate& tpl);
+void applyTypeRows(EditorState& state, const std::vector<TypeRow>& rows, std::size_t corner,
+                   bool anchor = true);
+void applyPoleTemplate(EditorState& state, const PoleTemplate& tpl, std::size_t corner,
+                       bool anchor = true);
 [[nodiscard]] std::vector<PoleTemplate> loadFrames();
-void applyFrame(EditorState& state, const PoleTemplate& frame, std::size_t corner);
+[[nodiscard]] EditorState::CornerState frameCornerState(const PoleTemplate& frame);
+void applyFrame(EditorState& state, const PoleTemplate& frame, std::size_t corner,
+                bool anchor = true);
+[[nodiscard]] std::vector<Keyframe> loadKeyframes();
+void applyKeyframe(EditorState& state, const Keyframe& key, std::size_t corner,
+                   bool anchor = true);
+[[nodiscard]] PoleTemplate keyframeFrame(const Keyframe& key);
+[[nodiscard]] std::array<std::uint16_t, 5> keyframeSlotWords(const Keyframe& key,
+                                                             std::size_t slot);
+[[nodiscard]] const std::vector<double>& responseGridHz();
+[[nodiscard]] std::vector<double> responseDb(const PoleTemplate& tpl,
+                                             const std::vector<double>& hz);
+[[nodiscard]] std::vector<double> responseDb(const Keyframe& key,
+                                             const std::vector<double>& hz);
 
 }

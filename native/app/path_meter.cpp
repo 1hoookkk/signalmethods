@@ -6,7 +6,6 @@
 
 #include <QLabel>
 #include <QPainter>
-#include <QVBoxLayout>
 
 #include <algorithm>
 #include <cmath>
@@ -20,9 +19,8 @@ constexpr QColor kWarn{214, 150, 38};
 constexpr QColor kHot{196, 60, 48};
 constexpr QColor kPanel{255, 255, 255};
 constexpr QColor kPanelEdge{200, 200, 200};
-constexpr int kBarHeight = 10;
 constexpr int kMeterWidth = 170;
-constexpr int kMeterHeight = 68;
+constexpr int kMeterHeight = 18;
 
 const std::vector<double>& auditGrid() {
   static const std::vector<double> grid =
@@ -54,17 +52,12 @@ QColor toneFor(double db) {
 
 PathMeter::PathMeter(QWidget* parent) : QWidget(parent) {
   setFixedSize(kMeterWidth, kMeterHeight);
-  auto* column = new QVBoxLayout(this);
-  column->setContentsMargins(5, 3, 5, kBarHeight + 8);
-  column->setSpacing(1);
   readout_ = new QLabel(this);
   readout_->setObjectName(QStringLiteral("pathReadout"));
   readout_->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
   here_ = new QLabel(this);
   here_->setObjectName(QStringLiteral("hereReadout"));
   here_->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-  column->addWidget(readout_);
-  column->addWidget(here_);
   setBody({}, 0.0, 0.0);
 }
 
@@ -96,8 +89,7 @@ void PathMeter::paintEvent(QPaintEvent*) {
   painter.setPen(QPen(kPanelEdge, 1.0));
   painter.setBrush(kPanel);
   painter.drawRect(card);
-  const QRectF lane(card.left() + 4.0, card.bottom() - kBarHeight - 3.0, card.width() - 8.0,
-                    static_cast<double>(kBarHeight));
+  const QRectF lane = card.adjusted(3.0, 3.0, -3.0, -3.0);
   painter.setPen(QPen(kPanelEdge, 1.0));
   painter.setBrush(Qt::NoBrush);
   painter.drawRect(lane);

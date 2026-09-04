@@ -1,0 +1,49 @@
+P2K axis-order census - TRENCH tool over the Audity 1.00 hardware bank (33 families x knots 0/15 x Morph ends). Byte-identity between the four authored corners.
+
+identical bytes between the two corners of a pair (all 33 families, both pairs of each kind):
+                              pole freq   pole radius     zero freq   zero radius
+Q pair (Morph fixed)          11% (396)      2% (396)     32% (376)     47% (376)
+Morph pair (Q fixed)           1% (396)      3% (396)      6% (376)     22% (376)
+diagonal (both change)         2% (396)      1% (396)      9% (376)     24% (376)
+
+pairs where every live section moved by the SAME nonzero byte delta (one-dial operation fingerprint):
+Q pair (Morph fixed)         0 of  66    0 of  66    0 of  62    0 of  62
+Morph pair (Q fixed)         0 of  66    0 of  66    0 of  62    0 of  62
+diagonal (both change)       0 of  66    0 of  66    0 of  62    0 of  62
+
+per family: %% identical bytes  Q-pair / Morph-pair / diagonal   (>> on one axis = that axis was the copy-and-edit)
+  00 ace_of_bass       10% /     8% /     6%  even
+  01 megasweepz        15% /     4% /     6%  Q shares more
+  02 early_rizer        8% /     4% /     6%  even
+  03 millennium        12% /     4% /     4%  Q shares more
+  04 meaty_gizmo       33% /     4% /     4%  Q shares more
+  05 klub_klassik      17% /     4% /     4%  Q shares more
+  06 bassbox_303        4% /     6% /     4%  even
+  07 fuzzi_face        14% /     7% /     7%  Q shares more
+  08 dead_ringer       46% /     8% /     4%  Q shares more
+  09 tb_or_not_tb      10% /     4% /     4%  Q shares more
+  10 ooh_to_eee        69% /     6% /     4%  Q shares more
+  11 boland_bass       10% /     6% /     8%  even
+  12 multi_q_vox        4% /    21% /     4%  Morph shares more
+  13 talking_hedz      12% /     8% /     6%  even
+  14 zoom_peaks         6% /     6% /    33%  even
+  15 dj_alkaline       48% /    38% /    38%  Q shares more
+  16 bass_tracer        4% /     6% /     6%  even
+  17 rogue_hertz       50% /     4% /     4%  Q shares more
+  18 razor_blades      10% /     4% /     6%  Q shares more
+  19 radio_craze        6% /     4% /     4%  even
+  20 eeh_to_aah        69% /    12% /     4%  Q shares more
+  21 ubu_orator        31% /     4% /     4%  Q shares more
+  22 deep_bouche       10% /     4% /     6%  Q shares more
+  23 freak_shifta      40% /     8% /    12%  Q shares more
+  24 cruz_pusher       36% /     7% /     7%  Q shares more
+  25 angelz_hairz      48% /    25% /    25%  Q shares more
+  26 dream_weava       27% /     6% /     8%  Q shares more
+  27 acid_ravage       10% /     4% /     4%  Q shares more
+  28 bass_o_matic       6% /     4% /    27%  even
+  29 lucifer_s_q        4% /     4% /     4%  even
+  30 tooth_comb        10% /     4% /     4%  Q shares more
+  31 ear_bender        35% /    10% /    10%  Q shares more
+  32 klang_kling       29% /     6% /     6%  Q shares more
+
+families where Q pairs share more: 22; Morph pairs share more: 1; even (within 5 points): 10

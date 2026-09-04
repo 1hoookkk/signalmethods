@@ -1,4 +1,5 @@
 add_library(trench_native_core STATIC
+  src/body_from_audio.cpp
   src/measure.cpp
   src/fit_target.cpp
   src/packed_body.cpp
@@ -18,7 +19,6 @@ add_library(trench_native_core STATIC
   src/p2k/templates.cpp
   src/p2k/rows_fit.cpp
   src/p2k/widths.cpp
-  src/p2k/zeros_fit.cpp
   src/audition.cpp
   src/transpose.cpp
   src/p2k/section_param.cpp
@@ -42,9 +42,23 @@ else()
   target_compile_options(trench_native_core PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+add_library(trench_core_c SHARED
+  src/trench_core_c.cpp
+)
+target_link_libraries(trench_core_c PRIVATE trench_native_core)
+target_include_directories(trench_core_c PUBLIC include)
+target_compile_features(trench_core_c PUBLIC cxx_std_20)
+target_compile_definitions(trench_core_c PRIVATE TRENCH_CORE_C_BUILD)
+if(MSVC)
+  target_compile_options(trench_core_c PRIVATE /W4 /permissive-)
+endif()
+
 if(NOT CMAKE_CROSSCOMPILING)
   enable_testing()
   add_executable(trench_core_tests tests/packed_body_tests.cpp)
   target_link_libraries(trench_core_tests PRIVATE trench_native_core)
   add_test(NAME trench_core COMMAND trench_core_tests)
+  add_executable(trench_core_from_audio_tests tests/body_from_audio_tests.cpp)
+  target_link_libraries(trench_core_from_audio_tests PRIVATE trench_native_core)
+  add_test(NAME trench_core_from_audio COMMAND trench_core_from_audio_tests)
 endif()

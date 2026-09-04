@@ -1,4 +1,5 @@
 #include "editor_state.hpp"
+#include "keyframe_grid.hpp"
 #include "main_window.hpp"
 #include "skin.hpp"
 
@@ -48,7 +49,17 @@ int main(int argc, char* argv[]) {
   parser.addOption(open_option);
   parser.addOption(pad_option);
   parser.addOption(dump_option);
+  QCommandLineOption frames_option(
+      QStringLiteral("frames"),
+      QStringLiteral("Open the FRAMES grid on a tab; with --capture the grid is grabbed instead of the window."),
+      QStringLiteral("tab"));
+  QCommandLineOption frames_dump_option(
+      QStringLiteral("frames-dump"),
+      QStringLiteral("Write every FRAMES tile's response to a CSV and exit."),
+      QStringLiteral("path"));
   parser.addOption(capture_option);
+  parser.addOption(frames_option);
+  parser.addOption(frames_dump_option);
   parser.process(application);
 
   MainWindow window;
@@ -72,10 +83,32 @@ int main(int argc, char* argv[]) {
     }
     return 0;
   }
+  if (parser.isSet(frames_dump_option)) {
+    KeyframeGrid* grid = window.keyframeGrid();
+    grid->setSearch(QString());
+    grid->setGroup(QStringLiteral("ALL"));
+    std::ofstream out(std::filesystem::path(parser.value(frames_dump_option).toStdWString()));
+    out << "group,name";
+    for (const double hz : grid->sparklineHz()) out << ',' << hz;
+    out << '\n';
+    for (int tile = 0; tile < grid->tileCount(); ++tile) {
+      out << grid->tileGroup(tile).toStdString() << ",\"" << grid->tileName(tile).toStdString() << '"';
+      for (const double db : grid->tileResponseDb(tile)) out << ',' << db;
+      out << '\n';
+    }
+    return 0;
+  }
   window.show();
+  if (parser.isSet(frames_option)) {
+    QTimer::singleShot(100, &window, [&] {
+      window.openFrames();
+      window.keyframeGrid()->setGroup(parser.value(frames_option));
+    });
+  }
   if (parser.isSet(capture_option)) {
-    QTimer::singleShot(250, &window, [&] {
-      window.grab().save(parser.value(capture_option));
+    QTimer::singleShot(600, &window, [&] {
+      QWidget* target = parser.isSet(frames_option) ? static_cast<QWidget*>(window.keyframeGrid()) : &window;
+      target->grab().save(parser.value(capture_option));
       application.quit();
     });
   }

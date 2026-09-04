@@ -11,6 +11,8 @@ add_library(trench_native_ui STATIC
   editor_state.hpp
   gesture_dial.cpp
   gesture_dial.hpp
+  keyframe_grid.cpp
+  keyframe_grid.hpp
   main_window.cpp
   main_window.hpp
   morph_pad.cpp
@@ -19,17 +21,20 @@ add_library(trench_native_ui STATIC
   path_meter.hpp
   pole_templates.cpp
   pole_templates.hpp
-  row_table.cpp
-  row_table.hpp
+  number_box.cpp
+  number_box.hpp
+  rows_table.cpp
+  rows_table.hpp
   skin.cpp
   skin.hpp
-  word_dial.cpp
-  word_dial.hpp
+  vowel_space.cpp
+  vowel_space.hpp
 )
 target_link_libraries(trench_native_ui PUBLIC trench_native_core trench_native_audio_boundary Qt6::Widgets)
 target_include_directories(trench_native_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(trench_native_ui PUBLIC TRENCH_POLE_TEMPLATES="${CMAKE_CURRENT_SOURCE_DIR}/templates/pole_templates_by_type.json")
 target_compile_definitions(trench_native_ui PUBLIC TRENCH_FRAMES_X3="${CMAKE_CURRENT_SOURCE_DIR}/templates/frames_x3.json" TRENCH_AUDITION_SLOT="${CMAKE_CURRENT_SOURCE_DIR}/../../plugin/patterns/audition_slot.body240")
+target_compile_definitions(trench_native_ui PUBLIC TRENCH_KEYFRAMES_FROM_AUDIO="${CMAKE_CURRENT_SOURCE_DIR}/templates/keyframes_from_audio.json")
 
 qt_add_executable(trench_native main.cpp)
 set_target_properties(trench_native PROPERTIES OUTPUT_NAME trench_native)

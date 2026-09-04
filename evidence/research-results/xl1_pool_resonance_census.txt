@@ -1,0 +1,102 @@
+family               n   fixed-score  tracked-score  verdict          peak (fixed Hz | tracked ratio)   Q   height
+Acid Bass 1          7          3.42           5.89  flat / no resonance      66 Hz                         0.3   +0.0 dB
+Acid Bass 2          7          2.72           2.83  flat / no resonance    8799 Hz                         5.9   +2.7 dB
+Acid Bass 3          7          3.89           5.37  flat / no resonance     527 Hz                         7.1   +2.0 dB
+Acid Bass 4          7          2.91           3.24  flat / no resonance     527 Hz                         4.8   +2.8 dB
+Acid Bass 5          4          3.61           3.95  flat / no resonance    2484 Hz                         4.1   +6.8 dB
+Acid Bass 6          4          3.33           3.58  flat / no resonance    2425 Hz                         4.6   +7.5 dB
+Acid Bass 7          3          1.93           2.71  flat / no resonance    6608 Hz                         8.3   +5.1 dB
+Acid Bass 8          3          3.66           5.00  flat / no resonance    1956 Hz                         3.4   +7.1 dB
+Aud Bell 1           8          6.20           2.71  KEY-TRACKED           2.98x                          16.3  +30.9 dB
+Aud Bell 4           8          7.36           4.39  KEY-TRACKED           4.05x                          16.6  +17.3 dB
+Aud Bell 5           7          6.84           5.98  KEY-TRACKED           1.02x                           8.4  +16.4 dB
+Aud Blend            10         3.57           6.51  FIXED                 6300 Hz                        13.8  +26.2 dB
+Aud Edge 1           7          4.42           4.07  flat / no resonance    5726 Hz                         5.9   +4.3 dB
+Aud Edge 2           10         2.58           3.75  flat / no resonance    2052 Hz                         5.1   +4.7 dB
+Aud Lead 1           11         4.98           6.33  flat / no resonance    1027 Hz                         4.5   +1.1 dB
+Aud Lead 10          5          6.94           4.40  flat / no resonance    0.98x                           4.1   +7.0 dB
+Aud Lead 11          10         5.37           3.65  KEY-TRACKED           1.99x                           7.0  +14.6 dB
+Aud Lead 2           5          5.77           1.47  KEY-TRACKED           7.91x                          12.3  +31.7 dB
+Aud Lead 3           5          4.94           3.70  KEY-TRACKED           1.99x                           8.2   +8.5 dB
+C:\Users\hooki\trench-native\evidence\research-results\xl1_pool_resonance_census.py:113: RuntimeWarning: Mean of empty slice
+  mean = np.nanmean(M, axis=0)
+Aud Lead 5           5          1.88           2.54  flat / no resonance    2605 Hz                         3.9   +3.3 dB
+Aud Lead 6           10         5.87           6.06  flat / no resonance    6300 Hz                         5.9   +2.4 dB
+Aud Lead 8           3          2.39           0.92  flat / no resonance   48.17x                          12.6   +7.0 dB
+Aud Lead 9           9          5.75           4.21  KEY-TRACKED           2.03x                          12.6  +13.3 dB
+Aud Sqr              9          4.55           5.67  flat / no resonance    5205 Hz                         5.2   +2.5 dB
+Aud Sync 1           9          4.91           3.69  flat / no resonance    1.00x                           3.2   +6.8 dB
+Aud Synth 1          8          3.63           4.05  flat / no resonance    3079 Hz                         4.7   +3.2 dB
+Aud Synth 12         3          4.76           3.53  flat / no resonance    1.06x                           3.1   +6.7 dB
+Aud Synth 13         8          6.43           5.34  KEY-TRACKED           1.00x                          12.3  +10.1 dB
+Aud Synth 14         4          7.84           4.32  KEY-TRACKED           1.99x                          12.3  +24.3 dB
+Aud Synth 2          5          5.99           3.43  flat / no resonance    2.03x                           4.5   +4.1 dB
+Aud Synth 3          5          3.46           6.22  flat / no resonance    6151 Hz                         3.2   +0.2 dB
+Aud Synth 4          8          6.94           5.78  flat / no resonance    1.00x                           4.8   +6.2 dB
+Aud Synth 5          4          6.18           4.59  KEY-TRACKED           1.00x                          16.3  +10.4 dB
+Aud Synth 7          7          8.04           4.33  KEY-TRACKED           1.95x                          12.1  +12.8 dB
+Aud Wall 1           5          4.81           4.57  flat / no resonance    7270 Hz                         8.5   +6.5 dB
+Aud Wall 4           4          6.35           3.65  KEY-TRACKED           2.20x                           1.9   +9.2 dB
+Audity Bass 1        5          3.86           3.83  flat / no resonance     290 Hz                         0.9   +3.7 dB
+Audity Bass 2        9          6.17           6.15  flat / no resonance    3909 Hz                        20.9   +3.4 dB
+Brass 1              4          6.37           4.34  flat / no resonance    1.99x                           9.7   +7.7 dB
+Brazz!!!             4          6.24           3.13  KEY-TRACKED           2.98x                           9.7   +8.1 dB
+Buzz Bass            3          2.79           2.00  flat / no resonance   36.25x                           8.2   +1.9 dB
+Chronic              3          6.06           2.74  KEY-TRACKED           2.03x                           9.7   +8.3 dB
+Classic 1            10         7.06           4.24  KEY-TRACKED           1.99x                           7.0  +12.1 dB
+Classic 2            10         5.63           3.97  KEY-TRACKED           2.03x                           6.3  +14.9 dB
+Classic 4            11         5.23           3.67  flat / no resonance    1.99x                           6.2   +7.3 dB
+Clavinet             6          4.14           3.82  flat / no resonance    8592 Hz                        14.1   +4.3 dB
+Dance Bass 2         3          4.28           6.48  flat / no resonance    6006 Hz                         7.0   +0.8 dB
+Future               3          4.77           4.03  flat / no resonance    0.85x                           5.4   +6.3 dB
+Humana               4          7.84           4.45  KEY-TRACKED           1.00x                          16.3  +16.1 dB
+Hybrid Bass 1        8          5.69           4.74  KEY-TRACKED           1.02x                           3.0  +10.8 dB
+Hybrid Bass 2        3          2.15           1.83  flat / no resonance    6300 Hz                         4.2   +1.7 dB
+J60 Pwm              4          6.74           4.01  KEY-TRACKED           1.99x                           8.0  +14.3 dB
+J60 Square           3          8.08           6.66  flat / no resonance    5.95x                           8.0   +6.7 dB
+Jungle Lead          4          3.77           5.07  flat / no resonance   10399 Hz                         8.5   +0.8 dB
+Mikro Bass           3          3.27           4.01  flat / no resonance      40 Hz                         1.0   +0.0 dB
+P5 Brass             3          7.55           4.99  KEY-TRACKED           2.03x                          24.6  +20.9 dB
+PWM 1                7          3.40           2.24  flat / no resonance   47.20x                           4.9   +7.9 dB
+PWM 2                7          1.62           0.42  flat / no resonance    9.30x                           2.0   +0.2 dB
+PWM 3                10         5.46           5.53  flat / no resonance    5205 Hz                         5.2   +2.3 dB
+Perc Organ           3          5.48           2.63  KEY-TRACKED           1.99x                          16.3  +25.7 dB
+Ring Mod 1           7          3.16           3.72  FIXED                 1821 Hz                        10.5  +10.3 dB
+Ring Mod 2           10         6.09           3.41  KEY-TRACKED          22.73x                          16.3  +19.5 dB
+Ring Mod 3           9          3.73           3.61  flat / no resonance    3153 Hz                         8.5   +5.0 dB
+Saudity              10         5.28           5.39  flat / no resonance    5205 Hz                         4.6   +1.7 dB
+Saw                  4          6.16           3.85  KEY-TRACKED           1.99x                          12.3  +11.1 dB
+Saw Wave             3          3.53           5.07  flat / no resonance    5459 Hz                         2.3   +1.0 dB
+Short Circuit        3          1.58           3.64  flat / no resonance   10650 Hz                         6.7   +0.0 dB
+Sine                 3          4.98           4.20  KEY-TRACKED           2.03x                           4.1  +17.6 dB
+Square               4          3.57           4.34  flat / no resonance    2004 Hz                         1.8   +1.8 dB
+Sync 2               5          4.57           2.70  KEY-TRACKED           3.81x                           7.0  +13.7 dB
+Sync 3               9          2.94           1.89  flat / no resonance   23.19x                           2.7   +0.7 dB
+Sync 4               7          2.84           4.63  FIXED                 3909 Hz                         8.5  +10.3 dB
+Sync 5               10         5.26           4.42  flat / no resonance    1.00x                           1.1   +2.8 dB
+Syncwave 5           4          3.30           3.07  flat / no resonance    8799 Hz                        13.8   +5.2 dB
+Tunnel               4          6.70           3.69  KEY-TRACKED           1.99x                           9.7  +10.5 dB
+Turbo                3          2.90           2.06  flat / no resonance    6.72x                           4.5   +2.6 dB
+Vapor Vox            3          5.43           4.43  KEY-TRACKED           1.99x                          12.3  +13.5 dB
+Zodiac Bass 1        4          1.77           5.14  flat / no resonance      40 Hz                         1.0   +0.0 dB
+
+STRONGEST RESONANCES (height >= 12 dB), by height:
+  Aud Lead 2           KEY-TRACKED     7.91x     Q  12.3  +31.7 dB  (n=5, spread fixed 5.8 / tracked 1.5 dB)
+  Aud Bell 1           KEY-TRACKED     2.98x     Q  16.3  +30.9 dB  (n=8, spread fixed 6.2 / tracked 2.7 dB)
+  Aud Blend            FIXED           6300 Hz   Q  13.8  +26.2 dB  (n=10, spread fixed 3.6 / tracked 6.5 dB)
+  Perc Organ           KEY-TRACKED     1.99x     Q  16.3  +25.7 dB  (n=3, spread fixed 5.5 / tracked 2.6 dB)
+  Aud Synth 14         KEY-TRACKED     1.99x     Q  12.3  +24.3 dB  (n=4, spread fixed 7.8 / tracked 4.3 dB)
+  P5 Brass             KEY-TRACKED     2.03x     Q  24.6  +20.9 dB  (n=3, spread fixed 7.5 / tracked 5.0 dB)
+  Ring Mod 2           KEY-TRACKED    22.73x     Q  16.3  +19.5 dB  (n=10, spread fixed 6.1 / tracked 3.4 dB)
+  Sine                 KEY-TRACKED     2.03x     Q   4.1  +17.6 dB  (n=3, spread fixed 5.0 / tracked 4.2 dB)
+  Aud Bell 4           KEY-TRACKED     4.05x     Q  16.6  +17.3 dB  (n=8, spread fixed 7.4 / tracked 4.4 dB)
+  Aud Bell 5           KEY-TRACKED     1.02x     Q   8.4  +16.4 dB  (n=7, spread fixed 6.8 / tracked 6.0 dB)
+  Humana               KEY-TRACKED     1.00x     Q  16.3  +16.1 dB  (n=4, spread fixed 7.8 / tracked 4.4 dB)
+  Classic 2            KEY-TRACKED     2.03x     Q   6.3  +14.9 dB  (n=10, spread fixed 5.6 / tracked 4.0 dB)
+  Aud Lead 11          KEY-TRACKED     1.99x     Q   7.0  +14.6 dB  (n=10, spread fixed 5.4 / tracked 3.6 dB)
+  J60 Pwm              KEY-TRACKED     1.99x     Q   8.0  +14.3 dB  (n=4, spread fixed 6.7 / tracked 4.0 dB)
+  Sync 2               KEY-TRACKED     3.81x     Q   7.0  +13.7 dB  (n=5, spread fixed 4.6 / tracked 2.7 dB)
+  Vapor Vox            KEY-TRACKED     1.99x     Q  12.3  +13.5 dB  (n=3, spread fixed 5.4 / tracked 4.4 dB)
+  Aud Lead 9           KEY-TRACKED     2.03x     Q  12.6  +13.3 dB  (n=9, spread fixed 5.7 / tracked 4.2 dB)
+  Aud Synth 7          KEY-TRACKED     1.95x     Q  12.1  +12.8 dB  (n=7, spread fixed 8.0 / tracked 4.3 dB)
+  Classic 1            KEY-TRACKED     1.99x     Q   7.0  +12.1 dB  (n=10, spread fixed 7.1 / tracked 4.2 dB)

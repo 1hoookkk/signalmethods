@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRENCH — Programmable Filter Processing System — Program Systems</title>
+<meta name="description" content="TRENCH is a musical filter, supplied as a module. It morphs through complex filter spaces in real time, with only one parameter the user has to control.">
+<style>
+html,body{margin:0;padding:0}
+body{background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a}
+a{color:#0033bb}
+a:visited{color:#5f3796}
+a:hover{color:#0050dd;text-decoration:underline}
+@keyframes pmBlink{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
+@keyframes pmDots{0%{width:0}100%{width:1.6em}}
+@keyframes pmGlow{0%{box-shadow:0 0 0 rgba(240,176,67,0)}100%{box-shadow:0 0 6px rgba(240,176,67,1)}}
+.pm-btn{display:inline-block;padding:4px 13px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;text-decoration:none;border:1px solid #8a8a85;background:linear-gradient(#ffffff 0%,#f4f4f1 49%,#e1e1dc 50%,#ececea 100%);color:#222222;box-shadow:0 1px 1px rgba(0,0,0,0.25);cursor:pointer;transition:none}
+.pm-btn:hover{background:linear-gradient(#ffffff 0%,#ffffff 49%,#ededea 50%,#f6f6f4 100%)}
+.pm-btn:active{background:linear-gradient(#d8d8d3 0%,#e6e6e2 100%);box-shadow:inset 0 1px 2px rgba(0,0,0,0.35);position:relative;top:1px}
+.pm-btn-buy{background:linear-gradient(#5a7fb0 0%,#3d5f90 49%,#2c4a74 50%,#35577f 100%);border-color:#1d3352;color:#ffffff;text-shadow:0 -1px 0 rgba(0,0,0,0.4)}
+.pm-btn-buy:hover{background:linear-gradient(#6b90c0 0%,#4a6fa0 49%,#365a86 50%,#40648e 100%)}
+.pm-btn-buy:active{background:linear-gradient(#243d60 0%,#2c4a74 100%);color:#e8eef8}
+.pm-small{padding:1px 9px;font-size:10.5px}
+.pm-blink{animation:pmBlink 1s steps(2,end) infinite}
+.pm-dots::after{content:"...";display:inline-block;overflow:hidden;vertical-align:bottom;white-space:nowrap;animation:pmDots 1.2s steps(4,end) infinite}
+.pm-led-on{background:#f0b043 !important;animation:pmGlow 0.5s steps(2,end) infinite}
+.pm-bar{height:6px;border:1px solid #8a8a85;background:#ffffff;margin:4px 0 0;position:relative}
+.pm-bar b{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#2c4a74 0 6px,#5a7fb0 6px 8px)}
+.pm-row:hover{background:#f6f6f2}
+</style>
+</head>
+<body>
+<div id="pm-page" style="width:820px;margin:0 auto;padding:12px 0 0">
+<div data-screen-label="Masthead" style="text-align:center;margin:0 0 10px"><img src="assets/ps-banner.jpg" alt="Program Systems" width="760" height="85" style="display:block;margin:0 auto"></div>
+<div data-screen-label="Product block" style="width:760px;margin:0 auto;border-top:1px solid #d4d4d0;border-bottom:1px solid #d4d4d0;padding:11px 2px 13px;display:flex;gap:20px;align-items:flex-start">
+<div style="flex:1;min-width:0">
+<div style="font-size:16px;font-weight:bold;color:#111111">TRENCH <span class="pm-blink" style="font-family:Verdana,Geneva,sans-serif;font-size:8px;font-weight:bold;color:#ffffff;background:#c8402a;padding:1px 4px;vertical-align:middle">NEW</span></div>
+<div style="font-size:12px;font-weight:bold;color:#333333;margin:2px 0 0">Programmable Filter Processing System</div>
+<div style="font-family:Verdana,Geneva,sans-serif;font-size:9.5px;color:#666666;margin:3px 0 0">Windows x64 &middot; VST3 &middot; one unit</div>
+<div style="font-size:12px;line-height:1.5;color:#222222;margin:9px 0 0;max-width:470px">TRENCH is a musical filter, supplied as a module. It morphs through complex filter spaces in real time, with only one parameter the user has to control. There is no rear panel.</div>
+</div>
+<div style="flex:none;text-align:right">
+<div style="font-size:15px;font-weight:bold;color:#111111">A$199 <span style="font-size:10px;font-weight:normal;color:#666666">AUD</span></div>
+<div style="display:flex;gap:6px;margin:9px 0 0;justify-content:flex-end">
+<a href="#" class="pm-btn pm-btn-buy">Buy Now</a>
+<a href="#" class="pm-btn">Download Demo</a>
+</div>
+<div style="font-size:11px;margin:9px 0 0"><a href="#">Manual (PDF)</a></div>
+<div style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#888888;margin:6px 0 0">Ships as a file. Weighs nothing.</div>
+</div>
+</div>
+<div style="width:760px;margin:14px auto 0;display:flex;gap:16px;align-items:flex-start">
+<div data-screen-label="Interface" style="flex:none;width:384px">
+<img src="assets/trench-face.png" alt="TRENCH front panel" style="display:block;width:384px;height:auto;border:1px solid #cfcfc9">
+</div>
+<div style="flex:1;min-width:0">
+<div data-screen-label="Product tour">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 0 6px">
+<span style="font-size:11px;font-weight:bold;color:#111111">The unit in operation</span>
+<span style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#888888">0:13 loop &middot; the unit as supplied</span>
+</div>
+<div style="border:1px solid #8a8a85;font-size:0;background:#14171d"><img src="assets/trench-tour.gif" alt="TRENCH product tour" style="display:block;width:100%;height:auto"></div>
+</div>
+<div style="border-top:1px solid #e0e0dc;margin:13px 0 0;padding:10px 0 0" data-screen-label="Sounds" id="sounds">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 0 4px">
+<span style="font-size:11px;font-weight:bold;color:#111111">Demonstration recordings</span>
+<span style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#888888">Dry is the sound before the unit. Processed is after. Nothing else was added.</span>
+</div>
+<div id="pm-audio">
+<div class="pm-row" style="padding:6px 0;border-top:1px solid #ebebe7">
+<div style="display:flex;align-items:center;gap:8px">
+<span data-led="brass" style="width:6px;height:6px;background:#d9d9d4;border:1px solid #a5a5a0"></span>
+<span style="font-size:11.5px;font-weight:bold;color:#111111">Brass</span>
+<span style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#999999">0:13</span>
+<span style="flex:1"></span>
+<button type="button" data-ex="brass" data-kind="dry" class="pm-btn pm-small">Dry</button>
+<button type="button" data-ex="brass" data-kind="proc" class="pm-btn pm-small">Processed</button>
+</div>
+<div style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#777777;margin:3px 0 0 14px">Brass. Morph climbs through the horn and comes back down, twice, with the Q up. The resonance belongs to the unit. The player did not do that.</div>
+</div>
+<div class="pm-row" style="padding:6px 0;border-top:1px solid #ebebe7">
+<div style="display:flex;align-items:center;gap:8px">
+<span data-led="reese" style="width:6px;height:6px;background:#d9d9d4;border:1px solid #a5a5a0"></span>
+<span style="font-size:11.5px;font-weight:bold;color:#111111">Reese bass</span>
+<span style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#999999">0:13</span>
+<span style="flex:1"></span>
+<button type="button" data-ex="reese" data-kind="dry" class="pm-btn pm-small">Dry</button>
+<button type="button" data-ex="reese" data-kind="proc" class="pm-btn pm-small">Processed</button>
+</div>
+<div style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#777777;margin:3px 0 0 14px">A reese bass. For four seconds the unit sits on the low end. Then Morph goes all the way up and the bass turns to air. It comes back. The bass was the same the whole time.</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:7px 0 0;border-top:1px solid #ebebe7">
+<button type="button" data-stop="1" class="pm-btn pm-small">Stop</button>
+<span id="pm-audio-status" style="font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#777777">idle</span>
+</div>
+<div style="font-family:Verdana,Geneva,sans-serif;font-size:8.5px;color:#aaaaaa;margin:5px 0 0;text-align:right">Recorded through the unit and nothing else.</div>
+</div>
+</div>
+</div>
+</div>
+<div data-screen-label="Technical and support" style="width:760px;margin:16px auto 0;border-top:1px solid #d4d4d0;padding:10px 2px 0;display:flex;gap:28px;align-items:flex-start">
+<div style="flex:1">
+<div style="font-size:11px;font-weight:bold;color:#111111;margin:0 0 4px">Specifications</div>
+<div style="font-size:11px;line-height:1.6;color:#333333">Filter: twelfth order, six sections in series, two frames per program. Controls: two wheels, one glass. Rear panel: none. Power: none required. Format: VST3 for Windows x64. The front panel is a fixed bitmap set, shown above unchanged. TRENCH is a musical filter.</div>
+</div>
+<div style="flex:1">
+<div style="font-size:11px;font-weight:bold;color:#111111;margin:0 0 4px">Support</div>
+<div style="font-size:11px;line-height:1.6;color:#333333"><a href="mailto:support@programsystems.com.au">support@programsystems.com.au</a> &mdash; one person reads this; allow a day, Melbourne time. <a href="#">Manual (PDF)</a>.</div>
+</div>
+</div>
+<div data-screen-label="Footer" style="width:760px;margin:14px auto 0;border-top:1px solid #e0e0dc;padding:7px 2px 16px;font-family:Verdana,Geneva,sans-serif;font-size:9px;color:#999999">&copy; Program Systems, Melbourne, Australia. VST is a trademark of Steinberg Media Technologies GmbH.</div>
+</div>
+<script>
+
+class Page {
+  start() {
+    this._buffers = {};
+    const audio = document.getElementById('pm-audio');
+    if (audio) audio.addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.stop) return this._stop();
+      if (b.dataset.ex) this._play(b.dataset.ex, b.dataset.kind);
+    });
+  }
+  _status(t) { const el = document.getElementById('pm-audio-status'); if (el) el.textContent = t; }
+  _led(key) {
+    document.querySelectorAll('[data-led]').forEach(el => {
+      const on = el.dataset.led === key;
+      el.classList.toggle('pm-led-on', on);
+      el.style.background = on ? '#f0b043' : '#d9d9d4';
+    });
+  }
+  _stop() { if (this._src) { try { this._src.stop(); } catch (e) {} this._src = null; } this._led(null); this._status('idle'); }
+  async _play(ex, kind) {
+    if (!this._ac) this._ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (this._ac.state === 'suspended') await this._ac.resume();
+    this._stop();
+    const key = ex + kind;
+    this._status('loading...');
+    try { if (!this._buffers[key]) this._buffers[key] = await this._render(ex, kind); } catch (e) { this._status('recording ' + e.message); return; }
+    const names = { brass: 'Brass', reese: 'Reese bass' };
+    const src = this._ac.createBufferSource(); src.buffer = this._buffers[key];
+    const g = this._ac.createGain(); g.gain.value = 0.9;
+    src.connect(g); g.connect(this._ac.destination);
+    src.onended = () => { if (this._src === src) { this._src = null; this._led(null); this._status('idle'); } };
+    this._src = src; src.start(); this._led(ex);
+    this._status('PLAYING > ' + names[ex] + ' (' + (kind === 'dry' ? 'dry' : 'processed') + ')');
+  }
+  async _render(ex, kind) {
+    const res = await fetch('assets/clips/' + ex + '_' + kind + '.wav');
+    if (!res.ok) throw new Error('not here yet');
+    return await this._ac.decodeAudioData(await res.arrayBuffer());
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => { new Page().start(); });
+</script>
+</body>
+</html>

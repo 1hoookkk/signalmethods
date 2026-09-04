@@ -1,16 +1,21 @@
 #include "trench/core/packed_body.hpp"
 #include "trench/core/native_body.hpp"
+#include "trench/core/audition.hpp"
 
 #include <cmath>
 
 #include <array>
+#include <complex>
 #include <cstdint>
 #include <cstdio>
 #include <random>
+#include <span>
+#include <vector>
 
 namespace {
 
 int failures = 0;
+constexpr double kPi = 3.14159265358979323846;
 
 void check(bool ok, const char* what, long a = 0, long b = 0) {
   std::printf("%s  %s  (%ld / %ld)\n", ok ? "PASS" : "FAIL", what, a, b);
@@ -136,6 +141,115 @@ int main() {
       const double body_level = cascade_response_db(c0, 1000.0, target);
       check(notch < body_level - 30.0, "unit-circle zero stays a notch at its authored frequency", (long) notch, (long) body_level);
     }
+  }
+
+  {
+    using trench::core::Biquad;
+    using trench::core::Cascade;
+    using trench::core::CascadeRunner;
+
+    constexpr double rate = 44100.0;
+    constexpr double tone_hz = 1000.0;
+    const double theta = 2.0 * kPi * tone_hz / rate;
+
+    const auto resonator = [theta](double radius, double numerator) {
+      return Biquad{numerator, 0.0, 0.0, -2.0 * radius * std::cos(theta), radius * radius};
+    };
+    const auto identity_cascade = [](const Biquad& first) {
+      Cascade cascade{};
+      for (auto& section : cascade) section = Biquad{1.0, 0.0, 0.0, 0.0, 0.0};
+      cascade[0] = first;
+      return cascade;
+    };
+    const auto peak_magnitude = [](const Biquad& section) {
+      double best = 0.0;
+      for (int step = 1; step < 20000; ++step) {
+        const double w = kPi * static_cast<double>(step) / 20000.0;
+        const std::complex<double> z{std::cos(-w), std::sin(-w)};
+        const std::complex<double> num = section[0] + section[1] * z + section[2] * z * z;
+        const std::complex<double> den = 1.0 + section[3] * z + section[4] * z * z;
+        best = std::max(best, std::abs(num / den));
+      }
+      return best;
+    };
+    const auto render = [](const Cascade& cascade, bool leveller, double amplitude,
+                           std::size_t samples) {
+      CascadeRunner runner;
+      runner.set_sample_rate(rate);
+      runner.set_ring_leveller(leveller);
+      runner.set_immediate(cascade);
+      std::vector<float> out(samples, 0.0F);
+      for (std::size_t i = 0; i < samples; ++i) {
+        out[i] = static_cast<float>(amplitude *
+                                    std::sin(2.0 * kPi * tone_hz * static_cast<double>(i) / rate));
+      }
+      runner.process(std::span<float>(out.data(), out.size()));
+      return out;
+    };
+    const auto bin = [](const std::vector<float>& x, std::size_t from, double hz) {
+      double re = 0.0;
+      double im = 0.0;
+      double norm = 0.0;
+      const auto count = x.size() - from;
+      for (std::size_t i = 0; i < count; ++i) {
+        const double w = 0.5 - 0.5 * std::cos(2.0 * kPi * static_cast<double>(i) /
+                                              static_cast<double>(count));
+        const double a = 2.0 * kPi * hz * static_cast<double>(i) / rate;
+        re += static_cast<double>(x[from + i]) * w * std::cos(a);
+        im -= static_cast<double>(x[from + i]) * w * std::sin(a);
+        norm += w;
+      }
+      return 2.0 * std::sqrt(re * re + im * im) / norm;
+    };
+    const auto peak_from = [](const std::vector<float>& x, std::size_t from) {
+      double best = 0.0;
+      for (std::size_t i = from; i < x.size(); ++i) {
+        best = std::max(best, std::abs(static_cast<double>(x[i])));
+      }
+      return best;
+    };
+
+    const std::size_t seconds = static_cast<std::size_t>(rate);
+    const std::size_t tail = seconds / 2;
+    const auto ringing = identity_cascade(resonator(0.995, 1.0));
+    const auto bare = render(ringing, false, 0.1, seconds);
+    const auto held = render(ringing, true, 0.1, seconds);
+    const double bare_peak = peak_from(bare, tail);
+    const double held_peak = peak_from(held, tail);
+    const double ceiling_peak = 0.1 * std::pow(10.0, 24.0 / 20.0) * 1.05;
+    std::printf("ring leveller: bare peak %.4f, held peak %.4f, ceiling %.4f\n", bare_peak,
+                held_peak, ceiling_peak);
+    check(bare_peak > 5.0, "the bare 1 kHz r 0.995 section rings far above its input",
+          static_cast<long>(bare_peak * 1000.0), 5000);
+    check(held_peak <= ceiling_peak, "ring_leveller_holds_the_ring",
+          static_cast<long>(held_peak * 100000.0), static_cast<long>(ceiling_peak * 100000.0));
+    const double fundamental = bin(held, tail, tone_hz);
+    double worst_harmonic_db = -300.0;
+    for (int h = 2; h <= 5; ++h) {
+      const double level = bin(held, tail, tone_hz * static_cast<double>(h));
+      const double relative =
+          20.0 * std::log10(std::max(level, 1.0e-30) / std::max(fundamental, 1.0e-30));
+      std::printf("  ring leveller harmonic %d: %.2f dB\n", h, relative);
+      worst_harmonic_db = std::max(worst_harmonic_db, relative);
+    }
+    check(worst_harmonic_db < -60.0, "the ring leveller adds no harmonic above -60 dB",
+          static_cast<long>(worst_harmonic_db * 100.0), -6000);
+
+    Biquad wide = resonator(0.9, 1.0);
+    wide[0] = std::pow(10.0, 10.0 / 20.0) / peak_magnitude(wide);
+    const auto low_q = identity_cascade(wide);
+    const auto plain = render(low_q, false, 0.1, seconds);
+    const auto through = render(low_q, true, 0.1, seconds);
+    double worst_difference = 0.0;
+    for (std::size_t i = 0; i < plain.size(); ++i) {
+      worst_difference = std::max(
+          worst_difference,
+          std::abs(static_cast<double>(plain[i]) - static_cast<double>(through[i])));
+    }
+    std::printf("ring leveller at r 0.9 (+10 dB): peak %.4f, worst difference %.3e\n",
+                peak_from(plain, tail), worst_difference);
+    check(worst_difference <= 1.0e-4, "ring_leveller_is_transparent_at_low_q",
+          static_cast<long>(worst_difference * 1.0e9), 100000);
   }
 
   std::printf("%d failure(s)\n", failures);

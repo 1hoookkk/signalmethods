@@ -129,6 +129,8 @@ QString saveDocument(const EditorState::Document& document, const QString& path)
       static_cast<int>(document.editing_corner);
   root[QStringLiteral("morph")] = document.morph;
   root[QStringLiteral("q")] = document.q;
+  root[QStringLiteral("morph_axis")] = document.morph_axis;
+  root[QStringLiteral("q_axis")] = document.q_axis;
   root[QStringLiteral("corners")] = corners;
   return writeAtomically(path,
                          QJsonDocument(root).toJson(QJsonDocument::Indented));
@@ -174,6 +176,8 @@ std::optional<EditorState::Document> loadDocument(const QString& path,
   if (!readFinite(root.value(QStringLiteral("q")), &document.q)) {
     return refuse(QStringLiteral("NON-FINITE Q"));
   }
+  document.morph_axis = root.value(QStringLiteral("morph_axis")).toString();
+  document.q_axis = root.value(QStringLiteral("q_axis")).toString();
 
   const QJsonValue corners_value = root.value(QStringLiteral("corners"));
   if (!corners_value.isArray()) return refuse(QStringLiteral("CORNERS != 4"));

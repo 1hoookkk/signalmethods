@@ -314,18 +314,6 @@ std::optional<WidthFit> fit_pole_widths(std::span<const double> target, const Co
                                         std::uint32_t live, std::size_t max_passes = 12,
                                         const Grid& g = grid());
 
-struct ZeroFit {
-  CornerWords words{};
-  StageScales scales{};
-  PackedCorner packed{};
-  double worst_over_db{};
-};
-
-std::optional<ZeroFit> fit_zeros_under(std::span<const double> ceiling_db,
-                                       const CornerWords& start, std::uint32_t live,
-                                       std::size_t max_passes = 8,
-                                       const Grid& g = grid());
-
 struct StepReport {
   std::size_t section{};
   CornerWords words{};

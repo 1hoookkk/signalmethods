@@ -1,0 +1,3788 @@
+{
+  "corpus": {
+    "body_count": 33,
+    "corners_per_body": 4,
+    "sections_per_corner": 6,
+    "sample_rate_hz": 39062.5,
+    "corner_order": [
+      "C0=M0/Q0",
+      "C1=M100/Q0",
+      "C2=M0/Q100",
+      "C3=M100/Q100"
+    ]
+  },
+  "prediction_1": {
+    "method": "minimum-total-absolute-log-frequency bijection from C2 sections to C0 sections",
+    "eligible_bodies": 24,
+    "identity_hits": 98,
+    "eligible_sections": 144,
+    "identity_rate": 0.6805555555555556,
+    "identity_permutation_bodies": 13,
+    "independent_nearest_identity_rate": 0.4791666666666667,
+    "tie_inclusive_own_slot_nearest_rate": 0.4791666666666667,
+    "random_permutation_expected_rate": 0.16666666666666666,
+    "random_permutation_mc_mean": 0.16662208333333337,
+    "random_permutation_mc_95_interval": [
+      0.10416666666666667,
+      0.2361111111111111
+    ],
+    "bodies": [
+      {
+        "body": "P2k_000_ace_of_bass",
+        "eligible": false
+      },
+      {
+        "body": "P2k_001_megasweepz",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          3,
+          4,
+          5,
+          2,
+          1,
+          0
+        ],
+        "identity_hits": 0,
+        "cost_log": 1.4779906913496728,
+        "independent_nearest": [
+          3,
+          4,
+          5,
+          2,
+          0,
+          3
+        ],
+        "independent_identity_hits": 0,
+        "own_slot_is_tied_or_unique_nearest_hits": 0
+      },
+      {
+        "body": "P2k_002_early_rizer",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 1.0554874036310578,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 6,
+        "own_slot_is_tied_or_unique_nearest_hits": 6
+      },
+      {
+        "body": "P2k_003_millennium",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          5,
+          2,
+          3,
+          4,
+          0,
+          1
+        ],
+        "identity_hits": 0,
+        "cost_log": 4.277000956352868,
+        "independent_nearest": [
+          4,
+          1,
+          2,
+          3,
+          1,
+          1
+        ],
+        "independent_identity_hits": 3,
+        "own_slot_is_tied_or_unique_nearest_hits": 3
+      },
+      {
+        "body": "P2k_004_meaty_gizmo",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          3,
+          0,
+          2,
+          5,
+          4,
+          1
+        ],
+        "identity_hits": 2,
+        "cost_log": 5.411903010903529,
+        "independent_nearest": [
+          3,
+          1,
+          1,
+          5,
+          3,
+          1
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_005_klub_klassik",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          4,
+          5,
+          3,
+          1,
+          2
+        ],
+        "identity_hits": 2,
+        "cost_log": 3.3729885312878167,
+        "independent_nearest": [
+          0,
+          4,
+          4,
+          5,
+          2,
+          2
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_006_bassbox_303",
+        "eligible": false
+      },
+      {
+        "body": "P2k_007_fuzzi_face",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 6.912631101125166,
+        "independent_nearest": [
+          0,
+          0,
+          0,
+          2,
+          2,
+          0
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_008_dead_ringer",
+        "eligible": false
+      },
+      {
+        "body": "P2k_009_tb_or_not_tb",
+        "eligible": false
+      },
+      {
+        "body": "P2k_010_ooh_to_eee",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 0.042001820318328775,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 6,
+        "own_slot_is_tied_or_unique_nearest_hits": 6
+      },
+      {
+        "body": "P2k_011_boland_bass",
+        "eligible": false
+      },
+      {
+        "body": "P2k_012_multi_q_vox",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          4,
+          1,
+          0,
+          3,
+          2,
+          5
+        ],
+        "identity_hits": 3,
+        "cost_log": 3.3443918957706966,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          3,
+          1,
+          1
+        ],
+        "independent_identity_hits": 4,
+        "own_slot_is_tied_or_unique_nearest_hits": 4
+      },
+      {
+        "body": "P2k_013_talking_hedz",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 0.5477939780842922,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 6,
+        "own_slot_is_tied_or_unique_nearest_hits": 6
+      },
+      {
+        "body": "P2k_014_zoom_peaks",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          5,
+          0,
+          2,
+          3,
+          4,
+          1
+        ],
+        "identity_hits": 3,
+        "cost_log": 6.067000251591668,
+        "independent_nearest": [
+          4,
+          3,
+          4,
+          4,
+          4,
+          1
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_015_dj_alkaline",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 0.05004293599235332,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 6,
+        "own_slot_is_tied_or_unique_nearest_hits": 6
+      },
+      {
+        "body": "P2k_016_bass_tracer",
+        "eligible": false
+      },
+      {
+        "body": "P2k_017_rogue_hertz",
+        "eligible": false
+      },
+      {
+        "body": "P2k_018_razor_blades",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 2.0855488141963034,
+        "independent_nearest": [
+          3,
+          1,
+          2,
+          3,
+          0,
+          3
+        ],
+        "independent_identity_hits": 3,
+        "own_slot_is_tied_or_unique_nearest_hits": 3
+      },
+      {
+        "body": "P2k_019_radio_craze",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          4,
+          1,
+          2,
+          3,
+          5,
+          0
+        ],
+        "identity_hits": 3,
+        "cost_log": 3.650368971306067,
+        "independent_nearest": [
+          3,
+          2,
+          5,
+          3,
+          5,
+          0
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_020_eeh_to_aah",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 0.03350395713556065,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 6,
+        "own_slot_is_tied_or_unique_nearest_hits": 6
+      },
+      {
+        "body": "P2k_021_ubu_orator",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          3,
+          1,
+          4,
+          5,
+          0,
+          2
+        ],
+        "identity_hits": 1,
+        "cost_log": 1.5750290542332346,
+        "independent_nearest": [
+          3,
+          1,
+          4,
+          5,
+          0,
+          2
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_022_deep_bouche",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 2.005424786335185,
+        "independent_nearest": [
+          0,
+          1,
+          2,
+          4,
+          4,
+          5
+        ],
+        "independent_identity_hits": 5,
+        "own_slot_is_tied_or_unique_nearest_hits": 5
+      },
+      {
+        "body": "P2k_023_freak_shifta",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          3,
+          1,
+          2,
+          0,
+          4,
+          5
+        ],
+        "identity_hits": 4,
+        "cost_log": 1.439035912276121,
+        "independent_nearest": [
+          4,
+          1,
+          1,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 4,
+        "own_slot_is_tied_or_unique_nearest_hits": 4
+      },
+      {
+        "body": "P2k_024_cruz_pusher",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 2.9075594463337087,
+        "independent_nearest": [
+          2,
+          1,
+          2,
+          2,
+          3,
+          5
+        ],
+        "independent_identity_hits": 3,
+        "own_slot_is_tied_or_unique_nearest_hits": 3
+      },
+      {
+        "body": "P2k_025_angelz_hairz",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 3.492804338760295,
+        "independent_nearest": [
+          4,
+          1,
+          2,
+          2,
+          2,
+          5
+        ],
+        "independent_identity_hits": 3,
+        "own_slot_is_tied_or_unique_nearest_hits": 3
+      },
+      {
+        "body": "P2k_026_dream_weava",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 8.56834705932617,
+        "independent_nearest": [
+          4,
+          4,
+          5,
+          5,
+          5,
+          5
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_027_acid_ravage",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          3,
+          5,
+          4,
+          2,
+          1
+        ],
+        "identity_hits": 1,
+        "cost_log": 0.23791187321821106,
+        "independent_nearest": [
+          0,
+          3,
+          5,
+          4,
+          2,
+          1
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_028_bass_o_matic",
+        "eligible": false
+      },
+      {
+        "body": "P2k_029_lucifer_s_q",
+        "eligible": false
+      },
+      {
+        "body": "P2k_030_tooth_comb",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          4,
+          0,
+          3,
+          2,
+          1,
+          5
+        ],
+        "identity_hits": 1,
+        "cost_log": 1.3184387664692947,
+        "independent_nearest": [
+          4,
+          0,
+          3,
+          2,
+          1,
+          5
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      },
+      {
+        "body": "P2k_031_ear_bender",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 3.139109100470476,
+        "independent_nearest": [
+          0,
+          2,
+          3,
+          3,
+          4,
+          5
+        ],
+        "independent_identity_hits": 4,
+        "own_slot_is_tied_or_unique_nearest_hits": 4
+      },
+      {
+        "body": "P2k_032_klang_kling",
+        "eligible": true,
+        "permutation_c2_to_c0": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "identity_hits": 6,
+        "cost_log": 5.106811542818588,
+        "independent_nearest": [
+          0,
+          3,
+          0,
+          5,
+          0,
+          0
+        ],
+        "independent_identity_hits": 1,
+        "own_slot_is_tied_or_unique_nearest_hits": 1
+      }
+    ]
+  },
+  "prediction_2": {
+    "method": "C2-C0 delta natural-log pole radius, physical sections S1-S5",
+    "valid_conjugate_stage_pairs": 158,
+    "bodies_at_least_4_of_5_same_sign": 23,
+    "positive_dominant_bodies_at_least_4_of_5": 18,
+    "negative_dominant_bodies_at_least_4_of_5": 5,
+    "zero_dominant_bodies_at_least_4_of_5": 0,
+    "within_body_variance": 0.01867540414485021,
+    "between_body_variance_of_means": 0.0034536721195880847,
+    "between_to_within_ratio": 0.1849315866366642,
+    "bodies": [
+      {
+        "body": "P2k_000_ace_of_bass",
+        "delta_log_r_s1_s5": [
+          null,
+          0.05868283624098958,
+          0.04539439524018557,
+          0.012280568206456881,
+          -0.012071311614024098
+        ],
+        "signs": [
+          null,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": 0.026071622018401984
+      },
+      {
+        "body": "P2k_001_megasweepz",
+        "delta_log_r_s1_s5": [
+          0.2676860708192281,
+          -1.2152723123848446,
+          0.058860220295053084,
+          0.026612943887311495,
+          -0.11978740197326726
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          -1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": -0.19638009587130384
+      },
+      {
+        "body": "P2k_002_early_rizer",
+        "delta_log_r_s1_s5": [
+          0.0957403603837394,
+          0.03835996160023444,
+          0.09044317988633885,
+          0.09290993108698901,
+          0.23708024114449544
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.11090673482035944
+      },
+      {
+        "body": "P2k_003_millennium",
+        "delta_log_r_s1_s5": [
+          -0.03317213269808034,
+          0.023557778748157746,
+          0.23949181828264182,
+          0.001040557724087919,
+          -0.06672210273688045
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": 0.032839183863985336
+      },
+      {
+        "body": "P2k_004_meaty_gizmo",
+        "delta_log_r_s1_s5": [
+          0.0008246707977467762,
+          -0.9808549513644674,
+          0.27339699917410476,
+          0.031860346649994625,
+          0.03178398631736855
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": -0.12859778968505056
+      },
+      {
+        "body": "P2k_005_klub_klassik",
+        "delta_log_r_s1_s5": [
+          0.07565559225756463,
+          -0.45346466571853716,
+          0.06776898250791613,
+          0.07204753965387836,
+          0.06776898250791613
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": -0.03404471375825238
+      },
+      {
+        "body": "P2k_006_bassbox_303",
+        "delta_log_r_s1_s5": [
+          null,
+          0.027680514850285512,
+          -0.025202178296382074,
+          -0.07050581537929301,
+          0.0282056098902059
+        ],
+        "signs": [
+          null,
+          1,
+          -1,
+          -1,
+          1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 2,
+        "at_least_4_of_5": false,
+        "mean": -0.00995546723379592
+      },
+      {
+        "body": "P2k_007_fuzzi_face",
+        "delta_log_r_s1_s5": [
+          0.0,
+          -0.03355046546891062,
+          -0.016303549403010494,
+          -0.007786034362611863,
+          -0.011064273812596686
+        ],
+        "signs": [
+          0,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": -0.013740864609425932
+      },
+      {
+        "body": "P2k_008_dead_ringer",
+        "delta_log_r_s1_s5": [
+          0.1945988005045481,
+          -0.0024715675815078957,
+          null,
+          -0.0030212882207532703,
+          -0.11451004557334372
+        ],
+        "signs": [
+          1,
+          -1,
+          null,
+          -1,
+          -1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": 0.0186489747822358
+      },
+      {
+        "body": "P2k_009_tb_or_not_tb",
+        "delta_log_r_s1_s5": [
+          null,
+          -0.17115811479962767,
+          0.044430057754635564,
+          0.026526903737580113,
+          0.024336298752662088
+        ],
+        "signs": [
+          null,
+          -1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": -0.018966213638687474
+      },
+      {
+        "body": "P2k_010_ooh_to_eee",
+        "delta_log_r_s1_s5": [
+          0.0050056472647753165,
+          0.015253609755711413,
+          0.01509915213659604,
+          0.010497794717517576,
+          0.005252742453571598
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.01022178926563439
+      },
+      {
+        "body": "P2k_011_boland_bass",
+        "delta_log_r_s1_s5": [
+          0.013515709629787872,
+          -0.02032168258548915,
+          -0.025202178296382074,
+          -0.10337780523673905,
+          -0.0021051623947203335
+        ],
+        "signs": [
+          1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": -0.027498223776708547
+      },
+      {
+        "body": "P2k_012_multi_q_vox",
+        "delta_log_r_s1_s5": [
+          0.15896097882074944,
+          -0.17469743855879588,
+          0.011876234470927241,
+          0.009268836760213083,
+          0.001346135683735962
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": 0.0013509494353659696
+      },
+      {
+        "body": "P2k_013_talking_hedz",
+        "delta_log_r_s1_s5": [
+          0.024041060462070975,
+          0.020042879539425597,
+          0.022114220626545795,
+          0.0022353737417237533,
+          0.04984944768224231
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.023656596410401683
+      },
+      {
+        "body": "P2k_014_zoom_peaks",
+        "delta_log_r_s1_s5": [
+          -0.07376545325490053,
+          -0.001191516265214047,
+          -0.0024536333609238266,
+          -0.00499000301751509,
+          0.011744514858404208
+        ],
+        "signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": -0.014131218208029858
+      },
+      {
+        "body": "P2k_015_dj_alkaline",
+        "delta_log_r_s1_s5": [
+          0.008879257586769194,
+          0.009377507913131508,
+          0.009377507913131508,
+          0.008381503272946525,
+          0.009377507913131508
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.009078656919822048
+      },
+      {
+        "body": "P2k_016_bass_tracer",
+        "delta_log_r_s1_s5": [
+          0.008879257586769194,
+          null,
+          -0.06090266504734254,
+          0.03545160769713852,
+          0.01615681647699495
+        ],
+        "signs": [
+          1,
+          null,
+          -1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": -0.00010374582160997074
+      },
+      {
+        "body": "P2k_017_rogue_hertz",
+        "delta_log_r_s1_s5": [
+          0.024367182492803688,
+          null,
+          -0.0010131475141956503,
+          0.0024628185164276718,
+          0.0010172700942810663
+        ],
+        "signs": [
+          1,
+          null,
+          -1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": 0.0067085308973291935
+      },
+      {
+        "body": "P2k_018_razor_blades",
+        "delta_log_r_s1_s5": [
+          -0.06406946511344988,
+          -0.07906811130677677,
+          -0.05784260608043948,
+          -0.05172908203396219,
+          -0.06208210371143023
+        ],
+        "signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": -0.06295827364921172
+      },
+      {
+        "body": "P2k_019_radio_craze",
+        "delta_log_r_s1_s5": [
+          -0.28924747997132594,
+          -0.10929134761329512,
+          -0.05521352655166992,
+          0.08349973484932599,
+          -0.33699352968155805
+        ],
+        "signs": [
+          -1,
+          -1,
+          -1,
+          1,
+          -1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": -0.1414492297937046
+      },
+      {
+        "body": "P2k_020_eeh_to_aah",
+        "delta_log_r_s1_s5": [
+          0.001346135683735962,
+          0.005408236396012858,
+          0.0003055077635115092,
+          0.009876255241573335,
+          0.011876234470927241
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.005762473911152181
+      },
+      {
+        "body": "P2k_021_ubu_orator",
+        "delta_log_r_s1_s5": [
+          0.005161019034772999,
+          0.019783192266202287,
+          0.003996122003415679,
+          0.011876234470927241,
+          0.0158944351640093
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.011342200587865503
+      },
+      {
+        "body": "P2k_022_deep_bouche",
+        "delta_log_r_s1_s5": [
+          0.011363345097732395,
+          0.00924827513832167,
+          0.0046765035404491865,
+          0.004432064171984971,
+          0.0031965876245370127
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.006583355114605047
+      },
+      {
+        "body": "P2k_023_freak_shifta",
+        "delta_log_r_s1_s5": [
+          0.015344099738496797,
+          0.02463267937024767,
+          -0.05047974339216606,
+          0.10058084092531797,
+          0.016189527710627413
+        ],
+        "signs": [
+          1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": 0.021253480870504757
+      },
+      {
+        "body": "P2k_024_cruz_pusher",
+        "delta_log_r_s1_s5": [
+          0.0006732349521362359,
+          0.0,
+          -0.0004940683258422432,
+          -0.0015961946865497845,
+          0.0007374611361174615
+        ],
+        "signs": [
+          1,
+          0,
+          -1,
+          -1,
+          1
+        ],
+        "dominant_sign": -1,
+        "dominant_count": 2,
+        "at_least_4_of_5": false,
+        "mean": -0.00013591338482766606
+      },
+      {
+        "body": "P2k_025_angelz_hairz",
+        "delta_log_r_s1_s5": [
+          0.0015310487684062752,
+          0.0,
+          0.00018363198444302717,
+          0.0015306736265102779,
+          0.0017153866386216186
+        ],
+        "signs": [
+          1,
+          0,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": 0.0009921482035962397
+      },
+      {
+        "body": "P2k_026_dream_weava",
+        "delta_log_r_s1_s5": [
+          0.01077531633167409,
+          0.007425149912024289,
+          0.007708709046315387,
+          0.005725535758918454,
+          0.004177833438695133
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.007162508897525471
+      },
+      {
+        "body": "P2k_027_acid_ravage",
+        "delta_log_r_s1_s5": [
+          0.0999662144687351,
+          0.05691305031951701,
+          0.07022008783746517,
+          0.07474452576502,
+          0.07022008783746517
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.0744127932456405
+      },
+      {
+        "body": "P2k_028_bass_o_matic",
+        "delta_log_r_s1_s5": [
+          0.05037734327221632,
+          0.007884243985076023,
+          0.0029673505621608167,
+          null,
+          -0.017605613971231848
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          null,
+          -1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 3,
+        "at_least_4_of_5": false,
+        "mean": 0.01090583096205533
+      },
+      {
+        "body": "P2k_029_lucifer_s_q",
+        "delta_log_r_s1_s5": [
+          -0.037187755673161155,
+          0.008451350977403016,
+          0.019827775493988387,
+          0.011663578705045282,
+          0.030290588662365517
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": 0.00660910763312821
+      },
+      {
+        "body": "P2k_030_tooth_comb",
+        "delta_log_r_s1_s5": [
+          0.052752599291393136,
+          0.06183858456451864,
+          0.07022008783746517,
+          0.05037734327221632,
+          0.10278618632856235
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.06759496025883112
+      },
+      {
+        "body": "P2k_031_ear_bender",
+        "delta_log_r_s1_s5": [
+          0.1515517420790432,
+          0.06983060191904328,
+          -0.00999916149847603,
+          0.08834922790018937,
+          0.08834922790018937
+        ],
+        "signs": [
+          1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 4,
+        "at_least_4_of_5": true,
+        "mean": 0.07761632765999785
+      },
+      {
+        "body": "P2k_032_klang_kling",
+        "delta_log_r_s1_s5": [
+          0.0007340348761456022,
+          0.02724712191549864,
+          0.013057043154424486,
+          0.01913356825420045,
+          0.018933886026345933
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "dominant_sign": 1,
+        "dominant_count": 5,
+        "at_least_4_of_5": true,
+        "mean": 0.015821130845323023
+      }
+    ]
+  },
+  "prediction_3": {
+    "method": "C1-C0 log2-frequency shifts; pooled same-section live-conjugate zero/pole pairs",
+    "bodies_unanimous_nonzero_pole_direction": 8,
+    "bodies_at_least_5_of_6_nonzero_pole_direction": 22,
+    "bodies_at_least_5_of_6_exact_sign": 22,
+    "regression_pair_count": 179,
+    "ols_slope": 0.15080275717282948,
+    "ols_intercept_octaves": -0.36719969998407237,
+    "through_origin_slope": 0.15920777301454003,
+    "pearson_r": 0.23778943472840205,
+    "bodies": [
+      {
+        "body": "P2k_000_ace_of_bass",
+        "pole_log2_hz_shifts": [
+          null,
+          -2.139519234035136,
+          -1.2118641343503396,
+          -0.7738853674319311,
+          -0.6714663532153917,
+          -2.85585285275509
+        ],
+        "signs": [
+          null,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_001_megasweepz",
+        "pole_log2_hz_shifts": [
+          -1.0918077059665197,
+          -3.105178687617203,
+          -2.2277667067838105,
+          -1.280151468590311,
+          -1.7517613588194494,
+          -3.518532845058032
+        ],
+        "signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_002_early_rizer",
+        "pole_log2_hz_shifts": [
+          0.03165912533981566,
+          5.782418219976122,
+          -1.7206598649281617,
+          -2.6167107598722135,
+          1.5277837069039935,
+          -5.1175168307957515
+        ],
+        "signs": [
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_003_millennium",
+        "pole_log2_hz_shifts": [
+          6.445287605657285,
+          -0.33012083016222254,
+          -3.8877665645759176,
+          -1.965325830018057,
+          -2.633527575487258,
+          -5.157427444524879
+        ],
+        "signs": [
+          1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_004_meaty_gizmo",
+        "pole_log2_hz_shifts": [
+          6.445287605657285,
+          -0.33012083016222254,
+          -3.8877665645759176,
+          -1.965325830018057,
+          -2.633527575487258,
+          -5.157427444524879
+        ],
+        "signs": [
+          1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_005_klub_klassik",
+        "pole_log2_hz_shifts": [
+          1.2111476543607007,
+          4.169130923485563,
+          2.1735203248430404,
+          0.4925812096647852,
+          -0.6239182725255051,
+          1.3419146369262487
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_006_bassbox_303",
+        "pole_log2_hz_shifts": [
+          null,
+          1.6930588962371949,
+          1.5025461892719294,
+          -1.6595554072342895,
+          -1.2701553995833508,
+          -1.0923962216071723
+        ],
+        "signs": [
+          null,
+          1,
+          1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_007_fuzzi_face",
+        "pole_log2_hz_shifts": [
+          -2.1100689341847305,
+          1.0090801300636338,
+          0.9662340198030023,
+          1.093285261240655,
+          1.0959996203786742,
+          1.0120187135374523
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_008_dead_ringer",
+        "pole_log2_hz_shifts": [
+          -1.9878101856834776,
+          -1.5084786207428238,
+          null,
+          -1.835873182698014,
+          -2.2724096664956344,
+          -1.9845525941792053
+        ],
+        "signs": [
+          -1,
+          -1,
+          null,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_009_tb_or_not_tb",
+        "pole_log2_hz_shifts": [
+          4.0882219052176865,
+          -0.472127547754594,
+          0.6704686147174502,
+          null,
+          0.6193970829008522,
+          0.3179087737363678
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          null,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_010_ooh_to_eee",
+        "pole_log2_hz_shifts": [
+          1.0740930243583304,
+          -1.2659593178490502,
+          0.42809959462757413,
+          0.7724054219714767,
+          1.1794677856969256,
+          1.0166838963056881
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_011_boland_bass",
+        "pole_log2_hz_shifts": [
+          6.89190113036079,
+          -5.6285808789387985,
+          2.286974738498585,
+          -1.6426597713438658,
+          -1.2999102762962362,
+          null
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          -1,
+          -1,
+          null
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_012_multi_q_vox",
+        "pole_log2_hz_shifts": [
+          0.15492534251290999,
+          -2.7032174857990032,
+          0.28575937304857696,
+          0.06684720100638407,
+          0.146646864121788,
+          2.293194562209906
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_013_talking_hedz",
+        "pole_log2_hz_shifts": [
+          -0.15419533282463946,
+          -2.148325397380965,
+          0.5903136266173363,
+          0.21839967272716246,
+          0.05385982194415248,
+          3.1653700527990063
+        ],
+        "signs": [
+          -1,
+          -1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_014_zoom_peaks",
+        "pole_log2_hz_shifts": [
+          5.821969742704055,
+          1.8885609571665118,
+          1.082391434690404,
+          0.8982657474119395,
+          0.7315436267178854,
+          -4.69844231726157
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_015_dj_alkaline",
+        "pole_log2_hz_shifts": [
+          0.3650214518313399,
+          -1.8352024990682794,
+          1.0687068332653644,
+          0.3900695544305264,
+          0.8345772196166293,
+          0.5269865493653532
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_016_bass_tracer",
+        "pole_log2_hz_shifts": [
+          -0.9066430474916154,
+          1.343522466989529,
+          2.286974738498585,
+          -1.2999102762962362,
+          -1.6426597713438658,
+          -2.1347205191310152
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_017_rogue_hertz",
+        "pole_log2_hz_shifts": [
+          -0.07105228414017306,
+          null,
+          3.2409861885286806,
+          -0.3033384830252317,
+          1.2695727298133193,
+          0.4603265892816281
+        ],
+        "signs": [
+          -1,
+          null,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_018_razor_blades",
+        "pole_log2_hz_shifts": [
+          -1.708245922566175,
+          -2.423042582221613,
+          -0.28487231442278627,
+          -2.104320059657612,
+          -0.18333368905456288,
+          -1.990973865126544
+        ],
+        "signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_019_radio_craze",
+        "pole_log2_hz_shifts": [
+          -0.8964487592874815,
+          2.811158835908979,
+          -1.5714540855819217,
+          -1.171808151785468,
+          -1.8291498332109397,
+          -0.5725776067013351
+        ],
+        "signs": [
+          -1,
+          1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_020_eeh_to_aah",
+        "pole_log2_hz_shifts": [
+          -1.1794677856969256,
+          1.2659593178490502,
+          -1.0740930243583307,
+          -1.0166838963056881,
+          -0.4280995946275742,
+          -0.7724054219714767
+        ],
+        "signs": [
+          -1,
+          1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_021_ubu_orator",
+        "pole_log2_hz_shifts": [
+          0.34701192803827696,
+          -1.540108781845484,
+          0.06928459593890915,
+          1.0922127725984059,
+          -0.4566715596620485,
+          -0.27496959544359334
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_022_deep_bouche",
+        "pole_log2_hz_shifts": [
+          1.1528985178347784,
+          0.04923807497627894,
+          0.1293274110640674,
+          0.2097821590507901,
+          0.08393949977907238,
+          0.5341868301787144
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_023_freak_shifta",
+        "pole_log2_hz_shifts": [
+          -0.670335260222529,
+          -0.1866698448089514,
+          0.29553078245542824,
+          -0.2698388129362567,
+          -1.220742532592458,
+          -0.6567449448335217
+        ],
+        "signs": [
+          -1,
+          -1,
+          1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_024_cruz_pusher",
+        "pole_log2_hz_shifts": [
+          -0.3758566592758517,
+          0.9868159496901925,
+          1.609902581932987,
+          3.03531106108271,
+          -1.18656112080497,
+          2.427929580131126
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_025_angelz_hairz",
+        "pole_log2_hz_shifts": [
+          0.42569067292940616,
+          1.820002554749772,
+          0.03704370552534256,
+          0.4198947449505079,
+          0.08297660112586111,
+          -3.5013185815461463
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_026_dream_weava",
+        "pole_log2_hz_shifts": [
+          -0.6022997458075714,
+          -0.4979578770834933,
+          -0.3356677416209075,
+          -0.8520801673146642,
+          -1.7797732666512407,
+          -2.1764587049610165
+        ],
+        "signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_027_acid_ravage",
+        "pole_log2_hz_shifts": [
+          1.2111476543607007,
+          2.3742247907349716,
+          2.034039813639104,
+          0.4925812096647852,
+          1.3104683714290224,
+          1.3419146369262487
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_028_bass_o_matic",
+        "pole_log2_hz_shifts": [
+          -0.6320746849514584,
+          1.4358359886807837,
+          0.5845749647604138,
+          null,
+          -1.0501338418829387,
+          null
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          null,
+          -1,
+          null
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_029_lucifer_s_q",
+        "pole_log2_hz_shifts": [
+          6.89190113036079,
+          -5.6285808789387985,
+          2.724040239637367,
+          -0.978124565820328,
+          -1.874471404714671,
+          null
+        ],
+        "signs": [
+          1,
+          -1,
+          1,
+          -1,
+          -1,
+          null
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": false,
+        "at_least_5_of_6_exact_sign": false
+      },
+      {
+        "body": "P2k_030_tooth_comb",
+        "pole_log2_hz_shifts": [
+          0.4907962193050216,
+          2.0215599875936756,
+          1.2972965859849226,
+          1.3276561058128113,
+          1.1887189335005173,
+          2.353326781117555
+        ],
+        "signs": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": true,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_031_ear_bender",
+        "pole_log2_hz_shifts": [
+          4.3773971144234896,
+          -2.3343515712294174,
+          -2.109038499909008,
+          -1.1992263093396296,
+          -1.3825539655586014,
+          -4.282813523134474
+        ],
+        "signs": [
+          1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      },
+      {
+        "body": "P2k_032_klang_kling",
+        "pole_log2_hz_shifts": [
+          -1.1970225134121153,
+          0.19780711037257434,
+          0.24765372595397853,
+          0.3382058050751507,
+          0.4127581515597567,
+          0.5918602787382772
+        ],
+        "signs": [
+          -1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "unanimous_nonzero_direction": false,
+        "at_least_5_of_6_nonzero_direction": true,
+        "at_least_5_of_6_exact_sign": true
+      }
+    ]
+  },
+  "prediction_5": {
+    "method": "raw fifth words retained; decoded cascade DC and linear-frequency white-noise RMS levels",
+    "bodies_dc_corner_range_le_1db": 28,
+    "bodies_white_noise_corner_range_le_1db": 0,
+    "median_dc_corner_range_db": 0.007933158921753608,
+    "max_dc_corner_range_db": 36.12557272954932,
+    "median_white_noise_corner_range_db": 16.23631865952036,
+    "gain_word_delta_vs_delta_log_radius_pearson_r": -0.07248454741487843,
+    "decoded_log_gain_delta_vs_delta_log_radius_pearson_r": -0.07272993589413383,
+    "positive_radius_pair_count": 269,
+    "gain_word_delta_vs_positive_delta_log_radius_pearson_r": 0.13487643960085702,
+    "decoded_log_gain_delta_vs_positive_delta_log_radius_pearson_r": 0.13044324725363612,
+    "pair_count": 383,
+    "bodies": [
+      {
+        "body": "P2k_000_ace_of_bass",
+        "raw_gain_words": [
+          [
+            48630,
+            48630,
+            48630,
+            48630,
+            48630,
+            48630
+          ],
+          [
+            55108,
+            55108,
+            55108,
+            55108,
+            55108,
+            55108
+          ],
+          [
+            47583,
+            47583,
+            47583,
+            47583,
+            47583,
+            47583
+          ],
+          [
+            55199,
+            55199,
+            55199,
+            55199,
+            55199,
+            55199
+          ]
+        ],
+        "dc_level_db": [
+          -0.007464028678803603,
+          -0.013979838627250451,
+          -0.015478897805667389,
+          -0.017601080024849787
+        ],
+        "dc_range_db": 0.010137051346046184,
+        "white_noise_rms_db": [
+          -26.340189215703255,
+          -9.703944968852895,
+          -14.892810560803916,
+          1.461937396099384
+        ],
+        "white_noise_rms_range_db": 27.802126611802638
+      },
+      {
+        "body": "P2k_001_megasweepz",
+        "raw_gain_words": [
+          [
+            53904,
+            53904,
+            53904,
+            53904,
+            53904,
+            53904
+          ],
+          [
+            50561,
+            50561,
+            50561,
+            50561,
+            50561,
+            50561
+          ],
+          [
+            55626,
+            55626,
+            55626,
+            55626,
+            55626,
+            55626
+          ],
+          [
+            52095,
+            52095,
+            52095,
+            52095,
+            52095,
+            52095
+          ]
+        ],
+        "dc_level_db": [
+          -0.017436705097297646,
+          -0.014616275321325943,
+          -0.012640997551478132,
+          -0.01516820354176088
+        ],
+        "dc_range_db": 0.004795707545819514,
+        "white_noise_rms_db": [
+          -7.83862423396454,
+          -17.83841532278221,
+          4.2413594328386885,
+          -12.684837627459844
+        ],
+        "white_noise_rms_range_db": 22.0797747556209
+      },
+      {
+        "body": "P2k_002_early_rizer",
+        "raw_gain_words": [
+          [
+            51506,
+            51506,
+            51506,
+            51506,
+            51506,
+            51506
+          ],
+          [
+            48663,
+            48663,
+            48663,
+            48663,
+            48663,
+            48663
+          ],
+          [
+            49550,
+            49550,
+            49550,
+            49550,
+            49550,
+            49550
+          ],
+          [
+            47933,
+            47933,
+            47933,
+            47933,
+            47933,
+            47933
+          ]
+        ],
+        "dc_level_db": [
+          -0.01317328969346434,
+          -0.01593243315389285,
+          -0.010950926203254715,
+          -0.015830943987352082
+        ],
+        "dc_range_db": 0.004981506950638134,
+        "white_noise_rms_db": [
+          -14.030149791753274,
+          -15.21824921734308,
+          -10.082018371675847,
+          -13.899954859456658
+        ],
+        "white_noise_rms_range_db": 5.136230845667233
+      },
+      {
+        "body": "P2k_003_millennium",
+        "raw_gain_words": [
+          [
+            47308,
+            47308,
+            47308,
+            47308,
+            47308,
+            47308
+          ],
+          [
+            53850,
+            53850,
+            53850,
+            53850,
+            53850,
+            53850
+          ],
+          [
+            55846,
+            55846,
+            55846,
+            55846,
+            55846,
+            55846
+          ],
+          [
+            54387,
+            54387,
+            54387,
+            54387,
+            54387,
+            54387
+          ]
+        ],
+        "dc_level_db": [
+          -0.016348793999996815,
+          -0.010973046549019486,
+          -0.017905410726348846,
+          -0.014735843321135835
+        ],
+        "dc_range_db": 0.006932364177329359,
+        "white_noise_rms_db": [
+          -17.07240553264225,
+          -7.758777177819262,
+          -5.336574543813217,
+          -7.224199591962764
+        ],
+        "white_noise_rms_range_db": 11.735830988829033
+      },
+      {
+        "body": "P2k_004_meaty_gizmo",
+        "raw_gain_words": [
+          [
+            47308,
+            47308,
+            47308,
+            47308,
+            47308,
+            47308
+          ],
+          [
+            53850,
+            53850,
+            53850,
+            53850,
+            53850,
+            53850
+          ],
+          [
+            57169,
+            57169,
+            57169,
+            57169,
+            57169,
+            57169
+          ],
+          [
+            54152,
+            54152,
+            54152,
+            54152,
+            54152,
+            54152
+          ]
+        ],
+        "dc_level_db": [
+          -0.016348793999996815,
+          -0.010973046549019486,
+          -0.009413101948856134,
+          -0.019099634651149007
+        ],
+        "dc_range_db": 0.009686532702292873,
+        "white_noise_rms_db": [
+          -17.07240553264225,
+          -7.758777177819262,
+          40.68989548749783,
+          -9.586863991201485
+        ],
+        "white_noise_rms_range_db": 57.76230102014008
+      },
+      {
+        "body": "P2k_005_klub_klassik",
+        "raw_gain_words": [
+          [
+            53692,
+            53692,
+            53692,
+            53692,
+            53692,
+            53692
+          ],
+          [
+            55181,
+            55181,
+            55181,
+            55181,
+            55181,
+            55181
+          ],
+          [
+            50307,
+            50307,
+            50307,
+            50307,
+            50307,
+            50307
+          ],
+          [
+            54582,
+            54582,
+            54582,
+            54582,
+            54582,
+            54582
+          ]
+        ],
+        "dc_level_db": [
+          -0.009532831623021982,
+          -0.015705511350426513,
+          -0.018021155819827616,
+          -0.012795168486002055
+        ],
+        "dc_range_db": 0.008488324196805635,
+        "white_noise_rms_db": [
+          -16.789625485498945,
+          -6.957678087071547,
+          0.7669747618902989,
+          -4.345837175641093
+        ],
+        "white_noise_rms_range_db": 17.556600247389245
+      },
+      {
+        "body": "P2k_006_bassbox_303",
+        "raw_gain_words": [
+          [
+            52654,
+            52654,
+            52654,
+            52654,
+            52654,
+            52654
+          ],
+          [
+            51847,
+            51847,
+            51847,
+            51847,
+            51847,
+            51847
+          ],
+          [
+            52423,
+            52423,
+            52423,
+            52423,
+            52423,
+            52423
+          ],
+          [
+            57413,
+            57413,
+            57413,
+            57413,
+            57413,
+            57413
+          ]
+        ],
+        "dc_level_db": [
+          -0.016831405134455572,
+          -0.0132253746973537,
+          -0.01293575429900336,
+          -0.018545728782722242
+        ],
+        "dc_range_db": 0.005609974483718883,
+        "white_noise_rms_db": [
+          -19.557872867420276,
+          -7.551182517560056,
+          -7.687745176163258,
+          9.81440505203896
+        ],
+        "white_noise_rms_range_db": 29.372277919459236
+      },
+      {
+        "body": "P2k_007_fuzzi_face",
+        "raw_gain_words": [
+          [
+            29877,
+            29877,
+            21685,
+            29877,
+            29877,
+            21685
+          ],
+          [
+            35633,
+            35633,
+            27441,
+            35633,
+            35633,
+            27441
+          ],
+          [
+            43155,
+            43155,
+            34963,
+            43155,
+            43155,
+            34963
+          ],
+          [
+            50530,
+            50530,
+            42338,
+            50530,
+            50530,
+            42338
+          ]
+        ],
+        "dc_level_db": [
+          -24.092368841899958,
+          -24.090653222901754,
+          -24.09567491470138,
+          -24.098142516799577
+        ],
+        "dc_range_db": 0.007489293897823046,
+        "white_noise_rms_db": [
+          -6.317742448752587,
+          12.50644087279449,
+          0.600548563401153,
+          17.254976380508623
+        ],
+        "white_noise_rms_range_db": 23.57271882926121
+      },
+      {
+        "body": "P2k_008_dead_ringer",
+        "raw_gain_words": [
+          [
+            54394,
+            54394,
+            54394,
+            54394,
+            54394,
+            54394
+          ],
+          [
+            52514,
+            52514,
+            52514,
+            52514,
+            52514,
+            52514
+          ],
+          [
+            54759,
+            54759,
+            54759,
+            54759,
+            54759,
+            54759
+          ],
+          [
+            52053,
+            52053,
+            52053,
+            52053,
+            52053,
+            52053
+          ]
+        ],
+        "dc_level_db": [
+          -0.020082642534543796,
+          -0.018780389665254676,
+          -0.018944383449596352,
+          -0.016109320082964958
+        ],
+        "dc_range_db": 0.003973322451578838,
+        "white_noise_rms_db": [
+          -11.30826445590925,
+          -4.0715433959348895,
+          -7.408904082553587,
+          3.68612674970694
+        ],
+        "white_noise_rms_range_db": 14.99439120561619
+      },
+      {
+        "body": "P2k_009_tb_or_not_tb",
+        "raw_gain_words": [
+          [
+            53868,
+            53868,
+            53868,
+            53868,
+            53868,
+            53868
+          ],
+          [
+            54028,
+            54028,
+            54028,
+            54028,
+            54028,
+            54028
+          ],
+          [
+            53361,
+            53361,
+            53361,
+            53361,
+            53361,
+            53361
+          ],
+          [
+            55761,
+            55761,
+            55761,
+            55761,
+            55761,
+            55761
+          ]
+        ],
+        "dc_level_db": [
+          -0.017922435362928472,
+          -0.01588728715846109,
+          -0.021802851768500543,
+          -0.015076494691603083
+        ],
+        "dc_range_db": 0.006726357076897459,
+        "white_noise_rms_db": [
+          -10.160973792231328,
+          -3.7679043931177816,
+          5.308581833743898,
+          4.756549307230193
+        ],
+        "white_noise_rms_range_db": 15.469555625975225
+      },
+      {
+        "body": "P2k_010_ooh_to_eee",
+        "raw_gain_words": [
+          [
+            52011,
+            52011,
+            52011,
+            52011,
+            52011,
+            52011
+          ],
+          [
+            53613,
+            53613,
+            53613,
+            53613,
+            53613,
+            53613
+          ],
+          [
+            52049,
+            52049,
+            52049,
+            52049,
+            52049,
+            52049
+          ],
+          [
+            53480,
+            53480,
+            53480,
+            53480,
+            53480,
+            53480
+          ]
+        ],
+        "dc_level_db": [
+          -0.012173804836714942,
+          -0.019482741964890096,
+          -0.013165521317179716,
+          -0.012437533353187383
+        ],
+        "dc_range_db": 0.007308937128175154,
+        "white_noise_rms_db": [
+          -2.5281023403452156,
+          -9.653584553283093,
+          6.582734106237268,
+          1.6996562796701356
+        ],
+        "white_noise_rms_range_db": 16.23631865952036
+      },
+      {
+        "body": "P2k_011_boland_bass",
+        "raw_gain_words": [
+          [
+            48307,
+            48307,
+            48307,
+            48307,
+            48307,
+            48307
+          ],
+          [
+            54766,
+            54766,
+            54766,
+            54766,
+            54766,
+            54766
+          ],
+          [
+            52602,
+            52602,
+            52602,
+            52602,
+            52602,
+            52602
+          ],
+          [
+            56661,
+            56661,
+            56661,
+            56661,
+            56661,
+            56661
+          ]
+        ],
+        "dc_level_db": [
+          -0.014674840312295344,
+          -0.01769813278157762,
+          -0.015638456915212266,
+          -0.012897763789949664
+        ],
+        "dc_range_db": 0.004800368991627956,
+        "white_noise_rms_db": [
+          -18.87292371932591,
+          -11.138583726401322,
+          -5.556776461049622,
+          -0.7421654052645412
+        ],
+        "white_noise_rms_range_db": 18.13075831406137
+      },
+      {
+        "body": "P2k_012_multi_q_vox",
+        "raw_gain_words": [
+          [
+            53832,
+            53832,
+            53832,
+            53832,
+            53832,
+            53832
+          ],
+          [
+            54316,
+            54316,
+            54316,
+            54316,
+            54316,
+            54316
+          ],
+          [
+            53743,
+            53743,
+            53743,
+            53743,
+            53743,
+            53743
+          ],
+          [
+            55579,
+            55579,
+            55579,
+            55579,
+            55579,
+            55579
+          ]
+        ],
+        "dc_level_db": [
+          -0.021074126359527132,
+          -0.016090567567196574,
+          -0.008115534102602481,
+          -0.010326169271656471
+        ],
+        "dc_range_db": 0.012958592256924651,
+        "white_noise_rms_db": [
+          -11.412210443677196,
+          -13.61493439407365,
+          1.2178366915496492,
+          7.823134603868512
+        ],
+        "white_noise_rms_range_db": 21.43806899794216
+      },
+      {
+        "body": "P2k_013_talking_hedz",
+        "raw_gain_words": [
+          [
+            53754,
+            53754,
+            53754,
+            53754,
+            53754,
+            53754
+          ],
+          [
+            53424,
+            53424,
+            53424,
+            53424,
+            53424,
+            53424
+          ],
+          [
+            53646,
+            53646,
+            53646,
+            53646,
+            53646,
+            53646
+          ],
+          [
+            53341,
+            53341,
+            53341,
+            53341,
+            53341,
+            53341
+          ]
+        ],
+        "dc_level_db": [
+          -0.013943034588499055,
+          -0.019121750786141478,
+          -0.019571669547740533,
+          -0.019481375464171898
+        ],
+        "dc_range_db": 0.005628634959241478,
+        "white_noise_rms_db": [
+          -13.438340615322385,
+          -11.486574557189053,
+          -4.474145286093217,
+          -1.2625148161117659
+        ],
+        "white_noise_rms_range_db": 12.17582579921062
+      },
+      {
+        "body": "P2k_014_zoom_peaks",
+        "raw_gain_words": [
+          [
+            45031,
+            45031,
+            40935,
+            45031,
+            45031,
+            40935
+          ],
+          [
+            55980,
+            55980,
+            47788,
+            55980,
+            55980,
+            47788
+          ],
+          [
+            55383,
+            55383,
+            47191,
+            55383,
+            55383,
+            47191
+          ],
+          [
+            59577,
+            59577,
+            51385,
+            59577,
+            59577,
+            51385
+          ]
+        ],
+        "dc_level_db": [
+          -12.055964367001549,
+          -24.093478964171922,
+          -24.088807532437265,
+          -24.100197835684604
+        ],
+        "dc_range_db": 12.044233468683055,
+        "white_noise_rms_db": [
+          -24.596322417890825,
+          -11.435186705577149,
+          -14.252845426003871,
+          5.5168938882986005
+        ],
+        "white_noise_rms_range_db": 30.113216306189425
+      },
+      {
+        "body": "P2k_015_dj_alkaline",
+        "raw_gain_words": [
+          [
+            55645,
+            55645,
+            55645,
+            55645,
+            55645,
+            55645
+          ],
+          [
+            55763,
+            55763,
+            55763,
+            55763,
+            55763,
+            55763
+          ],
+          [
+            55171,
+            55171,
+            55171,
+            55171,
+            55171,
+            55171
+          ],
+          [
+            54247,
+            54247,
+            54247,
+            54247,
+            54247,
+            54247
+          ]
+        ],
+        "dc_level_db": [
+          -0.015642247908008562,
+          -0.019244794722213413,
+          -0.010677016903108594,
+          -0.018726649633914978
+        ],
+        "dc_range_db": 0.008567777819104819,
+        "white_noise_rms_db": [
+          10.199622789783781,
+          -0.9421324294857985,
+          20.448020566026074,
+          -8.633766746560788
+        ],
+        "white_noise_rms_range_db": 29.08178731258686
+      },
+      {
+        "body": "P2k_016_bass_tracer",
+        "raw_gain_words": [
+          [
+            55288,
+            55288,
+            55288,
+            55288,
+            55288,
+            55288
+          ],
+          [
+            53596,
+            53596,
+            53596,
+            53596,
+            53596,
+            53596
+          ],
+          [
+            53436,
+            53436,
+            53436,
+            53436,
+            53436,
+            53436
+          ],
+          [
+            56644,
+            56644,
+            56644,
+            56644,
+            56644,
+            56644
+          ]
+        ],
+        "dc_level_db": [
+          -0.018520547051421896,
+          -0.013750950554520905,
+          -0.01866633920615377,
+          -0.017490519717370867
+        ],
+        "dc_range_db": 0.004915388651632867,
+        "white_noise_rms_db": [
+          -7.263657779611771,
+          -10.832834601991625,
+          5.83505741294206,
+          10.08076261886023
+        ],
+        "white_noise_rms_range_db": 20.913597220851855
+      },
+      {
+        "body": "P2k_017_rogue_hertz",
+        "raw_gain_words": [
+          [
+            54804,
+            54804,
+            54804,
+            54804,
+            54804,
+            54804
+          ],
+          [
+            56706,
+            56706,
+            56706,
+            56706,
+            56706,
+            56706
+          ],
+          [
+            51461,
+            51461,
+            51461,
+            51461,
+            51461,
+            51461
+          ],
+          [
+            55656,
+            55656,
+            55656,
+            55656,
+            55656,
+            55656
+          ]
+        ],
+        "dc_level_db": [
+          -0.01206473419196269,
+          -0.015217567482717388,
+          -0.018907192387562482,
+          -0.0134157759768307
+        ],
+        "dc_range_db": 0.0068424581955997925,
+        "white_noise_rms_db": [
+          -11.85149095643595,
+          1.7605482383795776,
+          -32.3758227018419,
+          11.858785803380862
+        ],
+        "white_noise_rms_range_db": 44.23460850522276
+      },
+      {
+        "body": "P2k_018_razor_blades",
+        "raw_gain_words": [
+          [
+            55469,
+            55469,
+            55469,
+            55469,
+            55469,
+            55469
+          ],
+          [
+            49976,
+            49976,
+            49976,
+            49976,
+            49976,
+            49976
+          ],
+          [
+            55194,
+            55194,
+            55194,
+            55194,
+            55194,
+            55194
+          ],
+          [
+            49643,
+            49643,
+            49643,
+            49643,
+            49643,
+            49643
+          ]
+        ],
+        "dc_level_db": [
+          -0.015327680823600337,
+          -0.015918078526939432,
+          -0.01464386807660167,
+          -0.01553675290751979
+        ],
+        "dc_range_db": 0.0012742104503377615,
+        "white_noise_rms_db": [
+          -5.437874858220613,
+          -17.491916697041848,
+          -5.518158579375909,
+          -15.200071747444888
+        ],
+        "white_noise_rms_range_db": 12.054041838821234
+      },
+      {
+        "body": "P2k_019_radio_craze",
+        "raw_gain_words": [
+          [
+            54983,
+            54983,
+            54983,
+            54983,
+            50887,
+            54983
+          ],
+          [
+            53748,
+            49652,
+            53748,
+            53748,
+            49652,
+            53748
+          ],
+          [
+            56440,
+            56440,
+            56440,
+            56440,
+            52344,
+            56440
+          ],
+          [
+            58673,
+            46385,
+            46385,
+            58673,
+            54577,
+            58673
+          ]
+        ],
+        "dc_level_db": [
+          -6.038792433664446,
+          -12.059402516550765,
+          -6.0318412381760105,
+          -42.157413967725326
+        ],
+        "dc_range_db": 36.12557272954932,
+        "white_noise_rms_db": [
+          24.85146685163016,
+          15.63102406353071,
+          11.395778495126496,
+          13.775238838689656
+        ],
+        "white_noise_rms_range_db": 13.455688356503664
+      },
+      {
+        "body": "P2k_020_eeh_to_aah",
+        "raw_gain_words": [
+          [
+            55352,
+            55352,
+            55352,
+            55352,
+            55352,
+            55352
+          ],
+          [
+            53031,
+            53031,
+            53031,
+            53031,
+            53031,
+            53031
+          ],
+          [
+            54941,
+            54941,
+            54941,
+            54941,
+            54941,
+            54941
+          ],
+          [
+            52945,
+            52945,
+            52945,
+            52945,
+            52945,
+            52945
+          ]
+        ],
+        "dc_level_db": [
+          -0.01532883039796094,
+          -0.01260712251261149,
+          -0.019281659833367798,
+          -0.016797563679838444
+        ],
+        "dc_range_db": 0.006674537320756308,
+        "white_noise_rms_db": [
+          -2.4972745180699594,
+          -5.282227509473484,
+          1.8651369405296705,
+          3.5424321664432163
+        ],
+        "white_noise_rms_range_db": 8.824659675916699
+      },
+      {
+        "body": "P2k_021_ubu_orator",
+        "raw_gain_words": [
+          [
+            53254,
+            53254,
+            53254,
+            53254,
+            53254,
+            53254
+          ],
+          [
+            54103,
+            54103,
+            54103,
+            54103,
+            54103,
+            54103
+          ],
+          [
+            50052,
+            50052,
+            50052,
+            50052,
+            50052,
+            50052
+          ],
+          [
+            50707,
+            50707,
+            50707,
+            50707,
+            50707,
+            50707
+          ]
+        ],
+        "dc_level_db": [
+          -0.021537955736527867,
+          -0.013624446699229926,
+          -0.015766910407822018,
+          -0.01569721941308121
+        ],
+        "dc_range_db": 0.007913509037297942,
+        "white_noise_rms_db": [
+          -4.702258348546462,
+          -13.1255122368335,
+          -17.97266067247464,
+          -7.539913014199698
+        ],
+        "white_noise_rms_range_db": 13.270402323928177
+      },
+      {
+        "body": "P2k_022_deep_bouche",
+        "raw_gain_words": [
+          [
+            53035,
+            53035,
+            53035,
+            53035,
+            53035,
+            44843
+          ],
+          [
+            54879,
+            54879,
+            54879,
+            54879,
+            54879,
+            46687
+          ],
+          [
+            52371,
+            52371,
+            52371,
+            52371,
+            52371,
+            40083
+          ],
+          [
+            51521,
+            51521,
+            51521,
+            51521,
+            51521,
+            43329
+          ]
+        ],
+        "dc_level_db": [
+          -12.056179957831386,
+          -12.055067024122298,
+          -18.073542308677464,
+          -12.05328295333122
+        ],
+        "dc_range_db": 6.020259355346244,
+        "white_noise_rms_db": [
+          -10.592881959207743,
+          -1.6196590185761477,
+          -0.03975999135944766,
+          -4.324813688250091
+        ],
+        "white_noise_rms_range_db": 10.553121967848295
+      },
+      {
+        "body": "P2k_023_freak_shifta",
+        "raw_gain_words": [
+          [
+            56493,
+            56493,
+            56493,
+            56493,
+            56493,
+            56493
+          ],
+          [
+            54977,
+            54977,
+            54977,
+            54977,
+            54977,
+            54977
+          ],
+          [
+            55098,
+            55098,
+            55098,
+            55098,
+            55098,
+            55098
+          ],
+          [
+            54759,
+            54759,
+            54759,
+            54759,
+            54759,
+            54759
+          ]
+        ],
+        "dc_level_db": [
+          -0.009961502624173313,
+          -0.01722223871533664,
+          -0.01711385383621749,
+          -0.014311034841975523
+        ],
+        "dc_range_db": 0.007260736091163329,
+        "white_noise_rms_db": [
+          3.1035496189669445,
+          -1.3867056299725733,
+          13.196322753564376,
+          4.53661151664975
+        ],
+        "white_noise_rms_range_db": 14.583028383536949
+      },
+      {
+        "body": "P2k_024_cruz_pusher",
+        "raw_gain_words": [
+          [
+            30837,
+            30837,
+            26741,
+            30837,
+            30837,
+            22645
+          ],
+          [
+            41055,
+            41055,
+            41055,
+            41055,
+            41055,
+            32863
+          ],
+          [
+            32233,
+            32233,
+            28137,
+            32233,
+            32233,
+            24041
+          ],
+          [
+            40953,
+            40953,
+            40953,
+            40953,
+            40953,
+            32761
+          ]
+        ],
+        "dc_level_db": [
+          -18.072143164600035,
+          -12.060899822390938,
+          -18.07212047566541,
+          -12.05391306178411
+        ],
+        "dc_range_db": 6.0182301028159255,
+        "white_noise_rms_db": [
+          -0.32196167747101595,
+          -13.711032984838713,
+          -4.983108146466154,
+          -8.23736632881673
+        ],
+        "white_noise_rms_range_db": 13.389071307367697
+      },
+      {
+        "body": "P2k_025_angelz_hairz",
+        "raw_gain_words": [
+          [
+            53065,
+            53065,
+            53065,
+            53065,
+            53065,
+            44873
+          ],
+          [
+            53887,
+            53887,
+            53887,
+            53887,
+            53887,
+            45695
+          ],
+          [
+            49450,
+            49450,
+            49450,
+            49450,
+            49450,
+            41258
+          ],
+          [
+            53392,
+            53392,
+            53392,
+            53392,
+            53392,
+            45200
+          ]
+        ],
+        "dc_level_db": [
+          -12.050026390883035,
+          -12.057599711636657,
+          -12.048528630303224,
+          -12.05327761056055
+        ],
+        "dc_range_db": 0.009071081333432929,
+        "white_noise_rms_db": [
+          -16.39705376367206,
+          -2.147448062372205,
+          -14.590202585897668,
+          -8.00879220980389
+        ],
+        "white_noise_rms_range_db": 14.249605701299853
+      },
+      {
+        "body": "P2k_026_dream_weava",
+        "raw_gain_words": [
+          [
+            55524,
+            55524,
+            55524,
+            55524,
+            55524,
+            55524
+          ],
+          [
+            48464,
+            48464,
+            48464,
+            48464,
+            48464,
+            48464
+          ],
+          [
+            41166,
+            41166,
+            41166,
+            41166,
+            41166,
+            41166
+          ],
+          [
+            46255,
+            46255,
+            46255,
+            46255,
+            46255,
+            46255
+          ]
+        ],
+        "dc_level_db": [
+          -0.014267505387637375,
+          -0.0065471813169788225,
+          -0.01681431843487536,
+          -0.019645470169035666
+        ],
+        "dc_range_db": 0.013098288852056843,
+        "white_noise_rms_db": [
+          5.9133835864021576,
+          1.127831175202014,
+          -0.04993723495228865,
+          -9.892496426704975
+        ],
+        "white_noise_rms_range_db": 15.805880013107132
+      },
+      {
+        "body": "P2k_027_acid_ravage",
+        "raw_gain_words": [
+          [
+            52504,
+            52504,
+            52504,
+            52504,
+            52504,
+            52504
+          ],
+          [
+            54705,
+            54705,
+            54705,
+            54705,
+            54705,
+            54705
+          ],
+          [
+            50983,
+            50983,
+            50983,
+            50983,
+            50983,
+            50983
+          ],
+          [
+            54150,
+            54150,
+            54150,
+            54150,
+            54150,
+            54150
+          ]
+        ],
+        "dc_level_db": [
+          -0.007750351028500463,
+          -0.017610568550297113,
+          -0.01619832653254213,
+          -0.01811483539574646
+        ],
+        "dc_range_db": 0.010364484367245996,
+        "white_noise_rms_db": [
+          -17.03856530233681,
+          -6.751962039033823,
+          -6.465325595342804,
+          0.752123572500199
+        ],
+        "white_noise_rms_range_db": 17.79068887483701
+      },
+      {
+        "body": "P2k_028_bass_o_matic",
+        "raw_gain_words": [
+          [
+            53490,
+            53490,
+            53490,
+            53490,
+            53490,
+            53490
+          ],
+          [
+            51925,
+            51925,
+            51925,
+            51925,
+            51925,
+            43733
+          ],
+          [
+            53601,
+            53601,
+            53601,
+            53601,
+            53601,
+            45409
+          ],
+          [
+            57895,
+            57895,
+            57895,
+            57895,
+            57895,
+            45607
+          ]
+        ],
+        "dc_level_db": [
+          -0.014390484567149139,
+          -12.056562610415902,
+          -12.060689685076929,
+          -18.081724724226007
+        ],
+        "dc_range_db": 18.06733423965886,
+        "white_noise_rms_db": [
+          -17.571123587994276,
+          -14.835747576452029,
+          -4.622528187758041,
+          -1.9206089471419103
+        ],
+        "white_noise_rms_range_db": 15.650514640852364
+      },
+      {
+        "body": "P2k_029_lucifer_s_q",
+        "raw_gain_words": [
+          [
+            48239,
+            48239,
+            48239,
+            48239,
+            48239,
+            48239
+          ],
+          [
+            54821,
+            54821,
+            54821,
+            54821,
+            54821,
+            54821
+          ],
+          [
+            54300,
+            54300,
+            54300,
+            54300,
+            54300,
+            54300
+          ],
+          [
+            58744,
+            58744,
+            58744,
+            58744,
+            58744,
+            58744
+          ]
+        ],
+        "dc_level_db": [
+          -0.014205811267502115,
+          -0.014445604316430976,
+          -0.008240963568157263,
+          -0.01617412248991087
+        ],
+        "dc_range_db": 0.007933158921753608,
+        "white_noise_rms_db": [
+          -18.864300917720392,
+          -12.27501597585781,
+          0.07149197832440388,
+          20.65472391674342
+        ],
+        "white_noise_rms_range_db": 39.51902483446381
+      },
+      {
+        "body": "P2k_030_tooth_comb",
+        "raw_gain_words": [
+          [
+            50866,
+            50866,
+            50866,
+            50866,
+            50866,
+            50866
+          ],
+          [
+            54634,
+            54634,
+            54634,
+            54634,
+            54634,
+            54634
+          ],
+          [
+            49908,
+            49908,
+            49908,
+            49908,
+            49908,
+            49908
+          ],
+          [
+            54300,
+            54300,
+            54300,
+            54300,
+            54300,
+            54300
+          ]
+        ],
+        "dc_level_db": [
+          -0.014730745019786166,
+          -0.01962064176656095,
+          -0.02238647808307086,
+          -0.012226219208220769
+        ],
+        "dc_range_db": 0.010160258874850092,
+        "white_noise_rms_db": [
+          -16.988948343095792,
+          -5.625535952050838,
+          -22.85850688841294,
+          1.0167748404987982
+        ],
+        "white_noise_rms_range_db": 23.875281728911737
+      },
+      {
+        "body": "P2k_031_ear_bender",
+        "raw_gain_words": [
+          [
+            52562,
+            52562,
+            52562,
+            52562,
+            52562,
+            52562
+          ],
+          [
+            54122,
+            54122,
+            54122,
+            54122,
+            54122,
+            54122
+          ],
+          [
+            45937,
+            45937,
+            45937,
+            45937,
+            45937,
+            45937
+          ],
+          [
+            53248,
+            53248,
+            53248,
+            53248,
+            53248,
+            53248
+          ]
+        ],
+        "dc_level_db": [
+          -0.014126232188944328,
+          -0.018723931353665187,
+          -0.008765755192580257,
+          -0.024985970415910237
+        ],
+        "dc_range_db": 0.01622021522332998,
+        "white_noise_rms_db": [
+          -13.919968369587375,
+          -9.70080950480436,
+          -22.451533922671008,
+          -13.903867565646223
+        ],
+        "white_noise_rms_range_db": 12.750724417866648
+      },
+      {
+        "body": "P2k_032_klang_kling",
+        "raw_gain_words": [
+          [
+            53761,
+            53761,
+            53761,
+            53761,
+            53761,
+            53761
+          ],
+          [
+            53351,
+            53351,
+            53351,
+            53351,
+            53351,
+            53351
+          ],
+          [
+            43962,
+            43962,
+            43962,
+            43962,
+            43962,
+            43962
+          ],
+          [
+            52831,
+            52831,
+            52831,
+            52831,
+            52831,
+            52831
+          ]
+        ],
+        "dc_level_db": [
+          -0.015324837582550084,
+          -0.0179422414486182,
+          -0.007749479406275002,
+          -0.013935123625754567
+        ],
+        "dc_range_db": 0.010192762042343198,
+        "white_noise_rms_db": [
+          34.42562634193032,
+          -3.5332253268730502,
+          14.592264309782754,
+          5.91418215595292
+        ],
+        "white_noise_rms_range_db": 37.95885166880337
+      }
+    ]
+  }
+}

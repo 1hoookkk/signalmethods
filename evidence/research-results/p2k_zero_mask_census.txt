@@ -1,0 +1,252 @@
+Audity OS 1.00 hardware bank at 0x2F8C8: 33 families x 16 Q knots x 2 Morph ends = 1056 frames x 6 sections
+knots 1..14 are per-byte interpolations of knots 0/15 (proven 21543/21616), so the authored data is 4 corners per family;
+'endpoints' below = knots 0 and 15 (what was authored), 'all knots' = what the hardware plays.
+byte -> X3 word -> validated X3 law (3168/3168). geometry -> bytes round trip misses: 0
+section census over all 16 knots: {'pole real': 103, 'paired': 4612, 'notch (zero radius byte 0)': 1026, 'zero real': 275, 'zero absent': 320}
+paired zeros at endpoints: 699 (of which S6 notches 127); over all knots: 5638
+families 004 meaty_gizmo and 007 fuzzi_face are in this census (marked *), excluded only from the shipping roster.
+
+=== ENDPOINTS: zero minus own-section pole, octaves (S6 notches included; they have a pitch) ===
+   -3.00 oct  |##################                                 34
+   -2.75 oct  |###                                                5
+   -2.50 oct  |######                                             12
+   -2.25 oct  |######                                             11
+   -2.00 oct  |#####                                              10
+   -1.75 oct  |#####                                              9
+   -1.50 oct  |##                                                 3
+   -1.25 oct  |####                                               8
+   -1.00 oct  |####                                               7
+   -0.75 oct  |###########                                        22
+   -0.50 oct  |##################                                 34
+   -0.25 oct  |###########################################        84
+   +0.00 oct  |################################################## 97
+   +0.25 oct  |#############################                      56
+   +0.50 oct  |##################                                 35
+   +0.75 oct  |###############                                    30
+   +1.00 oct  |###############                                    29
+   +1.25 oct  |###########                                        21
+   +1.50 oct  |############                                       24
+   +1.75 oct  |##########                                         20
+   +2.00 oct  |##########                                         19
+   +2.25 oct  |#######                                            14
+   +2.50 oct  |#######                                            13
+   +2.75 oct  |#####                                              9
+   +3.00 oct  |######                                             12
+   +3.25 oct  |######                                             11
+   +3.50 oct  |####                                               8
+   +3.75 oct  |################################                   62
+  all paired zeros                   n= 699  median  +0.31  IQR  -0.16.. +1.68  (spread 1.85)
+  S1-S5 + live S6                    n= 572  median  +0.15  IQR  -0.22.. +1.18  (spread 1.41)
+  S6 notches only                    n= 127  median  +2.11  IQR  +0.35.. +4.26  (spread 3.91)
+=== ENDPOINTS: log2(zero bw / pole bw)  (>0 = zero broader than pole; notches excluded) ===
+   -4.00      |###########################                        24
+   -3.50      |#####                                              4
+   -3.00      |######                                             5
+   -2.50      |##############                                     12
+   -2.00      |##################                                 16
+   -1.50      |######################                             19
+   -1.00      |###############################                    27
+   -0.50      |###################################                31
+   +0.00      |#######################################            34
+   +0.50      |###################################                31
+   +1.00      |################################################   42
+   +1.50      |#########################################          36
+   +2.00      |################################################## 44
+   +2.50      |##########################################         37
+   +3.00      |############################################       39
+   +3.50      |########################################           35
+   +4.00      |################################                   28
+   +4.50      |###########################                        24
+   +5.00      |##############                                     12
+   +5.50      |######################                             19
+   +6.00      |################                                   14
+   +6.50      |##############                                     12
+   +7.00      |############                                       11
+   +7.50      |##################                                 16
+  S1-S5 + live S6                    n= 572  median  +2.01  IQR  +0.00.. +3.93  (spread 3.93)
+  radius diff zero-pole              n= 572  median  -0.03  IQR  -0.10.. +0.00  (spread 0.10)
+  zero above its pole: 62%   zero broader than its pole: 74%   both: 47%
+
+=== ALL 16 KNOTS: zero minus own-section pole, octaves (S6 notches included; they have a pitch) ===
+   -3.00 oct  |##############                                     200
+   -2.75 oct  |##                                                 31
+   -2.50 oct  |#######                                            96
+   -2.25 oct  |######                                             82
+   -2.00 oct  |#####                                              67
+   -1.75 oct  |#####                                              67
+   -1.50 oct  |#######                                            100
+   -1.25 oct  |######                                             87
+   -1.00 oct  |########                                           113
+   -0.75 oct  |#########                                          128
+   -0.50 oct  |####################                               288
+   -0.25 oct  |##########################################         624
+   +0.00 oct  |################################################## 738
+   +0.25 oct  |##################################                 499
+   +0.50 oct  |#####################                              316
+   +0.75 oct  |##################                                 269
+   +1.00 oct  |################                                   242
+   +1.25 oct  |################                                   239
+   +1.50 oct  |###########                                        168
+   +1.75 oct  |############                                       171
+   +2.00 oct  |##########                                         147
+   +2.25 oct  |######                                             89
+   +2.50 oct  |########                                           113
+   +2.75 oct  |########                                           116
+   +3.00 oct  |#######                                            110
+   +3.25 oct  |######                                             89
+   +3.50 oct  |####                                               65
+   +3.75 oct  |##########################                         384
+  all paired zeros                   n=5638  median  +0.34  IQR  -0.16.. +1.55  (spread 1.70)
+  S1-S5 + live S6                    n=4612  median  +0.20  IQR  -0.26.. +1.09  (spread 1.35)
+  S6 notches only                    n=1026  median  +2.25  IQR  +0.58.. +3.75  (spread 3.17)
+=== ALL 16 KNOTS: log2(zero bw / pole bw)  (>0 = zero broader than pole; notches excluded) ===
+   -4.00      |################                                   124
+   -3.50      |####                                               34
+   -3.00      |#######                                            51
+   -2.50      |#########                                          67
+   -2.00      |###############                                    113
+   -1.50      |####################                               154
+   -1.00      |########################                           182
+   -0.50      |##########################                         197
+   +0.00      |##########################################         315
+   +0.50      |#######################################            292
+   +1.00      |###########################################        326
+   +1.50      |##############################################     349
+   +2.00      |################################################## 379
+   +2.50      |#################################################  374
+   +3.00      |#################################################  374
+   +3.50      |######################################             286
+   +4.00      |#################################                  253
+   +4.50      |###########################                        202
+   +5.00      |###################                                141
+   +5.50      |###############                                    113
+   +6.00      |############                                       92
+   +6.50      |##########                                         78
+   +7.00      |######                                             48
+   +7.50      |#########                                          68
+  S1-S5 + live S6                    n=4612  median  +2.13  IQR  +0.38.. +3.70  (spread 3.32)
+  radius diff zero-pole              n=4612  median  -0.04  IQR  -0.09.. -0.01  (spread 0.08)
+  zero above its pole: 63%   zero broader than its pole: 79%   both: 50%
+
+=== per section slot (endpoints) ===
+  S1 n= 95 (notch   0)  offset median -1.64 IQR -2.89..-0.03   log2 bw ratio median +1.56 IQR +0.03..+3.44   above  22%  broader  75%
+  S2 n=117 (notch   0)  offset median +1.01 IQR -0.09..+2.13   log2 bw ratio median +2.14 IQR -0.20..+3.97   above  72%  broader  72%
+  S3 n=123 (notch   0)  offset median +0.37 IQR +0.05..+1.15   log2 bw ratio median +2.36 IQR -0.21..+3.86   above  78%  broader  71%
+  S4 n=121 (notch   0)  offset median +0.02 IQR -0.32..+0.25   log2 bw ratio median +1.94 IQR -0.13..+3.85   above  50%  broader  72%
+  S5 n=116 (notch   0)  offset median +0.74 IQR +0.04..+1.62   log2 bw ratio median +2.09 IQR +1.06..+3.95   above  82%  broader  83%
+  S6 n=127 (notch 127)  offset median +2.11 IQR +0.35..+4.26   all unit-circle notches
+
+=== own pole vs nearest pole (endpoints, S1-S5 + live S6) ===
+  own-section pole is the nearest pole (log-frequency) to the zero: 26% (147/572)
+  offset vs own pole                 n= 572  median  +0.15  IQR  -0.22.. +1.18  (spread 1.41)
+  offset vs nearest pole             n= 572  median  -0.00  IQR  -0.12.. +0.13  (spread 0.24)
+  offset vs a different section's pole n= 572  median  +0.10  IQR  -0.73.. +1.47  (spread 2.20)
+  |offset| vs nearest pole, own frame n= 572  median  +0.12  IQR  +0.04.. +0.31  (spread 0.27)
+  |offset| vs nearest pole, unrelated family (null) n= 572  median  +0.37  IQR  +0.12.. +0.88  (spread 0.76)
+  S6 notches parked above 20 kHz (pitch offset meaningless): 48 of 127
+
+=== does the zero follow its pole? (byte-exact hardware ends) ===
+  morph: 332 pole/zero pairs seen at both ends
+    poles that move > 0.25 oct: 291; of those, zero moves the same (within 0.1 oct): 19 (7%), zero byte-frozen: 15 (5%)
+    zero move vs pole move: correlation 0.30, median |difference| 1.09 oct
+  q: 334 pole/zero pairs seen at both ends
+    poles that move > 0.25 oct: 206; of those, zero moves the same (within 0.1 oct): 9 (4%), zero byte-frozen: 50 (24%)
+    zero move vs pole move: correlation 0.24, median |difference| 0.67 oct
+
+=== per family (endpoints). criterion: HOLDS = >=80% of live zeros above AND broader than own pole and offset IQR <= 0.5 oct; LOOSE = sign holds, IQR > 0.5; NO = sign fails ===
+  00 ace_of_bass     zeros 23 (notch 4)  offset median +0.14 IQR -0.11..+0.53  log2 bw median +3.27 IQR +0.13..+4.13  above  63% broader  74%  NO
+  01 megasweepz      zeros 23 (notch 4)  offset median +0.08 IQR -0.41..+0.54  log2 bw median +1.41 IQR -1.44..+3.22  above  63% broader  58%  NO
+  02 early_rizer     zeros 24 (notch 4)  offset median +0.62 IQR -2.30..+3.63  log2 bw median +1.38 IQR +0.26..+2.52  above  70% broader  80%  NO
+  03 millennium      zeros 23 (notch 4)  offset median +0.08 IQR -0.04..+0.36  log2 bw median +0.86 IQR -0.10..+1.91  above  74% broader  68%  NO
+  04 meaty_gizmo   * zeros 24 (notch 4)  offset median +0.07 IQR -0.74..+0.41  log2 bw median +1.68 IQR +0.08..+4.54  above  65% broader  75%  NO
+  05 klub_klassik    zeros 22 (notch 4)  offset median +0.16 IQR -0.77..+1.12  log2 bw median +0.83 IQR -0.62..+2.26  above  56% broader  56%  NO
+  06 bassbox_303     zeros 21 (notch 4)  offset median +0.63 IQR +0.10..+2.24  log2 bw median +1.05 IQR +0.42..+2.36  above  88% broader  76%  NO
+  07 fuzzi_face    * zeros  4 (notch 4)  n/a (S6 notch only)
+  08 dead_ringer     zeros 23 (notch 4)  offset median -0.29 IQR -1.28..+0.57  log2 bw median +2.07 IQR +0.28..+3.19  above  42% broader  74%  NO
+  09 tb_or_not_tb    zeros 19 (notch 4)  offset median +0.03 IQR -0.71..+1.16  log2 bw median +1.25 IQR -0.08..+2.98  above  53% broader  73%  NO
+  10 ooh_to_eee      zeros 24 (notch 4)  offset median +0.25 IQR +0.02..+0.73  log2 bw median +3.98 IQR +3.01..+5.13  above  80% broader 100%  LOOSE
+  11 boland_bass     zeros 20 (notch 2)  offset median +0.24 IQR +0.08..+0.78  log2 bw median +0.98 IQR -0.36..+2.14  above  83% broader  67%  NO
+  12 multi_q_vox     zeros 24 (notch 4)  offset median -0.21 IQR -1.08..+0.07  log2 bw median +1.19 IQR -1.56..+4.04  above  40% broader  65%  NO
+  13 talking_hedz    zeros 24 (notch 4)  offset median +0.32 IQR -0.04..+0.36  log2 bw median +3.60 IQR +2.20..+5.82  above  70% broader 100%  NO
+  14 zoom_peaks      zeros 23 (notch 4)  offset median +0.04 IQR -0.08..+0.45  log2 bw median +2.25 IQR +1.16..+3.64  above  53% broader  89%  NO
+  15 dj_alkaline     zeros 20 (notch 4)  offset median +0.98 IQR +0.14..+1.32  log2 bw median +3.59 IQR +2.81..+5.20  above  88% broader 100%  LOOSE
+  16 bass_tracer     zeros 22 (notch 4)  offset median +0.03 IQR -0.14..+0.33  log2 bw median +1.64 IQR -0.70..+3.32  above  56% broader  67%  NO
+  17 rogue_hertz     zeros 18 (notch 4)  offset median +0.77 IQR +0.01..+2.12  log2 bw median +2.70 IQR +1.39..+3.23  above  71% broader  93%  NO
+  18 razor_blades    zeros 21 (notch 4)  offset median +0.61 IQR -0.13..+1.87  log2 bw median +2.59 IQR -1.94..+4.29  above  65% broader  71%  NO
+  19 radio_craze     zeros 24 (notch 4)  offset median +0.34 IQR -0.88..+1.65  log2 bw median -2.46 IQR -4.04..-0.05  above  55% broader  25%  NO
+  20 eeh_to_aah      zeros 24 (notch 4)  offset median +0.94 IQR -0.49..+1.49  log2 bw median +4.62 IQR +1.94..+5.67  above  60% broader 100%  NO
+  21 ubu_orator      zeros 24 (notch 4)  offset median +0.64 IQR -0.78..+1.20  log2 bw median +3.02 IQR +1.81..+3.78  above  70% broader 100%  NO
+  22 deep_bouche     zeros 23 (notch 4)  offset median -0.24 IQR -0.64..-0.06  log2 bw median +2.40 IQR +1.94..+3.53  above  21% broader 100%  NO
+  23 freak_shifta    zeros 23 (notch 4)  offset median +0.88 IQR -1.30..+1.78  log2 bw median +2.79 IQR +0.08..+4.38  above  63% broader  74%  NO
+  24 cruz_pusher     zeros  4 (notch 4)  n/a (S6 notch only)
+  25 angelz_hairz    zeros 20 (notch 4)  offset median +1.23 IQR +0.87..+1.95  log2 bw median +4.93 IQR +4.12..+6.22  above  88% broader  94%  LOOSE
+  26 dream_weava     zeros 24 (notch 4)  offset median +1.04 IQR -0.13..+1.55  log2 bw median +0.05 IQR -0.37..+7.28  above  55% broader  50%  NO
+  27 acid_ravage     zeros 22 (notch 4)  offset median -0.10 IQR -0.59..+1.62  log2 bw median +2.19 IQR -0.21..+4.88  above  50% broader  72%  NO
+  28 bass_o_matic    zeros 18 (notch 2)  offset median +0.15 IQR -0.02..+1.32  log2 bw median +2.23 IQR +0.74..+3.83  above  69% broader  75%  NO
+  29 lucifer_s_q     zeros 22 (notch 3)  offset median +0.11 IQR -0.11..+0.32  log2 bw median +1.30 IQR +0.53..+2.99  above  58% broader  79%  NO
+  30 tooth_comb      zeros 22 (notch 4)  offset median +0.04 IQR -0.28..+0.48  log2 bw median +1.27 IQR +0.26..+4.12  above  56% broader  78%  NO
+  31 ear_bender      zeros 23 (notch 4)  offset median +0.26 IQR +0.01..+0.81  log2 bw median -0.20 IQR -1.43..+1.42  above  74% broader  37%  NO
+  32 klang_kling     zeros 24 (notch 4)  offset median +0.10 IQR -0.15..+1.20  log2 bw median -0.15 IQR -0.69..+3.55  above  50% broader  45%  NO
+  tally: {'NO': 28, 'n/a (S6 notch only)': 2, 'LOOSE': 3}
+
+=== MASK rule test: predict the S1-S5 zero from its own pole alone (572 live zeros, authored endpoints), scored in hardware bytes ===
+  tolerance: tight = both bytes within +-2 (about 3/4 semitone, 9% bandwidth); loose = within +-8 (about a quarter octave, x1.4 bandwidth)
+  rules: oct+radius = pitch x 2^k, radius + c;  oct+bwmul = pitch x 2^k, bandwidth x m;  bytes = freq byte + k, radius byte + c
+  one rule for the bank  oct+radius k=+0.15 c=-0.032 exact   0.2%  tight(+-2)   0.5%  loose(+-8)  11.2%  pitch-only loose  28.5%  median |doct| 0.66  median |dfb| 20 |drb| 17  [1 rule]
+  one rule for the bank  oct+bwmul  k=+0.15 c=+4.038 exact   0.0%  tight(+-2)   0.3%  loose(+-8)   5.1%  pitch-only loose  28.1%  median |doct| 0.66  median |dfb| 20 |drb| 29  [1 rule]
+  one rule for the bank  bytes      k=+4 c=+30   exact   0.0%  tight(+-2)   0.2%  loose(+-8)   4.7%  pitch-only loose  28.8%  median |doct| 0.62  median |dfb| 20 |drb| 30  [1 rule]
+  one rule per slot S1..S5   oct+radius          exact   0.0%  tight(+-2)   0.7%  loose(+-8)   6.6%  pitch-only loose  23.1%  median |doct| 0.70  median |dfb| 21 |drb| 17  [5 rules]
+  one rule per slot S1..S5   oct+bwmul           exact   0.0%  tight(+-2)   0.3%  loose(+-8)   3.7%  pitch-only loose  23.6%  median |doct| 0.70  median |dfb| 20 |drb| 28  [5 rules]
+  one rule per slot S1..S5   bytes               exact   0.0%  tight(+-2)   0.3%  loose(+-8)   3.3%  pitch-only loose  24.5%  median |doct| 0.69  median |dfb| 22 |drb| 29  [5 rules]
+  one rule per family        oct+radius          exact   0.2%  tight(+-2)   1.0%  loose(+-8)  14.0%  pitch-only loose  32.9%  median |doct| 0.53  median |dfb| 16 |drb| 14  [31 rules]
+  one rule per family        oct+bwmul           exact   0.2%  tight(+-2)   0.9%  loose(+-8)   6.8%  pitch-only loose  32.5%  median |doct| 0.53  median |dfb| 16 |drb| 23  [31 rules]
+  one rule per family        bytes               exact   0.2%  tight(+-2)   1.0%  loose(+-8)   6.5%  pitch-only loose  31.8%  median |doct| 0.50  median |dfb| 17 |drb| 24  [31 rules]
+  one rule per family+slot   oct+radius (4 zeros each) exact   2.1%  tight(+-2)   5.4%  loose(+-8)  18.9%  pitch-only loose  42.0%  median |doct| 0.35  median |dfb| 12 |drb| 11  [152 rules]
+  one rule per family+slot   oct+bwmul  (4 zeros each) exact   1.6%  tight(+-2)   3.8%  loose(+-8)  14.0%  pitch-only loose  39.3%  median |doct| 0.36  median |dfb| 12 |drb| 15  [152 rules]
+  one rule per family+slot   bytes      (4 zeros each) exact   1.2%  tight(+-2)   3.8%  loose(+-8)  13.3%  pitch-only loose  44.1%  median |doct| 0.35  median |dfb| 10 |drb| 17  [152 rules]
+  -- baselines that ignore the pole entirely --
+  median zero per slot, pole ignored             exact   0.0%  tight(+-2)   0.2%  loose(+-8)   5.2%  pitch-only loose  19.1%  median |doct| 0.98  median |dfb| 30 |drb| 17  [5 rules]
+  median zero per family, pole ignored           exact   0.5%  tight(+-2)   0.9%  loose(+-8)   8.2%  pitch-only loose  21.2%  median |doct| 0.88  median |dfb| 26 |drb| 11  [31 rules]
+  median zero per family+slot, pole ignored      exact   8.9%  tight(+-2)   9.6%  loose(+-8)  22.0%  pitch-only loose  33.9%  median |doct| 0.44  median |dfb| 14 |drb|  9  [152 rules]
+  chance: random bytes                           exact   0.0%  tight(+-2)   0.0%  loose(+-8)   0.3%  pitch-only loose   5.6%  median |doct| 2.27  median |dfb| 78 |drb| 73
+  zero := pole (k=0, same radius)                exact   0.0%  tight(+-2)   1.0%  loose(+-8)   5.4%  pitch-only loose  29.0%  median |doct| 0.73  median |dfb| 20 |drb| 37
+
+=== S6 notch (127, radius byte 0 is a known law, given for free): can the notch pitch be predicted from the S6 pole? ===
+  one octave offset for the bank     freq byte exact   0.8%  within +-2   3.9%  within +-8  11.8%  median |doct| 1.21  [1 rule]
+  one octave offset per family       freq byte exact   2.4%  within +-2   9.4%  within +-8  28.3%  median |doct| 0.70  [33 rules]
+  median notch per family, pole ignored freq byte exact  12.6%  within +-2  20.5%  within +-8  33.1%
+
+=== per family: best pole-only rule (per-family oct+bwmul) vs pole-ignored median, S1-S5 loose hits ===
+  00 ace_of_bass      rule loose   0% tight   0%   pole-ignored loose   5%   NO
+  01 megasweepz       rule loose   5% tight   5%   pole-ignored loose   0%   NO
+  02 early_rizer      rule loose   5% tight   0%   pole-ignored loose   0%   NO
+  03 millennium       rule loose  11% tight   0%   pole-ignored loose   0%   NO
+  04 meaty_gizmo   *  rule loose   5% tight   0%   pole-ignored loose   0%   NO
+  05 klub_klassik     rule loose   0% tight   0%   pole-ignored loose  11%   NO
+  06 bassbox_303      rule loose   0% tight   0%   pole-ignored loose   0%   NO
+  08 dead_ringer      rule loose  16% tight   0%   pole-ignored loose  21%   NO
+  09 tb_or_not_tb     rule loose   7% tight   0%   pole-ignored loose   0%   NO
+  10 ooh_to_eee       rule loose  10% tight   0%   pole-ignored loose  20%   LOOSE
+  11 boland_bass      rule loose  11% tight   0%   pole-ignored loose   6%   NO
+  12 multi_q_vox      rule loose   5% tight   0%   pole-ignored loose   5%   NO
+  13 talking_hedz     rule loose  10% tight   0%   pole-ignored loose  15%   NO
+  14 zoom_peaks       rule loose  11% tight   5%   pole-ignored loose  11%   NO
+  15 dj_alkaline      rule loose  19% tight   0%   pole-ignored loose   6%   LOOSE
+  16 bass_tracer      rule loose   0% tight   0%   pole-ignored loose   0%   NO
+  17 rogue_hertz      rule loose   7% tight   0%   pole-ignored loose  14%   NO
+  18 razor_blades     rule loose   0% tight   0%   pole-ignored loose   6%   NO
+  19 radio_craze      rule loose   0% tight   0%   pole-ignored loose   0%   NO
+  20 eeh_to_aah       rule loose   0% tight   0%   pole-ignored loose  20%   NO
+  21 ubu_orator       rule loose   5% tight   5%   pole-ignored loose  20%   NO
+  22 deep_bouche      rule loose  21% tight   0%   pole-ignored loose  16%   NO
+  23 freak_shifta     rule loose   5% tight   0%   pole-ignored loose  11%   NO
+  25 angelz_hairz     rule loose  12% tight   0%   pole-ignored loose  12%   LOOSE
+  26 dream_weava      rule loose   5% tight   0%   pole-ignored loose   0%   NO
+  27 acid_ravage      rule loose   0% tight   0%   pole-ignored loose  11%   NO
+  28 bass_o_matic     rule loose   0% tight   0%   pole-ignored loose   0%   NO
+  29 lucifer_s_q      rule loose  16% tight   5%   pole-ignored loose   0%   NO
+  30 tooth_comb       rule loose   0% tight   0%   pole-ignored loose  11%   NO
+  31 ear_bender       rule loose  11% tight   5%   pole-ignored loose   0%   NO
+  32 klang_kling      rule loose  15% tight   0%   pole-ignored loose  30%   NO
+
+figures: C:\Users\hooki\trench-native\evidence\research-results\zero_mask_distributions.png, C:\Users\hooki\trench-native\evidence\research-results\zero_mask_by_family.png

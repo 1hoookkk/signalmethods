@@ -1,0 +1,36 @@
+Morpheus axis census - a TRENCH tool reading Morpheus evidence; 289 cubes from records_stream.bin, decoded at 39062.5 Hz. Not a statement of the E-mu method.
+record 0 = 'Null Cube', all sections identity: True, gain codes [1.0]
+record 22 = 'AEParaVowel' corner 0 live poles: [496, 777, 1135, 2784, 3451, 4843] Hz
+
+=== Transform axis: 288 cubes live, 1124 corner pairs (0 more go to a flat identity corner, skipped), 5463 section moves, 1886 sections switched on/off
+poles (3615 live): pitch-only 4%  width-only 16%  both 41%  neither 39%
+  pole pitch move where it moves: median 706 c, IQR 143..2379 c; width ratio on those: median x0.93, IQR x0.26..x4.71 (Hz)
+  width-vs-pitch on moving poles: r=0.42 slope 0.69 oct/oct (0 = Hz held, 1 = Q held)
+zeros (3202 live): pitch-only 16%  depth-only 8%  both 26%  neither 50%
+  zero radius change where it changes: median +0.022 (sign: + = deeper)
+  per corner pair (>=2 moving poles): shift median -113 c, IQR -1022..+163 c; spread across sections median 272 c, 29% of pairs within 50 c (transpose-like)
+gain: median |change| 0.00 dB, 40% of pairs change > 1 dB
+sections with live pole and zero: 2633; pole and zero both move pitch 31%; pole moves, zero frozen 13%; corr(pole move, zero move) r=0.76
+  |pitch move| by pole position in its corner: lower half median 10 c (46% move), upper half median 9 c (44% move)
+
+=== Frequency axis: 287 cubes live, 957 corner pairs (0 more go to a flat identity corner, skipped), 6092 section moves, 300 sections switched on/off
+poles (4080 live): pitch-only 5%  width-only 4%  both 81%  neither 10%
+  pole pitch move where it moves: median 3984 c, IQR 1487..6022 c; width ratio on those: median x8.09, IQR x2.02..x32.07 (Hz)
+  width-vs-pitch on moving poles: r=0.70 slope 0.86 oct/oct (0 = Hz held, 1 = Q held)
+zeros (3505 live): pitch-only 38%  depth-only 2%  both 48%  neither 12%
+  zero radius change where it changes: median -0.041 (sign: + = deeper)
+  per corner pair (>=2 moving poles): shift median +3993 c, IQR +1456..+5991 c; spread across sections median 325 c, 26% of pairs within 50 c (transpose-like)
+gain: median |change| 0.00 dB, 31% of pairs change > 1 dB
+sections with live pole and zero: 2836; pole and zero both move pitch 82%; pole moves, zero frozen 5%; corr(pole move, zero move) r=0.87
+  |pitch move| by pole position in its corner: lower half median 3385 c (89% move), upper half median 2407 c (83% move)
+
+=== Morph axis: 288 cubes live, 940 corner pairs (0 more go to a flat identity corner, skipped), 5979 section moves, 326 sections switched on/off
+poles (4058 live): pitch-only 9%  width-only 9%  both 61%  neither 21%
+  pole pitch move where it moves: median 1134 c, IQR 293..2488 c; width ratio on those: median x1.21, IQR x0.27..x4.05 (Hz)
+  width-vs-pitch on moving poles: r=0.46 slope 0.72 oct/oct (0 = Hz held, 1 = Q held)
+zeros (3508 live): pitch-only 32%  depth-only 6%  both 38%  neither 24%
+  zero radius change where it changes: median -0.015 (sign: + = deeper)
+  per corner pair (>=2 moving poles): shift median +176 c, IQR -344..+1203 c; spread across sections median 384 c, 20% of pairs within 50 c (transpose-like)
+gain: median |change| 0.00 dB, 34% of pairs change > 1 dB
+sections with live pole and zero: 2813; pole and zero both move pitch 60%; pole moves, zero frozen 10%; corr(pole move, zero move) r=0.82
+  |pitch move| by pole position in its corner: lower half median 431 c (71% move), upper half median 288 c (68% move)

@@ -49,9 +49,11 @@ struct SectionGeometry {
 };
 
 double decode_word(std::uint16_t word);
+double decode_fractional(double word);
 std::uint16_t encode_word(double value);
 std::uint16_t interpolate_word(std::uint16_t a, std::uint16_t b, float fraction);
 
+Biquad section_values_to_biquad(const std::array<double, kCoefficientCount>& decoded);
 Biquad section_words_to_biquad(const PackedSection& words);
 SectionGeometry geometry_from_words(
     const PackedSection& words,
@@ -71,6 +73,7 @@ class PackedBody {
   [[nodiscard]] std::array<std::uint8_t, kLegacyBodyBytes> legacy_bytes() const;
   [[nodiscard]] CornerWords interpolate_words(float morph, float q, float z) const;
   [[nodiscard]] Cascade interpolate_biquads(float morph, float q, float z) const;
+  [[nodiscard]] Cascade interpolate_biquads_float(float morph, float q, float z) const;
 
   std::array<CornerWords, kCornerCount> words{};
 };

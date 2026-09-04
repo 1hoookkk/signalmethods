@@ -1,0 +1,6 @@
+303 sweep A LO keyframe t=0.05s: 382/265(+12)
+303 sweep A HI keyframe t=7.30s: 
+303 sweep C LO keyframe t=0.05s: 
+303 sweep C HI keyframe t=3.70s: 
+303 sweep E LO keyframe t=0.00s: 
+303 sweep E HI keyframe t=0.35s: 
