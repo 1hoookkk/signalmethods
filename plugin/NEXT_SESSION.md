@@ -1333,3 +1333,13 @@ Open, in order:
   one implementation each (CPU surface and HTML model removed). Audio out is in: LISTEN loops a
   region through the current cascade. GL path and audio path have not been run on screen by
   the assistant; the software shot is the check.
+- 2026-09-05, workstation focus pass applied: three rooms (FRAMES, EDIT, SOUND) on keys bottom
+  left; one right column in every room (corner block, ARMAdillo, response); tray groups collapse
+  by clicking their header; sort is one line (across, up, SORT); PAIR hides every anchor but the
+  two; timeline is a 24 px strip until it has keys; the shaded field, the rows table in FRAMES,
+  the duplicate cascade, the group keys and the ghost marks are gone. Colour rule: yellow is
+  live (probe, wheel, slice, playhead), cyan is chosen (pair, picked anchor, zeros, region,
+  keys that are on), white is data, grey is structure. EDIT room: row numbers are the row
+  switches, LOCK per row, CEILING on row 6, corner picker top right. Built through vcvars64,
+  shot headless (ws.png, ws_field.png, ws_sound.png), export still 240 bytes. GL and audio
+  still unproven on screen.

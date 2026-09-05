@@ -18,12 +18,7 @@ juce::String sceneToSvg (const std::vector<Batch>& batches, float width, float h
     s << "<rect width=\"" << num (width) << "\" height=\"" << num (height) << "\" fill=\"#000\"/>";
     for (const auto& b : batches)
     {
-        if (b.kind == Batch::tris)
-        {
-            for (size_t i = 0; i + 2 < b.v.size(); i += 3)
-                s << "<polygon fill=\"" << rgba (b.v[i]) << "\" points=\"" << num (b.v[i].x) << "," << num (b.v[i].y) << " " << num (b.v[i + 1].x) << "," << num (b.v[i + 1].y) << " " << num (b.v[i + 2].x) << "," << num (b.v[i + 2].y) << "\"/>";
-        }
-        else if (b.kind == Batch::points)
+        if (b.kind == Batch::points)
         {
             for (const auto& v : b.v)
             {

@@ -33,9 +33,7 @@ int shoot (const juce::String& path)
     out.deleteFile();
     juce::FileOutputStream os (out);
     juce::PNGImageFormat().writeImageToStream (img, os);
-    view.closeEditor();
-    view.openSpectro (0, 0.6);
-    view.demoRegion (0.9, 1.7);
+    view.demoSound (0, 0.6, 0.9, 1.7);
     juce::Image img3 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
     {
         juce::Graphics g (img3);
@@ -45,7 +43,7 @@ int shoot (const juce::String& path)
     out3.deleteFile();
     juce::FileOutputStream os3 (out3);
     juce::PNGImageFormat().writeImageToStream (img3, os3);
-    view.spectro = false;
+    view.setRoom (ws::Room::frames);
     juce::Image img2 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
     {
         juce::Graphics g (img2);

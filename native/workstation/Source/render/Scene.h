@@ -9,18 +9,10 @@ struct Vertex { float x, y, r, g, b, a, size; };
 
 struct Batch
 {
-    enum Kind { points, lines, strip, tris };
+    enum Kind { points, lines, strip };
     Kind kind;
     bool round;
     std::vector<Vertex> v;
-};
-
-struct FieldVertex { float x, y, bx, by, bz, ia, ib, ic; };
-
-struct FieldMesh
-{
-    std::vector<FieldVertex> v;
-    double hz = 1000.0;
 };
 
 Vertex vertex (juce::Point<float> p, juce::Colour c, float size);
