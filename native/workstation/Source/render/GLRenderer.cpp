@@ -5,7 +5,7 @@ namespace ws
 {
 namespace
 {
-constexpr int kFirstGlyph = 32, kGlyphCount = 95;
+constexpr int kFirstGlyph = 32, kGlyphCount = 224;
 constexpr unsigned int kBgra = 0x80E1, kUnpackRowLength = 0x0CF2, kClampToEdge = 0x812F, kProgramPointSize = 0x8642;
 
 const char* const kVS =

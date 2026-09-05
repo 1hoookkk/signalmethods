@@ -18,7 +18,7 @@ public:
 private:
     struct TexVertex { float x, y, u, v, r, g, b, a; };
 
-    struct Atlas { unsigned int tex = 0; float cellW = 0.0f, cellH = 0.0f; int width = 0; std::array<float, 95> advance {}; };
+    struct Atlas { unsigned int tex = 0; float cellW = 0.0f, cellH = 0.0f; int width = 0; std::array<float, 224> advance {}; };
 
     std::unique_ptr<juce::OpenGLShaderProgram> marks, textured;
     unsigned int vbo = 0, picture = 0;

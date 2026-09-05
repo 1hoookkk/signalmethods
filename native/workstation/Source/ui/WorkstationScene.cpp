@@ -33,7 +33,7 @@ void dotted (Batch& b, juce::Point<float> a, juce::Point<float> c, juce::Colour 
 void Workstation::sceneStitch (std::vector<Batch>& out) const
 {
     const auto& v = view;
-    const auto fade = [&] (juce::Colour c, const Vec3& p) { return c.interpolatedWith (kPanel, (float) (0.55 * v.depth01 (p))); };
+    const auto fade = [&] (juce::Colour c, const Vec3& p) { return c.interpolatedWith (kPanel, (float) (0.3 * v.depth01 (p))); };
     Batch grid { Batch::lines, false, {} };
     const bool farX = v.farPlane (0), farY = v.farPlane (1);
     const double fx = farX ? v.hi.x : v.lo.x, fy = farY ? v.hi.y : v.lo.y, fz = v.lo.z;
@@ -85,10 +85,10 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
         const auto& c = st.centres[(size_t) i];
         const bool lit = isNear (i);
         const float dimness = openFace >= 0 && ! lit ? 0.22f : 1.0f;
-        const auto stemColour = fade (kRule, c).withMultipliedAlpha (dimness);
+        const auto stemColour = fade (kDim, c).withMultipliedAlpha (dimness);
         stems.v.push_back (vertex (v.project ({ c.x, c.y, st.floorZ (f.floor) }), stemColour, 1.0f));
         stems.v.push_back (vertex (v.project (c), stemColour, 1.0f));
-        shelf.v.push_back (vertex (v.project (c), lit ? kChosen : fade (kData, c).withMultipliedAlpha (dimness), lit ? 6.0f : 4.0f));
+        shelf.v.push_back (vertex (v.project (c), lit ? kChosen : fade (kData, c).withMultipliedAlpha (dimness), lit ? 8.0f : 6.0f));
     }
     Batch fill { Batch::tris, false, {} };
     Batch wire { Batch::lines, false, {} };
@@ -138,7 +138,7 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
         }
     Batch stubMarks { Batch::points, false, {} };
     for (const auto& s : st.stubs)
-        if (floorOpen (s.floor)) stubMarks.v.push_back (vertex (v.project (s.p), fade (kChosen, s.p).withMultipliedAlpha (openFace >= 0 ? 0.22f : 1.0f), 4.0f));
+        if (floorOpen (s.floor)) stubMarks.v.push_back (vertex (v.project (s.p), fade (kChosen, s.p).withMultipliedAlpha (openFace >= 0 ? 0.22f : 1.0f), 5.0f));
     out.push_back (marks);
     out.push_back (stubMarks);
     Batch links { Batch::lines, false, {} };
@@ -315,7 +315,7 @@ std::vector<Batch> Workstation::scene() const
                 const auto here = L.armaXY (r.pHz, r.pR);
                 for (const auto& [parentWords, weight] : parents)
                 {
-                    if (weight < 0.08) continue;
+                    if (weight < 0.3) continue;
                     const auto pr = geometryOf (parentWords)[(size_t) s];
                     if (! pr.pole) continue;
                     glides.v.push_back (vertex (here, kChosen, 1.0f));

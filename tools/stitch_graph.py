@@ -65,7 +65,7 @@ def load_bodies():
     for path in sorted(glob.glob(MORPHEUS_GLOB)):
         d = json.load(open(path, encoding="utf-8"))
         corners = [[sec["words"] for sec in c["sections"]] for c in d["corner_data"]]
-        bodies.append({"name": "MORPHEUS %03d %s" % (d["filter_number"], d["manual_name"]), "floor": "MORPHEUS", "datum": d["datum_hz"], "corners": corners})
+        bodies.append({"name": "MORPHEUS %03d %s" % (d["filter_number"], d["manual_name"] or ("filter %d" % d["filter_number"])), "floor": "MORPHEUS", "datum": d["datum_hz"], "corners": corners})
     return bodies
 
 
