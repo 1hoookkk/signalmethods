@@ -1,4 +1,4 @@
 function app = launch
 root = trench.setup;
-app = trench.ui.Workstation(root, 'on');
+app = trench.ui.Headspace(root, 'on');
 end

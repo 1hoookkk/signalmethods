@@ -32,36 +32,6 @@ methods(Test)
         e=trench.model.lpcEnvelope(zeros(2646,1),44100);
         t.verifyEmpty(e.peaks); t.verifyTrue(all(isfinite(e.db))); t.verifyEqual(e.gain,0);
     end
-    function surfaceAndSosUseSamePeaks(t)
-        [a,r]=app(t); r.setSetting('envelope',true); r.setCursor(r.times(20));
-        e=trench.model.lpcEnvelope(r.windowAt(r.cursor),r.sound.fs,r.fftSize,r.window);
-        t.verifyEqual(r.db(:,20),e.db); t.verifyEqual(r.envelopeHz,e.hz);
-        t.verifyEqual(r.slicePeaks,e.peaks); t.verifyEqual(r.sliceChord,trench.model.peaksToChord(e.peaks));
-        t.verifyEqual(r.axes.YLim(2),log10(5512.5),'AbsTol',1e-12);
-        a.setUnity(false); t.verifyEqual(a.wordsOf,trench.bridge.compile(r.sliceChord));
-        chord=r.sliceChord; on=chord(:,1)==1;
-        for note=chord(on,2)'
-            t.verifyLessThan(min(abs(trench.bridge.noteOf(e.peaks(:,1))-note)),.05);
-        end
-    end
-    function markersAndSavedCorner(t)
-        [a,r]=app(t); r.setSetting('envelope',true); r.setSetting('threeD',true); r.setCursor(.3);
-        c=r.sliceChord; hz=trench.bridge.hzOf(c(c(:,1)~=0,2)); e=r.sliceEnvelope;
-        t.verifyEqual(r.voiceMarks.XData(:),hz);
-        expected=max(r.floor,interp1(e.hz,e.db,hz)+r.gain);
-        t.verifyEqual(r.voiceMarks.ZData(:),expected,'AbsTol',1e-9);
-        r.readFrameAtCursor; frame=a.bank.frames(end);
-        t.verifyEqual(frame.chord,c); t.verifyEqual(frame.words,trench.bridge.compile(c));
-        t.verifyEqual(frame.chord(6,1),0); t.verifyEqual(frame.chord(6,6),0);
-    end
-    function modeSwitchAndEmptyInput(t)
-        [a,r]=app(t); r.setSetting('mode','bells'); r.setSetting('envelope',true);
-        t.verifyEqual(r.mode,'speech'); r.setSetting('mode','bells'); t.verifyFalse(r.envelope);
-        r.setSetting('envelope',true); r.sound.mono(:)=0; r.envelopeDb=[]; r.drawSound; r.readSlice;
-        t.verifyEmpty(r.sliceChord); t.verifyEmpty(r.slicePeaks); t.verifyTrue(all(isnan(r.voiceMarks.XData)));
-        before=numel(a.bank.frames); r.readFrameAtCursor; t.verifyNumElements(a.bank.frames,before);
-        t.verifyEqual(char(a.figure.Visible),'off');
-    end
 end
 end
 function x=vowel(fs)
@@ -70,9 +40,4 @@ for k=1:3
     radius=exp(-pi*B(k)/fs); x=filter(1,[1 -2*radius*cos(2*pi*F(k)/fs) radius^2],x);
 end
 x=x(fs+1:end); x=x/max(abs(x))*.4;
-end
-function [a,r]=app(t)
-a=trench.ui.Workstation(trench.setup,'off'); t.addTeardown(@() delete(a));
-a.setRoom('sound'); r=a.rooms.sound;
-r.openSound(fullfile(a.root,'recipes','recordings','test-vowel-ah.wav'));
 end

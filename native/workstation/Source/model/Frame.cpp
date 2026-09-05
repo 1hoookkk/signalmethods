@@ -75,12 +75,16 @@ Words compile (const Chord& chord, double datum)
             continue;
         }
         auto geom = trench::core::geometry_from_words (sectionOf (w, s), datum);
+        const bool writePole = st.pole.on || std::holds_alternative<trench::core::ConjugatePair> (geom.pole);
+        const bool writeZero = st.zero.on || std::holds_alternative<trench::core::ConjugatePair> (geom.zero);
         if (st.pole.on) { const double hz = clampHz (hzOf (st.pole.note), datum); geom.pole = trench::core::ConjugatePair { hz, radiusOf (hz, st.pole.width, datum) }; }
+        else if (writePole) geom.pole = trench::core::DegeneratePair {};
         if (st.zero.on) { const double hz = clampHz (hzOf (st.zero.note), datum); geom.zero = trench::core::ConjugatePair { hz, radiusOf (hz, st.zero.width, datum) }; }
+        else if (writeZero) geom.zero = trench::core::DegeneratePair {};
         geom.scale = std::pow (10.0, st.gainDb / 20.0);
         const auto enc = trench::core::words_from_geometry (geom, datum);
-        if (st.pole.on) { w[(size_t) s][2] = enc[2]; w[(size_t) s][3] = enc[3]; }
-        if (st.zero.on) { w[(size_t) s][0] = enc[0]; w[(size_t) s][1] = enc[1]; }
+        if (writePole) { w[(size_t) s][2] = enc[2]; w[(size_t) s][3] = enc[3]; }
+        if (writeZero) { w[(size_t) s][0] = enc[0]; w[(size_t) s][1] = enc[1]; }
         w[(size_t) s][4] = enc[4];
     }
     return w;

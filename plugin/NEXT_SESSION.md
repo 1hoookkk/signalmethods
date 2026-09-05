@@ -1861,3 +1861,68 @@ Open, in order:
   layout remove redundant and cognitive overhead", and the stack question ("maybe the stack
   won't be ideal for my visual first approach"): the shell is thin and everything below it
   carries over; a web canvas over the same engine is the cheap Figma feel if he rules it.
+- 2026-09-05 ~23:10, Tyson: "do this. also why is saturation not a user facing control" (the
+  face), then "how do we smooth without smoothing and give a hardware lag feel so the morph
+  isnt so stepped", then "what sounds better". Face: INPUT and OUTPUT return as wheel rows
+  three and four under Q (UiLayout inputWheel / outputWheel / readouts / labels, same
+  grammar as MORPH and Q, clear of the notch), KEY's box restored beside the wordmark from
+  fbb48875~1 (KeySnapBox.h back, wired to the detector); the face test restated: Input,
+  Output and Key Snap on the face; Follow, Movement and the rest absent; the glass may carry
+  the title Bite for accessibility but no knob may (the two face checks that had failed all
+  session were that title on the glass). Wheel law: the X3 spec (plugin/X3_MOVEMENT_SPEC.md
+  at bdf47ae7) samples its sources once per block and ramps the kernel coefficients linearly
+  across the block, the target first heard at the next block's start: a one-block lag, not a
+  smoother. Built exactly that on the wheel: read once per chunk, linear glide across the
+  chunk from the previous chunk's end, seeded to the wheel at prepare so a parked wheel
+  passes through exactly; MOVEMENT and FOLLOW added raw per sample on top; no one-pole
+  anywhere. Verdict given: the ramp sounds better than the snap (every host block put a jump
+  in all six sections, a stair with a click per edge) and better than the old one-pole
+  (which softened the patterns). Tests: a wheel step is ramped, not snapped (0.36 peak
+  difference from held), and lands exactly on the wheel at the block's end; a follower
+  replica run beside the plugin proves FOLLOW reaches the filter raw (0.8155 vs 0.8155).
+  Suites 128 / 0 at 48 and 96 kHz, review 32 / 32; at 44.1 kHz only my sanity bound on the
+  replica's expected value tripped (0.96 against a 0.95 line, the loud phrase); widened to
+  the clamp. Installed ~23:12, ship and dev, both folders.
+- 2026-09-05 ~23:25, Tyson: "oh my god delete those two wheels whathte fuck". The INPUT and
+  OUTPUT wheel rows are gone from the face; KEY's box stays beside the wordmark; the face
+  test says Key Snap on the face, Input and Output absent again. Saturation is still a
+  parameter without a face control; its form on the face is his call, not a wheel.
+  Rebuilt, suites green at 44.1 / 48 / 96 kHz, review 32 / 32, installed to both folders.
+- 2026-09-05 ~23:45, Tyson: "Maybe when the filter itself clips"; "Make pre and post toggle
+  in the knob filmstrip"; "It doubles for a z axis later". Measured first: the desk stage at
+  unity gain adds -70 dB of harmonics at -12 dBFS, -46 at -6, -34 at -3, -21 at 0 dBFS, so a
+  fixed stage with its knee at full scale is silent until the filter's output reaches the
+  top; the one number to voice is that knee against the leveller's hold (-9.5 dBFS at 6x),
+  left with him. Built: a new parameter deskPosition (PRE / POST, default PRE); the face
+  gains a knob drawn from trench_knob_strip.png (61 frames of 96 px, the old BayKnob's
+  strip) under the Q row at UiLayout deskKnob, a two-position switch with PRE and POST
+  printed under it, click or drag to flip, title Desk; it is the Z knob for eight-corner
+  bodies later. Wiring: PRE puts the DRIVE (the preamp parameter) before the cascade, POST
+  puts it after the leveller; the OUTPUT parameter still drives the post stage for hosts
+  and the drawer; drives default to 0 so nothing is on at rest. Drawer gains DESK POSITION.
+  Tests: with No filter PRE and POST render sample-identical (0 diff); with Crisp they
+  differ (0.51 peak); Desk on the face. Suites 131 / 0 at 44.1, 48, 96 kHz; review 32 / 32.
+  Installed ~23:47, ship and dev, both folders.
+- 2026-09-05 ~23:00, Tyson on the four-room tool: "THIS IS JUST GARBAGE. make the whole app do
+  one thing. move through the klatt vowels and hrtf notches. bring in some of the dvtd. call it
+  headspace. ctrl s is to save to current corner"; "so in other words. perform the logarithmic
+  lerp"; "the key is capturing in-between and slight nudges not just smooth playback"; "fitting
+  is correct but it is a separate workflow"; also "should it be a highly interactive node based
+  environment with ability to arrange the latent space?" (not tonight) and "maybe the stack won't
+  be ideal for my visual first approach" (open). Built: HEADSPACE, one screen (trench.launch):
+  a strip of 74 frames sorted by root (12 Klatt vowels, 15 DVTD subject-1 vowels, 47 head
+  notches), drag or arrows (Shift = MORPH 5, Ctrl = MORPH 1), the log lerp of the voice-led
+  pair between neighbours (notes linear in semitones, widths geometric, compiled each position;
+  the chip's word lerp is what the plugin plays between saved corners), the live response with
+  the two anchors beside it, four corners M0 Q0..M1 Q1 (keys 1-4), Ctrl+S saves the live chord
+  to the current corner and banks/HEADSPACE.bank.json, WRITE BODY FILE when four are filled.
+  The rooms are deleted (git 2fb047c6 keeps them); the readers stay as feed generators. Two
+  model bugs found by the first HEADSPACE shot: MATLAB-written chord files said `[]` for an off
+  voice and the loader took that as a voice on at C4 width 1, so every table and bells frame
+  had a lone C4 pole in row 6 (the +30 dB peak and cliff Tyson saw twice); and a voice switched
+  off in a decompiled chord kept its old words. Both fixed; chord files and eight banks
+  regenerated. Suites: C++ 3 green, tBridge 13, tHeadspace 7, tShot 1, tEnvelope 5.
+  Tyson's question answered: E-mu fills all six stages at every corner because the chip lerps
+  slot to slot and a stage growing from the origin sweeps its pitch from fs/4; the PCA axes are
+  directions through the thirty-word cloud, not stages. Martens 1987 PDF filed at
+  evidence/papers/martens/.

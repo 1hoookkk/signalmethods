@@ -202,8 +202,8 @@ int Library::loadChords (const juce::File& file)
                     auto& stage = chord[(size_t) s];
                     const auto pole = st.getProperty ("pole", juce::var());
                     const auto zero = st.getProperty ("zero", juce::var());
-                    if (pole.isObject()) { stage.pole.on = true; stage.pole.note = (double) pole.getProperty ("note", 60.0); stage.pole.width = (double) pole.getProperty ("width", 1.0); }
-                    if (zero.isObject()) { stage.zero.on = true; stage.zero.note = (double) zero.getProperty ("note", 60.0); stage.zero.width = (double) zero.getProperty ("width", 1.0); }
+                    if (pole.getDynamicObject() != nullptr) { stage.pole.on = true; stage.pole.note = (double) pole.getProperty ("note", 60.0); stage.pole.width = (double) pole.getProperty ("width", 1.0); }
+                    if (zero.getDynamicObject() != nullptr) { stage.zero.on = true; stage.zero.note = (double) zero.getProperty ("note", 60.0); stage.zero.width = (double) zero.getProperty ("width", 1.0); }
                     stage.gainDb = (double) st.getProperty ("gain_db", 0.0);
                 }
             Frame f;

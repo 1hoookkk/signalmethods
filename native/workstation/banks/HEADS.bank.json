@@ -54,13 +54,13 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -367,8 +367,8 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -507,13 +507,13 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -977,8 +977,8 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -1128,8 +1128,8 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -1268,13 +1268,13 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -1559,18 +1559,18 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -1720,8 +1720,8 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2017,13 +2017,13 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2173,8 +2173,8 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2302,18 +2302,18 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2441,18 +2441,18 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2569,23 +2569,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2691,28 +2691,28 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2829,23 +2829,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -2962,23 +2962,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3095,23 +3095,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3228,23 +3228,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3372,18 +3372,18 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3500,23 +3500,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3633,23 +3633,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3766,23 +3766,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -3888,28 +3888,28 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4015,28 +4015,28 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4142,28 +4142,28 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4269,28 +4269,28 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4396,28 +4396,28 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4534,23 +4534,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4667,23 +4667,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],
@@ -4800,23 +4800,23 @@
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 0
         }
       ],

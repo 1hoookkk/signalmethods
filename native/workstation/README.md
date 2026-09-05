@@ -1,8 +1,10 @@
-# TRENCH Workstation
+# HEADSPACE
 
-The authoring tool for TRENCH bodies: a MATLAB R2025b toolbox over two MEX files, `trench_bridge`
-(the model: chords, words, voice leading, morphs, banks, the readers) and `trench_audio` (the engine
-and the sound card). The plugin plays what this writes; nothing here changes the ship face.
+The authoring tool for TRENCH bodies, one screen: a strip of frames (Klatt 1980 vowels, DVTD
+vowels, head notches), a log lerp between neighbours as you move, four corners, Ctrl+S to save
+what you hear into the current corner, WRITE BODY FILE for the plugin. A MATLAB R2025b toolbox
+over two MEX files, `trench_bridge` (the model) and `trench_audio` (the engine on the sound
+card). The plugin plays what this writes; nothing here changes the ship face.
 
 ## Run
 
@@ -13,9 +15,9 @@ In MATLAB:
     trench.setup
     app = trench.launch;
 
-Rooms: ANALYSE (open a sound, ENVELOPE, CURSOR, READ FRAME AT CURSOR), FRAMES (the bank as a line of
-anchors, the library, the map), MORPH (the pad over the four corners), CORNER (the six rows).
-The response panel and the body group stay on screen in every room.
+Drag the strip or use the arrows (Shift nudges MORPH by 5, Ctrl by 1). Keys 1 to 4 choose the
+corner, Ctrl+S saves the live sound into it, Space plays. WRITE BODY FILE when four corners are
+filled writes `plugin/presets/user/headspace_<stamp>.body240`.
 
 ## Build
 
@@ -30,14 +32,14 @@ the copy.
 ## Test
 
 All headless, figures invisible. In MATLAB, `buildtool test` runs the C++ suites through ctest and
-the four MATLAB suites (`tBridge`, `tRooms`, `tEnvelope`, `tShot`); `buildtool check` runs the
+the four MATLAB suites (`tBridge`, `tHeadspace`, `tEnvelope`, `tShot`); `buildtool check` runs the
 gesture check alone. From a shell:
 
     matlab -batch "addpath toolbox; trench.setup; r=runtests('Tests'); assertSuccess(r)"
 
 ## Banks
 
-`banks/*.bank.json` are the factory banks, written by `trench.io.makeFactoryBanks` (`buildtool banks`):
+`banks/HEADSPACE.bank.json` holds the four corners saved with Ctrl+S. `banks/*.bank.json` are the factory banks, written by `trench.io.makeFactoryBanks` (`buildtool banks`):
 P2K, Hillenbrand 1995, Klatt 1980, DVTD, X3, HEADS, XL-1, INSTRUMENTS. The musician's banks save
 there too. Chord files for the tables and reads live in `native/python/workstation/chords`.
 

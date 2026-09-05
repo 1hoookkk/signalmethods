@@ -4,8 +4,9 @@ This file is canonical. AGENTS.md is a stub; do not rely on it.
 
 ## What this is
 - `plugin/` is the TRENCH VST3, "a musical filter by Signal Methods". It ships.
-- `native/workstation/` is TRENCH Workstation, the authoring tool: a MATLAB R2025b toolbox
-  (`toolbox/+trench`) over two MEX files, `trench_bridge` (the model in
+- `native/workstation/` is HEADSPACE, the authoring tool: one screen, a strip of frames with a log
+  lerp between them, four corners, Ctrl+S saves what you hear, WRITE BODY FILE for the plugin.
+  A MATLAB R2025b toolbox (`toolbox/+trench`) over two MEX files, `trench_bridge` (the model in
   `native/workstation/Source/model` plus the readers) and `trench_audio` (the engine on the
   sound card). `native/core` is the C++ engine both products share. Run it with `trench.setup`
   then `trench.launch`; see `native/workstation/README.md`.
@@ -47,7 +48,7 @@ engine rewarps to the host rate from that datum.
   trench_core_from_audio_tests in the same `out/build/vst3` tree and copies the MEX files into
   `native/workstation/toolbox/mex`; MATLAB must have released the old files first. ctest names:
   trench_core, trench_core_from_audio, trench_workstation (C++), trench_workstation_bridge,
-  trench_workstation_rooms, trench_workstation_envelope, trench_workstation_shot (each
+  trench_workstation_headspace, trench_workstation_envelope, trench_workstation_shot (each
   `matlab -batch` on a `matlab.unittest` class in `native/workstation/Tests`).
 - All test runs headless. Never open windows on the user's screen. Tests are acceptance
   tests: fix the code, never loosen a threshold.

@@ -30,22 +30,22 @@
           "gain_db": -1.6804367128587057
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.6804367128587057
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.6804367128587057
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.6804367128587057
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -81,22 +81,22 @@
           "gain_db": -1.7242919066612568
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.7242919066612568
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.7242919066612568
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.7242919066612568
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -165,7 +165,7 @@
           "gain_db": -5.3849378624367317
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -190,27 +190,27 @@
           "gain_db": 1.1018600984435916
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.1018600984435916
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.1018600984435916
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.1018600984435916
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.1018600984435916
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -279,7 +279,7 @@
           "gain_db": -3.3071409900322388
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -315,22 +315,22 @@
           "gain_db": -0.64124719062408342
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.64124719062408342
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.64124719062408342
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.64124719062408342
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -355,27 +355,27 @@
           "gain_db": 1.6781809755551691
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.6781809755551691
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.6781809755551691
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.6781809755551691
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.6781809755551691
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -444,7 +444,7 @@
           "gain_db": -0.67441475999404
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -469,27 +469,27 @@
           "gain_db": -0.950328308478817
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.950328308478817
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.950328308478817
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.950328308478817
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.950328308478817
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -525,22 +525,22 @@
           "gain_db": -0.37704717272018212
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.37704717272018212
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.37704717272018212
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.37704717272018212
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -576,22 +576,22 @@
           "gain_db": -0.47728293921128656
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.47728293921128656
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.47728293921128656
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.47728293921128656
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -627,22 +627,22 @@
           "gain_db": -2.1441993929573675
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -2.1441993929573675
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -2.1441993929573675
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -2.1441993929573675
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -689,17 +689,17 @@
           "gain_db": -3.0608573020369838
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -3.0608573020369838
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -3.0608573020369838
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -724,27 +724,27 @@
           "gain_db": 4.1528871768108715
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 4.1528871768108715
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 4.1528871768108715
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 4.1528871768108715
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 4.1528871768108715
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -780,22 +780,22 @@
           "gain_db": -0.1303281781937024
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.1303281781937024
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.1303281781937024
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.1303281781937024
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -842,17 +842,17 @@
           "gain_db": -5.1343379549381076
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.1343379549381076
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.1343379549381076
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -899,17 +899,17 @@
           "gain_db": -0.879643884991073
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.879643884991073
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.879643884991073
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -978,7 +978,7 @@
           "gain_db": -3.3553744464963424
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1003,27 +1003,27 @@
           "gain_db": -0.76309994363181144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.76309994363181144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.76309994363181144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.76309994363181144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.76309994363181144
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1059,22 +1059,22 @@
           "gain_db": -1.3782553577214827
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.3782553577214827
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.3782553577214827
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.3782553577214827
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1110,22 +1110,22 @@
           "gain_db": -5.5782534694204786
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.5782534694204786
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.5782534694204786
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.5782534694204786
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1150,27 +1150,27 @@
           "gain_db": 1.9923181276796267
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9923181276796267
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9923181276796267
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9923181276796267
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9923181276796267
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1206,22 +1206,22 @@
           "gain_db": 1.9076101261199376
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9076101261199376
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9076101261199376
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": 1.9076101261199376
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1257,22 +1257,22 @@
           "gain_db": -1.1537822559263664
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.1537822559263664
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.1537822559263664
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.1537822559263664
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1319,17 +1319,17 @@
           "gain_db": -5.7739082471934831
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.7739082471934831
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -5.7739082471934831
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1365,22 +1365,22 @@
           "gain_db": -0.036124853013595144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.036124853013595144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.036124853013595144
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.036124853013595144
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1427,17 +1427,17 @@
           "gain_db": -4.440863589938675
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -4.440863589938675
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -4.440863589938675
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1484,17 +1484,17 @@
           "gain_db": -4.2849251247454365
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -4.2849251247454365
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -4.2849251247454365
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1530,22 +1530,22 @@
           "gain_db": -0.22338830704881685
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.22338830704881685
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.22338830704881685
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -0.22338830704881685
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0
@@ -1581,22 +1581,22 @@
           "gain_db": -1.2646804241932654
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.2646804241932654
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.2646804241932654
         },
         {
-          "pole": [],
-          "zero": [],
+          "pole": null,
+          "zero": null,
           "gain_db": -1.2646804241932654
         },
         {
-          "pole": [],
+          "pole": null,
           "zero": {
             "note": 135.07623199229749,
             "width": 0

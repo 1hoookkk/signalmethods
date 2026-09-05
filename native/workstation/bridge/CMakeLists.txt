@@ -22,7 +22,7 @@ foreach(target trench_bridge trench_audio)
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_SOURCE_DIR}/../toolbox/mex"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${target}>" "${CMAKE_CURRENT_SOURCE_DIR}/../toolbox/mex/")
 endforeach()
-foreach(suite bridge rooms shot envelope)
+foreach(suite bridge headspace shot envelope)
   string(SUBSTRING "${suite}" 0 1 initial)
   string(TOUPPER "${initial}" initial)
   string(SUBSTRING "${suite}" 1 -1 rest)
