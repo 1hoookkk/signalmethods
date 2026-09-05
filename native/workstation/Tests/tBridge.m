@@ -61,7 +61,8 @@ methods(Test)
         x=x/max(abs(x))*.4;
         res=trench.bridge.readResonances(x,fs,'speech');
         for hz=F, t.verifyLessThan(min(abs(res(:,1)-hz))/hz,.04); end
-        c=trench.model.bellChord(trench.bridge.readFrame(x,fs,'speech')); on=c(:,1)~=0;
+        c=trench.model.bellChord(trench.bridge.readFrame(x,fs,'speech')); on=c(:,1)~=0; on(6)=false;
+        t.verifyTrue(c(6,1)~=0 && c(6,4)~=0 && c(6,3)>=8 && c(6,6)>=8 && abs(c(6,2)-c(6,5))<1e-6);
         t.verifyEqual(c(on,5),c(on,2),'AbsTol',1e-12);
         t.verifyEqual(c(on,3),repmat(.25,sum(on),1),'AbsTol',.01);
         t.verifyEqual(c(on,6),repmat(4,sum(on),1),'AbsTol',.05);
@@ -129,7 +130,11 @@ methods(Test)
         t.verifyEqual(c(1:3,5),c(1:3,2),'AbsTol',.05);
         t.verifyEqual(c(1:3,6),c(1:3,3)*16,'AbsTol',.05);
         t.verifyEqual(c(4:5,[1 4]),zeros(2));
-        g=trench.bridge.geometry(f.words); t.verifyEqual(g(6,5),20000,'RelTol',.01); t.verifyEqual(g(6,6),1,'AbsTol',1e-9);
+        t.verifyEqual(c(6,[1 4]),[1 1]); t.verifyEqual(c(6,2),c(6,5),'AbsTol',1e-6); t.verifyEqual(c(6,2),trench.bridge.noteOf(250),'AbsTol',.05); t.verifyGreaterThanOrEqual(min(c(6,[3 6])),8);
+        shelved=trench.io.tableToChords([500 1500 2500],[60 90 120],'ah','test',[12 250]); s=shelved.chord;
+        t.verifyEqual(s(6,5)-s(6,2),12*log2(10^(12/40)),'AbsTol',.1);
+        hz=trench.bridge.curveHz; d=trench.bridge.responseDb(shelved.words,hz)-trench.bridge.responseDb(f.words,hz);
+        t.verifyGreaterThan(interp1(hz,d,60)-interp1(hz,d,8000),8);
     end
 end
 end

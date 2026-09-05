@@ -18,7 +18,7 @@ methods(Test)
         t.verifyGreaterThanOrEqual(nnz(strcmp(groups,'DVTD')),14);
         t.verifyGreaterThanOrEqual(nnz(strcmp(groups,'HEADS')),40);
         t.verifyEqual(size(t.app.points),[n 2]); t.verifyGreaterThan(size(t.app.tri.ConnectivityList,1),n);
-        for k=1:n, c=f(k).chord; t.verifyEqual(c(6,[1 4 6]),[0 1 0]); t.verifyGreaterThanOrEqual(c(6,5),trench.bridge.noteOf(18000)); end
+        for k=1:n, c=f(k).chord; t.verifyEqual(c(6,[1 4]),[1 1]); t.verifyGreaterThanOrEqual(min(c(6,[3 6])),8); t.verifyLessThanOrEqual(nnz(c(1:5,1)),5); end
         for k=[1 20 n]
             t.app.setPosition(t.app.points(k,:)); q=t.app.probe;
             t.verifyEqual(max(q.weights),1); t.verifyEqual(q.vertices(q.weights==1),k);

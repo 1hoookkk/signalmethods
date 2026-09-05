@@ -1,1607 +1,2309 @@
 {
   "schema": "trench-chords-v1",
   "floor": "VOWELS",
-  "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+  "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
   "chords": [
     {
       "name": "tense-a bahn s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 76.563925133364251,
-            "width": 5.2936273578821247
+            "note": 71.8667861345286,
+            "width": 1.9527536372931302
           },
           "zero": {
-            "note": 76.563925133364251,
-            "width": 41.50203848579585
+            "note": 71.8667861345286,
+            "width": 31.244058196690084
           },
-          "gain_db": -1.6804367128587057
+          "gain_db": -3.9143888125898672
         },
         {
           "pole": {
-            "note": 103.74590560105976,
-            "width": 1.0277574764757518
+            "note": 85.102916213282882,
+            "width": 1.2485969048837449
           },
           "zero": {
-            "note": 103.74590560105976,
-            "width": 16.444119623612028
+            "note": 85.102916213282882,
+            "width": 19.977550478139918
           },
-          "gain_db": -1.6804367128587057
+          "gain_db": -3.9143888125898672
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.6804367128587057
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.6804367128587057
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.6804367128587057
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 97.73347171327066,
+            "width": 0.59671752995574812
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 97.73347171327066,
+            "width": 9.54748047929197
           },
-          "gain_db": -1.6804367128587057
+          "gain_db": -3.9143888125898672
+        },
+        {
+          "pole": {
+            "note": 100.4153019906653,
+            "width": 1.1879844928961663
+          },
+          "zero": {
+            "note": 100.4153019906653,
+            "width": 19.00775188633866
+          },
+          "gain_db": -3.9143888125898672
+        },
+        {
+          "pole": {
+            "note": 103.7027068468265,
+            "width": 0.67865397033565655
+          },
+          "zero": {
+            "note": 103.7027068468265,
+            "width": 10.858463525370505
+          },
+          "gain_db": -3.9143888125898672
+        },
+        {
+          "pole": {
+            "note": 59.866786134528596,
+            "width": 12
+          },
+          "zero": {
+            "note": 59.331705878595805,
+            "width": 12
+          },
+          "gain_db": -3.9143888125898672
         }
       ]
     },
     {
       "name": "tense-e beet s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 95.148265604246944,
-            "width": 2.561914898896172
+            "note": 59.322741288650349,
+            "width": 2.7196436113809752
           },
           "zero": {
-            "note": 95.148265604246944,
-            "width": 40.990638382338751
+            "note": 59.322741288650349,
+            "width": 43.5142977820956
           },
-          "gain_db": -1.7242919066612568
+          "gain_db": -4.875883252148844
         },
         {
           "pole": {
-            "note": 102.69637174118587,
-            "width": 1.886131077506243
+            "note": 93.32142835368586,
+            "width": 0.5114535535562954
           },
           "zero": {
-            "note": 102.69637174118587,
-            "width": 30.178097240099888
+            "note": 93.32142835368586,
+            "width": 8.1832568569007265
           },
-          "gain_db": -1.7242919066612568
+          "gain_db": -4.875883252148844
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.7242919066612568
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.7242919066612568
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.7242919066612568
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 98.079514329708658,
+            "width": 0.84427148090267679
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 98.079514329708658,
+            "width": 13.508343694442829
           },
-          "gain_db": -1.7242919066612568
+          "gain_db": -4.875883252148844
+        },
+        {
+          "pole": {
+            "note": 102.0590044187459,
+            "width": 0.59379356907948877
+          },
+          "zero": {
+            "note": 102.0590044187459,
+            "width": 9.50069710527182
+          },
+          "gain_db": -4.875883252148844
+        },
+        {
+          "pole": {
+            "note": 105.17338796668807,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 105.17338796668807,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -4.875883252148844
+        },
+        {
+          "pole": {
+            "note": 47.322741288650349,
+            "width": 12
+          },
+          "zero": {
+            "note": 47.509505015401466,
+            "width": 12
+          },
+          "gain_db": -4.875883252148844
         }
       ]
     },
     {
       "name": "tense-i tiere s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 95.589411157021672,
-            "width": 4.3166783794076942
+            "note": 54.045591387970532,
+            "width": 3.5102582869356347
           },
           "zero": {
-            "note": 95.589411157021672,
-            "width": 33.842758494556314
+            "note": 54.045591387970532,
+            "width": 39.314892813679108
           },
-          "gain_db": -5.3849378624367317
+          "gain_db": -4.2537245297347246
         },
         {
           "pole": {
-            "note": 102.02833474662181,
-            "width": 0.984709869503616
+            "note": 93.407939007795392,
+            "width": 0.51145355355629163
           },
           "zero": {
-            "note": 102.02833474662181,
-            "width": 15.755357912057857
+            "note": 93.407939007795392,
+            "width": 8.1832568569006661
           },
-          "gain_db": -5.3849378624367317
+          "gain_db": -4.2537245297347246
         },
         {
           "pole": {
-            "note": 112.67156930540988,
-            "width": 2.3378989504250347
+            "note": 99.896238066008266,
+            "width": 0.67865397033566022
           },
           "zero": {
-            "note": 112.67156930540988,
-            "width": 26.184468244760389
+            "note": 99.896238066008266,
+            "width": 10.858463525370563
           },
-          "gain_db": -5.3849378624367317
+          "gain_db": -4.2537245297347246
         },
         {
           "pole": {
-            "note": 112.94566071420252,
-            "width": 10.144556041568112
+            "note": 103.27015357627897,
+            "width": 0.59088369270264085
           },
           "zero": {
-            "note": 112.94566071420252,
-            "width": 28.811999999999994
+            "note": 103.27015357627897,
+            "width": 9.4541390832422536
           },
-          "gain_db": -5.3849378624367317
+          "gain_db": -4.2537245297347246
         },
         {
           "pole": {
-            "note": 115.84821737801843,
-            "width": 1.581116881130274
+            "note": 107.76870758997325,
+            "width": 0.34263528333676796
           },
           "zero": {
-            "note": 115.84821737801843,
-            "width": 25.297870098084385
+            "note": 107.76870758997325,
+            "width": 5.4821645333882874
           },
-          "gain_db": -5.3849378624367317
+          "gain_db": -4.2537245297347246
         },
         {
-          "pole": null,
-          "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+          "pole": {
+            "note": 42.045591387970532,
+            "width": 12
           },
-          "gain_db": -5.3849378624367317
+          "zero": {
+            "note": 43.244099684824825,
+            "width": 12
+          },
+          "gain_db": -4.2537245297347246
         }
       ]
     },
     {
       "name": "tense-o boote s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 65.735336884803871,
-            "width": 6.0106205572049607
+            "note": 60.1878478297454,
+            "width": 2.7744174897537528
           },
           "zero": {
-            "note": 65.735336884803871,
-            "width": 32.986285617940823
+            "note": 60.1878478297454,
+            "width": 44.390679836060045
           },
-          "gain_db": 1.1018600984435916
+          "gain_db": -5.6551739922251105
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.1018600984435916
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.1018600984435916
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.1018600984435916
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.1018600984435916
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 76.538361456441876,
+            "width": 1.1708924727049639
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 76.538361456441876,
+            "width": 18.734279563279422
           },
-          "gain_db": 1.1018600984435916
+          "gain_db": -5.6551739922251105
+        },
+        {
+          "pole": {
+            "note": 96.089769285190044,
+            "width": 0.5114535535562954
+          },
+          "zero": {
+            "note": 96.089769285190044,
+            "width": 8.1832568569007265
+          },
+          "gain_db": -5.6551739922251105
+        },
+        {
+          "pole": {
+            "note": 100.67483395299382,
+            "width": 0.42830458950740113
+          },
+          "zero": {
+            "note": 100.67483395299382,
+            "width": 6.8528734321184182
+          },
+          "gain_db": -5.6551739922251105
+        },
+        {
+          "pole": {
+            "note": 105.69245189134512,
+            "width": 0.34263528333676796
+          },
+          "zero": {
+            "note": 105.69245189134512,
+            "width": 5.4821645333882874
+          },
+          "gain_db": -5.6551739922251105
+        },
+        {
+          "pole": {
+            "note": 48.1878478297454,
+            "width": 12
+          },
+          "zero": {
+            "note": 48.480876048754695,
+            "width": 12
+          },
+          "gain_db": -5.6551739922251105
         }
       ]
     },
     {
       "name": "tense-u bude s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 58.913440628851809,
-            "width": 8.1467470592795159
+            "note": 54.824187274956067,
+            "width": 3.4314340583473895
           },
           "zero": {
-            "note": 58.913440628851809,
-            "width": 41.16
+            "note": 54.824187274956067,
+            "width": 54.902944933558231
           },
-          "gain_db": -3.3071409900322388
+          "gain_db": -8.5491135972000762
         },
         {
           "pole": {
-            "note": 114.08714063481278,
-            "width": 0.47335577753329006
+            "note": 75.846276223565837,
+            "width": 1.331960866708672
           },
           "zero": {
-            "note": 114.08714063481278,
-            "width": 7.5736924405326409
+            "note": 75.846276223565837,
+            "width": 21.311373867338752
           },
-          "gain_db": -3.3071409900322388
+          "gain_db": -8.5491135972000762
         },
         {
           "pole": {
-            "note": 123.99415366864913,
-            "width": 0.86015073529553687
+            "note": 94.53257751121896,
+            "width": 0.51145355355629163
           },
           "zero": {
-            "note": 123.99415366864913,
-            "width": 13.76241176472859
+            "note": 94.53257751121896,
+            "width": 8.1832568569006661
           },
-          "gain_db": -3.3071409900322388
+          "gain_db": -8.5491135972000762
         },
         {
           "pole": {
-            "note": 125.89779787755653,
-            "width": 1.1269661483673783
+            "note": 100.4153019906653,
+            "width": 0.51145355355632893
           },
           "zero": {
-            "note": 125.89779787755653,
-            "width": 18.031458373878053
+            "note": 100.4153019906653,
+            "width": 8.1832568569012629
           },
-          "gain_db": -3.3071409900322388
+          "gain_db": -8.5491135972000762
         },
         {
           "pole": {
-            "note": 127.72450529353081,
-            "width": 1.180810457554174
+            "note": 104.22177077148351,
+            "width": 0.42619573201681604
           },
           "zero": {
-            "note": 127.72450529353081,
-            "width": 18.892967320866784
+            "note": 104.22177077148351,
+            "width": 6.8191317122690567
           },
-          "gain_db": -3.3071409900322388
+          "gain_db": -8.5491135972000762
         },
         {
-          "pole": null,
-          "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+          "pole": {
+            "note": 42.824187274956067,
+            "width": 12
           },
-          "gain_db": -3.3071409900322388
+          "zero": {
+            "note": 48.166346981230141,
+            "width": 12
+          },
+          "gain_db": -8.5491135972000762
         }
       ]
     },
     {
       "name": "tense-ae laehmung s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 93.819759469207739,
-            "width": 2.5561877490835307
+            "note": 68.8389132406959,
+            "width": 1.7242356496744731
           },
           "zero": {
-            "note": 93.819759469207739,
-            "width": 40.899003985336492
+            "note": 68.8389132406959,
+            "width": 27.587770394791569
           },
-          "gain_db": -0.64124719062408342
+          "gain_db": -2.4171636346089591
         },
         {
           "pole": {
-            "note": 102.04919229203776,
-            "width": 0.97195978289686413
+            "note": 91.331683309167261,
+            "width": 0.67865397033565655
           },
           "zero": {
-            "note": 102.04919229203776,
-            "width": 15.551356526349826
+            "note": 91.331683309167261,
+            "width": 10.858463525370505
           },
-          "gain_db": -0.64124719062408342
+          "gain_db": -2.4171636346089591
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.64124719062408342
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.64124719062408342
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.64124719062408342
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 97.2144077886136,
+            "width": 0.92424592689714413
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 97.2144077886136,
+            "width": 14.787934830354306
           },
-          "gain_db": -0.64124719062408342
+          "gain_db": -2.4171636346089591
+        },
+        {
+          "pole": {
+            "note": 101.79947245641738,
+            "width": 0.76352244127391866
+          },
+          "zero": {
+            "note": 101.79947245641738,
+            "width": 12.216359060382699
+          },
+          "gain_db": -2.4171636346089591
+        },
+        {
+          "pole": {
+            "note": 103.44317488449799,
+            "width": 0.6753362889168657
+          },
+          "zero": {
+            "note": 103.44317488449799,
+            "width": 10.805380622669851
+          },
+          "gain_db": -2.4171636346089591
+        },
+        {
+          "pole": {
+            "note": 56.8389132406959,
+            "width": 12
+          },
+          "zero": {
+            "note": 56.340437902515482,
+            "width": 12
+          },
+          "gain_db": -2.4171636346089591
         }
       ]
     },
     {
       "name": "tense-oe hoehle s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 91.877247229800929,
-            "width": 2.9947058176296344
+            "note": 58.198102785226773,
+            "width": 3.0002666243324509
           },
           "zero": {
-            "note": 91.877247229800929,
-            "width": 33.5407051574519
+            "note": 58.198102785226773,
+            "width": 48.004265989319215
           },
-          "gain_db": 1.6781809755551691
+          "gain_db": -5.6409531429564552
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.6781809755551691
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.6781809755551691
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.6781809755551691
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.6781809755551691
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 87.525214528349039,
+            "width": 0.678653970335675
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 87.525214528349039,
+            "width": 10.8584635253708
           },
-          "gain_db": 1.6781809755551691
+          "gain_db": -5.6409531429564552
+        },
+        {
+          "pole": {
+            "note": 93.494449661904866,
+            "width": 0.5114535535562954
+          },
+          "zero": {
+            "note": 93.494449661904866,
+            "width": 8.1832568569007265
+          },
+          "gain_db": -5.6409531429564552
+        },
+        {
+          "pole": {
+            "note": 100.93436591532233,
+            "width": 0.42619573201677863
+          },
+          "zero": {
+            "note": 100.93436591532233,
+            "width": 6.819131712268458
+          },
+          "gain_db": -5.6409531429564552
+        },
+        {
+          "pole": {
+            "note": 104.13526011737403,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 104.13526011737403,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -5.6409531429564552
+        },
+        {
+          "pole": {
+            "note": 46.198102785226773,
+            "width": 12
+          },
+          "zero": {
+            "note": 46.847839341362487,
+            "width": 12
+          },
+          "gain_db": -5.6409531429564552
         }
       ]
     },
     {
       "name": "tense-y guete s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 91.890473465994518,
-            "width": 2.4749696977287554
+            "note": 50.585165223590316,
+            "width": 4.187556027380217
           },
           "zero": {
-            "note": 91.890473465994518,
-            "width": 39.599515163660087
+            "note": 50.585165223590316,
+            "width": 46.900627506658431
           },
-          "gain_db": -0.67441475999404
+          "gain_db": -7.2241720958483944
         },
         {
           "pole": {
-            "note": 123.65083035232371,
-            "width": 1.2710186415739013
+            "note": 88.044278453006072,
+            "width": 0.763522441273904
           },
           "zero": {
-            "note": 123.65083035232371,
-            "width": 20.336298265182421
+            "note": 88.044278453006072,
+            "width": 12.216359060382464
           },
-          "gain_db": -0.67441475999404
+          "gain_db": -7.2241720958483944
         },
         {
           "pole": {
-            "note": 125.66375869909473,
-            "width": 1.599549125218233
+            "note": 93.148407045466854,
+            "width": 0.59379356907948877
           },
           "zero": {
-            "note": 125.66375869909473,
-            "width": 25.592786003491728
+            "note": 93.148407045466854,
+            "width": 9.50069710527182
           },
-          "gain_db": -0.67441475999404
+          "gain_db": -7.2241720958483944
         },
         {
           "pole": {
-            "note": 127.57119609067487,
-            "width": 1.6189026356522853
+            "note": 100.76134460710333,
+            "width": 0.42830458950741612
           },
           "zero": {
-            "note": 127.57119609067487,
-            "width": 25.902442170436565
+            "note": 100.76134460710333,
+            "width": 6.852873432118658
           },
-          "gain_db": -0.67441475999404
+          "gain_db": -7.2241720958483944
         },
         {
           "pole": {
-            "note": 129.31985453406918,
-            "width": 1.574594667491453
+            "note": 105.2598986207976,
+            "width": 0.51145355355631028
           },
           "zero": {
-            "note": 129.31985453406918,
-            "width": 25.193514679863249
+            "note": 105.2598986207976,
+            "width": 8.1832568569009645
           },
-          "gain_db": -0.67441475999404
+          "gain_db": -7.2241720958483944
         },
         {
-          "pole": null,
-          "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+          "pole": {
+            "note": 38.585165223590316,
+            "width": 12
           },
-          "gain_db": -0.67441475999404
+          "zero": {
+            "note": 48.595457557411656,
+            "width": 12
+          },
+          "gain_db": -7.2241720958483944
         }
       ]
     },
     {
       "name": "lax-a bass s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 78.275746847657686,
-            "width": 4.4802993120008949
+            "note": 72.0398074427476,
+            "width": 1.879997698261445
           },
           "zero": {
-            "note": 78.275746847657686,
-            "width": 50.179352294410023
+            "note": 72.0398074427476,
+            "width": 30.07996317218312
           },
-          "gain_db": -0.950328308478817
+          "gain_db": -3.1426858975504417
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.950328308478817
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.950328308478817
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.950328308478817
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.950328308478817
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 82.767128552326241,
+            "width": 1.0871678480607265
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 82.767128552326241,
+            "width": 17.394685568971624
           },
-          "gain_db": -0.950328308478817
+          "gain_db": -3.1426858975504417
+        },
+        {
+          "pole": {
+            "note": 98.252535637927664,
+            "width": 0.67865397033567876
+          },
+          "zero": {
+            "note": 98.252535637927664,
+            "width": 10.85846352537086
+          },
+          "gain_db": -3.1426858975504417
+        },
+        {
+          "pole": {
+            "note": 102.31853638107442,
+            "width": 0.92424592689714058
+          },
+          "zero": {
+            "note": 102.31853638107442,
+            "width": 14.787934830354249
+          },
+          "gain_db": -3.1426858975504417
+        },
+        {
+          "pole": {
+            "note": 104.48130273381204,
+            "width": 0.59379356907947023
+          },
+          "zero": {
+            "note": 104.48130273381204,
+            "width": 9.5006971052715237
+          },
+          "gain_db": -3.1426858975504417
+        },
+        {
+          "pole": {
+            "note": 60.0398074427476,
+            "width": 12
+          },
+          "zero": {
+            "note": 59.456848431125529,
+            "width": 12
+          },
+          "gain_db": -3.1426858975504417
         }
       ]
     },
     {
       "name": "lax-ae bett s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 95.13678757187887,
-            "width": 3.7257860034946892
+            "note": 68.6658919324769,
+            "width": 1.8065679175073628
           },
           "zero": {
-            "note": 95.13678757187887,
-            "width": 41.728803239140518
+            "note": 68.6658919324769,
+            "width": 28.905086680117805
           },
-          "gain_db": -0.37704717272018212
+          "gain_db": -2.5001885662438443
         },
         {
           "pole": {
-            "note": 102.35734784139829,
-            "width": 0.62243408906605446
+            "note": 90.639598076291207,
+            "width": 0.763522441273904
           },
           "zero": {
-            "note": 102.35734784139829,
-            "width": 9.9589454250568714
+            "note": 90.639598076291207,
+            "width": 12.216359060382464
           },
-          "gain_db": -0.37704717272018212
+          "gain_db": -2.5001885662438443
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.37704717272018212
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.37704717272018212
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.37704717272018212
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 97.2144077886136,
+            "width": 0.76352244127392233
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 97.2144077886136,
+            "width": 12.216359060382757
           },
-          "gain_db": -0.37704717272018212
+          "gain_db": -2.5001885662438443
+        },
+        {
+          "pole": {
+            "note": 101.97249376463638,
+            "width": 0.84427148090268023
+          },
+          "zero": {
+            "note": 101.97249376463638,
+            "width": 13.508343694442884
+          },
+          "gain_db": -2.5001885662438443
+        },
+        {
+          "pole": {
+            "note": 109.23938870983483,
+            "width": 0.42830458950743489
+          },
+          "zero": {
+            "note": 109.23938870983483,
+            "width": 6.8528734321189582
+          },
+          "gain_db": -2.5001885662438443
+        },
+        {
+          "pole": {
+            "note": 56.665891932476896,
+            "width": 12
+          },
+          "zero": {
+            "note": 56.181158873156861,
+            "width": 12
+          },
+          "gain_db": -2.5001885662438443
         }
       ]
     },
     {
       "name": "lax-i mit s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 94.512904314277,
-            "width": 2.4833694981748815
+            "note": 62.091082220154505,
+            "width": 2.2688857173402535
           },
           "zero": {
-            "note": 94.512904314277,
-            "width": 39.733911970798104
+            "note": 62.091082220154505,
+            "width": 36.302171477444055
           },
-          "gain_db": -0.47728293921128656
+          "gain_db": -3.78228148061933
         },
         {
           "pole": {
-            "note": 103.01630917117083,
-            "width": 0.98943237613210189
+            "note": 89.774491535196148,
+            "width": 0.84427148090268023
           },
           "zero": {
-            "note": 103.01630917117083,
-            "width": 15.83091801811363
+            "note": 89.774491535196148,
+            "width": 13.508343694442884
           },
-          "gain_db": -0.47728293921128656
+          "gain_db": -3.78228148061933
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.47728293921128656
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.47728293921128656
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.47728293921128656
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 95.657216014642515,
+            "width": 0.59671752995577054
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 95.657216014642515,
+            "width": 9.5474804792923287
           },
-          "gain_db": -0.47728293921128656
+          "gain_db": -3.78228148061933
+        },
+        {
+          "pole": {
+            "note": 101.97249376463638,
+            "width": 0.5114535535562954
+          },
+          "zero": {
+            "note": 101.97249376463638,
+            "width": 8.1832568569007265
+          },
+          "gain_db": -3.78228148061933
+        },
+        {
+          "pole": {
+            "note": 104.22177077148351,
+            "width": 0.42619573201681604
+          },
+          "zero": {
+            "note": 104.22177077148351,
+            "width": 6.8191317122690567
+          },
+          "gain_db": -3.78228148061933
+        },
+        {
+          "pole": {
+            "note": 50.091082220154505,
+            "width": 12
+          },
+          "zero": {
+            "note": 50.252655701517945,
+            "width": 12
+          },
+          "gain_db": -3.78228148061933
         }
       ]
     },
     {
       "name": "lax-o offen s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 71.035583303740978,
-            "width": 5.84498612640897
+            "note": 65.551508384534714,
+            "width": 2.0344149071100515
           },
           "zero": {
-            "note": 71.035583303740978,
-            "width": 45.824691231046316
+            "note": 65.551508384534714,
+            "width": 32.550638513760823
           },
-          "gain_db": -2.1441993929573675
+          "gain_db": -3.3913344405601045
         },
         {
           "pole": {
-            "note": 107.36041923671159,
-            "width": 0.56343779403161154
+            "note": 78.7011278091795,
+            "width": 1.0924457930356675
           },
           "zero": {
-            "note": 107.36041923671159,
-            "width": 9.0150047045057846
+            "note": 78.7011278091795,
+            "width": 17.479132688570679
           },
-          "gain_db": -2.1441993929573675
+          "gain_db": -3.3913344405601045
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -2.1441993929573675
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -2.1441993929573675
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -2.1441993929573675
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 97.906493021489652,
+            "width": 0.42619573201679734
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 97.906493021489652,
+            "width": 6.8191317122687574
           },
-          "gain_db": -2.1441993929573675
+          "gain_db": -3.3913344405601045
+        },
+        {
+          "pole": {
+            "note": 102.40504703518391,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 102.40504703518391,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -3.3913344405601045
+        },
+        {
+          "pole": {
+            "note": 106.64406908654968,
+            "width": 0.42830458950741612
+          },
+          "zero": {
+            "note": 106.64406908654968,
+            "width": 6.852873432118658
+          },
+          "gain_db": -3.3913344405601045
+        },
+        {
+          "pole": {
+            "note": 53.551508384534714,
+            "width": 12
+          },
+          "zero": {
+            "note": 53.328207520342346,
+            "width": 12
+          },
+          "gain_db": -3.3913344405601045
         }
       ]
     },
     {
       "name": "lax-u butter s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 64.272685992569961,
-            "width": 6.1517172490718579
+            "note": 59.322741288650349,
+            "width": 2.7872548430247024
           },
           "zero": {
-            "note": 64.272685992569961,
-            "width": 33.760624262906347
+            "note": 59.322741288650349,
+            "width": 44.596077488395238
           },
-          "gain_db": -3.0608573020369838
+          "gain_db": -5.8338896260495341
         },
         {
           "pole": {
-            "note": 106.95639579661935,
-            "width": 0.90415305472115048
+            "note": 76.019297531784844,
+            "width": 1.2485969048837449
           },
           "zero": {
-            "note": 106.95639579661935,
-            "width": 14.466448875538408
+            "note": 76.019297531784844,
+            "width": 19.977550478139918
           },
-          "gain_db": -3.0608573020369838
+          "gain_db": -5.8338896260495341
         },
         {
           "pole": {
-            "note": 107.45932373749358,
-            "width": 10.894330099130071
+            "note": 96.435811901628043,
+            "width": 0.42619573201678229
           },
           "zero": {
-            "note": 107.45932373749358,
-            "width": 28.811999999999994
+            "note": 96.435811901628043,
+            "width": 6.8191317122685167
           },
-          "gain_db": -3.0608573020369838
+          "gain_db": -5.8338896260495341
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -3.0608573020369838
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -3.0608573020369838
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 101.19389787765084,
+            "width": 0.34263528333678306
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 101.19389787765084,
+            "width": 5.4821645333885289
           },
-          "gain_db": -3.0608573020369838
+          "gain_db": -5.8338896260495341
+        },
+        {
+          "pole": {
+            "note": 104.56781338792156,
+            "width": 0.34263528333674909
+          },
+          "zero": {
+            "note": 104.56781338792156,
+            "width": 5.4821645333879854
+          },
+          "gain_db": -5.8338896260495341
+        },
+        {
+          "pole": {
+            "note": 47.322741288650349,
+            "width": 12
+          },
+          "zero": {
+            "note": 47.639762299870583,
+            "width": 12
+          },
+          "gain_db": -5.8338896260495341
         }
       ]
     },
     {
       "name": "lax-y muetter s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 107.70365123707342,
-            "width": 0.6506828315660641
+            "note": 62.523635490702027,
+            "width": 2.25828275817752
           },
           "zero": {
-            "note": 107.70365123707342,
-            "width": 10.410925305057026
+            "note": 62.523635490702027,
+            "width": 36.132524130840324
           },
-          "gain_db": 4.1528871768108715
+          "gain_db": -3.6958540049664785
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": 4.1528871768108715
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 4.1528871768108715
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 4.1528871768108715
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 4.1528871768108715
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 85.881512100268424,
+            "width": 0.84427148090268023
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 85.881512100268424,
+            "width": 13.508343694442884
           },
-          "gain_db": 4.1528871768108715
+          "gain_db": -3.6958540049664785
+        },
+        {
+          "pole": {
+            "note": 95.657216014642515,
+            "width": 0.51145355355629163
+          },
+          "zero": {
+            "note": 95.657216014642515,
+            "width": 8.1832568569006661
+          },
+          "gain_db": -3.6958540049664785
+        },
+        {
+          "pole": {
+            "note": 101.36691918586986,
+            "width": 0.42830458950743489
+          },
+          "zero": {
+            "note": 101.36691918586986,
+            "width": 6.8528734321189582
+          },
+          "gain_db": -3.6958540049664785
+        },
+        {
+          "pole": {
+            "note": 107.50917562764471,
+            "width": 0.42830458950743489
+          },
+          "zero": {
+            "note": 107.50917562764471,
+            "width": 6.8528734321189582
+          },
+          "gain_db": -3.6958540049664785
+        },
+        {
+          "pole": {
+            "note": 50.523635490702027,
+            "width": 12
+          },
+          "zero": {
+            "note": 50.570868173793485,
+            "width": 12
+          },
+          "gain_db": -3.6958540049664785
+        }
+      ]
+    },
+    {
+      "name": "lax-oe goetter s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 67.022189504396309,
+            "width": 1.8889200116900049
+          },
+          "zero": {
+            "note": 67.022189504396309,
+            "width": 30.222720187040078
+          },
+          "gain_db": -2.6484982804687718
+        },
+        {
+          "pole": {
+            "note": 86.573597333144477,
+            "width": 0.84427148090268023
+          },
+          "zero": {
+            "note": 86.573597333144477,
+            "width": 13.508343694442884
+          },
+          "gain_db": -2.6484982804687718
+        },
+        {
+          "pole": {
+            "note": 95.830237322861535,
+            "width": 0.51145355355631028
+          },
+          "zero": {
+            "note": 95.830237322861535,
+            "width": 8.1832568569009645
+          },
+          "gain_db": -2.6484982804687718
+        },
+        {
+          "pole": {
+            "note": 103.27015357627897,
+            "width": 0.51145355355629163
+          },
+          "zero": {
+            "note": 103.27015357627897,
+            "width": 8.1832568569006661
+          },
+          "gain_db": -2.6484982804687718
+        },
+        {
+          "pole": {
+            "note": 105.51943058312611,
+            "width": 0.59379356907948877
+          },
+          "zero": {
+            "note": 105.51943058312611,
+            "width": 9.50069710527182
+          },
+          "gain_db": -2.6484982804687718
+        },
+        {
+          "pole": {
+            "note": 55.022189504396309,
+            "width": 12
+          },
+          "zero": {
+            "note": 54.693829046995084,
+            "width": 12
+          },
+          "gain_db": -2.6484982804687718
         }
       ]
     },
     {
       "name": "schwa ehe s1",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 94.944851908076942,
-            "width": 4.5947389492707895
+            "note": 64.426869881111145,
+            "width": 2.4898657597900558
           },
           "zero": {
-            "note": 94.944851908076942,
-            "width": 36.022753362282984
+            "note": 64.426869881111145,
+            "width": 39.837852156640892
           },
-          "gain_db": -0.1303281781937024
+          "gain_db": -4.1676396859683909
         },
         {
           "pole": {
-            "note": 103.83768164140176,
-            "width": 1.0347532406863085
+            "note": 91.072151346838751,
+            "width": 0.7597989008388768
           },
           "zero": {
-            "note": 103.83768164140176,
-            "width": 16.556051850980936
+            "note": 91.072151346838751,
+            "width": 12.156782413422029
           },
-          "gain_db": -0.1303281781937024
+          "gain_db": -4.1676396859683909
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.1303281781937024
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.1303281781937024
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.1303281781937024
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 97.3009184427231,
+            "width": 0.59671752995577054
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 97.3009184427231,
+            "width": 9.5474804792923287
           },
-          "gain_db": -0.1303281781937024
+          "gain_db": -4.1676396859683909
+        },
+        {
+          "pole": {
+            "note": 102.83760030573144,
+            "width": 0.59671752995576677
+          },
+          "zero": {
+            "note": 102.83760030573144,
+            "width": 9.5474804792922683
+          },
+          "gain_db": -4.1676396859683909
+        },
+        {
+          "pole": {
+            "note": 104.91385600435956,
+            "width": 0.67865397033566022
+          },
+          "zero": {
+            "note": 104.91385600435956,
+            "width": 10.858463525370563
+          },
+          "gain_db": -4.1676396859683909
+        },
+        {
+          "pole": {
+            "note": 52.426869881111145,
+            "width": 12
+          },
+          "zero": {
+            "note": 52.068778139947526,
+            "width": 12
+          },
+          "gain_db": -4.1676396859683909
         }
       ]
     },
     {
       "name": "tense-a bahn s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 81.773617599346181,
-            "width": 5.1981376762792211
+            "note": 78.268574538631981,
+            "width": 1.2546305394819204
           },
           "zero": {
-            "note": 81.773617599346181,
-            "width": 58.219141974327272
+            "note": 78.268574538631981,
+            "width": 20.074088631710726
           },
-          "gain_db": -5.1343379549381076
+          "gain_db": -1.7670700482080361
         },
         {
           "pole": {
-            "note": 104.18578772415805,
-            "width": 1.6100090988359583
+            "note": 89.168916956429626,
+            "width": 1.40856441436728
           },
           "zero": {
-            "note": 104.18578772415805,
-            "width": 25.760145581375333
+            "note": 89.168916956429626,
+            "width": 22.53703062987648
           },
-          "gain_db": -5.1343379549381076
+          "gain_db": -1.7670700482080361
         },
         {
           "pole": {
-            "note": 108.04737482897937,
-            "width": 0.37907253713889366
+            "note": 103.09713226805997,
+            "width": 0.59671752995576677
           },
           "zero": {
-            "note": 108.04737482897937,
-            "width": 6.0651605942222986
+            "note": 103.09713226805997,
+            "width": 9.5474804792922683
           },
-          "gain_db": -5.1343379549381076
+          "gain_db": -1.7670700482080361
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.1343379549381076
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.1343379549381076
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 107.2496436653162,
+            "width": 0.92875398175682189
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 107.2496436653162,
+            "width": 14.86006370810915
           },
-          "gain_db": -5.1343379549381076
+          "gain_db": -1.7670700482080361
+        },
+        {
+          "pole": {
+            "note": 113.04585749065305,
+            "width": 0.84427148090269488
+          },
+          "zero": {
+            "note": 113.04585749065305,
+            "width": 13.508343694443118
+          },
+          "gain_db": -1.7670700482080361
+        },
+        {
+          "pole": {
+            "note": 66.268574538631981,
+            "width": 12
+          },
+          "zero": {
+            "note": 65.56506925379044,
+            "width": 12
+          },
+          "gain_db": -1.7670700482080361
         }
       ]
     },
     {
       "name": "tense-e beet s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 99.825359425107422,
-            "width": 0.59793925043209906
+            "note": 63.388742031797079,
+            "width": 2.2688857173402535
           },
           "zero": {
-            "note": 99.825359425107422,
-            "width": 9.5670280069135849
+            "note": 63.388742031797079,
+            "width": 36.302171477444055
           },
-          "gain_db": -0.879643884991073
+          "gain_db": -3.4700257709442486
         },
         {
           "pole": {
-            "note": 108.79833827676615,
-            "width": 2.1786482665187172
+            "note": 99.031131524913221,
+            "width": 0.59379356907948877
           },
           "zero": {
-            "note": 108.79833827676615,
-            "width": 34.858372264299476
+            "note": 99.031131524913221,
+            "width": 9.50069710527182
           },
-          "gain_db": -0.879643884991073
+          "gain_db": -3.4700257709442486
         },
         {
           "pole": {
-            "note": 109.68441024481621,
-            "width": 2.5952342426460313
+            "note": 102.0590044187459,
+            "width": 1.0034567285409279
           },
           "zero": {
-            "note": 109.68441024481621,
-            "width": 29.066623517635549
+            "note": 102.0590044187459,
+            "width": 16.055307656654847
           },
-          "gain_db": -0.879643884991073
+          "gain_db": -3.4700257709442486
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.879643884991073
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.879643884991073
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 108.54730347695879,
+            "width": 0.51145355355631028
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 108.54730347695879,
+            "width": 8.1832568569009645
           },
-          "gain_db": -0.879643884991073
+          "gain_db": -3.4700257709442486
+        },
+        {
+          "pole": {
+            "note": 112.61330422010552,
+            "width": 0.91529363809177533
+          },
+          "zero": {
+            "note": 112.61330422010552,
+            "width": 14.644698209468405
+          },
+          "gain_db": -3.4700257709442486
+        },
+        {
+          "pole": {
+            "note": 51.388742031797079,
+            "width": 12
+          },
+          "zero": {
+            "note": 51.154103139194532,
+            "width": 12
+          },
+          "gain_db": -3.4700257709442486
         }
       ]
     },
     {
       "name": "tense-i tiere s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 100.27157767800894,
-            "width": 2.7091632297791737
+            "note": 56.727421665365185,
+            "width": 3.2888278009683081
           },
           "zero": {
-            "note": 100.27157767800894,
-            "width": 30.342628173526744
+            "note": 56.727421665365185,
+            "width": 52.621244815492929
           },
-          "gain_db": -3.3553744464963424
+          "gain_db": -6.080179987620971
         },
         {
           "pole": {
-            "note": 106.77836564313766,
-            "width": 1.7884130498448521
+            "note": 99.117642179022724,
+            "width": 0.42619573201679734
           },
           "zero": {
-            "note": 106.77836564313766,
-            "width": 28.614608797517633
+            "note": 99.117642179022724,
+            "width": 6.8191317122687574
           },
-          "gain_db": -3.3553744464963424
+          "gain_db": -6.080179987620971
         },
         {
           "pole": {
-            "note": 109.04015116501341,
-            "width": 0.80218366439873678
+            "note": 104.91385600435956,
+            "width": 0.76352244127388547
           },
           "zero": {
-            "note": 109.04015116501341,
-            "width": 12.834938630379789
+            "note": 104.91385600435956,
+            "width": 12.216359060382167
           },
-          "gain_db": -3.3553744464963424
+          "gain_db": -6.080179987620971
         },
         {
           "pole": {
-            "note": 120.07676660685858,
-            "width": 1.4830494764344175
+            "note": 108.02823955230176,
+            "width": 0.84427148090268023
           },
           "zero": {
-            "note": 120.07676660685858,
-            "width": 23.728791622950681
+            "note": 108.02823955230176,
+            "width": 13.508343694442884
           },
-          "gain_db": -3.3553744464963424
+          "gain_db": -6.080179987620971
         },
         {
           "pole": {
-            "note": 122.38484963282549,
-            "width": 1.4753365623931849
+            "note": 111.31564440846296,
+            "width": 0.430423752653859
           },
           "zero": {
-            "note": 122.38484963282549,
-            "width": 23.605384998290958
+            "note": 111.31564440846296,
+            "width": 6.8867800424617442
           },
-          "gain_db": -3.3553744464963424
+          "gain_db": -6.080179987620971
         },
         {
-          "pole": null,
-          "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+          "pole": {
+            "note": 44.727421665365185,
+            "width": 12
           },
-          "gain_db": -3.3553744464963424
+          "zero": {
+            "note": 45.320166714126586,
+            "width": 12
+          },
+          "gain_db": -6.080179987620971
         }
       ]
     },
     {
       "name": "tense-o boote s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 74.081897997736974,
-            "width": 5.9784261582631659
+            "note": 67.973806699600871,
+            "width": 1.8065679175073592
           },
           "zero": {
-            "note": 74.081897997736974,
-            "width": 46.870861080783214
+            "note": 67.973806699600871,
+            "width": 28.905086680117748
           },
-          "gain_db": -0.76309994363181144
+          "gain_db": -2.4959477542279229
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.76309994363181144
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.76309994363181144
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.76309994363181144
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.76309994363181144
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 81.382958086574149,
+            "width": 1.0083400045744468
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 81.382958086574149,
+            "width": 16.133440073191149
           },
-          "gain_db": -0.76309994363181144
+          "gain_db": -2.4959477542279229
+        },
+        {
+          "pole": {
+            "note": 103.18364292216947,
+            "width": 0.42830458950743489
+          },
+          "zero": {
+            "note": 103.18364292216947,
+            "width": 6.8528734321189582
+          },
+          "gain_db": -2.4959477542279229
+        },
+        {
+          "pole": {
+            "note": 107.50917562764471,
+            "width": 0.426195732016801
+          },
+          "zero": {
+            "note": 107.50917562764471,
+            "width": 6.819131712268816
+          },
+          "gain_db": -2.4959477542279229
+        },
+        {
+          "pole": {
+            "note": 110.45053786736788,
+            "width": 0.426195732016801
+          },
+          "zero": {
+            "note": 110.45053786736788,
+            "width": 6.819131712268816
+          },
+          "gain_db": -2.4959477542279229
+        },
+        {
+          "pole": {
+            "note": 55.973806699600864,
+            "width": 12
+          },
+          "zero": {
+            "note": 55.692126281199691,
+            "width": 12
+          },
+          "gain_db": -2.4959477542279229
         }
       ]
     },
     {
       "name": "tense-u bude s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 70.0557721283143,
-            "width": 9.0499569886330846
+            "note": 64.340359227001628,
+            "width": 2.25828275817752
           },
           "zero": {
-            "note": 70.0557721283143,
-            "width": 41.16
+            "note": 64.340359227001628,
+            "width": 36.132524130840324
           },
-          "gain_db": -1.3782553577214827
+          "gain_db": -4.2036914587253849
         },
         {
           "pole": {
-            "note": 109.71998090699323,
-            "width": 0.51144325847305
+            "note": 80.777383507807627,
+            "width": 1.2485969048837413
           },
           "zero": {
-            "note": 109.71998090699323,
-            "width": 8.1830921355688
+            "note": 80.777383507807627,
+            "width": 19.977550478139861
           },
-          "gain_db": -1.3782553577214827
+          "gain_db": -4.2036914587253849
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.3782553577214827
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.3782553577214827
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.3782553577214827
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 100.5883232988843,
+            "width": 0.42830458950743489
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 100.5883232988843,
+            "width": 6.8528734321189582
           },
-          "gain_db": -1.3782553577214827
+          "gain_db": -4.2036914587253849
+        },
+        {
+          "pole": {
+            "note": 106.99011170298769,
+            "width": 0.34263528333678683
+          },
+          "zero": {
+            "note": 106.99011170298769,
+            "width": 5.4821645333885893
+          },
+          "gain_db": -4.2036914587253849
+        },
+        {
+          "pole": {
+            "note": 109.84496328860135,
+            "width": 0.42830458950743489
+          },
+          "zero": {
+            "note": 109.84496328860135,
+            "width": 6.8528734321189582
+          },
+          "gain_db": -4.2036914587253849
+        },
+        {
+          "pole": {
+            "note": 52.340359227001628,
+            "width": 12
+          },
+          "zero": {
+            "note": 52.453389332406942,
+            "width": 12
+          },
+          "gain_db": -4.2036914587253849
         }
       ]
     },
     {
       "name": "tense-ae laehmung s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 79.068593291209211,
-            "width": 9.9860598774795974
+            "note": 76.538361456441876,
+            "width": 1.40856441436728
           },
           "zero": {
-            "note": 79.068593291209211,
-            "width": 58.8
+            "note": 76.538361456441876,
+            "width": 22.53703062987648
           },
-          "gain_db": -5.5782534694204786
+          "gain_db": -1.6971787397330824
         },
         {
           "pole": {
-            "note": 96.885255038169362,
-            "width": 3.4600456125121495
+            "note": 94.359556202999926,
+            "width": 1.0871678480607265
           },
           "zero": {
-            "note": 96.885255038169362,
-            "width": 38.75251086013607
+            "note": 94.359556202999926,
+            "width": 17.394685568971624
           },
-          "gain_db": -5.5782534694204786
+          "gain_db": -1.6971787397330824
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.5782534694204786
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.5782534694204786
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.5782534694204786
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 101.28040853176034,
+            "width": 1.0083400045744286
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 101.28040853176034,
+            "width": 16.133440073190858
           },
-          "gain_db": -5.5782534694204786
+          "gain_db": -1.6971787397330824
+        },
+        {
+          "pole": {
+            "note": 107.50917562764471,
+            "width": 1.0083400045744324
+          },
+          "zero": {
+            "note": 107.50917562764471,
+            "width": 16.133440073190918
+          },
+          "gain_db": -1.6971787397330824
+        },
+        {
+          "pole": {
+            "note": 111.48866571668196,
+            "width": 1.2667822535049549
+          },
+          "zero": {
+            "note": 111.48866571668196,
+            "width": 20.268516056079278
+          },
+          "gain_db": -1.6971787397330824
+        },
+        {
+          "pole": {
+            "note": 64.538361456441876,
+            "width": 12
+          },
+          "zero": {
+            "note": 61.33456244745247,
+            "width": 12
+          },
+          "gain_db": -1.6971787397330824
         }
       ]
     },
     {
       "name": "tense-oe hoehle s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 94.395237027092165,
-            "width": 2.8480843863467484
+            "note": 66.762657542067785,
+            "width": 2.1160990004991644
           },
           "zero": {
-            "note": 94.395237027092165,
-            "width": 31.89854512708358
+            "note": 66.762657542067785,
+            "width": 33.857584007986631
           },
-          "gain_db": 1.9923181276796267
+          "gain_db": -2.9380547478412291
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9923181276796267
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9923181276796267
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9923181276796267
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9923181276796267
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 91.331683309167261,
+            "width": 0.67865397033565655
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 91.331683309167261,
+            "width": 10.858463525370505
           },
-          "gain_db": 1.9923181276796267
+          "gain_db": -2.9380547478412291
+        },
+        {
+          "pole": {
+            "note": 97.819982367380135,
+            "width": 0.51145355355631028
+          },
+          "zero": {
+            "note": 97.819982367380135,
+            "width": 8.1832568569009645
+          },
+          "gain_db": -2.9380547478412291
+        },
+        {
+          "pole": {
+            "note": 105.60594123723561,
+            "width": 0.34263528333676796
+          },
+          "zero": {
+            "note": 105.60594123723561,
+            "width": 5.4821645333882874
+          },
+          "gain_db": -2.9380547478412291
+        },
+        {
+          "pole": {
+            "note": 111.66168702490097,
+            "width": 0.832006321316346
+          },
+          "zero": {
+            "note": 111.66168702490097,
+            "width": 13.312101141061536
+          },
+          "gain_db": -2.9380547478412291
+        },
+        {
+          "pole": {
+            "note": 54.762657542067792,
+            "width": 12
+          },
+          "zero": {
+            "note": 54.419180116966437,
+            "width": 12
+          },
+          "gain_db": -2.9380547478412291
         }
       ]
     },
     {
       "name": "tense-y guete s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 95.0217959688141,
-            "width": 1.3112418949122537
+            "note": 62.350614182483021,
+            "width": 2.4091255643468705
           },
           "zero": {
-            "note": 95.0217959688141,
-            "width": 20.97987031859606
+            "note": 62.350614182483021,
+            "width": 38.546009029549928
           },
-          "gain_db": 1.9076101261199376
+          "gain_db": -3.8447819976414275
         },
         {
           "pole": {
-            "note": 111.05757465676726,
-            "width": 0.58559866744371769
+            "note": 92.542832466700332,
+            "width": 0.75979890083885848
           },
           "zero": {
-            "note": 111.05757465676726,
-            "width": 9.3695786790994831
+            "note": 92.542832466700332,
+            "width": 12.156782413421736
           },
-          "gain_db": 1.9076101261199376
+          "gain_db": -3.8447819976414275
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9076101261199376
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9076101261199376
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": 1.9076101261199376
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 97.3009184427231,
+            "width": 0.5114535535562954
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 97.3009184427231,
+            "width": 8.1832568569007265
           },
-          "gain_db": 1.9076101261199376
+          "gain_db": -3.8447819976414275
+        },
+        {
+          "pole": {
+            "note": 106.29802647011164,
+            "width": 0.42830458950743489
+          },
+          "zero": {
+            "note": 106.29802647011164,
+            "width": 6.8528734321189582
+          },
+          "gain_db": -3.8447819976414275
+        },
+        {
+          "pole": {
+            "note": 110.5370485214774,
+            "width": 0.42830458950741612
+          },
+          "zero": {
+            "note": 110.5370485214774,
+            "width": 6.852873432118658
+          },
+          "gain_db": -3.8447819976414275
+        },
+        {
+          "pole": {
+            "note": 50.350614182483021,
+            "width": 12
+          },
+          "zero": {
+            "note": 50.298052552729473,
+            "width": 12
+          },
+          "gain_db": -3.8447819976414275
         }
       ]
     },
     {
       "name": "lax-a bass s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 81.777051477158636,
-            "width": 3.7003270808181536
+            "note": 76.8844040728799,
+            "width": 1.3319608667086542
           },
           "zero": {
-            "note": 81.777051477158636,
-            "width": 41.443663305163319
+            "note": 76.8844040728799,
+            "width": 21.311373867338467
           },
-          "gain_db": -1.1537822559263664
+          "gain_db": -1.4870414048689939
         },
         {
           "pole": {
-            "note": 108.16492939636743,
-            "width": 0.62595897417495
+            "note": 86.48708667903496,
+            "width": 1.2485969048837449
           },
           "zero": {
-            "note": 108.16492939636743,
-            "width": 10.0153435867992
+            "note": 86.48708667903496,
+            "width": 19.977550478139918
           },
-          "gain_db": -1.1537822559263664
+          "gain_db": -1.4870414048689939
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.1537822559263664
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.1537822559263664
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.1537822559263664
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 102.23202572696491,
+            "width": 0.51145355355631028
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 102.23202572696491,
+            "width": 8.1832568569009645
           },
-          "gain_db": -1.1537822559263664
+          "gain_db": -1.4870414048689939
+        },
+        {
+          "pole": {
+            "note": 108.54730347695879,
+            "width": 0.75979890083885848
+          },
+          "zero": {
+            "note": 108.54730347695879,
+            "width": 12.156782413421736
+          },
+          "gain_db": -1.4870414048689939
+        },
+        {
+          "pole": {
+            "note": 115.81419842215722,
+            "width": 0.92424592689714058
+          },
+          "zero": {
+            "note": 115.81419842215722,
+            "width": 14.787934830354249
+          },
+          "gain_db": -1.4870414048689939
+        },
+        {
+          "pole": {
+            "note": 64.8844040728799,
+            "width": 12
+          },
+          "zero": {
+            "note": 64.296292837686636,
+            "width": 12
+          },
+          "gain_db": -1.4870414048689939
         }
       ]
     },
     {
       "name": "lax-ae bett s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 75.253536600619228,
-            "width": 11.595273948275338
+            "note": 73.6835098708282,
+            "width": 1.4153399457178872
           },
           "zero": {
-            "note": 75.253536600619228,
-            "width": 41.16
+            "note": 73.6835098708282,
+            "width": 22.645439131486196
           },
-          "gain_db": -5.7739082471934831
+          "gain_db": -1.5223448225891056
         },
         {
           "pole": {
-            "note": 94.1333580801121,
-            "width": 3.7861429656571008
+            "note": 92.542832466700332,
+            "width": 0.76352244127392233
           },
           "zero": {
-            "note": 94.1333580801121,
-            "width": 42.404801215359527
+            "note": 92.542832466700332,
+            "width": 12.216359060382757
           },
-          "gain_db": -5.7739082471934831
+          "gain_db": -1.5223448225891056
         },
         {
           "pole": {
-            "note": 107.49337906661381,
-            "width": 0.26333700357397843
+            "note": 100.4153019906653,
+            "width": 0.76352244127392233
           },
           "zero": {
-            "note": 107.49337906661381,
-            "width": 4.2133920571836549
+            "note": 100.4153019906653,
+            "width": 12.216359060382757
           },
-          "gain_db": -5.7739082471934831
+          "gain_db": -1.5223448225891056
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.7739082471934831
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -5.7739082471934831
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 106.99011170298769,
+            "width": 1.3578244604470422
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 106.99011170298769,
+            "width": 21.725191367152675
           },
-          "gain_db": -5.7739082471934831
+          "gain_db": -1.5223448225891056
+        },
+        {
+          "pole": {
+            "note": 115.46815580571921,
+            "width": 0.68198763141781871
+          },
+          "zero": {
+            "note": 115.46815580571921,
+            "width": 10.9118021026851
+          },
+          "gain_db": -1.5223448225891056
+        },
+        {
+          "pole": {
+            "note": 61.683509870828196,
+            "width": 12
+          },
+          "zero": {
+            "note": 60.398342968923487,
+            "width": 12
+          },
+          "gain_db": -1.5223448225891056
         }
       ]
     },
     {
       "name": "lax-i mit s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 96.881214291075707,
-            "width": 2.5107734430987456
+            "note": 65.638019038644217,
+            "width": 1.962002062387231
           },
           "zero": {
-            "note": 96.881214291075707,
-            "width": 40.17237508957993
+            "note": 65.638019038644217,
+            "width": 31.392032998195695
           },
-          "gain_db": -0.036124853013595144
+          "gain_db": -2.8375190730417814
         },
         {
           "pole": {
-            "note": 106.49836009078027,
-            "width": 0.32293952666572656
+            "note": 95.051641435875979,
+            "width": 0.59379356907947023
           },
           "zero": {
-            "note": 106.49836009078027,
-            "width": 5.167032426651625
+            "note": 95.051641435875979,
+            "width": 9.5006971052715237
           },
-          "gain_db": -0.036124853013595144
+          "gain_db": -2.8375190730417814
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.036124853013595144
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.036124853013595144
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.036124853013595144
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 99.982748720117769,
+            "width": 1.0871678480607407
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 99.982748720117769,
+            "width": 17.394685568971852
           },
-          "gain_db": -0.036124853013595144
+          "gain_db": -2.8375190730417814
+        },
+        {
+          "pole": {
+            "note": 106.03849450778314,
+            "width": 0.68198763141783725
+          },
+          "zero": {
+            "note": 106.03849450778314,
+            "width": 10.911802102685396
+          },
+          "gain_db": -2.8375190730417814
+        },
+        {
+          "pole": {
+            "note": 114.25700664818612,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 114.25700664818612,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -2.8375190730417814
+        },
+        {
+          "pole": {
+            "note": 53.638019038644217,
+            "width": 12
+          },
+          "zero": {
+            "note": 53.313239883337495,
+            "width": 12
+          },
+          "gain_db": -2.8375190730417814
         }
       ]
     },
     {
       "name": "lax-o offen s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 75.293370770484728,
-            "width": 6.3644995465388856
+            "note": 70.050062398228974,
+            "width": 1.6497688238357466
           },
           "zero": {
-            "note": 75.293370770484728,
-            "width": 49.89767644486485
+            "note": 70.050062398228974,
+            "width": 26.396301181371946
           },
-          "gain_db": -4.440863589938675
+          "gain_db": -2.632691379585733
         },
         {
           "pole": {
-            "note": 107.80742220835086,
-            "width": 1.177688629609253
+            "note": 84.410830980406828,
+            "width": 1.331960866708658
           },
           "zero": {
-            "note": 107.80742220835086,
-            "width": 18.843018073748048
+            "note": 84.410830980406828,
+            "width": 21.311373867338528
           },
-          "gain_db": -4.440863589938675
+          "gain_db": -2.632691379585733
         },
         {
           "pole": {
-            "note": 109.70538678034902,
-            "width": 1.2041893551352527
+            "note": 102.66457899751244,
+            "width": 0.59671752995576677
           },
           "zero": {
-            "note": 109.70538678034902,
-            "width": 19.267029682164043
+            "note": 102.66457899751244,
+            "width": 9.5474804792922683
           },
-          "gain_db": -4.440863589938675
+          "gain_db": -2.632691379585733
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -4.440863589938675
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -4.440863589938675
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 107.42266497353523,
+            "width": 0.76352244127392233
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 107.42266497353523,
+            "width": 12.216359060382757
           },
-          "gain_db": -4.440863589938675
+          "gain_db": -2.632691379585733
+        },
+        {
+          "pole": {
+            "note": 108.97985674750632,
+            "width": 0.5114535535562954
+          },
+          "zero": {
+            "note": 108.97985674750632,
+            "width": 8.1832568569007265
+          },
+          "gain_db": -2.632691379585733
+        },
+        {
+          "pole": {
+            "note": 58.050062398228981,
+            "width": 12
+          },
+          "zero": {
+            "note": 57.408007152997911,
+            "width": 12
+          },
+          "gain_db": -2.632691379585733
         }
       ]
     },
     {
       "name": "lax-u butter s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 68.750613819269233,
-            "width": 5.6174222140465462
+            "note": 66.416614925629759,
+            "width": 1.8799976982614313
           },
           "zero": {
-            "note": 68.750613819269233,
-            "width": 44.040590158124921
+            "note": 66.416614925629759,
+            "width": 30.0799631721829
           },
-          "gain_db": -4.2849251247454365
+          "gain_db": -2.9633715465354955
         },
         {
           "pole": {
-            "note": 106.13237304361012,
-            "width": 1.636075749471164
+            "note": 84.756873596844869,
+            "width": 1.1708924727049459
           },
           "zero": {
-            "note": 106.13237304361012,
-            "width": 26.177211991538623
+            "note": 84.756873596844869,
+            "width": 18.734279563279134
           },
-          "gain_db": -4.2849251247454365
+          "gain_db": -2.9633715465354955
         },
         {
           "pole": {
-            "note": 109.46907043074438,
-            "width": 0.37007844092731595
+            "note": 102.23202572696491,
+            "width": 0.42830458950743489
           },
           "zero": {
-            "note": 109.46907043074438,
-            "width": 5.9212550548370553
+            "note": 102.23202572696491,
+            "width": 6.8528734321189582
           },
-          "gain_db": -4.2849251247454365
+          "gain_db": -2.9633715465354955
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -4.2849251247454365
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -4.2849251247454365
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 106.47104777833067,
+            "width": 0.42830458950743489
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 106.47104777833067,
+            "width": 6.8528734321189582
           },
-          "gain_db": -4.2849251247454365
+          "gain_db": -2.9633715465354955
+        },
+        {
+          "pole": {
+            "note": 108.37428216873977,
+            "width": 0.42619573201681232
+          },
+          "zero": {
+            "note": 108.37428216873977,
+            "width": 6.8191317122689972
+          },
+          "gain_db": -2.9633715465354955
+        },
+        {
+          "pole": {
+            "note": 54.416614925629759,
+            "width": 12
+          },
+          "zero": {
+            "note": 54.144385469695273,
+            "width": 12
+          },
+          "gain_db": -2.9633715465354955
         }
       ]
     },
     {
       "name": "lax-y muetter s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 96.0910742128743,
-            "width": 2.6634766797407949
+            "note": 67.973806699600871,
+            "width": 1.8065679175073592
           },
           "zero": {
-            "note": 96.0910742128743,
-            "width": 42.615626875852719
+            "note": 67.973806699600871,
+            "width": 28.905086680117748
           },
-          "gain_db": -0.22338830704881685
+          "gain_db": -2.0927794256432164
         },
         {
           "pole": {
-            "note": 110.71507009546175,
-            "width": 0.73992164386054671
+            "note": 92.629343120809835,
+            "width": 0.67865397033566022
           },
           "zero": {
-            "note": 110.71507009546175,
-            "width": 11.838746301768747
+            "note": 92.629343120809835,
+            "width": 10.858463525370563
           },
-          "gain_db": -0.22338830704881685
+          "gain_db": -2.0927794256432164
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.22338830704881685
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.22338830704881685
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -0.22338830704881685
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 98.7715995625847,
+            "width": 0.42619573201681604
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 98.7715995625847,
+            "width": 6.8191317122690567
           },
-          "gain_db": -0.22338830704881685
+          "gain_db": -2.0927794256432164
+        },
+        {
+          "pole": {
+            "note": 106.29802647011164,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 106.29802647011164,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -2.0927794256432164
+        },
+        {
+          "pole": {
+            "note": 110.10449525092989,
+            "width": 0.51145355355631028
+          },
+          "zero": {
+            "note": 110.10449525092989,
+            "width": 8.1832568569009645
+          },
+          "gain_db": -2.0927794256432164
+        },
+        {
+          "pole": {
+            "note": 55.973806699600864,
+            "width": 12
+          },
+          "zero": {
+            "note": 55.618375256604111,
+            "width": 12
+          },
+          "gain_db": -2.0927794256432164
         }
       ]
     },
     {
       "name": "lax-oe goetter s2",
-      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
       "stages": [
         {
           "pole": {
-            "note": 75.563947360710486,
-            "width": 9.2277568752597752
+            "note": 72.385850059185628,
+            "width": 1.40856441436728
           },
           "zero": {
-            "note": 75.563947360710486,
-            "width": 41.16
+            "note": 72.385850059185628,
+            "width": 22.53703062987648
           },
-          "gain_db": -1.2646804241932654
+          "gain_db": -1.8663981863885948
         },
         {
           "pole": {
-            "note": 107.0748151197854,
-            "width": 0.610604370883241
+            "note": 89.947512843415154,
+            "width": 0.84427148090268389
           },
           "zero": {
-            "note": 107.0748151197854,
-            "width": 9.7696699341318567
+            "note": 89.947512843415154,
+            "width": 13.508343694442942
           },
-          "gain_db": -1.2646804241932654
+          "gain_db": -1.8663981863885948
         },
         {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.2646804241932654
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.2646804241932654
-        },
-        {
-          "pole": null,
-          "zero": null,
-          "gain_db": -1.2646804241932654
-        },
-        {
-          "pole": null,
+          "pole": {
+            "note": 98.512067600256174,
+            "width": 0.51145355355631028
+          },
           "zero": {
-            "note": 135.07623199229749,
-            "width": 0
+            "note": 98.512067600256174,
+            "width": 8.1832568569009645
           },
-          "gain_db": -1.2646804241932654
+          "gain_db": -1.8663981863885948
+        },
+        {
+          "pole": {
+            "note": 107.42266497353523,
+            "width": 1.5300904758628351
+          },
+          "zero": {
+            "note": 107.42266497353523,
+            "width": 24.481447613805361
+          },
+          "gain_db": -1.8663981863885948
+        },
+        {
+          "pole": {
+            "note": 110.96960179202492,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 110.96960179202492,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -1.8663981863885948
+        },
+        {
+          "pole": {
+            "note": 60.385850059185621,
+            "width": 12
+          },
+          "zero": {
+            "note": 59.261630357310636,
+            "width": 12
+          },
+          "gain_db": -1.8663981863885948
+        }
+      ]
+    },
+    {
+      "name": "schwa ehe s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 71.607254172200072,
+            "width": 1.4085644143672975
+          },
+          "zero": {
+            "note": 71.607254172200072,
+            "width": 22.53703062987676
+          },
+          "gain_db": -1.4318528951480047
+        },
+        {
+          "pole": {
+            "note": 90.293555459853209,
+            "width": 0.678653970335675
+          },
+          "zero": {
+            "note": 90.293555459853209,
+            "width": 10.8584635253708
+          },
+          "gain_db": -1.4318528951480047
+        },
+        {
+          "pole": {
+            "note": 99.636706103679742,
+            "width": 0.59379356907948877
+          },
+          "zero": {
+            "note": 99.636706103679742,
+            "width": 9.50069710527182
+          },
+          "gain_db": -1.4318528951480047
+        },
+        {
+          "pole": {
+            "note": 104.13526011737403,
+            "width": 1.0083400045744142
+          },
+          "zero": {
+            "note": 104.13526011737403,
+            "width": 16.133440073190627
+          },
+          "gain_db": -1.4318528951480047
+        },
+        {
+          "pole": {
+            "note": 107.42266497353523,
+            "width": 0.42619573201679734
+          },
+          "zero": {
+            "note": 107.42266497353523,
+            "width": 6.8191317122687574
+          },
+          "gain_db": -1.4318528951480047
+        },
+        {
+          "pole": {
+            "note": 59.607254172200072,
+            "width": 12
+          },
+          "zero": {
+            "note": 58.956582940340589,
+            "width": 12
+          },
+          "gain_db": -1.4318528951480047
         }
       ]
     }

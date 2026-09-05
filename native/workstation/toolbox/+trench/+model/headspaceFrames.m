@@ -8,6 +8,6 @@ dvtd=library(strcmp({library.group},'VOWELS') & contains({library.source},'dvtd'
 for k=1:numel(dvtd), dvtd(k).group='DVTD'; end
 heads=library(strcmp({library.group},'HEADS'));
 frames=[klatt(:)' dvtd(:)' heads(:)'];
-for k=1:numel(frames), frames(k)=trench.model.conformCeiling(frames(k)); end
+for k=1:numel(frames), frames(k)=trench.model.conformShelf(frames(k)); end
 [~,order]=sort([frames.root]); frames=frames(order);
 end

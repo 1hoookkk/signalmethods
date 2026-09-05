@@ -1937,3 +1937,11 @@ Open, in order:
   space". The field's vertical axis is F2 AND ABOVE, the mean note of a frame's poles above the
   root; gain is the size of the square. Notes blend linearly, so the mark's x is the blended
   root exactly and its y the blended upper mean: the place is the sound. tHeadspace 7, tShot 1.
+- 2026-09-06 ~00:30, Tyson: "Our anchors are low order aren't they"; "Both only"; "Low shelf
+  and then 5 bells"; "Or 6 is the shelf". Every HEADSPACE anchor is now rows 1-5 bells and row 6
+  a low shelf (pole and zero 12 st wide, zero a quarter decade above the pole per 10 dB of low
+  boost, unity when unknown); the ceiling row is gone from these frames and from bellChord.
+  DVTD read directly off the measured magnitude (3 dB prominence, 3 dB bandwidth under the
+  frequency, five lowest = F1..F5, shelf = level at 100 Hz over the median): 32 frames, five
+  resonances each, where the LPC reader gave 2.25. Klatt F4/F5 blocked: the paper is not in
+  evidence (man page gives ranges, examples vary); Tyson to drop it in evidence/mouths/klatt.
