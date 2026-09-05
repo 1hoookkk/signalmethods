@@ -228,6 +228,11 @@ target_sources(TRENCH_Workstation PRIVATE
   "${TRENCH_WORKSTATION_DIR}/render/SvgRenderer.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/Layout.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/Workstation.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationKeys.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationActions.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationInput.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationScene.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationPaint.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/Audio.cpp")
 target_include_directories(TRENCH_Workstation PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
 target_compile_features(TRENCH_Workstation PRIVATE cxx_std_20)

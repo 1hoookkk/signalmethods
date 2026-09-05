@@ -1,0 +1,222 @@
+#include "Workstation.h"
+#include "Style.h"
+#include <cmath>
+
+namespace ws
+{
+void Workstation::setProbe (juce::Point<float> p)
+{
+    probe = L.toField (p);
+    playBody = false;
+    status = current() ? "" : "outside the anchors";
+    redraw();
+}
+
+void Workstation::setPairT (juce::Point<float> p)
+{
+    const auto a = L.fromField (lib.anchors[(size_t) pairA].p), b = L.fromField (lib.anchors[(size_t) pairB].p);
+    const float dx = b.x - a.x, dy = b.y - a.y, len2 = std::max (1e-6f, dx * dx + dy * dy);
+    pairT = juce::jlimit (0.0, 1.0, (double) (((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+    const auto& pa = lib.anchors[(size_t) pairA].p;
+    const auto& pb = lib.anchors[(size_t) pairB].p;
+    probe = std::array<double, 2> { pa[0] + (pb[0] - pa[0]) * pairT, pa[1] + (pb[1] - pa[1]) * pairT };
+    playBody = false;
+    redraw();
+}
+
+void Workstation::setWheel (juce::Point<float> p)
+{
+    body.morph = juce::jlimit (0.0, 1.0, (double) (p.x - L.square.getX()) / L.square.getWidth());
+    body.q = juce::jlimit (0.0, 1.0, (double) (L.square.getBottom() - p.y) / L.square.getHeight());
+    playBody = true;
+    redraw();
+}
+
+void Workstation::scrubTo (float x)
+{
+    tl.playhead = L.tAt (x);
+    if (const auto p = tl.pathAt (tl.playhead)) { probe = p; playBody = false; }
+    redraw();
+}
+
+void Workstation::pickHz (float x)
+{
+    const double t = juce::jlimit (0.0, 1.0, (double) (x - L.rx (20.0)) / (L.rx (20000.0) - L.rx (20.0)));
+    fieldHz = 20.0 * std::pow (1000.0, t);
+    redraw();
+}
+
+void Workstation::openEditor (int corner)
+{
+    if (body.corner[(size_t) corner] < 0) { status = "corner is empty"; redraw(); return; }
+    const auto& src = lib.frames[(size_t) body.corner[(size_t) corner]];
+    if (! src.capture)
+    {
+        Frame f = src;
+        f.capture = true;
+        f.name = "edit " + src.name;
+        f.group = kGroups - 1;
+        lib.frames.push_back (f);
+        body.corner[(size_t) corner] = (int) lib.frames.size() - 1;
+    }
+    editing = corner;
+    editCorner = corner;
+    playBody = true;
+    L.room = Room::edit;
+    status = "";
+    redraw();
+}
+
+void Workstation::dragHandle (juce::Point<float> p)
+{
+    auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+    const auto r = L.stageRect (dragStage);
+    const double hz = L.hzAt (r, p.x), db = L.dbAt (r, p.y);
+    if (mode == Mode::dragPole)
+    {
+        setPole (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, db + 30.0) / 20.0));
+        if (lockRow[(size_t) dragStage] && f.rows[(size_t) dragStage].zero) setZero (f.words, dragStage, hz, f.rows[(size_t) dragStage].zR);
+    }
+    else setZero (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, 30.0 - db) / 20.0));
+    measure (f);
+    redraw();
+}
+
+int Workstation::f1Row (const Frame& f) const
+{
+    int best = -1;
+    double lo = 1e9;
+    for (int s = 0; s < kRows; ++s)
+        if (f.rows[(size_t) s].pole && f.rows[(size_t) s].pR > 0.85 && f.rows[(size_t) s].pHz < lo) { lo = f.rows[(size_t) s].pHz; best = s; }
+    return best;
+}
+
+void Workstation::setOpen (float x)
+{
+    openAmount = juce::jlimit (0.0, 1.0, (double) (x - openBar.getX()) / openBar.getWidth());
+    auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+    const int row = f1Row (f);
+    if (row < 0) { status = "no F1 pole in this frame"; redraw(); return; }
+    const double f1 = 250.0 * std::pow (900.0 / 250.0, openAmount), b1 = 60.0 + 60.0 * openAmount;
+    setPole (f.words, row, f1, std::exp (-juce::MathConstants<double>::pi * b1 / kDatumHz));
+    measure (f);
+    status = "";
+    redraw();
+}
+
+void Workstation::sharpenQ()
+{
+    if (body.corner[0] < 0 || body.corner[1] < 0) { status = "fill M0 Q0 and M1 Q0 first"; redraw(); return; }
+    for (int i = 0; i < 2; ++i)
+    {
+        Frame f = lib.frames[(size_t) body.corner[(size_t) i]];
+        f.capture = true;
+        f.group = kGroups - 1;
+        f.name = "sharp " + f.name.replace (" Q0", " Q1");
+        sharpen (f.words, 0.25);
+        measure (f);
+        lib.frames.push_back (f);
+        body.corner[(size_t) (2 + i)] = (int) lib.frames.size() - 1;
+    }
+    playBody = true;
+    redraw();
+}
+
+void Workstation::ceiling()
+{
+    if (editing < 0) return;
+    auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+    setZero (f.words, kRows - 1, 20000.0, 0.9995);
+    measure (f);
+    redraw();
+}
+
+void Workstation::loadWav (int index)
+{
+    if (index < 0 || index >= (int) wavs.size()) return;
+    if (! sound.load (wavs[(size_t) index])) { status = "could not read " + wavs[(size_t) index].getFileName(); redraw(); return; }
+    L.compute ((float) getWidth(), (float) getHeight());
+    sound.render ((int) L.field.getWidth() - 2, (int) L.field.getHeight() - 2);
+    if (audio) audio->setClip (sound.mono, sound.sampleRate);
+    status = "";
+    redraw();
+}
+
+void Workstation::setSlice (float x)
+{
+    if (sound.mono->empty()) return;
+    sound.slice = juce::jlimit (0.0, sound.seconds, (double) (x - L.field.getX()) / L.field.getWidth() * sound.seconds);
+    redraw();
+}
+
+void Workstation::setRegion (float x, bool start)
+{
+    if (sound.mono->empty()) return;
+    const double t = juce::jlimit (0.0, sound.seconds, (double) (x - L.field.getX()) / L.field.getWidth() * sound.seconds);
+    if (start) { sound.regionA = t; sound.regionB = t; }
+    else sound.regionB = t;
+    if (audio) audio->setRegion (std::min (sound.regionA, sound.regionB), std::max (sound.regionA, sound.regionB));
+    redraw();
+}
+
+void Workstation::frameFromSlice()
+{
+    const auto w = sound.frameAt (sound.slice);
+    if (! w) { status = "no frame at this slice"; redraw(); return; }
+    Frame f;
+    f.words = *w;
+    f.capture = true;
+    f.group = kGroups - 1;
+    f.name = sound.file.getFileNameWithoutExtension().substring (0, 18) + " @" + juce::String (sound.slice, 2);
+    measure (f);
+    lib.frames.push_back (f);
+    lib.anchors.push_back ({ (int) lib.frames.size() - 1, lib.coordOf (f) });
+    lib.retriangulate();
+    pickFor = (int) lib.anchors.size() - 1;
+    setRoom (Room::frames);
+    status = f.name + " picked";
+}
+
+void Workstation::capture()
+{
+    const auto b = current();
+    if (! b) { status = "outside the anchors"; redraw(); return; }
+    const int idx = lib.addCapture (lib.wordsOf (*b), *probe);
+    status = "captured " + lib.frames[(size_t) idx].name;
+    redraw();
+}
+
+void Workstation::assignCorner (int i)
+{
+    editCorner = i;
+    if (copyFrom >= 0 && body.corner[(size_t) copyFrom] >= 0)
+    {
+        Frame f = lib.frames[(size_t) body.corner[(size_t) copyFrom]];
+        f.capture = true;
+        f.group = kGroups - 1;
+        f.name = "copy " + f.name;
+        lib.frames.push_back (f);
+        body.corner[(size_t) i] = (int) lib.frames.size() - 1;
+        copyFrom = -1;
+    }
+    else if (pickFor >= 0 && pickFor < (int) lib.anchors.size())
+    {
+        body.corner[(size_t) i] = lib.anchors[(size_t) pickFor].frame;
+        pickFor = -1;
+    }
+    else if (pairMode && pairA >= 0 && pairB >= 0)
+    {
+        body.corner[(size_t) i] = lib.addCapture (lib.wordsOf (*current()), *probe);
+    }
+    else if (const auto b = current())
+    {
+        int single = -1;
+        for (int k = 0; k < 3; ++k) if (b->w[(size_t) k] > 0.999) single = lib.anchors[(size_t) b->anchors[(size_t) k]].frame;
+        body.corner[(size_t) i] = single >= 0 ? single : lib.addCapture (lib.wordsOf (*b), *probe);
+    }
+    else return;
+    playBody = true;
+    status = "";
+    redraw();
+}
+}
