@@ -43,22 +43,7 @@
         "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets",
         "VCPKG_TARGET_TRIPLET": "x64-windows-release",
         "VCPKG_HOST_TRIPLET": "x64-windows-release",
-        "VCPKG_MANIFEST_FEATURES": "gui",
-        "TRENCH_BUILD_APP": "ON"
-      },
-      "name": "app",
-      "displayName": "Workstation app (Qt)",
-      "binaryDir": "${sourceDir}/out/build/app"
-    },
-    {
-      "generator": "Ninja",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets",
-        "VCPKG_TARGET_TRIPLET": "x64-windows-release",
-        "VCPKG_HOST_TRIPLET": "x64-windows-release",
-        "TRENCH_BUILD_APP": "OFF"
+        "Matlab_ROOT_DIR": "C:/Program Files/MATLAB/R2025b"
       },
       "name": "vst3",
       "displayName": "Plugin (VST3 + FaceShot)",
@@ -73,13 +58,6 @@
     {
       "name": "windows-msvc-release",
       "configurePreset": "windows-msvc-release"
-    },
-    {
-      "name": "app",
-      "configurePreset": "app",
-      "targets": [
-        "trench_native"
-      ]
     },
     {
       "name": "vst3",

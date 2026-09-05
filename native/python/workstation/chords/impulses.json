@@ -1,0 +1,835 @@
+{
+  "schema": "trench-chords-v1",
+  "floor": "INSTRUMENTS",
+  "source": "itsmusician IR-Library (MIT), instrument body impulse responses, evidence/measured-bodies/ir_library; read by the bells reader",
+  "chords": [
+    {
+      "name": "China Cymbal Contact Damped",
+      "source": "cymbals China Cymbal Contact Damped.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 81.489400880783393,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 81.489400880783393,
+            "width": 4
+          },
+          "gain_db": -14.974794553949176
+        },
+        {
+          "pole": {
+            "note": 88.703686662702339,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 88.703686662702339,
+            "width": 4
+          },
+          "gain_db": -14.974794553949176
+        },
+        {
+          "pole": {
+            "note": 100.13244236182362,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 100.13244236182362,
+            "width": 4
+          },
+          "gain_db": -14.974794553949176
+        },
+        {
+          "pole": {
+            "note": 104.61705029565246,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 104.61705029565246,
+            "width": 4
+          },
+          "gain_db": -14.974794553949176
+        },
+        {
+          "pole": {
+            "note": 119.25286244589952,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 119.25286244589952,
+            "width": 4
+          },
+          "gain_db": -14.974794553949176
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -14.974794553949176
+        }
+      ]
+    },
+    {
+      "name": "China Cymbal Contact Resonant",
+      "source": "cymbals China Cymbal Contact Resonant.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 67.81886135159499,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 67.81886135159499,
+            "width": 4
+          },
+          "gain_db": -15.534972690500163
+        },
+        {
+          "pole": {
+            "note": 88.6941700602197,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 88.6941700602197,
+            "width": 4
+          },
+          "gain_db": -15.534972690500163
+        },
+        {
+          "pole": {
+            "note": 101.88587069925546,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 101.88587069925546,
+            "width": 4
+          },
+          "gain_db": -15.534972690500163
+        },
+        {
+          "pole": {
+            "note": 106.7043224454186,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 106.7043224454186,
+            "width": 4
+          },
+          "gain_db": -15.534972690500163
+        },
+        {
+          "pole": {
+            "note": 120.96588168892697,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 120.96588168892697,
+            "width": 4
+          },
+          "gain_db": -15.534972690500163
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -15.534972690500163
+        }
+      ]
+    },
+    {
+      "name": "Kalimba Resonance Full",
+      "source": "misc Kalimba Resonance Full.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.082762553079533,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 73.082762553079533,
+            "width": 4
+          },
+          "gain_db": -16.547724760267471
+        },
+        {
+          "pole": {
+            "note": 86.2221917964277,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 86.2221917964277,
+            "width": 4
+          },
+          "gain_db": -16.547724760267471
+        },
+        {
+          "pole": {
+            "note": 104.22855909990687,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 104.22855909990687,
+            "width": 4
+          },
+          "gain_db": -16.547724760267471
+        },
+        {
+          "pole": {
+            "note": 107.82588656250735,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 107.82588656250735,
+            "width": 4
+          },
+          "gain_db": -16.547724760267471
+        },
+        {
+          "pole": {
+            "note": 112.94329886587343,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 112.94329886587343,
+            "width": 4
+          },
+          "gain_db": -16.547724760267471
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -16.547724760267471
+        }
+      ]
+    },
+    {
+      "name": "Winter Upright Open Bass Sustain",
+      "source": "piano_upright Winter Upright Open Bass Sustain.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 44.42925040361051,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 44.42925040361051,
+            "width": 4
+          },
+          "gain_db": -21.814631952563019
+        },
+        {
+          "pole": {
+            "note": 84.816990085008513,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 84.816990085008513,
+            "width": 4
+          },
+          "gain_db": -21.814631952563019
+        },
+        {
+          "pole": {
+            "note": 103.1891008345071,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 103.1891008345071,
+            "width": 4
+          },
+          "gain_db": -21.814631952563019
+        },
+        {
+          "pole": {
+            "note": 111.03877998267984,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 111.03877998267984,
+            "width": 4
+          },
+          "gain_db": -21.814631952563019
+        },
+        {
+          "pole": {
+            "note": 112.23954543608258,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 112.23954543608258,
+            "width": 4
+          },
+          "gain_db": -21.814631952563019
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -21.814631952563019
+        }
+      ]
+    },
+    {
+      "name": "Winter Upright Open Default",
+      "source": "piano_upright Winter Upright Open Default.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 42.438339560096573,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 42.438339560096573,
+            "width": 4
+          },
+          "gain_db": -16.034149131012708
+        },
+        {
+          "pole": {
+            "note": 104.1822339461843,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 104.1822339461843,
+            "width": 4
+          },
+          "gain_db": -16.034149131012708
+        },
+        {
+          "pole": {
+            "note": 109.88841962273908,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 109.88841962273908,
+            "width": 4
+          },
+          "gain_db": -16.034149131012708
+        },
+        {
+          "pole": {
+            "note": 115.84961778752879,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 115.84961778752879,
+            "width": 4
+          },
+          "gain_db": -16.034149131012708
+        },
+        {
+          "pole": {
+            "note": 118.933036292425,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 118.933036292425,
+            "width": 4
+          },
+          "gain_db": -16.034149131012708
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -16.034149131012708
+        }
+      ]
+    },
+    {
+      "name": "Winter Upright Open Sustain",
+      "source": "piano_upright Winter Upright Open Sustain.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 41.645242241298646,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 41.645242241298646,
+            "width": 4
+          },
+          "gain_db": -21.840804144532488
+        },
+        {
+          "pole": {
+            "note": 86.380042558773823,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 86.380042558773823,
+            "width": 4
+          },
+          "gain_db": -21.840804144532488
+        },
+        {
+          "pole": {
+            "note": 102.88400417585541,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 102.88400417585541,
+            "width": 4
+          },
+          "gain_db": -21.840804144532488
+        },
+        {
+          "pole": {
+            "note": 109.58115994455343,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 109.58115994455343,
+            "width": 4
+          },
+          "gain_db": -21.840804144532488
+        },
+        {
+          "pole": {
+            "note": 114.72249876999024,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 114.72249876999024,
+            "width": 4
+          },
+          "gain_db": -21.840804144532488
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -21.840804144532488
+        }
+      ]
+    },
+    {
+      "name": "Winter Upright Sympathetic Resonance",
+      "source": "piano_upright Winter Upright Sympathetic Resonance.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 69.451120071246876,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 69.451120071246876,
+            "width": 4
+          },
+          "gain_db": -13.125031468516809
+        },
+        {
+          "pole": {
+            "note": 97.943664537182642,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 97.943664537182642,
+            "width": 4
+          },
+          "gain_db": -13.125031468516809
+        },
+        {
+          "pole": {
+            "note": 106.84976376494386,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 106.84976376494386,
+            "width": 4
+          },
+          "gain_db": -13.125031468516809
+        },
+        {
+          "pole": {
+            "note": 114.13541336583248,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 114.13541336583248,
+            "width": 4
+          },
+          "gain_db": -13.125031468516809
+        },
+        {
+          "pole": {
+            "note": 117.7850851873722,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 117.7850851873722,
+            "width": 4
+          },
+          "gain_db": -13.125031468516809
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -13.125031468516809
+        }
+      ]
+    },
+    {
+      "name": "Concert Ukulele Close Mono",
+      "source": "ukulele Concert Ukulele Close Mono.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 109.01593851279671,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 109.01593851279671,
+            "width": 4
+          },
+          "gain_db": 4.8145916376818239
+        },
+        {
+          "pole": {
+            "note": 126.22084132864202,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 126.22084132864202,
+            "width": 4
+          },
+          "gain_db": 4.8145916376818239
+        },
+        {
+          "pole": {
+            "note": 132.58006892781765,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 132.58006892781765,
+            "width": 4
+          },
+          "gain_db": 4.8145916376818239
+        },
+        {
+          "pole": {
+            "note": 135.07383550610325,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 135.07383550610325,
+            "width": 4
+          },
+          "gain_db": 4.8145916376818239
+        },
+        {
+          "pole": {
+            "note": 135.0784836467713,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 135.0784836467713,
+            "width": 4
+          },
+          "gain_db": 4.8145916376818239
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 4.8145916376818239
+        }
+      ]
+    },
+    {
+      "name": "Concert Ukulele Contact Mic",
+      "source": "ukulele Concert Ukulele Contact Mic.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 75.052723521823026,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 75.052723521823026,
+            "width": 4
+          },
+          "gain_db": -3.035255181403457
+        },
+        {
+          "pole": {
+            "note": 107.517018421227,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 107.517018421227,
+            "width": 4
+          },
+          "gain_db": -3.035255181403457
+        },
+        {
+          "pole": {
+            "note": 122.99917982698405,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 122.99917982698405,
+            "width": 4
+          },
+          "gain_db": -3.035255181403457
+        },
+        {
+          "pole": {
+            "note": 133.98816098171841,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 133.98816098171841,
+            "width": 4
+          },
+          "gain_db": -3.035255181403457
+        },
+        {
+          "pole": {
+            "note": 135.0757844687671,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 135.0757844687671,
+            "width": 4
+          },
+          "gain_db": -3.035255181403457
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -3.035255181403457
+        }
+      ]
+    },
+    {
+      "name": "Soprano Ukulele Close Mono",
+      "source": "ukulele Soprano Ukulele Close Mono.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 82.623275044937145,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 82.623275044937145,
+            "width": 4
+          },
+          "gain_db": -0.52558481013743674
+        },
+        {
+          "pole": {
+            "note": 111.29493141326977,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 111.29493141326977,
+            "width": 4
+          },
+          "gain_db": -0.52558481013743674
+        },
+        {
+          "pole": {
+            "note": 125.92729012187682,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 125.92729012187682,
+            "width": 4
+          },
+          "gain_db": -0.52558481013743674
+        },
+        {
+          "pole": {
+            "note": 128.42246207681566,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 128.42246207681566,
+            "width": 4
+          },
+          "gain_db": -0.52558481013743674
+        },
+        {
+          "pole": {
+            "note": 135.07707509261576,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 135.07707509261576,
+            "width": 4
+          },
+          "gain_db": -0.52558481013743674
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.52558481013743674
+        }
+      ]
+    },
+    {
+      "name": "Violin Body Dampened",
+      "source": "violin Violin Body Dampened.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 83.906040280879637,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 83.906040280879637,
+            "width": 4
+          },
+          "gain_db": -10.006835486277616
+        },
+        {
+          "pole": {
+            "note": 100.71244790298137,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 100.71244790298137,
+            "width": 4
+          },
+          "gain_db": -10.006835486277616
+        },
+        {
+          "pole": {
+            "note": 106.1476916437511,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 106.1476916437511,
+            "width": 4
+          },
+          "gain_db": -10.006835486277616
+        },
+        {
+          "pole": {
+            "note": 111.11242655294512,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 111.11242655294512,
+            "width": 4
+          },
+          "gain_db": -10.006835486277616
+        },
+        {
+          "pole": {
+            "note": 115.77940341899577,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 115.77940341899577,
+            "width": 4
+          },
+          "gain_db": -10.006835486277616
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -10.006835486277616
+        }
+      ]
+    },
+    {
+      "name": "Violin Body Resonant",
+      "source": "violin Violin Body Resonant.wav",
+      "stages": [
+        {
+          "pole": {
+            "note": 80.593948169838228,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 80.593948169838228,
+            "width": 4
+          },
+          "gain_db": -11.237670414054225
+        },
+        {
+          "pole": {
+            "note": 102.06748104248106,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 102.06748104248106,
+            "width": 4
+          },
+          "gain_db": -11.237670414054225
+        },
+        {
+          "pole": {
+            "note": 107.37028565198597,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 107.37028565198597,
+            "width": 4
+          },
+          "gain_db": -11.237670414054225
+        },
+        {
+          "pole": {
+            "note": 111.61730586445124,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 111.61730586445124,
+            "width": 4
+          },
+          "gain_db": -11.237670414054225
+        },
+        {
+          "pole": {
+            "note": 116.125888877916,
+            "width": 0.25
+          },
+          "zero": {
+            "note": 116.125888877916,
+            "width": 4
+          },
+          "gain_db": -11.237670414054225
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -11.237670414054225
+        }
+      ]
+    }
+  ]
+}

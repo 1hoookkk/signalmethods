@@ -1,2311 +1,2743 @@
 {
- "schema": "trench-chords-v1",
- "floor": "VOWELS",
- "source": "hillenbrand-vowel-formatted.csv",
- "chords": [
-  {
-   "name": "vowel ae boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
+  "schema": "trench-chords-v1",
+  "floor": "VOWELS",
+  "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+  "chords": [
     {
-     "pole": {
-      "note": 77.034,
-      "width": 1.424
-     },
-     "zero": null,
-     "gain_db": 0.0
+      "name": "vowel ae boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 77.141416224122352,
+            "width": 1.1875672255150398
+          },
+          "zero": {
+            "note": 77.141416224122352,
+            "width": 19.001075608240637
+          },
+          "gain_db": 0.250813084734317
+        },
+        {
+          "pole": {
+            "note": 98.883314721979644,
+            "width": 0.44245966522492253
+          },
+          "zero": {
+            "note": 98.883314721979644,
+            "width": 7.07935464359876
+          },
+          "gain_db": 0.250813084734317
+        },
+        {
+          "pole": {
+            "note": 103.38217195895365,
+            "width": 0.61012704791871841
+          },
+          "zero": {
+            "note": 103.38217195895365,
+            "width": 9.7620327666994946
+          },
+          "gain_db": 0.250813084734317
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.250813084734317
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.250813084734317
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.250813084734317
+        }
+      ]
     },
     {
-     "pole": {
-      "note": 98.85,
-      "width": 0.62
-     },
-     "zero": null,
-     "gain_db": 0.0
+      "name": "vowel ae girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 77.964515846062227,
+            "width": 1.1341931288612419
+          },
+          "zero": {
+            "note": 77.964515846062227,
+            "width": 18.14709006177987
+          },
+          "gain_db": 0.37964677032316868
+        },
+        {
+          "pole": {
+            "note": 99.296063843037885,
+            "width": 0.4321646148730961
+          },
+          "zero": {
+            "note": 99.296063843037885,
+            "width": 6.9146338379695376
+          },
+          "gain_db": 0.37964677032316868
+        },
+        {
+          "pole": {
+            "note": 104.45334189808511,
+            "width": 0.57412080601001414
+          },
+          "zero": {
+            "note": 104.45334189808511,
+            "width": 9.1859328961602262
+          },
+          "gain_db": 0.37964677032316868
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.37964677032316868
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.37964677032316868
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.37964677032316868
+        }
+      ]
     },
     {
-     "pole": {
-      "note": 103.359,
-      "width": 0.637
-     },
-     "zero": null,
-     "gain_db": 0.0
+      "name": "vowel ae men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.120869631502174,
+            "width": 1.4049799089875852
+          },
+          "zero": {
+            "note": 74.120869631502174,
+            "width": 22.479678543801363
+          },
+          "gain_db": -0.38258558369534923
+        },
+        {
+          "pole": {
+            "note": 94.597700320057172,
+            "width": 0.56472996482063043
+          },
+          "zero": {
+            "note": 94.597700320057172,
+            "width": 9.0356794371300868
+          },
+          "gain_db": -0.38258558369534923
+        },
+        {
+          "pole": {
+            "note": 99.724429448248316,
+            "width": 0.75059282055107546
+          },
+          "zero": {
+            "note": 99.724429448248316,
+            "width": 12.009485128817207
+          },
+          "gain_db": -0.38258558369534923
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.38258558369534923
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.38258558369534923
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.38258558369534923
+        }
+      ]
     },
     {
-     "pole": {
-      "note": 108.872,
-      "width": 0.58
-     },
-     "zero": null,
-     "gain_db": 0.0
+      "name": "vowel ae women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 76.426231706706091,
+            "width": 1.2359070454831484
+          },
+          "zero": {
+            "note": 76.426231706706091,
+            "width": 19.774512727730375
+          },
+          "gain_db": 0.11166973722397354
+        },
+        {
+          "pole": {
+            "note": 97.8923117839881,
+            "width": 0.46817674670888165
+          },
+          "zero": {
+            "note": 97.8923117839881,
+            "width": 7.4908279473421064
+          },
+          "gain_db": 0.11166973722397354
+        },
+        {
+          "pole": {
+            "note": 102.07426984830556,
+            "width": 0.65710869056980314
+          },
+          "zero": {
+            "note": 102.07426984830556,
+            "width": 10.51373904911685
+          },
+          "gain_db": 0.11166973722397354
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.11166973722397354
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.11166973722397354
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.11166973722397354
+        }
+      ]
     },
     {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
+      "name": "vowel ah boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 82.480971215999389,
+            "width": 0.88024605597462391
+          },
+          "zero": {
+            "note": 82.480971215999389,
+            "width": 14.083936895593983
+          },
+          "gain_db": 0.57037661467687828
+        },
+        {
+          "pole": {
+            "note": 91.887722732122683,
+            "width": 0.65862501956938613
+          },
+          "zero": {
+            "note": 91.887722732122683,
+            "width": 10.538000313110178
+          },
+          "gain_db": 0.57037661467687828
+        },
+        {
+          "pole": {
+            "note": 101.54038602666931,
+            "width": 0.67729108524977089
+          },
+          "zero": {
+            "note": 101.54038602666931,
+            "width": 10.836657363996334
+          },
+          "gain_db": 0.57037661467687828
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.57037661467687828
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.57037661467687828
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.57037661467687828
+        }
+      ]
     },
     {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
+      "name": "vowel ah girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 83.879827018527124,
+            "width": 0.81349832207082784
+          },
+          "zero": {
+            "note": 83.879827018527124,
+            "width": 13.015973153133245
+          },
+          "gain_db": 0.70046044293690968
+        },
+        {
+          "pole": {
+            "note": 92.79742890655325,
+            "width": 0.62551163595949477
+          },
+          "zero": {
+            "note": 92.79742890655325,
+            "width": 10.008186175351916
+          },
+          "gain_db": 0.70046044293690968
+        },
+        {
+          "pole": {
+            "note": 102.3211062493165,
+            "width": 0.6479781436961245
+          },
+          "zero": {
+            "note": 102.3211062493165,
+            "width": 10.367650299137992
+          },
+          "gain_db": 0.70046044293690968
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.70046044293690968
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.70046044293690968
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.70046044293690968
+        }
+      ]
+    },
+    {
+      "name": "vowel ah men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 78.381784427039321,
+            "width": 1.1080291756200735
+          },
+          "zero": {
+            "note": 78.381784427039321,
+            "width": 17.728466809921176
+          },
+          "gain_db": -0.025484291058034098
+        },
+        {
+          "pole": {
+            "note": 87.873794290394585,
+            "width": 0.82643943975649192
+          },
+          "zero": {
+            "note": 87.873794290394585,
+            "width": 13.223031036103871
+          },
+          "gain_db": -0.025484291058034098
+        },
+        {
+          "pole": {
+            "note": 99.316013219693247,
+            "width": 0.76811886699494414
+          },
+          "zero": {
+            "note": 99.316013219693247,
+            "width": 12.289901871919106
+          },
+          "gain_db": -0.025484291058034098
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.025484291058034098
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.025484291058034098
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.025484291058034098
+        }
+      ]
+    },
+    {
+      "name": "vowel ah women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 81.790721097554155,
+            "width": 0.91512069585083122
+          },
+          "zero": {
+            "note": 81.790721097554155,
+            "width": 14.6419311336133
+          },
+          "gain_db": 0.4685057513175479
+        },
+        {
+          "pole": {
+            "note": 90.52822324263,
+            "width": 0.71133937631653188
+          },
+          "zero": {
+            "note": 90.52822324263,
+            "width": 11.38143002106451
+          },
+          "gain_db": 0.4685057513175479
+        },
+        {
+          "pole": {
+            "note": 101.23456796482276,
+            "width": 0.68912445021779556
+          },
+          "zero": {
+            "note": 101.23456796482276,
+            "width": 11.025991203484729
+          },
+          "gain_db": 0.4685057513175479
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.4685057513175479
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.4685057513175479
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.4685057513175479
+        }
+      ]
+    },
+    {
+      "name": "vowel aw boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 79.2220482956212,
+            "width": 1.0571043956450799
+          },
+          "zero": {
+            "note": 79.2220482956212,
+            "width": 16.913670330321278
+          },
+          "gain_db": 0.094905650692074517
+        },
+        {
+          "pole": {
+            "note": 87.094333896849264,
+            "width": 0.86356493191262051
+          },
+          "zero": {
+            "note": 87.094333896849264,
+            "width": 13.817038910601928
+          },
+          "gain_db": 0.094905650692074517
+        },
+        {
+          "pole": {
+            "note": 101.44295209580807,
+            "width": 0.681039416391398
+          },
+          "zero": {
+            "note": 101.44295209580807,
+            "width": 10.896630662262368
+          },
+          "gain_db": 0.094905650692074517
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.094905650692074517
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.094905650692074517
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.094905650692074517
+        }
+      ]
+    },
+    {
+      "name": "vowel aw girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 81.323125200185558,
+            "width": 0.93950654446839965
+          },
+          "zero": {
+            "note": 81.323125200185558,
+            "width": 15.032104711494394
+          },
+          "gain_db": 0.399921965425977
+        },
+        {
+          "pole": {
+            "note": 88.761911486507344,
+            "width": 0.78603626244609037
+          },
+          "zero": {
+            "note": 88.761911486507344,
+            "width": 12.576580199137446
+          },
+          "gain_db": 0.399921965425977
+        },
+        {
+          "pole": {
+            "note": 102.61503285290831,
+            "width": 0.63726802876833732
+          },
+          "zero": {
+            "note": 102.61503285290831,
+            "width": 10.196288460293397
+          },
+          "gain_db": 0.399921965425977
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.399921965425977
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.399921965425977
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.399921965425977
+        }
+      ]
+    },
+    {
+      "name": "vowel aw men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 75.913134530588664,
+            "width": 1.2717514974529407
+          },
+          "zero": {
+            "note": 75.913134530588664,
+            "width": 20.348023959247051
+          },
+          "gain_db": -0.66067488425038567
+        },
+        {
+          "pole": {
+            "note": 83.610528877132552,
+            "width": 1.0503281694337814
+          },
+          "zero": {
+            "note": 83.610528877132552,
+            "width": 16.805250710940502
+          },
+          "gain_db": -0.66067488425038567
+        },
+        {
+          "pole": {
+            "note": 99.2221164781395,
+            "width": 0.77220442485300256
+          },
+          "zero": {
+            "note": 99.2221164781395,
+            "width": 12.355270797648041
+          },
+          "gain_db": -0.66067488425038567
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.66067488425038567
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.66067488425038567
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.66067488425038567
+        }
+      ]
+    },
+    {
+      "name": "vowel aw women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 79.4421345394864,
+            "width": 1.0441454932363452
+          },
+          "zero": {
+            "note": 79.4421345394864,
+            "width": 16.706327891781523
+          },
+          "gain_db": 0.050745361307205056
+        },
+        {
+          "pole": {
+            "note": 86.1995431586549,
+            "width": 0.90819071607504065
+          },
+          "zero": {
+            "note": 86.1995431586549,
+            "width": 14.53105145720065
+          },
+          "gain_db": 0.050745361307205056
+        },
+        {
+          "pole": {
+            "note": 101.18814697555369,
+            "width": 0.69093829842485843
+          },
+          "zero": {
+            "note": 101.18814697555369,
+            "width": 11.055012774797735
+          },
+          "gain_db": 0.050745361307205056
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.050745361307205056
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.050745361307205056
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.050745361307205056
+        }
+      ]
+    },
+    {
+      "name": "vowel eh boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 77.686364824823642,
+            "width": 1.1519650356035145
+          },
+          "zero": {
+            "note": 77.686364824823642,
+            "width": 18.431440569656232
+          },
+          "gain_db": 0.30011817249916578
+        },
+        {
+          "pole": {
+            "note": 97.05904706298378,
+            "width": 0.49093746448359221
+          },
+          "zero": {
+            "note": 97.05904706298378,
+            "width": 7.8549994317374754
+          },
+          "gain_db": 0.30011817249916578
+        },
+        {
+          "pole": {
+            "note": 103.50197357348033,
+            "width": 0.60599232004319437
+          },
+          "zero": {
+            "note": 103.50197357348033,
+            "width": 9.69587712069111
+          },
+          "gain_db": 0.30011817249916578
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.30011817249916578
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.30011817249916578
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.30011817249916578
+        }
+      ]
+    },
+    {
+      "name": "vowel eh girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 78.422341247232239,
+            "width": 1.1055175296992625
+          },
+          "zero": {
+            "note": 78.422341247232239,
+            "width": 17.6882804751882
+          },
+          "gain_db": 0.414086494474497
+        },
+        {
+          "pole": {
+            "note": 98.044140883118615,
+            "width": 0.46414310233349854
+          },
+          "zero": {
+            "note": 98.044140883118615,
+            "width": 7.4262896373359766
+          },
+          "gain_db": 0.414086494474497
+        },
+        {
+          "pole": {
+            "note": 104.37376535763437,
+            "width": 0.576722266177124
+          },
+          "zero": {
+            "note": 104.37376535763437,
+            "width": 9.2275562588339834
+          },
+          "gain_db": 0.414086494474497
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.414086494474497
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.414086494474497
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.414086494474497
+        }
+      ]
+    },
+    {
+      "name": "vowel eh men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.017788614063576,
+            "width": 1.4130370723022527
+          },
+          "zero": {
+            "note": 74.017788614063576,
+            "width": 22.608593156836044
+          },
+          "gain_db": -0.42479331460782943
+        },
+        {
+          "pole": {
+            "note": 93.4151134920271,
+            "width": 0.60396547268712242
+          },
+          "zero": {
+            "note": 93.4151134920271,
+            "width": 9.6634475629939587
+          },
+          "gain_db": -0.42479331460782943
+        },
+        {
+          "pole": {
+            "note": 99.781995976488943,
+            "width": 0.748154185643714
+          },
+          "zero": {
+            "note": 99.781995976488943,
+            "width": 11.970466970299425
+          },
+          "gain_db": -0.42479331460782943
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.42479331460782943
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.42479331460782943
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.42479331460782943
+        }
+      ]
+    },
+    {
+      "name": "vowel eh women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 77.694910358154331,
+            "width": 1.1514150472188667
+          },
+          "zero": {
+            "note": 77.694910358154331,
+            "width": 18.422640755501867
+          },
+          "gain_db": 0.24050586904981464
+        },
+        {
+          "pole": {
+            "note": 95.747223206438633,
+            "width": 0.52899872643835077
+          },
+          "zero": {
+            "note": 95.747223206438633,
+            "width": 8.4639796230136124
+          },
+          "gain_db": 0.24050586904981464
+        },
+        {
+          "pole": {
+            "note": 101.95829399906967,
+            "width": 0.66144214395713785
+          },
+          "zero": {
+            "note": 101.95829399906967,
+            "width": 10.583074303314206
+          },
+          "gain_db": 0.24050586904981464
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.24050586904981464
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.24050586904981464
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.24050586904981464
+        }
+      ]
+    },
+    {
+      "name": "vowel ei boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.282376088278156,
+            "width": 1.4718191719028548
+          },
+          "zero": {
+            "note": 73.282376088278156,
+            "width": 23.549106750445677
+          },
+          "gain_db": -0.34278762340234836
+        },
+        {
+          "pole": {
+            "note": 99.8116171481386,
+            "width": 0.41963711827460082
+          },
+          "zero": {
+            "note": 99.8116171481386,
+            "width": 6.7141938923936131
+          },
+          "gain_db": -0.34278762340234836
+        },
+        {
+          "pole": {
+            "note": 103.8074634596461,
+            "width": 0.59557312871738577
+          },
+          "zero": {
+            "note": 103.8074634596461,
+            "width": 9.5291700594781723
+          },
+          "gain_db": -0.34278762340234836
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.34278762340234836
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.34278762340234836
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.34278762340234836
+        }
+      ]
+    },
+    {
+      "name": "vowel ei girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.398175733058025,
+            "width": 1.4624102009287814
+          },
+          "zero": {
+            "note": 73.398175733058025,
+            "width": 23.398563214860502
+          },
+          "gain_db": -0.3042692026815797
+        },
+        {
+          "pole": {
+            "note": 100.45646263798598,
+            "width": 0.40447192322869469
+          },
+          "zero": {
+            "note": 100.45646263798598,
+            "width": 6.471550771659115
+          },
+          "gain_db": -0.3042692026815797
+        },
+        {
+          "pole": {
+            "note": 104.27943754380783,
+            "width": 0.57982098250713932
+          },
+          "zero": {
+            "note": 104.27943754380783,
+            "width": 9.277135720114229
+          },
+          "gain_db": -0.3042692026815797
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.3042692026815797
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.3042692026815797
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.3042692026815797
+        }
+      ]
+    },
+    {
+      "name": "vowel ei men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.364729225639721,
+            "width": 1.728907453719323
+          },
+          "zero": {
+            "note": 70.364729225639721,
+            "width": 27.662519259509168
+          },
+          "gain_db": -1.1211489440097415
+        },
+        {
+          "pole": {
+            "note": 95.974025670557992,
+            "width": 0.522216508737392
+          },
+          "zero": {
+            "note": 95.974025670557992,
+            "width": 8.3554641397982721
+          },
+          "gain_db": -1.1211489440097415
+        },
+        {
+          "pole": {
+            "note": 100.35665112380403,
+            "width": 0.72423179971196139
+          },
+          "zero": {
+            "note": 100.35665112380403,
+            "width": 11.587708795391382
+          },
+          "gain_db": -1.1211489440097415
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1211489440097415
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1211489440097415
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.1211489440097415
+        }
+      ]
+    },
+    {
+      "name": "vowel ei women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 72.399923074508621,
+            "width": 1.5454486684121846
+          },
+          "zero": {
+            "note": 72.399923074508621,
+            "width": 24.727178694594954
+          },
+          "gain_db": -0.553791270068512
+        },
+        {
+          "pole": {
+            "note": 99.252780210553937,
+            "width": 0.43323302355091431
+          },
+          "zero": {
+            "note": 99.252780210553937,
+            "width": 6.9317283768146289
+          },
+          "gain_db": -0.553791270068512
+        },
+        {
+          "pole": {
+            "note": 102.51803172428681,
+            "width": 0.64078320907251607
+          },
+          "zero": {
+            "note": 102.51803172428681,
+            "width": 10.252531345160257
+          },
+          "gain_db": -0.553791270068512
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.553791270068512
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.553791270068512
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.553791270068512
+        }
+      ]
+    },
+    {
+      "name": "vowel er boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.386749623626,
+            "width": 1.4633360277094638
+          },
+          "zero": {
+            "note": 73.386749623626,
+            "width": 23.413376443351421
+          },
+          "gain_db": -0.77236612894914525
+        },
+        {
+          "pole": {
+            "note": 92.504050250895887,
+            "width": 0.63600801156629228
+          },
+          "zero": {
+            "note": 92.504050250895887,
+            "width": 10.176128185060676
+          },
+          "gain_db": -0.77236612894914525
+        },
+        {
+          "pole": {
+            "note": 95.8767243881007,
+            "width": 0.93245468464250592
+          },
+          "zero": {
+            "note": 95.8767243881007,
+            "width": 14.919274954280095
+          },
+          "gain_db": -0.77236612894914525
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.77236612894914525
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.77236612894914525
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.77236612894914525
+        }
+      ]
+    },
+    {
+      "name": "vowel er girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.768821582146245,
+            "width": 1.3553350317209449
+          },
+          "zero": {
+            "note": 74.768821582146245,
+            "width": 21.685360507535119
+          },
+          "gain_db": -0.4270204658092791
+        },
+        {
+          "pole": {
+            "note": 92.7649223824535,
+            "width": 0.62666620878660462
+          },
+          "zero": {
+            "note": 92.7649223824535,
+            "width": 10.026659340585674
+          },
+          "gain_db": -0.4270204658092791
+        },
+        {
+          "pole": {
+            "note": 97.362131095230581,
+            "width": 0.85765256640791032
+          },
+          "zero": {
+            "note": 97.362131095230581,
+            "width": 13.722441062526565
+          },
+          "gain_db": -0.4270204658092791
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.4270204658092791
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.4270204658092791
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.4270204658092791
+        }
+      ]
+    },
+    {
+      "name": "vowel er men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.320227589798151,
+            "width": 1.7331418552447939
+          },
+          "zero": {
+            "note": 70.320227589798151,
+            "width": 27.730269683916703
+          },
+          "gain_db": -1.8716575808199902
+        },
+        {
+          "pole": {
+            "note": 88.778238157829122,
+            "width": 0.78531188173043365
+          },
+          "zero": {
+            "note": 88.778238157829122,
+            "width": 12.564990107686938
+          },
+          "gain_db": -1.8716575808199902
+        },
+        {
+          "pole": {
+            "note": 92.507630218801125,
+            "width": 1.1263871440376374
+          },
+          "zero": {
+            "note": 92.507630218801125,
+            "width": 18.0221943046022
+          },
+          "gain_db": -1.8716575808199902
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.8716575808199902
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.8716575808199902
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.8716575808199902
+        }
+      ]
+    },
+    {
+      "name": "vowel er women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 72.023382784013236,
+            "width": 1.5779270251875646
+          },
+          "zero": {
+            "note": 72.023382784013236,
+            "width": 25.246832403001033
+          },
+          "gain_db": -1.1841079959629783
+        },
+        {
+          "pole": {
+            "note": 91.222351083313541,
+            "width": 0.68392771945501107
+          },
+          "zero": {
+            "note": 91.222351083313541,
+            "width": 10.942843511280177
+          },
+          "gain_db": -1.1841079959629783
+        },
+        {
+          "pole": {
+            "note": 94.594959452588711,
+            "width": 1.0020756186650541
+          },
+          "zero": {
+            "note": 94.594959452588711,
+            "width": 16.033209898640866
+          },
+          "gain_db": -1.1841079959629783
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1841079959629783
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1841079959629783
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.1841079959629783
+        }
+      ]
+    },
+    {
+      "name": "vowel ih boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 71.8365198092658,
+            "width": 1.5942859067228379
+          },
+          "zero": {
+            "note": 71.8365198092658,
+            "width": 25.508574507565406
+          },
+          "gain_db": -0.63896443380724766
+        },
+        {
+          "pole": {
+            "note": 99.061093107095246,
+            "width": 0.4379960476624789
+          },
+          "zero": {
+            "note": 99.061093107095246,
+            "width": 7.0079367625996625
+          },
+          "gain_db": -0.63896443380724766
+        },
+        {
+          "pole": {
+            "note": 104.06552825270705,
+            "width": 0.58690879706776833
+          },
+          "zero": {
+            "note": 104.06552825270705,
+            "width": 9.3905407530842933
+          },
+          "gain_db": -0.63896443380724766
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.63896443380724766
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.63896443380724766
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.63896443380724766
+        }
+      ]
+    },
+    {
+      "name": "vowel ih girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 71.414203262837518,
+            "width": 1.6318559330567153
+          },
+          "zero": {
+            "note": 71.414203262837518,
+            "width": 26.109694928907444
+          },
+          "gain_db": -0.70540917869176067
+        },
+        {
+          "pole": {
+            "note": 100.0181693841872,
+            "width": 0.41471934321076565
+          },
+          "zero": {
+            "note": 100.0181693841872,
+            "width": 6.63550949137225
+          },
+          "gain_db": -0.70540917869176067
+        },
+        {
+          "pole": {
+            "note": 104.96657523154022,
+            "width": 0.55761766734557716
+          },
+          "zero": {
+            "note": 104.96657523154022,
+            "width": 8.9218826775292346
+          },
+          "gain_db": -0.70540917869176067
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.70540917869176067
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.70540917869176067
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.70540917869176067
+        }
+      ]
+    },
+    {
+      "name": "vowel ih men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 68.576032027112163,
+            "width": 1.9070795205891757
+          },
+          "zero": {
+            "note": 68.576032027112163,
+            "width": 30.513272329426812
+          },
+          "gain_db": -1.5933850637424456
+        },
+        {
+          "pole": {
+            "note": 95.503985258699231,
+            "width": 0.53636883559132476
+          },
+          "zero": {
+            "note": 95.503985258699231,
+            "width": 8.5819013694611961
+          },
+          "gain_db": -1.5933850637424456
+        },
+        {
+          "pole": {
+            "note": 100.32419162190584,
+            "width": 0.72556287263553765
+          },
+          "zero": {
+            "note": 100.32419162190584,
+            "width": 11.609005962168602
+          },
+          "gain_db": -1.5933850637424456
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.5933850637424456
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.5933850637424456
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.5933850637424456
+        }
+      ]
+    },
+    {
+      "name": "vowel ih women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.661216583773964,
+            "width": 1.7009463562918428
+          },
+          "zero": {
+            "note": 70.661216583773964,
+            "width": 27.215141700669484
+          },
+          "gain_db": -0.95151126927575125
+        },
+        {
+          "pole": {
+            "note": 98.145194456154,
+            "width": 0.46147743694663462
+          },
+          "zero": {
+            "note": 98.145194456154,
+            "width": 7.383638991146154
+          },
+          "gain_db": -0.95151126927575125
+        },
+        {
+          "pole": {
+            "note": 102.55920136334379,
+            "width": 0.63928896220366282
+          },
+          "zero": {
+            "note": 102.55920136334379,
+            "width": 10.228623395258605
+          },
+          "gain_db": -0.95151126927575125
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.95151126927575125
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.95151126927575125
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.95151126927575125
+        }
+      ]
+    },
+    {
+      "name": "vowel iy boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 69.140781010306668,
+            "width": 1.8490256319751448
+          },
+          "zero": {
+            "note": 69.140781010306668,
+            "width": 29.584410111602317
+          },
+          "gain_db": -1.2352948095689282
+        },
+        {
+          "pole": {
+            "note": 102.39114784253657,
+            "width": 0.36214958726382313
+          },
+          "zero": {
+            "note": 102.39114784253657,
+            "width": 5.79439339622117
+          },
+          "gain_db": -1.2352948095689282
+        },
+        {
+          "pole": {
+            "note": 105.44644132755175,
+            "width": 0.54261015757283459
+          },
+          "zero": {
+            "note": 105.44644132755175,
+            "width": 8.6817625211653535
+          },
+          "gain_db": -1.2352948095689282
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.2352948095689282
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.2352948095689282
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.2352948095689282
+        }
+      ]
+    },
+    {
+      "name": "vowel iy girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 69.931233817487666,
+            "width": 1.7705772381004645
+          },
+          "zero": {
+            "note": 69.931233817487666,
+            "width": 28.329235809607432
+          },
+          "gain_db": -1.0132483062756183
+        },
+        {
+          "pole": {
+            "note": 103.12411396152581,
+            "width": 0.34728657175213862
+          },
+          "zero": {
+            "note": 103.12411396152581,
+            "width": 5.5565851480342179
+          },
+          "gain_db": -1.0132483062756183
+        },
+        {
+          "pole": {
+            "note": 106.36200173535234,
+            "width": 0.515071473673885
+          },
+          "zero": {
+            "note": 106.36200173535234,
+            "width": 8.24114357878216
+          },
+          "gain_db": -1.0132483062756183
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0132483062756183
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0132483062756183
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.0132483062756183
+        }
+      ]
+    },
+    {
+      "name": "vowel iy men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 64.672750702849839,
+            "width": 2.3578483433843345
+          },
+          "zero": {
+            "note": 64.672750702849839,
+            "width": 37.725573494149351
+          },
+          "gain_db": -2.7004320055176341
+        },
+        {
+          "pole": {
+            "note": 97.803308495574328,
+            "width": 0.47055735541800958
+          },
+          "zero": {
+            "note": 97.803308495574328,
+            "width": 7.5289176866881533
+          },
+          "gain_db": -2.7004320055176341
+        },
+        {
+          "pole": {
+            "note": 102.23640217186352,
+            "width": 0.651097251960226
+          },
+          "zero": {
+            "note": 102.23640217186352,
+            "width": 10.417556031363617
+          },
+          "gain_db": -2.7004320055176341
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.7004320055176341
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.7004320055176341
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -2.7004320055176341
+        }
+      ]
+    },
+    {
+      "name": "vowel iy women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 68.891458324763917,
+            "width": 1.8744456160348482
+          },
+          "zero": {
+            "note": 68.891458324763917,
+            "width": 29.991129856557571
+          },
+          "gain_db": -1.3348723010927608
+        },
+        {
+          "pole": {
+            "note": 100.79734487140442,
+            "width": 0.39667536857644337
+          },
+          "zero": {
+            "note": 100.79734487140442,
+            "width": 6.3468058972230939
+          },
+          "gain_db": -1.3348723010927608
+        },
+        {
+          "pole": {
+            "note": 104.26022798705361,
+            "width": 0.58045402981147975
+          },
+          "zero": {
+            "note": 104.26022798705361,
+            "width": 9.2872644769836761
+          },
+          "gain_db": -1.3348723010927608
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.3348723010927608
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.3348723010927608
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.3348723010927608
+        }
+      ]
+    },
+    {
+      "name": "vowel oa boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.536480020019056,
+            "width": 1.3729396048376368
+          },
+          "zero": {
+            "note": 74.536480020019056,
+            "width": 21.967033677402188
+          },
+          "gain_db": -0.62869944584310078
+        },
+        {
+          "pole": {
+            "note": 85.417600656154065,
+            "width": 0.94902143694291108
+          },
+          "zero": {
+            "note": 85.417600656154065,
+            "width": 15.184342991086577
+          },
+          "gain_db": -0.62869944584310078
+        },
+        {
+          "pole": {
+            "note": 101.85342089367306,
+            "width": 0.66538487208235586
+          },
+          "zero": {
+            "note": 101.85342089367306,
+            "width": 10.646157953317694
+          },
+          "gain_db": -0.62869944584310078
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.62869944584310078
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.62869944584310078
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.62869944584310078
+        }
+      ]
+    },
+    {
+      "name": "vowel oa girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.052263022836286,
+            "width": 1.4103375118469157
+          },
+          "zero": {
+            "note": 74.052263022836286,
+            "width": 22.565400189550651
+          },
+          "gain_db": -0.67556073131809358
+        },
+        {
+          "pole": {
+            "note": 85.563631157165077,
+            "width": 0.94126286766884792
+          },
+          "zero": {
+            "note": 85.563631157165077,
+            "width": 15.060205882701567
+          },
+          "gain_db": -0.67556073131809358
+        },
+        {
+          "pole": {
+            "note": 102.83408216775524,
+            "width": 0.62939949823434027
+          },
+          "zero": {
+            "note": 102.83408216775524,
+            "width": 10.070391971749444
+          },
+          "gain_db": -0.67556073131809358
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.67556073131809358
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.67556073131809358
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.67556073131809358
+        }
+      ]
+    },
+    {
+      "name": "vowel oa men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 71.1344338100387,
+            "width": 1.6572080761815036
+          },
+          "zero": {
+            "note": 71.1344338100387,
+            "width": 26.515329218904057
+          },
+          "gain_db": -1.7970101994979308
+        },
+        {
+          "pole": {
+            "note": 81.587119222049779,
+            "width": 1.1762184214144766
+          },
+          "zero": {
+            "note": 81.587119222049779,
+            "width": 18.819494742631626
+          },
+          "gain_db": -1.7970101994979308
+        },
+        {
+          "pole": {
+            "note": 98.791207254056843,
+            "width": 0.79122790785137309
+          },
+          "zero": {
+            "note": 98.791207254056843,
+            "width": 12.659646525621969
+          },
+          "gain_db": -1.7970101994979308
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7970101994979308
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7970101994979308
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.7970101994979308
+        }
+      ]
+    },
+    {
+      "name": "vowel oa women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.03410205027771,
+            "width": 1.4921878173819931
+          },
+          "zero": {
+            "note": 73.03410205027771,
+            "width": 23.87500507811189
+          },
+          "gain_db": -1.0574453234001846
+        },
+        {
+          "pole": {
+            "note": 83.817373801644337,
+            "width": 1.0382203335546867
+          },
+          "zero": {
+            "note": 83.817373801644337,
+            "width": 16.611525336874987
+          },
+          "gain_db": -1.0574453234001846
+        },
+        {
+          "pole": {
+            "note": 101.21226571701291,
+            "width": 0.68999530229975525
+          },
+          "zero": {
+            "note": 101.21226571701291,
+            "width": 11.039924836796084
+          },
+          "gain_db": -1.0574453234001846
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0574453234001846
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0574453234001846
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.0574453234001846
+        }
+      ]
+    },
+    {
+      "name": "vowel oo boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.404837482647039,
+            "width": 1.461870676437518
+          },
+          "zero": {
+            "note": 73.404837482647039,
+            "width": 23.389930823000288
+          },
+          "gain_db": -0.57642257426844412
+        },
+        {
+          "pole": {
+            "note": 89.661641735308692,
+            "width": 0.74707531955569217
+          },
+          "zero": {
+            "note": 89.661641735308692,
+            "width": 11.953205112891075
+          },
+          "gain_db": -0.57642257426844412
+        },
+        {
+          "pole": {
+            "note": 102.22131332693942,
+            "width": 0.65165442140530683
+          },
+          "zero": {
+            "note": 102.22131332693942,
+            "width": 10.426470742484909
+          },
+          "gain_db": -0.57642257426844412
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.57642257426844412
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.57642257426844412
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.57642257426844412
+        }
+      ]
+    },
+    {
+      "name": "vowel oo girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 73.639038641948318,
+            "width": 1.4430238936359499
+          },
+          "zero": {
+            "note": 73.639038641948318,
+            "width": 23.088382298175198
+          },
+          "gain_db": -0.4504400964062919
+        },
+        {
+          "pole": {
+            "note": 91.161575970979953,
+            "width": 0.68628582329777876
+          },
+          "zero": {
+            "note": 91.161575970979953,
+            "width": 10.98057317276446
+          },
+          "gain_db": -0.4504400964062919
+        },
+        {
+          "pole": {
+            "note": 103.27776757448294,
+            "width": 0.613752963145849
+          },
+          "zero": {
+            "note": 103.27776757448294,
+            "width": 9.8200474103335846
+          },
+          "gain_db": -0.4504400964062919
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.4504400964062919
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.4504400964062919
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.4504400964062919
+        }
+      ]
+    },
+    {
+      "name": "vowel oo men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.115673348885707,
+            "width": 1.7527326468124316
+          },
+          "zero": {
+            "note": 70.115673348885707,
+            "width": 28.043722348998905
+          },
+          "gain_db": -1.6855846695292185
+        },
+        {
+          "pole": {
+            "note": 85.218649120029056,
+            "width": 0.95969187846480453
+          },
+          "zero": {
+            "note": 85.218649120029056,
+            "width": 15.355070055436872
+          },
+          "gain_db": -1.6855846695292185
+        },
+        {
+          "pole": {
+            "note": 98.618102059939289,
+            "width": 0.79899833670756393
+          },
+          "zero": {
+            "note": 98.618102059939289,
+            "width": 12.783973387321023
+          },
+          "gain_db": -1.6855846695292185
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.6855846695292185
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.6855846695292185
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.6855846695292185
+        }
+      ]
+    },
+    {
+      "name": "vowel oo women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 71.846954168491152,
+            "width": 1.5933681801644206
+          },
+          "zero": {
+            "note": 71.846954168491152,
+            "width": 25.49389088263073
+          },
+          "gain_db": -1.0718279230237973
+        },
+        {
+          "pole": {
+            "note": 86.77674988984954,
+            "width": 0.8791534638375853
+          },
+          "zero": {
+            "note": 86.77674988984954,
+            "width": 14.066455421401365
+          },
+          "gain_db": -1.0718279230237973
+        },
+        {
+          "pole": {
+            "note": 101.21927809123552,
+            "width": 0.68972136882436952
+          },
+          "zero": {
+            "note": 101.21927809123552,
+            "width": 11.035541901189912
+          },
+          "gain_db": -1.0718279230237973
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0718279230237973
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0718279230237973
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.0718279230237973
+        }
+      ]
+    },
+    {
+      "name": "vowel uh boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 77.389127045168777,
+            "width": 1.1712540588509508
+          },
+          "zero": {
+            "note": 77.389127045168777,
+            "width": 18.740064941615213
+          },
+          "gain_db": 0.069698698138555809
+        },
+        {
+          "pole": {
+            "note": 90.036215993418864,
+            "width": 0.73141803963820684
+          },
+          "zero": {
+            "note": 90.036215993418864,
+            "width": 11.702688634211309
+          },
+          "gain_db": 0.069698698138555809
+        },
+        {
+          "pole": {
+            "note": 102.61461472083192,
+            "width": 0.63728314056861735
+          },
+          "zero": {
+            "note": 102.61461472083192,
+            "width": 10.196530249097878
+          },
+          "gain_db": 0.069698698138555809
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.069698698138555809
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.069698698138555809
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.069698698138555809
+        }
+      ]
+    },
+    {
+      "name": "vowel uh girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 78.726084758811737,
+            "width": 1.086881486836736
+          },
+          "zero": {
+            "note": 78.726084758811737,
+            "width": 17.390103789387776
+          },
+          "gain_db": 0.29397032066430584
+        },
+        {
+          "pole": {
+            "note": 91.502475349544611,
+            "width": 0.67316105580065444
+          },
+          "zero": {
+            "note": 91.502475349544611,
+            "width": 10.770576892810471
+          },
+          "gain_db": 0.29397032066430584
+        },
+        {
+          "pole": {
+            "note": 103.40312283469328,
+            "width": 0.60940197328368839
+          },
+          "zero": {
+            "note": 103.40312283469328,
+            "width": 9.7504315725390143
+          },
+          "gain_db": 0.29397032066430584
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.29397032066430584
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.29397032066430584
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.29397032066430584
+        }
+      ]
+    },
+    {
+      "name": "vowel uh men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.976224612517825,
+            "width": 1.3398035469085139
+          },
+          "zero": {
+            "note": 74.976224612517825,
+            "width": 21.436856750536222
+          },
+          "gain_db": -0.59229964552994585
+        },
+        {
+          "pole": {
+            "note": 86.098088091710423,
+            "width": 0.91339021385572472
+          },
+          "zero": {
+            "note": 86.098088091710423,
+            "width": 14.614243421691596
+          },
+          "gain_db": -0.59229964552994585
+        },
+        {
+          "pole": {
+            "note": 99.402458151542078,
+            "width": 0.76437624059492437
+          },
+          "zero": {
+            "note": 99.402458151542078,
+            "width": 12.23001984951879
+          },
+          "gain_db": -0.59229964552994585
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.59229964552994585
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.59229964552994585
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.59229964552994585
+        }
+      ]
+    },
+    {
+      "name": "vowel uh women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 78.466221347529128,
+            "width": 1.1028062859056389
+          },
+          "zero": {
+            "note": 78.466221347529128,
+            "width": 17.644900574490222
+          },
+          "gain_db": 0.13466765317936805
+        },
+        {
+          "pole": {
+            "note": 89.230874149219034,
+            "width": 0.7654871997322974
+          },
+          "zero": {
+            "note": 89.230874149219034,
+            "width": 12.247795195716758
+          },
+          "gain_db": 0.13466765317936805
+        },
+        {
+          "pole": {
+            "note": 101.6512010833746,
+            "width": 0.6730525597827689
+          },
+          "zero": {
+            "note": 101.6512010833746,
+            "width": 10.768840956524302
+          },
+          "gain_db": 0.13466765317936805
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.13466765317936805
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 0.13466765317936805
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 0.13466765317936805
+        }
+      ]
+    },
+    {
+      "name": "vowel uw boys",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.966408070704347,
+            "width": 1.6726141733781943
+          },
+          "zero": {
+            "note": 70.966408070704347,
+            "width": 26.761826774051109
+          },
+          "gain_db": -1.1707516242784306
+        },
+        {
+          "pole": {
+            "note": 88.106096796012,
+            "width": 0.81567952378642239
+          },
+          "zero": {
+            "note": 88.106096796012,
+            "width": 13.050872380582758
+          },
+          "gain_db": -1.1707516242784306
+        },
+        {
+          "pole": {
+            "note": 101.93173999759965,
+            "width": 0.66243827543971745
+          },
+          "zero": {
+            "note": 101.93173999759965,
+            "width": 10.599012407035479
+          },
+          "gain_db": -1.1707516242784306
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1707516242784306
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1707516242784306
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.1707516242784306
+        }
+      ]
+    },
+    {
+      "name": "vowel uw girls",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.944965837408347,
+            "width": 1.6745899763481136
+          },
+          "zero": {
+            "note": 70.944965837408347,
+            "width": 26.793439621569817
+          },
+          "gain_db": -1.0598407700888548
+        },
+        {
+          "pole": {
+            "note": 90.344660046853036,
+            "width": 0.71876659556295519
+          },
+          "zero": {
+            "note": 90.344660046853036,
+            "width": 11.500265529007283
+          },
+          "gain_db": -1.0598407700888548
+        },
+        {
+          "pole": {
+            "note": 102.53164708735706,
+            "width": 0.64028866215118319
+          },
+          "zero": {
+            "note": 102.53164708735706,
+            "width": 10.244618594418931
+          },
+          "gain_db": -1.0598407700888548
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0598407700888548
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.0598407700888548
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.0598407700888548
+        }
+      ]
+    },
+    {
+      "name": "vowel uw men",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 66.446757809547549,
+            "width": 2.141814199842468
+          },
+          "zero": {
+            "note": 66.446757809547549,
+            "width": 34.269027197479488
+          },
+          "gain_db": -2.9335947273899277
+        },
+        {
+          "pole": {
+            "note": 83.078304670546984,
+            "width": 1.0821152219253778
+          },
+          "zero": {
+            "note": 83.078304670546984,
+            "width": 17.313843550806045
+          },
+          "gain_db": -2.9335947273899277
+        },
+        {
+          "pole": {
+            "note": 98.043779810674238,
+            "width": 0.82531652240214726
+          },
+          "zero": {
+            "note": 98.043779810674238,
+            "width": 13.205064358434356
+          },
+          "gain_db": -2.9335947273899277
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.9335947273899277
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.9335947273899277
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -2.9335947273899277
+        }
+      ]
+    },
+    {
+      "name": "vowel uw women",
+      "source": "Hillenbrand et al. 1995, JASA 97:3099-3111; mean F1-F3 by vowel and speaker group from evidence/mouths/hillenbrand/hillenbrand-vowel-formatted.csv; bandwidth proxy: Dunn 1961, English adults, 50/64/115 Hz, Kent and Vorperian 2018 Table 5 (p48), doi:10.1016/j.jcomdis.2018.05.004",
+      "stages": [
+        {
+          "pole": {
+            "note": 69.757014327217973,
+            "width": 1.7875913981618927
+          },
+          "zero": {
+            "note": 69.757014327217973,
+            "width": 28.601462370590284
+          },
+          "gain_db": -1.7152447772864432
+        },
+        {
+          "pole": {
+            "note": 84.94980940639141,
+            "width": 0.974296184760924
+          },
+          "zero": {
+            "note": 84.94980940639141,
+            "width": 15.588738956174783
+          },
+          "gain_db": -1.7152447772864432
+        },
+        {
+          "pole": {
+            "note": 100.63409026324268,
+            "width": 0.71295194650668181
+          },
+          "zero": {
+            "note": 100.63409026324268,
+            "width": 11.407231144106909
+          },
+          "gain_db": -1.7152447772864432
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7152447772864432
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7152447772864432
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.7152447772864432
+        }
+      ]
     }
-   ]
-  },
-  {
-   "name": "vowel ae girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 77.816,
-      "width": 1.364
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.268,
-      "width": 0.606
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.397,
-      "width": 0.601
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.133,
-      "width": 0.572
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ae men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 74.079,
-      "width": 1.677
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 94.559,
-      "width": 0.791
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.701,
-      "width": 0.784
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.535,
-      "width": 0.701
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ae women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 76.341,
-      "width": 1.48
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 97.853,
-      "width": 0.656
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.037,
-      "width": 0.687
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.467,
-      "width": 0.594
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ah boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 82.366,
-      "width": 1.058
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 91.825,
-      "width": 0.922
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.475,
-      "width": 0.709
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.295,
-      "width": 0.599
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ah girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 83.739,
-      "width": 0.979
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 92.715,
-      "width": 0.877
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.268,
-      "width": 0.678
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.296,
-      "width": 0.599
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ah men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 78.326,
-      "width": 1.325
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 87.811,
-      "width": 1.155
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.287,
-      "width": 0.802
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.745,
-      "width": 0.693
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ah women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 81.698,
-      "width": 1.098
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 90.47,
-      "width": 0.995
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.202,
-      "width": 0.72
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.361,
-      "width": 0.597
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel aw boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 79.111,
-      "width": 1.269
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 86.953,
-      "width": 1.212
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.395,
-      "width": 0.712
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 107.045,
-      "width": 0.643
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel aw girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 81.225,
-      "width": 1.128
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 88.687,
-      "width": 1.1
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.538,
-      "width": 0.667
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 107.567,
-      "width": 0.625
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel aw men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 75.891,
-      "width": 1.517
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 83.576,
-      "width": 1.462
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.179,
-      "width": 0.807
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.966,
-      "width": 0.724
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel aw women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 79.37,
-      "width": 1.251
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 86.104,
-      "width": 1.271
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.141,
-      "width": 0.722
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 106.944,
-      "width": 0.647
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel eh boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 77.56,
-      "width": 1.383
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 97.019,
-      "width": 0.688
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 103.478,
-      "width": 0.633
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.636,
-      "width": 0.555
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel eh girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 78.268,
-      "width": 1.33
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 98.021,
-      "width": 0.65
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.342,
-      "width": 0.602
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.976,
-      "width": 0.545
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel eh men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.979,
-      "width": 1.686
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 93.38,
-      "width": 0.845
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.758,
-      "width": 0.781
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.82,
-      "width": 0.69
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel eh women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 77.611,
-      "width": 1.379
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 95.707,
-      "width": 0.741
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.925,
-      "width": 0.691
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.446,
-      "width": 0.594
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ei boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.18,
-      "width": 1.762
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.789,
-      "width": 0.588
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 103.783,
-      "width": 0.622
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.936,
-      "width": 0.578
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ei girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.31,
-      "width": 1.749
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 100.42,
-      "width": 0.567
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.211,
-      "width": 0.607
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.792,
-      "width": 0.583
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ei men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 70.3,
-      "width": 2.062
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 95.937,
-      "width": 0.731
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 100.329,
-      "width": 0.756
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.574,
-      "width": 0.699
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ei women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 72.285,
-      "width": 1.85
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.221,
-      "width": 0.607
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.488,
-      "width": 0.669
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.453,
-      "width": 0.594
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel er boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.306,
-      "width": 1.749
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 92.453,
-      "width": 0.89
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 95.819,
-      "width": 0.975
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.772,
-      "width": 0.692
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel er girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 74.726,
-      "width": 1.618
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 92.724,
-      "width": 0.877
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 97.318,
-      "width": 0.896
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 106.81,
-      "width": 0.652
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel er men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 70.289,
-      "width": 2.063
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 88.751,
-      "width": 1.096
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 92.474,
-      "width": 1.176
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.005,
-      "width": 0.764
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel er women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 71.963,
-      "width": 1.883
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 91.171,
-      "width": 0.957
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 94.556,
-      "width": 1.047
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 106.766,
-      "width": 0.654
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ih boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 71.789,
-      "width": 1.901
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.031,
-      "width": 0.614
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.043,
-      "width": 0.613
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.398,
-      "width": 0.563
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ih girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 71.369,
-      "width": 1.945
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.995,
-      "width": 0.581
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.944,
-      "width": 0.582
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.57,
-      "width": 0.557
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ih men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 68.531,
-      "width": 2.27
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 95.475,
-      "width": 0.751
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 100.305,
-      "width": 0.757
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.496,
-      "width": 0.702
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel ih women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 70.619,
-      "width": 2.027
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 98.112,
-      "width": 0.647
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.528,
-      "width": 0.668
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.558,
-      "width": 0.59
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel iy boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 69.021,
-      "width": 2.211
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.37,
-      "width": 0.508
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.398,
-      "width": 0.567
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.404,
-      "width": 0.563
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel iy girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 69.901,
-      "width": 2.107
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 103.084,
-      "width": 0.488
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 106.322,
-      "width": 0.538
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 109.626,
-      "width": 0.556
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel iy men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 64.617,
-      "width": 2.802
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 97.774,
-      "width": 0.659
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.199,
-      "width": 0.68
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.634,
-      "width": 0.697
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel iy women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 68.816,
-      "width": 2.235
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 100.773,
-      "width": 0.556
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.218,
-      "width": 0.607
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.603,
-      "width": 0.589
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oa boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 74.487,
-      "width": 1.639
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 85.329,
-      "width": 1.327
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.82,
-      "width": 0.695
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 107.813,
-      "width": 0.616
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oa girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.881,
-      "width": 1.695
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 85.303,
-      "width": 1.329
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.804,
-      "width": 0.657
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.198,
-      "width": 0.603
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oa men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 71.071,
-      "width": 1.977
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 81.485,
-      "width": 1.641
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 98.761,
-      "width": 0.826
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.284,
-      "width": 0.752
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oa women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 72.85,
-      "width": 1.794
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 83.698,
-      "width": 1.452
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.175,
-      "width": 0.721
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 106.871,
-      "width": 0.65
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oo boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.334,
-      "width": 1.747
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 89.516,
-      "width": 1.05
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.187,
-      "width": 0.681
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.38,
-      "width": 0.596
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oo girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 73.558,
-      "width": 1.725
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 91.101,
-      "width": 0.961
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 103.248,
-      "width": 0.641
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.56,
-      "width": 0.59
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oo men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 70.085,
-      "width": 2.086
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 85.156,
-      "width": 1.339
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 98.595,
-      "width": 0.834
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.365,
-      "width": 0.749
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel oo women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 71.795,
-      "width": 1.901
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 86.663,
-      "width": 1.232
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.185,
-      "width": 0.721
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 107.445,
-      "width": 0.629
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uh boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 77.32,
-      "width": 1.402
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 89.978,
-      "width": 1.023
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.577,
-      "width": 0.666
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.558,
-      "width": 0.591
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uh girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 78.574,
-      "width": 1.307
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 91.465,
-      "width": 0.941
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 103.373,
-      "width": 0.636
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.23,
-      "width": 0.602
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uh men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 74.956,
-      "width": 1.598
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 86.053,
-      "width": 1.274
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 99.375,
-      "width": 0.798
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 105.185,
-      "width": 0.715
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uh women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 78.417,
-      "width": 1.319
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 89.173,
-      "width": 1.071
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.621,
-      "width": 0.703
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 107.743,
-      "width": 0.618
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uw boys",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 70.887,
-      "width": 1.997
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 87.747,
-      "width": 1.159
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 101.893,
-      "width": 0.692
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.061,
-      "width": 0.607
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uw girls",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 70.889,
-      "width": 1.997
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 89.814,
-      "width": 1.033
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 102.491,
-      "width": 0.669
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 108.644,
-      "width": 0.588
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uw men",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 66.381,
-      "width": 2.549
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 82.971,
-      "width": 1.512
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 98.016,
-      "width": 0.862
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 104.224,
-      "width": 0.755
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  },
-  {
-   "name": "vowel uw women",
-   "source": "hillenbrand-vowel-formatted.csv",
-   "stages": [
-    {
-     "pole": {
-      "note": 69.694,
-      "width": 2.131
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 84.681,
-      "width": 1.375
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 100.612,
-      "width": 0.744
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": {
-      "note": 107.653,
-      "width": 0.622
-     },
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    },
-    {
-     "pole": null,
-     "zero": null,
-     "gain_db": 0.0
-    }
-   ]
-  }
- ]
+  ]
 }

@@ -4,7 +4,11 @@ This file is canonical. AGENTS.md is a stub; do not rely on it.
 
 ## What this is
 - `plugin/` is the TRENCH VST3, "a musical filter by Signal Methods". It ships.
-- `native/` is the authoring tool (Qt app) and `native/core` the C++ engine both share.
+- `native/workstation/` is TRENCH Workstation, the authoring tool: a MATLAB R2025b toolbox
+  (`toolbox/+trench`) over two MEX files, `trench_bridge` (the model in
+  `native/workstation/Source/model` plus the readers) and `trench_audio` (the engine on the
+  sound card). `native/core` is the C++ engine both products share. Run it with `trench.setup`
+  then `trench.launch`; see `native/workstation/README.md`.
 - `evidence/` is the ONLY evidence root. Bodies, ROM dumps, manuals, patents, papers and
   research results live under `C:\Users\hooki\trench-native\evidence`. Do not go to
   trench-x3-clean or other repos for evidence; if something is needed from there, copy it
@@ -38,8 +42,13 @@ engine rewarps to the host rate from that datum.
 - Plugin tree: `out/build/vst3` (Ninja, Release). Targets: TRENCH_VST3 (ship),
   TRENCH_Dev_VST3 (dev build with the drawer and the 33-body roster), TRENCH_Tests,
   TRENCH_ReviewTests, TRENCH_FaceShot (headless face render).
-- App tree: `out/build/app`. Targets: trench_native, trench_native_tests, trench_core_tests.
-  Native tests run with QT_QPA_PLATFORM=offscreen via ctest.
+- Workstation: `native/workstation/build_mex.cmd` (or `buildtool mex` in MATLAB) builds
+  trench_bridge, trench_audio, TRENCH_WorkstationTests, trench_core_tests and
+  trench_core_from_audio_tests in the same `out/build/vst3` tree and copies the MEX files into
+  `native/workstation/toolbox/mex`; MATLAB must have released the old files first. ctest names:
+  trench_core, trench_core_from_audio, trench_workstation (C++), trench_workstation_bridge,
+  trench_workstation_rooms, trench_workstation_envelope, trench_workstation_shot (each
+  `matlab -batch` on a `matlab.unittest` class in `native/workstation/Tests`).
 - All test runs headless. Never open windows on the user's screen. Tests are acceptance
   tests: fix the code, never loosen a threshold.
 - Install: copy the built .vst3 over `C:\Program Files\Common Files\VST3\...`; if FL holds

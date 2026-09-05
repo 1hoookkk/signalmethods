@@ -210,49 +210,7 @@ add_test(NAME trench_gen_curves
     WORKING_DIRECTORY "${TRENCH_WORKSPACE_DIR}")
 set_tests_properties(trench_gen_curves PROPERTIES ENVIRONMENT "MPLBACKEND=Agg")
 
-juce_add_gui_app(TRENCH_Workstation
-  COMPANY_NAME "Signal Methods"
-  BUNDLE_ID "com.signalmethods.trench.workstation"
-  PRODUCT_NAME "TRENCH Workstation")
 set(TRENCH_WORKSTATION_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
-target_sources(TRENCH_Workstation PRIVATE
-  "${TRENCH_WORKSTATION_DIR}/Main.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Frame.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Delaunay.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Timeline.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Body.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Morph.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Stitch.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Sound.cpp"
-  "${TRENCH_WORKSTATION_DIR}/render/Scene.cpp"
-  "${TRENCH_WORKSTATION_DIR}/render/GLRenderer.cpp"
-  "${TRENCH_WORKSTATION_DIR}/render/SoftwareRenderer.cpp"
-  "${TRENCH_WORKSTATION_DIR}/render/Canvas.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/Layout.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/View3D.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/Workstation.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationKeys.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationActions.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationInput.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationScene.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationPaint.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationRooms.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/Audio.cpp")
-target_include_directories(TRENCH_Workstation PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
-target_compile_features(TRENCH_Workstation PRIVATE cxx_std_20)
-target_compile_definitions(TRENCH_Workstation PRIVATE ${TRENCH_COMMON_DEFINITIONS}
-    JUCE_APPLICATION_NAME_STRING="TRENCH Workstation"
-    JUCE_APPLICATION_VERSION_STRING="0.1.0")
-target_link_libraries(TRENCH_Workstation PRIVATE
-    trench_native_core
-    juce::juce_gui_basics
-    juce::juce_opengl
-    juce::juce_dsp
-    juce::juce_audio_devices
-    juce::juce_recommended_config_flags
-    juce::juce_recommended_warning_flags)
-
 juce_add_console_app(TRENCH_WorkstationTests PRODUCT_NAME "TRENCH Workstation Tests")
 target_sources(TRENCH_WorkstationTests PRIVATE
   "${TRENCH_WORKSTATION_DIR}/../Tests/MorphTests.cpp"
@@ -270,6 +228,6 @@ target_link_libraries(TRENCH_WorkstationTests PRIVATE
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
 add_test(NAME trench_workstation COMMAND TRENCH_WorkstationTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-add_test(NAME trench_workstation_gestures COMMAND TRENCH_Workstation --check WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-set_tests_properties(trench_workstation_gestures PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)
 set_tests_properties(trench_workstation PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/bridge" "${CMAKE_CURRENT_BINARY_DIR}/workstation-bridge")

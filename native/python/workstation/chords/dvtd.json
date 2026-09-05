@@ -1,0 +1,1609 @@
+{
+  "schema": "trench-chords-v1",
+  "floor": "VOWELS",
+  "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+  "chords": [
+    {
+      "name": "tense-a bahn s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 76.563925133364251,
+            "width": 5.2936273578821247
+          },
+          "zero": {
+            "note": 76.563925133364251,
+            "width": 41.50203848579585
+          },
+          "gain_db": -1.6804367128587057
+        },
+        {
+          "pole": {
+            "note": 103.74590560105976,
+            "width": 1.0277574764757518
+          },
+          "zero": {
+            "note": 103.74590560105976,
+            "width": 16.444119623612028
+          },
+          "gain_db": -1.6804367128587057
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.6804367128587057
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.6804367128587057
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.6804367128587057
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.6804367128587057
+        }
+      ]
+    },
+    {
+      "name": "tense-e beet s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 95.148265604246944,
+            "width": 2.561914898896172
+          },
+          "zero": {
+            "note": 95.148265604246944,
+            "width": 40.990638382338751
+          },
+          "gain_db": -1.7242919066612568
+        },
+        {
+          "pole": {
+            "note": 102.69637174118587,
+            "width": 1.886131077506243
+          },
+          "zero": {
+            "note": 102.69637174118587,
+            "width": 30.178097240099888
+          },
+          "gain_db": -1.7242919066612568
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7242919066612568
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7242919066612568
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.7242919066612568
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.7242919066612568
+        }
+      ]
+    },
+    {
+      "name": "tense-i tiere s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 95.589411157021672,
+            "width": 4.3166783794076942
+          },
+          "zero": {
+            "note": 95.589411157021672,
+            "width": 33.842758494556314
+          },
+          "gain_db": -5.3849378624367317
+        },
+        {
+          "pole": {
+            "note": 102.02833474662181,
+            "width": 0.984709869503616
+          },
+          "zero": {
+            "note": 102.02833474662181,
+            "width": 15.755357912057857
+          },
+          "gain_db": -5.3849378624367317
+        },
+        {
+          "pole": {
+            "note": 112.67156930540988,
+            "width": 2.3378989504250347
+          },
+          "zero": {
+            "note": 112.67156930540988,
+            "width": 26.184468244760389
+          },
+          "gain_db": -5.3849378624367317
+        },
+        {
+          "pole": {
+            "note": 112.94566071420252,
+            "width": 10.144556041568112
+          },
+          "zero": {
+            "note": 112.94566071420252,
+            "width": 28.811999999999994
+          },
+          "gain_db": -5.3849378624367317
+        },
+        {
+          "pole": {
+            "note": 115.84821737801843,
+            "width": 1.581116881130274
+          },
+          "zero": {
+            "note": 115.84821737801843,
+            "width": 25.297870098084385
+          },
+          "gain_db": -5.3849378624367317
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -5.3849378624367317
+        }
+      ]
+    },
+    {
+      "name": "tense-o boote s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 65.735336884803871,
+            "width": 6.0106205572049607
+          },
+          "zero": {
+            "note": 65.735336884803871,
+            "width": 32.986285617940823
+          },
+          "gain_db": 1.1018600984435916
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.1018600984435916
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.1018600984435916
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.1018600984435916
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.1018600984435916
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 1.1018600984435916
+        }
+      ]
+    },
+    {
+      "name": "tense-u bude s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 58.913440628851809,
+            "width": 8.1467470592795159
+          },
+          "zero": {
+            "note": 58.913440628851809,
+            "width": 41.16
+          },
+          "gain_db": -3.3071409900322388
+        },
+        {
+          "pole": {
+            "note": 114.08714063481278,
+            "width": 0.47335577753329006
+          },
+          "zero": {
+            "note": 114.08714063481278,
+            "width": 7.5736924405326409
+          },
+          "gain_db": -3.3071409900322388
+        },
+        {
+          "pole": {
+            "note": 123.99415366864913,
+            "width": 0.86015073529553687
+          },
+          "zero": {
+            "note": 123.99415366864913,
+            "width": 13.76241176472859
+          },
+          "gain_db": -3.3071409900322388
+        },
+        {
+          "pole": {
+            "note": 125.89779787755653,
+            "width": 1.1269661483673783
+          },
+          "zero": {
+            "note": 125.89779787755653,
+            "width": 18.031458373878053
+          },
+          "gain_db": -3.3071409900322388
+        },
+        {
+          "pole": {
+            "note": 127.72450529353081,
+            "width": 1.180810457554174
+          },
+          "zero": {
+            "note": 127.72450529353081,
+            "width": 18.892967320866784
+          },
+          "gain_db": -3.3071409900322388
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -3.3071409900322388
+        }
+      ]
+    },
+    {
+      "name": "tense-ae laehmung s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 93.819759469207739,
+            "width": 2.5561877490835307
+          },
+          "zero": {
+            "note": 93.819759469207739,
+            "width": 40.899003985336492
+          },
+          "gain_db": -0.64124719062408342
+        },
+        {
+          "pole": {
+            "note": 102.04919229203776,
+            "width": 0.97195978289686413
+          },
+          "zero": {
+            "note": 102.04919229203776,
+            "width": 15.551356526349826
+          },
+          "gain_db": -0.64124719062408342
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.64124719062408342
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.64124719062408342
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.64124719062408342
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.64124719062408342
+        }
+      ]
+    },
+    {
+      "name": "tense-oe hoehle s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 91.877247229800929,
+            "width": 2.9947058176296344
+          },
+          "zero": {
+            "note": 91.877247229800929,
+            "width": 33.5407051574519
+          },
+          "gain_db": 1.6781809755551691
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.6781809755551691
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.6781809755551691
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.6781809755551691
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.6781809755551691
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 1.6781809755551691
+        }
+      ]
+    },
+    {
+      "name": "tense-y guete s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 91.890473465994518,
+            "width": 2.4749696977287554
+          },
+          "zero": {
+            "note": 91.890473465994518,
+            "width": 39.599515163660087
+          },
+          "gain_db": -0.67441475999404
+        },
+        {
+          "pole": {
+            "note": 123.65083035232371,
+            "width": 1.2710186415739013
+          },
+          "zero": {
+            "note": 123.65083035232371,
+            "width": 20.336298265182421
+          },
+          "gain_db": -0.67441475999404
+        },
+        {
+          "pole": {
+            "note": 125.66375869909473,
+            "width": 1.599549125218233
+          },
+          "zero": {
+            "note": 125.66375869909473,
+            "width": 25.592786003491728
+          },
+          "gain_db": -0.67441475999404
+        },
+        {
+          "pole": {
+            "note": 127.57119609067487,
+            "width": 1.6189026356522853
+          },
+          "zero": {
+            "note": 127.57119609067487,
+            "width": 25.902442170436565
+          },
+          "gain_db": -0.67441475999404
+        },
+        {
+          "pole": {
+            "note": 129.31985453406918,
+            "width": 1.574594667491453
+          },
+          "zero": {
+            "note": 129.31985453406918,
+            "width": 25.193514679863249
+          },
+          "gain_db": -0.67441475999404
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.67441475999404
+        }
+      ]
+    },
+    {
+      "name": "lax-a bass s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 78.275746847657686,
+            "width": 4.4802993120008949
+          },
+          "zero": {
+            "note": 78.275746847657686,
+            "width": 50.179352294410023
+          },
+          "gain_db": -0.950328308478817
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.950328308478817
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.950328308478817
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.950328308478817
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.950328308478817
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.950328308478817
+        }
+      ]
+    },
+    {
+      "name": "lax-ae bett s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 95.13678757187887,
+            "width": 3.7257860034946892
+          },
+          "zero": {
+            "note": 95.13678757187887,
+            "width": 41.728803239140518
+          },
+          "gain_db": -0.37704717272018212
+        },
+        {
+          "pole": {
+            "note": 102.35734784139829,
+            "width": 0.62243408906605446
+          },
+          "zero": {
+            "note": 102.35734784139829,
+            "width": 9.9589454250568714
+          },
+          "gain_db": -0.37704717272018212
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.37704717272018212
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.37704717272018212
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.37704717272018212
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.37704717272018212
+        }
+      ]
+    },
+    {
+      "name": "lax-i mit s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 94.512904314277,
+            "width": 2.4833694981748815
+          },
+          "zero": {
+            "note": 94.512904314277,
+            "width": 39.733911970798104
+          },
+          "gain_db": -0.47728293921128656
+        },
+        {
+          "pole": {
+            "note": 103.01630917117083,
+            "width": 0.98943237613210189
+          },
+          "zero": {
+            "note": 103.01630917117083,
+            "width": 15.83091801811363
+          },
+          "gain_db": -0.47728293921128656
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.47728293921128656
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.47728293921128656
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.47728293921128656
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.47728293921128656
+        }
+      ]
+    },
+    {
+      "name": "lax-o offen s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 71.035583303740978,
+            "width": 5.84498612640897
+          },
+          "zero": {
+            "note": 71.035583303740978,
+            "width": 45.824691231046316
+          },
+          "gain_db": -2.1441993929573675
+        },
+        {
+          "pole": {
+            "note": 107.36041923671159,
+            "width": 0.56343779403161154
+          },
+          "zero": {
+            "note": 107.36041923671159,
+            "width": 9.0150047045057846
+          },
+          "gain_db": -2.1441993929573675
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.1441993929573675
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.1441993929573675
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -2.1441993929573675
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -2.1441993929573675
+        }
+      ]
+    },
+    {
+      "name": "lax-u butter s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 64.272685992569961,
+            "width": 6.1517172490718579
+          },
+          "zero": {
+            "note": 64.272685992569961,
+            "width": 33.760624262906347
+          },
+          "gain_db": -3.0608573020369838
+        },
+        {
+          "pole": {
+            "note": 106.95639579661935,
+            "width": 0.90415305472115048
+          },
+          "zero": {
+            "note": 106.95639579661935,
+            "width": 14.466448875538408
+          },
+          "gain_db": -3.0608573020369838
+        },
+        {
+          "pole": {
+            "note": 107.45932373749358,
+            "width": 10.894330099130071
+          },
+          "zero": {
+            "note": 107.45932373749358,
+            "width": 28.811999999999994
+          },
+          "gain_db": -3.0608573020369838
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -3.0608573020369838
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -3.0608573020369838
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -3.0608573020369838
+        }
+      ]
+    },
+    {
+      "name": "lax-y muetter s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 107.70365123707342,
+            "width": 0.6506828315660641
+          },
+          "zero": {
+            "note": 107.70365123707342,
+            "width": 10.410925305057026
+          },
+          "gain_db": 4.1528871768108715
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 4.1528871768108715
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 4.1528871768108715
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 4.1528871768108715
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 4.1528871768108715
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 4.1528871768108715
+        }
+      ]
+    },
+    {
+      "name": "schwa ehe s1",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 94.944851908076942,
+            "width": 4.5947389492707895
+          },
+          "zero": {
+            "note": 94.944851908076942,
+            "width": 36.022753362282984
+          },
+          "gain_db": -0.1303281781937024
+        },
+        {
+          "pole": {
+            "note": 103.83768164140176,
+            "width": 1.0347532406863085
+          },
+          "zero": {
+            "note": 103.83768164140176,
+            "width": 16.556051850980936
+          },
+          "gain_db": -0.1303281781937024
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.1303281781937024
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.1303281781937024
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.1303281781937024
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.1303281781937024
+        }
+      ]
+    },
+    {
+      "name": "tense-a bahn s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 81.773617599346181,
+            "width": 5.1981376762792211
+          },
+          "zero": {
+            "note": 81.773617599346181,
+            "width": 58.219141974327272
+          },
+          "gain_db": -5.1343379549381076
+        },
+        {
+          "pole": {
+            "note": 104.18578772415805,
+            "width": 1.6100090988359583
+          },
+          "zero": {
+            "note": 104.18578772415805,
+            "width": 25.760145581375333
+          },
+          "gain_db": -5.1343379549381076
+        },
+        {
+          "pole": {
+            "note": 108.04737482897937,
+            "width": 0.37907253713889366
+          },
+          "zero": {
+            "note": 108.04737482897937,
+            "width": 6.0651605942222986
+          },
+          "gain_db": -5.1343379549381076
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.1343379549381076
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.1343379549381076
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -5.1343379549381076
+        }
+      ]
+    },
+    {
+      "name": "tense-e beet s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 99.825359425107422,
+            "width": 0.59793925043209906
+          },
+          "zero": {
+            "note": 99.825359425107422,
+            "width": 9.5670280069135849
+          },
+          "gain_db": -0.879643884991073
+        },
+        {
+          "pole": {
+            "note": 108.79833827676615,
+            "width": 2.1786482665187172
+          },
+          "zero": {
+            "note": 108.79833827676615,
+            "width": 34.858372264299476
+          },
+          "gain_db": -0.879643884991073
+        },
+        {
+          "pole": {
+            "note": 109.68441024481621,
+            "width": 2.5952342426460313
+          },
+          "zero": {
+            "note": 109.68441024481621,
+            "width": 29.066623517635549
+          },
+          "gain_db": -0.879643884991073
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.879643884991073
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.879643884991073
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.879643884991073
+        }
+      ]
+    },
+    {
+      "name": "tense-i tiere s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 100.27157767800894,
+            "width": 2.7091632297791737
+          },
+          "zero": {
+            "note": 100.27157767800894,
+            "width": 30.342628173526744
+          },
+          "gain_db": -3.3553744464963424
+        },
+        {
+          "pole": {
+            "note": 106.77836564313766,
+            "width": 1.7884130498448521
+          },
+          "zero": {
+            "note": 106.77836564313766,
+            "width": 28.614608797517633
+          },
+          "gain_db": -3.3553744464963424
+        },
+        {
+          "pole": {
+            "note": 109.04015116501341,
+            "width": 0.80218366439873678
+          },
+          "zero": {
+            "note": 109.04015116501341,
+            "width": 12.834938630379789
+          },
+          "gain_db": -3.3553744464963424
+        },
+        {
+          "pole": {
+            "note": 120.07676660685858,
+            "width": 1.4830494764344175
+          },
+          "zero": {
+            "note": 120.07676660685858,
+            "width": 23.728791622950681
+          },
+          "gain_db": -3.3553744464963424
+        },
+        {
+          "pole": {
+            "note": 122.38484963282549,
+            "width": 1.4753365623931849
+          },
+          "zero": {
+            "note": 122.38484963282549,
+            "width": 23.605384998290958
+          },
+          "gain_db": -3.3553744464963424
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -3.3553744464963424
+        }
+      ]
+    },
+    {
+      "name": "tense-o boote s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 74.081897997736974,
+            "width": 5.9784261582631659
+          },
+          "zero": {
+            "note": 74.081897997736974,
+            "width": 46.870861080783214
+          },
+          "gain_db": -0.76309994363181144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.76309994363181144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.76309994363181144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.76309994363181144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.76309994363181144
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.76309994363181144
+        }
+      ]
+    },
+    {
+      "name": "tense-u bude s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 70.0557721283143,
+            "width": 9.0499569886330846
+          },
+          "zero": {
+            "note": 70.0557721283143,
+            "width": 41.16
+          },
+          "gain_db": -1.3782553577214827
+        },
+        {
+          "pole": {
+            "note": 109.71998090699323,
+            "width": 0.51144325847305
+          },
+          "zero": {
+            "note": 109.71998090699323,
+            "width": 8.1830921355688
+          },
+          "gain_db": -1.3782553577214827
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.3782553577214827
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.3782553577214827
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.3782553577214827
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.3782553577214827
+        }
+      ]
+    },
+    {
+      "name": "tense-ae laehmung s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 79.068593291209211,
+            "width": 9.9860598774795974
+          },
+          "zero": {
+            "note": 79.068593291209211,
+            "width": 58.8
+          },
+          "gain_db": -5.5782534694204786
+        },
+        {
+          "pole": {
+            "note": 96.885255038169362,
+            "width": 3.4600456125121495
+          },
+          "zero": {
+            "note": 96.885255038169362,
+            "width": 38.75251086013607
+          },
+          "gain_db": -5.5782534694204786
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.5782534694204786
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.5782534694204786
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.5782534694204786
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -5.5782534694204786
+        }
+      ]
+    },
+    {
+      "name": "tense-oe hoehle s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 94.395237027092165,
+            "width": 2.8480843863467484
+          },
+          "zero": {
+            "note": 94.395237027092165,
+            "width": 31.89854512708358
+          },
+          "gain_db": 1.9923181276796267
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9923181276796267
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9923181276796267
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9923181276796267
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9923181276796267
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 1.9923181276796267
+        }
+      ]
+    },
+    {
+      "name": "tense-y guete s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 95.0217959688141,
+            "width": 1.3112418949122537
+          },
+          "zero": {
+            "note": 95.0217959688141,
+            "width": 20.97987031859606
+          },
+          "gain_db": 1.9076101261199376
+        },
+        {
+          "pole": {
+            "note": 111.05757465676726,
+            "width": 0.58559866744371769
+          },
+          "zero": {
+            "note": 111.05757465676726,
+            "width": 9.3695786790994831
+          },
+          "gain_db": 1.9076101261199376
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9076101261199376
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9076101261199376
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": 1.9076101261199376
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": 1.9076101261199376
+        }
+      ]
+    },
+    {
+      "name": "lax-a bass s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 81.777051477158636,
+            "width": 3.7003270808181536
+          },
+          "zero": {
+            "note": 81.777051477158636,
+            "width": 41.443663305163319
+          },
+          "gain_db": -1.1537822559263664
+        },
+        {
+          "pole": {
+            "note": 108.16492939636743,
+            "width": 0.62595897417495
+          },
+          "zero": {
+            "note": 108.16492939636743,
+            "width": 10.0153435867992
+          },
+          "gain_db": -1.1537822559263664
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1537822559263664
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1537822559263664
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.1537822559263664
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.1537822559263664
+        }
+      ]
+    },
+    {
+      "name": "lax-ae bett s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 75.253536600619228,
+            "width": 11.595273948275338
+          },
+          "zero": {
+            "note": 75.253536600619228,
+            "width": 41.16
+          },
+          "gain_db": -5.7739082471934831
+        },
+        {
+          "pole": {
+            "note": 94.1333580801121,
+            "width": 3.7861429656571008
+          },
+          "zero": {
+            "note": 94.1333580801121,
+            "width": 42.404801215359527
+          },
+          "gain_db": -5.7739082471934831
+        },
+        {
+          "pole": {
+            "note": 107.49337906661381,
+            "width": 0.26333700357397843
+          },
+          "zero": {
+            "note": 107.49337906661381,
+            "width": 4.2133920571836549
+          },
+          "gain_db": -5.7739082471934831
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.7739082471934831
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -5.7739082471934831
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -5.7739082471934831
+        }
+      ]
+    },
+    {
+      "name": "lax-i mit s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 96.881214291075707,
+            "width": 2.5107734430987456
+          },
+          "zero": {
+            "note": 96.881214291075707,
+            "width": 40.17237508957993
+          },
+          "gain_db": -0.036124853013595144
+        },
+        {
+          "pole": {
+            "note": 106.49836009078027,
+            "width": 0.32293952666572656
+          },
+          "zero": {
+            "note": 106.49836009078027,
+            "width": 5.167032426651625
+          },
+          "gain_db": -0.036124853013595144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.036124853013595144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.036124853013595144
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.036124853013595144
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.036124853013595144
+        }
+      ]
+    },
+    {
+      "name": "lax-o offen s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 75.293370770484728,
+            "width": 6.3644995465388856
+          },
+          "zero": {
+            "note": 75.293370770484728,
+            "width": 49.89767644486485
+          },
+          "gain_db": -4.440863589938675
+        },
+        {
+          "pole": {
+            "note": 107.80742220835086,
+            "width": 1.177688629609253
+          },
+          "zero": {
+            "note": 107.80742220835086,
+            "width": 18.843018073748048
+          },
+          "gain_db": -4.440863589938675
+        },
+        {
+          "pole": {
+            "note": 109.70538678034902,
+            "width": 1.2041893551352527
+          },
+          "zero": {
+            "note": 109.70538678034902,
+            "width": 19.267029682164043
+          },
+          "gain_db": -4.440863589938675
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -4.440863589938675
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -4.440863589938675
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -4.440863589938675
+        }
+      ]
+    },
+    {
+      "name": "lax-u butter s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 68.750613819269233,
+            "width": 5.6174222140465462
+          },
+          "zero": {
+            "note": 68.750613819269233,
+            "width": 44.040590158124921
+          },
+          "gain_db": -4.2849251247454365
+        },
+        {
+          "pole": {
+            "note": 106.13237304361012,
+            "width": 1.636075749471164
+          },
+          "zero": {
+            "note": 106.13237304361012,
+            "width": 26.177211991538623
+          },
+          "gain_db": -4.2849251247454365
+        },
+        {
+          "pole": {
+            "note": 109.46907043074438,
+            "width": 0.37007844092731595
+          },
+          "zero": {
+            "note": 109.46907043074438,
+            "width": 5.9212550548370553
+          },
+          "gain_db": -4.2849251247454365
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -4.2849251247454365
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -4.2849251247454365
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -4.2849251247454365
+        }
+      ]
+    },
+    {
+      "name": "lax-y muetter s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 96.0910742128743,
+            "width": 2.6634766797407949
+          },
+          "zero": {
+            "note": 96.0910742128743,
+            "width": 42.615626875852719
+          },
+          "gain_db": -0.22338830704881685
+        },
+        {
+          "pole": {
+            "note": 110.71507009546175,
+            "width": 0.73992164386054671
+          },
+          "zero": {
+            "note": 110.71507009546175,
+            "width": 11.838746301768747
+          },
+          "gain_db": -0.22338830704881685
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.22338830704881685
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.22338830704881685
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -0.22338830704881685
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -0.22338830704881685
+        }
+      ]
+    },
+    {
+      "name": "lax-oe goetter s2",
+      "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; resonances by order-30 LPC of the measured magnitude as in evidence/research-results/dvtd_vowel_frames.py; 44,100 Hz datum",
+      "stages": [
+        {
+          "pole": {
+            "note": 75.563947360710486,
+            "width": 9.2277568752597752
+          },
+          "zero": {
+            "note": 75.563947360710486,
+            "width": 41.16
+          },
+          "gain_db": -1.2646804241932654
+        },
+        {
+          "pole": {
+            "note": 107.0748151197854,
+            "width": 0.610604370883241
+          },
+          "zero": {
+            "note": 107.0748151197854,
+            "width": 9.7696699341318567
+          },
+          "gain_db": -1.2646804241932654
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.2646804241932654
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.2646804241932654
+        },
+        {
+          "pole": [],
+          "zero": [],
+          "gain_db": -1.2646804241932654
+        },
+        {
+          "pole": [],
+          "zero": {
+            "note": 135.07623199229749,
+            "width": 0
+          },
+          "gain_db": -1.2646804241932654
+        }
+      ]
+    }
+  ]
+}

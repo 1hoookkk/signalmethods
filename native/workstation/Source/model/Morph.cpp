@@ -204,8 +204,8 @@ void dissolveInto (Stage& target, const Stage& partner)
 {
     if (partner.pole.on && ! target.pole.on)
     {
-        target.pole.on = true; target.pole.note = partner.pole.note; target.pole.width = dissolveWidth (partner.pole.note);
-        if (! target.zero.on) { target.zero.on = true; target.zero.note = target.pole.note; target.zero.width = target.pole.width; }
+        target.pole = partner.pole;
+        target.zero = partner.pole;
     }
     if (partner.zero.on && ! target.zero.on) { target.zero.on = true; target.zero.note = partner.zero.note; target.zero.width = widthOf (hzOf (partner.zero.note), 0.02, kDatumHz); }
 }

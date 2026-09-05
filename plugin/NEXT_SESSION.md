@@ -1594,3 +1594,270 @@ Open, in order:
   dim mark to light it; no free nearest-neighbour blend, no three-control cursor
   (blendChords dropped); the pad in MORPH is the two-dimensional case of the line. Tiered
   space, same axes at every tier: library seen, bank lit and played, body written.
+- 2026-09-05, Tyson: "inspect the TRENCH signal chain and wiring. make morph per sample no
+  smoothing". Chain as wired: input meter on the dry buffer -> AUTO KEY tap -> Movement writes
+  the pattern offset per sample -> FOLLOW adds its offset per 32-sample hop -> processor sums
+  wheel + offsets into morphBuffer -> TrenchDspBridge::processTrajectory re-evaluates the six
+  biquads every sample the morph moves (interpolate_biquads_float, or the word path + rewarp
+  when datum != host) -> DeskDrive -> CascadeRunner L/R -> leveller -> OUTPUT gain -> safety
+  ceiling. The only smoothing on MORPH lived in the processor: a one-block linear ramp of the
+  wheel when nothing modulated (wheelRampFrom) and a 32-sample one-pole on the modulated sum.
+  Both removed; the wheel atomic is read every sample through its curve and summed raw with
+  the offsets, clamped. The bridge lost its 32-sample tick, kernel glide and the
+  setGlide/setPerSample switches (Render lost --glide/--persample); per-sample is the only
+  path. The drawer's WheelLoop played its recorded offsets through the same one-pole; now
+  straight. Left alone: the runner's 256-sample approach on a body switch (swap crossfade),
+  FOLLOW's own 1 ms / 80 ms detector, Movement's cell glide (pattern grammar). New acceptance
+  test in TRENCH_Tests: a wheel step from 0 to 1 between blocks renders sample-identical to a
+  processor held at 1 (worst diff 0, was a ramp). TRENCH_Tests 111 pass, the same two face
+  cases fail as before. TRENCH_ReviewTests 27/28: the engine budget check fails at 48 kHz,
+  0.13 s engine per 1 s of audio against the 5 % line; rebuilt against HEAD's bridge header it
+  measures 0.11-0.14 s, so the cost predates this change (the exe on disk before this session
+  was stale at 0.016 s). Cause: with datum 44.1k and host 48k every sample runs
+  rewarp_section (import, design, two response_magnitude calls and a log10 per section). Open:
+  make that path cheap in the core; the threshold stands. Not installed.
+- 2026-09-05 ~21:05-21:13, Tyson ratified a GPT design review ("heres gpt's output and its
+  valid"). Recorded as rulings, verbatim in spirit: (1) BODY selection is the first musical
+  success: No filter must read as inactive; BODY menu gains short audition-verified
+  descriptions; browsing keeps continuity and recovers from a failed pick. (2) MORPH = moving
+  through the body's changing shape; Q = its second authored dimension, never a universal
+  "more resonance"; body-specific help for each axis's audible journey, by listening only.
+  (3) Every exposed axis earns its travel: useful intermediates, controllable transitions, a
+  reason to use Q; a body with identical Q corners marks Q inactive; voice the roster, never
+  bend the raw axes. (4) BITE discoverable: "BITE - drag vertically" on hover or focus, value
+  while adjusting, inspectable after. (5) Modulation legend shows off/active and the selected
+  movement; amount or timing revealed during adjustment; wheel base position stays distinct
+  from the moving position on the trace. (6) The graph answers a question: frequency and dB
+  on hover, fixed scale (already law), state what the curve represents when BITE is in.
+  (7) Finish the interaction under the locked art: hit areas, fine adjust, typed entry, reset,
+  keyboard, automation, proportional scaling; leave the empty metal alone. Order: body
+  quality and axis usefulness, then state clarity, then polish. Acceptance is musical: a new
+  user picks a useful body, tells MORPH from Q, finds BITE, sees modulation running, returns
+  to a known setting unaided. Tyson: "modulation is key to the sound and distortion really
+  gives a sound massive density and balls. im just not sure how to expose them"; "i also
+  would like for users to use the plugin just for the distortion of the real mackie
+  emulation". Ruled with GPT: No filter is a first-class mode; INPUT becomes DRIVE (same
+  control, same place) driving the desk stage, minimum = the model's clean operating point,
+  never a bypass; OUTPUT stays clean and last; one desk stage with a PRE / POST selector
+  beside DRIVE, inactive under No filter; audition POST as the default at matched level.
+  Reference order for the desk: unmodified Airwindows Mackity (pre-VLZ 1202 input stage via
+  the insert out), then recorded 1202 hardware, then Sonic Sweep 2 as a different character;
+  wording "Mackie-inspired desk saturation" until fidelity is shown. AGC: keep, no face
+  control; contract = tame distracting level across the body, keep accents and DRIVE's
+  payoff, no pumping, independent of the filter under No filter, OUTPUT still the user's;
+  prefer a state-based compensation map over audio-reactive riding; tune in the drawer.
+  Conflicts with standing rulings, for Tyson to confirm before code: CLAUDE.md "INPUT and
+  OUTPUT are clean gain" (now DRIVE) and "the face is locked" (PRE / POST is a new control).
+  What the code does today, checked: DeskDrive sits PRE only, inside the bridge before the
+  cascade; it is switched off below DRIVE 0.001 (no clean operating point) and its curve
+  changes with drive (0.25 (1-d)^2 on the fifth-order term) where Mackity keeps a fixed curve
+  and varies gain; the leveller is audio-reactive, after the cascade, before OUTPUT; No filter
+  loads an exact identity body with the wet path live, so desk, leveller and OUTPUT already
+  run for a distortion-only user.
+- 2026-09-05, Tyson (via GPT's AGC verdict, adopted: AGC stays as voicing with no face
+  control, prefer a state-based compensation map, tune in the drawer) asked for a 10-minute
+  blind comparison of the shipping DeskDrive against unmodified Airwindows Mackity. Built
+  headless, outside the plugin, at evidence/research-results/desk-blind-2026-09-05/: the
+  Mackity source fetched into mackity-source/ (MIT, pre-VLZ 1202 input stage via the insert
+  out); harness/desk_ab.cpp includes plugin/source/dsp/DeskDrive.h untouched and carries a
+  verbatim transcription of Mackity's process loop; a self-check proves the transcription by
+  running it with TRENCH's coefficient against DeskDrive.h (worst diff 1.2e-7 at all three
+  gains). Sources: the dry drum loop from the 2026-09-04 demos (140 bpm, 4 bars) and a
+  synthesised 303-style bass phrase at the same tempo, both in sources/, peak -12 dBFS at
+  48 kHz. Three matched input gains, +10 / +20 / +30 dB, which are TRENCH INPUT 25 / 50 /
+  75 % and Mackity In Trim 0.316 / 0.562 / 1.0. Twelve files, six A/B trials in random
+  order under random names in listen/, each pair matched to -20 LUFS (K-weighted, ungated)
+  by a clean trim after the algorithm, pairs within 0.01 dB; key sealed in the session
+  scratchpad, not in the folder. Implementation differences found by reading both sources:
+  same highpass, 19,160 Hz lowpasses, clip and fifth-order pull; Mackity's pull is a fixed
+  0.1768 and only its gain moves, TRENCH's is 0.25 (1 - d)^2, 0.239 / 0.207 / 0.119 at the
+  three gains, equal to Mackity's only near INPUT 61 % and tending to a hard clip at 100 %;
+  TRENCH switches the whole stage off below INPUT 0.001 where Mackity at unity trim still
+  runs its filters and curve; Mackity has an output pad and float dither, TRENCH a +-8
+  clamp. Pair differences -58 dB relative at light drive rising to -35 dB at heavy. Verdict
+  awaited: density, attack, harshness, preference per trial, recorded before the key opens.
+- 2026-09-05, desk blind result. Tyson judged by elimination in FL Studio, not the four
+  columns: "i deleted the rows that sucked they did not sound good on drums and it was kinda
+  hard to tell honestly". Kept before the key opened: desk_28b0, desk_4229, desk_8be4,
+  desk_834b. Key: bass light, medium and heavy all kept TRENCH and dropped Mackity (3 of 3);
+  drums light kept Mackity and dropped TRENCH; drums medium and heavy dropped both. Reading:
+  on the bass phrase the moving curve (softer pull-down at low drive, harder at high) won
+  every time; driven drums through either stage were rejected, so that is a verdict on desk
+  saturation on a full drum loop, not on which curve; the one drums pick sits where the pair
+  differs by -58 dB relative, below reliable discrimination, so it is not evidence either
+  way. Fidelity: TRENCH is not Mackity and the listener preferred TRENCH's departure on bass.
+  Single listener, one pass, elimination method; key and verdict filed under results/.
+- 2026-09-05, "wobbly" measured. Tyson on the driven drum renders: "it just makes it feel
+  wobbly? but my mental was mainly for the filters but i want users to use it for just the
+  dist too"; "thats why i failed them". In the harness renders the sub-10 Hz offset on the
+  drum loop rises from -34 dB below peak at the input to -27 dB at +20 dB and -24 dB at
+  +30 dB, identical for TRENCH and Mackity: the clipper leaves a per-hit offset that the 2 Hz
+  output highpass (Mackity's 0.000287 one-pole) recovers from over ~80 ms, and the loop's
+  dynamics collapse from 4.9 dB peak-over-median at light to 0.4 dB at heavy. Corner sweep
+  in the harness copy (plugin untouched): output highpass 2 -> 40 Hz takes the offset to
+  -41 / -37 dB and dynamics to 2.8 / 1.7 dB; 40 Hz on both couplings -47 / -42 and 3.7 /
+  1.9; 80 Hz on both kills the wobble but cuts the bass fundamental. The flattening at heavy
+  drive is the clip itself and no coupling change recovers it. Listening pairs, plainly
+  named and loudness matched, in listen-hp/: drums medium and heavy, bass heavy, stock vs
+  output highpass 40 Hz. Awaiting Tyson's call on the corner before DeskDrive.h changes.
+- 2026-09-05 late, Tyson on the driven renders: "they all fail" (drums medium and heavy, stock
+  and 40 Hz coupling, and bass heavy); "use eeh to aah for testing"; "it doesnt make sense
+  to give the user output gain does it? so lock it to input on No filter? or ?"; "the macky
+  output is really musical thats why its stayed with input"; "but im not sure what to do";
+  "output distortion makes the filter scream". Findings: OUTPUT today is clean gain 0..+12 dB
+  into the guard's soft knee (linear to 80 % of the 0.9886 ceiling, quadratic above), so the
+  musical thing heard on OUTPUT is the knee, not the desk. Proposed contract, awaiting his
+  ear: INPUT = the desk stage before the cascade, always on with a clean floor; OUTPUT = the
+  same desk family after the cascade and leveller in place of clean gain; both loudness
+  compensated so neither knob is a level chore; the guard stays silent at the end; no
+  PRE / POST selector, the two existing knobs are the two positions; face unchanged. Ship
+  Render carries the 19-body roster; the 33 P2K bodies are in RenderDev (Eeh To Aah [21]).
+  Rendered for the ear in listen-prepost/: drums and bass through Eeh To Aah, MORPH 0..100
+  over four bars, four ways each at one loudness: filter only; INPUT 50 %; OUTPUT desk at
+  +20 dB after the leveller (harness stage on the render); both. Raw levels say why
+  compensation is owed: INPUT 50 % lifts loudness ~6 dB because the leveller pulls the
+  cascade back, the post stage lifts ~18 dB because nothing after it levels.
+  listen-chain/ holds the same loop at INPUT 0 / 25 / 50 / 75 % without a post stage.
+- 2026-09-05 late, Tyson: "the source is the problem" (the full kick loop flattens under any
+  clipper, the synthesised bass phrase was mine); then "input output and both drives sound
+  good on the 3 bass renders tho". Verdict recorded: on Eeh To Aah with the bass phrase all
+  three, INPUT desk, OUTPUT desk after the leveller, and both, pass. The two-drive contract
+  stands on his ear: INPUT and OUTPUT are both desk drives, the face unchanged. Brass and
+  supersaw phrases from the 2026-09-04 demos copied into sources/ and rendered the same four
+  ways into listen-prepost/ (16 files) as the sustained-source check; the post stage lifts
+  raw loudness 14-18 dB against the input stage's 4-6 dB, so compensation is part of the
+  build, not an option. Not built in the plugin yet.
+- 2026-09-05 late, Tyson: "sometimes the input sounds worse than the output. no always on
+  character please". Ruling: no desk stage is ever on at zero; INPUT 0 and OUTPUT 0 are
+  bit-clean, the stage enters above the first notch as today. GPT's "clean operating point,
+  never a bypass" is refused. Build plan as corrected: INPUT desk as shipped (off at 0);
+  OUTPUT desk after the cascade and leveller, off at 0, in place of clean gain into the
+  guard; both loudness compensated by a measured static map; the guard stays silent last.
+- 2026-09-05 late, Tyson: "double check for that" (always-on character). Measured on the
+  ship Render: No filter, INPUT 0, OUTPUT 0, BITE 0, 48 kHz. Source peaks at -12 dBFS: the
+  output differs from the input by -51 dB (drums) and -55 dB (bass) relative, the leveller's
+  table already nibbling (index 1-2 of the 6x table is 0.998 per sample). Source peaks at
+  -3 dBFS: output peak -6.2 dBFS, difference -7.4 / -8.7 dB relative; the leveller wakes at
+  -9.5 dBFS and limits 3 dB off the top with no body loaded. The desk is off at zero and
+  the guard is linear there, so the one always-on character under No filter is the
+  leveller. Proposed for Tyson: the leveller belongs to the filter (it is the X3 cascade's
+  level law) and runs only when a body is loaded; No filter carries the desk stages alone,
+  and at zero drives it is bit-clean. Unbuilt.
+- 2026-09-05 late, Tyson: "the goal of the agc is to manage the cascade. it is literally the
+  secret sauce". Ruling: the leveller is the cascade's, untouched when a body is loaded, no
+  face control, and out under No filter. Build starts: (1) leveller armed only when a body
+  is loaded, gain reset to unity when disarmed; (2) OUTPUT = desk stage after the cascade
+  and leveller, off at 0, the clean +12 dB gain gone; (3) a static compensation map for the
+  desk stage measured on pink noise at -18 dBFS RMS, applied after the OUTPUT stage always
+  and after the INPUT stage only under No filter (with a body the leveller is the
+  compensation, INPUT keeps pushing the sections); (4) the guard stays last and silent;
+  (5) tests: bit-clean at zero, loudness held within a dB through each stage, ceiling held.
+- 2026-09-05 ~22:00, the two-drive contract built and installed (Tyson: "install the vst").
+  Code: TrenchDspBridge gains postDeskL/R after the leveller with setOutputDrive (drive,
+  compensation), setInputPreamp takes a compensation, setLevellerArmed resets the leveller to
+  unity when disarmed; the processor arms the leveller only when the loaded body is not No
+  filter, feeds INPUT its compensation only under No filter, and OUTPUT its compensation
+  always; the clean +12 dB OUTPUT gain is gone; dsp/DeskCompensation.h holds the 33-point
+  map measured on pink noise at -18 dBFS RMS through DeskDrive (0 to -19.5 dB by knob).
+  Tests rewritten to the contract: OUTPUT desk adds harmonics (ratio 0.16 at 35 %); No
+  filter at zero drives is bit-clean at -3 dBFS peaks (worst diff 0); the leveller reports
+  0 dB under No filter, 14.6 dB once Crisp is loaded with INPUT 50 %, 0 dB again on
+  switching back; INPUT and OUTPUT desks hold K-weighted loudness within 0.03 dB at 25 / 50
+  / 75 / 100 % on pink at 48 kHz; the ceiling still holds. TRENCH_Tests 122 pass, the same
+  two face cases fail; ReviewTests 27/28 with the pre-existing 48 kHz engine budget failure.
+  Raw renders in listen-built/ (no trims): Eeh To Aah bass dry -23.7 LUFS, INPUT 50 -20.3,
+  OUTPUT 50 -22.2, both -20.9; No filter clean -24.6, INPUT 50 -22.1, OUTPUT 50 -22.1, both
+  75 -20.7: the map holds within ~2 dB on the phrase (it was measured on pink). Installed
+  22:01, ship and dev, over the 2026-09-04 22:47 copies. CLAUDE.md line "INPUT and OUTPUT
+  are clean gain" is now superseded: both are desk drives, off at zero, compensated.
+- 2026-09-05 ~22:10, Tyson: "the bloody thing doesnt work in other sample rates. this is
+  because the current plugin list likely does not compile the 4 variations of itself";
+  "theres not much ring to it?"; "the problem is agc doesnt get triggered so the agc in dev
+  panel switching doesnt do anything". Measured, not assumed: an impulse through Eeh To Aah
+  at MORPH 50 rendered at 44.1 / 48 / 96 / 192 kHz gives the same peak (1391 Hz at Q 0,
+  2828 Hz at Q 100), the same estimated Q and the same ring time (24.5 ms / 91.1 ms to
+  -40 dB) at every rate; a 4 s MORPH sweep on a sine at 44.1 / 48 / 96 kHz shows no steps
+  or spikes (words are 16-bit, so a sweep crosses a code nearly every sample). The engine is
+  rate-consistent; what the ear reports in FL still needs its rate and symptom. The AGC
+  switch: the leveller arms with any loaded body (both load paths set the index); at the 6x
+  scale it wakes at -9.5 dBFS after the cascade, so at INPUT 0 with -12 dBFS material it
+  idles and the drawer switch changes nothing; INPUT 25 % wakes it. The wake point is
+  Tyson's to move. Cost is the real rate issue: away from the 44.1 kHz datum the exact path
+  rewarps every section every sample (11-13 % of real time at 48 kHz in the review budget,
+  measured with FL running). Tried and refused: the core's rewarp_p2k_body compile deviates
+  from the exact rewarp by 3.8 dB at 48 kHz and 20 dB at 96 kHz (its gain handling, not
+  precision). Tried, kept, no gain: skipping the rewarp while the interpolated words hold
+  (they rarely hold, 16-bit). Fixed: the loudness checks fell back to plain RMS away from
+  48 kHz; now BS.1770 K-weighting from the cookbook at any rate; and the map plus the test
+  pink are band-limited to 16 kHz (at 96 kHz full-band pink carried an octave the desk's
+  19 kHz lowpass removes, -0.7 to -0.9 dB). DeskCompensation.h re-measured on band-limited
+  pink (0 to -19.73 dB). The mute test restated to the contract: INPUT full under No filter
+  is the compensated desk (peak > 0.05), the leveller-floor claim moved to a body. Suites
+  124 pass / 2 known face fails at 44.1, 48 and 96 kHz. Installed 22:18, ship and dev.
+  In flight: a faithful per-corner compile in the bridge (rewarp_section per corner and
+  section, re-encoded to 16-bit words at the host rate) so the float path runs at every
+  rate; review check demands corners within 0.05 dB and the interpolated field within
+  0.5 dB of the exact per-sample rewarp at 48 and 96 kHz.
+- 2026-09-05 ~22:40, the host-rate build done and installed. Tyson: "soundsbetter. so its
+  morphing per sasmple as per thje patent? bite shouoldnt default to25 and modulation isnt
+  wokring"; then GPT's PRE / POST note re-pasted without comment (the two-drive build already
+  carries both positions; a selector would be a new face control, not built unless he says).
+  Per-rate compile of corners refused on evidence: corners exact to 0.03 dB, but between
+  corners the strongest peak moved 55-73 cents at 48 kHz and 90-150 at 96 kHz (3.8 / 20 dB
+  worst), because lerping words at the host rate is a different path from lerping them at
+  the 44.1 kHz datum where the bodies were voiced; the datum-order law stands. Built
+  instead: at load, when the host rate is off the datum, the bridge computes the exact
+  datum-order rewarp on a 65 x 17 morph/q grid and interpolates coefficients bilinearly
+  per sample (stable: the a1/a2 triangle is convex); KEY transposes grid nodes on first
+  touch into a per-snapshot cache, invalidated on a key change; at the datum the float word
+  path stays byte-faithful. Core decode_word drops std::ldexp for a power-of-two table
+  (exact); core tests 0 failures. Review: the grid reproduces the exact path within
+  0.072 dB everywhere and 1.9 cents at the strongest peak at 48 and 96 kHz, nine off-node
+  points; engine 1.1 % of real time at 48 kHz with MORPH moving every sample, 0.9 % with
+  KEY on. ReviewTests 32/32, the first green run tonight. TRENCH_Tests 124 pass / 2 known
+  face fails at 44.1, 48 and 96 kHz. BITE default 18 % -> 0 (Tyson: no character at rest).
+  MOVEMENT checked headless: preset 1 and 3 swing the render 11 / 22 dB against a still
+  wheel, so the engine modulates; what fails in FL needs his rate, which modulation, and
+  the wheel position. Installed 22:40, ship and dev.
+- 2026-09-05 ~22:50, Tyson: "wheres key?"; "can you refactor the dev panel so it actually
+  means something"; "install ot my folder"; "[FL screenshot] this?"; "faceshot is using an
+  old build". Facts: the lean face (fbb48875, 2026-09-04 20:59) carries BODY, glass, MORPH
+  and Q only; INPUT, OUTPUT, BITE, KEY, MOVEMENT, transition and FOLLOW are parameters with
+  no face control, reachable in FL only through host automation, which is why modulation
+  looked dead and why the desk drives were inaudible from the face. FaceShot rebuilt from
+  the tree at 22:50 renders pixel-identical to yesterday's binary; the cream plate in FL is
+  this tree's face, not an old build. Drawer rewritten (dev build only, 680 px, three
+  columns): CONTROLS THE FACE HIDES with INPUT / OUTPUT / BITE / FOLLOW sliders and
+  MOVEMENT / TRANSITION / KEY menus bound to the parameters; LEVELLER on/off, WAKE 0 / -6 /
+  -9.5 / -12 dBFS, BITE AUTO WAKE, a live line (no body: out / armed idle / pulling N dB);
+  DESK: IN STAGE, OUT STAGE, LEVEL HOLD, COUPLING 2 / 20 / 40 Hz (DeskDrive gained a
+  settable output coupling), a line naming what INPUT does under the loaded body; MORPH:
+  wheel vs playing, moving or still; WHEEL LOOP unchanged. Bridge gained setDeskStages,
+  setCompensationEnabled, setDeskCoupling. Suites 124 / 2 known at 44.1, 48, 96 kHz; review
+  32 / 32. Installed 22:5x to Program Files\Common Files\VST3 and to Documents\VST3 (his
+  folder; the March trench-plugin copies there stay disabled). Open for Tyson: KEY's face
+  box (fbb48875 holds it) and whether INPUT / OUTPUT return to the face.
+- 2026-09-05 late, workstation: the one-shot rebuild (Codex, GPT) landed as the MATLAB toolbox
+  at native/workstation and stopped at its usage limit mid-acceptance. This session finished
+  acceptance and Tyson's first hour on the tool. Green: trench_core, trench_core_from_audio,
+  trench_workstation (17), tBridge 13, tRooms 33, tEnvelope 8, tShot 4. Built on Tyson's
+  rulings tonight: corner identity everywhere (keys read `M0 Q0 · name`, gold = heard, orange =
+  chosen, corner column in the FRAMES list, orange corner labels on the map, corner name first
+  in the status line); NOISE is PINK NOISE, MEASURE excites with a keyless white source; the
+  SOUND key is ANALYSE (law 10 overridden by Tyson for this key); the old Python all-pole fits
+  (VOWELS and INSTRUMENTS from frames_3d.json, raw gains +94..+164 dB, no zeros, no ceiling,
+  which UNITY DC turned into the same peaky low-pass everywhere) are dropped from the library;
+  the DVTD measured vocal tracts (30 vowels, order-30 LPC of the measured magnitude, table
+  rule with measured bandwidths) are the DVTD bank and the 12 instrument-body IRs read as bells
+  are the INSTRUMENTS bank; eight factory banks. Dissolve rule fixed in the model: a
+  partnerless voice is now the partner's pole with a cancelling zero on the same note and
+  width, so the pole never moves on the wheel (the old radius-0.5 pole bent twelve semitones
+  under the chip's word lerp; gesture check 8 failed at 6.44). Gesture check 7 had been
+  inverted; it now forbids backtracking over one semitone. Records: native/workstation/README.md,
+  DECISIONS.md, CLAUDE.md sections rewritten. Open, from Tyson tonight, in his order: "the
+  corner space is a flat strip of squares that you can interpolate logarithmically for 0-100
+  morph between them all", "at all times I can morph and snapshot", "intuitive Figma style
+  workflow, assigning things to corners and switching and dynamically updating", "fix the
+  layout remove redundant and cognitive overhead", and the stack question ("maybe the stack
+  won't be ideal for my visual first approach"): the shell is thin and everything below it
+  carries over; a web canvas over the same engine is the cheap Figma feel if he rules it.
