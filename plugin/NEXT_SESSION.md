@@ -1343,3 +1343,11 @@ Open, in order:
   switches, LOCK per row, CEILING on row 6, corner picker top right. Built through vcvars64,
   shot headless (ws.png, ws_field.png, ws_sound.png), export still 240 bytes. GL and audio
   still unproven on screen.
+- 2026-09-05, five novel bodies baked by tools/novel_bodies.py into plugin/presets/user/novel
+  (240 bytes each, DC unity within 0.006 dB, corners 4-7 mirrored): head (left ear front > left
+  on MORPH, behind and above on Q, from the SONICOM frames), anti_vowel (Ooh To Eee against its
+  own poles-for-zeros negative, ceiling row kept; at MORPH 0.5 the span is 4.5 dB, flat),
+  zeros_only (Eeh To Aah poles held, zeros walk from eeh to aah), chimera (six rows from six
+  sounds: Aud Wall, eh head, uh hud, Talking Hedz, left ear, Talking Hedz ceiling), fifth (Ooh
+  To Eee with every pole and zero times 1.5 on the Q corners, ratio 1.500 measured). The
+  plugin drawer cannot load user bodies yet; audition through the workstation or the dev roster.
