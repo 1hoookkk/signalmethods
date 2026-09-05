@@ -10,7 +10,7 @@
     {
      "pole": {
       "note": 82.834,
-      "width": 14.096
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -18,7 +18,7 @@
     {
      "pole": {
       "note": 87.634,
-      "width": 11.57
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -26,7 +26,7 @@
     {
      "pole": {
       "note": 103.732,
-      "width": 6.399
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -34,7 +34,7 @@
     {
      "pole": {
       "note": 106.217,
-      "width": 5.549
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -42,7 +42,7 @@
     {
      "pole": {
       "note": 108.165,
-      "width": 4.961
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -50,7 +50,7 @@
     {
      "pole": {
       "note": 110.006,
-      "width": 4.616
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0

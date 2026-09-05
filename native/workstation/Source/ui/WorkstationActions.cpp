@@ -188,7 +188,6 @@ void Workstation::frameFromSlice()
     f.name = sound.file.getFileNameWithoutExtension().substring (0, 18) + " @" + juce::String (sound.slice, 2);
     setWords (f, *w, kDatumHz);
     lib.frames.push_back (f);
-    if (razor)
     {
         auto chord = f.chord;
         for (auto& stg : chord) if (stg.pole.on) stg.pole.width = 0.25;

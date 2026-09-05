@@ -66,7 +66,6 @@ void Workstation::layoutKeys()
     {
         keys.push_back ({ "speech", "SPEECH", { L.sortRow.getX() + 8.0f, 5.0f, 60.0f, kh }, sound.speech });
         keys.push_back ({ "bells", "BELLS", { L.sortRow.getX() + 72.0f, 5.0f, 56.0f, kh }, ! sound.speech });
-        keys.push_back ({ "razor", "RAZOR", { L.field.getRight() - 128.0f, 5.0f, 60.0f, kh }, razor });
         keys.push_back ({ "frame", "FRAME", { L.field.getRight() - 60.0f, 5.0f, 60.0f, kh }, false });
     }
     if (L.timelineOpen)
@@ -98,7 +97,6 @@ void Workstation::press (const juce::String& id)
     else if (id.startsWith ("lock")) { const int s = id.substring (4).getIntValue(); lockRow[(size_t) s] = ! lockRow[(size_t) s]; }
     else if (id == "speech") sound.speech = true;
     else if (id == "bells") sound.speech = false;
-    else if (id == "razor") razor = ! razor;
     else if (id == "frame") frameFromSlice();
     else if (id == "listen")
     {

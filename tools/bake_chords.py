@@ -99,7 +99,7 @@ def chord_from_signal(x, rate, mode):
     for i in range(ROWS):
         if i < len(poles):
             hz, r = poles[i]
-            stages.append({"pole": {"note": round(note_of(hz), 3), "width": round(width_from_radius(hz, r, rate), 3)}, "zero": None, "gain_db": 0.0})
+            stages.append({"pole": {"note": round(note_of(hz), 3), "width": 0.25}, "zero": None, "gain_db": 0.0})
         else:
             stages.append({"pole": None, "zero": None, "gain_db": 0.0})
     return stages

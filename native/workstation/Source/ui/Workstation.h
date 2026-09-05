@@ -58,7 +58,6 @@ private:
     std::unique_ptr<Audio> audio;
     std::optional<Spot> spot, picked, dragSpot;
     int openFace = -1;
-    bool razor = false;
     double freeZ = 0.5;
     std::array<bool, kGroups> open { true, true, true, true, true, true, true };
     juce::String status;

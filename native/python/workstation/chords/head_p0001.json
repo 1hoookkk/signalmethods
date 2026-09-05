@@ -10,7 +10,7 @@
     {
      "pole": {
       "note": 124.059,
-      "width": 0.746
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -18,7 +18,7 @@
     {
      "pole": {
       "note": 125.716,
-      "width": 0.735
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -26,7 +26,7 @@
     {
      "pole": {
       "note": 129.878,
-      "width": 0.585
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -34,7 +34,7 @@
     {
      "pole": {
       "note": 131.704,
-      "width": 1.022
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -42,7 +42,7 @@
     {
      "pole": {
       "note": 133.047,
-      "width": 0.508
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -50,7 +50,7 @@
     {
      "pole": {
       "note": 134.521,
-      "width": 0.722
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -64,7 +64,7 @@
     {
      "pole": {
       "note": 104.397,
-      "width": 4.99
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -72,7 +72,7 @@
     {
      "pole": {
       "note": 110.205,
-      "width": 3.038
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -80,7 +80,7 @@
     {
      "pole": {
       "note": 122.484,
-      "width": 1.233
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -88,7 +88,7 @@
     {
      "pole": {
       "note": 124.544,
-      "width": 1.107
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -96,7 +96,7 @@
     {
      "pole": {
       "note": 128.744,
-      "width": 1.231
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -104,7 +104,7 @@
     {
      "pole": {
       "note": 132.878,
-      "width": 0.946
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -118,7 +118,7 @@
     {
      "pole": {
       "note": 105.805,
-      "width": 3.406
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -126,7 +126,7 @@
     {
      "pole": {
       "note": 123.962,
-      "width": 1.36
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -134,7 +134,7 @@
     {
      "pole": {
       "note": 125.348,
-      "width": 1.43
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -142,7 +142,7 @@
     {
      "pole": {
       "note": 129.714,
-      "width": 0.836
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -150,7 +150,7 @@
     {
      "pole": {
       "note": 132.871,
-      "width": 0.826
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -158,7 +158,7 @@
     {
      "pole": {
       "note": 133.979,
-      "width": 0.545
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -172,7 +172,7 @@
     {
      "pole": {
       "note": 115.894,
-      "width": 1.812
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -180,7 +180,7 @@
     {
      "pole": {
       "note": 125.127,
-      "width": 1.196
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -188,7 +188,7 @@
     {
      "pole": {
       "note": 129.654,
-      "width": 0.741
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -196,7 +196,7 @@
     {
      "pole": {
       "note": 131.571,
-      "width": 0.881
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -204,7 +204,7 @@
     {
      "pole": {
       "note": 133.79,
-      "width": 0.677
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -212,7 +212,7 @@
     {
      "pole": {
       "note": 134.846,
-      "width": 0.52
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -226,7 +226,7 @@
     {
      "pole": {
       "note": 108.93,
-      "width": 3.872
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -234,7 +234,7 @@
     {
      "pole": {
       "note": 117.108,
-      "width": 2.593
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -242,7 +242,7 @@
     {
      "pole": {
       "note": 124.704,
-      "width": 1.237
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -250,7 +250,7 @@
     {
      "pole": {
       "note": 129.643,
-      "width": 0.818
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -258,7 +258,7 @@
     {
      "pole": {
       "note": 133.08,
-      "width": 1.129
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -266,7 +266,7 @@
     {
      "pole": {
       "note": 134.016,
-      "width": 0.904
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -280,7 +280,7 @@
     {
      "pole": {
       "note": 85.839,
-      "width": 10.719
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -288,7 +288,7 @@
     {
      "pole": {
       "note": 116.061,
-      "width": 2.126
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -296,7 +296,7 @@
     {
      "pole": {
       "note": 123.534,
-      "width": 1.338
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -304,7 +304,7 @@
     {
      "pole": {
       "note": 129.864,
-      "width": 0.853
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -312,7 +312,7 @@
     {
      "pole": {
       "note": 133.721,
-      "width": 0.422
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -334,7 +334,7 @@
     {
      "pole": {
       "note": 107.037,
-      "width": 3.838
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -342,7 +342,7 @@
     {
      "pole": {
       "note": 119.035,
-      "width": 2.034
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -350,7 +350,7 @@
     {
      "pole": {
       "note": 124.618,
-      "width": 1.326
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -358,7 +358,7 @@
     {
      "pole": {
       "note": 125.85,
-      "width": 1.202
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -366,7 +366,7 @@
     {
      "pole": {
       "note": 129.85,
-      "width": 0.641
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -374,7 +374,7 @@
     {
      "pole": {
       "note": 133.821,
-      "width": 0.459
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -388,7 +388,7 @@
     {
      "pole": {
       "note": 123.759,
-      "width": 1.347
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -396,7 +396,7 @@
     {
      "pole": {
       "note": 125.852,
-      "width": 1.271
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -404,7 +404,7 @@
     {
      "pole": {
       "note": 129.867,
-      "width": 0.821
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -412,7 +412,7 @@
     {
      "pole": {
       "note": 131.66,
-      "width": 0.756
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -420,7 +420,7 @@
     {
      "pole": {
       "note": 133.905,
-      "width": 0.475
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -428,7 +428,7 @@
     {
      "pole": {
       "note": 134.969,
-      "width": 0.298
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -442,7 +442,7 @@
     {
      "pole": {
       "note": 80.597,
-      "width": 10.329
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -450,7 +450,7 @@
     {
      "pole": {
       "note": 105.332,
-      "width": 2.336
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -458,7 +458,7 @@
     {
      "pole": {
       "note": 109.393,
-      "width": 1.966
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -466,7 +466,7 @@
     {
      "pole": {
       "note": 118.56,
-      "width": 1.732
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -474,7 +474,7 @@
     {
      "pole": {
       "note": 125.672,
-      "width": 1.388
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -482,7 +482,7 @@
     {
      "pole": {
       "note": 130.086,
-      "width": 0.77
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -496,7 +496,7 @@
     {
      "pole": {
       "note": 109.81,
-      "width": 2.752
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -504,7 +504,7 @@
     {
      "pole": {
       "note": 114.331,
-      "width": 2.297
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -512,7 +512,7 @@
     {
      "pole": {
       "note": 127.946,
-      "width": 1.432
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -520,7 +520,7 @@
     {
      "pole": {
       "note": 132.003,
-      "width": 1.113
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -528,7 +528,7 @@
     {
      "pole": {
       "note": 133.625,
-      "width": 0.528
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -536,7 +536,7 @@
     {
      "pole": {
       "note": 134.847,
-      "width": 0.375
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -550,7 +550,7 @@
     {
      "pole": {
       "note": 106.461,
-      "width": 3.143
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -558,7 +558,7 @@
     {
      "pole": {
       "note": 111.851,
-      "width": 2.828
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -566,7 +566,7 @@
     {
      "pole": {
       "note": 123.675,
-      "width": 1.137
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -574,7 +574,7 @@
     {
      "pole": {
       "note": 127.964,
-      "width": 1.132
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -582,7 +582,7 @@
     {
      "pole": {
       "note": 132.176,
-      "width": 0.987
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -590,7 +590,7 @@
     {
      "pole": {
       "note": 133.362,
-      "width": 0.559
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -604,7 +604,7 @@
     {
      "pole": {
       "note": 113.103,
-      "width": 2.914
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -612,7 +612,7 @@
     {
      "pole": {
       "note": 125.534,
-      "width": 0.891
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -620,7 +620,7 @@
     {
      "pole": {
       "note": 127.57,
-      "width": 1.249
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -628,7 +628,7 @@
     {
      "pole": {
       "note": 131.88,
-      "width": 0.498
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -636,7 +636,7 @@
     {
      "pole": {
       "note": 133.497,
-      "width": 0.457
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
@@ -644,7 +644,7 @@
     {
      "pole": {
       "note": 134.769,
-      "width": 0.252
+      "width": 0.25
      },
      "zero": null,
      "gain_db": 0.0
