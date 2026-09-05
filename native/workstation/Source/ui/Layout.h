@@ -9,7 +9,7 @@ enum class Room { frames, edit, sound };
 
 struct Layout
 {
-    juce::Rectangle<float> tray, field, resp, body, square, outer, arma, cascade, tl, tlAx, sortRow, rooms;
+    juce::Rectangle<float> tray, field, resp, plot, body, square, outer, arma, cascade, tl, tlAx, sortRow, rooms;
     double zoom = 1.0;
     double pan[2] { 0.0, 0.0 };
     double duration = 8.0;
@@ -26,6 +26,7 @@ struct Layout
     juce::Point<float> wheelXY (double morph, double q) const;
     juce::Point<float> armaXY (double hz, double r) const;
     juce::Rectangle<float> stageRect (int s) const;
+    juce::Rectangle<float> thumbRect (int i) const;
     float sx (juce::Rectangle<float> r, double hz) const;
     float sy (juce::Rectangle<float> r, double db) const;
     double hzAt (juce::Rectangle<float> r, float x) const;

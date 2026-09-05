@@ -56,11 +56,12 @@ void Workstation::layoutKeys()
     {
         for (int s = 0; s < kRows; ++s)
         {
-            keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { L.field.getX() + 8.0f, L.stageRect (s).getY() + 2.0f, 20.0f, kh }, body.rowOn[(size_t) s] });
-            keys.push_back ({ "lock" + juce::String (s), "LOCK", { L.field.getX() + 236.0f, L.stageRect (s).getY() + 16.0f, 48.0f, kh }, lockRow[(size_t) s] });
+            const auto r = L.stageRect (s);
+            keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { r.getX(), r.getY() - 18.0f, 20.0f, kh }, body.rowOn[(size_t) s] });
+            keys.push_back ({ "lock" + juce::String (s), "LOCK", { r.getRight() - 48.0f, r.getBottom() + 48.0f, 48.0f, kh }, lockRow[(size_t) s] });
         }
-        keys.push_back ({ "ceiling", "CEILING", { L.field.getX() + 236.0f, L.stageRect (kRows - 1).getY() + 34.0f, 60.0f, kh }, false });
-        for (int i = 0; i < 4; ++i) keys.push_back ({ "goto" + juce::String (i), kCornerNames[i], { L.body.getX() + 8.0f + (i & 1) * 212.0f, L.body.getY() + 16.0f + (i >> 1) * 80.0f, 52.0f, kh }, editing == i });
+        keys.push_back ({ "ceiling", "CEILING", { L.stageRect (kRows - 1).getRight() - 116.0f, L.stageRect (kRows - 1).getBottom() + 48.0f, 60.0f, kh }, false });
+        for (int i = 0; i < 4; ++i) keys.push_back ({ "goto" + juce::String (i), kCornerNames[i], { L.thumbRect (i).getX(), L.thumbRect (i).getY() - 32.0f, 52.0f, kh }, editing == i });
     }
     else
     {

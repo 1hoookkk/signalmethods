@@ -37,7 +37,7 @@ void Workstation::paintPanels (Canvas& g)
     {
         g.fillRect (L.cascade);
         for (int s = 0; s < kRows; ++s) g.fillRect (L.stageRect (s));
-        for (int i = 0; i < 4; ++i) g.fillRect (juce::Rectangle<int> ((int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 48 + (i >> 1) * 80, 200, 40));
+        for (int i = 0; i < 4; ++i) g.fillRect (L.thumbRect (i));
     }
 }
 
@@ -97,7 +97,7 @@ void Workstation::paintChrome (Canvas& g)
         paintArma (g);
         for (int i = 0; i < 4; ++i)
         {
-            const juce::Rectangle<int> t ((int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 48 + (i >> 1) * 80, 200, 40);
+            const auto t = px (L.thumbRect (i));
             g.setColour (kFrame);
             g.drawRect (t, 1);
             g.setColour (kLine);
@@ -190,7 +190,7 @@ void Workstation::paintBody (Canvas& g)
 void Workstation::paintArma (Canvas& g)
 {
     g.setColour (kDim);
-    for (double db : { 20.0, 40.0, 60.0 }) { const auto p = L.armaXY (20.0, 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (juce::String ((int) db) + " dB", (int) p.x - 44, (int) p.y - 6, 40, 12, juce::Justification::centredRight); }
+    for (double db : { 20.0, 40.0, 60.0 }) { const auto p = L.armaXY (20.0, 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (db >= 60.0 ? juce::String ((int) db) + " dB" : juce::String ((int) db), (int) p.x - 44, (int) p.y - 6, 40, 12, juce::Justification::centredRight); }
     for (int o = 0; o <= 10; o += 2) { const double hz = 20.0 * std::pow (2.0, o); const auto p = L.armaXY (hz, 0.9995); g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 1) + "k" : juce::String (hz, 0), (int) p.x - 16, (int) p.y - 15, 32, 12, juce::Justification::centred); }
     const bool haveWords = L.room == Room::sound ? ! sound.mono->empty() : (current().has_value() || (playBody && body.ready()));
     if (! haveWords) return;
@@ -221,8 +221,8 @@ void Workstation::paintEditor (Canvas& g)
     const auto cr = L.cascade;
     gridOf (cr, true, true);
     g.setColour (kChosen);
-    g.drawText (f.name, (int) cr.getX(), (int) cr.getY() - 14, (int) cr.getWidth() / 2, 12, juce::Justification::centredLeft);
-    openBar = { cr.getRight() - 220.0f, cr.getY() - 13.0f, 160.0f, 10.0f };
+    g.drawText (f.name, (int) cr.getX(), (int) cr.getY() - 14, (int) cr.getWidth(), 12, juce::Justification::centredLeft);
+    openBar = { cr.getRight() + 80.0f, cr.getY() + 4.0f, 160.0f, 10.0f };
     g.setColour (kDim);
     g.drawText ("open", (int) openBar.getX() - 40, (int) openBar.getY() - 2, 36, 14, juce::Justification::centredRight);
     g.setColour (kPanel);
@@ -237,13 +237,14 @@ void Workstation::paintEditor (Canvas& g)
     for (int s = 0; s < kRows; ++s)
     {
         const auto r = L.stageRect (s);
-        gridOf (r, s == kRows - 1, s == 0);
+        gridOf (r, s >= 3, s % 3 == 0);
         const auto& gm = f.rows[(size_t) s];
-        const int x0 = (int) L.field.getX() + 8, y0 = (int) r.getY() + 2;
+        const int x0 = (int) r.getX(), y0 = (int) r.getBottom() + 17;
         g.setColour (gm.pole ? kText : kDim);
-        g.drawText (gm.pole ? "pole  " + juce::String ((int) std::round (gm.pHz)).paddedLeft (' ', 6) + " Hz   r " + juce::String (gm.pR, 3) + "   " + juce::String (resDb (gm.pR), 1) + " dB" : "pole  real", x0 + 40, y0, 240, 13, juce::Justification::centredLeft);
+        g.drawText (gm.pole ? "pole " + juce::String ((int) std::round (gm.pHz)).paddedLeft (' ', 5) + " Hz  r " + juce::String (gm.pR, 3) : "pole real", x0, y0, (int) r.getWidth(), 13, juce::Justification::centredLeft);
         g.setColour (gm.zero ? kText : kDim);
-        g.drawText (gm.zero ? "zero  " + juce::String ((int) std::round (gm.zHz)).paddedLeft (' ', 6) + " Hz   r " + juce::String (gm.zR, 3) : "zero  real", x0 + 40, y0 + 14, 240, 13, juce::Justification::centredLeft);
+        g.drawText (gm.zero ? "zero " + juce::String ((int) std::round (gm.zHz)).paddedLeft (' ', 5) + " Hz  r " + juce::String (gm.zR, 3) : "zero real", x0, y0 + 14, (int) r.getWidth(), 13, juce::Justification::centredLeft);
+        if (gm.pole) { g.setColour (kDim); g.drawText (juce::String ((int) std::round (resDb (gm.pR))) + " dB", x0, y0 + 28, (int) r.getWidth() - 120, 13, juce::Justification::centredLeft); }
     }
     g.setFont (11.0f);
 }

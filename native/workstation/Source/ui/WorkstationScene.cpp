@@ -76,7 +76,7 @@ std::vector<Batch> Workstation::scene() const
         for (int i = 0; i < 4; ++i)
         {
             if (body.corner[(size_t) i] < 0) continue;
-            const juce::Rectangle<float> t (L.body.getX() + 8.0f + (i & 1) * 212.0f, L.body.getY() + 48.0f + (i >> 1) * 80.0f, 200.0f, 40.0f);
+            const auto t = L.thumbRect (i);
             Batch thumb { Batch::strip, false, {} };
             const auto cv = curveOf (lib.frames[(size_t) body.corner[(size_t) i]].words);
             for (int k = 0; k < kCurvePoints; ++k)

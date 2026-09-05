@@ -1383,3 +1383,10 @@ Open, in order:
   Unix workstations set their axes); Lucida Console 11 only for columned rows (editor stage
   rows, sound room pole list). The GL glyph atlas is now proportional, one atlas per face,
   size and scale, with per-glyph advances; the software shot path uses the same faces.
+- 2026-09-05, workstation plots, Tyson: "No wide plots of magnitude". Ruling applied: every
+  magnitude plot keeps a figure aspect. EDIT room: cascade 4:3 (300 x 225) top left, the six
+  stage plots a 3 x 2 grid of 4:3 axes sized from the room's height, row key above each, pole
+  and zero lines and the resonance dB below, LOCK and CEILING under those; corner thumbnails
+  4:3 (160 x 120) in a 2 x 2 block. Response plot 3:2 (288 x 192) in a 240 px panel; the wheel
+  block shrank to 180 outer / 60 inner to give the column room; the ARMAdillo takes what is
+  left and its rings read 20, 40, 60 dB.

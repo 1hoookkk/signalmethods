@@ -17,10 +17,10 @@ void Layout::compute (float Wf, float Hf)
         tray = { 0.0f, 0.0f, left, bottom };
         sortRow = { left, 0.0f, W - left - right, 24.0f };
         field = { left + m, 24.0f, W - left - right - 2.0f * m, bottom - 24.0f - m };
-        body = { W - right, 0.0f, right, 360.0f };
-        outer = { W - right + m + 56.0f, 16.0f, 216.0f, 216.0f };
-        square = outer.reduced (72.0f);
-        resp = { W - right, bottom - 150.0f, right, 150.0f };
+        body = { W - right, 0.0f, right, 324.0f };
+        outer = { W - right + m + 56.0f, 16.0f, 180.0f, 180.0f };
+        square = outer.reduced (60.0f);
+        resp = { W - right, bottom - 240.0f, right, 240.0f };
         arma = { W - right, body.getBottom(), right, resp.getY() - body.getBottom() };
         cascade = {};
     }
@@ -29,11 +29,11 @@ void Layout::compute (float Wf, float Hf)
         tray = {};
         sortRow = {};
         field = { m, 0.0f, W - right - 2.0f * m, bottom - m };
-        cascade = { field.getX() + 40.0f, 24.0f, field.getWidth() - 48.0f, 120.0f };
-        body = { W - right, 0.0f, right, 192.0f };
+        cascade = { field.getX() + 40.0f, 24.0f, 300.0f, 225.0f };
+        body = { W - right, 0.0f, right, 350.0f };
         square = {};
         outer = {};
-        resp = { W - right, bottom - 150.0f, right, 150.0f };
+        resp = { W - right, bottom - 240.0f, right, 240.0f };
         arma = { W - right, body.getBottom(), right, resp.getY() - body.getBottom() };
     }
     else
@@ -41,13 +41,14 @@ void Layout::compute (float Wf, float Hf)
         tray = { 0.0f, 0.0f, left, bottom };
         sortRow = { left, 0.0f, W - left - right, 24.0f };
         field = { left + m, 24.0f, W - left - right - 2.0f * m, bottom - 24.0f - m };
-        resp = { W - right, 0.0f, right, 150.0f };
+        resp = { W - right, 0.0f, right, 240.0f };
         body = {};
         square = {};
         outer = {};
-        arma = { W - right, 150.0f, right, bottom - 150.0f };
+        arma = { W - right, 240.0f, right, bottom - 240.0f };
         cascade = {};
     }
+    plot = { resp.getX() + 40.0f, resp.getY() + 28.0f, 288.0f, 192.0f };
 }
 
 std::array<double, 2> Layout::toField (juce::Point<float> p) const
@@ -60,8 +61,8 @@ juce::Point<float> Layout::fromField (std::array<double, 2> u) const
     return { (float) (field.getX() + u[0] * field.getWidth() * zoom + pan[0]), (float) (field.getBottom() - u[1] * field.getHeight() * zoom + pan[1]) };
 }
 
-float Layout::rx (double hz) const { return resp.getX() + 40.0f + (float) (std::log10 (hz / 20.0) / 3.0) * (resp.getWidth() - 56.0f); }
-float Layout::ry (double db) const { return resp.getY() + 24.0f + (float) ((30.0 - db) / 60.0) * (resp.getHeight() - 48.0f); }
+float Layout::rx (double hz) const { return plot.getX() + (float) (std::log10 (hz / 20.0) / 3.0) * plot.getWidth(); }
+float Layout::ry (double db) const { return plot.getY() + (float) ((30.0 - db) / 60.0) * plot.getHeight(); }
 float Layout::tx (double t) const { return tlAx.getX() + (float) (t / duration) * tlAx.getWidth(); }
 double Layout::tAt (float x) const { return juce::jlimit (0.0, duration, (x - tlAx.getX()) / tlAx.getWidth() * duration); }
 
@@ -82,8 +83,16 @@ juce::Point<float> Layout::armaXY (double hz, double r) const
 
 juce::Rectangle<float> Layout::stageRect (int s) const
 {
-    const float top = cascade.getBottom() + 32.0f, h = std::floor ((field.getBottom() - top - 8.0f) / 6.0f);
-    return { field.getX() + 304.0f, top + s * h, field.getWidth() - 312.0f, h - 8.0f };
+    const float top = cascade.getBottom() + 40.0f, gap = 24.0f, under = 72.0f;
+    const float wMax = std::floor ((field.getWidth() - 56.0f - 2.0f * gap) / 3.0f);
+    const float h = std::floor (std::min (wMax * 0.75f, (field.getBottom() - 8.0f - top - 2.0f * under) / 2.0f));
+    const float w = std::floor (h / 0.75f);
+    return { field.getX() + 40.0f + (s % 3) * (w + gap), top + (s / 3) * (h + under), w, h };
+}
+
+juce::Rectangle<float> Layout::thumbRect (int i) const
+{
+    return { body.getX() + 8.0f + (i & 1) * 212.0f, body.getY() + 48.0f + (i >> 1) * 168.0f, 160.0f, 120.0f };
 }
 
 float Layout::sx (juce::Rectangle<float> r, double hz) const { return r.getX() + (float) (std::log10 (hz / 20.0) / 3.0) * r.getWidth(); }
