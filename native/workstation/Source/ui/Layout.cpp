@@ -29,7 +29,7 @@ void Layout::compute (float Wf, float Hf)
         sortRow = {};
         field = { m, 0.0f, W - right - 2.0f * m, bottom - m };
         cascade = { field.getX() + 40.0f, 24.0f, field.getWidth() - 48.0f, 120.0f };
-        body = { W - right, 0.0f, right, 184.0f };
+        body = { W - right, 0.0f, right, 192.0f };
         square = {};
         resp = { W - right, bottom - 150.0f, right, 150.0f };
         arma = { W - right, body.getBottom(), right, resp.getY() - body.getBottom() };

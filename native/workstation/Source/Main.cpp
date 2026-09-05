@@ -24,9 +24,10 @@ int shoot (const juce::String& path)
     view.workspace = workspaceRoot();
     view.demo();
     view.exportBody (juce::File (path).getSiblingFile ("ws_demo.body240"));
-    juce::Image img (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
+    juce::Image img (juce::Image::RGB, view.getWidth() * 2, view.getHeight() * 2, true);
     {
         juce::Graphics g (img);
+        g.addTransform (juce::AffineTransform::scale (2.0f));
         view.paintEntireComponent (g, false);
     }
     juce::File out (path);
@@ -34,9 +35,10 @@ int shoot (const juce::String& path)
     juce::FileOutputStream os (out);
     juce::PNGImageFormat().writeImageToStream (img, os);
     view.demoSound (0, 0.6, 0.9, 1.7);
-    juce::Image img3 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
+    juce::Image img3 (juce::Image::RGB, view.getWidth() * 2, view.getHeight() * 2, true);
     {
         juce::Graphics g (img3);
+        g.addTransform (juce::AffineTransform::scale (2.0f));
         view.paintEntireComponent (g, false);
     }
     auto out3 = out.getSiblingFile (out.getFileNameWithoutExtension() + "_sound.png");
@@ -44,9 +46,10 @@ int shoot (const juce::String& path)
     juce::FileOutputStream os3 (out3);
     juce::PNGImageFormat().writeImageToStream (img3, os3);
     view.setRoom (ws::Room::frames);
-    juce::Image img2 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
+    juce::Image img2 (juce::Image::RGB, view.getWidth() * 2, view.getHeight() * 2, true);
     {
         juce::Graphics g (img2);
+        g.addTransform (juce::AffineTransform::scale (2.0f));
         view.paintEntireComponent (g, false);
     }
     auto out2 = out.getSiblingFile (out.getFileNameWithoutExtension() + "_field.png");

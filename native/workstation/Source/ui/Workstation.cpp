@@ -22,6 +22,10 @@ Workstation::Workstation (Library& library, bool useGL, bool withAudio) : lib (l
     if (gl)
     {
         ctx.setRenderer (this);
+        juce::OpenGLPixelFormat fmt;
+        fmt.multisamplingLevel = 4;
+        ctx.setPixelFormat (fmt);
+        ctx.setMultisamplingEnabled (true);
         ctx.setComponentPaintingEnabled (true);
         ctx.setContinuousRepainting (false);
         ctx.attachTo (*this);
@@ -198,7 +202,7 @@ void Workstation::layoutKeys()
             keys.push_back ({ "lock" + juce::String (s), "LOCK", { L.field.getX() + 236.0f, L.stageRect (s).getY() + 16.0f, 48.0f, kh }, lockRow[(size_t) s] });
         }
         keys.push_back ({ "ceiling", "CEILING", { L.field.getX() + 236.0f, L.stageRect (kRows - 1).getY() + 34.0f, 60.0f, kh }, false });
-        for (int i = 0; i < 4; ++i) keys.push_back ({ "goto" + juce::String (i), kCornerNames[i], { L.body.getX() + 8.0f + (i & 1) * 212.0f, L.body.getY() + 24.0f + (i >> 1) * 48.0f, 52.0f, kh }, editing == i });
+        for (int i = 0; i < 4; ++i) keys.push_back ({ "goto" + juce::String (i), kCornerNames[i], { L.body.getX() + 8.0f + (i & 1) * 212.0f, L.body.getY() + 16.0f + (i >> 1) * 80.0f, 52.0f, kh }, editing == i });
     }
     else
     {
@@ -703,6 +707,19 @@ std::vector<Batch> Workstation::scene() const
             out.push_back (wheel);
         }
     }
+    if (L.room == Room::edit)
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            if (body.corner[(size_t) i] < 0) continue;
+            const juce::Rectangle<float> t (L.body.getX() + 8.0f + (i & 1) * 212.0f, L.body.getY() + 48.0f + (i >> 1) * 80.0f, 200.0f, 40.0f);
+            Batch thumb { Batch::strip, false, {} };
+            const auto cv = curveOf (lib.frames[(size_t) body.corner[(size_t) i]].words);
+            for (int k = 0; k < kCurvePoints; ++k)
+                thumb.v.push_back (vertex ({ t.getX() + k / float (kCurvePoints - 1) * t.getWidth(), t.getY() + (float) ((30.0 - juce::jlimit (-30.0, 30.0, cv[(size_t) k])) / 60.0) * t.getHeight() }, i == editing ? kChosen : kDim, 1.0f));
+            out.push_back (thumb);
+        }
+    }
     if (L.room == Room::edit && editing >= 0 && body.corner[(size_t) editing] >= 0)
     {
         const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
@@ -859,17 +876,28 @@ void Workstation::paintChrome (juce::Graphics& g)
         if (pairMode && pairA >= 0 && pairB >= 0)
         {
             g.setColour (kChosen);
-            g.drawText (lib.frames[(size_t) lib.anchors[(size_t) pairA].frame].name + "  >  " + lib.frames[(size_t) lib.anchors[(size_t) pairB].frame].name + "   " + juce::String (pairT, 3), (int) L.field.getX() + 8, (int) L.field.getY() + 4, (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
+            g.drawText (juce::String (pairT, 3), (int) L.field.getX() + 8, (int) L.field.getY() + 4, 60, 12, juce::Justification::centredLeft);
+            for (int a : { pairA, pairB })
+            {
+                const auto p = L.fromField (lib.anchors[(size_t) a].p);
+                g.drawText (lib.frames[(size_t) lib.anchors[(size_t) a].frame].name, (int) p.x + 10, (int) p.y - 6, 220, 12, juce::Justification::centredLeft);
+            }
         }
     }
     else if (L.room == Room::edit)
     {
         paintEditor (g);
         paintArma (g);
-        g.setColour (kDim);
         for (int i = 0; i < 4; ++i)
-            if (body.corner[(size_t) i] >= 0)
-                g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 40 + (i >> 1) * 48, 200, 12, juce::Justification::centredLeft);
+        {
+            const juce::Rectangle<int> t ((int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 48 + (i >> 1) * 80, 200, 40);
+            g.setColour (kLine);
+            g.drawRect (t, 1);
+            g.drawHorizontalLine (t.getCentreY(), (float) t.getX(), (float) t.getRight());
+            if (body.corner[(size_t) i] < 0) continue;
+            g.setColour (i == editing ? kChosen : kDim);
+            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, t.getX(), t.getY() - 14, 200, 12, juce::Justification::centredLeft);
+        }
     }
     else paintArma (g);
     paintResponse (g, b);

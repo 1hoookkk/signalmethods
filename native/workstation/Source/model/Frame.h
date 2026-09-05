@@ -13,7 +13,7 @@ constexpr double kDatumHz = trench::core::kP2kDatumHz;
 constexpr int kRows = 6;
 constexpr int kWords = 5;
 constexpr int kMeasures = 8;
-constexpr int kCurvePoints = 96;
+constexpr int kCurvePoints = 160;
 constexpr int kGroups = 7;
 
 using Words = std::array<std::array<std::uint16_t, kWords>, kRows>;
