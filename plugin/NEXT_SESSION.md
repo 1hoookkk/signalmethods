@@ -1534,3 +1534,63 @@ Open, in order:
   check now walks the strip, the slots, the pad, FINE, COMPARE, CAPTURE, LISTEN and the
   return; 13 checks pass headless.
 - 2026-09-05 close, Tyson: "the issue is in the monolithic files" and "instead of rebuilding we should just get gpt to one shot it from scratch". Brief at native/NEXT_SESSION_PROMPT.md; plane-room draft parked at native/workstation/drafts/. Analyser (NOISE source, measured trace over the plotted curve) committed. Next: turn the brief into a one-shot build spec (rooms, chord law, voice leading, core API, JSON formats, both check suites) for an outside model; the UI shell is rewritten from it, model and tests are kept.
+- 2026-09-05 (new session), the one-shot spec written: native/WORKSTATION_ONE_SHOT_SPEC.md,
+  for GPT-6 Astra at max reasoning with the repo attached. Tyson's rulings this session,
+  verbatim: "spectrogram is our target"; "do not infer the current ui or layouts either";
+  "look at the images. and instruct gpt to do a similar thing. use source code structured
+  like matlabs open source github or something similar"; "also we have matlab and multiple
+  toolboxes so im willing to use matlab too"; "do not use abstract vague naming like capture
+  etc. put the most literal naming you can or do not include text"; "chose the framework for
+  him to absolutely crush this". Framework decided: MATLAB R2025b shell (classic figure,
+  uipanel, uicontrol, axes; Audio, DSP, Signal Processing toolboxes present, MSVC 2022 MEX)
+  over two MEX files, trench_bridge (the kept model + core) and trench_audio (miniaudio +
+  CascadeRunner, rewarp, 256-sample glide, the double-buffer word handoff transcribed from
+  ui/Audio.cpp). Kept verbatim: native/core, native/workstation/Source/model,
+  Tests/MorphTests.cpp (17/17). Deleted by the spec: the JUCE shell (ui/, render/, Main.cpp,
+  drafts/), the Qt app (native/app, native/tests, native/audio), the superseded native/*.md
+  briefs, the app preset and the vcpkg gui feature. Rooms: SOUND (Peevers' Spectrogram as the
+  target: file or live in, FFT SIZE/WINDOW/STRIDE boxes, 2D or 3D surface, LOG F, GAIN, FLOOR,
+  cursor, IN/OUT, SPEECH/BELLS reader, ENVELOPE, READ FRAME AT CURSOR), FRAMES (sorted list
+  with ROOT/VOICING/RESONANCE, the flat map, three controls with SWEEP, chord blend of the
+  nearest by inverse fourth power, USE AS <corner>), MORPH (pad, FINE DRAG, SWEEP, HEAR M0 Q0
+  held, PAST THE ENDS switch, KEEP AS FRAME, B: NEXT/PREVIOUS FRAME as the donor browse),
+  CORNER (six 4:3 stage axes with handles, PITCH/WIDTH/AMOUNT/ZERO typed rows, LOCK ZERO TO
+  POLE, CEILING, OPEN, SHARPEN, COPY TO, SHOW HZ). One Live value. Acceptance: the C++ suites
+  unchanged, tBridge (9), tRooms (26 gestures, the 16 carried over plus 10), tShot, all under
+  matlab -batch, registered in ctest. Discrepancy found and resolved in the spec: the bell
+  rule (pole 0.25 st, zero on the same note at 4.0 st) lived in ui/frameFromSlice, not the
+  model; the spec puts it in MATLAB as trench.model.bellChord over the bridge's readFrame.
+  frames_3d.json (the 304-frame bank) is untracked; the spec has it committed.
+- 2026-09-05, the bank ruled (Tyson: "Lets decide on the size of a frame bank as it is one big
+  filter", "And if we are even know what to feed it", "Or should they be textbook literature
+  tables", "what would be the ground truth range of literature"). Decided and written into the
+  spec (law 18, sections 5.6, 5.7, 9.3): a bank is up to 256 frames in numbered slots and is
+  one filter; the map, the three controls, the blend, the donor browse and the corners act on
+  the open bank alone; the library feeds banks and is never played. 128 rejected on the bytes:
+  the 132 P2K corners are 130 distinct word for word (Meaty Gizmo repeats two), 127 by pole
+  skeleton, so 128 cannot hold the standard. Three feeds and no other: factory corners, reads
+  from sound, textbook literature tables through one rule (formant to pole note, width
+  12 log2(1 + B/F), the bell zero, row 6 ceiling). Bank file trench-bank-v1 JSON in
+  native/workstation/banks. Factory banks: P2K (132 + schwa, open at launch), Hillenbrand
+  1995 (48, regenerated through the table rule), Klatt 1980 (core table via the bridge), X3,
+  HEADS, XL-1, INSTRUMENTS; MORPHEUS library only. Literature in hand: Hillenbrand 1995, Klatt
+  1980, Kent and Vorperian bandwidth review. To acquire, each a bank when its file lands in
+  evidence: Peterson and Barney 1952, Fant 1960, Hawks and Miller 1995, Rodet's CHANT vowel
+  table, Meyer's instrument formant regions, Fletcher and Rossing body modes, Rossing and
+  Perrin bell partials. Handoff prompt at native/WORKSTATION_ONE_SHOT_PROMPT.md. MATLAB
+  toolchain probed headless the same day: FindMatlab sees R2025b, a MEX builds through vcvars
+  and loads under matlab -batch, invisible figures export PNGs, pwelch/buildtool/unittest
+  present.
+- 2026-09-05, the space ruled by Tyson (voice notes): "I think it should just be one massive
+  long light space you know with a bunch of corners"; "think of it like anchors. Right? You
+  place an anchor. You move from one anchor to the other, and it takes the same amount of
+  time so that it's morphing musically from the interpolation"; and the space is not only
+  vowels, the literature fills the rest. Written into the spec (law 18, 9.1, 9.3, tests 7,
+  19, 20, 32, 33): a bank is one line of up to 256 anchors in its sort order; at an anchor
+  the frame exactly; between neighbours the voice-led pair morph at MORPH 0..100; every hop
+  spans the same 0..100 and under SWEEP POSITION the same seconds per hop (4 by default),
+  whatever the distance on the map; one POSITION control with FINE DRAG; the map shows the
+  whole library dim with the bank's anchors lit and the line drawn through them, press a
+  dim mark to light it; no free nearest-neighbour blend, no three-control cursor
+  (blendChords dropped); the pad in MORPH is the two-dimensional case of the line. Tiered
+  space, same axes at every tier: library seen, bank lit and played, body written.
