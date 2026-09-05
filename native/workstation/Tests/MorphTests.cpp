@@ -179,6 +179,46 @@ int main()
         const auto g = ws::geometryOf (ws::compile (c, ws::kDatumHz));
         check (g[0].pole && std::abs (ws::noteOf (g[0].pHz) - 48.0) < 0.05 && g[3].pole && std::abs (ws::noteOf (g[3].pHz) - 64.0) < 0.05, "a typed chord lands on its notes", ws::noteOf (g[0].pHz), ws::noteOf (g[3].pHz));
     }
+    {
+        int vowel = -1, metal = -1;
+        for (int i = 0; i < (int) lib.frames.size(); ++i)
+        {
+            if (vowel < 0 && lib.frames[(size_t) i].name == "vowel schwa") vowel = i;
+            if (metal < 0 && lib.frames[(size_t) i].name.startsWith ("Megasweepz")) metal = i;
+        }
+        if (vowel < 0) { lib.addSchwa(); vowel = (int) lib.frames.size() - 1; }
+        check (vowel >= 0 && metal >= 0, "a vowel and a metallic frame exist to pair");
+        if (vowel >= 0 && metal >= 0)
+        {
+            const auto& a = lib.frames[(size_t) vowel].chord;
+            const auto& b = lib.frames[(size_t) metal].chord;
+            double raw = 0.0;
+            for (int s = 0; s < ws::kRows; ++s) if (a[(size_t) s].pole.on && b[(size_t) s].pole.on) raw += std::abs (a[(size_t) s].pole.note - b[(size_t) s].pole.note);
+            const auto led = ws::leadTo (a, b);
+            double moved = 0.0;
+            int pairsOn = 0;
+            for (int s = 0; s < ws::kRows - 1; ++s) if (led.a[(size_t) s].pole.on && led.b[(size_t) s].pole.on) { moved += std::abs (led.a[(size_t) s].pole.note - led.b[(size_t) s].pole.note); ++pairsOn; }
+            check (moved <= raw + 1e-9, "voice leading moves no more in semitones than the raw slot pairing", moved, raw);
+            check (pairsOn >= 5, "after leading every voice has a partner, in place if it had none", pairsOn);
+            const auto ca = ws::cascadeOf (ws::compile (led.a, ws::kDatumHz)), cb = ws::cascadeOf (lib.frames[(size_t) vowel].words);
+            double worst = 0.0;
+            for (int i = 0; i < ws::kCurvePoints; ++i) { const double hz = 20.0 * std::pow (1000.0, i / double (ws::kCurvePoints - 1)); worst = std::max (worst, std::abs (ws::responseDb (ca, hz) - ws::responseDb (cb, hz))); }
+            check (worst < 3.0, "dissolved partners leave the pinned frame's response within 3 dB, worst", worst);
+            ws::Library scratch;
+            scratch.addNamed (ws::compile (led.a, ws::kDatumHz), "A", 0, false);
+            scratch.addNamed (ws::compile (led.b, ws::kDatumHz), "B", 0, false);
+            ws::Body body;
+            body.corner = { 0, 1, 0, 1 };
+            body.unity = false;
+            const auto bytes = body.legacyBytes (scratch.frames);
+            const auto loaded = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> (bytes.data(), bytes.size()));
+            const auto plugin = loaded.interpolate_words (0.5f, 0.0f, 0.0f);
+            const auto ours = ws::pairMorph (ws::compile (led.a, ws::kDatumHz), ws::compile (led.b, ws::kDatumHz), 0.5).words;
+            int mism = 0;
+            for (int s = 0; s < ws::kRows; ++s) for (int k = 0; k < ws::kWords; ++k) if (plugin[(size_t) s][(size_t) k] != ours[(size_t) s][(size_t) k]) ++mism;
+            check (mism == 0, "the exported led body's own lerp at 50 percent equals the workstation pair, mismatched words", mism);
+        }
+    }
     std::printf ("%s  %d failure(s)\n", failures == 0 ? "PASS" : "FAIL", failures);
     return failures == 0 ? 0 : 1;
 }

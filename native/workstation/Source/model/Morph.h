@@ -22,5 +22,18 @@ Morph pairMorph (const Words& a, const Words& b, double t);
 Morph wheelMorph (const std::array<Words, 4>& corners, double morph, double q);
 std::vector<Excess> excessOf (const Words& words);
 Words meanWords (const std::vector<const Words*>& parents);
+
+struct Lead
+{
+    Chord a, b;
+    std::array<int, kRows> map {};
+    double cost = 0.0;
+};
+
+double dissolveWidth (double note);
+Lead leadTo (const Chord& a, const Chord& b);
+double leadCost (const Chord& a, const Chord& b);
+Words leadWords (const Words& a, const Words& b);
+juce::String intervalsOf (const Chord& c);
 Words schwaWords();
 }

@@ -1,4 +1,5 @@
 #include "Morph.h"
+#include <algorithm>
 #include <cmath>
 
 namespace ws
@@ -180,6 +181,75 @@ std::vector<Excess> excessOf (const Words& words)
         else if (! beyond && inRun) { out.push_back ({ bestHz, above }); inRun = false; }
     }
     return out;
+}
+
+double dissolveWidth (double note) { return widthOf (hzOf (note), 0.5, kDatumHz); }
+
+namespace
+{
+double voiceCost (const Voice& a, const Voice& b, double note)
+{
+    if (a.on && b.on) return std::abs (a.note - b.note) + 0.5 * std::abs (std::log2 (std::max (1e-3, a.width) / std::max (1e-3, b.width)));
+    if (a.on != b.on) return 18.0;
+    (void) note;
+    return 0.0;
+}
+
+double stageCost (const Stage& a, const Stage& b)
+{
+    return voiceCost (a.pole, b.pole, 0.0) + 0.5 * voiceCost (a.zero, b.zero, 0.0);
+}
+
+void dissolveInto (Stage& target, const Stage& partner)
+{
+    if (partner.pole.on && ! target.pole.on)
+    {
+        target.pole.on = true; target.pole.note = partner.pole.note; target.pole.width = dissolveWidth (partner.pole.note);
+        if (! target.zero.on) { target.zero.on = true; target.zero.note = target.pole.note; target.zero.width = target.pole.width; }
+    }
+    if (partner.zero.on && ! target.zero.on) { target.zero.on = true; target.zero.note = partner.zero.note; target.zero.width = widthOf (hzOf (partner.zero.note), 0.02, kDatumHz); }
+}
+}
+
+Lead leadTo (const Chord& a, const Chord& b)
+{
+    Lead out;
+    out.a = a;
+    std::array<int, kRows> perm { 0, 1, 2, 3, 4, 5 };
+    double best = 1e18;
+    std::array<int, kRows> bestPerm = perm;
+    do
+    {
+        double c = 0.0;
+        for (int s = 0; s < kRows - 1; ++s) c += stageCost (a[(size_t) s], b[(size_t) perm[(size_t) s]]);
+        c += 0.25 * stageCost (a[kRows - 1], b[(size_t) perm[kRows - 1]]);
+        if (c < best) { best = c; bestPerm = perm; }
+    } while (std::next_permutation (perm.begin(), perm.end()));
+    out.map = bestPerm;
+    out.cost = best;
+    for (int s = 0; s < kRows; ++s) out.b[(size_t) s] = b[(size_t) bestPerm[(size_t) s]];
+    for (int s = 0; s < kRows - 1; ++s)
+    {
+        dissolveInto (out.b[(size_t) s], out.a[(size_t) s]);
+        dissolveInto (out.a[(size_t) s], out.b[(size_t) s]);
+    }
+    return out;
+}
+
+double leadCost (const Chord& a, const Chord& b) { return leadTo (a, b).cost; }
+
+Words leadWords (const Words& a, const Words& b) { return compile (leadTo (decompile (a, kDatumHz), decompile (b, kDatumHz)).b, kDatumHz); }
+
+juce::String intervalsOf (const Chord& c)
+{
+    std::vector<double> notes;
+    for (const auto& st : c) if (st.pole.on && st.pole.width <= 6.0) notes.push_back (st.pole.note);
+    if (notes.empty()) for (const auto& st : c) if (st.pole.on) notes.push_back (st.pole.note);
+    if (notes.empty()) return "-";
+    std::sort (notes.begin(), notes.end());
+    juce::String s;
+    for (size_t i = 1; i < notes.size(); ++i) s += (s.isEmpty() ? "" : " ") + juce::String ((int) std::round (notes[i] - notes[0]));
+    return s.isEmpty() ? "1" : s;
 }
 
 Words meanWords (const std::vector<const Words*>& parents)

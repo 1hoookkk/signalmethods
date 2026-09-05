@@ -11,6 +11,12 @@ bool Body::ready() const
 Words Body::cornerWords (const std::vector<Frame>& frames, int i) const
 {
     Words w = frames[(size_t) corner[(size_t) i]].words;
+    if (i > 0 && corner[0] >= 0 && corner[0] != corner[(size_t) i]) w = compile (leadTo (frames[(size_t) corner[0]].chord, frames[(size_t) corner[(size_t) i]].chord).b, kDatumHz);
+    else if (i == 0)
+    {
+        for (int k = 1; k < 4; ++k)
+            if (corner[(size_t) k] >= 0 && corner[(size_t) k] != corner[0]) { w = compile (leadTo (frames[(size_t) corner[0]].chord, frames[(size_t) corner[(size_t) k]].chord).a, kDatumHz); break; }
+    }
     for (int s = 0; s < kRows; ++s)
         if (! rowOn[(size_t) s])
             for (int k = 0; k < kWords; ++k) w[(size_t) s][(size_t) k] = trench::core::kIdentitySection[(size_t) k];

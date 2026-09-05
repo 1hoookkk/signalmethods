@@ -212,7 +212,11 @@ Morph Workstation::live() const
     Morph m;
     if (L.room == Room::sound) { if (const auto w = sound.frameAt (sound.slice)) m.words = *w; return m; }
     if (playBody && body.ready()) return body.wheelMorph (lib.frames);
-    if (pairLive()) return pairMorph (st.wordsOf (pairA), st.wordsOf (pairB), pairT);
+    if (pairLive())
+    {
+        const auto led = leadTo (decompile (st.wordsOf (pairA), kDatumHz), decompile (st.wordsOf (pairB), kDatumHz));
+        return pairMorph (compile (led.a, kDatumHz), compile (led.b, kDatumHz), pairT);
+    }
     if (spot) return st.soundAt (*spot, open);
     return m;
 }
