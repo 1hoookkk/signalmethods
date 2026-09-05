@@ -152,15 +152,15 @@ void Workstation::paintAxes (Canvas& g)
     const bool farX = v.farPlane (0), farY = v.farPlane (1);
     const double nearX = farX ? v.lo.x : v.hi.x, nearY = farY ? v.lo.y : v.hi.y, farXv = farX ? v.hi.x : v.lo.x;
     g.setColour (kDim);
-    for (double x : { -0.5, 0.0, 0.5 })
+    for (double hz : { 100.0, 1000.0, 10000.0 })
     {
-        const auto p = v.project ({ x, nearY, v.lo.z });
-        g.drawText (juce::String (x, 1), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
+        const auto p = v.project ({ std::log10 (hz / 20.0) / 3.0 - 0.5, nearY, v.lo.z });
+        g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 0) + "k" : juce::String (hz, 0), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
     }
-    for (double y : { -0.5, 0.0, 0.5 })
+    for (double db : { -20.0, 0.0, 20.0 })
     {
-        const auto p = v.project ({ nearX, y, v.lo.z });
-        g.drawText (juce::String (y, 1), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
+        const auto p = v.project ({ nearX, db / 60.0, v.lo.z });
+        g.drawText (juce::String ((int) db) + (db == 0.0 ? " dB" : ""), (int) p.x - 20, (int) p.y + 4, 40, 12, juce::Justification::centred);
     }
     for (const int f : st.usedFloors)
     {

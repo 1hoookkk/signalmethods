@@ -73,5 +73,7 @@ public:
     int addStub (const juce::String& name, const Words& words, const Spot& near, int floor);
     Spot lerp (const Spot& a, const Spot& b, double f) const;
     int nearestNode (const Words& words) const;
+    void placeOnGrid();
+    static Vec3 gridPlace (const Words& words, double z);
 };
 }

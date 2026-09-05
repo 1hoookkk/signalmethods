@@ -1,4 +1,5 @@
 #include "Stitch.h"
+#include <algorithm>
 #include <cmath>
 
 namespace ws
@@ -137,9 +138,28 @@ int Stitch::addStub (const juce::String& name, const Words& words, const Spot& n
     s.words = words;
     s.node = near.node >= 0 ? near.node : near.edge >= 0 ? edges[(size_t) near.edge].a : near.face >= 0 ? faces[(size_t) near.face].nodes[0] : near.stub >= 0 ? stubs[(size_t) near.stub].node : 0;
     const auto at = positionOf (near);
-    s.p = { at.x + 0.05, at.y + 0.05, at.z + 0.08 };
+    s.p = gridPlace (words, at.z);
     stubs.push_back (s);
     return (int) stubs.size() - 1;
+}
+
+Vec3 Stitch::gridPlace (const Words& words, double z)
+{
+    const auto cv = curveOf (words);
+    int best = 0;
+    for (int i = 1; i < kCurvePoints; ++i) if (cv[(size_t) i] > cv[(size_t) best]) best = i;
+    const double hz = 20.0 * std::pow (1000.0, best / double (kCurvePoints - 1));
+    double res = 0.0;
+    int count = 0;
+    for (const auto& g : geometryOf (words)) if (g.pole && g.pR > 0.5) { res += resDb (g.pR); ++count; }
+    const double lift = count > 0 ? juce::jlimit (0.0, 1.0, res / count / 60.0) * 0.3 : 0.0;
+    return { std::log10 (hz / 20.0) / 3.0 - 0.5, juce::jlimit (-0.5, 0.5, cv[(size_t) best] / 60.0), z + lift };
+}
+
+void Stitch::placeOnGrid()
+{
+    for (auto& n : nodes) n.p = gridPlace (wordsOf ((int) (&n - nodes.data())), floorZ (n.floor));
+    for (auto& s : stubs) s.p = gridPlace (s.words, floorZ (s.floor >= 0 && std::find (usedFloors.begin(), usedFloors.end(), s.floor) != usedFloors.end() ? s.floor : nodes[(size_t) s.node].floor));
 }
 
 int Stitch::nearestNode (const Words& words) const

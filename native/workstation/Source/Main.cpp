@@ -9,6 +9,7 @@ juce::File workspaceRoot() { return juce::File (TRENCH_TABLE_STITCH_ROOT); }
 void loadStitch (ws::Stitch& st)
 {
     st.loadJson (workspaceRoot().getChildFile ("native/python/workstation/stitch.json"));
+    st.placeOnGrid();
 }
 
 void loadLibrary (ws::Library& lib)

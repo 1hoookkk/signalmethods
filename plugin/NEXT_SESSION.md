@@ -1413,3 +1413,10 @@ Open, in order:
 - Tyson 2026-09-05 on bookkeeping: E-mu presets stay in the stitch as reference floors, every
   node carries its member list; the organic matrix is the floors that grow (captures, reads,
   exports); factory floors fold from the tray.
+- 2026-09-05, Tyson on the first stitch render: "Wrong execution its not easy to understand";
+  on my axis options: "Random? Is that better?". Ruling taken: no invented layout; the hero's
+  axes are the ones already law. Corners stand on the fixed log grid at their strongest peak
+  (frequency across, level in dB along), stem height is resonance in dB, floors are the
+  sources. Nothing is drawn but stems and marks; pressing a stem lights that body's square
+  (edges and parula fill), so the surface is read one body at a time. The spectral layout
+  stays in stitch.json unused. Commit 2 of the stitch.
