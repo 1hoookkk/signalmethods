@@ -49,6 +49,7 @@ void Workstation::demo()
     if (face < 0 && ! st.faces.empty()) face = 0;
     if (face < 0) return;
     const auto& f = st.faces[(size_t) face];
+    openFace = face;
     pairMode = true; pairA = f.nodes[0]; pairB = f.nodes[1];
     pairTo (1.62);
     tl.keys = { { 0.5, Spot { -1, -1, face, -1, 0.0, 0.2, 0.2 } }, { 3.0, Spot { -1, -1, face, -1, 0.0, 0.8, 0.5 } }, { 6.5, Spot { f.nodes[3], -1, -1, -1, 0.0, 0.0, 0.0 } } };
@@ -65,6 +66,18 @@ void Workstation::demoPair (double t)
 {
     setRoom (Room::frames);
     pairTo (t);
+    redraw();
+}
+
+void Workstation::demoShelf()
+{
+    setRoom (Room::frames);
+    pairMode = false; pairA = pairB = -1;
+    openFace = -1;
+    spot.reset();
+    picked.reset();
+    playBody = false;
+    status = "";
     redraw();
 }
 

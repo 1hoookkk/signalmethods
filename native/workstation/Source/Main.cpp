@@ -76,6 +76,17 @@ int shoot (const juce::String& path)
     out4.deleteFile();
     juce::FileOutputStream os4 (out4);
     juce::PNGImageFormat().writeImageToStream (img4, os4);
+    view.demoShelf();
+    juce::Image img5 (juce::Image::RGB, view.getWidth() * 2, view.getHeight() * 2, true);
+    {
+        juce::Graphics g (img5);
+        g.addTransform (juce::AffineTransform::scale (2.0f));
+        view.paintEntireComponent (g, false);
+    }
+    auto out5 = out.getSiblingFile (out.getFileNameWithoutExtension() + "_shelf.png");
+    out5.deleteFile();
+    juce::FileOutputStream os5 (out5);
+    juce::PNGImageFormat().writeImageToStream (img5, os5);
     std::printf ("wrote %s  %dx%d  frames %d  nodes %d  edges %d  faces %d  stubs %d\n", out.getFullPathName().toRawUTF8(), img.getWidth(), img.getHeight(), (int) lib.frames.size(), (int) st.nodes.size(), (int) st.edges.size(), (int) st.faces.size(), (int) st.stubs.size());
     return 0;
 }

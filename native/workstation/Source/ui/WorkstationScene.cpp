@@ -70,31 +70,32 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
         box.v.push_back (vertex (v.project (c), kFrame, 1.0f));
     }
     out.push_back (box);
-    std::vector<bool> active (st.faces.size(), false);
+    const auto near = st.neighbours (openFace);
+    const auto isNear = [&] (int i) { return std::find (near.begin(), near.end(), i) != near.end(); };
     std::vector<int> activeNodes;
-    if (spot && spot->node >= 0) activeNodes.push_back (spot->node);
-    if (spot && spot->stub >= 0) activeNodes.push_back (st.stubs[(size_t) spot->stub].node);
-    if (spot && spot->edge >= 0) active[(size_t) st.edges[(size_t) spot->edge].body] = true;
-    if (spot && spot->face >= 0) active[(size_t) spot->face] = true;
     if (picked && picked->node >= 0) activeNodes.push_back (picked->node);
     if (pairLive()) { activeNodes.push_back (pairA); activeNodes.push_back (pairB); }
-    for (int i = 0; i < (int) st.faces.size(); ++i)
-        for (const int n : st.faces[(size_t) i].nodes)
-            if (std::find (activeNodes.begin(), activeNodes.end(), n) != activeNodes.end()) active[(size_t) i] = true;
-    std::vector<std::pair<double, int>> order;
+    if (spot && spot->node >= 0) activeNodes.push_back (spot->node);
+    Batch stems { Batch::lines, false, {} };
+    Batch shelf { Batch::points, true, {} };
     for (int i = 0; i < (int) st.faces.size(); ++i)
     {
         const auto& f = st.faces[(size_t) i];
-        if (! active[(size_t) i] || ! floorOpen (f.floor) || f.nodes.size() < 4) continue;
-        double d = 0.0;
-        for (int k = 0; k < 4; ++k) d += v.depth (st.nodes[(size_t) f.nodes[(size_t) k]].p);
-        order.push_back ({ -d, i });
+        if (! floorOpen (f.floor) || i == openFace) continue;
+        const auto& c = st.centres[(size_t) i];
+        const bool lit = isNear (i);
+        const float dimness = openFace >= 0 && ! lit ? 0.22f : 1.0f;
+        const auto stemColour = fade (kRule, c).withMultipliedAlpha (dimness);
+        stems.v.push_back (vertex (v.project ({ c.x, c.y, st.floorZ (f.floor) }), stemColour, 1.0f));
+        stems.v.push_back (vertex (v.project (c), stemColour, 1.0f));
+        shelf.v.push_back (vertex (v.project (c), lit ? kChosen : fade (kData, c).withMultipliedAlpha (dimness), lit ? 6.0f : 4.0f));
     }
-    std::sort (order.begin(), order.end());
     Batch fill { Batch::tris, false, {} };
-    for (const auto& [d, i] : order)
+    Batch wire { Batch::lines, false, {} };
+    static const juce::Colour axisColour[3] = { juce::Colour (0xff303030), juce::Colour (0xff808080), juce::Colour (0xffb4b4b4) };
+    if (openFace >= 0 && st.faces[(size_t) openFace].nodes.size() >= 4)
     {
-        const auto& f = st.faces[(size_t) i];
+        const auto& f = st.faces[(size_t) openFace];
         double res = 0.0;
         int count = 0;
         for (int k = 0; k < 4; ++k)
@@ -102,26 +103,21 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
         const auto colour = parula (count > 0 ? res / count / 45.0 : 0.0).withAlpha (0.35f);
         const juce::Point<float> c[4] = { v.project (st.nodes[(size_t) f.nodes[0]].p), v.project (st.nodes[(size_t) f.nodes[1]].p), v.project (st.nodes[(size_t) f.nodes[3]].p), v.project (st.nodes[(size_t) f.nodes[2]].p) };
         for (int k : { 0, 1, 2, 0, 2, 3 }) fill.v.push_back (vertex (c[k], colour, 0.0f));
-    }
-    out.push_back (fill);
-    Batch stems { Batch::lines, false, {} };
-    Batch wire { Batch::lines, false, {} };
-    for (const auto& n : st.nodes)
-    {
-        if (! floorOpen (n.floor)) continue;
-        const auto c = fade (kRule, n.p);
-        stems.v.push_back (vertex (v.project ({ n.p.x, n.p.y, st.floorZ (n.floor) }), c, 1.0f));
-        stems.v.push_back (vertex (v.project (n.p), c, 1.0f));
-    }
-    out.push_back (stems);
-    static const juce::Colour axisColour[3] = { juce::Colour (0xff303030), juce::Colour (0xff808080), juce::Colour (0xffb4b4b4) };
-    for (const auto& e : st.edges)
-    {
-        if (! floorOpen (e.floor) || ! active[(size_t) e.body]) continue;
-        const auto& a = st.nodes[(size_t) e.a].p;
-        const auto& b = st.nodes[(size_t) e.b].p;
-        wire.v.push_back (vertex (v.project (a), axisColour[e.axis], 1.0f));
-        wire.v.push_back (vertex (v.project (b), axisColour[e.axis], 1.0f));
+        for (const auto& e : st.edges)
+        {
+            if (e.body != openFace && ! isNear (e.body)) continue;
+            const auto& a = st.nodes[(size_t) e.a].p;
+            const auto& b = st.nodes[(size_t) e.b].p;
+            const auto col = e.body == openFace ? axisColour[e.axis] : kLine;
+            wire.v.push_back (vertex (v.project (a), col, 1.0f));
+            wire.v.push_back (vertex (v.project (b), col, 1.0f));
+        }
+        for (const int n : f.nodes)
+        {
+            const auto& p = st.nodes[(size_t) n].p;
+            stems.v.push_back (vertex (v.project ({ p.x, p.y, st.floorZ (f.floor) }), kRule, 1.0f));
+            stems.v.push_back (vertex (v.project (p), kRule, 1.0f));
+        }
     }
     if (spot && spot->stub >= 0)
     {
@@ -129,20 +125,20 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
         wire.v.push_back (vertex (v.project (st.nodes[(size_t) s.node].p), kChosen, 1.0f));
         wire.v.push_back (vertex (v.project (s.p), kChosen, 1.0f));
     }
+    out.push_back (fill);
+    out.push_back (stems);
     out.push_back (wire);
+    out.push_back (shelf);
     Batch marks { Batch::points, true, {} };
-    std::array<int, kGroups> perFloor {};
-    for (const auto& n : st.nodes) if (n.floor >= 0 && n.floor < kGroups) ++perFloor[(size_t) n.floor];
-    for (const auto& n : st.nodes)
-    {
-        if (! floorOpen (n.floor)) continue;
-        const bool dense = n.floor >= 0 && n.floor < kGroups && perFloor[(size_t) n.floor] > 400;
-        const bool lit = std::find (activeNodes.begin(), activeNodes.end(), (int) (&n - st.nodes.data())) != activeNodes.end();
-        marks.v.push_back (vertex (v.project (n.p), lit ? kChosen : fade (kData, n.p), lit ? 7.0f : n.faces >= 4 ? 5.0f : dense ? 2.0f : 3.5f));
-    }
+    if (openFace >= 0)
+        for (const int n : st.faces[(size_t) openFace].nodes)
+        {
+            const bool lit = std::find (activeNodes.begin(), activeNodes.end(), n) != activeNodes.end();
+            marks.v.push_back (vertex (v.project (st.nodes[(size_t) n].p), lit ? kChosen : kData, lit ? 7.0f : 5.0f));
+        }
     Batch stubMarks { Batch::points, false, {} };
     for (const auto& s : st.stubs)
-        if (floorOpen (s.floor)) stubMarks.v.push_back (vertex (v.project (s.p), fade (kChosen, s.p), 4.0f));
+        if (floorOpen (s.floor)) stubMarks.v.push_back (vertex (v.project (s.p), fade (kChosen, s.p).withMultipliedAlpha (openFace >= 0 ? 0.22f : 1.0f), 4.0f));
     out.push_back (marks);
     out.push_back (stubMarks);
     Batch links { Batch::lines, false, {} };

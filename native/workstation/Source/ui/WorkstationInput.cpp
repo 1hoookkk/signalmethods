@@ -1,5 +1,6 @@
 #include "Workstation.h"
 #include "Style.h"
+#include <algorithm>
 #include <cmath>
 
 namespace ws
@@ -36,16 +37,38 @@ bool inverseBilinear (juce::Point<float> p, const juce::Point<float> c[4], doubl
 
 int Workstation::nodeAt (juce::Point<float> p) const
 {
+    if (openFace < 0) return -1;
     int best = -1;
-    float bestD = 7.0f;
-    for (int i = 0; i < (int) st.nodes.size(); ++i)
+    float bestD = 8.0f;
+    for (const int i : st.faces[(size_t) openFace].nodes)
     {
-        const auto& n = st.nodes[(size_t) i];
-        if (! floorOpen (n.floor)) continue;
-        const float d = view.project (n.p).getDistanceFrom (p);
+        const float d = view.project (st.nodes[(size_t) i].p).getDistanceFrom (p);
         if (d < bestD) { bestD = d; best = i; }
     }
     return best;
+}
+
+int Workstation::faceAt (juce::Point<float> p) const
+{
+    int best = -1;
+    float bestD = 7.0f;
+    const auto near = st.neighbours (openFace);
+    for (int i = 0; i < (int) st.faces.size(); ++i)
+    {
+        if (i == openFace || ! floorOpen (st.faces[(size_t) i].floor)) continue;
+        if (openFace >= 0 && std::find (near.begin(), near.end(), i) == near.end()) continue;
+        const float d = view.project (st.centres[(size_t) i]).getDistanceFrom (p);
+        if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+}
+
+void Workstation::openFilter (int face)
+{
+    openFace = face;
+    spot = Spot { -1, -1, face, -1, 0.0, 0.5, 0.5 };
+    playBody = false;
+    status = st.faces[(size_t) face].name;
 }
 
 Spot Workstation::spotAt (juce::Point<float> p) const
@@ -59,7 +82,7 @@ Spot Workstation::spotAt (juce::Point<float> p) const
     for (int i = 0; i < (int) st.edges.size(); ++i)
     {
         const auto& e = st.edges[(size_t) i];
-        if (! floorOpen (e.floor)) continue;
+        if (e.body != openFace) continue;
         float d = 0.0f;
         const double t = segmentT (p, view.project (st.nodes[(size_t) e.a].p), view.project (st.nodes[(size_t) e.b].p), d);
         if (d < bestD) { bestD = d; s.edge = i; s.t = t; }
@@ -69,7 +92,7 @@ Spot Workstation::spotAt (juce::Point<float> p) const
     for (int i = 0; i < (int) st.faces.size(); ++i)
     {
         const auto& f = st.faces[(size_t) i];
-        if (! floorOpen (f.floor) || f.nodes.size() < 4) continue;
+        if (i != openFace || f.nodes.size() < 4) continue;
         juce::Point<float> c[4];
         double depth = 0.0;
         for (int k = 0; k < 4; ++k) { c[k] = view.project (st.nodes[(size_t) f.nodes[(size_t) k]].p); depth += view.depth (st.nodes[(size_t) f.nodes[(size_t) k]].p); }
@@ -157,6 +180,7 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
         }
         mode = Mode::dragSpot; dragSpot = Spot { a, -1, -1, -1, 0.0, 0.0, 0.0 }; dragPos = p; dragStart = p; return;
     }
+    if (const int f = faceAt (p); f >= 0 && L.field.contains (p) && ! pairLive()) { openFilter (f); redraw(); return; }
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
     if (L.timelineOpen && L.tlAx.contains (p)) { mode = Mode::scrub; scrubTo (p.x); return; }
     if (L.outer.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
@@ -227,7 +251,9 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
     }
     else if (mode == Mode::orbit && ! moved && L.field.contains (p))
     {
+        openFace = -1;
         spot.reset();
+        picked.reset();
         status = "";
     }
     else if (mode == Mode::dragKey && ! moved)

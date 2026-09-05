@@ -1420,3 +1420,12 @@ Open, in order:
   sources. Nothing is drawn but stems and marks; pressing a stem lights that body's square
   (edges and parula fill), so the surface is read one body at a time. The spectral layout
   stays in stitch.json unused. Commit 2 of the stitch.
+- 2026-09-05, Tyson: "How do we abstract it properly without confusion" (asked twice). Answer
+  built: one idea per level, never two levels at once. Level one, the shelf: one stem per
+  filter (340), at the filter's own peak with the wheel centred, height its resonance, on its
+  source floor; read frames as orange marks. Level two, the filter: press a stem and the
+  shelf dims, the filter opens as its square (corners, MORPH and Q edges, parula fill); the
+  filters sharing a corner with it are the only other things lit, and pressing one walks
+  into it; drag inside the square is the wheel, press a corner for that corner alone. Press
+  empty space to close. Level three is EDIT as before. Words: filter, morph, Q, frame; no
+  nodes, edges or faces on the surface. Shots: ws_shelf.png (closed), ws_pair.png (open).

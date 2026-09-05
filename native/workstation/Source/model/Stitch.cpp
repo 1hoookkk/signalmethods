@@ -156,9 +156,27 @@ Vec3 Stitch::gridPlace (const Words& words, double z)
     return { std::log10 (hz / 20.0) / 3.0 - 0.5, juce::jlimit (-0.5, 0.5, cv[(size_t) best] / 60.0), z + lift };
 }
 
+bool Stitch::sharesNode (int a, int b) const
+{
+    if (a < 0 || b < 0 || a == b) return false;
+    for (const int n : faces[(size_t) a].nodes)
+        for (const int m : faces[(size_t) b].nodes) if (n == m) return true;
+    return false;
+}
+
+std::vector<int> Stitch::neighbours (int face) const
+{
+    std::vector<int> out;
+    if (face < 0) return out;
+    for (int i = 0; i < (int) faces.size(); ++i) if (sharesNode (face, i)) out.push_back (i);
+    return out;
+}
+
 void Stitch::placeOnGrid()
 {
     for (auto& n : nodes) n.p = gridPlace (wordsOf ((int) (&n - nodes.data())), floorZ (n.floor));
+    centres.clear();
+    for (int i = 0; i < (int) faces.size(); ++i) centres.push_back (gridPlace (wheelMorph (cornersOf (i), 0.5, 0.5).words, floorZ (faces[(size_t) i].floor)));
     for (auto& s : stubs) s.p = gridPlace (s.words, floorZ (s.floor >= 0 && std::find (usedFloors.begin(), usedFloors.end(), s.floor) != usedFloors.end() ? s.floor : nodes[(size_t) s.node].floor));
 }
 

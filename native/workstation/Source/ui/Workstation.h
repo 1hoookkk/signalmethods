@@ -26,6 +26,7 @@ public:
     void demo();
     void demoSound (int wavIndex, double at, double regionA, double regionB);
     void demoPair (double t);
+    void demoShelf();
     void setRoom (Room r);
     bool exportBody (const juce::File& file);
     juce::File exportDir, workspace;
@@ -56,6 +57,7 @@ private:
     GLRenderer renderer;
     std::unique_ptr<Audio> audio;
     std::optional<Spot> spot, picked, dragSpot;
+    int openFace = -1;
     std::array<bool, kGroups> open { true, true, true, true, true, true, true };
     juce::String status;
     Mode mode = Mode::none;
@@ -95,6 +97,8 @@ private:
     int captureSpot (const Spot& s, const Words& words, const juce::String& name);
     Spot spotAt (juce::Point<float> p) const;
     int nodeAt (juce::Point<float> p) const;
+    int faceAt (juce::Point<float> p) const;
+    void openFilter (int face);
     void setSurface (juce::Point<float> p);
     void setPairT (juce::Point<float> p);
     void setWheel (juce::Point<float> p);

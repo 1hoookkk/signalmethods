@@ -54,6 +54,7 @@ public:
     std::vector<Edge> edges;
     std::vector<Face> faces;
     std::vector<Stub> stubs;
+    std::vector<Vec3> centres;
     double floorGap = 1.0;
     int floorCount = 7;
     std::vector<int> usedFloors;
@@ -74,6 +75,8 @@ public:
     Spot lerp (const Spot& a, const Spot& b, double f) const;
     int nearestNode (const Words& words) const;
     void placeOnGrid();
+    bool sharesNode (int faceA, int faceB) const;
+    std::vector<int> neighbours (int face) const;
     static Vec3 gridPlace (const Words& words, double z);
 };
 }
