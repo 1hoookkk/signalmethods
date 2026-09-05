@@ -1322,3 +1322,14 @@ Open, in order:
   Not yet: sound in the workstation, FROM AUDIO, loading a user body in the plugin drawer. Rules
   from Tyson this session: no glow, no sentences on the surface, no stock widgets, no chrome, a
   stage is a row, pairing is slot to slot only, one response curve.
+- 2026-09-05, workstation, verbatim from Tyson's request: "SPEECH is linear prediction at order
+  12 on the sound resampled to 11 kHz, the classic speech envelope, which yields the poles
+  directly. BELLS is the core's all-pole fit at a higher order followed by peak picking. Both are
+  LPC envelope methods, the same family as the Env and lattice modules in Peevers' program, but
+  not his code. We only have his binary, so nothing here is his implementation, and I will not
+  claim it is." Resampling: analysis through the core's resample to 11,025 Hz inside
+  speech_poles; playback by linear interpolation to the device rate in Audio.cpp; the cascade
+  rewarped from the 44,100 Hz datum by the core's rewarp_cascade. Two rooms (FRAMES, SOUND);
+  one implementation each (CPU surface and HTML model removed). Audio out is in: LISTEN loops a
+  region through the current cascade. GL path and audio path have not been run on screen by
+  the assistant; the software shot is the check.
