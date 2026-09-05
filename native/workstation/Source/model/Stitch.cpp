@@ -97,29 +97,56 @@ std::array<Words, 4> Stitch::cornersOf (int face) const
 Words Stitch::wordsOfItem (const Item& it) const
 {
     if (it.stub >= 0) return stubs[(size_t) it.stub].words;
-    return wheelMorph (cornersOf (it.face), 0.5, 0.5).words;
+    return wordsOf (it.node);
 }
 
 juce::String Stitch::nameOfItem (const Item& it) const
 {
-    return it.stub >= 0 ? stubs[(size_t) it.stub].name : faces[(size_t) it.face].name;
+    if (it.stub >= 0) return stubs[(size_t) it.stub].name;
+    for (const auto& f : faces)
+        for (int i = 0; i < (int) f.nodes.size(); ++i)
+            if (f.nodes[(size_t) i] == it.node) return f.name + (f.nodes.size() == 4 ? juce::String (juce::CharPointer_UTF8 (" \xc2\xb7 ")) + juce::String (i & 1 ? "M1" : "M0") + (i & 2 ? " Q1" : " Q0") : " c" + juce::String (i));
+    return "corner " + juce::String (it.node);
+}
+
+juce::String Stitch::itemName (const Item& it) const { return nameOfItem (it); }
+
+int Stitch::stackCount (const Vec3& at) const
+{
+    int n = 0;
+    for (const auto& it : items) if (std::abs (it.p.x - at.x) < 1e-4 && std::abs (it.p.y - at.y) < 1e-4 && std::abs (it.p.z - at.z) < 1e-4) ++n;
+    return n;
 }
 
 std::vector<Near> Stitch::nearest (const Vec3& at, int count, const std::array<bool, kGroups>& open) const
 {
-    std::vector<std::pair<double, int>> d;
+    std::vector<Near> all;
+    double total = 0.0, best = 1e18;
+    int bestIndex = -1;
     for (int i = 0; i < (int) items.size(); ++i)
     {
         const auto& it = items[(size_t) i];
         if (it.group >= 0 && it.group < kGroups && ! open[(size_t) it.group]) continue;
-        const double dx = it.p.x - at.x, dy = it.p.y - at.y, dz = (it.p.z - at.z) * 0.6;
-        d.push_back ({ std::sqrt (dx * dx + dy * dy + dz * dz), i });
+        const double dx = it.p.x - at.x, dy = it.p.y - at.y, dz = it.p.z - at.z;
+        const double d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 < best) { best = d2; bestIndex = (int) all.size(); }
+        const double w = 1.0 / (d2 * d2 + 1e-12);
+        all.push_back ({ it, w });
+        total += w;
     }
-    std::sort (d.begin(), d.end());
+    if (all.empty()) return all;
+    if (best < 1e-6) { Near exact = all[(size_t) bestIndex]; exact.weight = 1.0; return { exact }; }
+    for (auto& n : all) n.weight /= total;
+    std::sort (all.begin(), all.end(), [] (const Near& a, const Near& b) { return a.weight > b.weight; });
     std::vector<Near> out;
-    double total = 0.0;
-    for (int k = 0; k < count && k < (int) d.size(); ++k) { const double w = 1.0 / std::max (1e-4, d[(size_t) k].first); out.push_back ({ items[(size_t) d[(size_t) k].second], w }); total += w; }
-    for (auto& n : out) n.weight /= std::max (1e-12, total);
+    double kept = 0.0;
+    for (const auto& n : all)
+    {
+        if (n.weight < 1e-4 || (count > 0 && (int) out.size() >= count)) break;
+        out.push_back (n);
+        kept += n.weight;
+    }
+    for (auto& n : out) n.weight /= std::max (1e-12, kept);
     return out;
 }
 
@@ -132,7 +159,7 @@ Morph Stitch::soundAt (const Spot& s, const std::array<bool, kGroups>& open) con
     if (s.face >= 0 && s.face < (int) faces.size()) return wheelMorph (cornersOf (s.face), juce::jlimit (0.0, 1.0, s.m), juce::jlimit (0.0, 1.0, s.q));
     if (s.free)
     {
-        const auto near = nearest ({ s.x, s.y, s.z }, 4, open);
+        const auto near = nearest ({ s.x, s.y, s.z }, 0, open);
         std::vector<Words> ws;
         std::vector<double> wt;
         for (const auto& n : near) { ws.push_back (wordsOfItem (n.item)); wt.push_back (n.weight); }
@@ -163,7 +190,8 @@ juce::String Stitch::nameOf (const Spot& s, const std::array<bool, kGroups>& ope
     if (s.free)
     {
         juce::String out;
-        for (const auto& n : nearest ({ s.x, s.y, s.z }, 4, open)) out += (out.isEmpty() ? "" : "   ") + juce::String ((int) std::round (n.weight * 100)) + "% " + nameOfItem (n.item);
+        int shown = 0;
+        for (const auto& n : nearest ({ s.x, s.y, s.z }, 4, open)) { if (n.weight < 0.05 && shown > 0) break; out += (out.isEmpty() ? "" : "   ") + juce::String ((int) std::round (n.weight * 100)) + "% " + nameOfItem (n.item); ++shown; }
         return out;
     }
     if (s.stub >= 0 && s.stub < (int) stubs.size()) return stubs[(size_t) s.stub].name;
@@ -180,9 +208,11 @@ int Stitch::addStub (const juce::String& name, const Words& words, int node, int
     s.floor = floor;
     s.words = words;
     s.node = juce::jlimit (0, std::max (0, (int) nodes.size() - 1), node);
-    s.p = gridPlace (words);
+    const auto sh = shapeOf (decompile (words, kDatumHz));
+    s.p = place (sh);
     stubs.push_back (s);
-    items.push_back ({ -1, (int) stubs.size() - 1, floor, s.p });
+    Item it; it.stub = (int) stubs.size() - 1; it.group = floor; it.p = s.p; it.root = sh.root; it.voicing = sh.voicing; it.resonance = sh.width;
+    items.push_back (it);
     return (int) stubs.size() - 1;
 }
 
@@ -207,18 +237,39 @@ int Stitch::nearestNode (const Words& words) const
     return best;
 }
 
-Vec3 Stitch::gridPlace (const Words& words)
+Shape Stitch::shapeOf (const Chord& chord)
 {
-    const auto cv = curveOf (words);
-    int best = 0;
-    for (int i = 1; i < kCurvePoints; ++i) if (cv[(size_t) i] > cv[(size_t) best]) best = i;
-    const double hz = 20.0 * std::pow (1000.0, best / double (kCurvePoints - 1));
-    double res = 0.0;
-    int count = 0;
-    for (const auto& g : geometryOf (words)) if (g.pole && g.pR > 0.5) { res += resDb (g.pR); ++count; }
-    const double lift = count > 0 ? juce::jlimit (0.0, 1.0, res / count / 60.0) : 0.0;
-    return { std::log10 (hz / 20.0) / 3.0 - 0.5, juce::jlimit (-0.5, 0.5, cv[(size_t) best] / 60.0), lift };
+    Shape s;
+    double lo = 1e9, hi = -1e9, widths = 0.0;
+    int n = 0;
+    for (const auto& st : chord)
+    {
+        if (! st.pole.on || st.pole.width > 6.0 || st.pole.note < 12.0 || st.pole.note > 132.0) continue;
+        lo = std::min (lo, st.pole.note); hi = std::max (hi, st.pole.note); widths += st.pole.width; ++n;
+    }
+    if (n == 0)
+        for (const auto& st : chord)
+        {
+            if (! st.pole.on || st.pole.note < 12.0 || st.pole.note > 132.0) continue;
+            lo = std::min (lo, st.pole.note); hi = std::max (hi, st.pole.note); widths += st.pole.width; ++n;
+        }
+    if (n == 0) return s;
+    s.any = true;
+    s.root = lo;
+    s.voicing = (hi - lo) / 12.0;
+    s.width = widths / n;
+    return s;
 }
+
+Vec3 Stitch::place (const Shape& s)
+{
+    const double x = juce::jlimit (-0.5, 0.5, (s.root - 24.0) / 96.0 - 0.5);
+    const double y = juce::jlimit (-0.5, 0.5, s.voicing / 6.0 - 0.5);
+    const double z = juce::jlimit (0.0, 1.0, 1.0 - std::log2 (1.0 + std::max (0.0, s.width)) / std::log2 (13.0));
+    return { x, y, z };
+}
+
+Vec3 Stitch::gridPlace (const Words& words) { return place (shapeOf (decompile (words, kDatumHz))); }
 
 bool Stitch::sharesNode (int a, int b) const
 {
@@ -238,16 +289,25 @@ std::vector<int> Stitch::neighbours (int face) const
 
 void Stitch::placeOnGrid()
 {
-    for (auto& n : nodes) n.p = gridPlace (n.words);
-    for (auto& s : stubs) s.p = gridPlace (s.words);
     centres.clear();
     items.clear();
-    for (int i = 0; i < (int) faces.size(); ++i)
+    for (int i = 0; i < (int) nodes.size(); ++i)
     {
-        centres.push_back (gridPlace (wheelMorph (cornersOf (i), 0.5, 0.5).words));
-        items.push_back ({ i, -1, faces[(size_t) i].floor, centres.back() });
+        auto& n = nodes[(size_t) i];
+        const auto sh = shapeOf (n.chord);
+        n.p = place (sh);
+        Item it; it.node = i; it.group = n.floor; it.p = n.p; it.root = sh.root; it.voicing = sh.voicing; it.resonance = sh.width;
+        items.push_back (it);
     }
-    for (int i = 0; i < (int) stubs.size(); ++i) items.push_back ({ -1, i, stubs[(size_t) i].floor, stubs[(size_t) i].p });
+    for (int i = 0; i < (int) faces.size(); ++i) centres.push_back (gridPlace (wheelMorph (cornersOf (i), 0.5, 0.5).words));
+    for (int i = 0; i < (int) stubs.size(); ++i)
+    {
+        auto& s = stubs[(size_t) i];
+        const auto sh = shapeOf (decompile (s.words, kDatumHz));
+        s.p = place (sh);
+        Item it; it.stub = i; it.group = s.floor; it.p = s.p; it.root = sh.root; it.voicing = sh.voicing; it.resonance = sh.width;
+        items.push_back (it);
+    }
 }
 
 Spot Stitch::lerp (const Spot& a, const Spot& b, double f) const

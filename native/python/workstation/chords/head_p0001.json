@@ -12,7 +12,10 @@
       "note": 124.059,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 124.059,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -20,7 +23,10 @@
       "note": 125.716,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.716,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -28,7 +34,10 @@
       "note": 129.878,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.878,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -36,7 +45,10 @@
       "note": 131.704,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 131.704,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -44,7 +56,10 @@
       "note": 133.047,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.047,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -52,7 +67,10 @@
       "note": 134.521,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.521,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -66,7 +84,10 @@
       "note": 104.397,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 104.397,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -74,7 +95,10 @@
       "note": 110.205,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 110.205,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -82,7 +106,10 @@
       "note": 122.484,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 122.484,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -90,7 +117,10 @@
       "note": 124.544,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 124.544,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -98,7 +128,10 @@
       "note": 128.744,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 128.744,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -106,7 +139,10 @@
       "note": 132.878,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 132.878,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -120,7 +156,10 @@
       "note": 105.805,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 105.805,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -128,7 +167,10 @@
       "note": 123.962,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 123.962,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -136,7 +178,10 @@
       "note": 125.348,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.348,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -144,7 +189,10 @@
       "note": 129.714,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.714,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -152,7 +200,10 @@
       "note": 132.871,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 132.871,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -160,7 +211,10 @@
       "note": 133.979,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.979,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -174,7 +228,10 @@
       "note": 115.894,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 115.894,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -182,7 +239,10 @@
       "note": 125.127,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.127,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -190,7 +250,10 @@
       "note": 129.654,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.654,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -198,7 +261,10 @@
       "note": 131.571,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 131.571,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -206,7 +272,10 @@
       "note": 133.79,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.79,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -214,7 +283,10 @@
       "note": 134.846,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.846,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -228,7 +300,10 @@
       "note": 108.93,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 108.93,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -236,7 +311,10 @@
       "note": 117.108,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 117.108,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -244,7 +322,10 @@
       "note": 124.704,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 124.704,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -252,7 +333,10 @@
       "note": 129.643,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.643,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -260,7 +344,10 @@
       "note": 133.08,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.08,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -268,7 +355,10 @@
       "note": 134.016,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.016,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -282,7 +372,10 @@
       "note": 85.839,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 85.839,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -290,7 +383,10 @@
       "note": 116.061,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 116.061,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -298,7 +394,10 @@
       "note": 123.534,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 123.534,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -306,7 +405,10 @@
       "note": 129.864,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.864,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -314,7 +416,10 @@
       "note": 133.721,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.721,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -322,7 +427,10 @@
       "note": 134.938,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.938,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -336,7 +444,10 @@
       "note": 107.037,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 107.037,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -344,7 +455,10 @@
       "note": 119.035,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 119.035,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -352,7 +466,10 @@
       "note": 124.618,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 124.618,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -360,7 +477,10 @@
       "note": 125.85,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.85,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -368,7 +488,10 @@
       "note": 129.85,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.85,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -376,7 +499,10 @@
       "note": 133.821,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.821,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -390,7 +516,10 @@
       "note": 123.759,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 123.759,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -398,7 +527,10 @@
       "note": 125.852,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.852,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -406,7 +538,10 @@
       "note": 129.867,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 129.867,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -414,7 +549,10 @@
       "note": 131.66,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 131.66,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -422,7 +560,10 @@
       "note": 133.905,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.905,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -430,7 +571,10 @@
       "note": 134.969,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.969,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -444,7 +588,10 @@
       "note": 80.597,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 80.597,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -452,7 +599,10 @@
       "note": 105.332,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 105.332,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -460,7 +610,10 @@
       "note": 109.393,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 109.393,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -468,7 +621,10 @@
       "note": 118.56,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 118.56,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -476,7 +632,10 @@
       "note": 125.672,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.672,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -484,7 +643,10 @@
       "note": 130.086,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 130.086,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -498,7 +660,10 @@
       "note": 109.81,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 109.81,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -506,7 +671,10 @@
       "note": 114.331,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 114.331,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -514,7 +682,10 @@
       "note": 127.946,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 127.946,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -522,7 +693,10 @@
       "note": 132.003,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 132.003,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -530,7 +704,10 @@
       "note": 133.625,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.625,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -538,7 +715,10 @@
       "note": 134.847,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.847,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -552,7 +732,10 @@
       "note": 106.461,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 106.461,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -560,7 +743,10 @@
       "note": 111.851,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 111.851,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -568,7 +754,10 @@
       "note": 123.675,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 123.675,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -576,7 +765,10 @@
       "note": 127.964,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 127.964,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -584,7 +776,10 @@
       "note": 132.176,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 132.176,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -592,7 +787,10 @@
       "note": 133.362,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.362,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]
@@ -606,7 +804,10 @@
       "note": 113.103,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 113.103,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -614,7 +815,10 @@
       "note": 125.534,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 125.534,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -622,7 +826,10 @@
       "note": 127.57,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 127.57,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -630,7 +837,10 @@
       "note": 131.88,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 131.88,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -638,7 +848,10 @@
       "note": 133.497,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 133.497,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -646,7 +859,10 @@
       "note": 134.769,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 134.769,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]

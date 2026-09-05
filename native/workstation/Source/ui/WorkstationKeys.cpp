@@ -34,7 +34,23 @@ void Workstation::layoutKeys()
     if (L.room == Room::frames)
     {
         keys.push_back ({ "home", "HOME", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, false });
+        {
+            const auto& v = view;
+            const bool farX = v.farPlane (0), farY = v.farPlane (1);
+            const double nearX = farX ? v.lo.x : v.hi.x, nearY = farY ? v.lo.y : v.hi.y, farXv = farX ? v.hi.x : v.lo.x;
+            const auto ox = v.project ({ 0.0, nearY, v.lo.z }), oy = v.project ({ nearX, 0.0, v.lo.z }), oz = v.project ({ farXv, nearY, 0.5 });
+            const bool left = v.project ({ farXv, nearY, 0.0 }).x < L.field.getCentreX();
+            keys.push_back ({ "sweep0", "SWEEP", { ox.x + 34.0f, ox.y + 17.0f, 52.0f, kh }, sweep[0] });
+            keys.push_back ({ "sweep1", "SWEEP", { oy.x + 44.0f, oy.y + 17.0f, 52.0f, kh }, sweep[1] });
+            keys.push_back ({ "sweep2", "SWEEP", { left ? std::max (L.field.getX() + 4.0f, oz.x - 176.0f) : oz.x + 86.0f, oz.y - 4.0f, 52.0f, kh }, sweep[2] });
+        }
         keys.push_back ({ "pair", "PAIR", { L.field.getRight() - 56.0f, 5.0f, 56.0f, kh }, pairMode });
+        for (int i = 0; i < 4; ++i)
+        {
+            const float sx = L.field.getX() + 8.0f + i * 96.0f;
+            keys.push_back ({ "slot" + juce::String (i), juce::String ("TAKE ") + kCornerNames[i], { sx, L.field.getBottom() - 22.0f, 88.0f, kh }, body.corner[(size_t) i] >= 0 });
+        }
+        keys.push_back ({ "toBody", "BODY ROOM", { L.field.getRight() - 96.0f, L.field.getBottom() - 22.0f, 88.0f, kh }, false });
         keys.push_back ({ "capture", "CAPTURE", { L.field.getRight() - 128.0f, 5.0f, 68.0f, kh }, false });
         const auto sq = L.outer;
         for (int i = 0; i < 4; ++i)
@@ -81,10 +97,13 @@ void Workstation::press (const juce::String& id)
     if (id == "room0") setRoom (Room::frames);
     else if (id == "room1") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "pick a corner first"; }
     else if (id == "room2") setRoom (Room::sound);
+    else if (id.startsWith ("sweep")) { const int k = id.substring (5).getIntValue(); sweep[(size_t) k] = ! sweep[(size_t) k]; if (sweep[0] || sweep[1] || sweep[2]) startTimerHz (60); }
     else if (id == "home") { view.az = -37.5; view.el = 30.0; view.zoom = 1.0; view.panX = view.panY = 0.0; }
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two nodes" : ""; }
     else if (id == "capture") capture();
     else if (id.startsWith ("corner")) assignCorner (id.substring (6).getIntValue());
+    else if (id.startsWith ("slot")) { assignCorner (id.substring (4).getIntValue()); playBody = false; }
+    else if (id == "toBody") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "take a corner first"; }
     else if (id.startsWith ("goto")) openEditor (id.substring (4).getIntValue());
     else if (id.startsWith ("row")) { const int s = id.substring (3).getIntValue(); body.rowOn[(size_t) s] = ! body.rowOn[(size_t) s]; }
     else if (id == "playbody") playBody = ! playBody;

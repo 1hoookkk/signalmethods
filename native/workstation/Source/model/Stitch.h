@@ -43,10 +43,13 @@ struct Stub
 
 struct Item
 {
-    int face = -1, stub = -1;
+    int node = -1, stub = -1;
     int group = 0;
     Vec3 p;
+    double root = 60.0, voicing = 0.0, resonance = 1.0;
 };
+
+struct Shape { double root = 60.0, voicing = 0.0, width = 1.0; bool any = false; };
 
 struct Spot
 {
@@ -86,6 +89,10 @@ public:
     void placeOnGrid();
     bool sharesNode (int faceA, int faceB) const;
     std::vector<int> neighbours (int face) const;
+    static Shape shapeOf (const Chord& chord);
+    static Vec3 place (const Shape& s);
     static Vec3 gridPlace (const Words& words);
+    juce::String itemName (const Item& it) const;
+    int stackCount (const Vec3& at) const;
 };
 }

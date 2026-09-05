@@ -1494,3 +1494,25 @@ Open, in order:
   right-drag or Alt-drag. RAZOR key in SOUND sets every read voice to a 0.25 st width before
   FRAME, the P2K pole-only sharpness. Brief for an outside opinion on the abstraction at
   native/PROMPT_HERO_SPACE.md (Tyson wants it sent to another model at max reasoning).
+- 2026-09-05, the instrument, built from the outside answer Tyson pasted (GPT-6 Astra at max
+  reasoning, brief native/PROMPT_HERO_SPACE.md plus a correction note): one morphing filter
+  whose preset is the whole frame bank on ROOT x VOICING x RESONANCE. Root = lowest strong
+  voice as a note (strong = pole width <= 6 st), voicing = highest strong voice minus root in
+  octaves, resonance = mean width mapped narrower-is-higher (12, 3, 1, 0.25 st ticks). Every
+  factory corner and every read frame is an anchor coloured by its root's pitch class; wheel
+  centres are gone. Position -> sound is the normalised inverse-fourth-power blend over the
+  whole open bank (exact anchor within 1e-3 snaps), so no boundary steps; stacks at one
+  position are counted in the status line. Drag moves root and voicing, Shift-drag moves
+  resonance, right or Alt drag orbits; SWEEP keys sit beside each axis word and glide that
+  coordinate by itself. Grab an anchor by pressing within 3 px: exact state, PAIR, TAKE.
+  Four TAKE slots along the bottom of the box fill the body's corners (one or four), BODY
+  ROOM leaves to the editor, FRAMES is one key back. No shelf, no floors, no open squares,
+  no pole plot in the hero; the response plot took its room. MORPHEUS folded by default
+  (1,567 corners), P2K and read frames open. Reader and bake tool write bells: razor pole
+  with a zero on the same note sixteen times wider, so read frames are peaks not low-passes
+  (Tyson: "in sound why is everything a low pass"). Peak meter on the response panel fed
+  from the audio callback. Headless gesture check: TRENCH_Workstation --check (ctest
+  trench_workstation_gestures) presses, drags, shift-drags, presses LISTEN and orbits; it
+  caught the 6 px grab radius eating every press before Tyson saw it. Memory corrections
+  from the outside answer: US5943427 is a spatialization patent, the Hillenbrand "PDF" in
+  papers is a saved web page.

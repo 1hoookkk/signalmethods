@@ -190,7 +190,7 @@ void Workstation::frameFromSlice()
     lib.frames.push_back (f);
     {
         auto chord = f.chord;
-        for (auto& stg : chord) if (stg.pole.on) stg.pole.width = 0.25;
+        for (auto& stg : chord) if (stg.pole.on) { stg.pole.width = 0.25; stg.zero.on = true; stg.zero.note = stg.pole.note; stg.zero.width = 4.0; }
         setChord (f, chord);
         lib.frames.back() = f;
     }

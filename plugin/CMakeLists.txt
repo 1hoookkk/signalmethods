@@ -269,4 +269,6 @@ target_link_libraries(TRENCH_WorkstationTests PRIVATE
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
 add_test(NAME trench_workstation COMMAND TRENCH_WorkstationTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+add_test(NAME trench_workstation_gestures COMMAND TRENCH_Workstation --check WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+set_tests_properties(trench_workstation_gestures PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)
 set_tests_properties(trench_workstation PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)

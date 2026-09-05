@@ -68,88 +68,55 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
         box.v.push_back (vertex (v.project (c), kFrame, 1.0f));
     }
     out.push_back (box);
-    const auto near = st.neighbours (openFace);
-    const auto isNear = [&] (int i) { return std::find (near.begin(), near.end(), i) != near.end(); };
-    std::vector<int> activeNodes;
-    if (picked && picked->node >= 0) activeNodes.push_back (picked->node);
-    if (pairLive()) { activeNodes.push_back (pairA); activeNodes.push_back (pairB); }
-    if (spot && spot->node >= 0) activeNodes.push_back (spot->node);
-    static const juce::Colour groupColour[kGroups] = { juce::Colour (0xff0072bd), juce::Colour (0xff1f9e89), juce::Colour (0xff5c5c5c), juce::Colour (0xffd95319), juce::Colour (0xff7e2f8e), juce::Colour (0xffedb120), juce::Colour (0xffa2142f) };
-    Batch stems { Batch::lines, false, {} };
-    Batch shelf { Batch::points, true, {} };
+    std::vector<Near> near;
+    if (spot && spot->free && ! playBody) near = st.nearest ({ spot->x, spot->y, spot->z }, 12, open);
+    const auto weightOf = [&] (const Item& it)
+    {
+        for (const auto& n : near) if (n.item.node == it.node && n.item.stub == it.stub) return n.weight;
+        return 0.0;
+    };
+    Batch anchors { Batch::points, true, {} };
+    Batch rings { Batch::points, true, {} };
     for (const auto& it : st.items)
     {
-        if (! floorOpen (it.group) || it.face == openFace) continue;
-        const auto& c = it.p;
-        const bool lit = it.face >= 0 && isNear (it.face);
-        const float dimness = openFace >= 0 && ! lit ? 0.22f : 1.0f;
-        const auto stemColour = fade (kDim, c).withMultipliedAlpha (dimness);
-        stems.v.push_back (vertex (v.project ({ c.x, c.y, 0.0 }), stemColour, 1.0f));
-        stems.v.push_back (vertex (v.project (c), stemColour, 1.0f));
-        const auto base = groupColour[juce::jlimit (0, kGroups - 1, it.group)];
-        shelf.v.push_back (vertex (v.project (c), lit ? kChosen : fade (base, c).withMultipliedAlpha (dimness), lit ? 8.0f : it.stub >= 0 ? 5.0f : 6.0f));
+        if (! floorOpen (it.group)) continue;
+        const double w = weightOf (it);
+        const auto colour = fade (hueOf (std::fmod (it.root, 12.0) / 12.0), it.p);
+        const bool grabbed = spot && ((it.node >= 0 && spot->node == it.node) || (it.stub >= 0 && spot->stub == it.stub));
+        const bool paired = pairLive() && it.node >= 0 && (it.node == pairA || it.node == pairB);
+        if (w > 0.03 || grabbed || paired) rings.v.push_back (vertex (v.project (it.p), kChosen, 9.0f));
+        anchors.v.push_back (vertex (v.project (it.p), colour, it.stub >= 0 ? 4.0f : 3.5f));
     }
-    Batch fill { Batch::tris, false, {} };
+    out.push_back (rings);
+    out.push_back (anchors);
     Batch wire { Batch::lines, false, {} };
-    static const juce::Colour axisColour[3] = { juce::Colour (0xff303030), juce::Colour (0xff808080), juce::Colour (0xffb4b4b4) };
-    if (openFace >= 0 && st.faces[(size_t) openFace].nodes.size() >= 4)
-    {
-        const auto& f = st.faces[(size_t) openFace];
-        double res = 0.0;
-        int count = 0;
-        for (int k = 0; k < 4; ++k)
-            for (const auto& g : geometryOf (st.wordsOf (f.nodes[(size_t) k]))) if (g.pole && g.pR > 0.5) { res += resDb (g.pR); ++count; }
-        const auto colour = parula (count > 0 ? res / count / 45.0 : 0.0).withAlpha (0.35f);
-        const juce::Point<float> c[4] = { v.project (st.nodes[(size_t) f.nodes[0]].p), v.project (st.nodes[(size_t) f.nodes[1]].p), v.project (st.nodes[(size_t) f.nodes[3]].p), v.project (st.nodes[(size_t) f.nodes[2]].p) };
-        for (int k : { 0, 1, 2, 0, 2, 3 }) fill.v.push_back (vertex (c[k], colour, 0.0f));
-        for (const auto& e : st.edges)
-        {
-            if (e.body != openFace && ! isNear (e.body)) continue;
-            const auto& a = st.nodes[(size_t) e.a].p;
-            const auto& b = st.nodes[(size_t) e.b].p;
-            const auto col = e.body == openFace ? axisColour[e.axis] : kLine;
-            wire.v.push_back (vertex (v.project (a), col, 1.0f));
-            wire.v.push_back (vertex (v.project (b), col, 1.0f));
-        }
-        for (const int n : f.nodes)
-        {
-            const auto& p = st.nodes[(size_t) n].p;
-            stems.v.push_back (vertex (v.project ({ p.x, p.y, 0.0 }), kRule, 1.0f));
-            stems.v.push_back (vertex (v.project (p), kRule, 1.0f));
-        }
-    }
     if (spot && spot->stub >= 0)
     {
-        const auto& s = st.stubs[(size_t) spot->stub];
-        wire.v.push_back (vertex (v.project (st.nodes[(size_t) s.node].p), kChosen, 1.0f));
-        wire.v.push_back (vertex (v.project (s.p), kChosen, 1.0f));
+        const auto& sb = st.stubs[(size_t) spot->stub];
+        wire.v.push_back (vertex (v.project (st.nodes[(size_t) sb.node].p), kChosen, 1.0f));
+        wire.v.push_back (vertex (v.project (sb.p), kChosen, 1.0f));
     }
-    out.push_back (fill);
-    out.push_back (stems);
     out.push_back (wire);
-    out.push_back (shelf);
-    Batch marks { Batch::points, true, {} };
-    if (openFace >= 0)
-        for (const int n : st.faces[(size_t) openFace].nodes)
-        {
-            const bool lit = std::find (activeNodes.begin(), activeNodes.end(), n) != activeNodes.end();
-            marks.v.push_back (vertex (v.project (st.nodes[(size_t) n].p), lit ? kChosen : kData, lit ? 7.0f : 5.0f));
-        }
-    out.push_back (marks);
     Batch links { Batch::lines, false, {} };
     const auto ks = tl.sorted();
     for (size_t i = 0; i + 1 < ks.size(); ++i) { links.v.push_back (vertex (v.project (st.positionOf (ks[i].spot)), kDim, 1.0f)); links.v.push_back (vertex (v.project (st.positionOf (ks[i + 1].spot)), kDim, 1.0f)); }
     if (spot && spot->free && ! playBody)
     {
         const auto at = st.positionOf (*spot);
-        for (const auto& n : st.nearest (at, 4, open))
+        for (const auto& n : near)
         {
-            const auto colour = kChosen.withAlpha ((float) juce::jlimit (0.15, 1.0, n.weight * 2.0));
+            if (n.weight < 0.03) continue;
+            const auto colour = kChosen.withAlpha ((float) juce::jlimit (0.2, 1.0, n.weight * 2.0));
             links.v.push_back (vertex (v.project (at), colour, 1.0f));
             links.v.push_back (vertex (v.project (n.item.p), colour, 1.0f));
         }
-        links.v.push_back (vertex (v.project ({ at.x, at.y, 0.0 }), kLive, 1.0f));
-        links.v.push_back (vertex (v.project (at), kLive, 1.0f));
+        const bool farX = v.farPlane (0), farY = v.farPlane (1);
+        const double wallX = farX ? v.hi.x : v.lo.x, wallY = farY ? v.hi.y : v.lo.y;
+        for (const Vec3& to : { Vec3 { at.x, at.y, v.lo.z }, Vec3 { wallX, at.y, at.z }, Vec3 { at.x, wallY, at.z } })
+        {
+            links.v.push_back (vertex (v.project (at), kLive.withAlpha (0.6f), 1.0f));
+            links.v.push_back (vertex (v.project (to), kLive.withAlpha (0.6f), 1.0f));
+        }
     }
     if (pairLive())
     {

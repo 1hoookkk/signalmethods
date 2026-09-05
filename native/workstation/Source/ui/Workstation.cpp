@@ -129,7 +129,19 @@ void Workstation::timerCallback()
         redraw();
         return;
     }
-    if (! tl.playing) { stopTimer(); return; }
+    if (audio != nullptr && audio->isPlaying() && ! tl.playing && ! (sweep[0] || sweep[1] || sweep[2])) { repaint(); if (gl) ctx.triggerRepaint(); return; }
+    if (sweep[0] || sweep[1] || sweep[2])
+    {
+        sweepT += 1.0 / 60.0;
+        if (! spot || ! spot->free) { Spot fs; fs.free = true; fs.z = freeZ; spot = fs; }
+        if (sweep[0]) spot->x = 0.5 * std::sin (sweepT * 0.35);
+        if (sweep[1]) spot->y = 0.5 * std::sin (sweepT * 0.23 + 1.0);
+        if (sweep[2]) { spot->z = 0.5 + 0.5 * std::sin (sweepT * 0.17 + 2.0); freeZ = spot->z; }
+        playBody = false;
+        status = st.nameOf (*spot, open);
+        if (! tl.playing) { redraw(); return; }
+    }
+    if (! tl.playing) { if (! (sweep[0] || sweep[1] || sweep[2]) && ! (audio != nullptr && audio->isPlaying())) stopTimer(); return; }
     double t = playFrom + (juce::Time::getMillisecondCounterHiRes() - playT0) / 1000.0;
     if (t >= tl.duration)
     {
@@ -139,6 +151,50 @@ void Workstation::timerCallback()
     tl.playhead = t;
     if (const auto s = tl.pathAt (t, st)) { spot = s; playBody = false; }
     redraw();
+}
+
+Workstation::Probe Workstation::probe() const
+{
+    Probe pr;
+    pr.status = status;
+    pr.sounding = haveSound();
+    pr.listening = audio != nullptr && audio->isPlaying();
+    if (spot) { pr.free = spot->free; pr.x = spot->x; pr.y = spot->y; pr.z = spot->z; }
+    return pr;
+}
+
+juce::Point<float> Workstation::clearPoint() const
+{
+    const auto f = L.field;
+    for (int ring = 0; ring < 40; ++ring)
+        for (int k = 0; k < 16; ++k)
+        {
+            const float a = (float) k / 16.0f * juce::MathConstants<float>::twoPi;
+            const juce::Point<float> p (f.getCentreX() + std::cos (a) * ring * 6.0f, f.getCentreY() + 40.0f + std::sin (a) * ring * 6.0f);
+            if (anchorAt (p) < 0 && anchorAt (p + juce::Point<float> (60.0f, 0.0f)) < 0 && anchorAt (p + juce::Point<float> (0.0f, -40.0f)) < 0)
+            {
+                double x = 0.0, y = 0.0;
+                if (view.unproject (p, freeZ, x, y) && x > view.lo.x && x < view.hi.x && y > view.lo.y && y < view.hi.y) return p;
+            }
+        }
+    return { f.getCentreX(), f.getCentreY() };
+}
+
+juce::Rectangle<float> Workstation::keyBox (const juce::String& id) const
+{
+    for (const auto& k : keys) if (k.id == id) return k.box;
+    return {};
+}
+
+void Workstation::gesture (juce::Point<float> p, int phase, bool shift, bool right)
+{
+    juce::ModifierKeys mods;
+    if (shift) mods = mods.withFlags (juce::ModifierKeys::shiftModifier);
+    mods = mods.withFlags (right ? juce::ModifierKeys::rightButtonModifier : juce::ModifierKeys::leftButtonModifier);
+    const juce::MouseEvent e (juce::Desktop::getInstance().getMainMouseSource(), p, mods, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, this, this, juce::Time::getCurrentTime(), p, juce::Time::getCurrentTime(), 1, phase != 0);
+    if (phase == 0) mouseDown (e);
+    else if (phase == 1) mouseDrag (e);
+    else mouseUp (e);
 }
 
 bool Workstation::floorOpen (int floor) const { return floor < 0 || floor >= kGroups || open[(size_t) floor]; }

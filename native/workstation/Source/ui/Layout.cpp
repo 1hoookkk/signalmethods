@@ -20,8 +20,8 @@ void Layout::compute (float Wf, float Hf)
         body = { W - right, 0.0f, right, 324.0f };
         outer = { W - right + m + 56.0f, 16.0f, 180.0f, 180.0f };
         square = outer.reduced (60.0f);
-        resp = { W - right, bottom - 240.0f, right, 240.0f };
-        arma = { W - right, body.getBottom(), right, resp.getY() - body.getBottom() };
+        resp = { W - right, body.getBottom(), right, bottom - body.getBottom() };
+        arma = {};
         cascade = {};
     }
     else if (room == Room::edit)
@@ -48,7 +48,10 @@ void Layout::compute (float Wf, float Hf)
         arma = { W - right, 240.0f, right, bottom - 240.0f };
         cascade = {};
     }
-    plot = { resp.getX() + 40.0f, resp.getY() + 28.0f, 288.0f, 192.0f };
+    {
+        const float pw = std::min (resp.getWidth() - 56.0f, (resp.getHeight() - 60.0f) * 1.5f);
+        plot = { resp.getX() + 40.0f, resp.getY() + 28.0f, std::floor (pw), std::floor (pw / 1.5f) };
+    }
 }
 
 std::array<double, 2> Layout::toField (juce::Point<float> p) const

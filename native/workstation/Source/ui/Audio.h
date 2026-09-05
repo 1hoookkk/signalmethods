@@ -23,6 +23,7 @@ public:
     void setWet (bool on);
     bool isPlaying() const { return playing.load(); }
     double playhead() const { return position.load(); }
+    float peak() const { return peakLevel.load(); }
     bool available() const { return ready; }
     juce::String deviceInfo() const;
 
@@ -39,6 +40,7 @@ private:
     std::atomic<double> clipRate { 44100.0 }, deviceRate { 44100.0 };
     std::atomic<double> regionStart { 0.0 }, regionEnd { 0.0 }, position { 0.0 };
     std::atomic<bool> playing { false }, wet { true };
+    std::atomic<float> peakLevel { 0.0f };
     double cursor = 0.0;
     std::array<Words, 2> pending {};
     std::atomic<int> pendingIndex { -1 };

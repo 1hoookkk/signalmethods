@@ -35,6 +35,31 @@ bool inverseBilinear (juce::Point<float> p, const juce::Point<float> c[4], doubl
 }
 }
 
+int Workstation::anchorAt (juce::Point<float> p) const
+{
+    int best = -1;
+    float bestD = 3.0f;
+    for (int i = 0; i < (int) st.items.size(); ++i)
+    {
+        const auto& it = st.items[(size_t) i];
+        if (! floorOpen (it.group)) continue;
+        const float d = view.project (it.p).getDistanceFrom (p);
+        if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+}
+
+void Workstation::grab (int item)
+{
+    const auto& it = st.items[(size_t) item];
+    Spot s;
+    if (it.stub >= 0) s.stub = it.stub; else s.node = it.node;
+    spot = s;
+    playBody = false;
+    const int stack = st.stackCount (it.p);
+    status = st.itemName (it) + (stack > 1 ? "   +" + juce::String (stack - 1) + " more here" : juce::String());
+}
+
 int Workstation::nodeAt (juce::Point<float> p) const
 {
     if (openFace < 0) return -1;
@@ -48,7 +73,12 @@ int Workstation::nodeAt (juce::Point<float> p) const
     return best;
 }
 
-int Workstation::faceAt (juce::Point<float> p) const
+int Workstation::faceAt (juce::Point<float>) const
+{
+    return -1;
+}
+
+int Workstation::faceAtUnused (juce::Point<float> p) const
 {
     int best = -1;
     float bestD = 7.0f;
@@ -173,19 +203,22 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
         }
         mode = Mode::dragFrame; dragFrame = row.frame; dragPos = p; dragStart = p; return;
     }
-    if (const int a = nodeAt (p); a >= 0 && L.field.contains (p))
+    if (const int a = anchorAt (p); a >= 0 && L.field.contains (p) && L.room == Room::frames && ! e.mods.isRightButtonDown() && ! e.mods.isAltDown())
     {
-        if (pairMode)
+        const auto& it = st.items[(size_t) a];
+        if (pairMode && it.node >= 0)
         {
-            if (pairA < 0) { pairA = a; status = "pick the far node"; }
-            else if (pairB < 0 && a != pairA) { pairB = a; pairTo (0.0); }
-            else { pairA = a; pairB = -1; status = "pick the far node"; }
+            if (pairA < 0) { pairA = it.node; status = "pick the far frame"; }
+            else if (pairB < 0 && it.node != pairA) { pairB = it.node; pairTo (0.0); }
+            else { pairA = it.node; pairB = -1; status = "pick the far frame"; }
             playBody = false;
             redraw();
             return;
         }
-        Spot ds; ds.node = a;
-        mode = Mode::dragSpot; dragSpot = ds; dragPos = p; dragStart = p; return;
+        Spot ds;
+        if (it.stub >= 0) ds.stub = it.stub; else ds.node = it.node;
+        grab (a);
+        mode = Mode::dragSpot; dragSpot = ds; dragPos = p; dragStart = p; redraw(); return;
     }
     if (const int f = faceAt (p); f >= 0 && L.field.contains (p) && ! pairLive()) { openFilter (f); redraw(); return; }
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
@@ -263,11 +296,9 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
     }
     else if (mode == Mode::dragSpot && dragSpot && ! moved)
     {
-        if (picked && *picked == *dragSpot) picked.reset();
-        else picked = dragSpot;
+        picked = dragSpot;
         spot = dragSpot;
         playBody = false;
-        status = picked ? st.nameOf (*picked, open) + "  picked, click a corner" : "";
     }
     else if (mode == Mode::orbit && ! moved && L.field.contains (p))
     {

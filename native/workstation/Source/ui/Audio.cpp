@@ -62,6 +62,7 @@ void Audio::audioDeviceStopped() {}
 void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* const* out, int numOut, int numSamples, const juce::AudioIODeviceCallbackContext&)
 {
     for (int c = 0; c < numOut; ++c) juce::FloatVectorOperations::clear (out[c], numSamples);
+    peakLevel.store (0.0f);
     const int slot = pendingIndex.exchange (-1);
     if (slot >= 0)
     {
@@ -87,8 +88,10 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
             if (sawPhase >= 1.0) sawPhase -= 1.0;
         }
         if (wet.load()) runner.process (std::span<float> (saw.data(), saw.size()));
+        float pk = 0.0f;
         for (int c = 0; c < numOut; ++c)
-            for (int i = 0; i < numSamples; ++i) out[c][i] = saw[(size_t) i] * 0.5f;
+            for (int i = 0; i < numSamples; ++i) { out[c][i] = saw[(size_t) i] * 0.5f; pk = std::max (pk, std::abs (out[c][i])); }
+        peakLevel.store (pk);
         return;
     }
     const double a = regionStart.load() * rate, b = std::min ((double) clip->size() - 1.0, regionEnd.load() * rate);
@@ -106,8 +109,10 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
         if (cursor >= b) cursor = a;
     }
     if (wet.load()) runner.process (std::span<float> (block.data(), block.size()));
+    float pk = 0.0f;
     for (int c = 0; c < numOut; ++c)
-        for (int i = 0; i < numSamples; ++i) out[c][i] = block[(size_t) i] * 0.5f;
+        for (int i = 0; i < numSamples; ++i) { out[c][i] = block[(size_t) i] * 0.5f; pk = std::max (pk, std::abs (out[c][i])); }
+    peakLevel.store (pk);
     position.store (cursor / rate);
 }
 }

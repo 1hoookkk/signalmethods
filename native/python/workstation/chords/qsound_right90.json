@@ -12,7 +12,10 @@
       "note": 82.834,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 82.834,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -20,7 +23,10 @@
       "note": 87.634,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 87.634,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -28,7 +34,10 @@
       "note": 103.732,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 103.732,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -36,7 +45,10 @@
       "note": 106.217,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 106.217,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -44,7 +56,10 @@
       "note": 108.165,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 108.165,
+      "width": 4.0
+     },
      "gain_db": 0.0
     },
     {
@@ -52,7 +67,10 @@
       "note": 110.006,
       "width": 0.25
      },
-     "zero": null,
+     "zero": {
+      "note": 110.006,
+      "width": 4.0
+     },
      "gain_db": 0.0
     }
    ]

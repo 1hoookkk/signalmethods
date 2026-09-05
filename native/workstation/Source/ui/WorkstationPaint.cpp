@@ -76,7 +76,6 @@ void Workstation::paintChrome (Canvas& g)
         paintAxes (g);
         paintTray (g);
         paintBody (g);
-        paintArma (g);
         if (pairLive())
         {
             g.setColour (kChosen);
@@ -114,7 +113,7 @@ void Workstation::paintChrome (Canvas& g)
     paintResponse (g);
     paintTimeline (g);
     g.setColour (kChosen);
-    g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
+    g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - (L.room == Room::frames ? 40 : 16), (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
 }
 
 void Workstation::paintTray (Canvas& g)
@@ -152,22 +151,36 @@ void Workstation::paintAxes (Canvas& g)
     const bool farX = v.farPlane (0), farY = v.farPlane (1);
     const double nearX = farX ? v.lo.x : v.hi.x, nearY = farY ? v.lo.y : v.hi.y, farXv = farX ? v.hi.x : v.lo.x;
     g.setColour (kDim);
-    for (double hz : { 100.0, 1000.0, 10000.0 })
+    for (double note : { 36.0, 60.0, 84.0, 108.0 })
     {
-        const auto p = v.project ({ std::log10 (hz / 20.0) / 3.0 - 0.5, nearY, v.lo.z });
-        g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 0) + "k" : juce::String (hz, 0), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
+        const auto p = v.project ({ (note - 24.0) / 96.0 - 0.5, nearY, v.lo.z });
+        g.drawText (noteName (note), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
     }
-    for (double db : { -20.0, 0.0, 20.0 })
+    for (double oct : { 0.0, 2.0, 4.0, 6.0 })
     {
-        const auto p = v.project ({ nearX, db / 60.0, v.lo.z });
-        g.drawText (juce::String ((int) db) + (db == 0.0 ? " dB" : ""), (int) p.x - 20, (int) p.y + 4, 40, 12, juce::Justification::centred);
+        const auto p = v.project ({ nearX, oct / 6.0 - 0.5, v.lo.z });
+        g.drawText (juce::String ((int) oct) + (oct == 6.0 ? " oct" : ""), (int) p.x - 20, (int) p.y + 4, 40, 12, juce::Justification::centred);
     }
-    for (double db : { 20.0, 40.0, 60.0 })
+    for (double w : { 12.0, 3.0, 1.0, 0.25 })
     {
-        const auto p = v.project ({ farXv, nearY, db / 60.0 });
+        const double z = 1.0 - std::log2 (1.0 + w) / std::log2 (13.0);
+        const auto p = v.project ({ farXv, nearY, z });
         const bool left = v.project ({ farXv, nearY, 0.0 }).x < L.field.getCentreX();
-        g.setColour (kDim);
-        g.drawText (juce::String ((int) db) + (db == 60.0 ? " dB" : ""), left ? (int) p.x - 92 : (int) p.x + 8, (int) p.y - 6, 84, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
+        g.drawText (juce::String (w, w < 1.0 ? 2 : 0) + " st", left ? (int) p.x - 92 : (int) p.x + 8, (int) p.y - 6, 84, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
+    }
+    g.setColour (kText);
+    const auto ox = v.project ({ 0.0, nearY, v.lo.z }), oy = v.project ({ nearX, 0.0, v.lo.z }), oz = v.project ({ farXv, nearY, 0.5 });
+    g.drawText ("ROOT", (int) ox.x - 30, (int) ox.y + 18, 60, 12, juce::Justification::centred);
+    g.drawText ("VOICING", (int) oy.x - 40, (int) oy.y + 18, 80, 12, juce::Justification::centred);
+    const bool left = v.project ({ farXv, nearY, 0.0 }).x < L.field.getCentreX();
+    g.drawText ("RESONANCE", left ? std::max ((int) L.field.getX() + 4, (int) oz.x - 176) : (int) oz.x + 86, (int) oz.y - 22, 90, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
+    if (spot && spot->free)
+    {
+        const auto near = st.nearest ({ spot->x, spot->y, spot->z }, 1, open);
+        const double root = (spot->x + 0.5) * 96.0 + 24.0, voicing = (spot->y + 0.5) * 6.0, width = std::pow (13.0, 1.0 - spot->z) - 1.0;
+        g.setColour (kLive);
+        g.drawText (noteName (root) + "   " + juce::String (voicing, 1) + " oct   " + juce::String (width, 2) + " st", (int) L.field.getX() + 8, (int) L.field.getY() + 4, 300, 12, juce::Justification::centredLeft);
+        (void) near;
     }
 }
 
@@ -183,6 +196,19 @@ void Workstation::paintResponse (Canvas& g)
     for (double f : { 100.0, 1000.0, 10000.0 }) g.drawText (f >= 1000.0 ? juce::String (f / 1000.0, 0) + "k" : juce::String (f, 0), (int) L.rx (f) - 14, (int) L.ry (-30.0) + 4, 28, 12, juce::Justification::centred);
     for (double d : { 20.0, 0.0, -20.0 }) g.drawText (juce::String (d, 0), (int) L.resp.getX() + 6, (int) L.ry (d) - 6, 28, 12, juce::Justification::centredRight);
     g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.resp.getRight() - 70, (int) L.resp.getY() + 8, 62, 12, juce::Justification::centredRight);
+    if (audio != nullptr)
+    {
+        const float pk = audio->peak();
+        const juce::Rectangle<float> bar (L.resp.getX() + 140.0f, L.resp.getY() + 9.0f, 120.0f, 8.0f);
+        g.setColour (kKeyLine);
+        g.drawRect (px (bar), 1);
+        const double db = 20.0 * std::log10 (std::max (1e-5f, pk));
+        const float fill = (float) juce::jlimit (0.0, 1.0, (db + 60.0) / 60.0);
+        g.setColour (pk > 0.0f ? kData : kRule);
+        g.fillRect (bar.getX() + 1.0f, bar.getY() + 1.0f, (bar.getWidth() - 2.0f) * fill, bar.getHeight() - 2.0f);
+        g.setColour (kDim);
+        g.drawText (pk > 0.0f ? juce::String ((int) std::round (db)) + " dB" : "silent", (int) bar.getRight() + 6, (int) L.resp.getY() + 7, 60, 12, juce::Justification::centredLeft);
+    }
 }
 
 void Workstation::paintBody (Canvas& g)

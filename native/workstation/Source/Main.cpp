@@ -33,6 +33,49 @@ void loadLibrary (ws::Library& lib)
     lib.sort();
 }
 
+int check()
+{
+    ws::Library lib;
+    ws::Stitch st;
+    loadLibrary (lib);
+    loadStitch (st, lib);
+    ws::Workstation view (lib, st, false);
+    view.workspace = workspaceRoot();
+    juce::Image img (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
+    { juce::Graphics g (img); view.paintEntireComponent (g, false); }
+    int failures = 0;
+    const auto check = [&] (bool ok, const char* what) { std::printf ("%s  %s\n", ok ? "ok  " : "FAIL", what); if (! ok) ++failures; };
+    const juce::Point<float> c = view.clearPoint();
+    view.gesture (c, 0);
+    auto pr = view.probe();
+    check (pr.free && pr.sounding, "press on the box gives a free playing position with sound");
+    check (pr.status.isNotEmpty(), "status names the contributing frames");
+    const double x0 = pr.x;
+    view.gesture (c + juce::Point<float> (60.0f, 0.0f), 1);
+    pr = view.probe();
+    check (pr.free && std::abs (pr.x - x0) > 1e-4, "drag moves the position in root");
+    view.gesture (c + juce::Point<float> (60.0f, 0.0f), 2);
+    view.gesture (c, 0, true);
+    const double z0 = view.probe().z;
+    view.gesture (c + juce::Point<float> (0.0f, -40.0f), 1, true);
+    pr = view.probe();
+    check (pr.free && pr.z > z0 + 1e-4, "shift-drag upward raises resonance");
+    view.gesture (c + juce::Point<float> (0.0f, -40.0f), 2, true);
+    const auto lk = view.keyBox ("listen");
+    check (! lk.isEmpty(), "LISTEN key exists");
+    view.gesture (lk.getCentre(), 0);
+    view.gesture (lk.getCentre(), 2);
+    pr = view.probe();
+    check (pr.status.startsWith ("no audio device") || pr.status.startsWith ("listening"), "LISTEN reports the device or the error");
+    std::printf ("  status: %s\n", pr.status.toRawUTF8());
+    view.gesture (c, 0, false, true);
+    view.gesture (c + juce::Point<float> (30.0f, 10.0f), 1, false, true);
+    view.gesture (c + juce::Point<float> (30.0f, 10.0f), 2, false, true);
+    check (view.probe().sounding, "right-drag orbits without losing the playing position");
+    std::printf ("%s  %d failure(s)\n", failures == 0 ? "PASS" : "FAIL", failures);
+    return failures == 0 ? 0 : 1;
+}
+
 int shoot (const juce::String& path)
 {
     ws::Library lib;
@@ -113,6 +156,7 @@ public:
     void initialise (const juce::String& commandLine) override
     {
         const auto args = juce::StringArray::fromTokens (commandLine, true);
+        if (args.contains ("--check")) { setApplicationReturnValue (check()); quit(); return; }
         const int shot = args.indexOf ("--shot");
         if (shot >= 0 && shot + 1 < args.size()) { shoot (args[shot + 1].unquoted()); quit(); return; }
         loadLibrary (library);

@@ -30,6 +30,12 @@ public:
     void setRoom (Room r);
     bool exportBody (const juce::File& file);
     juce::File exportDir, workspace;
+    struct Probe { bool free = false, sounding = false, listening = false; double x = 0.0, y = 0.0, z = 0.0; juce::String status; };
+    Probe probe() const;
+    juce::Rectangle<float> keyBox (const juce::String& id) const;
+    juce::Rectangle<float> fieldRect() const { return L.field; }
+    juce::Point<float> clearPoint() const;
+    void gesture (juce::Point<float> p, int phase, bool shift = false, bool right = false);
 
     void paint (juce::Graphics& g) override;
     void newOpenGLContextCreated() override;
@@ -58,8 +64,12 @@ private:
     std::unique_ptr<Audio> audio;
     std::optional<Spot> spot, picked, dragSpot;
     int openFace = -1;
+    std::array<bool, 3> sweep { false, false, false };
+    double sweepT = 0.0;
     double freeZ = 0.5;
-    std::array<bool, kGroups> open { true, true, true, true, true, true, true };
+    int anchorAt (juce::Point<float> p) const;
+    void grab (int item);
+    std::array<bool, kGroups> open { true, false, true, true, true, true, true };
     juce::String status;
     Mode mode = Mode::none;
     int dragFrame = -1, dragKey = -1, trayScroll = 0, wavScroll = 0;
@@ -99,6 +109,7 @@ private:
     Spot spotAt (juce::Point<float> p) const;
     int nodeAt (juce::Point<float> p) const;
     int faceAt (juce::Point<float> p) const;
+    int faceAtUnused (juce::Point<float> p) const;
     void openFilter (int face);
     void setSurface (juce::Point<float> p);
     void setPairT (juce::Point<float> p);
