@@ -235,6 +235,12 @@ void Workstation::paintEditor (Canvas& g)
     gridOf (cr, true, true);
     g.setColour (kChosen);
     g.drawText (f.name, (int) cr.getX(), (int) cr.getY() - 14, (int) cr.getWidth(), 12, juce::Justification::centredLeft);
+    {
+        juce::String chordLine;
+        for (const auto& st : f.chord) if (st.pole.on) chordLine += (chordLine.isEmpty() ? "" : "  ") + noteName (st.pole.note);
+        g.setColour (kDim);
+        g.drawText (chordLine, (int) cr.getRight() + 80, (int) cr.getY() + 24, 400, 12, juce::Justification::centredLeft);
+    }
     openBar = { cr.getRight() + 80.0f, cr.getY() + 4.0f, 160.0f, 10.0f };
     g.setColour (kDim);
     g.drawText ("open", (int) openBar.getX() - 40, (int) openBar.getY() - 2, 36, 14, juce::Justification::centredRight);
@@ -251,13 +257,14 @@ void Workstation::paintEditor (Canvas& g)
     {
         const auto r = L.stageRect (s);
         gridOf (r, s >= 3, s % 3 == 0);
-        const auto& gm = f.rows[(size_t) s];
+        const auto& st = f.chord[(size_t) s];
         const int x0 = (int) r.getX(), y0 = (int) r.getBottom() + 17;
-        g.setColour (gm.pole ? kText : kDim);
-        g.drawText (gm.pole ? "pole " + juce::String ((int) std::round (gm.pHz)).paddedLeft (' ', 5) + " Hz  r " + juce::String (gm.pR, 3) : "pole real", x0, y0, (int) r.getWidth(), 13, juce::Justification::centredLeft);
-        g.setColour (gm.zero ? kText : kDim);
-        g.drawText (gm.zero ? "zero " + juce::String ((int) std::round (gm.zHz)).paddedLeft (' ', 5) + " Hz  r " + juce::String (gm.zR, 3) : "zero real", x0, y0 + 14, (int) r.getWidth(), 13, juce::Justification::centredLeft);
-        if (gm.pole) { g.setColour (kDim); g.drawText (juce::String ((int) std::round (resDb (gm.pR))) + " dB", x0, y0 + 28, (int) r.getWidth() - 120, 13, juce::Justification::centredLeft); }
+        g.setColour (st.pole.on ? kText : kDim);
+        g.drawText (st.pole.on ? "pole " + noteName (st.pole.note).paddedRight (' ', 8) + " w " + juce::String (st.pole.width, 1) + " st" : "pole off", x0, y0, (int) r.getWidth(), 13, juce::Justification::centredLeft);
+        g.setColour (st.zero.on ? kText : kDim);
+        g.drawText (st.zero.on ? "zero " + noteName (st.zero.note).paddedRight (' ', 8) + " w " + juce::String (st.zero.width, 1) + " st" : "zero off", x0, y0 + 14, (int) r.getWidth(), 13, juce::Justification::centredLeft);
+        g.setColour (kDim);
+        g.drawText (juce::String (st.gainDb, 1) + " dB", x0, y0 + 28, (int) r.getWidth() - 120, 13, juce::Justification::centredLeft);
     }
     g.setFont (11.0f);
 }

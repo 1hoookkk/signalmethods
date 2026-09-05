@@ -1447,3 +1447,17 @@ Open, in order:
   pole pitch. Unresolved: bandwidth, gain and zero fields, section 1, the 12 header bytes,
   and a per-corner refit of the note scale. Answers Tyson's "what about the Rossum
   Morpheus": rewarp by recompiling from designer numbers is exactly what Rossum did.
+- 2026-09-05, the chord representation (Tyson: "Please refactor for that exact representation",
+  then "What about chords"). A frame's truth is now a Chord: six Stages, each a pole Voice and
+  a zero Voice (on, note as a MIDI number, width in semitones) and a gain in dB; the words are
+  compiled from the chord at the app's datum and kept as a cache. decompile(words, datum) reads
+  any source at its own rate (P2K 44.1 kHz, Morpheus 39,062.5 Hz); compile(chord, datum) writes
+  words for any rate; rows with no conjugate pair keep their raw words so nothing is lost.
+  Width = 12 log2(1 + bandwidth / pitch), bandwidth from -ln(r) fs / pi. Round trip over the
+  132 P2K corners is byte-exact on all 792 rows; a Morpheus chord compiled at 44.1 kHz lands
+  within 0.001 semitone of its 39 kHz pitch, so Morpheus nodes on the shelf now play at true
+  pitch. The caricature push is on the chord (note lerp, log width, dB), and a pushed voice is
+  narrowed until the words can hold its pitch (fitVoice), since a low wide pole has no bytes;
+  doubling error fell from 0.64 to 0.08 semitone. EDIT rows read "pole G7 -29  w 1.1 st",
+  the frame's six notes read as a chord line; chordFrom(root, intervals, width, dB) seeds a
+  frame from a chord. Tests: 12 checks pass (ctest trench_workstation).

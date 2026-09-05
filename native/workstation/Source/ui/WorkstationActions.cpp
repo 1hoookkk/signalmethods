@@ -76,13 +76,22 @@ void Workstation::dragHandle (juce::Point<float> p)
     auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
     const auto r = L.stageRect (dragStage);
     const double hz = L.hzAt (r, p.x), db = L.dbAt (r, p.y);
+    auto chord = f.chord;
+    auto& st = chord[(size_t) dragStage];
     if (mode == Mode::dragPole)
     {
-        setPole (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, db + 30.0) / 20.0));
-        if (lockRow[(size_t) dragStage] && f.rows[(size_t) dragStage].zero) setZero (f.words, dragStage, hz, f.rows[(size_t) dragStage].zR);
+        st.pole.on = true;
+        st.pole.note = noteOf (hz);
+        st.pole.width = widthOf (hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, db + 30.0) / 20.0), kDatumHz);
+        if (lockRow[(size_t) dragStage] && st.zero.on) st.zero.note = st.pole.note;
     }
-    else setZero (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, 30.0 - db) / 20.0));
-    measure (f);
+    else
+    {
+        st.zero.on = true;
+        st.zero.note = noteOf (hz);
+        st.zero.width = widthOf (hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, 30.0 - db) / 20.0), kDatumHz);
+    }
+    setChord (f, chord);
     redraw();
 }
 
@@ -102,8 +111,11 @@ void Workstation::setOpen (float x)
     const int row = f1Row (f);
     if (row < 0) { status = "no F1 pole in this frame"; redraw(); return; }
     const double f1 = 250.0 * std::pow (900.0 / 250.0, openAmount), b1 = 60.0 + 60.0 * openAmount;
-    setPole (f.words, row, f1, std::exp (-juce::MathConstants<double>::pi * b1 / kDatumHz));
-    measure (f);
+    auto chord = f.chord;
+    chord[(size_t) row].pole.on = true;
+    chord[(size_t) row].pole.note = noteOf (f1);
+    chord[(size_t) row].pole.width = widthOf (f1, std::exp (-juce::MathConstants<double>::pi * b1 / kDatumHz), kDatumHz);
+    setChord (f, chord);
     status = "";
     redraw();
 }
@@ -117,8 +129,9 @@ void Workstation::sharpenQ()
         f.capture = true;
         f.group = kGroups - 1;
         f.name = "sharp " + f.name.replace (" Q0", " Q1");
-        sharpen (f.words, 0.25);
-        measure (f);
+        auto chord = f.chord;
+        sharpen (chord, 0.25);
+        setChord (f, chord);
         lib.frames.push_back (f);
         body.corner[(size_t) (2 + i)] = (int) lib.frames.size() - 1;
     }
@@ -130,8 +143,11 @@ void Workstation::ceiling()
 {
     if (editing < 0) return;
     auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
-    setZero (f.words, kRows - 1, 20000.0, 0.9995);
-    measure (f);
+    auto chord = f.chord;
+    chord[kRows - 1].zero.on = true;
+    chord[kRows - 1].zero.note = noteOf (20000.0);
+    chord[kRows - 1].zero.width = widthOf (20000.0, 0.9995, kDatumHz);
+    setChord (f, chord);
     redraw();
 }
 
@@ -168,11 +184,10 @@ void Workstation::frameFromSlice()
     const auto w = sound.frameAt (sound.slice);
     if (! w) { status = "no frame at this slice"; redraw(); return; }
     Frame f;
-    f.words = *w;
     f.capture = true;
     f.group = kGroups - 1;
     f.name = sound.file.getFileNameWithoutExtension().substring (0, 18) + " @" + juce::String (sound.slice, 2);
-    measure (f);
+    setWords (f, *w, kDatumHz);
     lib.frames.push_back (f);
     const int near = st.nearestNode (f.words);
     const int stub = st.addStub (f.name, f.words, Spot { near, -1, -1, -1, 0.0, 0.0, 0.0 }, kGroups - 1);

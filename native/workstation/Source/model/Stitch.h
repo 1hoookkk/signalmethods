@@ -14,6 +14,8 @@ struct Node
     int floor = 0;
     double datum = kDatumHz;
     std::vector<std::array<std::uint16_t, kWords>> rows;
+    Chord chord {};
+    Words words {};
     int faces = 0, members = 0;
     Vec3 p;
     int frame = -1;

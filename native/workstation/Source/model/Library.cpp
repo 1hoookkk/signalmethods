@@ -25,9 +25,8 @@ bool Library::loadJson (const juce::File& file)
     {
         Frame f;
         f.name = item["name"].toString().replace (juce::String (juce::CharPointer_UTF8 ("\xef\xbf\xbd")), juce::String (juce::CharPointer_UTF8 ("\xc2\xb7")));
-        f.words = wordsFromVar (item["words"]);
         f.group = groupOf (f.name);
-        measure (f);
+        setWords (f, wordsFromVar (item["words"]), kDatumHz);
         frames.push_back (f);
     }
     return ! frames.empty();
@@ -45,11 +44,12 @@ bool Library::loadBodies (const juce::File& dir)
         {
             Frame f;
             f.name = file.getFileNameWithoutExtension() + juce::String (juce::CharPointer_UTF8 (" \xc2\xb7 ")) + tags[c];
+            Words w {};
             for (int s = 0; s < kRows; ++s)
                 for (int k = 0; k < kWords; ++k)
-                    f.words[(size_t) s][(size_t) k] = body.words[(size_t) c][(size_t) s][(size_t) k];
+                    w[(size_t) s][(size_t) k] = body.words[(size_t) c][(size_t) s][(size_t) k];
             f.group = 0;
-            measure (f);
+            setWords (f, w, kDatumHz);
             frames.push_back (f);
         }
     }
@@ -158,11 +158,10 @@ Words Library::wordsOf (const Blend& b) const
 int Library::addNamed (const Words& words, const juce::String& name, int group, bool capture)
 {
     Frame f;
-    f.words = words;
     f.capture = capture;
     f.name = name;
     f.group = group;
-    measure (f);
+    setWords (f, words, kDatumHz);
     frames.push_back (f);
     return (int) frames.size() - 1;
 }
@@ -187,11 +186,10 @@ int Library::addGroupMean (int group)
 int Library::addCapture (const Words& words, std::array<double, 2> at)
 {
     Frame f;
-    f.words = words;
     f.capture = true;
     f.name = "cap " + juce::String (at[0], 2) + "," + juce::String (at[1], 2);
     f.group = kGroups - 1;
-    measure (f);
+    setWords (f, words, kDatumHz);
     frames.push_back (f);
     anchors.push_back ({ (int) frames.size() - 1, at });
     retriangulate();

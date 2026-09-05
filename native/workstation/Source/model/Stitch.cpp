@@ -35,6 +35,11 @@ bool Stitch::loadJson (const juce::File& file)
                     if (const auto* ws = row.getArray()) for (int k = 0; k < kWords && k < ws->size(); ++k) r[(size_t) k] = (std::uint16_t) (int) (*ws)[k];
                     node.rows.push_back (r);
                 }
+            Words raw {};
+            for (int s = 0; s < kRows; ++s)
+                for (int k = 0; k < kWords; ++k) raw[(size_t) s][(size_t) k] = s < (int) node.rows.size() ? node.rows[(size_t) s][(size_t) k] : trench::core::kIdentitySection[(size_t) k];
+            node.chord = decompile (raw, node.datum);
+            node.words = node.datum == kDatumHz ? raw : compile (node.chord, kDatumHz);
             nodes.push_back (node);
         }
     if (const auto* arr = v.getProperty ("edges", juce::var()).getArray())
@@ -84,9 +89,7 @@ Words Stitch::wordsOf (int node) const
     for (int s = 0; s < kRows; ++s)
         for (int k = 0; k < kWords; ++k) w[(size_t) s][(size_t) k] = trench::core::kIdentitySection[(size_t) k];
     if (node < 0 || node >= (int) nodes.size()) return w;
-    const auto& rows = nodes[(size_t) node].rows;
-    for (int s = 0; s < kRows && s < (int) rows.size(); ++s) w[(size_t) s] = rows[(size_t) s];
-    return w;
+    return nodes[(size_t) node].words;
 }
 
 std::array<Words, 4> Stitch::cornersOf (int face) const

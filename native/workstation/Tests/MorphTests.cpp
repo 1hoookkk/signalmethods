@@ -145,6 +145,40 @@ int main()
         check (g[0].pole && std::abs (semis (g[0].pHz, 500.0)) < 0.2 && g[4].pole && std::abs (semis (g[4].pHz, 4500.0)) < 0.2, "schwa sits on the uniform tube", g[0].pHz, g[4].pHz);
     }
 
+    {
+        double worst = 0.0;
+        int exactRows = 0, rowsTotal = 0;
+        for (const auto& f : lib.frames)
+        {
+            if (f.group != 0) continue;
+            const auto back = ws::compile (ws::decompile (f.words, ws::kDatumHz), ws::kDatumHz);
+            const auto ca = ws::cascadeOf (f.words), cb = ws::cascadeOf (back);
+            for (int i = 0; i < ws::kCurvePoints; ++i)
+            {
+                const double hz = 20.0 * std::pow (1000.0, i / double (ws::kCurvePoints - 1));
+                worst = std::max (worst, std::abs (ws::responseDb (ca, hz) - ws::responseDb (cb, hz)));
+            }
+            for (int s = 0; s < ws::kRows; ++s) { ++rowsTotal; if (back[(size_t) s] == f.words[(size_t) s]) ++exactRows; }
+        }
+        std::printf ("  chord round trip: rows byte-exact %d of %d\n", exactRows, rowsTotal);
+        check (worst < 0.25, "chord round trip of the 132 P2K corners changes the response by less than a quarter dB, worst", worst);
+    }
+    {
+        const ws::Words a = lib.frames[(size_t) pairs[0].first].words;
+        const auto chord = ws::decompile (a, 39062.5);
+        const auto at44 = ws::compile (chord, ws::kDatumHz);
+        const auto g39 = ws::geometryOf (a);
+        const auto g44 = ws::geometryOf (at44);
+        double worst = 0.0;
+        for (int s = 0; s < ws::kRows - 1; ++s)
+            if (g39[(size_t) s].pole && g44[(size_t) s].pole) worst = std::max (worst, std::abs (semis (g39[(size_t) s].pHz * 39062.5 / ws::kDatumHz, g44[(size_t) s].pHz)));
+        check (worst < 0.2, "a chord read at the 39,062.5 Hz datum compiles at 44.1 kHz to the same pitches, worst semitones", worst);
+    }
+    {
+        const auto c = ws::chordFrom (48.0, { 0.0, 7.0, 12.0, 16.0, 19.0, 24.0 }, 1.0, 0.0);
+        const auto g = ws::geometryOf (ws::compile (c, ws::kDatumHz));
+        check (g[0].pole && std::abs (ws::noteOf (g[0].pHz) - 48.0) < 0.05 && g[3].pole && std::abs (ws::noteOf (g[3].pHz) - 64.0) < 0.05, "a typed chord lands on its notes", ws::noteOf (g[0].pHz), ws::noteOf (g[3].pHz));
+    }
     std::printf ("%s  %d failure(s)\n", failures == 0 ? "PASS" : "FAIL", failures);
     return failures == 0 ? 0 : 1;
 }

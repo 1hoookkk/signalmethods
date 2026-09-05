@@ -57,33 +57,43 @@ bool holdRadius (Words& w, int row)
 Words pushWords (const Words& a, const Words& b, double t)
 {
     Words out = plainLerp (a, b, t);
+    const Chord ca = decompile (a, kDatumHz), cb = decompile (b, kDatumHz);
+    Chord pushed = decompile (out, kDatumHz);
     for (int s = 0; s < kRows - 1; ++s)
     {
-        const auto ga = trench::core::geometry_from_words (sectionOf (a, s), kDatumHz);
-        const auto gb = trench::core::geometry_from_words (sectionOf (b, s), kDatumHz);
-        auto geom = trench::core::geometry_from_words (sectionOf (out, s), kDatumHz);
-        const auto* pa = std::get_if<ConjugatePair> (&ga.pole);
-        const auto* pb = std::get_if<ConjugatePair> (&gb.pole);
-        if (pa != nullptr && pb != nullptr)
+        const auto& sa = ca[(size_t) s];
+        const auto& sb = cb[(size_t) s];
+        auto& sp = pushed[(size_t) s];
+        if (sa.pole.on && sb.pole.on)
         {
-            const double hz = juce::jlimit (20.0, kDatumHz * 0.495, logPush (pa->hz, pb->hz, t));
-            const double r = 1.0 - logPush (1.0 - pa->radius, 1.0 - pb->radius, t);
-            geom.pole = ConjugatePair { hz, juce::jlimit (0.0, kRadiusGuard, r) };
+            sp.pole.on = true;
+            sp.pole.note = sa.pole.note + (sb.pole.note - sa.pole.note) * t;
+            sp.pole.width = logPush (std::max (1e-3, sa.pole.width), std::max (1e-3, sb.pole.width), t);
+            fitVoice (sp.pole, true, kDatumHz);
         }
-        const auto* za = std::get_if<ConjugatePair> (&ga.zero);
-        const auto* zb = std::get_if<ConjugatePair> (&gb.zero);
-        if (za != nullptr && zb != nullptr)
+        if (sa.zero.on && sb.zero.on)
         {
-            const double hz = juce::jlimit (20.0, kDatumHz * 0.495, logPush (za->hz, zb->hz, t));
-            geom.zero = ConjugatePair { hz, juce::jlimit (0.0, 1.0, za->radius + (zb->radius - za->radius) * t) };
+            sp.zero.on = true;
+            sp.zero.note = sa.zero.note + (sb.zero.note - sa.zero.note) * t;
+            sp.zero.width = logPush (std::max (1e-3, sa.zero.width), std::max (1e-3, sb.zero.width), t);
+            fitVoice (sp.zero, false, kDatumHz);
         }
-        geom.scale = juce::jlimit (0.0, 4.0, logPush (ga.scale, gb.scale, t));
-        const auto enc = trench::core::words_from_geometry (geom, kDatumHz);
-        if (pa != nullptr && pb != nullptr) { out[(size_t) s][2] = enc[2]; out[(size_t) s][3] = enc[3]; }
-        if (za != nullptr && zb != nullptr) { out[(size_t) s][0] = enc[0]; out[(size_t) s][1] = enc[1]; }
-        out[(size_t) s][4] = enc[4];
+        sp.gainDb = sa.gainDb + (sb.gainDb - sa.gainDb) * t;
+        sp.raw = out[(size_t) s];
     }
-    return out;
+    pushed[kRows - 1].raw = out[kRows - 1];
+    pushed[kRows - 1].pole.on = pushed[kRows - 1].zero.on = false;
+    pushed[kRows - 1].gainDb = 20.0 * std::log10 (std::max (1e-6, 4.0 * trench::core::decode_word (out[kRows - 1][4])));
+    Words w = compile (pushed, kDatumHz);
+    for (int s = 0; s < kRows - 1; ++s)
+    {
+        const auto& sa = ca[(size_t) s];
+        const auto& sb = cb[(size_t) s];
+        if (! (sa.pole.on && sb.pole.on)) { w[(size_t) s][2] = out[(size_t) s][2]; w[(size_t) s][3] = out[(size_t) s][3]; }
+        if (! (sa.zero.on && sb.zero.on)) { w[(size_t) s][0] = out[(size_t) s][0]; w[(size_t) s][1] = out[(size_t) s][1]; }
+    }
+    w[kRows - 1] = out[kRows - 1];
+    return w;
 }
 }
 
@@ -180,13 +190,19 @@ Words meanWords (const std::vector<const Words*>& parents)
 
 Words schwaWords()
 {
-    Words w;
-    for (int s = 0; s < kRows; ++s) putSection (w, s, trench::core::kIdentitySection);
+    Chord c {};
     const double bw[kRows - 1] = { 60.0, 90.0, 120.0, 150.0, 200.0 };
     for (int s = 0; s < kRows - 1; ++s)
-        setPole (w, s, 500.0 * (2 * s + 1), std::exp (-juce::MathConstants<double>::pi * bw[s] / kDatumHz));
-    setPole (w, kRows - 1, 17000.0, 0.414);
-    setZero (w, kRows - 1, 20000.0, kRadiusGuard);
+    {
+        const double hz = 500.0 * (2 * s + 1);
+        c[(size_t) s].pole.on = true;
+        c[(size_t) s].pole.note = noteOf (hz);
+        c[(size_t) s].pole.width = widthOf (hz, std::exp (-juce::MathConstants<double>::pi * bw[s] / kDatumHz), kDatumHz);
+    }
+    auto& top = c[kRows - 1];
+    top.pole.on = true; top.pole.note = noteOf (17000.0); top.pole.width = widthOf (17000.0, 0.414, kDatumHz);
+    top.zero.on = true; top.zero.note = noteOf (20000.0); top.zero.width = widthOf (20000.0, kRadiusGuard, kDatumHz);
+    Words w = compile (c, kDatumHz);
     unityDc (w);
     return w;
 }
