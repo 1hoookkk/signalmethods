@@ -66,7 +66,6 @@ int Workstation::faceAt (juce::Point<float> p) const
 void Workstation::openFilter (int face)
 {
     openFace = face;
-    activeFloor = juce::jlimit (0, kGroups - 1, st.faces[(size_t) face].floor);
     spot = Spot { -1, -1, face, -1, 0.0, 0.5, 0.5 };
     playBody = false;
     status = st.faces[(size_t) face].name;
@@ -92,7 +91,7 @@ Spot Workstation::spotAt (juce::Point<float> p) const
     if (openFace < 0)
     {
         double x = 0.0, y = 0.0;
-        if (view.unproject (p, st.floorZ (activeFloor), x, y) && x > view.lo.x && x < view.hi.x && y > view.lo.y && y < view.hi.y) { s.floor = activeFloor; s.x = x; s.y = y; }
+        if (view.unproject (p, freeZ, x, y) && x > view.lo.x && x < view.hi.x && y > view.lo.y && y < view.hi.y) { s.free = true; s.x = x; s.y = y; s.z = freeZ; }
         return s;
     }
     double bestDepth = 1e18;
@@ -185,7 +184,8 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
             redraw();
             return;
         }
-        mode = Mode::dragSpot; dragSpot = Spot { a, -1, -1, -1, 0.0, 0.0, 0.0 }; dragPos = p; dragStart = p; return;
+        Spot ds; ds.node = a;
+        mode = Mode::dragSpot; dragSpot = ds; dragPos = p; dragStart = p; return;
     }
     if (const int f = faceAt (p); f >= 0 && L.field.contains (p) && ! pairLive()) { openFilter (f); redraw(); return; }
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
@@ -196,6 +196,7 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     if (L.field.contains (p))
     {
         if (e.mods.isRightButtonDown() || e.mods.isAltDown()) { mode = Mode::orbit; dragStart = p; orbitAz = view.az; orbitEl = view.el; return; }
+        if (e.mods.isShiftDown() && openFace < 0) { mode = Mode::lift; dragStart = p; if (! spot || ! spot->free) { Spot fs; fs.free = true; fs.z = freeZ; view.unproject (p, freeZ, fs.x, fs.y); spot = fs; } return; }
         const auto s = spotAt (p);
         if (s.stub >= 0) { mode = Mode::dragSpot; dragSpot = s; dragPos = p; dragStart = p; return; }
         if (s.valid()) { mode = Mode::surface; setSurface (p); return; }
@@ -209,6 +210,17 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
     switch (mode)
     {
         case Mode::surface: setSurface (p); break;
+        case Mode::lift:
+            if (spot && spot->free)
+            {
+                spot->z = juce::jlimit (0.0, 1.0, spot->z - (p.y - dragStart.y) / (view.scale() * 1.0));
+                dragStart = p;
+                freeZ = spot->z;
+                playBody = false;
+                status = st.nameOf (*spot, open);
+                redraw();
+            }
+            break;
         case Mode::orbit:
             view.az = orbitAz + (p.x - dragStart.x) * 0.4;
             view.el = juce::jlimit (-89.0, 89.0, orbitEl + (p.y - dragStart.y) * 0.4);
@@ -238,7 +250,7 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
     {
         const auto& f = lib.frames[(size_t) dragFrame];
         const int near = nodeAt (p) >= 0 ? nodeAt (p) : st.nearestNode (f.words);
-        const int stub = st.addStub (f.name, f.words, Spot { near, -1, -1, -1, 0.0, 0.0, 0.0 }, juce::jlimit (0, kGroups - 1, f.group));
+        const int stub = st.addStub (f.name, f.words, near, juce::jlimit (0, kGroups - 1, f.group));
         st.stubs[(size_t) stub].frame = dragFrame;
     }
     else if (mode == Mode::dragSpot && dragSpot && moved)
@@ -255,7 +267,7 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
         else picked = dragSpot;
         spot = dragSpot;
         playBody = false;
-        status = picked ? st.nameOf (*picked) + "  picked, click a corner" : "";
+        status = picked ? st.nameOf (*picked, open) + "  picked, click a corner" : "";
     }
     else if (mode == Mode::orbit && ! moved && L.field.contains (p))
     {

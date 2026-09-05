@@ -29,5 +29,6 @@ public:
     int addNamed (const Words& words, const juce::String& name, int group, bool capture);
     void addSchwa();
     int addGroupMean (int group);
+    int loadChords (const juce::File& file);
 };
 }

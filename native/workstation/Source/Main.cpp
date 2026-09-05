@@ -1,14 +1,24 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "ui/Workstation.h"
+#include <algorithm>
 #include <cstdio>
 
 namespace
 {
 juce::File workspaceRoot() { return juce::File (TRENCH_TABLE_STITCH_ROOT); }
 
-void loadStitch (ws::Stitch& st)
+void loadStitch (ws::Stitch& st, ws::Library& lib)
 {
     st.loadJson (workspaceRoot().getChildFile ("native/python/workstation/stitch.json"));
+    std::vector<juce::String> have;
+    for (const auto& s : st.stubs) have.push_back (s.name);
+    for (int i = 0; i < (int) lib.frames.size(); ++i)
+    {
+        const auto& f = lib.frames[(size_t) i];
+        if (f.group == 0 || f.group == 1 || std::find (have.begin(), have.end(), f.name) != have.end()) continue;
+        const int stub = st.addStub (f.name, f.words, st.nearestNode (f.words), f.group);
+        st.stubs[(size_t) stub].frame = i;
+    }
     st.placeOnGrid();
 }
 
@@ -18,6 +28,7 @@ void loadLibrary (ws::Library& lib)
     if (! (json.existsAsFile() && lib.loadJson (json)))
         lib.loadBodies (workspaceRoot().getChildFile ("plugin/presets/p2k"));
     lib.addSchwa();
+    for (const auto& f : workspaceRoot().getChildFile ("native/python/workstation/chords").findChildFiles (juce::File::findFiles, false, "*.json")) lib.loadChords (f);
     lib.computePca();
     lib.sort();
 }
@@ -27,7 +38,7 @@ int shoot (const juce::String& path)
     ws::Library lib;
     ws::Stitch st;
     loadLibrary (lib);
-    loadStitch (st);
+    loadStitch (st, lib);
     ws::Workstation view (lib, st, false);
     view.exportDir = workspaceRoot().getChildFile ("plugin/presets/user");
     view.workspace = workspaceRoot();
@@ -105,7 +116,7 @@ public:
         const int shot = args.indexOf ("--shot");
         if (shot >= 0 && shot + 1 < args.size()) { shoot (args[shot + 1].unquoted()); quit(); return; }
         loadLibrary (library);
-        loadStitch (stitch);
+        loadStitch (stitch, library);
         window = std::make_unique<MainWindow> (getApplicationName(), library, stitch);
         if (auto* w = dynamic_cast<ws::Workstation*> (window->getContentComponent())) { w->exportDir = workspaceRoot().getChildFile ("plugin/presets/user"); w->workspace = workspaceRoot(); }
     }

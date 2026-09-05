@@ -1473,3 +1473,24 @@ Open, in order:
   -> LISTEN now names the device and rate (or the open error) in the status line, and plays
   a built-in 110 Hz saw through the cascade when no WAV is loaded, so the FRAMES room sounds
   without visiting SOUND first. Not yet verified with ears by the assistant.
+- 2026-09-05, chord files and the bake tool (Tyson: "build the format and the tool").
+  Format trench-chords-v1: {"schema","floor","source","chords":[{"name","source","stages":
+  [{"pole":{"note","width"}|null,"zero":{...}|null,"gain_db"} x 6]}]}. tools/bake_chords.py
+  reads formant tables (CSV, --group-mean makes the 48 Hillenbrand keyframes by vowel and
+  speaker group), impulse WAVs (LPC, speech order 12 at 11 kHz or bells order 24), SOFA heads
+  (h5py, one chord per azimuth step at an elevation), and magnitude tables (minimum-phase
+  impulse by cepstrum, then the reader). Baked: hillenbrand_1995 (48), head_p0001 (12),
+  qsound_right90, magnitude_example, in native/python/workstation/chords/. The workstation
+  loads every chords/*.json at start (Library::loadChords) and every library frame that is
+  not a factory corner enters the space as a read frame.
+- 2026-09-05, the space, third try after "i still cant move through the hero cube. its the
+  wrong abstraction. whats the right one": three continuous musical axes. Pitch across, level
+  along, resonance up (0..60 dB), one box, no floors. Every filter (at its wheel centre) and
+  every read frame stands at its strongest voice, coloured by source (P2K blue, MORPHEUS
+  teal, X3 grey, VOWELS orange, HEADS purple, XL-1 gold, INSTRUMENTS red), foldable from the
+  tray. Drag anywhere moves in pitch and level at the current height, Shift-drag moves the
+  height, the sound is the inverse-distance blend of the four nearest items in the box (z
+  weighted 0.6), thin lines to the four parents, a gold stem under the live point. Orbit is
+  right-drag or Alt-drag. RAZOR key in SOUND sets every read voice to a 0.25 st width before
+  FRAME, the P2K pole-only sharpness. Brief for an outside opinion on the abstraction at
+  native/PROMPT_HERO_SPACE.md (Tyson wants it sent to another model at max reasoning).

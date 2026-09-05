@@ -41,7 +41,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, surface, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
+    enum class Mode { none, surface, lift, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
     struct TrayRow { int frame; int group; bool header; };
 
@@ -57,7 +57,9 @@ private:
     GLRenderer renderer;
     std::unique_ptr<Audio> audio;
     std::optional<Spot> spot, picked, dragSpot;
-    int openFace = -1, activeFloor = 0;
+    int openFace = -1;
+    bool razor = false;
+    double freeZ = 0.5;
     std::array<bool, kGroups> open { true, true, true, true, true, true, true };
     juce::String status;
     Mode mode = Mode::none;

@@ -183,6 +183,39 @@ int Library::addGroupMean (int group)
     return idx;
 }
 
+int Library::loadChords (const juce::File& file)
+{
+    const auto v = juce::JSON::parse (file);
+    if (! v.isObject() || v.getProperty ("schema", "").toString() != "trench-chords-v1") return 0;
+    const auto floorName = v.getProperty ("floor", "INSTRUMENTS").toString();
+    int group = kGroups - 1;
+    for (int g = 0; g < kGroups; ++g) if (floorName == kGroupNames[g]) group = g;
+    int count = 0;
+    if (const auto* arr = v.getProperty ("chords", juce::var()).getArray())
+        for (const auto& c : *arr)
+        {
+            Chord chord {};
+            if (const auto* stages = c.getProperty ("stages", juce::var()).getArray())
+                for (int s = 0; s < kRows && s < stages->size(); ++s)
+                {
+                    const auto& st = (*stages)[s];
+                    auto& stage = chord[(size_t) s];
+                    const auto pole = st.getProperty ("pole", juce::var());
+                    const auto zero = st.getProperty ("zero", juce::var());
+                    if (pole.isObject()) { stage.pole.on = true; stage.pole.note = (double) pole.getProperty ("note", 60.0); stage.pole.width = (double) pole.getProperty ("width", 1.0); }
+                    if (zero.isObject()) { stage.zero.on = true; stage.zero.note = (double) zero.getProperty ("note", 60.0); stage.zero.width = (double) zero.getProperty ("width", 1.0); }
+                    stage.gainDb = (double) st.getProperty ("gain_db", 0.0);
+                }
+            Frame f;
+            f.name = c.getProperty ("name", "chord").toString();
+            f.group = group;
+            setChord (f, chord);
+            frames.push_back (f);
+            ++count;
+        }
+    return count;
+}
+
 int Library::addCapture (const Words& words, std::array<double, 2> at)
 {
     Frame f;

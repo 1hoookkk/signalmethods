@@ -10,7 +10,8 @@ Workstation::Workstation (Library& library, Stitch& stitch, bool useGL, bool wit
     setOpaque (true);
     setSize (1280, 800);
     L.duration = tl.duration;
-    view.hi.z = st.topZ() + 0.35;
+    view.hi.z = 1.15;
+    view.lo.z = -0.1;
     if (gl)
     {
         ctx.setRenderer (this);
@@ -52,9 +53,13 @@ void Workstation::demo()
     openFace = face;
     pairMode = true; pairA = f.nodes[0]; pairB = f.nodes[1];
     pairTo (1.62);
-    tl.keys = { { 0.5, Spot { -1, -1, face, -1, 0.0, 0.2, 0.2 } }, { 3.0, Spot { -1, -1, face, -1, 0.0, 0.8, 0.5 } }, { 6.5, Spot { f.nodes[3], -1, -1, -1, 0.0, 0.0, 0.0 } } };
+    Spot k0, k1, k2;
+    k0.face = face; k0.m = 0.2; k0.q = 0.2;
+    k1.face = face; k1.m = 0.8; k1.q = 0.5;
+    k2.node = f.nodes[3];
+    tl.keys = { { 0.5, k0 }, { 3.0, k1 }, { 6.5, k2 } };
     tl.playhead = 2.1;
-    for (int i = 0; i < 4; ++i) body.corner[(size_t) i] = frameFor (Spot { f.nodes[(size_t) i], -1, -1, -1, 0.0, 0.0, 0.0 });
+    for (int i = 0; i < 4; ++i) { Spot c; c.node = f.nodes[(size_t) i]; body.corner[(size_t) i] = frameFor (c); }
     body.rowOn[4] = false;
     body.morph = 1.4;
     body.q = 0.6;
@@ -152,7 +157,7 @@ Morph Workstation::live() const
     if (L.room == Room::sound) { if (const auto w = sound.frameAt (sound.slice)) m.words = *w; return m; }
     if (playBody && body.ready()) return body.wheelMorph (lib.frames);
     if (pairLive()) return pairMorph (st.wordsOf (pairA), st.wordsOf (pairB), pairT);
-    if (spot) return st.soundAt (*spot);
+    if (spot) return st.soundAt (*spot, open);
     return m;
 }
 
@@ -217,13 +222,13 @@ int Workstation::frameFor (const Spot& s)
         }
         return b.frame;
     }
-    return captureSpot (s, st.soundAt (s).words, "cap " + st.nameOf (s));
+    return captureSpot (s, st.soundAt (s, open).words, "cap " + st.nameOf (s, open));
 }
 
 int Workstation::captureSpot (const Spot& s, const Words& words, const juce::String& name)
 {
     const int idx = lib.addNamed (words, name, kGroups - 1, true);
-    const int stub = st.addStub (name, words, s, kGroups - 1);
+    const int stub = st.addStub (name, words, s.node >= 0 ? s.node : st.nearestNode (words), kGroups - 1);
     st.stubs[(size_t) stub].frame = idx;
     return idx;
 }

@@ -10,7 +10,7 @@ void Workstation::setSurface (juce::Point<float> p)
     if (! s.valid()) return;
     spot = s;
     playBody = false;
-    status = st.nameOf (s);
+    status = st.nameOf (s, open);
     redraw();
 }
 
@@ -188,10 +188,18 @@ void Workstation::frameFromSlice()
     f.name = sound.file.getFileNameWithoutExtension().substring (0, 18) + " @" + juce::String (sound.slice, 2);
     setWords (f, *w, kDatumHz);
     lib.frames.push_back (f);
-    const int near = st.nearestNode (f.words);
-    const int stub = st.addStub (f.name, f.words, Spot { near, -1, -1, -1, 0.0, 0.0, 0.0 }, kGroups - 1);
+    if (razor)
+    {
+        auto chord = f.chord;
+        for (auto& stg : chord) if (stg.pole.on) stg.pole.width = 0.25;
+        setChord (f, chord);
+        lib.frames.back() = f;
+    }
+    const Words placed = f.words;
+    const int stub = st.addStub (f.name, placed, st.nearestNode (placed), kGroups - 1);
     st.stubs[(size_t) stub].frame = (int) lib.frames.size() - 1;
-    picked = Spot { -1, -1, -1, stub, 0.0, 0.0, 0.0 };
+    Spot ps; ps.stub = stub;
+    picked = ps;
     setRoom (Room::frames);
     status = f.name + " picked";
 }
@@ -199,8 +207,10 @@ void Workstation::frameFromSlice()
 void Workstation::capture()
 {
     if (! haveSound() || L.room != Room::frames) { status = "nothing to capture"; redraw(); return; }
-    const Spot at = pairLive() ? Spot { pairT < 0.5 ? pairA : pairB, -1, -1, -1, 0.0, 0.0, 0.0 } : spot ? *spot : Spot {};
-    const juce::String name = pairLive() ? "cap " + pairName() + " " + juce::String (pairT, 2) : "cap " + st.nameOf (at);
+    Spot at;
+    if (pairLive()) at.node = pairT < 0.5 ? pairA : pairB;
+    else if (spot) at = *spot;
+    const juce::String name = pairLive() ? "cap " + pairName() + " " + juce::String (pairT, 2) : "cap " + st.nameOf (at, open);
     const int idx = captureSpot (at, live().words, name);
     status = "captured " + lib.frames[(size_t) idx].name;
     redraw();
@@ -226,7 +236,8 @@ void Workstation::assignCorner (int i)
     }
     else if (pairLive())
     {
-        body.corner[(size_t) i] = captureSpot (Spot { pairT < 0.5 ? pairA : pairB, -1, -1, -1, 0.0, 0.0, 0.0 }, live().words, "cap " + pairName() + " " + juce::String (pairT, 2));
+        Spot at; at.node = pairT < 0.5 ? pairA : pairB;
+        body.corner[(size_t) i] = captureSpot (at, live().words, "cap " + pairName() + " " + juce::String (pairT, 2));
     }
     else if (spot)
     {

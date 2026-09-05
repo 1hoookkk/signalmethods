@@ -1,0 +1,61 @@
+{
+ "schema": "trench-chords-v1",
+ "floor": "INSTRUMENTS",
+ "source": "qcreator_qright90_impulse_11025.wav",
+ "chords": [
+  {
+   "name": "QSound right 90",
+   "source": "qcreator_qright90_impulse_11025.wav",
+   "stages": [
+    {
+     "pole": {
+      "note": 82.834,
+      "width": 14.096
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 87.634,
+      "width": 11.57
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 103.732,
+      "width": 6.399
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 106.217,
+      "width": 5.549
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 108.165,
+      "width": 4.961
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 110.006,
+      "width": 4.616
+     },
+     "zero": null,
+     "gain_db": 0.0
+    }
+   ]
+  }
+ ]
+}

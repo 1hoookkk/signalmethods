@@ -41,15 +41,24 @@ struct Stub
     int frame = -1;
 };
 
+struct Item
+{
+    int face = -1, stub = -1;
+    int group = 0;
+    Vec3 p;
+};
+
 struct Spot
 {
     int node = -1, edge = -1, face = -1, stub = -1;
     double t = 0.0, m = 0.0, q = 0.0;
-    int floor = -1;
-    double x = 0.0, y = 0.0;
-    bool valid() const { return node >= 0 || edge >= 0 || face >= 0 || stub >= 0 || floor >= 0; }
-    bool operator== (const Spot& o) const { return node == o.node && edge == o.edge && face == o.face && stub == o.stub && t == o.t && m == o.m && q == o.q && floor == o.floor && x == o.x && y == o.y; }
+    bool free = false;
+    double x = 0.0, y = 0.0, z = 0.5;
+    bool valid() const { return node >= 0 || edge >= 0 || face >= 0 || stub >= 0 || free; }
+    bool operator== (const Spot& o) const { return node == o.node && edge == o.edge && face == o.face && stub == o.stub && t == o.t && m == o.m && q == o.q && free == o.free && x == o.x && y == o.y && z == o.z; }
 };
+
+struct Near { Item item; double weight; };
 
 class Stitch
 {
@@ -59,29 +68,24 @@ public:
     std::vector<Face> faces;
     std::vector<Stub> stubs;
     std::vector<Vec3> centres;
-    double floorGap = 1.0;
+    std::vector<Item> items;
     int floorCount = 7;
-    std::vector<int> usedFloors;
 
     bool loadJson (const juce::File& file);
     Words wordsOf (int node) const;
     std::array<Words, 4> cornersOf (int face) const;
-    Morph soundAt (const Spot& s) const;
+    Words wordsOfItem (const Item& it) const;
+    juce::String nameOfItem (const Item& it) const;
+    std::vector<Near> nearest (const Vec3& at, int count, const std::array<bool, kGroups>& open) const;
+    Morph soundAt (const Spot& s, const std::array<bool, kGroups>& open) const;
     Vec3 positionOf (const Spot& s) const;
-    double floorZ (int floor) const
-    {
-        for (int i = 0; i < (int) usedFloors.size(); ++i) if (usedFloors[(size_t) i] == floor) return i * floorGap;
-        return usedFloors.empty() ? 0.0 : (double) (usedFloors.size() - 1) * floorGap;
-    }
-    double topZ() const { return usedFloors.empty() ? 0.0 : (double) (usedFloors.size() - 1) * floorGap; }
-    juce::String nameOf (const Spot& s) const;
-    int addStub (const juce::String& name, const Words& words, const Spot& near, int floor);
-    Spot lerp (const Spot& a, const Spot& b, double f) const;
-    std::vector<std::pair<int, double>> nearestFaces (int floor, double x, double y, int count) const;
+    juce::String nameOf (const Spot& s, const std::array<bool, kGroups>& open) const;
+    int addStub (const juce::String& name, const Words& words, int node, int floor);
     int nearestNode (const Words& words) const;
+    Spot lerp (const Spot& a, const Spot& b, double f) const;
     void placeOnGrid();
     bool sharesNode (int faceA, int faceB) const;
     std::vector<int> neighbours (int face) const;
-    static Vec3 gridPlace (const Words& words, double z);
+    static Vec3 gridPlace (const Words& words);
 };
 }

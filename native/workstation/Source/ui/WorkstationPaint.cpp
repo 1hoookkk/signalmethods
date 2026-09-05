@@ -91,7 +91,7 @@ void Workstation::paintChrome (Canvas& g)
         {
             g.setColour (kChosen);
             const auto p = view.project (st.positionOf (*picked));
-            g.drawText (st.nameOf (*picked), (int) p.x + 10, (int) p.y - 6, 260, 12, juce::Justification::centredLeft);
+            g.drawText (st.nameOf (*picked, open), (int) p.x + 10, (int) p.y - 6, 260, 12, juce::Justification::centredLeft);
         }
     }
     else if (L.room == Room::edit)
@@ -162,13 +162,12 @@ void Workstation::paintAxes (Canvas& g)
         const auto p = v.project ({ nearX, db / 60.0, v.lo.z });
         g.drawText (juce::String ((int) db) + (db == 0.0 ? " dB" : ""), (int) p.x - 20, (int) p.y + 4, 40, 12, juce::Justification::centred);
     }
-    for (const int f : st.usedFloors)
+    for (double db : { 20.0, 40.0, 60.0 })
     {
-        if (f < 0 || f >= kGroups) continue;
-        const auto p = v.project ({ farXv, nearY, st.floorZ (f) });
+        const auto p = v.project ({ farXv, nearY, db / 60.0 });
         const bool left = v.project ({ farXv, nearY, 0.0 }).x < L.field.getCentreX();
-        g.setColour (open[(size_t) f] ? kText : kDim);
-        g.drawText (kGroupNames[f], left ? (int) p.x - 92 : (int) p.x + 8, (int) p.y - 6, 84, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
+        g.setColour (kDim);
+        g.drawText (juce::String ((int) db) + (db == 60.0 ? " dB" : ""), left ? (int) p.x - 92 : (int) p.x + 8, (int) p.y - 6, 84, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
     }
 }
 

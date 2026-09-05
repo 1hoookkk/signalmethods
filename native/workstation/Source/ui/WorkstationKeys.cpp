@@ -34,15 +34,6 @@ void Workstation::layoutKeys()
     if (L.room == Room::frames)
     {
         keys.push_back ({ "home", "HOME", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, false });
-        {
-            float fx = L.sortRow.getX() + 72.0f;
-            for (const int f : st.usedFloors)
-            {
-                if (f < 0 || f >= kGroups) continue;
-                keys.push_back ({ "floor" + juce::String (f), kGroupNames[f], { fx, 5.0f, 76.0f, kh }, activeFloor == f });
-                fx += 80.0f;
-            }
-        }
         keys.push_back ({ "pair", "PAIR", { L.field.getRight() - 56.0f, 5.0f, 56.0f, kh }, pairMode });
         keys.push_back ({ "capture", "CAPTURE", { L.field.getRight() - 128.0f, 5.0f, 68.0f, kh }, false });
         const auto sq = L.outer;
@@ -75,6 +66,7 @@ void Workstation::layoutKeys()
     {
         keys.push_back ({ "speech", "SPEECH", { L.sortRow.getX() + 8.0f, 5.0f, 60.0f, kh }, sound.speech });
         keys.push_back ({ "bells", "BELLS", { L.sortRow.getX() + 72.0f, 5.0f, 56.0f, kh }, ! sound.speech });
+        keys.push_back ({ "razor", "RAZOR", { L.field.getRight() - 128.0f, 5.0f, 60.0f, kh }, razor });
         keys.push_back ({ "frame", "FRAME", { L.field.getRight() - 60.0f, 5.0f, 60.0f, kh }, false });
     }
     if (L.timelineOpen)
@@ -90,7 +82,6 @@ void Workstation::press (const juce::String& id)
     if (id == "room0") setRoom (Room::frames);
     else if (id == "room1") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "pick a corner first"; }
     else if (id == "room2") setRoom (Room::sound);
-    else if (id.startsWith ("floor")) { activeFloor = id.substring (5).getIntValue(); openFace = -1; }
     else if (id == "home") { view.az = -37.5; view.el = 30.0; view.zoom = 1.0; view.panX = view.panY = 0.0; }
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two nodes" : ""; }
     else if (id == "capture") capture();
@@ -107,6 +98,7 @@ void Workstation::press (const juce::String& id)
     else if (id.startsWith ("lock")) { const int s = id.substring (4).getIntValue(); lockRow[(size_t) s] = ! lockRow[(size_t) s]; }
     else if (id == "speech") sound.speech = true;
     else if (id == "bells") sound.speech = false;
+    else if (id == "razor") razor = ! razor;
     else if (id == "frame") frameFromSlice();
     else if (id == "listen")
     {

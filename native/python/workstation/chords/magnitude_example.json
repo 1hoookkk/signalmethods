@@ -1,0 +1,61 @@
+{
+ "schema": "trench-chords-v1",
+ "floor": "INSTRUMENTS",
+ "source": "mag.csv",
+ "chords": [
+  {
+   "name": "magnitude example",
+   "source": "mag.csv",
+   "stages": [
+    {
+     "pole": {
+      "note": 78.963,
+      "width": 19.345
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 99.172,
+      "width": 5.456
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 107.633,
+      "width": 6.767
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 114.85,
+      "width": 5.433
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 119.677,
+      "width": 4.602
+     },
+     "zero": null,
+     "gain_db": 0.0
+    },
+    {
+     "pole": {
+      "note": 123.423,
+      "width": 3.853
+     },
+     "zero": null,
+     "gain_db": 0.0
+    }
+   ]
+  }
+ ]
+}
