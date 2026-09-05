@@ -75,7 +75,9 @@ private:
     double padPressM = 0.0, padPressQ = 0.0, padPressM0 = 0.0, padPressQ0 = 0.0;
     double scanPos = 0.0;
     int regionDragEnd = 1;
-    bool sourceSample = false;
+    bool sourceSample = false, analyse = false;
+    std::vector<float> measured;
+    void updateMeasured();
     void buildStrip();
     juce::Rectangle<float> scanRect() const;
     double scanAt (juce::Point<float> p) const;

@@ -230,6 +230,13 @@ std::vector<Batch> Workstation::scene() const
     marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (-30.0) }, kLine, 1.0f));
     out.push_back (marker);
     const auto now = live();
+    if (analyse && measured.size() == (size_t) kCurvePoints)
+    {
+        Batch trace { Batch::strip, false, {} };
+        for (int i = 0; i < kCurvePoints; ++i)
+            trace.v.push_back (vertex ({ L.rx (20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.ry (juce::jlimit (-30.0, 30.0, (double) measured[(size_t) i])) }, kDim, 1.5f));
+        out.push_back (trace);
+    }
     if (haveWords)
     {
         const auto colour = L.room == Room::sound ? kChosen : kData;

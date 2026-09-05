@@ -202,7 +202,7 @@ void Workstation::paintResponse (Canvas& g)
     if (audio != nullptr)
     {
         const float pk = audio->peak();
-        const juce::Rectangle<float> bar (L.resp.getX() + 140.0f, L.resp.getY() + 9.0f, 120.0f, 8.0f);
+        const juce::Rectangle<float> bar (L.resp.getX() + 284.0f, L.resp.getY() + 9.0f, 80.0f, 8.0f);
         g.setColour (kKeyLine);
         g.drawRect (px (bar), 1);
         const double db = 20.0 * std::log10 (std::max (1e-5f, pk));

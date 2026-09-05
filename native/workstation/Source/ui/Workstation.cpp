@@ -1,6 +1,7 @@
 #include "Workstation.h"
 #include "Style.h"
 #include <cmath>
+#include <juce_dsp/juce_dsp.h>
 
 namespace ws
 {
@@ -141,7 +142,7 @@ void Workstation::timerCallback()
         redraw();
         return;
     }
-    if (audio != nullptr && audio->isPlaying() && ! tl.playing && ! (sweep[0] || sweep[1] || sweep[2])) { repaint(); if (gl) ctx.triggerRepaint(); return; }
+    if (audio != nullptr && audio->isPlaying() && ! tl.playing && ! (sweep[0] || sweep[1] || sweep[2])) { if (analyse) updateMeasured(); repaint(); if (gl) ctx.triggerRepaint(); return; }
     if (L.room == Room::morph && (sweep[0] || sweep[1]))
     {
         sweepT += 1.0 / 60.0;
@@ -204,6 +205,37 @@ juce::Point<float> Workstation::clearPoint() const
             }
         }
     return { f.getCentreX(), f.getCentreY() };
+}
+
+void Workstation::updateMeasured()
+{
+    measured.assign ((size_t) kCurvePoints, 0.0f);
+    if (audio == nullptr || ! analyse) return;
+    const auto x = audio->snapshot();
+    const int n = 4096;
+    juce::dsp::FFT fft (12);
+    std::vector<float> acc ((size_t) n, 0.0f);
+    int frames = 0;
+    for (int start = 0; start + n <= (int) x.size(); start += n / 2)
+    {
+        std::vector<float> buf ((size_t) n * 2, 0.0f);
+        for (int i = 0; i < n; ++i) buf[(size_t) i] = x[(size_t) (start + i)] * (0.5f - 0.5f * std::cos (juce::MathConstants<float>::twoPi * i / (float) n));
+        fft.performFrequencyOnlyForwardTransform (buf.data());
+        for (int i = 0; i < n; ++i) acc[(size_t) i] += buf[(size_t) i] * buf[(size_t) i];
+        ++frames;
+    }
+    if (frames == 0) return;
+    const double dev = audio->rate();
+    const double ref = 0.8 * 0.8 / 12.0 * n * 0.375;
+    for (int i = 0; i < kCurvePoints; ++i)
+    {
+        const double hz = 20.0 * std::pow (1000.0, i / double (kCurvePoints - 1));
+        const int bin = juce::jlimit (1, n / 2 - 1, (int) std::round (hz / dev * n));
+        double p = 0.0;
+        int cnt = 0;
+        for (int b = std::max (1, bin - 2); b <= std::min (n / 2 - 1, bin + 2); ++b) { p += acc[(size_t) b] / frames; ++cnt; }
+        measured[(size_t) i] = (float) (10.0 * std::log10 (std::max (1e-12, p / cnt) / ref));
+    }
 }
 
 juce::Point<float> Workstation::scanPoint (double fraction) const

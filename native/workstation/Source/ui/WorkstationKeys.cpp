@@ -32,7 +32,8 @@ void Workstation::layoutKeys()
     const bool audioOn = audio != nullptr && audio->isPlaying();
     keys.push_back ({ "listen", audioOn ? "STOP" : "LISTEN", { L.resp.getX() + 8.0f, L.resp.getY() + 6.0f, 60.0f, kh }, audioOn });
     keys.push_back ({ "wet", "FILTER", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 60.0f, kh }, wet });
-    if (L.room != Room::sound) keys.push_back ({ "source", sourceSample ? "SAMPLE" : "SAW", { L.resp.getX() + 136.0f, L.resp.getY() + 6.0f, 64.0f, kh }, sourceSample });
+    if (L.room != Room::sound) keys.push_back ({ "source", analyse ? "NOISE" : sourceSample ? "SAMPLE" : "SAW", { L.resp.getX() + 136.0f, L.resp.getY() + 6.0f, 64.0f, kh }, sourceSample });
+    keys.push_back ({ "analyse", "ANALYSE", { L.resp.getX() + 204.0f, L.resp.getY() + 6.0f, 72.0f, kh }, analyse });
     if (L.room == Room::frames)
     {
         keys.push_back ({ "sortRoot", "LOW > HIGH", { L.sortRow.getX() + 8.0f, 5.0f, 84.0f, kh }, ! sortNear });
@@ -97,6 +98,7 @@ void Workstation::press (const juce::String& id)
     else if (id.startsWith ("slot")) { const int k = id.substring (4).getIntValue(); selectedSlot = selectedSlot == k ? -1 : k; status = selectedSlot >= 0 ? juce::String ("TAKE fills ") + kCornerNames[k] : juce::String(); }
     else if (id == "take") takeScan();
     else if (id == "source") { sourceSample = ! sourceSample; if (audio) audio->useClip (sourceSample); }
+    else if (id == "analyse") { analyse = ! analyse; if (audio) { audio->useNoise (analyse); audio->useClip (! analyse && sourceSample); } if (! analyse) measured.clear(); }
     else if (id.startsWith ("goto") && L.room == Room::morph) { selectedSlot = id.substring (4).getIntValue(); setRoom (Room::frames); status = juce::String ("choose a frame for ") + kCornerNames[selectedSlot]; }
     else if (id == "fine") fine = ! fine;
     else if (id == "compare") {}

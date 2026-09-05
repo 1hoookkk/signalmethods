@@ -22,6 +22,9 @@ public:
     void setPlaying (bool on);
     void setWet (bool on);
     void useClip (bool on) { clipOn.store (on); }
+    void useNoise (bool on) { noiseOn.store (on); }
+    double rate() const { return deviceRate.load(); }
+    std::vector<float> snapshot() const;
     bool isPlaying() const { return playing.load(); }
     double playhead() const { return position.load(); }
     float peak() const { return peakLevel.load(); }
@@ -40,7 +43,10 @@ private:
     std::shared_ptr<const std::vector<float>> clip;
     std::atomic<double> clipRate { 44100.0 }, deviceRate { 44100.0 };
     std::atomic<double> regionStart { 0.0 }, regionEnd { 0.0 }, position { 0.0 };
-    std::atomic<bool> playing { false }, wet { true }, clipOn { false };
+    std::atomic<bool> playing { false }, wet { true }, clipOn { false }, noiseOn { false };
+    std::vector<float> ring = std::vector<float> (16384, 0.0f);
+    std::atomic<int> ringPos { 0 };
+    juce::Random noise;
     std::atomic<float> peakLevel { 0.0f };
     double cursor = 0.0;
     std::array<Words, 2> pending {};

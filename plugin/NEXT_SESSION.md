@@ -1533,3 +1533,4 @@ Open, in order:
   The 3D box is gone from the rooms; the Stitch model stays for the corner bank. Gesture
   check now walks the strip, the slots, the pad, FINE, COMPARE, CAPTURE, LISTEN and the
   return; 13 checks pass headless.
+- 2026-09-05 close, Tyson: "the issue is in the monolithic files" and "instead of rebuilding we should just get gpt to one shot it from scratch". Brief at native/NEXT_SESSION_PROMPT.md; plane-room draft parked at native/workstation/drafts/. Analyser (NOISE source, measured trace over the plotted curve) committed. Next: turn the brief into a one-shot build spec (rooms, chord law, voice leading, core API, JSON formats, both check suites) for an outside model; the UI shell is rewritten from it, model and tests are kept.
