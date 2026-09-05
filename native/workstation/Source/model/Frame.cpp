@@ -116,6 +116,32 @@ double sectionDb (const Words& words, int row, double hz)
     return trench::core::section_response_db (trench::core::section_words_to_biquad ({ r[0], r[1], r[2], r[3], r[4] }), hz, kDatumHz);
 }
 
+void unityDc (Words& words)
+{
+    double product = 1.0;
+    for (int s = 0; s < kRows; ++s)
+    {
+        const auto& r = words[(size_t) s];
+        const double d0 = trench::core::decode_word (r[0]), d1 = trench::core::decode_word (r[1]), d2 = trench::core::decode_word (r[2]), d3 = trench::core::decode_word (r[3]);
+        const double num = 4.0 * d0 + d1 - d1, den = 4.0 * d2 + d3 - d3;
+        if (std::abs (den) > 1e-12 && std::abs (num) > 1e-12) product *= num / den;
+    }
+    const double gain = std::pow (1.0 / std::max (1e-9, std::abs (product)), 1.0 / kRows);
+    const auto word = trench::core::encode_word (juce::jlimit (0.0, 1.0, gain / 4.0));
+    for (int s = 0; s < kRows; ++s) words[(size_t) s][4] = word;
+}
+
+void sharpen (Words& words, double keep)
+{
+    for (int s = 0; s < kRows; ++s)
+    {
+        const auto& r = words[(size_t) s];
+        const auto geom = trench::core::geometry_from_words ({ r[0], r[1], r[2], r[3], r[4] }, kDatumHz);
+        if (const auto* c = std::get_if<trench::core::ConjugatePair> (&geom.pole))
+            setPole (words, s, c->hz, 1.0 - (1.0 - c->radius) * keep);
+    }
+}
+
 juce::Colour hueOf (double t)
 {
     return juce::Colour::fromHSV ((float) (juce::jlimit (0.0, 1.0, t) * 0.75), 0.9f, 0.9f, 1.0f);

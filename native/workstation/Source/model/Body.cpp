@@ -14,6 +14,7 @@ Words Body::cornerWords (const std::vector<Frame>& frames, int i) const
     for (int s = 0; s < kRows; ++s)
         if (! rowOn[(size_t) s])
             for (int k = 0; k < kWords; ++k) w[(size_t) s][(size_t) k] = trench::core::kIdentitySection[(size_t) k];
+    if (unity) unityDc (w);
     return w;
 }
 

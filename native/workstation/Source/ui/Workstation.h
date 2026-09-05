@@ -40,6 +40,10 @@ private:
     Body body;
     bool playBody = false;
     int editCorner = 0;
+    int copyFrom = -1;
+    std::array<bool, kRows> lockRow { false, false, false, false, false, false };
+    void sharpenQ();
+    void ceiling();
     int editing = -1;
     int dragStage = -1;
     double openAmount = 0.5;

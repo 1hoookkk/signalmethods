@@ -98,7 +98,11 @@ void Workstation::dragHandle (juce::Point<float> p)
     const auto r = L.stageRect (dragStage);
     const double hz = L.hzAt (r, p.x);
     const double db = L.dbAt (r, p.y);
-    if (mode == Mode::dragPole) setPole (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, db + 30.0) / 20.0));
+    if (mode == Mode::dragPole)
+    {
+        setPole (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, db + 30.0) / 20.0));
+        if (lockRow[(size_t) dragStage] && f.rows[(size_t) dragStage].zero) setZero (f.words, dragStage, hz, f.rows[(size_t) dragStage].zR);
+    }
     else setZero (f.words, dragStage, hz, 1.0 - std::pow (10.0, -juce::jlimit (0.0, 60.0, 30.0 - db) / 20.0));
     measure (f);
     redraw();
@@ -127,9 +131,52 @@ void Workstation::setOpen (float x)
     redraw();
 }
 
+void Workstation::sharpenQ()
+{
+    if (body.corner[0] < 0 || body.corner[1] < 0) { status = "fill M0 Q0 and M1 Q0 first"; redraw(); return; }
+    for (int i = 0; i < 2; ++i)
+    {
+        Frame f = lib.frames[(size_t) body.corner[(size_t) i]];
+        f.capture = true;
+        f.group = kGroups - 1;
+        f.name = "sharp " + f.name.replace (" Q0", " Q1");
+        sharpen (f.words, 0.25);
+        measure (f);
+        lib.frames.push_back (f);
+        body.corner[(size_t) (2 + i)] = (int) lib.frames.size() - 1;
+    }
+    playBody = true;
+    status = "Q corners made from the M corners, radius kept to a quarter of its distance from one";
+    redraw();
+}
+
+void Workstation::ceiling()
+{
+    if (editing < 0) return;
+    auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
+    setZero (f.words, kRows - 1, 20000.0, 0.9995);
+    measure (f);
+    status = "row 6 zero parked at the ceiling";
+    redraw();
+}
+
 void Workstation::assignCorner (int i)
 {
     editCorner = i;
+    if (copyFrom >= 0 && body.corner[(size_t) copyFrom] >= 0)
+    {
+        Frame f = lib.frames[(size_t) body.corner[(size_t) copyFrom]];
+        f.capture = true;
+        f.group = kGroups - 1;
+        f.name = "copy " + f.name;
+        lib.frames.push_back (f);
+        body.corner[(size_t) i] = (int) lib.frames.size() - 1;
+        copyFrom = -1;
+        playBody = true;
+        status = "corner " + juce::String (i) + " = " + f.name;
+        redraw();
+        return;
+    }
     if (pickFor >= 0 && pickFor < (int) lib.anchors.size())
     {
         body.corner[(size_t) i] = lib.anchors[(size_t) pickFor].frame;
@@ -199,6 +246,18 @@ void Workstation::layoutKeys()
     keys.push_back ({ "playbody", "BODY", { bx, sq.getY() + 24.0f, 68.0f, kh }, playBody });
     keys.push_back ({ editing >= 0 ? "close" : "edit", editing >= 0 ? "CLOSE" : "EDIT", { bx + 72.0f, sq.getY() + 24.0f, 68.0f, kh }, editing >= 0 });
     keys.push_back ({ "export", "EXPORT", { bx, sq.getY() + 48.0f, 68.0f, kh }, false });
+    keys.push_back ({ "copy", "COPY", { bx + 72.0f, sq.getY() + 48.0f, 68.0f, kh }, copyFrom >= 0 });
+    keys.push_back ({ "sharpen", "SHARPEN", { bx + 144.0f, sq.getY() + 48.0f, 68.0f, kh }, false });
+    keys.push_back ({ "unity", "UNITY", { bx + 144.0f, sq.getY() + 24.0f, 68.0f, kh }, body.unity });
+    if (editing >= 0)
+    {
+        for (int s = 0; s < kRows; ++s)
+        {
+            const auto r = L.stageRect (s);
+            keys.push_back ({ "lock" + juce::String (s), "LOCK", { L.field.getX() + 240.0f, r.getY() + 2.0f, 48.0f, kh }, lockRow[(size_t) s] });
+        }
+        keys.push_back ({ "ceiling", "CEILING", { L.field.getX() + 240.0f, L.stageRect (kRows - 1).getY() + 20.0f, 56.0f, kh }, false });
+    }
     keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 8.0f, L.resp.getY() + 6.0f, 56.0f, kh }, showSurface });
     keys.push_back ({ "pair", "PAIR", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 56.0f, kh }, pairMode });
     keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { 8.0f, L.tl.getY() + 8.0f, 64.0f, kh }, tl.playing });
@@ -252,6 +311,11 @@ void Workstation::press (const juce::String& id)
     else if (id == "export") exportBody (exportDir.getChildFile ("ws_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".body240"));
     else if (id == "playbody") playBody = ! playBody;
     else if (id == "edit") openEditor (editCorner);
+    else if (id == "copy") { copyFrom = copyFrom >= 0 ? -1 : editCorner; status = copyFrom >= 0 ? "click the corner to paste into" : ""; }
+    else if (id == "sharpen") sharpenQ();
+    else if (id == "unity") body.unity = ! body.unity;
+    else if (id == "ceiling") ceiling();
+    else if (id.startsWith ("lock")) { const int s = id.substring (4).getIntValue(); lockRow[(size_t) s] = ! lockRow[(size_t) s]; }
     else if (id == "close") editing = -1;
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two anchors" : ""; }
     else if (id == "play")
@@ -703,7 +767,7 @@ void Workstation::paintChrome (juce::Graphics& g)
             const auto& gm = f.rows[(size_t) s];
             const int x0 = (int) L.field.getX() + 8, y0 = (int) r.getY() + 2;
             g.setColour (body.rowOn[(size_t) s] ? kText : kDim);
-            g.drawText (juce::String (s + 1) + (body.rowOn[(size_t) s] ? "" : "  off"), x0, y0, 60, 13, juce::Justification::centredLeft);
+            g.drawText (juce::String (s + 1) + (body.rowOn[(size_t) s] ? "" : "  off"), x0, y0, 40, 13, juce::Justification::centredLeft);
             g.setColour (gm.pole ? kText : kDim);
             g.drawText (gm.pole ? "pole  " + juce::String ((int) std::round (gm.pHz)).paddedLeft (' ', 6) + " Hz   r " + juce::String (gm.pR, 3) + "   " + juce::String (resDb (gm.pR), 1) + " dB" : "pole  real", x0 + 40, y0, 240, 13, juce::Justification::centredLeft);
             g.setColour (gm.zero ? kText : kDim);

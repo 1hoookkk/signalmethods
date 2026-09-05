@@ -54,4 +54,6 @@ Words blend (const std::vector<const Words*>& parents, const std::vector<double>
 void setPole (Words& words, int row, double hz, double radius);
 void setZero (Words& words, int row, double hz, double radius);
 double sectionDb (const Words& words, int row, double hz);
+void unityDc (Words& words);
+void sharpen (Words& words, double keep);
 }
