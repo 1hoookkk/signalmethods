@@ -39,9 +39,8 @@ void GLRenderer::create (juce::OpenGLContext& ctx)
     textured->addFragmentShader (juce::OpenGLHelpers::translateFragmentShaderToV3 (kTexFS));
     textured->link();
     glGenBuffers (1, &vbo);
-    glGenTextures (1, &atlas);
     glGenTextures (1, &picture);
-    atlasScale = 0.0f;
+    atlases.clear();
     pictureSource = {};
 }
 
@@ -49,9 +48,10 @@ void GLRenderer::destroy()
 {
     using namespace juce::gl;
     if (vbo != 0) glDeleteBuffers (1, &vbo);
-    if (atlas != 0) glDeleteTextures (1, &atlas);
+    for (auto& [k, a] : atlases) if (a.tex != 0) glDeleteTextures (1, &a.tex);
+    atlases.clear();
     if (picture != 0) glDeleteTextures (1, &picture);
-    vbo = atlas = picture = 0;
+    vbo = picture = 0;
     marks.reset();
     textured.reset();
 }
@@ -73,24 +73,33 @@ void GLRenderer::upload (unsigned int tex, const juce::Image& source)
     glBindTexture (GL_TEXTURE_2D, 0);
 }
 
-void GLRenderer::buildAtlas (float size, float scale)
+const GLRenderer::Atlas& GLRenderer::atlasFor (bool monospace, float size, float scale)
 {
-    const auto font = mono (size * scale);
-    cellW = std::ceil (juce::GlyphArrangement::getStringWidth (font, "M")) + 1.0f;
-    cellH = std::ceil (font.getHeight()) + 2.0f;
-    atlasW = (int) cellW * kGlyphCount;
-    atlasH = (int) cellH;
-    juce::Image img (juce::Image::ARGB, atlasW, atlasH, true);
+    using namespace juce::gl;
+    const juce::String key = juce::String (monospace ? "m" : "s") + juce::String (size, 2) + "@" + juce::String (scale, 3);
+    if (const auto it = atlases.find (key); it != atlases.end()) return it->second;
+    Atlas a;
+    const auto font = faceOf (monospace, size * scale);
+    float widest = 0.0f;
+    for (int i = 0; i < kGlyphCount; ++i)
+    {
+        a.advance[(size_t) i] = juce::GlyphArrangement::getStringWidth (font, juce::String::charToString ((juce::juce_wchar) (kFirstGlyph + i)));
+        widest = std::max (widest, a.advance[(size_t) i]);
+    }
+    a.cellW = std::ceil (widest) + 4.0f;
+    a.cellH = std::ceil (font.getHeight()) + 2.0f;
+    a.width = (int) a.cellW * kGlyphCount;
+    juce::Image img (juce::Image::ARGB, a.width, (int) a.cellH, true);
     {
         juce::Graphics g (img);
         g.setFont (font);
         g.setColour (juce::Colours::white);
         for (int i = 0; i < kGlyphCount; ++i)
-            g.drawText (juce::String::charToString ((juce::juce_wchar) (kFirstGlyph + i)), juce::Rectangle<int> ((int) (i * cellW), 0, (int) cellW, (int) cellH), juce::Justification::centred, false);
+            g.drawText (juce::String::charToString ((juce::juce_wchar) (kFirstGlyph + i)), juce::Rectangle<int> ((int) (i * a.cellW) + 2, 0, (int) a.cellW - 2, (int) a.cellH), juce::Justification::centredLeft, false);
     }
-    upload (atlas, img);
-    atlasScale = scale;
-    atlasSize = size;
+    glGenTextures (1, &a.tex);
+    upload (a.tex, img);
+    return atlases.emplace (key, a).first->second;
 }
 
 void GLRenderer::draw (const std::vector<Batch>& batches, float width, float height, float scale, juce::Colour ground)
@@ -187,29 +196,37 @@ void GLRenderer::drawTextured (const std::vector<TexVertex>& quads, unsigned int
 
 void GLRenderer::drawText (const Batch& b, float width, float height, float scale)
 {
-    std::vector<TexVertex> quads;
+    std::map<unsigned int, std::vector<TexVertex>> runs;
     for (const auto& t : b.texts)
     {
-        if (atlasScale != scale || atlasSize != t.size) buildAtlas (t.size, scale);
-        const int fit = std::max (0, (int) std::floor (t.box.getWidth() * scale / cellW));
-        const auto s = t.s.substring (0, fit);
-        const float w = (float) s.length() * cellW;
+        const auto& at = atlasFor (t.mono, t.size, scale);
+        auto& quads = runs[at.tex];
+        std::vector<int> glyphs;
+        float w = 0.0f;
+        const float limit = t.box.getWidth() * scale;
+        for (int i = 0; i < t.s.length(); ++i)
+        {
+            const int gi = glyphIndex (t.s[i]);
+            if (w + at.advance[(size_t) gi] > limit) break;
+            glyphs.push_back (gi);
+            w += at.advance[(size_t) gi];
+        }
         float x = t.box.getX() * scale;
         if (t.just.testFlags (juce::Justification::horizontallyCentred)) x = t.box.getCentreX() * scale - w * 0.5f;
         else if (t.just.testFlags (juce::Justification::right)) x = t.box.getRight() * scale - w;
-        const float y = std::round (t.box.getCentreY() * scale - cellH * 0.5f);
+        const float y = std::round (t.box.getCentreY() * scale - at.cellH * 0.5f);
         x = std::round (x);
         const float r = t.colour.getFloatRed(), g = t.colour.getFloatGreen(), bl = t.colour.getFloatBlue(), a = t.colour.getFloatAlpha();
-        for (int i = 0; i < s.length(); ++i)
+        for (const int gi : glyphs)
         {
-            const int gi = glyphIndex (s[i]);
-            const float u0 = gi * cellW / (float) atlasW, u1 = (gi + 1) * cellW / (float) atlasW;
-            const float x0 = x + i * cellW, x1 = x0 + cellW, y0 = y, y1 = y + cellH;
+            const float u0 = gi * at.cellW / (float) at.width, u1 = (gi + 1) * at.cellW / (float) at.width;
+            const float x0 = x - 2.0f, x1 = x0 + at.cellW, y0 = y, y1 = y + at.cellH;
             quads.insert (quads.end(), { { x0, y0, u0, 0.0f, r, g, bl, a }, { x1, y0, u1, 0.0f, r, g, bl, a }, { x1, y1, u1, 1.0f, r, g, bl, a },
                                          { x0, y0, u0, 0.0f, r, g, bl, a }, { x1, y1, u1, 1.0f, r, g, bl, a }, { x0, y1, u0, 1.0f, r, g, bl, a } });
+            x += at.advance[(size_t) gi];
         }
     }
-    drawTextured (quads, atlas, true, width, height, scale);
+    for (const auto& [tex, quads] : runs) drawTextured (quads, tex, true, width, height, scale);
 }
 
 void GLRenderer::drawImage (const Batch& b, float width, float height, float scale)

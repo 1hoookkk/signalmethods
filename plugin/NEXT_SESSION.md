@@ -1378,3 +1378,8 @@ Open, in order:
   calls the chrome used; the headless --shot path walks the same scene with juce::Graphics
   (render/SoftwareRenderer). SVG and lunasvg are gone. GL path still not run on screen by the
   assistant; the software shots are the check.
+- 2026-09-05, workstation typography, Tyson: "Change the typography from ai generic". Ruling
+  applied: labels, keys, ticks, names and readouts in Arial 11 (Helvetica as MATLAB and the
+  Unix workstations set their axes); Lucida Console 11 only for columned rows (editor stage
+  rows, sound room pole list). The GL glyph atlas is now proportional, one atlas per face,
+  size and scale, with per-glyph advances; the software shot path uses the same faces.

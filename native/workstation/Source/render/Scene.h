@@ -14,6 +14,7 @@ struct Text
     juce::Colour colour;
     juce::Justification just = juce::Justification::centredLeft;
     float size = 11.0f;
+    bool mono = false;
 };
 
 struct Batch

@@ -37,6 +37,7 @@ void Workstation::paintPanels (Canvas& g)
     {
         g.fillRect (L.cascade);
         for (int s = 0; s < kRows; ++s) g.fillRect (L.stageRect (s));
+        for (int i = 0; i < 4; ++i) g.fillRect (juce::Rectangle<int> ((int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 48 + (i >> 1) * 80, 200, 40));
     }
 }
 
@@ -97,8 +98,6 @@ void Workstation::paintChrome (Canvas& g)
         for (int i = 0; i < 4; ++i)
         {
             const juce::Rectangle<int> t ((int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 48 + (i >> 1) * 80, 200, 40);
-            g.setColour (kPanel);
-            g.fillRect (t);
             g.setColour (kFrame);
             g.drawRect (t, 1);
             g.setColour (kLine);
@@ -234,6 +233,7 @@ void Workstation::paintEditor (Canvas& g)
     g.fillRect (openBar.getX() + 1.0f, openBar.getY() + 1.0f, (openBar.getWidth() - 2.0f) * (float) openAmount, openBar.getHeight() - 2.0f);
     g.setColour (kDim);
     g.drawText (juce::String ((int) std::round (250.0 * std::pow (900.0 / 250.0, openAmount))) + " Hz", (int) openBar.getRight() + 4, (int) openBar.getY() - 2, 56, 14, juce::Justification::centredLeft);
+    g.setFont (11.0f, true);
     for (int s = 0; s < kRows; ++s)
     {
         const auto r = L.stageRect (s);
@@ -245,6 +245,7 @@ void Workstation::paintEditor (Canvas& g)
         g.setColour (gm.zero ? kText : kDim);
         g.drawText (gm.zero ? "zero  " + juce::String ((int) std::round (gm.zHz)).paddedLeft (' ', 6) + " Hz   r " + juce::String (gm.zR, 3) : "zero  real", x0 + 40, y0 + 14, 240, 13, juce::Justification::centredLeft);
     }
+    g.setFont (11.0f);
 }
 
 void Workstation::paintSound (Canvas& g)
@@ -283,12 +284,14 @@ void Workstation::paintSound (Canvas& g)
         const auto rows = geometryOf (*w);
         int y = (int) L.field.getY() + 6;
         g.setColour (kData);
+        g.setFont (11.0f, true);
         for (int s = 0; s < kRows; ++s)
             if (rows[(size_t) s].pole && rows[(size_t) s].pR > 0.0)
             {
                 g.drawText (juce::String (s + 1) + "  " + juce::String ((int) std::round (rows[(size_t) s].pHz)) + " Hz  r " + juce::String (rows[(size_t) s].pR, 3), (int) L.field.getX() + 8, y, 200, 13, juce::Justification::centredLeft);
                 y += 13;
             }
+        g.setFont (11.0f);
     }
     const int maxRows = (int) ((L.tray.getHeight() - 8.0f) / 14.0f);
     wavScroll = juce::jlimit (0, std::max (0, (int) wavs.size() - maxRows), wavScroll);

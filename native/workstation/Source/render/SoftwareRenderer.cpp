@@ -49,7 +49,7 @@ void drawScene (juce::Graphics& g, const std::vector<Batch>& batches)
             case Batch::text:
                 for (const auto& t : b.texts)
                 {
-                    g.setFont (mono (t.size));
+                    g.setFont (faceOf (t.mono, t.size));
                     g.setColour (t.colour);
                     g.drawText (t.s, t.box.toNearestInt(), t.just, false);
                 }

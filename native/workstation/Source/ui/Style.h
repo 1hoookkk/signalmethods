@@ -4,7 +4,9 @@
 
 namespace ws
 {
-inline juce::Font mono (float h) { return juce::Font (juce::FontOptions ("Consolas", h, juce::Font::plain)); }
+inline juce::Font sans (float h) { return juce::Font (juce::FontOptions ("Arial", h, juce::Font::plain)); }
+inline juce::Font mono (float h) { return juce::Font (juce::FontOptions ("Lucida Console", h, juce::Font::plain)); }
+inline juce::Font faceOf (bool monospace, float h) { return monospace ? mono (h) : sans (h); }
 inline const juce::Colour kGround (0xffcccccc), kPanel (0xffffffff), kFrame (0xff000000);
 inline const juce::Colour kLine (0xffd6d6d6), kRule (0xffb0b0b0), kText (0xff000000), kDim (0xff5c5c5c);
 inline const juce::Colour kKey (0xffe2e2e2), kKeyLine (0xff6e6e6e), kKeyOn (0xff2b2b2b), kKeyText (0xff000000), kKeyOnText (0xffffffff);

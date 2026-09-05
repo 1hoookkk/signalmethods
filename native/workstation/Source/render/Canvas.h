@@ -10,7 +10,7 @@ public:
     explicit Canvas (std::vector<Batch>& out) : batches (out) {}
 
     void setColour (juce::Colour c) { colour = c; }
-    void setFont (float h) { fontH = h; }
+    void setFont (float h, bool monospace = false) { fontH = h; fontMono = monospace; }
     void fillRect (juce::Rectangle<float> r);
     void fillRect (juce::Rectangle<int> r) { fillRect (r.toFloat()); }
     void fillRect (float x, float y, float w, float h) { fillRect (juce::Rectangle<float> (x, y, w, h)); }
@@ -27,6 +27,7 @@ private:
     std::vector<Batch>& batches;
     juce::Colour colour = juce::Colours::black;
     float fontH = 11.0f;
+    bool fontMono = false;
 
     Batch& open (Batch::Kind kind, bool round);
 };

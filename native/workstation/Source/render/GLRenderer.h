@@ -2,6 +2,8 @@
 
 #include <juce_opengl/juce_opengl.h>
 #include "Scene.h"
+#include <array>
+#include <map>
 #include <memory>
 
 namespace ws
@@ -16,13 +18,14 @@ public:
 private:
     struct TexVertex { float x, y, u, v, r, g, b, a; };
 
+    struct Atlas { unsigned int tex = 0; float cellW = 0.0f, cellH = 0.0f; int width = 0; std::array<float, 95> advance {}; };
+
     std::unique_ptr<juce::OpenGLShaderProgram> marks, textured;
-    unsigned int vbo = 0, atlas = 0, picture = 0;
-    float atlasScale = 0.0f, atlasSize = 0.0f, cellW = 0.0f, cellH = 0.0f;
-    int atlasW = 0, atlasH = 0;
+    unsigned int vbo = 0, picture = 0;
+    std::map<juce::String, Atlas> atlases;
     juce::Image pictureSource;
 
-    void buildAtlas (float size, float scale);
+    const Atlas& atlasFor (bool monospace, float size, float scale);
     void upload (unsigned int tex, const juce::Image& img);
     void drawSolid (const Batch& b, float scale);
     void drawTextured (const std::vector<TexVertex>& quads, unsigned int tex, bool coverage, float width, float height, float scale);

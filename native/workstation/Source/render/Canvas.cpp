@@ -40,7 +40,7 @@ void Canvas::drawText (const juce::String& s, int x, int y, int w, int h, juce::
 {
     if (s.isEmpty()) return;
     auto& b = open (Batch::text, false);
-    b.texts.push_back ({ juce::Rectangle<float> ((float) x, (float) y, (float) w, (float) h), s, colour, just, fontH });
+    b.texts.push_back ({ juce::Rectangle<float> ((float) x, (float) y, (float) w, (float) h), s, colour, just, fontH, fontMono });
 }
 
 void Canvas::drawImageAt (const juce::Image& img, int x, int y)
