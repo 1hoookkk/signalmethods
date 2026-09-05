@@ -1,14 +1,23 @@
 function refresh(app)
 if app.closing || isempty(app.figure) || ~isgraphics(app.figure), return; end
-n=numel(app.frames); p=app.position; a=floor(p)+1; b=min(n,a+1); t=p-floor(p); hz=trench.bridge.curveHz;
-set(app.positionLine,'XData',[p p]); set(app.positionMark,'XData',p);
+hz=trench.bridge.curveHz; p=app.position; x=app.fieldAxes.XLim; y=app.fieldAxes.YLim;
+set(app.positionMark,'XData',p(1),'YData',p(2));
+set(app.projections,'XData',[x(1) p(1) p(1)],'YData',[p(2) p(2) y(1)]);
+on=app.weights>0; v=app.vertices;
+set(app.vertexMarks,'XData',app.points(v(on),1),'YData',app.points(v(on),2));
 set(app.liveCurve,'YData',trench.bridge.responseDb(app.words,hz));
-fa=app.frames(a); fb=app.frames(b);
-set(app.beforeCurve,'YData',trench.bridge.responseDb(trench.bridge.unityDc(fa.words),hz));
-set(app.afterCurve,'YData',trench.bridge.responseDb(trench.bridge.unityDc(fb.words),hz));
-set(app.beforeLabel,'String',sprintf('%d  %s   %s',a,fa.name,fa.group));
-set(app.afterLabel,'String',sprintf('%d  %s   %s',b,fb.name,fb.group));
-set(app.stripLabel,'String',sprintf('%d  %s      MORPH %d      >  %d  %s',a,fa.name,round(100*t),b,fb.name));
+parts={};
+for k=1:3
+    f=app.frames(v(k));
+    if on(k)
+        set(app.vertexCurves(k),'Visible','on','YData',trench.bridge.responseDb(trench.bridge.unityDc(f.words),hz));
+        set(app.vertexLabels(k),'String',sprintf('%d  %s   %s   %d',v(k),f.name,f.group,round(100*app.weights(k))));
+        parts{end+1}=sprintf('%d  %s  %d',v(k),f.name,round(100*app.weights(k)));
+    else
+        set(app.vertexCurves(k),'Visible','off'); set(app.vertexLabels(k),'String','');
+    end
+end
+set(app.fieldLabel,'String',strjoin(parts,['   ' char(183) '   ']));
 labels={'M0 Q0','M1 Q0','M0 Q1','M1 Q1'};
 for k=1:4
     color='k'; width=.5; if k==app.current, color=[.851 .325 .098]; width=2; end
@@ -17,7 +26,8 @@ for k=1:4
         set(app.cornerCurves(k),'Visible','off'); set(app.cornerLabels(k),'String',labels{k});
     else
         set(app.cornerCurves(k),'Visible','on','YData',trench.bridge.responseDb(trench.bridge.unityDc(app.corners{k}.words),hz));
-        set(app.cornerLabels(k),'String',[labels{k} '   ' app.corners{k}.name]);
+        label=[labels{k} '   ' app.corners{k}.name]; if numel(label)>44, label=[label(1:43) char(8230)]; end
+        set(app.cornerLabels(k),'String',label);
     end
 end
 set(app.writeKey,'Enable',trench.ui.draw.onOff(all(~cellfun(@isempty,app.corners))));

@@ -1926,3 +1926,10 @@ Open, in order:
   slot to slot and a stage growing from the origin sweeps its pitch from fs/4; the PCA axes are
   directions through the thirty-word cloud, not stages. Martens 1987 PDF filed at
   evidence/papers/martens/.
+- 2026-09-05 ~23:50, Tyson on the strip: "It should be more of a triangular shape. Sorted by
+  gain and pitch"; "Think high order geometry". HEADSPACE's strip is a field: ROOT across, dB
+  up, every frame a square where it sits, the mark anywhere, the sound the barycentric log
+  blend of the Delaunay triangle around it (edges = the pair lerp, squares = the frame exactly;
+  the 2-simplex of the same blend the pair was the 1-simplex of). Arrows step by ROOT or dB,
+  Shift/Ctrl nudge. tHeadspace 7 (vertex, edge, inside, keys, body, play, one screen), tShot 1,
+  tBridge 13, tEnvelope 5, C++ 17.
