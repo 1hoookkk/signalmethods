@@ -195,3 +195,15 @@ def sheet(bodies, path):
 if __name__ == "__main__":
     bodies = [("head", head()), ("anti_vowel", anti_vowel()), ("zeros_only", zeros_only()), ("chimera", chimera()), ("fifth", fifth())]
     sheet(bodies, sys.argv[1] if len(sys.argv) > 1 else os.path.join(OUT, "novel_bodies.png"))
+
+
+def head_hedz():
+    heads = [frame(n) for n in ("left ear az 0 el 0", "left ear az 90 el 0", "left ear az 180 el 0", "left ear az 0 el 60")]
+    hedz = [frame(n) for n in ("Talking Hedz · M0 Q0", "Talking Hedz · M1 Q0", "Talking Hedz · M0 Q1", "Talking Hedz · M1 Q1")]
+    corners = []
+    for h, t in zip(heads, hedz):
+        bells = [r for r in h if geom_get(r).pole_type == 1 and geom_get(r).pole_b > 0.5][:4]
+        while len(bells) < 4:
+            bells.append(list(IDENT))
+        corners.append([t[0]] + bells + [t[5]])
+    return write("head_hedz", corners, "Hedz row 1 tilt, head bells 2-5, Hedz row 6 ceiling")
