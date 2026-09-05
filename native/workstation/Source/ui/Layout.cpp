@@ -17,7 +17,7 @@ void Layout::compute (float Wf, float Hf)
     info = { W - right, body.getBottom(), right, 144.0f };
     arma = { W - right, info.getBottom(), right, H - tlH - info.getBottom() };
     tl = { 0.0f, H - tlH, W, tlH };
-    tlAx = { 80.0f, H - tlH + 16.0f, W - 80.0f - m, tlH - 36.0f };
+    tlAx = { 80.0f, H - tlH + 20.0f, W - 80.0f - m, tlH - 40.0f };
 }
 
 std::array<double, 2> Layout::toField (juce::Point<float> p) const

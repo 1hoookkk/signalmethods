@@ -24,5 +24,4 @@ struct FieldMesh
 };
 
 Vertex vertex (juce::Point<float> p, juce::Colour c, float size);
-juce::Colour levelColour (double db);
 }

@@ -32,25 +32,27 @@ bool Sound::load (const juce::File& wav)
     const auto clip = trench::core::audio::read_wav_mono (wav.getFullPathName().toStdString());
     if (! clip) return false;
     file = wav;
-    mono = clip->samples;
+    mono = std::make_shared<std::vector<float>> (clip->samples);
     sampleRate = clip->sample_rate_hz;
-    seconds = (double) mono.size() / sampleRate;
+    seconds = (double) mono->size() / sampleRate;
     slice = std::min (seconds * 0.5, 0.25);
-    return ! mono.empty();
+    regionA = 0.0;
+    regionB = seconds;
+    return ! mono->empty();
 }
 
 std::vector<float> Sound::window (double at, double length) const
 {
     const int n = (int) std::round (length * sampleRate);
-    const int start = juce::jlimit (0, std::max (0, (int) mono.size() - n), (int) std::round (at * sampleRate) - n / 2);
+    const int start = juce::jlimit (0, std::max (0, (int) mono->size() - n), (int) std::round (at * sampleRate) - n / 2);
     std::vector<float> out;
-    for (int i = 0; i < n && start + i < (int) mono.size(); ++i) out.push_back (mono[(size_t) (start + i)]);
+    for (int i = 0; i < n && start + i < (int) mono->size(); ++i) out.push_back ((*mono)[(size_t) (start + i)]);
     return out;
 }
 
 void Sound::render (int width, int height)
 {
-    if (mono.empty() || width < 2 || height < 2) return;
+    if (mono->empty() || width < 2 || height < 2) return;
     columns = width;
     spectrogram = juce::Image (juce::Image::RGB, width, height, true);
     juce::Image::BitmapData bits (spectrogram, juce::Image::BitmapData::writeOnly);
@@ -72,7 +74,7 @@ void Sound::render (int width, int height)
 Curve Sound::sliceMagnitude (double at) const
 {
     Curve out {};
-    if (mono.empty()) return out;
+    if (mono->empty()) return out;
     const auto mag = magnitudeDb (window (at, kFft / sampleRate));
     for (int i = 0; i < kCurvePoints; ++i)
     {
@@ -85,7 +87,7 @@ Curve Sound::sliceMagnitude (double at) const
 
 std::optional<Words> Sound::frameAt (double at) const
 {
-    if (mono.empty()) return std::nullopt;
+    if (mono->empty()) return std::nullopt;
     const auto block = window (at, 0.06);
     if (block.size() < 256) return std::nullopt;
     std::vector<trench::core::audio::Resonance> res;

@@ -227,7 +227,8 @@ target_sources(TRENCH_Workstation PRIVATE
   "${TRENCH_WORKSTATION_DIR}/render/GLRenderer.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/SvgRenderer.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/Layout.cpp"
-  "${TRENCH_WORKSTATION_DIR}/ui/Workstation.cpp")
+  "${TRENCH_WORKSTATION_DIR}/ui/Workstation.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/Audio.cpp")
 target_include_directories(TRENCH_Workstation PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
 target_compile_features(TRENCH_Workstation PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_Workstation PRIVATE ${TRENCH_COMMON_DEFINITIONS}
@@ -238,5 +239,6 @@ target_link_libraries(TRENCH_Workstation PRIVATE
     juce::juce_gui_basics
     juce::juce_opengl
     juce::juce_dsp
+    juce::juce_audio_devices
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)

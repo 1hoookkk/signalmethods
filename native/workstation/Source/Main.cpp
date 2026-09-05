@@ -35,6 +35,7 @@ int shoot (const juce::String& path)
     juce::PNGImageFormat().writeImageToStream (img, os);
     view.closeEditor();
     view.openSpectro (0, 0.6);
+    view.demoRegion (0.9, 1.7);
     juce::Image img3 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
     {
         juce::Graphics g (img3);
@@ -86,7 +87,7 @@ private:
         MainWindow (const juce::String& name, ws::Library& lib) : DocumentWindow (name, juce::Colours::black, DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new ws::Workstation (lib, true), true);
+            setContentOwned (new ws::Workstation (lib, true, true), true);
             setResizable (true, false);
             centreWithSize (getWidth(), getHeight());
             setVisible (true);

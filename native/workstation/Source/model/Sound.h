@@ -11,7 +11,8 @@ class Sound
 {
 public:
     juce::File file;
-    std::vector<float> mono;
+    std::shared_ptr<std::vector<float>> mono = std::make_shared<std::vector<float>>();
+    double regionA = 0.0, regionB = 0.0;
     double sampleRate = 44100.0;
     juce::Image spectrogram;
     int columns = 0;

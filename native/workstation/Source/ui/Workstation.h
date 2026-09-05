@@ -6,6 +6,7 @@
 #include "../model/Timeline.h"
 #include "../model/Body.h"
 #include "../model/Sound.h"
+#include "Audio.h"
 #include "../render/GLRenderer.h"
 #include "Layout.h"
 #include <optional>
@@ -15,7 +16,7 @@ namespace ws
 class Workstation : public juce::Component, public juce::OpenGLRenderer, private juce::Timer
 {
 public:
-    Workstation (Library& library, bool useGL);
+    Workstation (Library& library, bool useGL, bool withAudio = false);
     ~Workstation() override;
 
     void demo();
@@ -24,6 +25,7 @@ public:
     juce::File exportDir;
     juce::File workspace;
     void openSpectro (int wavIndex, double at);
+    void demoRegion (double a, double b) { sound.regionA = a; sound.regionB = b; }
 
     void paint (juce::Graphics& g) override;
     void newOpenGLContextCreated() override;
@@ -35,7 +37,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice };
+    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
 
     Library& lib;
@@ -47,6 +49,10 @@ public:
     bool spectro = false;
 private:
     Sound sound;
+    std::unique_ptr<Audio> audio;
+    bool wet = true;
+    void feedAudio();
+    void setRegion (float x, bool start);
     std::vector<juce::File> wavs;
     int wavScroll = 0;
     void loadWav (int index);
