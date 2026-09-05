@@ -5,12 +5,6 @@
 
 namespace ws
 {
-namespace
-{
-constexpr float kRowH = 16.0f;
-constexpr float kStripTop = 30.0f;
-}
-
 void Workstation::buildStrip()
 {
     stripOrder.clear();
@@ -20,7 +14,7 @@ void Workstation::buildStrip()
         if (! f.capture && ! floorOpen (f.group)) continue;
         stripOrder.push_back (i);
     }
-    const int ref = body.corner[0] >= 0 ? body.corner[0] : playFrame;
+    const int ref = body.corner[0];
     std::vector<double> key (lib.frames.size(), 0.0);
     for (const int i : stripOrder)
     {
@@ -28,35 +22,71 @@ void Workstation::buildStrip()
         if (sortNear && ref >= 0) key[(size_t) i] = i == ref ? -1.0 : leadCost (lib.frames[(size_t) ref].chord, f.chord);
         else key[(size_t) i] = Stitch::shapeOf (f.chord).root;
     }
-    std::stable_sort (stripOrder.begin(), stripOrder.end(), [&] (int a, int b)
-    {
-        const bool ca = lib.frames[(size_t) a].capture, cb = lib.frames[(size_t) b].capture;
-        if (ca != cb) return ca;
-        return key[(size_t) a] < key[(size_t) b];
-    });
+    std::stable_sort (stripOrder.begin(), stripOrder.end(), [&] (int a, int b) { return key[(size_t) a] < key[(size_t) b]; });
     stripDirty = false;
+    scanPos = juce::jlimit (0.0, std::max (0.0, (double) stripOrder.size() - 1.0), scanPos);
 }
 
-int Workstation::stripAt (juce::Point<float> p) const
+juce::Rectangle<float> Workstation::scanRect() const
 {
-    if (L.room != Room::frames || ! L.field.contains (p) || p.y < L.field.getY() + kStripTop) return -1;
-    const int row = (int) ((p.y - L.field.getY() - kStripTop) / kRowH) + stripScroll;
-    return row >= 0 && row < (int) stripOrder.size() ? stripOrder[(size_t) row] : -1;
+    return { L.field.getX() + 60.0f, L.field.getY() + 40.0f, L.field.getWidth() - 120.0f, L.field.getHeight() - 110.0f };
 }
 
-void Workstation::chooseFrame (int frame)
+double Workstation::scanAt (juce::Point<float> p) const
 {
-    playFrame = frame;
+    const auto r = scanRect();
+    if (stripOrder.size() < 2) return 0.0;
+    return juce::jlimit (0.0, (double) stripOrder.size() - 1.0, (double) (p.x - r.getX()) / r.getWidth() * ((double) stripOrder.size() - 1.0));
+}
+
+Words Workstation::scanWords() const
+{
+    if (stripDirty) const_cast<Workstation*> (this)->buildStrip();
+    if (stripOrder.empty()) return Words {};
+    const int a = (int) std::floor (scanPos), b = std::min ((int) stripOrder.size() - 1, a + 1);
+    const double t = scanPos - a;
+    const auto& fa = lib.frames[(size_t) stripOrder[(size_t) a]];
+    if (b == a || t < 1e-4) return fa.words;
+    const auto& fb = lib.frames[(size_t) stripOrder[(size_t) b]];
+    const auto led = leadTo (fa.chord, fb.chord);
+    return pairMorph (compile (led.a, kDatumHz), compile (led.b, kDatumHz), t).words;
+}
+
+int Workstation::scanFrame() const
+{
+    if (stripOrder.empty()) return -1;
+    return stripOrder[(size_t) juce::jlimit (0, (int) stripOrder.size() - 1, (int) std::round (scanPos))];
+}
+
+void Workstation::setScan (juce::Point<float> p)
+{
+    if (stripDirty) buildStrip();
+    scanPos = scanAt (p);
+    playFrame = scanFrame();
     playBody = false;
-    if (selectedSlot >= 0)
-    {
-        body.corner[(size_t) selectedSlot] = frame;
-        chosen[(size_t) selectedSlot] = true;
-        fillCorners();
-        editCorner = selectedSlot;
-        stripDirty = true;
-    }
-    status = lib.frames[(size_t) frame].name + "   " + noteName (Stitch::shapeOf (lib.frames[(size_t) frame].chord).root) + "   " + intervalsOf (lib.frames[(size_t) frame].chord);
+    const auto& f = lib.frames[(size_t) playFrame];
+    const auto sh = Stitch::shapeOf (f.chord);
+    status = f.name + "   " + noteName (sh.root) + "   " + intervalsOf (f.chord) + "   " + juce::String (sh.width, sh.width < 1.0 ? 2 : 1) + " st";
+    redraw();
+}
+
+void Workstation::takeScan()
+{
+    if (stripOrder.empty()) return;
+    int slot = selectedSlot;
+    if (slot < 0) { for (int k = 0; k < 4; ++k) if (! chosen[(size_t) k]) { slot = k; break; } }
+    if (slot < 0) slot = 3;
+    const int a = (int) std::floor (scanPos);
+    const double t = scanPos - a;
+    int frame = scanFrame();
+    if (t > 0.02 && t < 0.98) frame = lib.addNamed (scanWords(), "scan " + lib.frames[(size_t) stripOrder[(size_t) a]].name.substring (0, 12) + " > " + lib.frames[(size_t) stripOrder[(size_t) std::min ((int) stripOrder.size() - 1, a + 1)]].name.substring (0, 12), kGroups - 1, true);
+    body.corner[(size_t) slot] = frame;
+    chosen[(size_t) slot] = true;
+    fillCorners();
+    editCorner = slot;
+    selectedSlot = -1;
+    stripDirty = true;
+    status = juce::String (kCornerNames[slot]) + "  " + lib.frames[(size_t) frame].name;
 }
 
 void Workstation::fillCorners()
@@ -74,38 +104,55 @@ void Workstation::fillCorners()
 void Workstation::paintStrip (Canvas& g)
 {
     if (stripDirty) buildStrip();
-    const auto f = L.field;
-    const int x0 = (int) f.getX() + 8;
-    g.setColour (kDim);
-    g.drawText ("frame", x0, (int) f.getY() + 8, 220, 14, juce::Justification::centredLeft);
-    g.drawText ("root", x0 + 240, (int) f.getY() + 8, 60, 14, juce::Justification::centredLeft);
-    g.drawText ("intervals", x0 + 310, (int) f.getY() + 8, 160, 14, juce::Justification::centredLeft);
-    g.drawText ("width", x0 + 480, (int) f.getY() + 8, 60, 14, juce::Justification::centredLeft);
-    g.drawText ("source", x0 + 550, (int) f.getY() + 8, 100, 14, juce::Justification::centredLeft);
-    g.setColour (kLine);
-    g.drawHorizontalLine ((int) (f.getY() + kStripTop - 2.0f), f.getX() + 1.0f, f.getRight() - 1.0f);
-    const int maxRows = (int) ((f.getHeight() - kStripTop - 30.0f) / kRowH);
-    stripScroll = juce::jlimit (0, std::max (0, (int) stripOrder.size() - maxRows), stripScroll);
-    for (int r = 0; r < maxRows && r + stripScroll < (int) stripOrder.size(); ++r)
+    const auto r = scanRect();
+    const int n = (int) stripOrder.size();
+    if (n == 0) return;
+    const float mid = std::floor (r.getCentreY());
+    g.setColour (kFrame);
+    g.drawHorizontalLine ((int) mid, r.getX(), r.getRight());
+    const auto xOf = [&] (double i) { return r.getX() + (float) (i / std::max (1.0, (double) n - 1.0)) * r.getWidth(); };
+    int lastC = -999;
+    for (int i = 0; i < n; ++i)
     {
-        const int i = stripOrder[(size_t) (r + stripScroll)];
-        const auto& fr = lib.frames[(size_t) i];
-        const int y = (int) (f.getY() + kStripTop + r * kRowH);
-        int slot = -1;
-        for (int k = 0; k < 4; ++k) if (body.corner[(size_t) k] == i) { slot = k; break; }
-        if (i == playFrame) { g.setColour (kKey); g.fillRect (juce::Rectangle<int> ((int) f.getX() + 1, y, (int) f.getWidth() - 2, (int) kRowH)); }
-        const auto shape = Stitch::shapeOf (fr.chord);
-        g.setColour (fr.capture ? kLive : hueOf (std::fmod (shape.root, 12.0) / 12.0));
-        g.fillEllipse ((float) x0 + 2.0f, (float) y + 5.5f, 5.0f, 5.0f);
-        g.setColour (slot >= 0 ? kChosen : kText);
-        g.drawText ((slot >= 0 ? juce::String (kCornerNames[slot]) + "  " : juce::String()) + fr.name, x0 + 12, y, 226, (int) kRowH, juce::Justification::centredLeft);
-        g.setColour (kText);
-        g.drawText (shape.any ? noteName (shape.root) : "-", x0 + 240, y, 66, (int) kRowH, juce::Justification::centredLeft);
-        g.setColour (kDim);
-        g.drawText (intervalsOf (fr.chord), x0 + 310, y, 166, (int) kRowH, juce::Justification::centredLeft);
-        g.drawText (shape.any ? juce::String (shape.width, shape.width < 1.0 ? 2 : 1) + " st" : "-", x0 + 480, y, 66, (int) kRowH, juce::Justification::centredLeft);
-        g.drawText (fr.capture ? "capture" : juce::String (kGroupNames[juce::jlimit (0, kGroups - 1, fr.group)]).toLowerCase(), x0 + 550, y, 100, (int) kRowH, juce::Justification::centredLeft);
+        const auto& f = lib.frames[(size_t) stripOrder[(size_t) i]];
+        const auto sh = Stitch::shapeOf (f.chord);
+        const float x = xOf (i);
+        g.setColour (f.capture ? kLive : hueOf (std::fmod (sh.root, 12.0) / 12.0));
+        g.drawVerticalLine ((int) x, mid - 10.0f, mid + 10.0f);
+        if (! sortNear)
+        {
+            const int c = (int) std::floor (sh.root / 12.0);
+            if (c > lastC)
+            {
+                g.setColour (kDim);
+                g.drawText (noteName (c * 12.0), (int) x - 14, (int) mid + 16, 28, 12, juce::Justification::centred);
+                lastC = c;
+            }
+        }
     }
+    if (sortNear)
+    {
+        g.setColour (kDim);
+        g.drawText ("nearest", (int) r.getX(), (int) mid + 16, 60, 12, juce::Justification::centredLeft);
+        g.drawText ("farthest", (int) r.getRight() - 60, (int) mid + 16, 60, 12, juce::Justification::centredRight);
+    }
+    for (int k = 0; k < 4; ++k)
+    {
+        if (body.corner[(size_t) k] < 0) continue;
+        for (int i = 0; i < n; ++i)
+            if (stripOrder[(size_t) i] == body.corner[(size_t) k])
+            {
+                const float x = xOf (i);
+                g.setColour (kChosen);
+                g.drawVerticalLine ((int) x, mid - 18.0f, mid + 18.0f);
+                g.drawText (kCornerNames[k], (int) x - 20, (int) mid - 32, 40, 12, juce::Justification::centred);
+            }
+    }
+    const float nx = xOf (scanPos);
+    g.setColour (kLive);
+    g.drawVerticalLine ((int) nx, r.getY(), r.getBottom());
+    g.setColour (kText);
+    g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getY() + 10, (int) L.field.getWidth() - 16, 14, juce::Justification::centredLeft);
 }
 
 juce::Rectangle<float> Workstation::padRect() const
@@ -145,12 +192,12 @@ void Workstation::paintPad (Canvas& g)
     for (int i = 0; i < 4; ++i)
     {
         const bool right = (i & 1) != 0, top = (i & 2) != 0;
-        const int x = right ? (int) r.getRight() - 236 : (int) r.getX() + 4, y = top ? (int) r.getY() - 18 : (int) r.getBottom() + 6;
-        const auto name = body.corner[(size_t) i] >= 0 ? lib.frames[(size_t) body.corner[(size_t) i]].name : juce::String("empty");
+        const int x = right ? (int) r.getRight() - 300 : (int) r.getX() + 60, y = top ? (int) r.getY() - 34 : (int) r.getBottom() + 24;
+        const auto name = body.corner[(size_t) i] >= 0 ? lib.frames[(size_t) body.corner[(size_t) i]].name : juce::String ("empty");
         g.setColour (body.corner[(size_t) i] >= 0 ? kText : kDim);
-        g.drawText (juce::String (kCornerNames[i]) + "   " + name, x, y, 232, 12, right ? juce::Justification::centredRight : juce::Justification::centredLeft);
+        g.drawText (name, x, y, 240, 12, right ? juce::Justification::centredRight : juce::Justification::centredLeft);
     }
     g.setColour (compare ? kChosen : kDim);
-    g.drawText (compare ? "comparing with " + juce::String (kCornerNames[0]) : "MORPH " + juce::String (body.morph, 3) + "   Q " + juce::String (body.q, 3), (int) r.getX(), (int) r.getBottom() + 26, (int) r.getWidth(), 12, juce::Justification::centred);
+    g.drawText (compare ? "comparing with " + juce::String (kCornerNames[0]) : "MORPH " + juce::String (body.morph, 3) + "   Q " + juce::String (body.q, 3), (int) r.getX(), (int) r.getBottom() + 44, (int) r.getWidth(), 12, juce::Justification::centred);
 }
 }

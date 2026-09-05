@@ -52,25 +52,56 @@ int check()
     { juce::Graphics g (img); view.paintEntireComponent (g, false); }
     int failures = 0;
     const auto check = [&] (bool ok, const char* what, double v = 0.0) { std::printf ("%s  %s  (%.3f)\n", ok ? "ok  " : "FAIL", what, v); if (! ok) ++failures; };
-    auto row = view.stripRow (3);
-    view.gesture (row.getCentre(), 0);
-    view.gesture (row.getCentre(), 2);
+    view.gesture (view.scanPoint (0.2), 0);
     auto pr = view.probe();
-    check (pr.playFrame >= 0 && pr.sounding, "press a strip row and it plays");
-    check (pr.status.isNotEmpty(), "status names the frame, its root and its intervals");
-    const auto slot0 = view.keyBox ("slot0");
-    check (! slot0.isEmpty(), "four slots exist");
-    view.gesture (slot0.getCentre(), 0); view.gesture (slot0.getCentre(), 2);
-    row = view.stripRow (5);
-    view.gesture (row.getCentre(), 0); view.gesture (row.getCentre(), 2);
+    check (pr.playFrame >= 0 && pr.sounding, "press on the line plays the frame under the needle");
+    check (pr.status.isNotEmpty(), "the line above names the frame, its root and its intervals");
+    const int first = pr.playFrame;
+    view.gesture (view.scanPoint (0.6), 1);
     pr = view.probe();
-    check (pr.corners[0] >= 0 && pr.corners[1] == pr.corners[0] && pr.corners[3] == pr.corners[0], "one chosen frame fills all four corners");
-    const auto slot1 = view.keyBox ("slot1");
-    view.gesture (slot1.getCentre(), 0); view.gesture (slot1.getCentre(), 2);
-    row = view.stripRow (9);
-    view.gesture (row.getCentre(), 0); view.gesture (row.getCentre(), 2);
+    check (pr.playFrame != first, "dragging along the line scans to other frames");
+    view.gesture (view.scanPoint (0.6), 2);
+    const auto take = view.keyBox ("take");
+    check (! take.isEmpty(), "TAKE exists");
+    view.gesture (take.getCentre(), 0); view.gesture (take.getCentre(), 2);
     pr = view.probe();
-    check (pr.corners[1] != pr.corners[0] && pr.corners[3] == pr.corners[1] && pr.corners[2] == pr.corners[0], "a second frame fills the opposite edge");
+    check (pr.corners[0] >= 0 && pr.corners[1] == pr.corners[0] && pr.corners[3] == pr.corners[0], "one taken frame fills all four corners");
+    view.gesture (view.scanPoint (0.2), 0); view.gesture (view.scanPoint (0.2), 2);
+    view.gesture (take.getCentre(), 0); view.gesture (take.getCentre(), 2);
+    pr = view.probe();
+    check (pr.corners[1] != pr.corners[0] && pr.corners[3] == pr.corners[1] && pr.corners[2] == pr.corners[0], "a second take fills the opposite edge");
+    {
+        const auto& fa = lib.frames[(size_t) pr.corners[0]];
+        const auto& fb = lib.frames[(size_t) pr.corners[1]];
+        const auto led = ws::leadTo (fa.chord, fb.chord);
+        const auto wa = ws::compile (led.a, ws::kDatumHz), wb = ws::compile (led.b, ws::kDatumHz);
+        double worstJump = 0.0, total = 0.0;
+        int nonMonotone = 0;
+        std::array<double, 6> lastNote {};
+        for (int step = 0; step <= 20; ++step)
+        {
+            const double t = step / 20.0;
+            const auto words = ws::pairMorph (wa, wb, t).words;
+            const auto g = ws::geometryOf (words);
+            for (int s = 0; s < ws::kRows - 1; ++s)
+            {
+                if (! g[(size_t) s].pole) continue;
+                const double note = ws::noteOf (g[(size_t) s].pHz);
+                if (step > 0)
+                {
+                    const double d = note - lastNote[(size_t) s];
+                    const double dir = led.b[(size_t) s].pole.note - led.a[(size_t) s].pole.note;
+                    if (std::abs (dir) > 1.0 && d * dir < -0.5) ++nonMonotone;
+                    worstJump = std::max (worstJump, std::abs (d));
+                    total += std::abs (d);
+                }
+                lastNote[(size_t) s] = note;
+            }
+        }
+        std::printf ("  morph 0..100 between %s and %s: %d voices, total glide %.1f st, largest step %.2f st, wrong-way steps %d\n", fa.name.toRawUTF8(), fb.name.toRawUTF8(), 5, total, worstJump, nonMonotone);
+        check (nonMonotone == 0, "every voice glides one way from corner to corner across MORPH 0..100", (double) nonMonotone);
+        check (worstJump < 6.0, "no voice jumps more than half an octave in one twentieth of the morph", worstJump);
+    }
     const auto toMorph = view.keyBox ("room3");
     view.gesture (toMorph.getCentre(), 0); view.gesture (toMorph.getCentre(), 2);
     pr = view.probe();

@@ -32,7 +32,7 @@ public:
     bool exportBody (const juce::File& file);
     juce::File exportDir, workspace;
     struct Probe { bool free = false, sounding = false, listening = false, comparing = false; double x = 0.0, y = 0.0, z = 0.0, morph = 0.0, q = 0.0; int playFrame = -1, room = 0; std::array<int, 4> corners { -1, -1, -1, -1 }; juce::String status; };
-    juce::Rectangle<float> stripRow (int index) const;
+    juce::Point<float> scanPoint (double fraction) const;
     Probe probe() const;
     juce::Rectangle<float> keyBox (const juce::String& id) const;
     juce::Rectangle<float> fieldRect() const { return L.field; }
@@ -50,7 +50,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, pad, holdCompare, surface, lift, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
+    enum class Mode { none, scan, pad, holdCompare, surface, lift, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
     struct TrayRow { int frame; int group; bool header; };
 
@@ -73,9 +73,16 @@ private:
     std::array<bool, 4> chosen { false, false, false, false };
     int stripScroll = 0, selectedSlot = -1, playFrame = -1;
     double padPressM = 0.0, padPressQ = 0.0, padPressM0 = 0.0, padPressQ0 = 0.0;
+    double scanPos = 0.0;
+    int regionDragEnd = 1;
+    bool sourceSample = false;
     void buildStrip();
-    int stripAt (juce::Point<float> p) const;
-    void chooseFrame (int frame);
+    juce::Rectangle<float> scanRect() const;
+    double scanAt (juce::Point<float> p) const;
+    Words scanWords() const;
+    int scanFrame() const;
+    void setScan (juce::Point<float> p);
+    void takeScan();
     void fillCorners();
     void paintStrip (Canvas& g);
     juce::Rectangle<float> padRect() const;

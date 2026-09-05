@@ -21,6 +21,7 @@ public:
     void setWords (const Words& words);
     void setPlaying (bool on);
     void setWet (bool on);
+    void useClip (bool on) { clipOn.store (on); }
     bool isPlaying() const { return playing.load(); }
     double playhead() const { return position.load(); }
     float peak() const { return peakLevel.load(); }
@@ -39,7 +40,7 @@ private:
     std::shared_ptr<const std::vector<float>> clip;
     std::atomic<double> clipRate { 44100.0 }, deviceRate { 44100.0 };
     std::atomic<double> regionStart { 0.0 }, regionEnd { 0.0 }, position { 0.0 };
-    std::atomic<bool> playing { false }, wet { true };
+    std::atomic<bool> playing { false }, wet { true }, clipOn { false };
     std::atomic<float> peakLevel { 0.0f };
     double cursor = 0.0;
     std::array<Words, 2> pending {};

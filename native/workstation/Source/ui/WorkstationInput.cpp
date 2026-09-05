@@ -179,8 +179,7 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     }
     if (L.room == Room::frames)
     {
-        if (const int f = stripAt (p); f >= 0) { chooseFrame (f); redraw(); return; }
-        if (L.outer.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
+        if (L.field.contains (p) && p.y > L.field.getY() + 30.0f && p.y < L.field.getBottom() - 30.0f) { mode = Mode::scan; setScan (p); return; }
         if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
         return;
     }
@@ -192,7 +191,13 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
             if (row >= 0 && row < (int) wavs.size()) loadWav (row);
             return;
         }
-        if (p.y >= L.field.getBottom() && p.y <= L.field.getBottom() + 16.0f && p.x >= L.field.getX() && p.x <= L.field.getRight()) { mode = Mode::region; setRegion (p.x, true); return; }
+        if (L.field.contains (p) && sound.seconds > 0.0)
+        {
+            const float xa = L.field.getX() + (float) (std::min (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();
+            const float xb = L.field.getX() + (float) (std::max (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();
+            if (std::abs (p.x - xa) < 8.0f) { regionDragEnd = 0; mode = Mode::region; setRegion (p.x, false); return; }
+            if (std::abs (p.x - xb) < 8.0f) { regionDragEnd = 1; mode = Mode::region; setRegion (p.x, false); return; }
+        }
         if (L.field.contains (p)) { mode = Mode::slice; setSlice (p.x); return; }
         if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
         return;
@@ -269,6 +274,7 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
     switch (mode)
     {
         case Mode::pad: setPad (p); break;
+        case Mode::scan: setScan (p); break;
         case Mode::holdCompare: break;
         case Mode::surface: setSurface (p); break;
         case Mode::lift:
@@ -358,7 +364,10 @@ void Workstation::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWh
     }
     else if (L.room == Room::frames && L.field.contains (p))
     {
-        stripScroll = std::max (0, stripScroll - (int) std::round (w.deltaY * 30));
+        if (stripDirty) buildStrip();
+        scanPos = juce::jlimit (0.0, std::max (0.0, (double) stripOrder.size() - 1.0), scanPos + (w.deltaY > 0 ? 0.1 : -0.1));
+        playFrame = scanFrame();
+        playBody = false;
         redraw();
     }
     else if (false)

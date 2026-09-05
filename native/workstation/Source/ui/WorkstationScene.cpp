@@ -157,7 +157,7 @@ std::vector<Batch> Workstation::scene() const
         pad.v.push_back (vertex ({ r.getX() + (float) body.morph * r.getWidth(), r.getBottom() - (float) body.q * r.getHeight() }, compare ? kChosen : kLive, 12.0f));
         out.push_back (pad);
     }
-    if (L.room == Room::frames || L.room == Room::morph)
+    if (L.room == Room::edit)
     {
         if (playBody && body.ready())
         {

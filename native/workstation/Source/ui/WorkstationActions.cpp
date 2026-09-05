@@ -173,7 +173,7 @@ void Workstation::setRegion (float x, bool start)
     if (sound.mono->empty()) return;
     const double t = juce::jlimit (0.0, sound.seconds, (double) (x - L.field.getX()) / L.field.getWidth() * sound.seconds);
     if (start) { sound.regionA = t; sound.regionB = t; }
-    else sound.regionB = t;
+    else if (regionDragEnd == 0) sound.regionA = std::min (t, sound.regionB); else sound.regionB = std::max (t, sound.regionA);
     if (audio) audio->setRegion (std::min (sound.regionA, sound.regionB), std::max (sound.regionA, sound.regionB));
     redraw();
 }

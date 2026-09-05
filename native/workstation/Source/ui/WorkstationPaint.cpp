@@ -30,7 +30,7 @@ void Workstation::paintPanels (Canvas& g)
     g.setColour (kPanel);
     if (! L.field.isEmpty()) g.fillRect (L.field);
     if (L.room == Room::morph) { g.setColour (kGround); g.fillRect (L.field); g.setColour (kPanel); g.fillRect (padRect()); }
-    if (! L.outer.isEmpty()) g.fillRect (L.outer);
+    if (! L.outer.isEmpty() && L.room != Room::frames && L.room != Room::morph) g.fillRect (L.outer);
     if (! L.arma.isEmpty()) g.fillRect (L.arma.reduced (1.0f));
     g.fillRect (juce::Rectangle<float> (L.rx (20.0), L.ry (30.0), L.rx (20000.0) - L.rx (20.0), L.ry (-30.0) - L.ry (30.0)));
     if (L.timelineOpen) g.fillRect (L.tlAx);
@@ -75,12 +75,10 @@ void Workstation::paintChrome (Canvas& g)
     if (L.room == Room::morph)
     {
         paintPad (g);
-        paintBody (g);
     }
     else if (L.room == Room::frames)
     {
         paintStrip (g);
-        paintBody (g);
         if (pairLive())
         {
             g.setColour (kChosen);
@@ -118,7 +116,7 @@ void Workstation::paintChrome (Canvas& g)
     paintResponse (g);
     paintTimeline (g);
     g.setColour (kChosen);
-    g.drawText (status, (int) L.field.getX() + 8, L.room == Room::morph ? (int) L.field.getY() + 6 : (int) L.field.getBottom() - (L.room == Room::frames ? 40 : 16), (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
+    if (L.room != Room::frames) g.drawText (status, (int) L.field.getX() + 8, L.room == Room::morph ? (int) L.field.getY() + 6 : (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
 }
 
 void Workstation::paintTray (Canvas& g)
@@ -305,6 +303,14 @@ void Workstation::paintSound (Canvas& g)
     {
         g.drawImageAt (sound.spectrogram, (int) L.field.getX() + 1, (int) L.field.getY() + 1);
         const float sx = L.field.getX() + (float) (sound.seconds > 0.0 ? sound.slice / sound.seconds : 0.0) * L.field.getWidth();
+        if (sound.seconds > 0.0)
+        {
+            const float xa = L.field.getX() + (float) (std::min (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();
+            const float xb = L.field.getX() + (float) (std::max (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();
+            g.setColour (kChosen);
+            g.drawText ("IN", (int) xa + 3, (int) L.field.getY() + 4, 24, 12, juce::Justification::centredLeft);
+            g.drawText ("OUT", (int) xb - 30, (int) L.field.getY() + 4, 28, 12, juce::Justification::centredRight);
+        }
         if (sound.seconds > 0.0 && std::abs (sound.regionB - sound.regionA) > 1e-6 && (sound.regionA > 0.0 || sound.regionB < sound.seconds))
         {
             const float ra = L.field.getX() + (float) (std::min (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();

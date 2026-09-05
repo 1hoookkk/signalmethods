@@ -17,10 +17,10 @@ void Layout::compute (float Wf, float Hf)
         tray = {};
         sortRow = { 0.0f, 0.0f, W - right, 24.0f };
         field = { m, 24.0f, W - right - 2.0f * m, bottom - 24.0f - m };
-        body = { W - right, 0.0f, right, 324.0f };
-        outer = { W - right + m + 56.0f, 16.0f, 180.0f, 180.0f };
-        square = outer.reduced (60.0f);
-        resp = { W - right, body.getBottom(), right, bottom - body.getBottom() };
+        body = {};
+        outer = {};
+        square = {};
+        resp = { W - right, 0.0f, right, bottom };
         arma = {};
         cascade = {};
     }

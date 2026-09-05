@@ -35,6 +35,7 @@ void Workstation::setRoom (Room r)
     L.room = r;
     if (r == Room::morph) { fillCorners(); playBody = body.ready(); compare = false; status = ""; }
     if (r == Room::frames) { playBody = false; stripDirty = true; status = ""; }
+    if (audio) audio->useClip (r == Room::sound || sourceSample);
     if (r != Room::edit) editing = -1;
     if (r == Room::sound)
     {
@@ -205,11 +206,11 @@ juce::Point<float> Workstation::clearPoint() const
     return { f.getCentreX(), f.getCentreY() };
 }
 
-juce::Rectangle<float> Workstation::stripRow (int index) const
+juce::Point<float> Workstation::scanPoint (double fraction) const
 {
-    if (stripDirty) const_cast<Workstation*> (this)->buildStrip();
-    const int row = index - stripScroll;
-    return { L.field.getX() + 8.0f, L.field.getY() + 30.0f + row * 16.0f, L.field.getWidth() - 16.0f, 16.0f };
+    const_cast<Workstation*> (this)->layoutKeys();
+    const auto r = scanRect();
+    return { r.getX() + (float) fraction * r.getWidth(), r.getCentreY() };
 }
 
 juce::Rectangle<float> Workstation::keyBox (const juce::String& id) const
@@ -249,7 +250,7 @@ Morph Workstation::live() const
     if (L.room == Room::sound) { if (const auto w = sound.frameAt (sound.slice)) m.words = *w; return m; }
     if (L.room == Room::morph && compare && body.corner[0] >= 0) { m.words = body.cornerWords (lib.frames, 0); return m; }
     if (L.room == Room::morph && body.ready()) return body.wheelMorph (lib.frames);
-    if (L.room == Room::frames && playFrame >= 0 && playFrame < (int) lib.frames.size() && ! playBody) { m.words = lib.frames[(size_t) playFrame].words; return m; }
+    if (L.room == Room::frames && playFrame >= 0 && ! playBody) { m.words = scanWords(); return m; }
     if (playBody && body.ready()) return body.wheelMorph (lib.frames);
     if (pairLive())
     {

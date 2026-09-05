@@ -77,7 +77,7 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
     const juce::SpinLock::ScopedTryLockType lock (clipLock);
     if (! lock.isLocked()) return;
     const double rate = clipRate.load(), dev = deviceRate.load();
-    if (clip == nullptr || clip->empty())
+    if (clip == nullptr || clip->empty() || ! clipOn.load())
     {
         std::vector<float> saw ((size_t) numSamples);
         const double inc = 110.0 / dev;

@@ -19,7 +19,7 @@ void Workstation::buildTray()
 
 void Workstation::layoutKeys()
 {
-    L.timelineOpen = ! tl.keys.empty() || tl.playing;
+    L.timelineOpen = (L.room == Room::edit || L.room == Room::sound) && (! tl.keys.empty() || tl.playing);
     L.compute ((float) getWidth(), (float) getHeight());
     view.rect = L.field;
     buildTray();
@@ -28,32 +28,23 @@ void Workstation::layoutKeys()
     keys.push_back ({ "room0", "FRAMES", { 8.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::frames });
     keys.push_back ({ "room3", "MORPH", { 72.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::morph });
     keys.push_back ({ "room1", "EDIT", { 136.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::edit });
-    keys.push_back ({ "room2", "SOUND", { 200.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::sound });
+    keys.push_back ({ "room2", "READ", { 200.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::sound });
     const bool audioOn = audio != nullptr && audio->isPlaying();
     keys.push_back ({ "listen", audioOn ? "STOP" : "LISTEN", { L.resp.getX() + 8.0f, L.resp.getY() + 6.0f, 60.0f, kh }, audioOn });
     keys.push_back ({ "wet", "FILTER", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 60.0f, kh }, wet });
+    if (L.room != Room::sound) keys.push_back ({ "source", sourceSample ? "SAMPLE" : "SAW", { L.resp.getX() + 136.0f, L.resp.getY() + 6.0f, 64.0f, kh }, sourceSample });
     if (L.room == Room::frames)
     {
-        keys.push_back ({ "sortRoot", "ROOT", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, ! sortNear });
-        keys.push_back ({ "sortNear", "NEAR", { L.sortRow.getX() + 64.0f, 5.0f, 52.0f, kh }, sortNear });
-        float gx = L.sortRow.getX() + 140.0f;
-        for (int g = 0; g < kGroups; ++g) { keys.push_back ({ "group" + juce::String (g), kGroupNames[g], { gx, 5.0f, 76.0f, kh }, open[(size_t) g] }); gx += 80.0f; }
+        keys.push_back ({ "sortRoot", "LOW > HIGH", { L.sortRow.getX() + 8.0f, 5.0f, 84.0f, kh }, ! sortNear });
+        const juce::String like = body.corner[0] >= 0 ? "LIKE " + lib.frames[(size_t) body.corner[0]].name.substring (0, 14) : juce::String ("LIKE M0 Q0");
+        keys.push_back ({ "sortNear", like, { L.sortRow.getX() + 96.0f, 5.0f, 170.0f, kh }, sortNear });
+        keys.push_back ({ "take", "TAKE", { L.field.getX() + 8.0f, L.field.getBottom() - 22.0f, 60.0f, kh }, false });
         for (int i = 0; i < 4; ++i)
         {
-            const float sx = L.field.getX() + 8.0f + i * 100.0f;
+            const float sx = L.field.getX() + 84.0f + i * 100.0f;
             keys.push_back ({ "slot" + juce::String (i), kCornerNames[i], { sx, L.field.getBottom() - 22.0f, 92.0f, kh }, selectedSlot == i });
         }
         keys.push_back ({ "room3", "MORPH ROOM", { L.field.getRight() - 96.0f, L.field.getBottom() - 22.0f, 88.0f, kh }, false });
-        const auto sq = L.outer;
-        for (int i = 0; i < 4; ++i)
-        {
-            const float x = (i & 1) ? sq.getRight() + 8.0f : sq.getX() - 56.0f, y = (i & 2) ? sq.getY() : sq.getBottom() - kh;
-            keys.push_back ({ "corner" + juce::String (i), kCornerNames[i], { x, y, 48.0f, kh }, body.corner[(size_t) i] >= 0 });
-        }
-        const float bx = sq.getX(), by = sq.getBottom() + 30.0f;
-        for (int s = 0; s < kRows; ++s) keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + 40.0f + s * 24.0f, by, 20.0f, kh }, body.rowOn[(size_t) s] });
-        keys.push_back ({ "export", "EXPORT", { bx, by + 48.0f, 68.0f, kh }, false });
-        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, by + 48.0f, 68.0f, kh }, body.unity });
     }
     else if (L.room == Room::morph)
     {
@@ -70,10 +61,6 @@ void Workstation::layoutKeys()
             const bool right = (i & 1) != 0, top = (i & 2) != 0;
             keys.push_back ({ "goto" + juce::String (i), kCornerNames[i], { right ? r.getRight() - 52.0f : r.getX(), top ? r.getY() - 36.0f : r.getBottom() + 22.0f, 52.0f, kh }, false });
         }
-        const auto sq = L.outer;
-        const float bx = sq.getX(), by = sq.getBottom() + 30.0f;
-        for (int s = 0; s < kRows; ++s) keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + 40.0f + s * 24.0f, by, 20.0f, kh }, body.rowOn[(size_t) s] });
-        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, by + 48.0f, 68.0f, kh }, body.unity });
     }
     else if (L.room == Room::edit)
     {
@@ -97,7 +84,7 @@ void Workstation::layoutKeys()
         keys.push_back ({ "play", tl.playing ? "STOP" : "PLAY", { L.tlAx.getRight() - 188.0f, L.tl.getY() + 3.0f, 60.0f, kh }, tl.playing });
         keys.push_back ({ "loop", "LOOP", { L.tlAx.getRight() - 124.0f, L.tl.getY() + 3.0f, 60.0f, kh }, tl.loop });
     }
-    keys.push_back ({ "addkey", "+ KEY", { L.tlAx.getRight() - 60.0f, L.tl.getY() + 3.0f, 60.0f, kh }, false });
+    if (L.room == Room::edit || L.room == Room::sound) keys.push_back ({ "addkey", "+ KEY", { L.tlAx.getRight() - 60.0f, L.tl.getY() + 3.0f, 60.0f, kh }, false });
 }
 
 void Workstation::press (const juce::String& id)
@@ -107,7 +94,9 @@ void Workstation::press (const juce::String& id)
     else if (id == "sortRoot") { sortNear = false; stripDirty = true; }
     else if (id == "sortNear") { sortNear = true; stripDirty = true; }
     else if (id.startsWith ("group")) { const int g = id.substring (5).getIntValue(); open[(size_t) g] = ! open[(size_t) g]; stripDirty = true; }
-    else if (id.startsWith ("slot")) { const int k = id.substring (4).getIntValue(); selectedSlot = selectedSlot == k ? -1 : k; status = selectedSlot >= 0 ? juce::String ("choose a frame for ") + kCornerNames[k] : juce::String(); }
+    else if (id.startsWith ("slot")) { const int k = id.substring (4).getIntValue(); selectedSlot = selectedSlot == k ? -1 : k; status = selectedSlot >= 0 ? juce::String ("TAKE fills ") + kCornerNames[k] : juce::String(); }
+    else if (id == "take") takeScan();
+    else if (id == "source") { sourceSample = ! sourceSample; if (audio) audio->useClip (sourceSample); }
     else if (id.startsWith ("goto") && L.room == Room::morph) { selectedSlot = id.substring (4).getIntValue(); setRoom (Room::frames); status = juce::String ("choose a frame for ") + kCornerNames[selectedSlot]; }
     else if (id == "fine") fine = ! fine;
     else if (id == "compare") {}
