@@ -46,6 +46,15 @@ void drawScene (juce::Graphics& g, const std::vector<Batch>& batches)
                     g.fillRect (juce::Rectangle<float> (b.v[i].x, b.v[i].y, b.v[i + 1].x - b.v[i].x, b.v[i + 1].y - b.v[i].y));
                 }
                 break;
+            case Batch::tris:
+                for (size_t i = 0; i + 2 < b.v.size(); i += 3)
+                {
+                    juce::Path p;
+                    p.addTriangle (b.v[i].x, b.v[i].y, b.v[i + 1].x, b.v[i + 1].y, b.v[i + 2].x, b.v[i + 2].y);
+                    g.setColour (colourOf (b.v[i]));
+                    g.fillPath (p);
+                }
+                break;
             case Batch::text:
                 for (const auto& t : b.texts)
                 {

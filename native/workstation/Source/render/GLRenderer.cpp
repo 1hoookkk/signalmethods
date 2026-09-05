@@ -157,7 +157,7 @@ void GLRenderer::drawSolid (const Batch& b, float scale)
     glEnableVertexAttribArray ((GLuint) size.attributeID);
     isRound.set (b.round ? 1.0f : 0.0f);
     if (b.kind == Batch::points) glDrawArrays (GL_POINTS, 0, (GLsizei) scaled.size());
-    else if (b.kind == Batch::rects) glDrawArrays (GL_TRIANGLES, 0, (GLsizei) scaled.size());
+    else if (b.kind == Batch::rects || b.kind == Batch::tris) glDrawArrays (GL_TRIANGLES, 0, (GLsizei) scaled.size());
     else
     {
         glLineWidth (scaled[0].size);

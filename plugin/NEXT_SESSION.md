@@ -1390,3 +1390,26 @@ Open, in order:
   4:3 (160 x 120) in a 2 x 2 block. Response plot 3:2 (288 x 192) in a 240 px panel; the wheel
   block shrank to 180 outer / 60 inner to give the column room; the ARMAdillo takes what is
   left and its rings read 20, 40, 60 dB.
+- 2026-09-05, the stitch built (native/WORKSTATION_STITCH.md steps 1, 2, 4), after Tyson sent
+  two MATLAB figures (slice and stem3) for "the hero abstraction which is the whole factory
+  corners". tools/stitch_graph.py builds native/python/workstation/stitch.json: 340 bodies
+  (33 P2K, 18 xml as X3, 289 Morpheus cubes), nodes = distinct pole skeletons per floor (exact
+  pole bytes, then near match 3% / 0.01 fused), edges MORPH/Q/Z, faces, stubs = loose frames
+  attached to the nearest node by slot-paired pole distance, spectral layout per floor (giant
+  component by the Laplacian's Fiedler vectors, small components on a ring around it), floors
+  stacked on z. Census from the bytes: 132 P2K corners -> 127 exact -> 126 nodes, five shared
+  exact pairs (not the ten the spec quoted; that number came from an image, not bytes); 2312
+  Morpheus corners -> 1567 nodes; 1763 nodes, 3069 edges, 340 faces, 167 stubs. The FRAMES
+  room is now the stitch in a MATLAB 3D axes: boxed axes, dotted grid on the far planes, floor
+  names as z ticks, stems from each floor to its node, faces filled with the parula ramp by
+  mean resonance, MORPH/Q/Z edges in three greys fading with depth, stubs orange. Orbit by
+  dragging empty space, wheel zoom, HOME. Press a node, an edge (t by projection) or a face
+  (M and Q by inverse bilinear) to play it through pairMorph / wheelMorph; PAIR picks two
+  nodes; click a node to pick it for a corner; drag a node to a corner key or the timeline;
+  CAPTURE adds a stub; timeline keys are Spots. The Martens plane, Delaunay and the sort keys
+  left the room (Library keeps them for the tray and the tests). Not yet: the walk through a
+  shared node into the next face (step 3), EXPORT adding a face (step 5), Morpheus nodes are
+  played at the 44.1 kHz datum and truncated to six rows.
+- Tyson 2026-09-05 on bookkeeping: E-mu presets stay in the stitch as reference floors, every
+  node carries its member list; the organic matrix is the floors that grow (captures, reads,
+  exports); factory floors fold from the tray.

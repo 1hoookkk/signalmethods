@@ -4,17 +4,20 @@
 
 namespace ws
 {
-void Workstation::setProbe (juce::Point<float> p)
+void Workstation::setSurface (juce::Point<float> p)
 {
-    probe = L.toField (p);
+    const auto s = spotAt (p);
+    if (! s.valid()) return;
+    if (spot && s.face < 0 && s.edge < 0 && ! (spot->node == s.node && spot->stub == s.stub)) {}
+    spot = s;
     playBody = false;
-    status = current() ? "" : "outside the anchors";
+    status = st.nameOf (s);
     redraw();
 }
 
 void Workstation::setPairT (juce::Point<float> p)
 {
-    pairFromPoint (L.toField (p));
+    pairFromPoint (p);
     redraw();
 }
 
@@ -29,7 +32,7 @@ void Workstation::setWheel (juce::Point<float> p)
 void Workstation::scrubTo (float x)
 {
     tl.playhead = L.tAt (x);
-    if (const auto p = tl.pathAt (tl.playhead)) { if (pairLive()) pairFromPoint (*p); else { probe = p; playBody = false; } }
+    if (const auto s = tl.pathAt (tl.playhead, st)) { spot = s; playBody = false; }
     redraw();
 }
 
@@ -171,18 +174,20 @@ void Workstation::frameFromSlice()
     f.name = sound.file.getFileNameWithoutExtension().substring (0, 18) + " @" + juce::String (sound.slice, 2);
     measure (f);
     lib.frames.push_back (f);
-    lib.anchors.push_back ({ (int) lib.frames.size() - 1, lib.coordOf (f) });
-    lib.retriangulate();
-    pickFor = (int) lib.anchors.size() - 1;
+    const int near = st.nearestNode (f.words);
+    const int stub = st.addStub (f.name, f.words, Spot { near, -1, -1, -1, 0.0, 0.0, 0.0 }, kGroups - 1);
+    st.stubs[(size_t) stub].frame = (int) lib.frames.size() - 1;
+    picked = Spot { -1, -1, -1, stub, 0.0, 0.0, 0.0 };
     setRoom (Room::frames);
     status = f.name + " picked";
 }
 
 void Workstation::capture()
 {
-    const auto b = current();
-    if (! b) { status = "outside the anchors"; redraw(); return; }
-    const int idx = lib.addCapture (live().words, *probe);
+    if (! haveSound() || L.room != Room::frames) { status = "nothing to capture"; redraw(); return; }
+    const Spot at = pairLive() ? Spot { pairT < 0.5 ? pairA : pairB, -1, -1, -1, 0.0, 0.0, 0.0 } : spot ? *spot : Spot {};
+    const juce::String name = pairLive() ? "cap " + pairName() + " " + juce::String (pairT, 2) : "cap " + st.nameOf (at);
+    const int idx = captureSpot (at, live().words, name);
     status = "captured " + lib.frames[(size_t) idx].name;
     redraw();
 }
@@ -200,20 +205,18 @@ void Workstation::assignCorner (int i)
         body.corner[(size_t) i] = (int) lib.frames.size() - 1;
         copyFrom = -1;
     }
-    else if (pickFor >= 0 && pickFor < (int) lib.anchors.size())
+    else if (picked)
     {
-        body.corner[(size_t) i] = lib.anchors[(size_t) pickFor].frame;
-        pickFor = -1;
+        body.corner[(size_t) i] = frameFor (*picked);
+        picked.reset();
     }
-    else if (pairMode && pairA >= 0 && pairB >= 0)
+    else if (pairLive())
     {
-        body.corner[(size_t) i] = lib.addCapture (live().words, *probe);
+        body.corner[(size_t) i] = captureSpot (Spot { pairT < 0.5 ? pairA : pairB, -1, -1, -1, 0.0, 0.0, 0.0 }, live().words, "cap " + pairName() + " " + juce::String (pairT, 2));
     }
-    else if (const auto b = current())
+    else if (spot)
     {
-        int single = -1;
-        for (int k = 0; k < 3; ++k) if (b->w[(size_t) k] > 0.999) single = lib.anchors[(size_t) b->anchors[(size_t) k]].frame;
-        body.corner[(size_t) i] = single >= 0 ? single : lib.addCapture (lib.wordsOf (*b), *probe);
+        body.corner[(size_t) i] = frameFor (*spot);
     }
     else return;
     playBody = true;

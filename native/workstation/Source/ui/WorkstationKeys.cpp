@@ -21,6 +21,7 @@ void Workstation::layoutKeys()
 {
     L.timelineOpen = ! tl.keys.empty() || tl.playing;
     L.compute ((float) getWidth(), (float) getHeight());
+    view.rect = L.field;
     buildTray();
     keys.clear();
     const float kh = 14.0f;
@@ -32,9 +33,7 @@ void Workstation::layoutKeys()
     keys.push_back ({ "wet", "FILTER", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 60.0f, kh }, wet });
     if (L.room == Room::frames)
     {
-        keys.push_back ({ "axx", kMeasureNames[lib.axisX], { L.sortRow.getX() + 56.0f, 5.0f, 70.0f, kh }, false });
-        keys.push_back ({ "axy", kMeasureNames[lib.axisY], { L.sortRow.getX() + 156.0f, 5.0f, 70.0f, kh }, false });
-        keys.push_back ({ "sort", "SORT", { L.sortRow.getX() + 232.0f, 5.0f, 52.0f, kh }, false });
+        keys.push_back ({ "home", "HOME", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, false });
         keys.push_back ({ "pair", "PAIR", { L.field.getRight() - 56.0f, 5.0f, 56.0f, kh }, pairMode });
         keys.push_back ({ "capture", "CAPTURE", { L.field.getRight() - 128.0f, 5.0f, 68.0f, kh }, false });
         const auto sq = L.outer;
@@ -82,10 +81,8 @@ void Workstation::press (const juce::String& id)
     if (id == "room0") setRoom (Room::frames);
     else if (id == "room1") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "pick a corner first"; }
     else if (id == "room2") setRoom (Room::sound);
-    else if (id == "axx") lib.axisX = (lib.axisX + 1) % kMeasures;
-    else if (id == "axy") lib.axisY = (lib.axisY + 1) % kMeasures;
-    else if (id == "sort") lib.sort();
-    else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two anchors" : ""; }
+    else if (id == "home") { view.az = -37.5; view.el = 30.0; view.zoom = 1.0; view.panX = view.panY = 0.0; }
+    else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two nodes" : ""; }
     else if (id == "capture") capture();
     else if (id.startsWith ("corner")) assignCorner (id.substring (6).getIntValue());
     else if (id.startsWith ("goto")) openEditor (id.substring (4).getIntValue());
@@ -117,8 +114,8 @@ void Workstation::press (const juce::String& id)
     else if (id == "loop") tl.loop = ! tl.loop;
     else if (id == "addkey")
     {
-        if (! probe) probe = std::array<double, 2> { 0.5, 0.5 };
-        tl.keys.push_back ({ tl.playhead, *probe, kData });
+        if (spot) tl.keys.push_back ({ tl.playhead, *spot });
+        else status = "press the surface first";
     }
     redraw();
 }

@@ -6,6 +6,11 @@ namespace
 {
 juce::File workspaceRoot() { return juce::File (TRENCH_TABLE_STITCH_ROOT); }
 
+void loadStitch (ws::Stitch& st)
+{
+    st.loadJson (workspaceRoot().getChildFile ("native/python/workstation/stitch.json"));
+}
+
 void loadLibrary (ws::Library& lib)
 {
     const auto json = workspaceRoot().getChildFile ("native/python/workstation/frames_3d.json");
@@ -19,8 +24,10 @@ void loadLibrary (ws::Library& lib)
 int shoot (const juce::String& path)
 {
     ws::Library lib;
+    ws::Stitch st;
     loadLibrary (lib);
-    ws::Workstation view (lib, false);
+    loadStitch (st);
+    ws::Workstation view (lib, st, false);
     view.exportDir = workspaceRoot().getChildFile ("plugin/presets/user");
     view.workspace = workspaceRoot();
     view.demo();
@@ -68,7 +75,7 @@ int shoot (const juce::String& path)
     out4.deleteFile();
     juce::FileOutputStream os4 (out4);
     juce::PNGImageFormat().writeImageToStream (img4, os4);
-    std::printf ("wrote %s  %dx%d  frames %d  anchors %d  triangles %d\n", out.getFullPathName().toRawUTF8(), img.getWidth(), img.getHeight(), (int) lib.frames.size(), (int) lib.anchors.size(), (int) lib.tris.size());
+    std::printf ("wrote %s  %dx%d  frames %d  nodes %d  edges %d  faces %d  stubs %d\n", out.getFullPathName().toRawUTF8(), img.getWidth(), img.getHeight(), (int) lib.frames.size(), (int) st.nodes.size(), (int) st.edges.size(), (int) st.faces.size(), (int) st.stubs.size());
     return 0;
 }
 }
@@ -86,7 +93,8 @@ public:
         const int shot = args.indexOf ("--shot");
         if (shot >= 0 && shot + 1 < args.size()) { shoot (args[shot + 1].unquoted()); quit(); return; }
         loadLibrary (library);
-        window = std::make_unique<MainWindow> (getApplicationName(), library);
+        loadStitch (stitch);
+        window = std::make_unique<MainWindow> (getApplicationName(), library, stitch);
         if (auto* w = dynamic_cast<ws::Workstation*> (window->getContentComponent())) { w->exportDir = workspaceRoot().getChildFile ("plugin/presets/user"); w->workspace = workspaceRoot(); }
     }
 
@@ -97,10 +105,10 @@ private:
     class MainWindow : public juce::DocumentWindow
     {
     public:
-        MainWindow (const juce::String& name, ws::Library& lib) : DocumentWindow (name, juce::Colours::black, DocumentWindow::allButtons)
+        MainWindow (const juce::String& name, ws::Library& lib, ws::Stitch& st) : DocumentWindow (name, juce::Colours::black, DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new ws::Workstation (lib, true, true), true);
+            setContentOwned (new ws::Workstation (lib, st, true, true), true);
             setResizable (true, false);
             centreWithSize (getWidth(), getHeight());
             setVisible (true);
@@ -109,6 +117,7 @@ private:
     };
 
     ws::Library library;
+    ws::Stitch stitch;
     std::unique_ptr<MainWindow> window;
 };
 

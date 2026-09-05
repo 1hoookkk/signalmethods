@@ -3,6 +3,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_opengl/juce_opengl.h>
 #include "../model/Library.h"
+#include "../model/Stitch.h"
 #include "../model/Timeline.h"
 #include "../model/Body.h"
 #include "../model/Sound.h"
@@ -11,6 +12,7 @@
 #include "../render/Canvas.h"
 #include "Audio.h"
 #include "Layout.h"
+#include "View3D.h"
 #include <optional>
 
 namespace ws
@@ -18,7 +20,7 @@ namespace ws
 class Workstation : public juce::Component, public juce::OpenGLRenderer, private juce::Timer
 {
 public:
-    Workstation (Library& library, bool useGL, bool withAudio = false);
+    Workstation (Library& library, Stitch& stitch, bool useGL, bool withAudio = false);
     ~Workstation() override;
 
     void demo();
@@ -38,24 +40,26 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
+    enum class Mode { none, surface, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
     struct TrayRow { int frame; int group; bool header; };
 
     Library& lib;
+    Stitch& st;
     Timeline tl;
     Body body;
     Sound sound;
     Layout L;
+    View3D view;
     bool gl;
     juce::OpenGLContext ctx;
     GLRenderer renderer;
     std::unique_ptr<Audio> audio;
-    std::optional<std::array<double, 2>> probe;
+    std::optional<Spot> spot, picked, dragSpot;
     std::array<bool, kGroups> open { true, true, true, true, true, true, true };
     juce::String status;
     Mode mode = Mode::none;
-    int dragFrame = -1, dragAnchor = -1, dragKey = -1, trayScroll = 0, pickFor = -1, wavScroll = 0;
+    int dragFrame = -1, dragKey = -1, trayScroll = 0, wavScroll = 0;
     bool pairMode = false;
     int pairA = -1, pairB = -1;
     double pairT = 0.0;
@@ -65,6 +69,7 @@ private:
     std::array<bool, kRows> lockRow { false, false, false, false, false, false };
     juce::Rectangle<float> openBar;
     juce::Point<float> dragPos, dragStart;
+    double orbitAz = 0.0, orbitEl = 0.0;
     double playT0 = 0.0, playFrom = 0.0;
     std::vector<KeyBox> keys;
     std::vector<TrayRow> trayRows;
@@ -75,17 +80,22 @@ private:
     void feedAudio();
     void layoutKeys();
     void buildTray();
-    bool visible (int anchorIndex) const;
-    std::optional<Blend> current() const;
+    bool floorOpen (int floor) const;
+    bool haveSound() const;
     Words playingWords() const;
     Morph live() const;
     bool pairLive() const;
-    std::array<double, 2> pairPoint (double t) const;
+    Vec3 pairPoint (double t) const;
     void pairTo (double t);
-    void pairFromPoint (std::array<double, 2> p);
+    void pairFromPoint (juce::Point<float> p);
     juce::String pairName() const;
+    juce::String nodeName (int node) const;
     void groupMean (int group);
-    void setProbe (juce::Point<float> p);
+    int frameFor (const Spot& s);
+    int captureSpot (const Spot& s, const Words& words, const juce::String& name);
+    Spot spotAt (juce::Point<float> p) const;
+    int nodeAt (juce::Point<float> p) const;
+    void setSurface (juce::Point<float> p);
     void setPairT (juce::Point<float> p);
     void setWheel (juce::Point<float> p);
     void scrubTo (float x);
@@ -103,15 +113,16 @@ private:
     void setSlice (float x);
     void setRegion (float x, bool start);
     void frameFromSlice();
-    int anchorAt (juce::Point<float> p) const;
     int trayAt (juce::Point<float> p) const;
     int keyAt (juce::Point<float> p) const;
     std::vector<Batch> scene() const;
+    void sceneStitch (std::vector<Batch>& out) const;
     std::vector<Batch> frame();
     void paintPanels (Canvas& g);
     void paintChrome (Canvas& g);
     void paintTray (Canvas& g);
-    void paintResponse (Canvas& g, const std::optional<Blend>& b);
+    void paintAxes (Canvas& g);
+    void paintResponse (Canvas& g);
     void paintBody (Canvas& g);
     void paintArma (Canvas& g);
     void paintEditor (Canvas& g);

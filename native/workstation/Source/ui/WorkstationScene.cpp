@@ -1,58 +1,172 @@
 #include "Workstation.h"
 #include "Style.h"
+#include <algorithm>
 #include <cmath>
 
 namespace ws
 {
+namespace
+{
+juce::Colour parula (double t)
+{
+    static const float stops[5][3] = { { 0.24f, 0.15f, 0.66f }, { 0.10f, 0.54f, 0.83f }, { 0.16f, 0.73f, 0.62f }, { 0.65f, 0.79f, 0.28f }, { 0.98f, 0.80f, 0.15f } };
+    const double u = juce::jlimit (0.0, 0.9999, t) * 4.0;
+    const int i = (int) u;
+    const float f = (float) (u - i);
+    return juce::Colour::fromFloatRGBA (stops[i][0] + (stops[i + 1][0] - stops[i][0]) * f, stops[i][1] + (stops[i + 1][1] - stops[i][1]) * f, stops[i][2] + (stops[i + 1][2] - stops[i][2]) * f, 1.0f);
+}
+
+void dotted (Batch& b, juce::Point<float> a, juce::Point<float> c, juce::Colour colour)
+{
+    const float dx = c.x - a.x, dy = c.y - a.y, len = std::sqrt (dx * dx + dy * dy);
+    if (len < 1.0f) return;
+    const int n = std::max (1, (int) (len / 5.0f));
+    for (int i = 0; i < n; ++i)
+    {
+        const float t0 = i / (float) n, t1 = t0 + 1.5f / len;
+        b.v.push_back (vertex ({ a.x + dx * t0, a.y + dy * t0 }, colour, 1.0f));
+        b.v.push_back (vertex ({ a.x + dx * std::min (1.0f, t1), a.y + dy * std::min (1.0f, t1) }, colour, 1.0f));
+    }
+}
+}
+
+void Workstation::sceneStitch (std::vector<Batch>& out) const
+{
+    const auto& v = view;
+    const auto fade = [&] (juce::Colour c, const Vec3& p) { return c.interpolatedWith (kPanel, (float) (0.55 * v.depth01 (p))); };
+    Batch grid { Batch::lines, false, {} };
+    const bool farX = v.farPlane (0), farY = v.farPlane (1);
+    const double fx = farX ? v.hi.x : v.lo.x, fy = farY ? v.hi.y : v.lo.y, fz = v.lo.z;
+    std::vector<double> zs { v.lo.z, v.hi.z };
+    for (const int f : st.usedFloors) zs.push_back (st.floorZ (f));
+    for (double x : { -0.5, 0.0, 0.5 })
+    {
+        dotted (grid, v.project ({ x, v.lo.y, fz }), v.project ({ x, v.hi.y, fz }), kLine);
+        dotted (grid, v.project ({ x, fy, v.lo.z }), v.project ({ x, fy, v.hi.z }), kLine);
+    }
+    for (double y : { -0.5, 0.0, 0.5 })
+    {
+        dotted (grid, v.project ({ v.lo.x, y, fz }), v.project ({ v.hi.x, y, fz }), kLine);
+        dotted (grid, v.project ({ fx, y, v.lo.z }), v.project ({ fx, y, v.hi.z }), kLine);
+    }
+    for (const int f : st.usedFloors)
+    {
+        const double z = st.floorZ (f);
+        dotted (grid, v.project ({ fx, v.lo.y, z }), v.project ({ fx, v.hi.y, z }), kRule);
+        dotted (grid, v.project ({ v.lo.x, fy, z }), v.project ({ v.hi.x, fy, z }), kRule);
+    }
+    out.push_back (grid);
+    Batch box { Batch::lines, false, {} };
+    for (int i = 0; i < 12; ++i)
+    {
+        const int axis = i / 4, k = i % 4;
+        Vec3 a, c;
+        if (axis == 0) { a = { v.lo.x, (k & 1) ? v.hi.y : v.lo.y, (k & 2) ? v.hi.z : v.lo.z }; c = a; c.x = v.hi.x; }
+        else if (axis == 1) { a = { (k & 1) ? v.hi.x : v.lo.x, v.lo.y, (k & 2) ? v.hi.z : v.lo.z }; c = a; c.y = v.hi.y; }
+        else { a = { (k & 1) ? v.hi.x : v.lo.x, (k & 2) ? v.hi.y : v.lo.y, v.lo.z }; c = a; c.z = v.hi.z; }
+        box.v.push_back (vertex (v.project (a), kFrame, 1.0f));
+        box.v.push_back (vertex (v.project (c), kFrame, 1.0f));
+    }
+    out.push_back (box);
+    std::vector<std::pair<double, int>> order;
+    for (int i = 0; i < (int) st.faces.size(); ++i)
+    {
+        const auto& f = st.faces[(size_t) i];
+        if (! floorOpen (f.floor) || f.nodes.size() < 4) continue;
+        double d = 0.0;
+        for (int k = 0; k < 4; ++k) d += v.depth (st.nodes[(size_t) f.nodes[(size_t) k]].p);
+        order.push_back ({ -d, i });
+    }
+    std::sort (order.begin(), order.end());
+    Batch fill { Batch::tris, false, {} };
+    for (const auto& [d, i] : order)
+    {
+        const auto& f = st.faces[(size_t) i];
+        double res = 0.0;
+        int count = 0;
+        for (int k = 0; k < 4; ++k)
+            for (const auto& g : geometryOf (st.wordsOf (f.nodes[(size_t) k]))) if (g.pole && g.pR > 0.5) { res += resDb (g.pR); ++count; }
+        const auto colour = parula (count > 0 ? res / count / 45.0 : 0.0).withAlpha (0.28f);
+        const juce::Point<float> c[4] = { v.project (st.nodes[(size_t) f.nodes[0]].p), v.project (st.nodes[(size_t) f.nodes[1]].p), v.project (st.nodes[(size_t) f.nodes[3]].p), v.project (st.nodes[(size_t) f.nodes[2]].p) };
+        for (int k : { 0, 1, 2, 0, 2, 3 }) fill.v.push_back (vertex (c[k], colour, 0.0f));
+    }
+    out.push_back (fill);
+    Batch stems { Batch::lines, false, {} };
+    Batch wire { Batch::lines, false, {} };
+    for (const auto& n : st.nodes)
+    {
+        if (! floorOpen (n.floor)) continue;
+        const auto c = fade (kRule, n.p);
+        stems.v.push_back (vertex (v.project ({ n.p.x, n.p.y, st.floorZ (n.floor) }), c, 1.0f));
+        stems.v.push_back (vertex (v.project (n.p), c, 1.0f));
+    }
+    out.push_back (stems);
+    static const juce::Colour axisColour[3] = { juce::Colour (0xff303030), juce::Colour (0xff808080), juce::Colour (0xffb4b4b4) };
+    for (const auto& e : st.edges)
+    {
+        if (! floorOpen (e.floor)) continue;
+        const auto& a = st.nodes[(size_t) e.a].p;
+        const auto& b = st.nodes[(size_t) e.b].p;
+        wire.v.push_back (vertex (v.project (a), fade (axisColour[e.axis], a), 1.0f));
+        wire.v.push_back (vertex (v.project (b), fade (axisColour[e.axis], b), 1.0f));
+    }
+    for (const auto& s : st.stubs)
+    {
+        if (! floorOpen (s.floor)) continue;
+        wire.v.push_back (vertex (v.project (st.nodes[(size_t) s.node].p), kChosen, 1.0f));
+        wire.v.push_back (vertex (v.project (s.p), kChosen, 1.0f));
+    }
+    out.push_back (wire);
+    Batch marks { Batch::points, true, {} };
+    std::array<int, kGroups> perFloor {};
+    for (const auto& n : st.nodes) if (n.floor >= 0 && n.floor < kGroups) ++perFloor[(size_t) n.floor];
+    for (const auto& n : st.nodes)
+    {
+        if (! floorOpen (n.floor)) continue;
+        const bool dense = n.floor >= 0 && n.floor < kGroups && perFloor[(size_t) n.floor] > 400;
+        marks.v.push_back (vertex (v.project (n.p), fade (kData, n.p), n.faces >= 4 ? 6.0f : dense ? 2.0f : 3.5f));
+    }
+    Batch stubMarks { Batch::points, false, {} };
+    for (const auto& s : st.stubs)
+        if (floorOpen (s.floor)) stubMarks.v.push_back (vertex (v.project (s.p), kChosen, 5.0f));
+    out.push_back (marks);
+    out.push_back (stubMarks);
+    Batch links { Batch::lines, false, {} };
+    const auto ks = tl.sorted();
+    for (size_t i = 0; i + 1 < ks.size(); ++i) { links.v.push_back (vertex (v.project (st.positionOf (ks[i].spot)), kDim, 1.0f)); links.v.push_back (vertex (v.project (st.positionOf (ks[i + 1].spot)), kDim, 1.0f)); }
+    if (pairLive())
+    {
+        const auto pa = v.project (pairPoint (0.0)), pb = v.project (pairPoint (1.0));
+        links.v.push_back (vertex (pa, kChosen, 1.5f));
+        links.v.push_back (vertex (pb, kChosen, 1.5f));
+        const auto lo = v.project (pairPoint (kPushLow)), hi = v.project (pairPoint (kPushHigh));
+        links.v.push_back (vertex (pa, kChosen, 1.0f)); links.v.push_back (vertex (lo, kChosen, 1.0f));
+        links.v.push_back (vertex (pb, kChosen, 1.0f)); links.v.push_back (vertex (hi, kChosen, 1.0f));
+        const float dx = pb.x - pa.x, dy = pb.y - pa.y, len = std::max (1e-3f, std::sqrt (dx * dx + dy * dy));
+        const juce::Point<float> n (-dy / len * 5.0f, dx / len * 5.0f);
+        for (const auto& e : { lo, hi }) { links.v.push_back (vertex (e - n, kChosen, 1.0f)); links.v.push_back (vertex (e + n, kChosen, 1.0f)); }
+    }
+    out.push_back (links);
+    Batch pts { Batch::points, true, {} };
+    Batch squares { Batch::points, false, {} };
+    for (const auto& k : ks) squares.v.push_back (vertex (v.project (st.positionOf (k.spot)), kData, 7.0f));
+    for (int a : { pairA, pairB }) if (pairLive() && a >= 0) pts.v.push_back (vertex (v.project (st.nodes[(size_t) a].p), kChosen, 10.0f));
+    if (picked) squares.v.push_back (vertex (v.project (st.positionOf (*picked)), kChosen, 11.0f));
+    if (pairLive()) pts.v.push_back (vertex (v.project (pairPoint (pairT)), kLive, 9.0f));
+    else if (spot && ! playBody) pts.v.push_back (vertex (v.project (st.positionOf (*spot)), kLive, 9.0f));
+    if (mode == Mode::dragFrame) pts.v.push_back (vertex (dragPos, hueOf (lib.frames[(size_t) dragFrame].m[0]), 12.0f));
+    if (mode == Mode::dragSpot) pts.v.push_back (vertex (dragPos, kData, 12.0f));
+    out.push_back (squares);
+    out.push_back (pts);
+}
+
 std::vector<Batch> Workstation::scene() const
 {
     std::vector<Batch> out;
-    const auto ks = tl.sorted();
-    const auto b = current();
-    const bool haveWords = L.room == Room::sound ? ! sound.mono->empty() : (b.has_value() || (playBody && body.ready()));
+    const bool haveWords = haveSound();
     if (L.room == Room::frames)
     {
-        Batch grid { Batch::lines, false, {} };
-        for (int i = 1; i < 4; ++i)
-        {
-            const auto a = L.fromField ({ i / 4.0, 0.0 }), c = L.fromField ({ i / 4.0, 1.0 }), d = L.fromField ({ 0.0, i / 4.0 }), f = L.fromField ({ 1.0, i / 4.0 });
-            grid.v.push_back (vertex (a, kLine, 1.0f)); grid.v.push_back (vertex (c, kLine, 1.0f));
-            grid.v.push_back (vertex (d, kLine, 1.0f)); grid.v.push_back (vertex (f, kLine, 1.0f));
-        }
-        out.push_back (grid);
-        Batch links { Batch::lines, false, {} };
-        for (size_t i = 0; i + 1 < ks.size(); ++i) { links.v.push_back (vertex (L.fromField (ks[i].p), kDim, 1.0f)); links.v.push_back (vertex (L.fromField (ks[i + 1].p), kDim, 1.0f)); }
-        if (pairLive())
-        {
-            const auto pa = L.fromField (pairPoint (0.0)), pb = L.fromField (pairPoint (1.0));
-            links.v.push_back (vertex (pa, kChosen, 1.5f));
-            links.v.push_back (vertex (pb, kChosen, 1.5f));
-            const auto lo = L.fromField (pairPoint (kPushLow)), hi = L.fromField (pairPoint (kPushHigh));
-            links.v.push_back (vertex (pa, kChosen, 1.0f)); links.v.push_back (vertex (lo, kChosen, 1.0f));
-            links.v.push_back (vertex (pb, kChosen, 1.0f)); links.v.push_back (vertex (hi, kChosen, 1.0f));
-            const float dx = pb.x - pa.x, dy = pb.y - pa.y, len = std::max (1e-3f, std::sqrt (dx * dx + dy * dy));
-            const juce::Point<float> n (-dy / len * 5.0f, dx / len * 5.0f);
-            for (const auto& e : { lo, hi }) { links.v.push_back (vertex (e - n, kChosen, 1.0f)); links.v.push_back (vertex (e + n, kChosen, 1.0f)); }
-        }
-        else if (b && ! playBody)
-            for (int i = 0; i < 3; ++i) { links.v.push_back (vertex (L.fromField (*probe), kChosen, 1.0f)); links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) b->anchors[(size_t) i]].p), kChosen, 1.0f)); }
-        out.push_back (links);
-        Batch pts { Batch::points, true, {} };
-        for (int i = 0; i < (int) lib.anchors.size(); ++i)
-        {
-            if (! visible (i)) continue;
-            const auto& a = lib.anchors[(size_t) i];
-            const auto& f = lib.frames[(size_t) a.frame];
-            const bool chosen = i == pairA || i == pairB || i == pickFor;
-            pts.v.push_back (vertex (L.fromField (a.p), chosen ? kChosen : hueOf (f.m[0]), chosen || i == dragAnchor ? 12.0f : 8.0f));
-        }
-        Batch squares { Batch::points, false, {} };
-        for (const auto& k : ks) squares.v.push_back (vertex (L.fromField (k.p), kData, 7.0f));
-        if (probe && ! playBody) pts.v.push_back (vertex (L.fromField (*probe), kLive, 9.0f));
-        if (mode == Mode::dragFrame) pts.v.push_back (vertex (dragPos, hueOf (lib.frames[(size_t) dragFrame].m[0]), 12.0f));
-        if (mode == Mode::dragAnchor) pts.v.push_back (vertex (dragPos, kData, 12.0f));
-        out.push_back (squares);
-        out.push_back (pts);
+        sceneStitch (out);
         if (playBody && body.ready())
         {
             const auto sq = L.square;
@@ -178,19 +292,21 @@ std::vector<Batch> Workstation::scene() const
             Batch glides { Batch::lines, false, {} };
             Batch poles { Batch::points, false, {} };
             Batch zeros { Batch::points, true, {} };
-            std::vector<std::pair<int, double>> parents;
+            std::vector<std::pair<Words, double>> parents;
             if (L.room == Room::sound) {}
-            else if (playBody && body.ready()) { const auto w = body.weights(); for (int i = 0; i < 4; ++i) parents.push_back ({ body.corner[(size_t) i], w[(size_t) i] }); }
-            else if (b) for (int i = 0; i < 3; ++i) parents.push_back ({ lib.anchors[(size_t) b->anchors[(size_t) i]].frame, b->w[(size_t) i] });
+            else if (playBody && body.ready()) { const auto w = body.weights(); for (int i = 0; i < 4; ++i) parents.push_back ({ lib.frames[(size_t) body.corner[(size_t) i]].words, w[(size_t) i] }); }
+            else if (pairLive()) { parents.push_back ({ st.wordsOf (pairA), 1.0 - pairT }); parents.push_back ({ st.wordsOf (pairB), pairT }); }
+            else if (spot && spot->edge >= 0) { const auto& e = st.edges[(size_t) spot->edge]; parents.push_back ({ st.wordsOf (e.a), 1.0 - spot->t }); parents.push_back ({ st.wordsOf (e.b), spot->t }); }
+            else if (spot && spot->face >= 0) { const auto c = st.cornersOf (spot->face); const double m = spot->m, q = spot->q; const double w[4] = { (1 - m) * (1 - q), m * (1 - q), (1 - m) * q, m * q }; for (int i = 0; i < 4; ++i) parents.push_back ({ c[(size_t) i], w[i] }); }
             for (int s = 0; s < kRows; ++s)
             {
                 const auto& r = rows[(size_t) s];
                 if (! r.pole) continue;
                 const auto here = L.armaXY (r.pHz, r.pR);
-                for (const auto& [frameIdx, weight] : parents)
+                for (const auto& [parentWords, weight] : parents)
                 {
                     if (weight < 0.08) continue;
-                    const auto& pr = lib.frames[(size_t) frameIdx].rows[(size_t) s];
+                    const auto pr = geometryOf (parentWords)[(size_t) s];
                     if (! pr.pole) continue;
                     glides.v.push_back (vertex (here, kChosen, 1.0f));
                     glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kChosen, 1.0f));
@@ -205,6 +321,7 @@ std::vector<Batch> Workstation::scene() const
     }
     if (L.timelineOpen)
     {
+        const auto ks = tl.sorted();
         Batch tline { Batch::lines, false, {} };
         for (size_t i = 0; i + 1 < ks.size(); ++i) { tline.v.push_back (vertex ({ L.tx (ks[i].t), L.tlAx.getCentreY() }, kDim, 1.0f)); tline.v.push_back (vertex ({ L.tx (ks[i + 1].t), L.tlAx.getCentreY() }, kDim, 1.0f)); }
         tline.v.push_back (vertex ({ L.tx (tl.playhead), L.tlAx.getY() }, kLive, 1.0f));

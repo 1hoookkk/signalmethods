@@ -51,7 +51,6 @@ void Workstation::renderOpenGL()
 
 void Workstation::paintChrome (Canvas& g)
 {
-    const auto b = current();
     if (L.room == Room::sound) paintSound (g);
     g.setColour (kRule);
     if (! L.tray.isEmpty()) g.drawVerticalLine ((int) L.tray.getRight() - 1, 0.0f, L.tl.getY());
@@ -74,21 +73,25 @@ void Workstation::paintChrome (Canvas& g)
     }
     if (L.room == Room::frames)
     {
-        g.setColour (kDim);
-        g.drawText ("across", (int) L.sortRow.getX() + 8, 5, 48, 14, juce::Justification::centredLeft);
-        g.drawText ("up", (int) L.sortRow.getX() + 134, 5, 20, 14, juce::Justification::centredLeft);
+        paintAxes (g);
         paintTray (g);
         paintBody (g);
         paintArma (g);
-        if (pairMode && pairA >= 0 && pairB >= 0)
+        if (pairLive())
         {
             g.setColour (kChosen);
             g.drawText (juce::String (pairT, 2), (int) L.field.getX() + 8, (int) L.field.getY() + 4, 60, 12, juce::Justification::centredLeft);
             for (int a : { pairA, pairB })
             {
-                const auto p = L.fromField (lib.anchors[(size_t) a].p);
-                g.drawText (lib.frames[(size_t) lib.anchors[(size_t) a].frame].name, (int) p.x + 10, (int) p.y - 6, 220, 12, juce::Justification::centredLeft);
+                const auto p = view.project (st.nodes[(size_t) a].p);
+                g.drawText (nodeName (a), (int) p.x + 10, (int) p.y - 6, 220, 12, juce::Justification::centredLeft);
             }
+        }
+        else if (picked)
+        {
+            g.setColour (kChosen);
+            const auto p = view.project (st.positionOf (*picked));
+            g.drawText (st.nameOf (*picked), (int) p.x + 10, (int) p.y - 6, 260, 12, juce::Justification::centredLeft);
         }
     }
     else if (L.room == Room::edit)
@@ -108,7 +111,7 @@ void Workstation::paintChrome (Canvas& g)
         }
     }
     else paintArma (g);
-    paintResponse (g, b);
+    paintResponse (g);
     paintTimeline (g);
     g.setColour (kChosen);
     g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
@@ -118,7 +121,6 @@ void Workstation::paintTray (Canvas& g)
 {
     const int maxRows = (int) ((L.tray.getHeight() - 8.0f) / 14.0f);
     trayScroll = juce::jlimit (0, std::max (0, (int) trayRows.size() - maxRows), trayScroll);
-    if (pickFor >= 0) { g.setColour (kChosen); g.drawRect (px (L.tray).reduced (1), 1); }
     for (int r = 0; r < maxRows && r + trayScroll < (int) trayRows.size(); ++r)
     {
         const auto& row = trayRows[(size_t) (r + trayScroll)];
@@ -144,7 +146,33 @@ void Workstation::paintTray (Canvas& g)
     }
 }
 
-void Workstation::paintResponse (Canvas& g, const std::optional<Blend>& b)
+void Workstation::paintAxes (Canvas& g)
+{
+    const auto& v = view;
+    const bool farX = v.farPlane (0), farY = v.farPlane (1);
+    const double nearX = farX ? v.lo.x : v.hi.x, nearY = farY ? v.lo.y : v.hi.y, farXv = farX ? v.hi.x : v.lo.x;
+    g.setColour (kDim);
+    for (double x : { -0.5, 0.0, 0.5 })
+    {
+        const auto p = v.project ({ x, nearY, v.lo.z });
+        g.drawText (juce::String (x, 1), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
+    }
+    for (double y : { -0.5, 0.0, 0.5 })
+    {
+        const auto p = v.project ({ nearX, y, v.lo.z });
+        g.drawText (juce::String (y, 1), (int) p.x - 16, (int) p.y + 4, 32, 12, juce::Justification::centred);
+    }
+    for (const int f : st.usedFloors)
+    {
+        if (f < 0 || f >= kGroups) continue;
+        const auto p = v.project ({ farXv, nearY, st.floorZ (f) });
+        const bool left = v.project ({ farXv, nearY, 0.0 }).x < L.field.getCentreX();
+        g.setColour (open[(size_t) f] ? kText : kDim);
+        g.drawText (kGroupNames[f], left ? (int) p.x - 92 : (int) p.x + 8, (int) p.y - 6, 84, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
+    }
+}
+
+void Workstation::paintResponse (Canvas& g)
 {
     g.setColour (kFrame);
     g.drawRect (juce::Rectangle<int> ((int) L.rx (20.0), (int) L.ry (30.0), (int) (L.rx (20000.0) - L.rx (20.0)), (int) (L.ry (-30.0) - L.ry (30.0))), 1);
@@ -156,20 +184,6 @@ void Workstation::paintResponse (Canvas& g, const std::optional<Blend>& b)
     for (double f : { 100.0, 1000.0, 10000.0 }) g.drawText (f >= 1000.0 ? juce::String (f / 1000.0, 0) + "k" : juce::String (f, 0), (int) L.rx (f) - 14, (int) L.ry (-30.0) + 4, 28, 12, juce::Justification::centred);
     for (double d : { 20.0, 0.0, -20.0 }) g.drawText (juce::String (d, 0), (int) L.resp.getX() + 6, (int) L.ry (d) - 6, 28, 12, juce::Justification::centredRight);
     g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.resp.getRight() - 70, (int) L.resp.getY() + 8, 62, 12, juce::Justification::centredRight);
-    if (L.room == Room::frames && b && ! playBody && ! pairLive())
-    {
-        int y = (int) L.resp.getY() - 44;
-        for (int i = 0; i < 3; ++i)
-        {
-            if (b->w[(size_t) i] <= 0.0) continue;
-            const auto& f = lib.frames[(size_t) lib.anchors[(size_t) b->anchors[(size_t) i]].frame];
-            g.setColour (hueOf (f.m[0]));
-            g.fillEllipse (L.resp.getX() + 9.0f, (float) y + 4.0f, 5.0f, 5.0f);
-            g.setColour (kText);
-            g.drawText (juce::String ((int) std::round (b->w[(size_t) i] * 100)) + "%  " + f.name, (int) L.resp.getX() + 20, y, (int) L.resp.getWidth() - 24, 13, juce::Justification::centredLeft);
-            y += 13;
-        }
-    }
 }
 
 void Workstation::paintBody (Canvas& g)
@@ -192,8 +206,7 @@ void Workstation::paintArma (Canvas& g)
     g.setColour (kDim);
     for (double db : { 20.0, 40.0, 60.0 }) { const auto p = L.armaXY (20.0, 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (db >= 60.0 ? juce::String ((int) db) + " dB" : juce::String ((int) db), (int) p.x - 44, (int) p.y - 6, 40, 12, juce::Justification::centredRight); }
     for (int o = 0; o <= 10; o += 2) { const double hz = 20.0 * std::pow (2.0, o); const auto p = L.armaXY (hz, 0.9995); g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 1) + "k" : juce::String (hz, 0), (int) p.x - 16, (int) p.y - 15, 32, 12, juce::Justification::centred); }
-    const bool haveWords = L.room == Room::sound ? ! sound.mono->empty() : (current().has_value() || (playBody && body.ready()));
-    if (! haveWords) return;
+    if (! haveSound()) return;
     const auto rows = geometryOf (playingWords());
     g.setColour (kText);
     for (int s = 0; s < kRows; ++s)

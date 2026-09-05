@@ -19,7 +19,7 @@ struct Text
 
 struct Batch
 {
-    enum Kind { points, lines, strip, rects, text, image };
+    enum Kind { points, lines, strip, rects, tris, text, image };
     Kind kind;
     bool round;
     std::vector<Vertex> v;
