@@ -1429,3 +1429,21 @@ Open, in order:
   into it; drag inside the square is the wheel, press a corner for that corner alone. Press
   empty space to close. Level three is EDIT as before. Words: filter, morph, Q, frame; no
   nodes, edges or faces on the surface. Shots: ws_shelf.png (closed), ws_pair.png (open).
+- 2026-09-05, Rossum Electro-Music Morpheus cube dump decoded from the firmware audio
+  (evidence/factory-data/morpheus/rossum/cubes_v1.01vc_170120.wav.zip). Decoder:
+  evidence/research-results/rossum_morpheus_cubes_decode.py, findings alongside as .txt,
+  table as rossum/rossum_cubes_v1.01.json. Modulation: 6 kHz biphase at 48 kHz, half cycles
+  of 4 or 8 samples, FM (short-short = 1, long = 0), 6000-bit leader; bytes LSB-first; 289
+  records x 332 bytes = 12-char name + 12 header bytes + 7 rows x 44 bytes. The two earlier
+  files (mfm.bin, demodulated.bin) were misdecoded and are superseded. Names are the 1993
+  manual list in order (record 1 = Null Cube, record 2 = filter 1), 127 exact, the rest
+  abbreviated to 12 characters. Rows 0..5 hold sections 2..7; each row carries the pole
+  pitch of all eight corners as LSB-first note counts, 64 counts per octave from about 0.29
+  Hz (ten bits; corner 6 eight bits at sixteen per octave), at fixed bit offsets keyed by
+  1993 corner; agreement with the 1993 poles within three semitones for 97 to 99.8% of
+  poles per corner, median 0.8 semitone with approximate scale constants. So the module
+  stores Rossum's designer numbers, pitch in notes, not H-chip coefficients, and compiles
+  them for its own rate at runtime; it has no datum and the same 289 cubes by name and by
+  pole pitch. Unresolved: bandwidth, gain and zero fields, section 1, the 12 header bytes,
+  and a per-corner refit of the note scale. Answers Tyson's "what about the Rossum
+  Morpheus": rewarp by recompiling from designer numbers is exactly what Rossum did.
