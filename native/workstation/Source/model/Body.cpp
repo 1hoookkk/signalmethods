@@ -23,15 +23,16 @@ std::array<double, 4> Body::weights() const
     return { (1.0 - morph) * (1.0 - q), morph * (1.0 - q), (1.0 - morph) * q, morph * q };
 }
 
-Words Body::wheelWords (const std::vector<Frame>& frames) const
+Morph Body::wheelMorph (const std::vector<Frame>& frames) const
 {
     std::array<Words, 4> cw;
-    std::vector<const Words*> parents;
-    std::vector<double> ws;
-    const auto w = weights();
-    for (int i = 0; i < 4; ++i) { cw[(size_t) i] = cornerWords (frames, i); parents.push_back (&cw[(size_t) i]); ws.push_back (w[(size_t) i]); }
-    return blend (parents, ws);
+    for (int i = 0; i < 4; ++i) cw[(size_t) i] = cornerWords (frames, i);
+    return ws::wheelMorph (cw, morph, q);
 }
+
+Words Body::wheelWords (const std::vector<Frame>& frames) const { return wheelMorph (frames).words; }
+
+bool Body::outside() const { return morph < 0.0 || morph > 1.0 || q < 0.0 || q > 1.0; }
 
 std::array<std::uint8_t, trench::core::kLegacyBodyBytes> Body::legacyBytes (const std::vector<Frame>& frames) const
 {

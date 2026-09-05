@@ -1,4 +1,5 @@
 #include "Library.h"
+#include "Morph.h"
 #include <algorithm>
 #include <cmath>
 
@@ -152,6 +153,35 @@ Words Library::wordsOf (const Blend& b) const
         weights.push_back (b.w[(size_t) i]);
     }
     return blend (parents, weights);
+}
+
+int Library::addNamed (const Words& words, const juce::String& name, int group, bool capture)
+{
+    Frame f;
+    f.words = words;
+    f.capture = capture;
+    f.name = name;
+    f.group = group;
+    measure (f);
+    frames.push_back (f);
+    return (int) frames.size() - 1;
+}
+
+void Library::addSchwa()
+{
+    for (const auto& f : frames) if (f.name == "vowel schwa") return;
+    addNamed (schwaWords(), "vowel schwa", 3, false);
+}
+
+int Library::addGroupMean (int group)
+{
+    std::vector<const Words*> parents;
+    for (const auto& f : frames) if (f.group == group && ! f.capture) parents.push_back (&f.words);
+    if (parents.empty()) return -1;
+    const int idx = addNamed (meanWords (parents), juce::String (kGroupNames[group]) + " mean", kGroups - 1, true);
+    anchors.push_back ({ idx, coordOf (frames[(size_t) idx]) });
+    retriangulate();
+    return idx;
 }
 
 int Library::addCapture (const Words& words, std::array<double, 2> at)

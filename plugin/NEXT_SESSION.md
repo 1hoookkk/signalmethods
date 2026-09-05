@@ -1351,3 +1351,18 @@ Open, in order:
   sounds: Aud Wall, eh head, uh hud, Talking Hedz, left ear, Talking Hedz ceiling), fifth (Ooh
   To Eee with every pole and zero times 1.5 on the Q corners, ratio 1.500 measured). The
   plugin drawer cannot load user bodies yet; audition through the workstation or the dev roster.
+- 2026-09-05, workstation caricature (native/WORKSTATION_CARICATURE.md) built: PAIR t runs -2 .. 3,
+  the wheel runs -1 .. 2 inside a margin square, timeline keys sit on the extended pair line and
+  drive t in PAIR. Out of bounds the push is row by row on the geometry (pitch in semitones times
+  t, bandwidth as log(1 - r), zero radius linear and capped at the circle, gain in dB), row 6 held
+  at the nearest end, pole radius guarded at 0.9995 in the word domain; in bounds the words are
+  the plugin's interpolate_word truncation, matched word for word. Drawn: cyan extension lines
+  with end ticks, faint outer rule on the wheel, readout cyan outside, response curve broken at
+  the frame with cyan ticks at the excess, guarded poles as cyan squares. GROUP MEAN key on each
+  tray header, "vowel schwa" added to VOWELS (uniform tube 500 .. 4500 Hz, 17 kHz tilt pole,
+  ceiling zero). Tests: TRENCH_WorkstationTests (ctest trench_workstation), 9 checks pass; worst
+  doubling error 0.64 semitones at t = 2 (Multi Q Vox row 2, a 0.9987 pole), rows pushed past
+  Nyquist are clamped there. Two spec points refused by the word format: a zero cannot pass
+  the circle (word 1 stores 1 - r squared) so no zero is ever drawn outside the rim; the P2K bank
+  itself carries poles at r 0.99979 in bounds, left untouched since in bounds nothing may change.
+  UI split by concern the same day (Workstation, Keys, Actions, Input, Scene, Paint, Style.h).

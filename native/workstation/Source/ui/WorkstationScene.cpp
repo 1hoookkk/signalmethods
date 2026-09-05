@@ -22,10 +22,17 @@ std::vector<Batch> Workstation::scene() const
         out.push_back (grid);
         Batch links { Batch::lines, false, {} };
         for (size_t i = 0; i + 1 < ks.size(); ++i) { links.v.push_back (vertex (L.fromField (ks[i].p), kDim, 1.0f)); links.v.push_back (vertex (L.fromField (ks[i + 1].p), kDim, 1.0f)); }
-        if (pairMode && pairA >= 0 && pairB >= 0)
+        if (pairLive())
         {
-            links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) pairA].p), kChosen, 1.5f));
-            links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) pairB].p), kChosen, 1.5f));
+            const auto pa = L.fromField (pairPoint (0.0)), pb = L.fromField (pairPoint (1.0));
+            links.v.push_back (vertex (pa, kChosen, 1.5f));
+            links.v.push_back (vertex (pb, kChosen, 1.5f));
+            const auto lo = L.fromField (pairPoint (kPushLow)), hi = L.fromField (pairPoint (kPushHigh));
+            links.v.push_back (vertex (pa, kChosen, 1.0f)); links.v.push_back (vertex (lo, kChosen, 1.0f));
+            links.v.push_back (vertex (pb, kChosen, 1.0f)); links.v.push_back (vertex (hi, kChosen, 1.0f));
+            const float dx = pb.x - pa.x, dy = pb.y - pa.y, len = std::max (1e-3f, std::sqrt (dx * dx + dy * dy));
+            const juce::Point<float> n (-dy / len * 5.0f, dx / len * 5.0f);
+            for (const auto& e : { lo, hi }) { links.v.push_back (vertex (e - n, kChosen, 1.0f)); links.v.push_back (vertex (e + n, kChosen, 1.0f)); }
         }
         else if (b && ! playBody)
             for (int i = 0; i < 3; ++i) { links.v.push_back (vertex (L.fromField (*probe), kChosen, 1.0f)); links.v.push_back (vertex (L.fromField (lib.anchors[(size_t) b->anchors[(size_t) i]].p), kChosen, 1.0f)); }
@@ -60,7 +67,7 @@ std::vector<Batch> Workstation::scene() const
             Batch wheel { Batch::points, true, {} };
             for (int i = 0; i < 4; ++i)
                 wheel.v.push_back (vertex ({ i & 1 ? sq.getRight() : sq.getX(), i & 2 ? sq.getY() : sq.getBottom() }, hueOf (lib.frames[(size_t) body.corner[(size_t) i]].m[0]), 8.0f));
-            wheel.v.push_back (vertex ({ sq.getX() + (float) body.morph * sq.getWidth(), sq.getBottom() - (float) body.q * sq.getHeight() }, kLive, 9.0f));
+            wheel.v.push_back (vertex (L.wheelXY (body.morph, body.q), kLive, 9.0f));
             out.push_back (wheel);
         }
     }
@@ -116,12 +123,39 @@ std::vector<Batch> Workstation::scene() const
     marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (30.0) }, kLine, 1.0f));
     marker.v.push_back (vertex ({ L.rx (fieldHz), L.ry (-30.0) }, kLine, 1.0f));
     out.push_back (marker);
+    const auto now = live();
     if (haveWords)
     {
+        const auto colour = L.room == Room::sound ? kChosen : kData;
+        const auto cascade = cascadeOf (now.words);
         Batch curve { Batch::strip, false, {} };
-        const auto cv = curveOf (playingWords());
-        for (int i = 0; i < kCurvePoints; ++i) curve.v.push_back (vertex ({ L.rx (20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.ry (juce::jlimit (-30.0, 30.0, cv[(size_t) i])) }, L.room == Room::sound ? kChosen : kData, 1.5f));
-        out.push_back (curve);
+        double prevDb = 0.0, prevHz = 20.0;
+        for (int i = 0; i < kCurvePoints; ++i)
+        {
+            const double hz = 20.0 * std::pow (1000.0, i / double (kCurvePoints - 1));
+            const double db = responseDb (cascade, hz);
+            const bool in = std::abs (db) <= 30.0, wasIn = i == 0 ? in : std::abs (prevDb) <= 30.0;
+            if (in != wasIn && i > 0)
+            {
+                const double edge = db > 30.0 || prevDb > 30.0 ? 30.0 : -30.0;
+                const double f = (edge - prevDb) / (db - prevDb);
+                const double hzX = prevHz * std::pow (hz / prevHz, f);
+                curve.v.push_back (vertex ({ L.rx (hzX), L.ry (edge) }, colour, 1.5f));
+                if (! in) { out.push_back (curve); curve.v.clear(); }
+            }
+            if (in) curve.v.push_back (vertex ({ L.rx (hz), L.ry (db) }, colour, 1.5f));
+            prevDb = db;
+            prevHz = hz;
+        }
+        if (curve.v.size() > 1) out.push_back (curve);
+        Batch ticks { Batch::lines, false, {} };
+        for (const auto& e : excessOf (now.words))
+        {
+            const float y = L.ry (e.above ? 30.0 : -30.0), d = e.above ? -6.0f : 6.0f;
+            ticks.v.push_back (vertex ({ L.rx (e.hz), y }, kChosen, 1.0f));
+            ticks.v.push_back (vertex ({ L.rx (e.hz), y + d }, kChosen, 1.0f));
+        }
+        out.push_back (ticks);
     }
     {
         Batch rings { Batch::lines, false, {} };
@@ -140,7 +174,7 @@ std::vector<Batch> Workstation::scene() const
         out.push_back (rings);
         if (haveWords)
         {
-            const auto rows = geometryOf (playingWords());
+            const auto rows = geometryOf (now.words);
             Batch glides { Batch::lines, false, {} };
             Batch poles { Batch::points, false, {} };
             Batch zeros { Batch::points, true, {} };
@@ -161,7 +195,7 @@ std::vector<Batch> Workstation::scene() const
                     glides.v.push_back (vertex (here, kChosen, 1.0f));
                     glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kChosen, 1.0f));
                 }
-                poles.v.push_back (vertex (here, kData, 8.0f));
+                poles.v.push_back (vertex (here, now.guarded[(size_t) s] ? kChosen : kData, 8.0f));
                 if (r.zero && r.zR > 0.01) zeros.v.push_back (vertex (L.armaXY (r.zHz, r.zR), kChosen, 7.0f));
             }
             out.push_back (glides);

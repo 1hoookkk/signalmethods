@@ -14,20 +14,14 @@ void Workstation::setProbe (juce::Point<float> p)
 
 void Workstation::setPairT (juce::Point<float> p)
 {
-    const auto a = L.fromField (lib.anchors[(size_t) pairA].p), b = L.fromField (lib.anchors[(size_t) pairB].p);
-    const float dx = b.x - a.x, dy = b.y - a.y, len2 = std::max (1e-6f, dx * dx + dy * dy);
-    pairT = juce::jlimit (0.0, 1.0, (double) (((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
-    const auto& pa = lib.anchors[(size_t) pairA].p;
-    const auto& pb = lib.anchors[(size_t) pairB].p;
-    probe = std::array<double, 2> { pa[0] + (pb[0] - pa[0]) * pairT, pa[1] + (pb[1] - pa[1]) * pairT };
-    playBody = false;
+    pairFromPoint (L.toField (p));
     redraw();
 }
 
 void Workstation::setWheel (juce::Point<float> p)
 {
-    body.morph = juce::jlimit (0.0, 1.0, (double) (p.x - L.square.getX()) / L.square.getWidth());
-    body.q = juce::jlimit (0.0, 1.0, (double) (L.square.getBottom() - p.y) / L.square.getHeight());
+    body.morph = juce::jlimit (kWheelLow, kWheelHigh, (double) (p.x - L.square.getX()) / L.square.getWidth());
+    body.q = juce::jlimit (kWheelLow, kWheelHigh, (double) (L.square.getBottom() - p.y) / L.square.getHeight());
     playBody = true;
     redraw();
 }
@@ -35,7 +29,14 @@ void Workstation::setWheel (juce::Point<float> p)
 void Workstation::scrubTo (float x)
 {
     tl.playhead = L.tAt (x);
-    if (const auto p = tl.pathAt (tl.playhead)) { probe = p; playBody = false; }
+    if (const auto p = tl.pathAt (tl.playhead)) { if (pairLive()) pairFromPoint (*p); else { probe = p; playBody = false; } }
+    redraw();
+}
+
+void Workstation::groupMean (int group)
+{
+    const int idx = lib.addGroupMean (group);
+    status = idx >= 0 ? "captured " + lib.frames[(size_t) idx].name : "group is empty";
     redraw();
 }
 
@@ -181,7 +182,7 @@ void Workstation::capture()
 {
     const auto b = current();
     if (! b) { status = "outside the anchors"; redraw(); return; }
-    const int idx = lib.addCapture (lib.wordsOf (*b), *probe);
+    const int idx = lib.addCapture (live().words, *probe);
     status = "captured " + lib.frames[(size_t) idx].name;
     redraw();
 }
@@ -206,7 +207,7 @@ void Workstation::assignCorner (int i)
     }
     else if (pairMode && pairA >= 0 && pairB >= 0)
     {
-        body.corner[(size_t) i] = lib.addCapture (lib.wordsOf (*current()), *probe);
+        body.corner[(size_t) i] = lib.addCapture (live().words, *probe);
     }
     else if (const auto b = current())
     {

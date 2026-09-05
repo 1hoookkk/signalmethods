@@ -222,6 +222,7 @@ target_sources(TRENCH_Workstation PRIVATE
   "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Timeline.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Body.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Morph.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Sound.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/Scene.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/GLRenderer.cpp"
@@ -247,3 +248,22 @@ target_link_libraries(TRENCH_Workstation PRIVATE
     juce::juce_audio_devices
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_WorkstationTests PRODUCT_NAME "TRENCH Workstation Tests")
+target_sources(TRENCH_WorkstationTests PRIVATE
+  "${TRENCH_WORKSTATION_DIR}/../Tests/MorphTests.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Frame.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Delaunay.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Body.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Morph.cpp")
+target_include_directories(TRENCH_WorkstationTests PRIVATE "${TRENCH_WORKSTATION_DIR}")
+target_compile_features(TRENCH_WorkstationTests PRIVATE cxx_std_20)
+target_compile_definitions(TRENCH_WorkstationTests PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+target_link_libraries(TRENCH_WorkstationTests PRIVATE
+    trench_native_core
+    juce::juce_graphics
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+add_test(NAME trench_workstation COMMAND TRENCH_WorkstationTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+set_tests_properties(trench_workstation PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Frame.h"
+#include "Morph.h"
 #include <array>
 
 namespace ws
@@ -16,6 +17,8 @@ public:
     bool ready() const;
     Words cornerWords (const std::vector<Frame>& frames, int i) const;
     Words wheelWords (const std::vector<Frame>& frames) const;
+    Morph wheelMorph (const std::vector<Frame>& frames) const;
+    bool outside() const;
     std::array<double, 4> weights() const;
     std::array<std::uint8_t, trench::core::kLegacyBodyBytes> legacyBytes (const std::vector<Frame>& frames) const;
     bool exportTo (const std::vector<Frame>& frames, const juce::File& file) const;

@@ -69,7 +69,12 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     if (const int t = trayAt (p); t >= 0)
     {
         const auto& row = trayRows[(size_t) t];
-        if (row.header) { open[(size_t) row.group] = ! open[(size_t) row.group]; redraw(); return; }
+        if (row.header)
+        {
+            if (p.x >= L.tray.getRight() - 52.0f) groupMean (row.group);
+            else { open[(size_t) row.group] = ! open[(size_t) row.group]; redraw(); }
+            return;
+        }
         if (pickFor >= 0 && pickFor < (int) lib.anchors.size()) { lib.anchors[(size_t) pickFor].frame = row.frame; pickFor = -1; lib.retriangulate(); redraw(); return; }
         mode = Mode::dragFrame; dragFrame = row.frame; dragPos = p; dragStart = p; return;
     }
@@ -78,7 +83,7 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
         if (pairMode)
         {
             if (pairA < 0) { pairA = a; status = "pick the far anchor"; }
-            else if (pairB < 0 && a != pairA) { pairB = a; pairT = 0.0; probe = lib.anchors[(size_t) pairA].p; status = ""; }
+            else if (pairB < 0 && a != pairA) { pairB = a; pairTo (0.0); }
             else { pairA = a; pairB = -1; status = "pick the far anchor"; }
             playBody = false;
             redraw();
@@ -88,7 +93,7 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     }
     if (const int k = keyAt (p); k >= 0) { mode = Mode::dragKey; dragKey = k; dragStart = p; return; }
     if (L.timelineOpen && L.tlAx.contains (p)) { mode = Mode::scrub; scrubTo (p.x); return; }
-    if (L.square.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
+    if (L.outer.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
     if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
     if (pairMode && pairA >= 0 && pairB >= 0 && L.field.contains (p)) { mode = Mode::pair; setPairT (p); return; }
     if (L.field.contains (p)) { mode = Mode::probe; setProbe (p); return; }

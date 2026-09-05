@@ -55,7 +55,7 @@ void Workstation::paintChrome (juce::Graphics& g)
         if (pairMode && pairA >= 0 && pairB >= 0)
         {
             g.setColour (kChosen);
-            g.drawText (juce::String (pairT, 3), (int) L.field.getX() + 8, (int) L.field.getY() + 4, 60, 12, juce::Justification::centredLeft);
+            g.drawText (juce::String (pairT, 2), (int) L.field.getX() + 8, (int) L.field.getY() + 4, 60, 12, juce::Justification::centredLeft);
             for (int a : { pairA, pairB })
             {
                 const auto p = L.fromField (lib.anchors[(size_t) a].p);
@@ -98,6 +98,13 @@ void Workstation::paintTray (juce::Graphics& g)
         {
             g.setColour (open[(size_t) row.group] ? kText : kDim);
             g.drawText (juce::String (open[(size_t) row.group] ? "- " : "+ ") + kGroupNames[row.group], (int) L.tray.getX() + 8, (int) y, (int) L.tray.getWidth() - 16, 14, juce::Justification::centredLeft);
+            const juce::Rectangle<int> k ((int) L.tray.getRight() - 52, (int) y, 44, 14);
+            g.setColour (kKey);
+            g.fillRect (k);
+            g.setColour (kKeyLine);
+            g.drawRect (k, 1);
+            g.setColour (kText);
+            g.drawText ("MEAN", k.reduced (6, 0), juce::Justification::centredLeft);
             continue;
         }
         const auto& f = lib.frames[(size_t) row.frame];
@@ -119,7 +126,7 @@ void Workstation::paintResponse (juce::Graphics& g, const std::optional<Blend>& 
     for (double f : { 100.0, 1000.0, 10000.0 }) g.drawText (f >= 1000.0 ? juce::String (f / 1000.0, 0) + "k" : juce::String (f, 0), (int) L.rx (f) - 14, (int) L.ry (-30.0) + 4, 28, 12, juce::Justification::centred);
     for (double d : { 20.0, 0.0, -20.0 }) g.drawText (juce::String (d, 0), (int) L.resp.getX() + 6, (int) L.ry (d) - 6, 28, 12, juce::Justification::centredRight);
     g.drawText (juce::String ((int) std::round (fieldHz)) + " Hz", (int) L.resp.getRight() - 70, (int) L.resp.getY() + 8, 62, 12, juce::Justification::centredRight);
-    if (L.room == Room::frames && b && ! playBody)
+    if (L.room == Room::frames && b && ! playBody && ! pairLive())
     {
         int y = (int) L.resp.getY() - 44;
         for (int i = 0; i < 3; ++i)
@@ -137,14 +144,17 @@ void Workstation::paintResponse (juce::Graphics& g, const std::optional<Blend>& 
 
 void Workstation::paintBody (juce::Graphics& g)
 {
+    g.setColour (kRule);
+    g.drawRect (px (L.outer), 1);
     g.setColour (kLine);
     g.drawRect (px (L.square), 1);
+    g.setColour (body.outside() ? kChosen : kDim);
+    g.drawText ("M " + juce::String (body.morph, 2) + "   Q " + juce::String (body.q, 2), (int) L.outer.getX(), (int) L.outer.getBottom() + 6, (int) L.outer.getWidth(), 12, juce::Justification::centred);
     g.setColour (kDim);
-    g.drawText ("M " + juce::String (body.morph, 2) + "   Q " + juce::String (body.q, 2), (int) L.square.getX(), (int) L.square.getBottom() + 6, (int) L.square.getWidth(), 12, juce::Justification::centred);
-    g.drawText ("rows", (int) L.square.getRight() + 64, (int) L.square.getY() + 10, 40, 12, juce::Justification::centredLeft);
+    g.drawText ("rows", (int) L.outer.getX(), (int) L.outer.getBottom() + 30, 40, 14, juce::Justification::centredLeft);
     for (int i = 0; i < 4; ++i)
         if (body.corner[(size_t) i] >= 0)
-            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.square.getRight() + 64, (int) L.square.getY() + 120 + i * 13, (int) L.body.getRight() - (int) L.square.getRight() - 72, 12, juce::Justification::centredLeft);
+            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.outer.getX() + 152, (int) L.outer.getBottom() + 54 + i * 13, (int) L.body.getRight() - (int) L.outer.getX() - 160, 12, juce::Justification::centredLeft);
 }
 
 void Workstation::paintArma (juce::Graphics& g)

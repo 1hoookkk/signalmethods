@@ -26,5 +26,8 @@ public:
     std::optional<Blend> blendAt (double u, double v) const;
     Words wordsOf (const Blend& b) const;
     int addCapture (const Words& words, std::array<double, 2> at);
+    int addNamed (const Words& words, const juce::String& name, int group, bool capture);
+    void addSchwa();
+    int addGroupMean (int group);
 };
 }

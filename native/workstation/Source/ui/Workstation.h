@@ -6,6 +6,7 @@
 #include "../model/Timeline.h"
 #include "../model/Body.h"
 #include "../model/Sound.h"
+#include "../model/Morph.h"
 #include "../render/GLRenderer.h"
 #include "Audio.h"
 #include "Layout.h"
@@ -21,6 +22,7 @@ public:
 
     void demo();
     void demoSound (int wavIndex, double at, double regionA, double regionB);
+    void demoPair (double t);
     void setRoom (Room r);
     bool exportBody (const juce::File& file);
     juce::File exportDir, workspace;
@@ -75,6 +77,13 @@ private:
     bool visible (int anchorIndex) const;
     std::optional<Blend> current() const;
     Words playingWords() const;
+    Morph live() const;
+    bool pairLive() const;
+    std::array<double, 2> pairPoint (double t) const;
+    void pairTo (double t);
+    void pairFromPoint (std::array<double, 2> p);
+    juce::String pairName() const;
+    void groupMean (int group);
     void setProbe (juce::Point<float> p);
     void setPairT (juce::Point<float> p);
     void setWheel (juce::Point<float> p);

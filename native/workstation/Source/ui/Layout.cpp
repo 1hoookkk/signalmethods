@@ -17,8 +17,9 @@ void Layout::compute (float Wf, float Hf)
         tray = { 0.0f, 0.0f, left, bottom };
         sortRow = { left, 0.0f, W - left - right, 24.0f };
         field = { left + m, 24.0f, W - left - right - 2.0f * m, bottom - 24.0f - m };
-        body = { W - right, 0.0f, right, 184.0f };
-        square = { W - right + m + 56.0f, 24.0f, 136.0f, 136.0f };
+        body = { W - right, 0.0f, right, 360.0f };
+        outer = { W - right + m + 56.0f, 16.0f, 216.0f, 216.0f };
+        square = outer.reduced (72.0f);
         resp = { W - right, bottom - 150.0f, right, 150.0f };
         arma = { W - right, body.getBottom(), right, resp.getY() - body.getBottom() };
         cascade = {};
@@ -31,6 +32,7 @@ void Layout::compute (float Wf, float Hf)
         cascade = { field.getX() + 40.0f, 24.0f, field.getWidth() - 48.0f, 120.0f };
         body = { W - right, 0.0f, right, 192.0f };
         square = {};
+        outer = {};
         resp = { W - right, bottom - 150.0f, right, 150.0f };
         arma = { W - right, body.getBottom(), right, resp.getY() - body.getBottom() };
     }
@@ -42,6 +44,7 @@ void Layout::compute (float Wf, float Hf)
         resp = { W - right, 0.0f, right, 150.0f };
         body = {};
         square = {};
+        outer = {};
         arma = { W - right, 150.0f, right, bottom - 150.0f };
         cascade = {};
     }
@@ -61,6 +64,11 @@ float Layout::rx (double hz) const { return resp.getX() + 40.0f + (float) (std::
 float Layout::ry (double db) const { return resp.getY() + 24.0f + (float) ((30.0 - db) / 60.0) * (resp.getHeight() - 48.0f); }
 float Layout::tx (double t) const { return tlAx.getX() + (float) (t / duration) * tlAx.getWidth(); }
 double Layout::tAt (float x) const { return juce::jlimit (0.0, duration, (x - tlAx.getX()) / tlAx.getWidth() * duration); }
+
+juce::Point<float> Layout::wheelXY (double morph, double q) const
+{
+    return { square.getX() + (float) morph * square.getWidth(), square.getBottom() - (float) q * square.getHeight() };
+}
 
 juce::Point<float> Layout::armaXY (double hz, double r) const
 {

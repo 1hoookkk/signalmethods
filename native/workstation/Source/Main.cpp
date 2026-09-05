@@ -11,6 +11,7 @@ void loadLibrary (ws::Library& lib)
     const auto json = workspaceRoot().getChildFile ("native/python/workstation/frames_3d.json");
     if (! (json.existsAsFile() && lib.loadJson (json)))
         lib.loadBodies (workspaceRoot().getChildFile ("plugin/presets/p2k"));
+    lib.addSchwa();
     lib.computePca();
     lib.sort();
 }
@@ -56,6 +57,17 @@ int shoot (const juce::String& path)
     out2.deleteFile();
     juce::FileOutputStream os2 (out2);
     juce::PNGImageFormat().writeImageToStream (img2, os2);
+    view.demoPair (2.6);
+    juce::Image img4 (juce::Image::RGB, view.getWidth() * 2, view.getHeight() * 2, true);
+    {
+        juce::Graphics g (img4);
+        g.addTransform (juce::AffineTransform::scale (2.0f));
+        view.paintEntireComponent (g, false);
+    }
+    auto out4 = out.getSiblingFile (out.getFileNameWithoutExtension() + "_pair.png");
+    out4.deleteFile();
+    juce::FileOutputStream os4 (out4);
+    juce::PNGImageFormat().writeImageToStream (img4, os4);
     std::printf ("wrote %s  %dx%d  frames %d  anchors %d  triangles %d\n", out.getFullPathName().toRawUTF8(), img.getWidth(), img.getHeight(), (int) lib.frames.size(), (int) lib.anchors.size(), (int) lib.tris.size());
     return 0;
 }

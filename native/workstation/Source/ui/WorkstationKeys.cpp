@@ -37,20 +37,20 @@ void Workstation::layoutKeys()
         keys.push_back ({ "sort", "SORT", { L.sortRow.getX() + 232.0f, 5.0f, 52.0f, kh }, false });
         keys.push_back ({ "pair", "PAIR", { L.field.getRight() - 56.0f, 5.0f, 56.0f, kh }, pairMode });
         keys.push_back ({ "capture", "CAPTURE", { L.field.getRight() - 128.0f, 5.0f, 68.0f, kh }, false });
-        const auto sq = L.square;
+        const auto sq = L.outer;
         for (int i = 0; i < 4; ++i)
         {
             const float x = (i & 1) ? sq.getRight() + 8.0f : sq.getX() - 56.0f, y = (i & 2) ? sq.getY() : sq.getBottom() - kh;
             keys.push_back ({ "corner" + juce::String (i), kCornerNames[i], { x, y, 48.0f, kh }, body.corner[(size_t) i] >= 0 });
         }
-        const float bx = sq.getRight() + 64.0f;
-        for (int s = 0; s < kRows; ++s) keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + s * 24.0f, sq.getY() + 24.0f, 20.0f, kh }, body.rowOn[(size_t) s] });
-        keys.push_back ({ "playbody", "BODY", { bx, sq.getY() + 48.0f, 68.0f, kh }, playBody });
-        keys.push_back ({ "edit", "EDIT", { bx + 72.0f, sq.getY() + 48.0f, 68.0f, kh }, false });
-        keys.push_back ({ "export", "EXPORT", { bx, sq.getY() + 72.0f, 68.0f, kh }, false });
-        keys.push_back ({ "copy", "COPY", { bx + 72.0f, sq.getY() + 72.0f, 68.0f, kh }, copyFrom >= 0 });
-        keys.push_back ({ "sharpen", "SHARPEN", { bx, sq.getY() + 96.0f, 68.0f, kh }, false });
-        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, sq.getY() + 96.0f, 68.0f, kh }, body.unity });
+        const float bx = sq.getX(), by = sq.getBottom() + 30.0f;
+        for (int s = 0; s < kRows; ++s) keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + 40.0f + s * 24.0f, by, 20.0f, kh }, body.rowOn[(size_t) s] });
+        keys.push_back ({ "playbody", "BODY", { bx, by + 24.0f, 68.0f, kh }, playBody });
+        keys.push_back ({ "edit", "EDIT", { bx + 72.0f, by + 24.0f, 68.0f, kh }, false });
+        keys.push_back ({ "export", "EXPORT", { bx, by + 48.0f, 68.0f, kh }, false });
+        keys.push_back ({ "copy", "COPY", { bx + 72.0f, by + 48.0f, 68.0f, kh }, copyFrom >= 0 });
+        keys.push_back ({ "sharpen", "SHARPEN", { bx, by + 72.0f, 68.0f, kh }, false });
+        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, by + 72.0f, 68.0f, kh }, body.unity });
     }
     else if (L.room == Room::edit)
     {
