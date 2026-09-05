@@ -5,6 +5,7 @@ namespace ws
 Audio::Audio()
 {
     const auto err = manager.initialiseWithDefaultDevices (0, 2);
+    initError = err;
     ready = err.isEmpty() && manager.getCurrentAudioDevice() != nullptr;
     if (ready) manager.addAudioCallback (this);
 }
@@ -40,6 +41,13 @@ void Audio::setWords (const Words& words)
 }
 
 void Audio::setPlaying (bool on) { playing.store (on); }
+
+juce::String Audio::deviceInfo() const
+{
+    if (! ready) return "no audio device" + (initError.isEmpty() ? juce::String() : ": " + initError);
+    auto* d = manager.getCurrentAudioDevice();
+    return "listening on " + d->getName() + " at " + juce::String ((int) d->getCurrentSampleRate()) + " Hz";
+}
 void Audio::setWet (bool on) { wet.store (on); }
 
 void Audio::audioDeviceAboutToStart (juce::AudioIODevice* device)
@@ -66,8 +74,23 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
     }
     if (! playing.load() || numOut == 0) return;
     const juce::SpinLock::ScopedTryLockType lock (clipLock);
-    if (! lock.isLocked() || clip == nullptr || clip->empty()) return;
+    if (! lock.isLocked()) return;
     const double rate = clipRate.load(), dev = deviceRate.load();
+    if (clip == nullptr || clip->empty())
+    {
+        std::vector<float> saw ((size_t) numSamples);
+        const double inc = 110.0 / dev;
+        for (int i = 0; i < numSamples; ++i)
+        {
+            saw[(size_t) i] = (float) (2.0 * sawPhase - 1.0) * 0.4f;
+            sawPhase += inc;
+            if (sawPhase >= 1.0) sawPhase -= 1.0;
+        }
+        if (wet.load()) runner.process (std::span<float> (saw.data(), saw.size()));
+        for (int c = 0; c < numOut; ++c)
+            for (int i = 0; i < numSamples; ++i) out[c][i] = saw[(size_t) i] * 0.5f;
+        return;
+    }
     const double a = regionStart.load() * rate, b = std::min ((double) clip->size() - 1.0, regionEnd.load() * rate);
     if (b - a < 2.0) return;
     if (cursor < a || cursor >= b) cursor = a;

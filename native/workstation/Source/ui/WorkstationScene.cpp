@@ -144,6 +144,13 @@ void Workstation::sceneStitch (std::vector<Batch>& out) const
     Batch links { Batch::lines, false, {} };
     const auto ks = tl.sorted();
     for (size_t i = 0; i + 1 < ks.size(); ++i) { links.v.push_back (vertex (v.project (st.positionOf (ks[i].spot)), kDim, 1.0f)); links.v.push_back (vertex (v.project (st.positionOf (ks[i + 1].spot)), kDim, 1.0f)); }
+    if (spot && spot->floor >= 0 && ! playBody)
+        for (const auto& [i, w] : st.nearestFaces (spot->floor, spot->x, spot->y, 4))
+        {
+            const auto colour = kChosen.withAlpha ((float) juce::jlimit (0.15, 1.0, w * 2.0));
+            links.v.push_back (vertex (v.project (st.positionOf (*spot)), colour, 1.0f));
+            links.v.push_back (vertex (v.project (st.centres[(size_t) i]), colour, 1.0f));
+        }
     if (pairLive())
     {
         const auto pa = v.project (pairPoint (0.0)), pb = v.project (pairPoint (1.0));

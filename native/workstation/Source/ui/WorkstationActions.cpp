@@ -8,7 +8,6 @@ void Workstation::setSurface (juce::Point<float> p)
 {
     const auto s = spotAt (p);
     if (! s.valid()) return;
-    if (spot && s.face < 0 && s.edge < 0 && ! (spot->node == s.node && spot->stub == s.stub)) {}
     spot = s;
     playBody = false;
     status = st.nameOf (s);

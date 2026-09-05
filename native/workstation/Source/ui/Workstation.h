@@ -57,7 +57,7 @@ private:
     GLRenderer renderer;
     std::unique_ptr<Audio> audio;
     std::optional<Spot> spot, picked, dragSpot;
-    int openFace = -1;
+    int openFace = -1, activeFloor = 0;
     std::array<bool, kGroups> open { true, true, true, true, true, true, true };
     juce::String status;
     Mode mode = Mode::none;

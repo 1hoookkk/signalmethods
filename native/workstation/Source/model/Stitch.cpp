@@ -100,9 +100,37 @@ std::array<Words, 4> Stitch::cornersOf (int face) const
     return c;
 }
 
+std::vector<std::pair<int, double>> Stitch::nearestFaces (int floor, double x, double y, int count) const
+{
+    std::vector<std::pair<double, int>> d;
+    for (int i = 0; i < (int) faces.size(); ++i)
+        if (faces[(size_t) i].floor == floor && i < (int) centres.size())
+        {
+            const auto& c = centres[(size_t) i];
+            d.push_back ({ std::hypot (c.x - x, c.y - y), i });
+        }
+    std::sort (d.begin(), d.end());
+    std::vector<std::pair<int, double>> out;
+    double total = 0.0;
+    for (int k = 0; k < count && k < (int) d.size(); ++k) { const double w = 1.0 / std::max (1e-4, d[(size_t) k].first); out.push_back ({ d[(size_t) k].second, w }); total += w; }
+    for (auto& [i, w] : out) w /= std::max (1e-12, total);
+    return out;
+}
+
 Morph Stitch::soundAt (const Spot& s) const
 {
     Morph m;
+    if (s.floor >= 0)
+    {
+        const auto near = nearestFaces (s.floor, s.x, s.y, 4);
+        std::vector<Words> ws;
+        std::vector<double> wt;
+        for (const auto& [i, w] : near) { ws.push_back (wheelMorph (cornersOf (i), 0.5, 0.5).words); wt.push_back (w); }
+        std::vector<const Words*> parents;
+        for (const auto& w : ws) parents.push_back (&w);
+        if (! parents.empty()) m.words = blend (parents, wt);
+        return m;
+    }
     if (s.stub >= 0 && s.stub < (int) stubs.size()) { m.words = stubs[(size_t) s.stub].words; return m; }
     if (s.node >= 0) { m.words = wordsOf (s.node); return m; }
     if (s.edge >= 0 && s.edge < (int) edges.size()) return pairMorph (wordsOf (edges[(size_t) s.edge].a), wordsOf (edges[(size_t) s.edge].b), juce::jlimit (0.0, 1.0, s.t));
@@ -112,6 +140,7 @@ Morph Stitch::soundAt (const Spot& s) const
 
 Vec3 Stitch::positionOf (const Spot& s) const
 {
+    if (s.floor >= 0) return { s.x, s.y, floorZ (s.floor) };
     if (s.stub >= 0 && s.stub < (int) stubs.size()) return stubs[(size_t) s.stub].p;
     if (s.node >= 0 && s.node < (int) nodes.size()) return nodes[(size_t) s.node].p;
     if (s.edge >= 0 && s.edge < (int) edges.size()) return mix (nodes[(size_t) edges[(size_t) s.edge].a].p, nodes[(size_t) edges[(size_t) s.edge].b].p, s.t);
@@ -126,6 +155,12 @@ Vec3 Stitch::positionOf (const Spot& s) const
 
 juce::String Stitch::nameOf (const Spot& s) const
 {
+    if (s.floor >= 0)
+    {
+        juce::String out;
+        for (const auto& [i, w] : nearestFaces (s.floor, s.x, s.y, 4)) out += (out.isEmpty() ? "" : "   ") + juce::String ((int) std::round (w * 100)) + "% " + faces[(size_t) i].name;
+        return out;
+    }
     if (s.stub >= 0 && s.stub < (int) stubs.size()) return stubs[(size_t) s.stub].name;
     if (s.node >= 0 && s.node < (int) nodes.size()) return "node " + juce::String (s.node) + "  " + juce::String (nodes[(size_t) s.node].members) + " corners";
     if (s.edge >= 0 && s.edge < (int) edges.size()) { const auto& e = edges[(size_t) s.edge]; return faces[(size_t) e.body].name + "  " + kAxisNames[e.axis] + "  " + juce::String (s.t, 2); }
@@ -139,7 +174,13 @@ int Stitch::addStub (const juce::String& name, const Words& words, const Spot& n
     s.name = name;
     s.floor = floor;
     s.words = words;
-    s.node = near.node >= 0 ? near.node : near.edge >= 0 ? edges[(size_t) near.edge].a : near.face >= 0 ? faces[(size_t) near.face].nodes[0] : near.stub >= 0 ? stubs[(size_t) near.stub].node : 0;
+    int anchor = 0;
+    if (near.node >= 0) anchor = near.node;
+    else if (near.edge >= 0) anchor = edges[(size_t) near.edge].a;
+    else if (near.face >= 0) anchor = faces[(size_t) near.face].nodes[0];
+    else if (near.stub >= 0) anchor = stubs[(size_t) near.stub].node;
+    else if (near.floor >= 0) { const auto nf = nearestFaces (near.floor, near.x, near.y, 1); if (! nf.empty()) anchor = faces[(size_t) nf[0].first].nodes[0]; }
+    s.node = anchor;
     const auto at = positionOf (near);
     s.p = gridPlace (words, at.z);
     stubs.push_back (s);
@@ -206,6 +247,7 @@ int Stitch::nearestNode (const Words& words) const
 
 Spot Stitch::lerp (const Spot& a, const Spot& b, double f) const
 {
+    if (a.floor >= 0 && a.floor == b.floor) { Spot s = a; s.x = a.x + (b.x - a.x) * f; s.y = a.y + (b.y - a.y) * f; return s; }
     if (a.face >= 0 && a.face == b.face) { Spot s = a; s.m = a.m + (b.m - a.m) * f; s.q = a.q + (b.q - a.q) * f; return s; }
     if (a.edge >= 0 && a.edge == b.edge) { Spot s = a; s.t = a.t + (b.t - a.t) * f; return s; }
     return f < 0.5 ? a : b;

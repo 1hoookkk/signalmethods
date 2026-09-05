@@ -24,6 +24,7 @@ public:
     bool isPlaying() const { return playing.load(); }
     double playhead() const { return position.load(); }
     bool available() const { return ready; }
+    juce::String deviceInfo() const;
 
     void audioDeviceIOCallbackWithContext (const float* const* in, int numIn, float* const* out, int numOut, int numSamples, const juce::AudioIODeviceCallbackContext&) override;
     void audioDeviceAboutToStart (juce::AudioIODevice* device) override;
@@ -32,6 +33,8 @@ public:
 private:
     juce::AudioDeviceManager manager;
     bool ready = false;
+    juce::String initError;
+    double sawPhase = 0.0;
     std::shared_ptr<const std::vector<float>> clip;
     std::atomic<double> clipRate { 44100.0 }, deviceRate { 44100.0 };
     std::atomic<double> regionStart { 0.0 }, regionEnd { 0.0 }, position { 0.0 };

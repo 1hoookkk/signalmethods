@@ -13,6 +13,7 @@ struct View3D
     Vec3 lo { -0.65, -0.65, -0.2 }, hi { 0.65, 0.65, 6.6 };
 
     juce::Point<float> project (const Vec3& p) const;
+    bool unproject (juce::Point<float> s, double z, double& x, double& y) const;
     double depth (const Vec3& p) const;
     double depth01 (const Vec3& p) const;
     bool farPlane (int axis) const;

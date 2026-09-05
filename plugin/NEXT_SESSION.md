@@ -1461,3 +1461,15 @@ Open, in order:
   doubling error fell from 0.64 to 0.08 semitone. EDIT rows read "pole G7 -29  w 1.1 st",
   the frame's six notes read as a chord line; chordFrom(root, intervals, width, dB) seeds a
   frame from a chord. Tests: 12 checks pass (ctest trench_workstation).
+- 2026-09-05, first run on screen (Tyson): GL path renders, chrome and text included. Fixed
+  from the screenshot: Latin-1 glyph atlas (the middle dot drew as ?), shelf marks and stems
+  sized for 1x, depth fade 30%, glides only for parents above 30%, Morpheus names without
+  None. Tyson: "i cant move through the space which is the entire thing" -> free movement
+  restored on the shelf: press and drag anywhere on the active floor and the mark follows
+  the pointer, the sound is the inverse-distance blend of the four nearest filters' centres,
+  thin lines show the parents, the status line names them with their percentages; floor
+  keys (P2K, MORPHEUS, X3) pick the floor, opening a filter picks its floor; orbit moved to
+  the right button or Alt-drag. Tyson: "the spectrogram room is sick. but there's no sound"
+  -> LISTEN now names the device and rate (or the open error) in the status line, and plays
+  a built-in 110 Hz saw through the cascade when no WAV is loaded, so the FRAMES room sounds
+  without visiting SOUND first. Not yet verified with ears by the assistant.

@@ -45,8 +45,10 @@ struct Spot
 {
     int node = -1, edge = -1, face = -1, stub = -1;
     double t = 0.0, m = 0.0, q = 0.0;
-    bool valid() const { return node >= 0 || edge >= 0 || face >= 0 || stub >= 0; }
-    bool operator== (const Spot& o) const { return node == o.node && edge == o.edge && face == o.face && stub == o.stub && t == o.t && m == o.m && q == o.q; }
+    int floor = -1;
+    double x = 0.0, y = 0.0;
+    bool valid() const { return node >= 0 || edge >= 0 || face >= 0 || stub >= 0 || floor >= 0; }
+    bool operator== (const Spot& o) const { return node == o.node && edge == o.edge && face == o.face && stub == o.stub && t == o.t && m == o.m && q == o.q && floor == o.floor && x == o.x && y == o.y; }
 };
 
 class Stitch
@@ -75,6 +77,7 @@ public:
     juce::String nameOf (const Spot& s) const;
     int addStub (const juce::String& name, const Words& words, const Spot& near, int floor);
     Spot lerp (const Spot& a, const Spot& b, double f) const;
+    std::vector<std::pair<int, double>> nearestFaces (int floor, double x, double y, int count) const;
     int nearestNode (const Words& words) const;
     void placeOnGrid();
     bool sharesNode (int faceA, int faceB) const;

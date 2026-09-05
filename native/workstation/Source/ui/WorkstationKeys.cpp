@@ -34,6 +34,15 @@ void Workstation::layoutKeys()
     if (L.room == Room::frames)
     {
         keys.push_back ({ "home", "HOME", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, false });
+        {
+            float fx = L.sortRow.getX() + 72.0f;
+            for (const int f : st.usedFloors)
+            {
+                if (f < 0 || f >= kGroups) continue;
+                keys.push_back ({ "floor" + juce::String (f), kGroupNames[f], { fx, 5.0f, 76.0f, kh }, activeFloor == f });
+                fx += 80.0f;
+            }
+        }
         keys.push_back ({ "pair", "PAIR", { L.field.getRight() - 56.0f, 5.0f, 56.0f, kh }, pairMode });
         keys.push_back ({ "capture", "CAPTURE", { L.field.getRight() - 128.0f, 5.0f, 68.0f, kh }, false });
         const auto sq = L.outer;
@@ -81,6 +90,7 @@ void Workstation::press (const juce::String& id)
     if (id == "room0") setRoom (Room::frames);
     else if (id == "room1") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "pick a corner first"; }
     else if (id == "room2") setRoom (Room::sound);
+    else if (id.startsWith ("floor")) { activeFloor = id.substring (5).getIntValue(); openFace = -1; }
     else if (id == "home") { view.az = -37.5; view.el = 30.0; view.zoom = 1.0; view.panX = view.panY = 0.0; }
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two nodes" : ""; }
     else if (id == "capture") capture();
@@ -101,8 +111,7 @@ void Workstation::press (const juce::String& id)
     else if (id == "listen")
     {
         if (audio == nullptr) status = "no audio device";
-        else if (L.room == Room::sound && sound.mono->empty()) status = "load a sound first";
-        else { audio->setPlaying (! audio->isPlaying()); if (audio->isPlaying()) startTimerHz (30); else if (! tl.playing) stopTimer(); }
+        else { audio->setPlaying (! audio->isPlaying()); status = audio->isPlaying() ? audio->deviceInfo() : ""; if (audio->isPlaying()) startTimerHz (30); else if (! tl.playing) stopTimer(); }
     }
     else if (id == "wet") { wet = ! wet; if (audio) audio->setWet (wet); }
     else if (id == "play")

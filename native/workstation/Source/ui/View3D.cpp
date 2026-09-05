@@ -27,6 +27,22 @@ juce::Point<float> View3D::project (const Vec3& p) const
     return { (float) (rect.getCentreX() + dot (q, right()) * s + panX), (float) (rect.getCentreY() - dot (q, up()) * s + panY) };
 }
 
+bool View3D::unproject (juce::Point<float> sp, double z, double& x, double& y) const
+{
+    const Vec3 c { (lo.x + hi.x) * 0.5, (lo.y + hi.y) * 0.5, (lo.z + hi.z) * 0.5 };
+    const double s = scale();
+    const auto r = right(), u = up();
+    const double qz = z - c.z;
+    const double bx = (sp.x - rect.getCentreX() - panX) / s - qz * r.z;
+    const double by = (rect.getCentreY() - sp.y + panY) / s - qz * u.z;
+    const double det = r.x * u.y - r.y * u.x;
+    if (std::abs (det) < 1e-9) return false;
+    const double qx = (bx * u.y - r.y * by) / det, qy = (r.x * by - bx * u.x) / det;
+    x = qx + c.x;
+    y = qy + c.y;
+    return true;
+}
+
 double View3D::depth (const Vec3& p) const { return dot (p, forward()); }
 
 double View3D::depth01 (const Vec3& p) const
