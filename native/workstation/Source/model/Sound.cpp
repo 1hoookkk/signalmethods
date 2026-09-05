@@ -65,7 +65,8 @@ void Sound::render (int width, int height)
             const double hz = 20.0 * std::pow (1000.0, 1.0 - (double) y / (height - 1));
             const int bin = juce::jlimit (0, kFft / 2 - 1, (int) std::round (hz / sampleRate * kFft));
             const float v = juce::jlimit (0.0f, 1.0f, (mag[(size_t) bin] + 80.0f) / 80.0f);
-            const auto c = juce::Colour::fromFloatRGBA (v * v, v * v * 0.9f + v * 0.1f, v, 1.0f);
+            const float k = v * v;
+            const auto c = k < 0.7f ? juce::Colour::fromFloatRGBA (1.0f - k / 0.7f, 1.0f - 0.553f * k / 0.7f, 1.0f - 0.259f * k / 0.7f, 1.0f) : juce::Colour::fromFloatRGBA (0.0f, 0.447f * (1.0f - (k - 0.7f) / 0.3f), 0.741f * (1.0f - (k - 0.7f) / 0.3f), 1.0f);
             bits.setPixelColour (x, y, c);
         }
     }

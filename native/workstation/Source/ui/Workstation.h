@@ -8,6 +8,7 @@
 #include "../model/Sound.h"
 #include "../model/Morph.h"
 #include "../render/GLRenderer.h"
+#include "../render/Canvas.h"
 #include "Audio.h"
 #include "Layout.h"
 #include <optional>
@@ -106,13 +107,15 @@ private:
     int trayAt (juce::Point<float> p) const;
     int keyAt (juce::Point<float> p) const;
     std::vector<Batch> scene() const;
-    void paintChrome (juce::Graphics& g);
-    void paintTray (juce::Graphics& g);
-    void paintResponse (juce::Graphics& g, const std::optional<Blend>& b);
-    void paintBody (juce::Graphics& g);
-    void paintArma (juce::Graphics& g);
-    void paintEditor (juce::Graphics& g);
-    void paintSound (juce::Graphics& g);
-    void paintTimeline (juce::Graphics& g);
+    std::vector<Batch> frame();
+    void paintPanels (Canvas& g);
+    void paintChrome (Canvas& g);
+    void paintTray (Canvas& g);
+    void paintResponse (Canvas& g, const std::optional<Blend>& b);
+    void paintBody (Canvas& g);
+    void paintArma (Canvas& g);
+    void paintEditor (Canvas& g);
+    void paintSound (Canvas& g);
+    void paintTimeline (Canvas& g);
 };
 }

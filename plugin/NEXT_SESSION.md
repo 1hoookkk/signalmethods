@@ -1366,3 +1366,15 @@ Open, in order:
   the circle (word 1 stores 1 - r squared) so no zero is ever drawn outside the rim; the P2K bank
   itself carries poles at r 0.99979 in bounds, left untouched since in bounds nothing may change.
   UI split by concern the same day (Workstation, Keys, Actions, Input, Scene, Paint, Style.h).
+- 2026-09-05, workstation look and rendering, two rulings from Tyson: "The black and cyan is
+  amateur" -> palette is MATLAB crossed with a high-end Unix workstation: ground #cccccc (the
+  classic MATLAB figure grey), white axes panels, black frames, light grid, black text, keys as
+  grey boxes that invert when on; data MATLAB blue #0072bd, chosen MATLAB orange #d95319, live
+  dark gold #c48f00. "Render the entire thing in custom OpenGL shaders" -> component painting
+  is off; text, rules, keys, panels and the spectrogram all go through the GL renderer (a solid
+  shader for points, lines, strips and rect triangles; a textured shader with a Consolas glyph
+  atlas built at the context's scale, and the spectrogram uploaded as a texture). One scene
+  description (render/Scene.h) built through render/Canvas, which mirrors the nine Graphics
+  calls the chrome used; the headless --shot path walks the same scene with juce::Graphics
+  (render/SoftwareRenderer). SVG and lunasvg are gone. GL path still not run on screen by the
+  assistant; the software shots are the check.

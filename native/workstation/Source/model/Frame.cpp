@@ -144,7 +144,7 @@ void sharpen (Words& words, double keep)
 
 juce::Colour hueOf (double t)
 {
-    return juce::Colour::fromHSV ((float) (juce::jlimit (0.0, 1.0, t) * 0.75), 0.9f, 0.9f, 1.0f);
+    return juce::Colour::fromHSV ((float) (juce::jlimit (0.0, 1.0, t) * 0.75), 0.85f, 0.72f, 1.0f);
 }
 
 Words blend (const std::vector<const Words*>& parents, const std::vector<double>& weights)

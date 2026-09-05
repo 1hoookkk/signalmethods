@@ -1,16 +1,43 @@
 #include "Workstation.h"
 #include "Style.h"
-#include "../render/SvgRenderer.h"
+#include "../render/SoftwareRenderer.h"
 #include <cmath>
 
 namespace ws
 {
 void Workstation::paint (juce::Graphics& g)
 {
+    if (gl) return;
+    g.fillAll (kGround);
+    drawScene (g, frame());
+}
+
+std::vector<Batch> Workstation::frame()
+{
     layoutKeys();
-    if (! gl) drawSvg (g, sceneToSvg (scene(), (float) getWidth(), (float) getHeight()), (float) getWidth(), (float) getHeight());
-    g.setFont (mono (11.0f));
-    paintChrome (g);
+    std::vector<Batch> out;
+    Canvas panels (out);
+    paintPanels (panels);
+    for (auto& b : scene()) out.push_back (std::move (b));
+    Canvas chrome (out);
+    chrome.setFont (11.0f);
+    paintChrome (chrome);
+    return out;
+}
+
+void Workstation::paintPanels (Canvas& g)
+{
+    g.setColour (kPanel);
+    if (! L.field.isEmpty()) g.fillRect (L.field);
+    if (! L.outer.isEmpty()) g.fillRect (L.outer);
+    if (! L.arma.isEmpty()) g.fillRect (L.arma.reduced (1.0f));
+    g.fillRect (juce::Rectangle<float> (L.rx (20.0), L.ry (30.0), L.rx (20000.0) - L.rx (20.0), L.ry (-30.0) - L.ry (30.0)));
+    if (L.timelineOpen) g.fillRect (L.tlAx);
+    if (! L.cascade.isEmpty())
+    {
+        g.fillRect (L.cascade);
+        for (int s = 0; s < kRows; ++s) g.fillRect (L.stageRect (s));
+    }
 }
 
 void Workstation::newOpenGLContextCreated() { renderer.create (ctx); }
@@ -18,30 +45,30 @@ void Workstation::openGLContextClosing() { renderer.destroy(); }
 
 void Workstation::renderOpenGL()
 {
-    layoutKeys();
-    renderer.draw (scene(), (float) getWidth(), (float) getHeight(), (float) ctx.getRenderingScale());
+    renderer.draw (frame(), (float) getWidth(), (float) getHeight(), (float) ctx.getRenderingScale(), kGround);
 }
 
-void Workstation::paintChrome (juce::Graphics& g)
+void Workstation::paintChrome (Canvas& g)
 {
     const auto b = current();
     if (L.room == Room::sound) paintSound (g);
-    g.setColour (kLine);
+    g.setColour (kRule);
     if (! L.tray.isEmpty()) g.drawVerticalLine ((int) L.tray.getRight() - 1, 0.0f, L.tl.getY());
     g.drawVerticalLine ((int) L.resp.getX(), 0.0f, L.tl.getY());
     g.drawHorizontalLine ((int) L.tl.getY(), 0.0f, (float) getWidth());
     if (L.room != Room::sound) g.drawHorizontalLine ((int) L.resp.getY(), L.resp.getX(), L.resp.getRight());
     if (! L.body.isEmpty()) g.drawHorizontalLine ((int) L.body.getBottom(), L.body.getX(), L.body.getRight());
+    g.setColour (kFrame);
     g.drawRect (px (L.field), 1);
     if (L.timelineOpen) g.drawRect (px (L.tlAx), 1);
     for (const auto& k : keys)
     {
         const auto r = px (k.box);
-        g.setColour (k.on ? kChosen : kKey);
+        g.setColour (k.on ? kKeyOn : kKey);
         g.fillRect (r);
-        g.setColour (k.on ? kChosen : kKeyLine);
+        g.setColour (k.on ? kKeyOn : kKeyLine);
         g.drawRect (r, 1);
-        g.setColour (k.on ? juce::Colours::black : kText);
+        g.setColour (k.on ? kKeyOnText : kKeyText);
         g.drawText (k.label, r.reduced (6, 0), juce::Justification::centredLeft);
     }
     if (L.room == Room::frames)
@@ -70,8 +97,11 @@ void Workstation::paintChrome (juce::Graphics& g)
         for (int i = 0; i < 4; ++i)
         {
             const juce::Rectangle<int> t ((int) L.body.getX() + 8 + (i & 1) * 212, (int) L.body.getY() + 48 + (i >> 1) * 80, 200, 40);
-            g.setColour (kLine);
+            g.setColour (kPanel);
+            g.fillRect (t);
+            g.setColour (kFrame);
             g.drawRect (t, 1);
+            g.setColour (kLine);
             g.drawHorizontalLine (t.getCentreY(), (float) t.getX(), (float) t.getRight());
             if (body.corner[(size_t) i] < 0) continue;
             g.setColour (i == editing ? kChosen : kDim);
@@ -85,7 +115,7 @@ void Workstation::paintChrome (juce::Graphics& g)
     g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
 }
 
-void Workstation::paintTray (juce::Graphics& g)
+void Workstation::paintTray (Canvas& g)
 {
     const int maxRows = (int) ((L.tray.getHeight() - 8.0f) / 14.0f);
     trayScroll = juce::jlimit (0, std::max (0, (int) trayRows.size() - maxRows), trayScroll);
@@ -115,10 +145,11 @@ void Workstation::paintTray (juce::Graphics& g)
     }
 }
 
-void Workstation::paintResponse (juce::Graphics& g, const std::optional<Blend>& b)
+void Workstation::paintResponse (Canvas& g, const std::optional<Blend>& b)
 {
-    g.setColour (kLine);
+    g.setColour (kFrame);
     g.drawRect (juce::Rectangle<int> ((int) L.rx (20.0), (int) L.ry (30.0), (int) (L.rx (20000.0) - L.rx (20.0)), (int) (L.ry (-30.0) - L.ry (30.0))), 1);
+    g.setColour (kLine);
     for (double f : { 100.0, 1000.0, 10000.0 }) g.drawVerticalLine ((int) L.rx (f), L.ry (30.0), L.ry (-30.0));
     for (double d : { -20.0, 20.0 }) g.drawHorizontalLine ((int) L.ry (d), L.rx (20.0), L.rx (20000.0));
     g.setColour (kDim);
@@ -142,11 +173,11 @@ void Workstation::paintResponse (juce::Graphics& g, const std::optional<Blend>& 
     }
 }
 
-void Workstation::paintBody (juce::Graphics& g)
+void Workstation::paintBody (Canvas& g)
 {
     g.setColour (kRule);
     g.drawRect (px (L.outer), 1);
-    g.setColour (kLine);
+    g.setColour (kFrame);
     g.drawRect (px (L.square), 1);
     g.setColour (body.outside() ? kChosen : kDim);
     g.drawText ("M " + juce::String (body.morph, 2) + "   Q " + juce::String (body.q, 2), (int) L.outer.getX(), (int) L.outer.getBottom() + 6, (int) L.outer.getWidth(), 12, juce::Justification::centred);
@@ -157,7 +188,7 @@ void Workstation::paintBody (juce::Graphics& g)
             g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.outer.getX() + 152, (int) L.outer.getBottom() + 54 + i * 13, (int) L.body.getRight() - (int) L.outer.getX() - 160, 12, juce::Justification::centredLeft);
 }
 
-void Workstation::paintArma (juce::Graphics& g)
+void Workstation::paintArma (Canvas& g)
 {
     g.setColour (kDim);
     for (double db : { 20.0, 40.0, 60.0 }) { const auto p = L.armaXY (20.0, 1.0 - std::pow (10.0, -db / 20.0)); g.drawText (juce::String ((int) db) + " dB", (int) p.x - 44, (int) p.y - 6, 40, 12, juce::Justification::centredRight); }
@@ -170,14 +201,15 @@ void Workstation::paintArma (juce::Graphics& g)
         if (rows[(size_t) s].pole) { const auto p = L.armaXY (rows[(size_t) s].pHz, rows[(size_t) s].pR); g.drawText (juce::String (s + 1), (int) p.x + 6, (int) p.y - 13, 12, 12, juce::Justification::centredLeft); }
 }
 
-void Workstation::paintEditor (juce::Graphics& g)
+void Workstation::paintEditor (Canvas& g)
 {
     if (editing < 0 || body.corner[(size_t) editing] < 0) return;
     const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
     const auto gridOf = [&] (juce::Rectangle<float> r, bool hzLabels, bool dbLabels)
     {
-        g.setColour (kLine);
+        g.setColour (kFrame);
         g.drawRect (px (r), 1);
+        g.setColour (kLine);
         const bool full = r.getHeight() > 100.0f;
         for (double hz : { 100.0, 1000.0, 10000.0 }) g.drawVerticalLine ((int) L.sx (r, hz), r.getY(), r.getBottom());
         if (full) for (double hz : { 50.0, 200.0, 500.0, 2000.0, 5000.0 }) g.drawVerticalLine ((int) L.sx (r, hz), r.getY(), r.getBottom());
@@ -194,7 +226,7 @@ void Workstation::paintEditor (juce::Graphics& g)
     openBar = { cr.getRight() - 220.0f, cr.getY() - 13.0f, 160.0f, 10.0f };
     g.setColour (kDim);
     g.drawText ("open", (int) openBar.getX() - 40, (int) openBar.getY() - 2, 36, 14, juce::Justification::centredRight);
-    g.setColour (juce::Colours::black);
+    g.setColour (kPanel);
     g.fillRect (openBar);
     g.setColour (kKeyLine);
     g.drawRect (px (openBar), 1);
@@ -215,7 +247,7 @@ void Workstation::paintEditor (juce::Graphics& g)
     }
 }
 
-void Workstation::paintSound (juce::Graphics& g)
+void Workstation::paintSound (Canvas& g)
 {
     if (sound.spectrogram.isValid())
     {
@@ -225,7 +257,7 @@ void Workstation::paintSound (juce::Graphics& g)
         {
             const float ra = L.field.getX() + (float) (std::min (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();
             const float rb = L.field.getX() + (float) (std::max (sound.regionA, sound.regionB) / sound.seconds) * L.field.getWidth();
-            g.setColour (juce::Colours::black.withAlpha (0.55f));
+            g.setColour (kGround.withAlpha (0.6f));
             g.fillRect (L.field.getX() + 1.0f, L.field.getY() + 1.0f, ra - L.field.getX() - 1.0f, L.field.getHeight() - 2.0f);
             g.fillRect (rb, L.field.getY() + 1.0f, L.field.getRight() - rb - 1.0f, L.field.getHeight() - 2.0f);
             g.setColour (kChosen);
@@ -268,7 +300,7 @@ void Workstation::paintSound (juce::Graphics& g)
     }
 }
 
-void Workstation::paintTimeline (juce::Graphics& g)
+void Workstation::paintTimeline (Canvas& g)
 {
     g.setColour (kDim);
     if (! L.timelineOpen) return;

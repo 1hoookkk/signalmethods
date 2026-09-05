@@ -17,7 +17,7 @@ Workstation::Workstation (Library& library, bool useGL, bool withAudio) : lib (l
         fmt.multisamplingLevel = 4;
         ctx.setPixelFormat (fmt);
         ctx.setMultisamplingEnabled (true);
-        ctx.setComponentPaintingEnabled (true);
+        ctx.setComponentPaintingEnabled (false);
         ctx.setContinuousRepainting (false);
         ctx.attachTo (*this);
     }
