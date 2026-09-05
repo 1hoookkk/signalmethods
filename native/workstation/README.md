@@ -1,7 +1,7 @@
 # HEADSPACE
 
 The authoring tool for TRENCH bodies, one screen: a field of frames (Klatt 1980 vowels, DVTD
-vowels, head notches) laid out by ROOT and dB, a log blend of the three frames around the mark, four corners, Ctrl+S to save
+vowels, head notches) laid out by ROOT and F2 AND ABOVE with gain as the size of the square, a log blend of the three frames around the mark, four corners, Ctrl+S to save
 what you hear into the current corner, WRITE BODY FILE for the plugin. A MATLAB R2025b toolbox
 over two MEX files, `trench_bridge` (the model) and `trench_audio` (the engine on the sound
 card). The plugin plays what this writes; nothing here changes the ship face.
@@ -15,8 +15,8 @@ In MATLAB:
     trench.setup
     app = trench.launch;
 
-Drag the field or use the arrows: left and right step by ROOT, up and down by dB, Shift nudges
-1 semitone or 1 dB, Ctrl 0.2. Keys 1 to 4 choose the
+Drag the field or use the arrows: left and right step by ROOT, up and down by F2 AND ABOVE, Shift
+nudges a semitone, Ctrl 0.2. Keys 1 to 4 choose the
 corner, Ctrl+S saves the live sound into it, Space plays. WRITE BODY FILE when four corners are
 filled writes `plugin/presets/user/headspace_<stamp>.body240`.
 

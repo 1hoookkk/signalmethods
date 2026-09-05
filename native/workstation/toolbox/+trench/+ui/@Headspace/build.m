@@ -16,12 +16,13 @@ for k=1:3
 end
 panel=uipanel(app.figure,'Units','pixels','Position',[20 470 1240 278],'BackgroundColor','w','BorderType','line','HighlightColor',[.43 .43 .43]);
 x=[app.low(1)-1 app.low(1)+app.span(1)+1]; y=[app.low(2)-1 app.low(2)+app.span(2)+1];
-ticks=12*ceil(x(1)/12):12:12*floor(x(2)/12);
+ticks=12*ceil(x(1)/12):12:12*floor(x(2)/12); yticks=12*ceil(y(1)/12):12:12*floor(y(2)/12);
 app.fieldAxes=axes(panel,'Units','pixels','Position',[70 44 1150 216],'Color','w','XLim',x,'YLim',y,'Box','on', ...
     'FontName','Arial','FontSize',9,'NextPlot','add','PositionConstraint','innerposition', ...
-    'XTick',ticks,'XTickLabel',arrayfun(@(n) trench.bridge.noteName(n),ticks,'UniformOutput',false));
-xlabel(app.fieldAxes,'ROOT'); ylabel(app.fieldAxes,'dB');
-app.squares=scatter(app.fieldAxes,app.points(:,1),app.points(:,2),70,blue,'s','filled','HitTest','off');
+    'XTick',ticks,'XTickLabel',arrayfun(@(n) trench.bridge.noteName(n),ticks,'UniformOutput',false), ...
+    'YTick',yticks,'YTickLabel',arrayfun(@(n) trench.bridge.noteName(n),yticks,'UniformOutput',false));
+xlabel(app.fieldAxes,'ROOT'); ylabel(app.fieldAxes,'F2 AND ABOVE');
+app.squares=scatter(app.fieldAxes,app.points(:,1),app.points(:,2),20+6*max(0,app.gains),blue,'s','filled','HitTest','off');
 app.vertexMarks=scatter(app.fieldAxes,NaN(1,3),NaN(1,3),130,orange,'s','LineWidth',1.5,'HitTest','off');
 app.projections=line(app.fieldAxes,NaN,NaN,'Color',gold,'LineStyle',':','HitTest','off');
 app.positionMark=line(app.fieldAxes,NaN,NaN,'Marker','s','MarkerSize',13,'MarkerFaceColor',gold,'Color',gold,'LineStyle','none','HitTest','off');

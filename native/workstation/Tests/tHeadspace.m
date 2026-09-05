@@ -31,8 +31,10 @@ methods(Test)
         t.app.setPosition(mean(t.app.points([i j],:),1)); p=t.app.probe;
         w=zeros(1,3); w(p.vertices==i)=.5; w(p.vertices==j)=.5;
         t.verifyEqual(p.weights,w,'AbsTol',1e-6);
-        [a,b]=trench.bridge.leadTo(f(i).chord,f(j).chord); expected=trench.model.lerpChords(a,b,.5);
-        t.verifyEqual(p.chord,expected,'AbsTol',1e-6);
+        [a,b]=trench.bridge.leadTo(f(i).chord,f(j).chord); expected=trench.model.lerpChords(a,b,.5); hz=trench.bridge.curveHz;
+        t.verifyEqual(trench.bridge.responseDb(p.words,hz),trench.bridge.responseDb(trench.bridge.unityDc(trench.bridge.compile(expected)),hz),'AbsTol',.05);
+        t.verifyEqual(sort(p.chord(p.chord(:,1)~=0,2)),sort(expected(expected(:,1)~=0,2)),'AbsTol',1e-6);
+        t.verifyEqual(p.position(1),sum(p.weights.*t.app.points(p.vertices,1)'),'AbsTol',1e-6);
         t.verifyEqual(p.words,trench.bridge.unityDc(trench.bridge.compile(p.chord)));
     end
     function h03Inside(t)

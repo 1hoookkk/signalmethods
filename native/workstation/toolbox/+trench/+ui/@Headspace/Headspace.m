@@ -4,6 +4,7 @@ properties
     figure
     frames
     points
+    gains
     low
     span
     tri
@@ -42,7 +43,7 @@ methods
     function app=Headspace(root,visible)
         if nargin<2, visible='on'; end
         app.root=root; app.frames=trench.model.headspaceFrames(root);
-        app.points=trench.model.spacePoints(app.frames);
+        measures=trench.model.spacePoints(app.frames); app.points=measures(:,1:2); app.gains=measures(:,3);
         [~,~,group]=unique(app.points,'rows');
         for g=unique(group)', same=find(group==g); app.points(same,1)=app.points(same,1)+(0:numel(same)-1)'*.01; end
         app.low=min(app.points); app.span=max(app.points)-app.low; app.span(app.span==0)=1;

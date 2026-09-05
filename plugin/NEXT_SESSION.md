@@ -1933,3 +1933,7 @@ Open, in order:
   the 2-simplex of the same blend the pair was the 1-simplex of). Arrows step by ROOT or dB,
   Shift/Ctrl nudge. tHeadspace 7 (vertex, edge, inside, keys, body, play, one screen), tShot 1,
   tBridge 13, tEnvelope 5, C++ 17.
+- 2026-09-06 ~00:05, Tyson: "What about f2 and above"; "Because it should be a coordinated
+  space". The field's vertical axis is F2 AND ABOVE, the mean note of a frame's poles above the
+  root; gain is the size of the square. Notes blend linearly, so the mark's x is the blended
+  root exactly and its y the blended upper mean: the place is the sound. tHeadspace 7, tShot 1.
