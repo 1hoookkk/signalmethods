@@ -157,7 +157,33 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
 {
     const auto p = e.position;
     for (const auto& k : keys)
-        if (k.box.contains (p)) { press (k.id); return; }
+        if (k.box.contains (p))
+        {
+            if (k.id == "compare") { compare = true; mode = Mode::holdCompare; redraw(); return; }
+            press (k.id);
+            return;
+        }
+    if (L.room == Room::morph)
+    {
+        if (padRect().contains (p) && body.ready())
+        {
+            const auto r = padRect();
+            padPressM = body.morph; padPressQ = body.q;
+            padPressM0 = (p.x - r.getX()) / r.getWidth(); padPressQ0 = (r.getBottom() - p.y) / r.getHeight();
+            mode = Mode::pad;
+            if (! fine) setPad (p); else { playBody = true; compare = false; redraw(); }
+            return;
+        }
+        if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
+        return;
+    }
+    if (L.room == Room::frames)
+    {
+        if (const int f = stripAt (p); f >= 0) { chooseFrame (f); redraw(); return; }
+        if (L.outer.contains (p) && body.ready()) { mode = Mode::wheel; setWheel (p); return; }
+        if (L.resp.contains (p)) { mode = Mode::pickHz; pickHz (p.x); return; }
+        return;
+    }
     if (L.room == Room::sound)
     {
         if (L.tray.contains (p))
@@ -242,6 +268,8 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
     const auto p = e.position;
     switch (mode)
     {
+        case Mode::pad: setPad (p); break;
+        case Mode::holdCompare: break;
         case Mode::surface: setSurface (p); break;
         case Mode::lift:
             if (spot && spot->free)
@@ -312,6 +340,7 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
         tl.playhead = tl.keys[(size_t) dragKey].t;
         playBody = false;
     }
+    if (mode == Mode::holdCompare) compare = false;
     mode = Mode::none;
     dragFrame = dragKey = -1;
     dragSpot.reset();
@@ -328,6 +357,11 @@ void Workstation::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWh
         redraw();
     }
     else if (L.room == Room::frames && L.field.contains (p))
+    {
+        stripScroll = std::max (0, stripScroll - (int) std::round (w.deltaY * 30));
+        redraw();
+    }
+    else if (false)
     {
         const double k = w.deltaY > 0 ? 1.1 : 1.0 / 1.1;
         view.zoom = juce::jlimit (0.3, 12.0, view.zoom * k);

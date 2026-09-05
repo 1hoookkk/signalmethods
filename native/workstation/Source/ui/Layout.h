@@ -5,7 +5,7 @@
 
 namespace ws
 {
-enum class Room { frames, edit, sound };
+enum class Room { frames, morph, edit, sound };
 
 struct Layout
 {

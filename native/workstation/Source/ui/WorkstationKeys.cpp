@@ -26,32 +26,24 @@ void Workstation::layoutKeys()
     keys.clear();
     const float kh = 14.0f;
     keys.push_back ({ "room0", "FRAMES", { 8.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::frames });
-    keys.push_back ({ "room1", "EDIT", { 72.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::edit });
-    keys.push_back ({ "room2", "SOUND", { 136.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::sound });
+    keys.push_back ({ "room3", "MORPH", { 72.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::morph });
+    keys.push_back ({ "room1", "EDIT", { 136.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::edit });
+    keys.push_back ({ "room2", "SOUND", { 200.0f, L.rooms.getY() + 5.0f, 60.0f, kh }, L.room == Room::sound });
     const bool audioOn = audio != nullptr && audio->isPlaying();
     keys.push_back ({ "listen", audioOn ? "STOP" : "LISTEN", { L.resp.getX() + 8.0f, L.resp.getY() + 6.0f, 60.0f, kh }, audioOn });
     keys.push_back ({ "wet", "FILTER", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 60.0f, kh }, wet });
     if (L.room == Room::frames)
     {
-        keys.push_back ({ "home", "HOME", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, false });
-        {
-            const auto& v = view;
-            const bool farX = v.farPlane (0), farY = v.farPlane (1);
-            const double nearX = farX ? v.lo.x : v.hi.x, nearY = farY ? v.lo.y : v.hi.y, farXv = farX ? v.hi.x : v.lo.x;
-            const auto ox = v.project ({ 0.0, nearY, v.lo.z }), oy = v.project ({ nearX, 0.0, v.lo.z }), oz = v.project ({ farXv, nearY, 0.5 });
-            const bool left = v.project ({ farXv, nearY, 0.0 }).x < L.field.getCentreX();
-            keys.push_back ({ "sweep0", "SWEEP", { ox.x + 34.0f, ox.y + 17.0f, 52.0f, kh }, sweep[0] });
-            keys.push_back ({ "sweep1", "SWEEP", { oy.x + 44.0f, oy.y + 17.0f, 52.0f, kh }, sweep[1] });
-            keys.push_back ({ "sweep2", "SWEEP", { left ? std::max (L.field.getX() + 4.0f, oz.x - 176.0f) : oz.x + 86.0f, oz.y - 4.0f, 52.0f, kh }, sweep[2] });
-        }
-        keys.push_back ({ "pair", "PAIR", { L.field.getRight() - 56.0f, 5.0f, 56.0f, kh }, pairMode });
+        keys.push_back ({ "sortRoot", "ROOT", { L.sortRow.getX() + 8.0f, 5.0f, 52.0f, kh }, ! sortNear });
+        keys.push_back ({ "sortNear", "NEAR", { L.sortRow.getX() + 64.0f, 5.0f, 52.0f, kh }, sortNear });
+        float gx = L.sortRow.getX() + 140.0f;
+        for (int g = 0; g < kGroups; ++g) { keys.push_back ({ "group" + juce::String (g), kGroupNames[g], { gx, 5.0f, 76.0f, kh }, open[(size_t) g] }); gx += 80.0f; }
         for (int i = 0; i < 4; ++i)
         {
-            const float sx = L.field.getX() + 8.0f + i * 96.0f;
-            keys.push_back ({ "slot" + juce::String (i), juce::String ("TAKE ") + kCornerNames[i], { sx, L.field.getBottom() - 22.0f, 88.0f, kh }, body.corner[(size_t) i] >= 0 });
+            const float sx = L.field.getX() + 8.0f + i * 100.0f;
+            keys.push_back ({ "slot" + juce::String (i), kCornerNames[i], { sx, L.field.getBottom() - 22.0f, 92.0f, kh }, selectedSlot == i });
         }
-        keys.push_back ({ "toBody", "BODY ROOM", { L.field.getRight() - 96.0f, L.field.getBottom() - 22.0f, 88.0f, kh }, false });
-        keys.push_back ({ "capture", "CAPTURE", { L.field.getRight() - 128.0f, 5.0f, 68.0f, kh }, false });
+        keys.push_back ({ "room3", "MORPH ROOM", { L.field.getRight() - 96.0f, L.field.getBottom() - 22.0f, 88.0f, kh }, false });
         const auto sq = L.outer;
         for (int i = 0; i < 4; ++i)
         {
@@ -60,12 +52,28 @@ void Workstation::layoutKeys()
         }
         const float bx = sq.getX(), by = sq.getBottom() + 30.0f;
         for (int s = 0; s < kRows; ++s) keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + 40.0f + s * 24.0f, by, 20.0f, kh }, body.rowOn[(size_t) s] });
-        keys.push_back ({ "playbody", "BODY", { bx, by + 24.0f, 68.0f, kh }, playBody });
-        keys.push_back ({ "edit", "EDIT", { bx + 72.0f, by + 24.0f, 68.0f, kh }, false });
         keys.push_back ({ "export", "EXPORT", { bx, by + 48.0f, 68.0f, kh }, false });
-        keys.push_back ({ "copy", "COPY", { bx + 72.0f, by + 48.0f, 68.0f, kh }, copyFrom >= 0 });
-        keys.push_back ({ "sharpen", "SHARPEN", { bx, by + 72.0f, 68.0f, kh }, false });
-        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, by + 72.0f, 68.0f, kh }, body.unity });
+        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, by + 48.0f, 68.0f, kh }, body.unity });
+    }
+    else if (L.room == Room::morph)
+    {
+        const auto r = padRect();
+        keys.push_back ({ "fine", "FINE", { r.getX(), r.getBottom() + 44.0f, 52.0f, kh }, fine });
+        keys.push_back ({ "sweep0", "SWEEP MORPH", { r.getX() + 60.0f, r.getBottom() + 44.0f, 96.0f, kh }, sweep[0] });
+        keys.push_back ({ "sweep1", "SWEEP Q", { r.getX() + 164.0f, r.getBottom() + 44.0f, 72.0f, kh }, sweep[1] });
+        keys.push_back ({ "compare", "COMPARE", { r.getX() + 244.0f, r.getBottom() + 44.0f, 76.0f, kh }, compare });
+        keys.push_back ({ "capture", "CAPTURE", { r.getRight() - 216.0f, r.getBottom() + 44.0f, 68.0f, kh }, false });
+        keys.push_back ({ "export", "EXPORT", { r.getRight() - 144.0f, r.getBottom() + 44.0f, 68.0f, kh }, false });
+        keys.push_back ({ "edit", "EDIT", { r.getRight() - 72.0f, r.getBottom() + 44.0f, 72.0f, kh }, false });
+        for (int i = 0; i < 4; ++i)
+        {
+            const bool right = (i & 1) != 0, top = (i & 2) != 0;
+            keys.push_back ({ "goto" + juce::String (i), kCornerNames[i], { right ? r.getRight() - 52.0f : r.getX(), top ? r.getY() - 36.0f : r.getBottom() + 22.0f, 52.0f, kh }, false });
+        }
+        const auto sq = L.outer;
+        const float bx = sq.getX(), by = sq.getBottom() + 30.0f;
+        for (int s = 0; s < kRows; ++s) keys.push_back ({ "row" + juce::String (s), juce::String (s + 1), { bx + 40.0f + s * 24.0f, by, 20.0f, kh }, body.rowOn[(size_t) s] });
+        keys.push_back ({ "unity", "UNITY", { bx + 72.0f, by + 48.0f, 68.0f, kh }, body.unity });
     }
     else if (L.room == Room::edit)
     {
@@ -95,13 +103,32 @@ void Workstation::layoutKeys()
 void Workstation::press (const juce::String& id)
 {
     if (id == "room0") setRoom (Room::frames);
+    else if (id == "room3") { if (body.corner[0] < 0 && body.corner[1] < 0 && body.corner[2] < 0 && body.corner[3] < 0) { if (playFrame >= 0) { body.corner[0] = playFrame; fillCorners(); } else { status = "choose a frame first"; redraw(); return; } } setRoom (Room::morph); }
+    else if (id == "sortRoot") { sortNear = false; stripDirty = true; }
+    else if (id == "sortNear") { sortNear = true; stripDirty = true; }
+    else if (id.startsWith ("group")) { const int g = id.substring (5).getIntValue(); open[(size_t) g] = ! open[(size_t) g]; stripDirty = true; }
+    else if (id.startsWith ("slot")) { const int k = id.substring (4).getIntValue(); selectedSlot = selectedSlot == k ? -1 : k; status = selectedSlot >= 0 ? juce::String ("choose a frame for ") + kCornerNames[k] : juce::String(); }
+    else if (id.startsWith ("goto") && L.room == Room::morph) { selectedSlot = id.substring (4).getIntValue(); setRoom (Room::frames); status = juce::String ("choose a frame for ") + kCornerNames[selectedSlot]; }
+    else if (id == "fine") fine = ! fine;
+    else if (id == "compare") {}
     else if (id == "room1") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "pick a corner first"; }
     else if (id == "room2") setRoom (Room::sound);
     else if (id.startsWith ("sweep")) { const int k = id.substring (5).getIntValue(); sweep[(size_t) k] = ! sweep[(size_t) k]; if (sweep[0] || sweep[1] || sweep[2]) startTimerHz (60); }
+    else if (id == "capture" && L.room == Room::morph)
+    {
+        if (! body.ready()) status = "nothing to capture";
+        else
+        {
+            juce::String name = "cap " + lib.frames[(size_t) body.corner[0]].name.substring (0, 14) + " " + juce::String (body.morph, 2) + "/" + juce::String (body.q, 2);
+            const int idx = lib.addNamed (body.wheelWords (lib.frames), name, kGroups - 1, true);
+            stripDirty = true;
+            status = "captured " + lib.frames[(size_t) idx].name;
+        }
+    }
     else if (id == "home") { view.az = -37.5; view.el = 30.0; view.zoom = 1.0; view.panX = view.panY = 0.0; }
     else if (id == "pair") { pairMode = ! pairMode; pairA = pairB = -1; pairT = 0.0; status = pairMode ? "pick two nodes" : ""; }
     else if (id == "capture") capture();
-    else if (id.startsWith ("corner")) assignCorner (id.substring (6).getIntValue());
+    else if (id.startsWith ("corner")) { assignCorner (id.substring (6).getIntValue()); chosen[(size_t) id.substring (6).getIntValue()] = true; fillCorners(); }
     else if (id.startsWith ("slot")) { assignCorner (id.substring (4).getIntValue()); playBody = false; }
     else if (id == "toBody") { if (body.corner[(size_t) editCorner] >= 0) openEditor (editCorner); else status = "take a corner first"; }
     else if (id.startsWith ("goto")) openEditor (id.substring (4).getIntValue());

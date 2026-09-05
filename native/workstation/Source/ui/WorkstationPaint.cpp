@@ -29,6 +29,7 @@ void Workstation::paintPanels (Canvas& g)
 {
     g.setColour (kPanel);
     if (! L.field.isEmpty()) g.fillRect (L.field);
+    if (L.room == Room::morph) { g.setColour (kGround); g.fillRect (L.field); g.setColour (kPanel); g.fillRect (padRect()); }
     if (! L.outer.isEmpty()) g.fillRect (L.outer);
     if (! L.arma.isEmpty()) g.fillRect (L.arma.reduced (1.0f));
     g.fillRect (juce::Rectangle<float> (L.rx (20.0), L.ry (30.0), L.rx (20000.0) - L.rx (20.0), L.ry (-30.0) - L.ry (30.0)));
@@ -71,10 +72,14 @@ void Workstation::paintChrome (Canvas& g)
         g.setColour (k.on ? kKeyOnText : kKeyText);
         g.drawText (k.label, r.reduced (6, 0), juce::Justification::centredLeft);
     }
-    if (L.room == Room::frames)
+    if (L.room == Room::morph)
     {
-        paintAxes (g);
-        paintTray (g);
+        paintPad (g);
+        paintBody (g);
+    }
+    else if (L.room == Room::frames)
+    {
+        paintStrip (g);
         paintBody (g);
         if (pairLive())
         {
@@ -113,7 +118,7 @@ void Workstation::paintChrome (Canvas& g)
     paintResponse (g);
     paintTimeline (g);
     g.setColour (kChosen);
-    g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - (L.room == Room::frames ? 40 : 16), (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
+    g.drawText (status, (int) L.field.getX() + 8, L.room == Room::morph ? (int) L.field.getY() + 6 : (int) L.field.getBottom() - (L.room == Room::frames ? 40 : 16), (int) L.field.getWidth() - 16, 12, juce::Justification::centredLeft);
 }
 
 void Workstation::paintTray (Canvas& g)
@@ -354,6 +359,6 @@ void Workstation::paintTimeline (Canvas& g)
     g.setColour (kDim);
     if (! L.timelineOpen) return;
     for (int t = 0; t <= (int) tl.duration; ++t) g.drawText (juce::String (t), (int) L.tx (t) - 8, (int) L.tlAx.getBottom() + 4, 20, 12, juce::Justification::centred);
-    g.drawText (juce::String (tl.playhead, 2) + " s", (int) L.tlAx.getX() + 4, (int) L.tlAx.getY() - 14, 58, 12, juce::Justification::centredLeft);
+    g.drawText (juce::String (tl.playhead, 2) + " s", (int) L.tlAx.getX() + 64, (int) L.tlAx.getY() - 14, 58, 12, juce::Justification::centredLeft);
 }
 }

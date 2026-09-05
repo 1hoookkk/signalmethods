@@ -27,14 +27,17 @@ public:
     void demoSound (int wavIndex, double at, double regionA, double regionB);
     void demoPair (double t);
     void demoShelf();
+    void demoMorph();
     void setRoom (Room r);
     bool exportBody (const juce::File& file);
     juce::File exportDir, workspace;
-    struct Probe { bool free = false, sounding = false, listening = false; double x = 0.0, y = 0.0, z = 0.0; juce::String status; };
+    struct Probe { bool free = false, sounding = false, listening = false, comparing = false; double x = 0.0, y = 0.0, z = 0.0, morph = 0.0, q = 0.0; int playFrame = -1, room = 0; std::array<int, 4> corners { -1, -1, -1, -1 }; juce::String status; };
+    juce::Rectangle<float> stripRow (int index) const;
     Probe probe() const;
     juce::Rectangle<float> keyBox (const juce::String& id) const;
     juce::Rectangle<float> fieldRect() const { return L.field; }
     juce::Point<float> clearPoint() const;
+    juce::Rectangle<float> padBox() const { return padRect(); }
     void gesture (juce::Point<float> p, int phase, bool shift = false, bool right = false);
 
     void paint (juce::Graphics& g) override;
@@ -47,7 +50,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, surface, lift, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
+    enum class Mode { none, pad, holdCompare, surface, lift, orbit, scrub, dragFrame, dragSpot, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice, region };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
     struct TrayRow { int frame; int group; bool header; };
 
@@ -65,6 +68,19 @@ private:
     std::optional<Spot> spot, picked, dragSpot;
     int openFace = -1;
     std::array<bool, 3> sweep { false, false, false };
+    std::vector<int> stripOrder;
+    bool stripDirty = true, sortNear = false, fine = false, compare = false;
+    std::array<bool, 4> chosen { false, false, false, false };
+    int stripScroll = 0, selectedSlot = -1, playFrame = -1;
+    double padPressM = 0.0, padPressQ = 0.0, padPressM0 = 0.0, padPressQ0 = 0.0;
+    void buildStrip();
+    int stripAt (juce::Point<float> p) const;
+    void chooseFrame (int frame);
+    void fillCorners();
+    void paintStrip (Canvas& g);
+    juce::Rectangle<float> padRect() const;
+    void setPad (juce::Point<float> p);
+    void paintPad (Canvas& g);
     double sweepT = 0.0;
     double freeZ = 0.5;
     int anchorAt (juce::Point<float> p) const;

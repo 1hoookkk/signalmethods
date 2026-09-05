@@ -237,6 +237,7 @@ target_sources(TRENCH_Workstation PRIVATE
   "${TRENCH_WORKSTATION_DIR}/ui/WorkstationInput.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/WorkstationScene.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/WorkstationPaint.cpp"
+  "${TRENCH_WORKSTATION_DIR}/ui/WorkstationRooms.cpp"
   "${TRENCH_WORKSTATION_DIR}/ui/Audio.cpp")
 target_include_directories(TRENCH_Workstation PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
 target_compile_features(TRENCH_Workstation PRIVATE cxx_std_20)

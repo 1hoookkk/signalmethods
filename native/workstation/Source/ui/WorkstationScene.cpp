@@ -148,9 +148,17 @@ std::vector<Batch> Workstation::scene() const
 {
     std::vector<Batch> out;
     const bool haveWords = haveSound();
-    if (L.room == Room::frames)
+    if (L.room == Room::morph && body.ready())
     {
-        sceneStitch (out);
+        const auto r = padRect();
+        Batch pad { Batch::points, true, {} };
+        for (int i = 0; i < 4; ++i)
+            pad.v.push_back (vertex ({ i & 1 ? r.getRight() : r.getX(), i & 2 ? r.getY() : r.getBottom() }, hueOf (lib.frames[(size_t) body.corner[(size_t) i]].m[0]), 10.0f));
+        pad.v.push_back (vertex ({ r.getX() + (float) body.morph * r.getWidth(), r.getBottom() - (float) body.q * r.getHeight() }, compare ? kChosen : kLive, 12.0f));
+        out.push_back (pad);
+    }
+    if (L.room == Room::frames || L.room == Room::morph)
+    {
         if (playBody && body.ready())
         {
             const auto sq = L.square;

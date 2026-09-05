@@ -33,6 +33,8 @@ Workstation::~Workstation()
 void Workstation::setRoom (Room r)
 {
     L.room = r;
+    if (r == Room::morph) { fillCorners(); playBody = body.ready(); compare = false; status = ""; }
+    if (r == Room::frames) { playBody = false; stripDirty = true; status = ""; }
     if (r != Room::edit) editing = -1;
     if (r == Room::sound)
     {
@@ -61,7 +63,7 @@ void Workstation::demo()
     tl.playhead = 2.1;
     for (int i = 0; i < 4; ++i) { Spot c; c.node = f.nodes[(size_t) i]; body.corner[(size_t) i] = frameFor (c); }
     body.rowOn[4] = false;
-    body.morph = 1.4;
+    body.morph = 0.35;
     body.q = 0.6;
     playBody = true;
     openEditor (1);
@@ -71,6 +73,15 @@ void Workstation::demoPair (double t)
 {
     setRoom (Room::frames);
     pairTo (t);
+    redraw();
+}
+
+void Workstation::demoMorph()
+{
+    setRoom (Room::morph);
+    body.morph = 0.3;
+    body.q = 0.6;
+    playBody = true;
     redraw();
 }
 
@@ -130,7 +141,15 @@ void Workstation::timerCallback()
         return;
     }
     if (audio != nullptr && audio->isPlaying() && ! tl.playing && ! (sweep[0] || sweep[1] || sweep[2])) { repaint(); if (gl) ctx.triggerRepaint(); return; }
-    if (sweep[0] || sweep[1] || sweep[2])
+    if (L.room == Room::morph && (sweep[0] || sweep[1]))
+    {
+        sweepT += 1.0 / 60.0;
+        if (sweep[0]) body.morph = 0.5 + 0.5 * std::sin (sweepT * 0.35);
+        if (sweep[1]) body.q = 0.5 + 0.5 * std::sin (sweepT * 0.23 + 1.0);
+        playBody = true;
+        if (! tl.playing) { redraw(); return; }
+    }
+    else if (sweep[0] || sweep[1] || sweep[2])
     {
         sweepT += 1.0 / 60.0;
         if (! spot || ! spot->free) { Spot fs; fs.free = true; fs.z = freeZ; spot = fs; }
@@ -159,6 +178,12 @@ Workstation::Probe Workstation::probe() const
     pr.status = status;
     pr.sounding = haveSound();
     pr.listening = audio != nullptr && audio->isPlaying();
+    pr.comparing = compare;
+    pr.morph = body.morph;
+    pr.q = body.q;
+    pr.playFrame = playFrame;
+    pr.room = (int) L.room;
+    pr.corners = body.corner;
     if (spot) { pr.free = spot->free; pr.x = spot->x; pr.y = spot->y; pr.z = spot->z; }
     return pr;
 }
@@ -180,8 +205,16 @@ juce::Point<float> Workstation::clearPoint() const
     return { f.getCentreX(), f.getCentreY() };
 }
 
+juce::Rectangle<float> Workstation::stripRow (int index) const
+{
+    if (stripDirty) const_cast<Workstation*> (this)->buildStrip();
+    const int row = index - stripScroll;
+    return { L.field.getX() + 8.0f, L.field.getY() + 30.0f + row * 16.0f, L.field.getWidth() - 16.0f, 16.0f };
+}
+
 juce::Rectangle<float> Workstation::keyBox (const juce::String& id) const
 {
+    const_cast<Workstation*> (this)->layoutKeys();
     for (const auto& k : keys) if (k.id == id) return k.box;
     return {};
 }
@@ -191,6 +224,7 @@ void Workstation::gesture (juce::Point<float> p, int phase, bool shift, bool rig
     juce::ModifierKeys mods;
     if (shift) mods = mods.withFlags (juce::ModifierKeys::shiftModifier);
     mods = mods.withFlags (right ? juce::ModifierKeys::rightButtonModifier : juce::ModifierKeys::leftButtonModifier);
+    layoutKeys();
     const juce::MouseEvent e (juce::Desktop::getInstance().getMainMouseSource(), p, mods, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, this, this, juce::Time::getCurrentTime(), p, juce::Time::getCurrentTime(), 1, phase != 0);
     if (phase == 0) mouseDown (e);
     else if (phase == 1) mouseDrag (e);
@@ -202,6 +236,8 @@ bool Workstation::floorOpen (int floor) const { return floor < 0 || floor >= kGr
 bool Workstation::haveSound() const
 {
     if (L.room == Room::sound) return ! sound.mono->empty();
+    if (L.room == Room::morph) return body.ready();
+    if (L.room == Room::frames && playFrame >= 0) return true;
     return (playBody && body.ready()) || pairLive() || spot.has_value();
 }
 
@@ -211,6 +247,9 @@ Morph Workstation::live() const
 {
     Morph m;
     if (L.room == Room::sound) { if (const auto w = sound.frameAt (sound.slice)) m.words = *w; return m; }
+    if (L.room == Room::morph && compare && body.corner[0] >= 0) { m.words = body.cornerWords (lib.frames, 0); return m; }
+    if (L.room == Room::morph && body.ready()) return body.wheelMorph (lib.frames);
+    if (L.room == Room::frames && playFrame >= 0 && playFrame < (int) lib.frames.size() && ! playBody) { m.words = lib.frames[(size_t) playFrame].words; return m; }
     if (playBody && body.ready()) return body.wheelMorph (lib.frames);
     if (pairLive())
     {

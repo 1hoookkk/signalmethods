@@ -12,11 +12,11 @@ void Layout::compute (float Wf, float Hf)
     tl = { 0.0f, H - tlH, W, tlH };
     tlAx = { left + m, H - tlH + (timelineOpen ? 20.0f : 5.0f), W - left - 2.0f * m, timelineOpen ? tlH - 40.0f : 14.0f };
     const float bottom = H - tlH;
-    if (room == Room::frames)
+    if (room == Room::frames || room == Room::morph)
     {
-        tray = { 0.0f, 0.0f, left, bottom };
-        sortRow = { left, 0.0f, W - left - right, 24.0f };
-        field = { left + m, 24.0f, W - left - right - 2.0f * m, bottom - 24.0f - m };
+        tray = {};
+        sortRow = { 0.0f, 0.0f, W - right, 24.0f };
+        field = { m, 24.0f, W - right - 2.0f * m, bottom - 24.0f - m };
         body = { W - right, 0.0f, right, 324.0f };
         outer = { W - right + m + 56.0f, 16.0f, 180.0f, 180.0f };
         square = outer.reduced (60.0f);

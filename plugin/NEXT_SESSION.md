@@ -1516,3 +1516,20 @@ Open, in order:
   caught the 6 px grab radius eating every press before Tyson saw it. Memory corrections
   from the outside answer: US5943427 is a spatialization patent, the Hillenbrand "PDF" in
   papers is a saved web page.
+- 2026-09-05, the second outside answer (GPT-6 Astra), Tyson: "lets listen to him strongly".
+  Built: two rooms, FRAMES and MORPH, one key between them, plus EDIT and SOUND as before.
+  FRAMES is a strip of every frame (P2K corners, the 1,567 Morpheus corners, X3, vowels,
+  heads, XL-1, instruments, captures first) with name, root note, intervals from the root
+  in semitones, mean width and source; sorted by ROOT or by NEAR, the voice-leading cost from
+  the first corner; group keys fold sources; four slots M0 Q0 .. M1 Q1, press a slot then
+  a row; one frame fills all four corners, a second fills the opposite edge, further frames
+  replace copies; pressing a row auditions it. MORPH is the pad: corner names at the corners,
+  one position, drag to play, FINE scales the drag to a tenth, SWEEP MORPH and SWEEP Q glide
+  an axis, hold COMPARE to hear the first corner, CAPTURE keeps the moment as a frame at the
+  top of the strip, EXPORT, EDIT; a corner name returns to FRAMES with that slot selected.
+  Voice leading underneath (commit 66a08d60): the partner's stages are reordered to the
+  nearest notes, partnerless voices dissolve in place as a cancelling pole and zero, so
+  MORPH 0..100 is six short glides and the exported body lerps voice to voice on the chip.
+  The 3D box is gone from the rooms; the Stitch model stays for the corner bank. Gesture
+  check now walks the strip, the slots, the pad, FINE, COMPARE, CAPTURE, LISTEN and the
+  return; 13 checks pass headless.
