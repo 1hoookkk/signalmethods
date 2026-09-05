@@ -455,7 +455,11 @@ int Workstation::anchorAt (juce::Point<float> p) const
 {
     if (! L.field.contains (p)) return -1;
     for (int i = (int) lib.anchors.size() - 1; i >= 0; --i)
-        if (L.fromField (lib.anchors[(size_t) i].p).getDistanceFrom (p) < 6.0f) return i;
+    {
+        const auto& f = lib.frames[(size_t) lib.anchors[(size_t) i].frame];
+        const bool on = (lit < 0 || f.group == lit || f.capture) && (! pairMode || pairB < 0 || i == pairA || i == pairB);
+        if (on && L.fromField (lib.anchors[(size_t) i].p).getDistanceFrom (p) < 6.0f) return i;
+    }
     return -1;
 }
 
@@ -697,9 +701,9 @@ std::vector<Batch> Workstation::scene() const
         const auto& f = lib.frames[(size_t) a.frame];
         const bool chosen = i == pairA || i == pairB;
         const bool on = (lit < 0 || f.group == lit || f.capture) && (! pairMode || pairB < 0 || chosen);
-        auto c = f.capture ? juce::Colours::yellow : hueOf (f.m[0]);
-        if (! on) c = c.withAlpha (0.25f);
-        pts.v.push_back (vertex (L.fromField (a.p), c, chosen || i == dragAnchor || i == pickFor ? 12.0f : (on ? 8.0f : 5.0f)));
+        if (! on) continue;
+        const auto c = f.capture ? juce::Colours::yellow : hueOf (f.m[0]);
+        pts.v.push_back (vertex (L.fromField (a.p), c, chosen || i == dragAnchor || i == pickFor ? 12.0f : 8.0f));
     }
     for (const auto& k : ks) pts.v.push_back (vertex (L.fromField (k.p), k.colour, 9.0f));
     if (probe) pts.v.push_back (vertex (L.fromField (*probe), juce::Colours::yellow, 9.0f));
@@ -768,10 +772,8 @@ std::vector<Batch> Workstation::scene() const
                 if (weight < 0.08) continue;
                 const auto& pr = lib.frames[(size_t) frameIdx].rows[(size_t) s];
                 if (! pr.pole) continue;
-                const auto c = kOn.withAlpha ((float) (0.15 + 0.6 * weight));
-                glides.v.push_back (vertex (here, c, 1.0f));
-                glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), c, 1.0f));
-                poles.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kDim, 4.0f));
+                glides.v.push_back (vertex (here, kOn, 1.0f));
+                glides.v.push_back (vertex (L.armaXY (pr.pHz, pr.pR), kOn, 1.0f));
             }
             poles.v.push_back (vertex (here, juce::Colours::white, 8.0f));
             if (r.zero) zeros.v.push_back (vertex (L.armaXY (r.zHz, r.zR), kOn, 7.0f));
@@ -865,7 +867,7 @@ void Workstation::paintChrome (juce::Graphics& g)
         const float y = L.tray.getY() + 6.0f + r * 14.0f;
         g.setColour (f.capture ? juce::Colours::yellow : hueOf (f.m[0]));
         g.fillEllipse (L.tray.getX() + 9.0f, y + 4.5f, 5.0f, 5.0f);
-        g.setColour (lit < 0 || f.group == lit || f.capture ? kText : kDim);
+        g.setColour (kText);
         g.drawText (f.name, (int) L.tray.getX() + 20, (int) y, (int) L.tray.getWidth() - 28, 14, juce::Justification::centredLeft);
     }
     g.setColour (kDim);
