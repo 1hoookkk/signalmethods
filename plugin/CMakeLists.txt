@@ -222,6 +222,7 @@ target_sources(TRENCH_Workstation PRIVATE
   "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Timeline.cpp"
   "${TRENCH_WORKSTATION_DIR}/model/Body.cpp"
+  "${TRENCH_WORKSTATION_DIR}/model/Sound.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/Scene.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/GLRenderer.cpp"
   "${TRENCH_WORKSTATION_DIR}/render/SvgRenderer.cpp"
@@ -236,5 +237,6 @@ target_link_libraries(TRENCH_Workstation PRIVATE
     trench_native_core
     juce::juce_gui_basics
     juce::juce_opengl
+    juce::juce_dsp
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)

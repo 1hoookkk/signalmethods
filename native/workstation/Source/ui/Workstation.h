@@ -5,6 +5,7 @@
 #include "../model/Library.h"
 #include "../model/Timeline.h"
 #include "../model/Body.h"
+#include "../model/Sound.h"
 #include "../render/GLRenderer.h"
 #include "Layout.h"
 #include <optional>
@@ -21,6 +22,8 @@ public:
     void closeEditor() { editing = -1; }
     bool exportBody (const juce::File& file);
     juce::File exportDir;
+    juce::File workspace;
+    void openSpectro (int wavIndex, double at);
 
     void paint (juce::Graphics& g) override;
     void newOpenGLContextCreated() override;
@@ -32,7 +35,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
 
 private:
-    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel, dragPole, dragZero, open };
+    enum class Mode { none, probe, scrub, dragFrame, dragAnchor, dragKey, pickHz, pair, wheel, dragPole, dragZero, open, slice };
     struct KeyBox { juce::String id, label; juce::Rectangle<float> box; bool on; };
 
     Library& lib;
@@ -40,6 +43,15 @@ private:
     Body body;
     bool playBody = false;
     int editCorner = 0;
+public:
+    bool spectro = false;
+private:
+    Sound sound;
+    std::vector<juce::File> wavs;
+    int wavScroll = 0;
+    void loadWav (int index);
+    void setSlice (float x);
+    void frameFromSlice();
     int copyFrom = -1;
     std::array<bool, kRows> lockRow { false, false, false, false, false, false };
     void sharpenQ();

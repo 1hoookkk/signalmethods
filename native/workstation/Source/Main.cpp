@@ -21,6 +21,7 @@ int shoot (const juce::String& path)
     loadLibrary (lib);
     ws::Workstation view (lib, false);
     view.exportDir = workspaceRoot().getChildFile ("plugin/presets/user");
+    view.workspace = workspaceRoot();
     view.demo();
     view.exportBody (juce::File (path).getSiblingFile ("ws_demo.body240"));
     juce::Image img (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
@@ -33,6 +34,17 @@ int shoot (const juce::String& path)
     juce::FileOutputStream os (out);
     juce::PNGImageFormat().writeImageToStream (img, os);
     view.closeEditor();
+    view.openSpectro (0, 0.6);
+    juce::Image img3 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
+    {
+        juce::Graphics g (img3);
+        view.paintEntireComponent (g, false);
+    }
+    auto out3 = out.getSiblingFile (out.getFileNameWithoutExtension() + "_sound.png");
+    out3.deleteFile();
+    juce::FileOutputStream os3 (out3);
+    juce::PNGImageFormat().writeImageToStream (img3, os3);
+    view.spectro = false;
     juce::Image img2 (juce::Image::RGB, view.getWidth(), view.getHeight(), true);
     {
         juce::Graphics g (img2);
@@ -61,7 +73,7 @@ public:
         if (shot >= 0 && shot + 1 < args.size()) { shoot (args[shot + 1].unquoted()); quit(); return; }
         loadLibrary (library);
         window = std::make_unique<MainWindow> (getApplicationName(), library);
-        if (auto* w = dynamic_cast<ws::Workstation*> (window->getContentComponent())) w->exportDir = workspaceRoot().getChildFile ("plugin/presets/user");
+        if (auto* w = dynamic_cast<ws::Workstation*> (window->getContentComponent())) { w->exportDir = workspaceRoot().getChildFile ("plugin/presets/user"); w->workspace = workspaceRoot(); }
     }
 
     void shutdown() override { window.reset(); }

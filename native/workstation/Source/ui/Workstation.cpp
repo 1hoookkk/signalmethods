@@ -160,6 +160,50 @@ void Workstation::ceiling()
     redraw();
 }
 
+void Workstation::openSpectro (int wavIndex, double at)
+{
+    if (wavs.empty()) wavs = Sound::scan (workspace);
+    spectro = true;
+    editing = -1;
+    loadWav (wavIndex);
+    sound.slice = at;
+    redraw();
+}
+
+void Workstation::loadWav (int index)
+{
+    if (index < 0 || index >= (int) wavs.size()) return;
+    if (! sound.load (wavs[(size_t) index])) { status = "could not read " + wavs[(size_t) index].getFileName(); redraw(); return; }
+    sound.render ((int) L.field.getWidth() - 2, (int) L.field.getHeight() - 2);
+    status = wavs[(size_t) index].getFileNameWithoutExtension() + "  " + juce::String (sound.seconds, 2) + " s  " + juce::String ((int) sound.sampleRate) + " Hz";
+    redraw();
+}
+
+void Workstation::setSlice (float x)
+{
+    if (sound.mono.empty()) return;
+    sound.slice = juce::jlimit (0.0, sound.seconds, (double) (x - L.field.getX()) / L.field.getWidth() * sound.seconds);
+    redraw();
+}
+
+void Workstation::frameFromSlice()
+{
+    const auto w = sound.frameAt (sound.slice);
+    if (! w) { status = "no frame at this slice"; redraw(); return; }
+    Frame f;
+    f.words = *w;
+    f.capture = true;
+    f.group = kGroups - 1;
+    f.name = sound.file.getFileNameWithoutExtension().substring (0, 18) + " @" + juce::String (sound.slice, 2);
+    measure (f);
+    lib.frames.push_back (f);
+    lib.anchors.push_back ({ (int) lib.frames.size() - 1, lib.coordOf (f) });
+    lib.retriangulate();
+    pickFor = (int) lib.anchors.size() - 1;
+    status = "frame " + f.name + " picked, click a corner";
+    redraw();
+}
+
 void Workstation::assignCorner (int i)
 {
     editCorner = i;
@@ -231,6 +275,13 @@ void Workstation::layoutKeys()
     const float rightKeys = L.field.getRight();
     keys.push_back ({ "sort", "SORT", { rightKeys - 56.0f, 6.0f, 56.0f, kh }, false });
     keys.push_back ({ "clear", "CLEAR", { rightKeys - 56.0f, 22.0f, 56.0f, kh }, false });
+    keys.push_back ({ "spectro", "SOUND", { L.resp.getX() + 136.0f, L.resp.getY() + 6.0f, 56.0f, kh }, spectro });
+    if (spectro)
+    {
+        keys.push_back ({ "speech", "SPEECH", { L.field.getX(), L.field.getBottom() - 20.0f, 60.0f, kh }, sound.speech });
+        keys.push_back ({ "bells", "BELLS", { L.field.getX() + 64.0f, L.field.getBottom() - 20.0f, 56.0f, kh }, ! sound.speech });
+        keys.push_back ({ "frame", "FRAME", { L.field.getX() + 124.0f, L.field.getBottom() - 20.0f, 60.0f, kh }, false });
+    }
     for (int i = 0; i < kGroups; ++i) keys.push_back ({ "lit" + juce::String (i), kGroupNames[i], { 8.0f, 8.0f + i * 16.0f, L.groups.getWidth() - 16.0f, kh }, lit == i });
     keys.push_back ({ "capture", "CAPTURE", { L.info.getX() + 8.0f, L.info.getY() + 8.0f, 76.0f, kh }, false });
     static const char* cornerNames[] = { "M0 Q0", "M1 Q0", "M0 Q1", "M1 Q1" };
@@ -311,6 +362,10 @@ void Workstation::press (const juce::String& id)
     else if (id == "export") exportBody (exportDir.getChildFile ("ws_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".body240"));
     else if (id == "playbody") playBody = ! playBody;
     else if (id == "edit") openEditor (editCorner);
+    else if (id == "spectro") { spectro = ! spectro; if (spectro) { editing = -1; if (wavs.empty()) wavs = Sound::scan (workspace); if (sound.mono.empty() && ! wavs.empty()) loadWav (0); } }
+    else if (id == "speech") sound.speech = true;
+    else if (id == "bells") sound.speech = false;
+    else if (id == "frame") frameFromSlice();
     else if (id == "copy") { copyFrom = copyFrom >= 0 ? -1 : editCorner; status = copyFrom >= 0 ? "click the corner to paste into" : ""; }
     else if (id == "sharpen") sharpenQ();
     else if (id == "unity") body.unity = ! body.unity;
@@ -369,6 +424,13 @@ void Workstation::mouseDown (const juce::MouseEvent& e)
     const auto p = e.position;
     for (const auto& k : keys)
         if (k.box.contains (p)) { press (k.id); return; }
+    if (spectro && L.tray.contains (p))
+    {
+        const int row = (int) ((p.y - L.tray.getY() - 6.0f) / 14.0f) + wavScroll;
+        if (row >= 0 && row < (int) wavs.size()) loadWav (row);
+        return;
+    }
+    if (spectro && L.field.contains (p)) { mode = Mode::slice; setSlice (p.x); return; }
     if (const int t = trayAt (p); t >= 0)
     {
         if (pickFor >= 0 && pickFor < (int) lib.anchors.size()) { lib.anchors[(size_t) pickFor].frame = t; pickFor = -1; lib.retriangulate(); redraw(); return; }
@@ -429,6 +491,7 @@ void Workstation::mouseDrag (const juce::MouseEvent& e)
         case Mode::dragPole:
         case Mode::dragZero: dragHandle (p); break;
         case Mode::open: setOpen (p.x); break;
+        case Mode::slice: setSlice (p.x); break;
         case Mode::dragFrame:
         case Mode::dragAnchor: dragPos = p; redraw(); break;
         case Mode::dragKey: tl.keys[(size_t) dragKey].t = L.tAt (p.x); redraw(); break;
@@ -473,7 +536,7 @@ void Workstation::mouseUp (const juce::MouseEvent& e)
 void Workstation::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w)
 {
     const auto p = e.position;
-    if (L.tray.contains (p)) { trayScroll = std::max (0, trayScroll - (int) std::round (w.deltaY * 30)); redraw(); }
+    if (L.tray.contains (p)) { if (spectro) wavScroll = std::max (0, wavScroll - (int) std::round (w.deltaY * 30)); else trayScroll = std::max (0, trayScroll - (int) std::round (w.deltaY * 30)); redraw(); }
     else if (L.field.contains (p))
     {
         const auto before = L.toField (p);
@@ -507,6 +570,20 @@ std::vector<Batch> Workstation::scene() const
     const auto ks = tl.sorted();
     const auto b = current();
     const bool inEditor = editing >= 0 && body.corner[(size_t) editing] >= 0;
+    if (spectro)
+    {
+        Batch spec { Batch::strip, false, {} };
+        const auto mag = sound.sliceMagnitude (sound.slice);
+        for (int i = 0; i < kCurvePoints; ++i) spec.v.push_back (vertex ({ L.rx (20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.ry (juce::jlimit (-30.0, 30.0, (double) mag[(size_t) i] + 30.0)) }, kDim, 1.0f));
+        if (! sound.mono.empty()) out.push_back (spec);
+        if (const auto w = sound.frameAt (sound.slice))
+        {
+            Batch fit { Batch::strip, false, {} };
+            const auto cv = curveOf (*w);
+            for (int i = 0; i < kCurvePoints; ++i) fit.v.push_back (vertex ({ L.rx (20.0 * std::pow (1000.0, i / double (kCurvePoints - 1))), L.ry (juce::jlimit (-30.0, 30.0, cv[(size_t) i])) }, kOn, 1.5f));
+            out.push_back (fit);
+        }
+    }
     if (inEditor)
     {
         const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
@@ -537,7 +614,7 @@ std::vector<Batch> Workstation::scene() const
         out.push_back (handles);
         out.push_back (zeroHandles);
     }
-    if (! inEditor)
+    if (! inEditor && ! spectro)
     {
     if (! gl && showSurface)
     {
@@ -690,6 +767,13 @@ void Workstation::renderOpenGL()
 
 void Workstation::paintChrome (juce::Graphics& g)
 {
+    if (spectro && sound.spectrogram.isValid())
+    {
+        g.drawImageAt (sound.spectrogram, (int) L.field.getX() + 1, (int) L.field.getY() + 1);
+        const float sx = L.field.getX() + (float) (sound.seconds > 0.0 ? sound.slice / sound.seconds : 0.0) * L.field.getWidth();
+        g.setColour (juce::Colours::yellow);
+        g.drawVerticalLine ((int) sx, L.field.getY(), L.field.getBottom());
+    }
     if (pickFor >= 0) { g.setColour (kOn); g.drawRect (px (L.tray).reduced (1), 1); }
     g.setColour (kLine);
     g.drawVerticalLine ((int) L.groups.getRight() - 1, 0.0f, L.tl.getY());
@@ -726,7 +810,42 @@ void Workstation::paintChrome (juce::Graphics& g)
         g.drawText (f.name, (int) L.tray.getX() + 20, (int) y, (int) L.tray.getWidth() - 28, 14, juce::Justification::centredLeft);
     }
     g.setColour (kDim);
-    if (editing >= 0 && body.corner[(size_t) editing] >= 0)
+    if (spectro)
+    {
+        g.setColour (kText);
+        for (double hz : { 100.0, 1000.0, 10000.0 })
+        {
+            const float y = L.field.getY() + (float) (1.0 - std::log10 (hz / 20.0) / 3.0) * L.field.getHeight();
+            g.drawText (hz >= 1000.0 ? juce::String (hz / 1000.0, 0) + "k" : juce::String (hz, 0), (int) L.field.getRight() - 40, (int) y - 6, 34, 12, juce::Justification::centredRight);
+        }
+        for (int t = 0; t <= (int) sound.seconds; ++t)
+            g.drawText (juce::String (t), (int) (L.field.getX() + (sound.seconds > 0.0 ? t / sound.seconds : 0.0) * L.field.getWidth()) - 6, (int) L.field.getBottom() + 2, 20, 12, juce::Justification::centredLeft);
+        g.setColour (kOn);
+        g.drawText (juce::String (sound.slice, 3) + " s", (int) L.field.getRight() - 90, (int) L.field.getY() + 4, 84, 14, juce::Justification::centredRight);
+        if (const auto w = sound.frameAt (sound.slice))
+        {
+            const auto rows = geometryOf (*w);
+            int y = (int) L.field.getY() + 6;
+            for (int s = 0; s < kRows; ++s)
+                if (rows[(size_t) s].pole && rows[(size_t) s].pR > 0.0)
+                {
+                    g.setColour (juce::Colours::white);
+                    g.drawText (juce::String (s + 1) + "  " + juce::String ((int) std::round (rows[(size_t) s].pHz)) + " Hz  r " + juce::String (rows[(size_t) s].pR, 3), (int) L.field.getX() + 8, y, 200, 13, juce::Justification::centredLeft);
+                    y += 13;
+                }
+        }
+        const int maxRows = (int) ((L.tray.getHeight() - 8.0f) / 14.0f);
+        wavScroll = juce::jlimit (0, std::max (0, (int) wavs.size() - maxRows), wavScroll);
+        g.setColour (juce::Colours::black);
+        g.fillRect (px (L.tray).reduced (1));
+        for (int r = 0; r < maxRows && r + wavScroll < (int) wavs.size(); ++r)
+        {
+            const auto& f = wavs[(size_t) (r + wavScroll)];
+            g.setColour (f == sound.file ? kOn : kText);
+            g.drawText (f.getFileNameWithoutExtension(), (int) L.tray.getX() + 8, (int) (L.tray.getY() + 6.0f + r * 14.0f), (int) L.tray.getWidth() - 16, 14, juce::Justification::centredLeft);
+        }
+    }
+    else if (editing >= 0 && body.corner[(size_t) editing] >= 0)
     {
         const auto& f = lib.frames[(size_t) body.corner[(size_t) editing]];
         const auto cr = L.cascadeRect();
@@ -841,7 +960,7 @@ void Workstation::paintChrome (juce::Graphics& g)
         const auto rows = geometryOf (lib.wordsOf (*b));
         for (int s = 0; s < kRows; ++s) if (rows[(size_t) s].pole) { const auto p = L.armaXY (rows[(size_t) s].pHz, rows[(size_t) s].pR); g.setColour (kText); g.drawText (juce::String (s + 1), (int) p.x + 6, (int) p.y - 13, 12, 12, juce::Justification::centredLeft); }
     }
-    if (pairMode && pairA >= 0 && pairB >= 0 && editing < 0)
+    if (pairMode && pairA >= 0 && pairB >= 0 && editing < 0 && ! spectro)
     {
         g.setColour (kOn);
         g.drawText (lib.frames[(size_t) lib.anchors[(size_t) pairA].frame].name + "  >  " + lib.frames[(size_t) lib.anchors[(size_t) pairB].frame].name + "   " + juce::String (pairT, 3), (int) L.field.getX() + 100, (int) L.field.getY() + 2, (int) L.field.getWidth() - 200, 12, juce::Justification::centred);
@@ -852,6 +971,6 @@ void Workstation::paintChrome (juce::Graphics& g)
     for (int t = 0; t <= (int) tl.duration; ++t) g.drawText (juce::String (t), (int) L.tx (t) - 8, (int) L.tlAx.getBottom() + 4, 20, 12, juce::Justification::centred);
     g.drawText (juce::String (tl.playhead, 2) + " s", (int) L.tlAx.getRight() - 60, (int) L.tlAx.getY() - 14, 58, 12, juce::Justification::centredRight);
     g.setColour (kOn);
-    g.drawText (status, (int) L.field.getX() + 8, (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 120, 12, juce::Justification::centredLeft);
+    g.drawText (status, (int) L.field.getX() + (spectro ? 200 : 8), (int) L.field.getBottom() - 16, (int) L.field.getWidth() - 300, 12, juce::Justification::centredLeft);
 }
 }
