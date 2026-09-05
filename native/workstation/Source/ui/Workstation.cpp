@@ -247,16 +247,16 @@ void Workstation::layoutKeys()
     keys.push_back ({ editing >= 0 ? "close" : "edit", editing >= 0 ? "CLOSE" : "EDIT", { bx + 72.0f, sq.getY() + 24.0f, 68.0f, kh }, editing >= 0 });
     keys.push_back ({ "export", "EXPORT", { bx, sq.getY() + 48.0f, 68.0f, kh }, false });
     keys.push_back ({ "copy", "COPY", { bx + 72.0f, sq.getY() + 48.0f, 68.0f, kh }, copyFrom >= 0 });
-    keys.push_back ({ "sharpen", "SHARPEN", { bx + 144.0f, sq.getY() + 48.0f, 68.0f, kh }, false });
-    keys.push_back ({ "unity", "UNITY", { bx + 144.0f, sq.getY() + 24.0f, 68.0f, kh }, body.unity });
+    keys.push_back ({ "sharpen", "SHARPEN", { bx, sq.getY() + 72.0f, 68.0f, kh }, false });
+    keys.push_back ({ "unity", "UNITY", { bx + 72.0f, sq.getY() + 72.0f, 68.0f, kh }, body.unity });
     if (editing >= 0)
     {
         for (int s = 0; s < kRows; ++s)
         {
             const auto r = L.stageRect (s);
-            keys.push_back ({ "lock" + juce::String (s), "LOCK", { L.field.getX() + 240.0f, r.getY() + 2.0f, 48.0f, kh }, lockRow[(size_t) s] });
+            keys.push_back ({ "lock" + juce::String (s), "LOCK", { L.field.getX() + 236.0f, r.getY() + 16.0f, 48.0f, kh }, lockRow[(size_t) s] });
         }
-        keys.push_back ({ "ceiling", "CEILING", { L.field.getX() + 240.0f, L.stageRect (kRows - 1).getY() + 20.0f, 56.0f, kh }, false });
+        keys.push_back ({ "ceiling", "CEILING", { L.field.getX() + 236.0f, L.stageRect (kRows - 1).getY() + 34.0f, 60.0f, kh }, false });
     }
     keys.push_back ({ "surface", "FIELD", { L.resp.getX() + 8.0f, L.resp.getY() + 6.0f, 56.0f, kh }, showSurface });
     keys.push_back ({ "pair", "PAIR", { L.resp.getX() + 72.0f, L.resp.getY() + 6.0f, 56.0f, kh }, pairMode });
@@ -798,9 +798,6 @@ void Workstation::paintChrome (juce::Graphics& g)
     g.drawRect (px (L.square), 1);
     g.setColour (kDim);
     g.drawText ("M " + juce::String (body.morph, 2) + "   Q " + juce::String (body.q, 2), (int) L.square.getX(), (int) L.square.getBottom() + 6, (int) L.square.getWidth(), 12, juce::Justification::centred);
-    for (int i = 0; i < 4; ++i)
-        if (body.corner[(size_t) i] >= 0)
-            g.drawText (lib.frames[(size_t) body.corner[(size_t) i]].name, (int) L.square.getRight() + 64, (int) L.square.getY() + 70 + i * 13, (int) L.body.getRight() - (int) L.square.getRight() - 72, 12, juce::Justification::centredLeft);
     if (b && ! playBody)
     {
         for (int i = 0; i < 3; ++i)
