@@ -2006,3 +2006,13 @@ Open, in order:
   Gemini pastes are Tyson's slice sentences (memory: gemini-pastes-are-the-sentence); the
   Sandell-Martens centering paste is picker geometry, not a path rule (a constant prototype
   changes nothing in a linear lerp); the Rossum-keyboard paste reopens note-in as slice 2.
+- 2026-09-06 late: three more slices, each committed with native pathspecs. 7a6ce4f8 the
+  picker: F1 across, F2 up, schwa at the origin (the vowel PCA's first two axes in their own
+  coordinates); 12 Klatt vowels + schwa as points named by symbol; click empty chart to make a
+  vowel; keeps and reads are points named by formants or file; E-mu presets and C1-style
+  counters left the surface; corners show only the sound's name (Tyson: the labels "hurt my
+  brain"). 66fea1cb note-in: MIDI note-on and [ ] Page Up/Down set the saw's pitch. This
+  commit: a wav loop as the third source, dropped on the stage. Tests 59 green; incremental
+  build script (no reconfigure) after Tyson called the builds "a monolithic churn". Spec
+  untouched by ruling; rows text parked in a todo. Bristow/Lovejoy/Wallace were the voicers
+  (SOS Oct 1995), Rossum built the chip; FOLLOW (Freq. Tracking axis) remains "later".
