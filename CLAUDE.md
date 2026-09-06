@@ -26,7 +26,7 @@ for the Proteus 2000 / X3 bodies, 7 sections (14th order) for the Morpheus cubes
 gains multiply; responses add in dB. There is no parallel bank, no band summing, no
 per-band normalisation. Begin any reply about level, response, interpolation or the tool's
 design by restating this law in one line: in a serial cascade section gains multiply and
-responses add in dB; a state is thirty words; a body is four states and the chip's lerp; the
+responses add in dB; a corner is six sections of five words, sixty bytes; a body is four corners and the chip's lerp; the
 ear decides.
 A body is a cube: 4 corners (P2K, 240 bytes, morph x q) or 8 corners (Morpheus, morph x
 q x z). MORPH and Q are the raw cube axes, played straight; modulation moves MORPH only.
