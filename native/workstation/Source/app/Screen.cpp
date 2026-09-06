@@ -1,4 +1,5 @@
 #include "Screen.h"
+#include "Look.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -7,11 +8,11 @@ namespace hs
 {
 namespace
 {
-const juce::Colour kBack (0xffc7c5be), kGrid (0xffaaa8a1), kAccent (0xff252627), kDim (0xff666763), kText (0xff343633), kBox (0xffdedcd5), kFill (0x4a343633);
-const juce::Colour kVowelInk (0xff445b6a), kCaptureInk (0xff805d32), kReadInk (0xff80534b), kBodyInk (0xff5a6a3c);
-const juce::Colour kPlotBack (0xff1b1d20), kPlotGrid (0xff35383b), kPlotInk (0xffe8e5dc);
+const juce::Colour kBack (Look::kGround), kGrid (Look::kGrid), kAccent (Look::kInk), kDim (Look::kDim), kText (Look::kText), kBox (Look::kPanel), kFill = juce::Colour (Look::kBlue).withAlpha (0.12f);
+const juce::Colour kVowelInk (Look::kBlue), kCaptureInk (Look::kOrange), kReadInk (Look::kPurple), kBodyInk (Look::kGreen);
+const juce::Colour kPlotBack (Look::kPanel), kPlotGrid (Look::kGrid), kPlotInk (Look::kBlue), kRule = juce::Colour (Look::kRule).withAlpha (0.55f), kFaint (Look::kFaint);
 
-juce::Font typeface (float height) { return juce::Font (juce::FontOptions (juce::Font::getDefaultSansSerifFontName(), height, juce::Font::plain)); }
+juce::Font typeface (float height) { return Look::font (height); }
 
 double xOf (double hzValue, juce::Rectangle<int> r) { return r.getX() + r.getWidth() * std::log (hzValue / 20.0) / std::log (1000.0); }
 double yOf (double db, juce::Rectangle<int> r) { return r.getBottom() - r.getHeight() * (db + 30.0) / 60.0; }
@@ -71,7 +72,7 @@ juce::Colour inkOf (const Star& s)
 }
 
 const juce::String kCaret (juce::CharPointer_UTF8 ("\xe2\x96\xbe"));
-const char* const kRoomNames[4] = { "1  Picker", "Cube", "2  Stage", "3  Perform" };
+const char* const kRoomNames[4] = { "Picker", "Cube", "Stage", "Perform" };
 const Screen::View kRoomOrder[4] = { Screen::View::picker, Screen::View::stage, Screen::View::perform, Screen::View::cube };
 const char* const kPaletteNames[3] = { "Bodies", "Reads", "Captures" };
 const char* const kPaletteKinds[3] = { "body", "read", "capture" };
@@ -116,7 +117,7 @@ void Screen::layout()
     for (int i = 0; i < 4; ++i) toKeys[(size_t) i] = { trackKey.getRight() + 12 + i * 40, h - 98, 38, 24 };
     status = { toKeys[3].getRight() + 12, h - 98, std::max (40, stage.getRight() - toKeys[3].getRight() - 12), 24 };
 
-    const int pickerW = std::clamp (stage.getWidth() * 2 / 5, 220, 340);
+    const int pickerW = std::clamp (stage.getWidth() / 3, 200, 300);
     picker = { stage.getRight() - pickerW, stage.getY(), pickerW, stage.getHeight() };
     for (int i = 0; i < 3; ++i) paletteTabs[(size_t) i] = { picker.getX() + i * (pickerW / 3), picker.getY(), pickerW / 3, 24 };
     dropZone = picker.withTrimmedTop (picker.getHeight() - 28);
@@ -430,7 +431,7 @@ void Screen::paintTabs (juce::Graphics& g) const
         const auto room = kRoomOrder[i];
         g.setColour (view == room ? kAccent : kDim);
         g.drawText (kRoomNames[(int) room], r, juce::Justification::centredLeft);
-        if (view == room) g.fillRect (r.withY (r.getBottom()).withHeight (2));
+        if (view == room) Look::underline (g, r.withWidth (r.getWidth() - 30), Look::blue);
     }
 }
 
@@ -442,10 +443,9 @@ void Screen::paintPicker (juce::Graphics& g) const
         const auto r = paletteTabs[(size_t) i];
         g.setColour (palette == i ? kAccent : kDim);
         g.drawText (kPaletteNames[i], r, juce::Justification::centredLeft);
-        if (palette == i) g.fillRect (r.withY (r.getBottom() - 2).withHeight (2).withWidth (r.getWidth() - 12));
+        if (palette == i) Look::underline (g, r.withWidth (r.getWidth() - 12), Look::blue);
     }
-    g.setColour (kDim);
-    g.drawText ("Vowels   Shift-drag one to transpose it", juce::Rectangle<int> (chart.getX() + 24, stage.getY(), chart.getWidth() - 24, 20), juce::Justification::centredLeft);
+    Look::axes (g, chart);
     {
         juce::Graphics::ScopedSaveState saved (g);
         g.reduceClipRegion (picker.withTrimmedTop (28).withTrimmedBottom (28));
@@ -460,10 +460,7 @@ void Screen::paintPicker (juce::Graphics& g) const
             if (selected) { g.setColour (kBox); g.fillRect (r); }
             g.setColour (selected ? kAccent : kText);
             g.setFont (typeface (15.0f));
-            g.drawText (star.name, r.reduced (8, 0).withTrimmedRight (170), juce::Justification::centredLeft);
-            g.setFont (typeface (10.0f));
-            g.setColour (kDim);
-            g.drawText (formantName (star.words), r.withTrimmedLeft (r.getWidth() - 170).withWidth (66), juce::Justification::centredRight);
+            g.drawText (star.name, r.reduced (8, 0).withTrimmedRight (104), juce::Justification::centredLeft);
             paintCurve (g, r.withTrimmedLeft (r.getWidth() - 96).reduced (4, 5), star.words, inkOf (star), 1.0f, false);
             g.setColour (kGrid); g.drawHorizontalLine (r.getBottom(), (float) r.getX(), (float) r.getRight());
         }
@@ -475,30 +472,29 @@ void Screen::paintPicker (juce::Graphics& g) const
         }
     }
     g.setFont (typeface (11.0f));
-    g.setColour (kGrid); g.drawRect (dropZone);
+    g.setColour (kFaint); g.drawRect (dropZone);
     g.setColour (kDim);
-    g.drawText ("drop a .wav   order-12 LPC at 11,025 Hz", dropZone, juce::Justification::centred);
-    g.setColour (kBox); g.fillRect (keepKey);
-    g.setColour (session.placeable() ? kAccent : kGrid);
-    g.drawText ("Keep as card   Ctrl+S", keepKey, juce::Justification::centred);
+    g.drawText ("drop .wav", dropZone, juce::Justification::centred);
+    g.setColour (session.placeable() ? kAccent : kFaint);
+    g.drawText ("Keep", keepKey, juce::Justification::centredLeft);
     g.setFont (typeface (10.0f));
     for (double f : { 3000.0, 2000.0, 1500.0, 1000.0, 700.0 })
     {
         const int x = (int) std::round (chartPoint (kF1Low, f).x);
-        g.setColour (kGrid); g.fillRect (x, chart.getY(), 1, chart.getHeight());
+        g.setColour (kGrid); g.fillRect (x, chart.getY() + 1, 1, chart.getHeight() - 2);
         g.setColour (kDim); g.drawText (juce::String ((int) f), x - 20, chart.getBottom() + 4, 40, 12, juce::Justification::centred);
     }
     for (double f : { 300.0, 400.0, 500.0, 700.0, 1000.0 })
     {
         const int y = (int) std::round (chartPoint (f, kF2Low).y);
-        g.setColour (kGrid); g.fillRect (chart.getX(), y, chart.getWidth(), 1);
+        g.setColour (kGrid); g.fillRect (chart.getX() + 1, y, chart.getWidth() - 2, 1);
         g.setColour (kDim); g.drawText (juce::String ((int) f), chart.getX() - 42, y - 6, 38, 12, juce::Justification::centredRight);
     }
     g.setColour (kDim);
-    g.drawText ("F2 Hz", chart.getRight() + 6, chart.getBottom() + 4, 40, 12, juce::Justification::centredLeft);
+    g.drawText ("F2", chart.getRight() + 6, chart.getBottom() + 4, 40, 12, juce::Justification::centredLeft);
     g.drawText ("F1", chart.getX() - 42, chart.getY() - 16, 38, 12, juce::Justification::centredRight);
     const auto origin = chartPoint (kSchwaF1, kSchwaF2);
-    g.setColour (kDim.withAlpha (0.8f));
+    g.setColour (kFaint);
     g.drawLine (origin.x, (float) chart.getY(), origin.x, (float) chart.getBottom(), 1.0f);
     g.drawLine ((float) chart.getX(), origin.y, (float) chart.getRight(), origin.y, 1.0f);
     g.setFont (typeface (11.0f));
@@ -550,8 +546,6 @@ void Screen::paintPicker (juce::Graphics& g) const
 void Screen::paintCube (juce::Graphics& g) const
 {
     g.setFont (typeface (12.0f));
-    g.setColour (kDim);
-    g.drawText ("Eight sounds; the plane is a body at this depth; the point is what plays", stage.withHeight (24), juce::Justification::centredLeft);
     for (int n = 0; n < 8; ++n)
         for (int bit : { 1, 2, 4 })
             if ((n & bit) == 0)
@@ -582,6 +576,7 @@ void Screen::paintCube (juce::Graphics& g) const
         const int pin = session.cube.pins[(size_t) n];
         const auto r = cubeBox[(size_t) n];
         g.setColour (kBox); g.fillRect (r);
+        g.setColour (kRule); g.drawRect (r);
         g.setColour (session.editingCube && session.editing == n ? kVowelInk : kDim);
         g.drawText (juce::String (n + 1), cubeTags[(size_t) n], juce::Justification::centred);
         g.setColour (kText);
@@ -592,9 +587,8 @@ void Screen::paintCube (juce::Graphics& g) const
     g.setColour (kVowelInk); g.fillEllipse ((float) (depth.getX() + depth.getWidth() * session.cube.z) - 5, (float) depth.getCentreY() - 5, 10, 10);
     g.setColour (kDim);
     g.drawText ("depth " + juce::String (session.cube.z * 100.0, 0), depth.withX (depth.getX() - 90).withWidth (80), juce::Justification::centredRight);
-    g.setColour (session.cube.complete() ? kBox : kBack); g.fillRect (sliceKey);
-    g.setColour (session.cube.complete() ? kAccent : kGrid);
-    g.drawText ("Use these four", sliceKey, juce::Justification::centred);
+    g.setColour (session.cube.complete() ? kAccent : kFaint);
+    g.drawText ("Use", sliceKey, juce::Justification::centredRight);
 }
 
 void Screen::paintEditor (juce::Graphics& g) const
@@ -603,10 +597,9 @@ void Screen::paintEditor (juce::Graphics& g) const
     for (int i = 0; i < 4; ++i)
     {
         const bool lit = ! session.editingCube && session.editing == i;
-        g.setColour (lit ? kBox : kBack);
-        g.fillRect (stageTags[(size_t) i]);
         g.setColour (lit ? kAccent : kDim);
         g.drawText (juce::String::charToString (Session::kCornerLetters[i]), stageTags[(size_t) i], juce::Justification::centred);
+        if (lit) Look::underline (g, stageTags[(size_t) i].reduced (8, 0), Look::blue);
     }
     g.setColour (kDim);
     const juce::String title = session.editing < 0 ? juce::String ("what plays")
@@ -615,8 +608,7 @@ void Screen::paintEditor (juce::Graphics& g) const
     g.drawText (title, juce::Rectangle<int> (stageTags[3].getRight() + 16, stage.getY(), std::max (40, stage.getWidth() - 330), 24), juce::Justification::centredLeft);
     if (session.editing >= 0)
     {
-        g.setColour (dragging == Drag::carve ? kBox : kBack); g.fillRect (carveKey);
-        g.setColour (dragging == Drag::carve ? kAccent : kDim);
+        g.setColour (dragging == Drag::carve ? Look::orange : kDim);
         g.drawText ("Carve  " + juce::String (carve * 100.0, 0), carveKey, juce::Justification::centredRight);
     }
     paintMagnitude (g);
@@ -626,52 +618,53 @@ void Screen::paintEditor (juce::Graphics& g) const
 void Screen::paintMagnitude (juce::Graphics& g) const
 {
     const auto r = magnitude;
-    g.setColour (kPlotBack); g.fillRect (r.expanded (2));
-    g.setFont (typeface (11.0f));
+    Look::axes (g, r);
+    g.setFont (typeface (10.0f));
     for (int db = -30; db <= 30; db += 10)
     {
         const int y = (int) std::round (yOf (db, r));
-        g.setColour (db == 0 ? kDim : kPlotGrid);
-        g.drawHorizontalLine (std::min (y, r.getBottom() - 1), (float) r.getX(), (float) r.getRight());
-        g.setColour (kText);
+        if (db != -30 && db != 30) { g.setColour (db == 0 ? kFaint : kPlotGrid); g.drawHorizontalLine (y, (float) r.getX() + 1, (float) r.getRight() - 1); }
+        g.setColour (kDim);
         g.drawText ((db > 0 ? "+" : "") + juce::String (db), r.getX() - 38, y - 7, 30, 14, juce::Justification::centredRight);
+    }
+    for (double f : { 100.0, 1000.0, 10000.0 })
+    {
+        const int x = (int) std::round (xOf (f, r));
+        g.setColour (kPlotGrid); g.drawVerticalLine (x, (float) r.getY() + 1, (float) r.getBottom() - 1);
     }
     for (double f : { 20.0, 100.0, 1000.0, 10000.0, 20000.0 })
     {
         const int x = (int) std::round (xOf (f, r));
-        g.setColour (kPlotGrid); g.drawVerticalLine (std::min (x, r.getRight() - 1), (float) r.getY(), (float) r.getBottom());
         g.setColour (kDim);
         g.drawText (f < 1000.0 ? juce::String ((int) f) : juce::String ((int) (f / 1000.0)) + "k", x - 18, r.getBottom() + 4, 36, 14, juce::Justification::centred);
     }
-    if (session.sounding) paintCurve (g, r, session.heard, kPlotInk, 2.0f, false, false);
-    g.setColour (kDim); g.drawRect (r);
+    if (session.sounding) paintCurve (g, r, session.heard, kPlotInk, 1.8f, false, false);
+    g.setColour (kRule); g.drawRect (r);
     if (session.editing < 0) return;
     const auto words = session.editWords();
     for (int row = 0; row < kRows; ++row)
     {
         const auto s = sectionOf (words[(size_t) row]);
         const bool lit = (dragging == Drag::peak || dragging == Drag::zero || dragging == Drag::row) && dragRow == row;
+        g.setFont (typeface (10.0f));
         if (s.zero)
         {
             const auto z = zeroPoint (row);
-            g.setColour (kPlotBack); g.fillRect (z.x - 4.5f, z.y - 4.5f, 9.0f, 9.0f);
-            g.setColour (lit ? kPlotInk : kPlotInk.withAlpha (0.75f)); g.drawRect (z.x - 4.5f, z.y - 4.5f, 9.0f, 9.0f, 1.2f);
-            if (! s.pole) g.drawText (juce::String (row + 1), (int) z.x + 7, (int) z.y - 16, 16, 14, juce::Justification::centredLeft);
+            Look::handle (g, z, Look::orange, true, lit);
+            if (! s.pole) { g.setColour (kText); g.drawText (juce::String (row + 1), (int) z.x + 8, (int) z.y - 16, 16, 14, juce::Justification::centredLeft); }
         }
         if (s.pole)
         {
             const auto p = peakPoint (row);
-            g.setColour (kPlotBack); g.fillEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f);
-            g.setColour (kPlotInk); g.drawEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f, lit ? 2.2f : 1.5f);
-            g.drawText (juce::String (row + 1), (int) p.x + 7, (int) p.y - 16, 16, 14, juce::Justification::centredLeft);
+            Look::handle (g, p, Look::blue, false, lit);
+            g.setColour (kText); g.drawText (juce::String (row + 1), (int) p.x + 8, (int) p.y - 17, 16, 14, juce::Justification::centredLeft);
         }
     }
 }
 
 void Screen::paintTable (juce::Graphics& g) const
 {
-    g.setColour (kBack.withAlpha (0.92f)); g.fillRect (table);
-    g.setColour (kDim); g.drawRect (table);
+    g.setColour (kRule); g.fillRect (table.getX(), table.getY(), table.getWidth(), 1);
     g.setFont (typeface (table.getWidth() < 450 ? 11.0f : 12.0f));
     const juce::String heads[kColumns] = { "#", "Pole", "Width st", "Zero", "Depth st", "Gain dB", "Cascade dB" };
     g.setColour (kDim);
@@ -708,16 +701,13 @@ void Screen::paintTable (juce::Graphics& g) const
 void Screen::paintPerform (juce::Graphics& g) const
 {
     g.setFont (typeface (12.0f));
-    g.setColour (kDim);
-    g.drawText ("MORPH across, Q up", stage.withHeight (24), juce::Justification::centredLeft);
-    g.setColour (kBox); g.fillRect (morph);
+    Look::axes (g, morph);
     g.setColour (kGrid);
     for (int i = 1; i < 4; ++i)
     {
-        g.fillRect (morph.getX() + morph.getWidth() * i / 4, morph.getY(), 1, morph.getHeight());
-        g.fillRect (morph.getX(), morph.getY() + morph.getHeight() * i / 4, morph.getWidth(), 1);
+        g.fillRect (morph.getX() + morph.getWidth() * i / 4, morph.getY() + 1, 1, morph.getHeight() - 2);
+        g.fillRect (morph.getX() + 1, morph.getY() + morph.getHeight() * i / 4, morph.getWidth() - 2, 1);
     }
-    g.drawRect (morph);
     g.setFont (typeface (11.0f));
     for (int n = 0; n < 4; ++n)
     {
@@ -732,31 +722,26 @@ void Screen::paintPerform (juce::Graphics& g) const
         for (int n = 0; n < 4; ++n) { const auto c = cornerPoint (n); g.drawLine (pk.x, pk.y, c.x, c.y, 1.0f); }
         juce::Path diamond;
         diamond.addQuadrilateral (pk.x, pk.y - 9.0f, pk.x + 9.0f, pk.y, pk.x, pk.y + 9.0f, pk.x - 9.0f, pk.y);
-        g.setColour (kBack); g.fillPath (diamond);
-        g.setColour (kAccent); g.strokePath (diamond, juce::PathStrokeType (1.6f));
+        g.setColour (kBox); g.fillPath (diamond);
+        g.setColour (Look::blue); g.strokePath (diamond, juce::PathStrokeType (1.8f));
         g.fillEllipse (pk.x - 2.5f, pk.y - 2.5f, 5.0f, 5.0f);
-        g.setFont (typeface (12.0f));
-        g.setColour (kText);
-        g.drawText ("MORPH " + juce::String (session.quad.morph, 0) + "   Q " + juce::String (session.quad.q, 0), morph.withY (morph.getBottom() + 30).withHeight (20), juce::Justification::centred);
     }
 }
 
 void Screen::paintHud (juce::Graphics& g) const
 {
-    g.setColour (kBox); g.fillRect (hud);
     g.setFont (typeface (11.0f));
     g.setColour (kDim);
-    g.drawText ("BODY", hudHead.reduced (6, 0), juce::Justification::centredLeft);
-    g.setColour (session.quad.complete() ? kAccent : kGrid);
-    g.drawText ("Write  W", writeKey.reduced (6, 0), juce::Justification::centredRight);
+    g.drawText ("Body", hudHead.reduced (2, 0), juce::Justification::centredLeft);
+    g.setColour (session.quad.complete() ? kAccent : kFaint);
+    g.drawText ("Write", writeKey.reduced (2, 0), juce::Justification::centredRight);
     const auto corners = cornersOf (session.quad, session.stars);
     for (int n = 0; n < 4; ++n)
     {
         const auto box = cornerBox[(size_t) n];
         const bool lit = ! session.editingCube && session.editing == n;
         const bool target = (dragging == Drag::card || dragging == Drag::slice) && cornerAt (dragPoint) == n;
-        g.setColour (kGrid); g.drawRect (box);
-        const auto tag = cornerTag[(size_t) n].reduced (5, 0);
+        const auto tag = cornerTag[(size_t) n].reduced (3, 0);
         g.setColour (lit ? kAccent : kDim);
         g.drawText (juce::String::charToString (Session::kCornerLetters[n]), tag, juce::Justification::centredLeft);
         g.setColour (kText);
@@ -764,20 +749,20 @@ void Screen::paintHud (juce::Graphics& g) const
         g.drawText (name.isNotEmpty() ? name : juce::String ("+"), tag.withTrimmedLeft (14).withTrimmedRight (12), juce::Justification::centredLeft);
         g.drawText (kCaret, tag.withTrimmedLeft (tag.getWidth() - 12), juce::Justification::centredRight);
         const auto plot = cornerPlot[(size_t) n];
-        g.setColour (kPlotBack); g.fillRect (plot);
+        Look::axes (g, plot);
         g.setColour (kPlotGrid);
-        for (int db = -20; db <= 20; db += 10) if (db != 0) g.drawHorizontalLine ((int) std::round (yOf (db, plot)), (float) plot.getX(), (float) plot.getRight());
-        g.setColour (kDim); g.drawHorizontalLine ((int) std::round (yOf (0.0, plot)), (float) plot.getX(), (float) plot.getRight());
+        for (int db = -20; db <= 20; db += 10) if (db != 0) g.drawHorizontalLine ((int) std::round (yOf (db, plot)), (float) plot.getX() + 1, (float) plot.getRight() - 1);
+        g.setColour (kFaint); g.drawHorizontalLine ((int) std::round (yOf (0.0, plot)), (float) plot.getX() + 1, (float) plot.getRight() - 1);
         if (session.quad.pins[(size_t) Session::kCornerPin[n]] >= 0)
-            paintCurve (g, plot, corners[(size_t) Session::kCornerPin[n]], lit ? kPlotInk : kPlotInk.withAlpha (0.8f), lit ? 1.6f : 1.2f, false);
-        if (target) { g.setColour (kAccent); g.drawRect (box.reduced (1), 2); }
+            paintCurve (g, plot, corners[(size_t) Session::kCornerPin[n]], lit ? Look::orange : kPlotInk, lit ? 1.8f : 1.3f, false);
+        if (target) { g.setColour (Look::orange); g.drawRect (plot.expanded (2), 2); }
     }
 }
 
 void Screen::paintStrip (juce::Graphics& g) const
 {
-    g.setColour (kPlotBack); g.fillRect (playing.expanded (1));
-    g.setColour (kDim); g.drawHorizontalLine ((int) std::round (yOf (0.0, playing)), (float) playing.getX(), (float) playing.getRight());
+    Look::axes (g, playing);
+    g.setColour (kFaint); g.drawHorizontalLine ((int) std::round (yOf (0.0, playing)), (float) playing.getX() + 1, (float) playing.getRight() - 1);
     if (session.sounding) paintCurve (g, playing, session.heard, kPlotInk, 1.4f, false, false);
     g.setFont (typeface (13.0f));
     g.setColour (kText);
@@ -793,11 +778,10 @@ void Screen::paintStrip (juce::Graphics& g) const
     const bool placeable = session.placeable();
     for (int i = 0; i < 4; ++i)
     {
-        g.setColour (placeable ? kBox : kBack); g.fillRect (toKeys[(size_t) i]);
-        g.setColour (placeable ? kAccent : kGrid);
+        g.setColour (placeable ? kAccent : kFaint);
         g.drawText ("> " + juce::String::charToString (Session::kCornerLetters[i]), toKeys[(size_t) i], juce::Justification::centred);
     }
-    g.setColour (session.tracking ? kAccent : kDim);
+    g.setColour (session.tracking ? Look::blue : kDim);
     g.drawText ("Track", trackKey, juce::Justification::centred);
     if (session.status.startsWith ("cannot") || session.status.startsWith ("no audio") || session.status.endsWith (".body240"))
     {
@@ -815,9 +799,9 @@ void Screen::paintKeyboard (juce::Graphics& g) const
             const auto r = pianoKey (midi);
             const bool black = r.getHeight() < keyboard.getHeight();
             if (black != (layer == 1)) continue;
-            g.setColour (midi == session.note ? kVowelInk : black ? kAccent : kBox);
+            g.setColour (midi == session.note ? Look::blue : black ? kAccent : kBox);
             g.fillRect (r);
-            g.setColour (kBack); g.drawRect (r);
+            g.setColour (black ? kAccent : kFaint); g.drawRect (r);
             if (midi % 12 == 0)
             {
                 g.setColour (midi == session.note ? kBox : kDim);

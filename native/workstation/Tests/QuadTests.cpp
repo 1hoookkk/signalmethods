@@ -1,3 +1,4 @@
+#include "Look.h"
 #include "Screen.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <cstdio>
@@ -477,7 +478,11 @@ int main()
         juce::FileOutputStream out (file);
         const bool written = out.openedOk() && png.writeImageToStream (image, out);
         out.flush();
-        check (written && file.getSize() > 20000 && image.getWidth() == 1120, "the screen renders to artifacts/shots/headspace.png without a window");
+        bool curve = false;
+        for (int y = screen.playing.getY(); y < screen.playing.getBottom() && ! curve; ++y)
+            for (int x = screen.playing.getX(); x < screen.playing.getRight() && ! curve; ++x)
+                curve = image.getPixelAt (x, y).getARGB() == hs::Look::blue.getARGB();
+        check (written && file.getSize() > 4000 && image.getWidth() == 1120 && image.getPixelAt (4, 4) == hs::Look::ground && image.getPixelAt (screen.chart.getX() + 2, screen.chart.getBottom() - 3) == hs::Look::panel && curve, "the screen renders to artifacts/shots/headspace.png without a window: ground, white axes and the blue curve of what plays");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "no window was opened");
         check (screen.stage.toFloat().contains (screen.puckPoint()), "the puck sits inside the stage");
         const auto f = screen.formantsAt (screen.chartPoint (700.0, 1100.0).toInt());

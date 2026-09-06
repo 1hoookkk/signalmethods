@@ -4,7 +4,8 @@ set(TRENCH_HEADSPACE_SOURCES
   "${TRENCH_HEADSPACE_DIR}/Library.h" "${TRENCH_HEADSPACE_DIR}/Library.cpp"
   "${TRENCH_HEADSPACE_DIR}/Audio.h" "${TRENCH_HEADSPACE_DIR}/Audio.cpp"
   "${TRENCH_HEADSPACE_DIR}/Session.h" "${TRENCH_HEADSPACE_DIR}/Session.cpp"
-  "${TRENCH_HEADSPACE_DIR}/Screen.h" "${TRENCH_HEADSPACE_DIR}/Screen.cpp")
+  "${TRENCH_HEADSPACE_DIR}/Screen.h" "${TRENCH_HEADSPACE_DIR}/Screen.cpp"
+  "${TRENCH_HEADSPACE_DIR}/Look.h" "${TRENCH_HEADSPACE_DIR}/Look.cpp")
 
 option(TRENCH_HEADSPACE_LTO "Enable link-time optimization for HEADSPACE and its acceptance tests" OFF)
 

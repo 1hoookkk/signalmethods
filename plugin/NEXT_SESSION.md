@@ -2109,3 +2109,18 @@ Open, in order:
   rewriting readWav to place zeros in valleys by default. 127 checks, ctest x3 green.
   Tyson, after: "the design and aesthetic sucks. reads as amateur" -> design pass pending his
   direction.
+- 2026-09-07: the look. Tyson: "the design and aesthetic sucks. reads as amateur" -> asked for
+  the ground -> "hyper optimised matlab look and feel. create a custom lookandfeel. striking,
+  free from redundant text. minimal design with a visually impactful hero display."
+  Built `Source/app/Look.h/.cpp`: a LookAndFeel_V4 subclass (ColourScheme + palette as
+  constexpr ARGB, colours built where used after a static-init-order bite that painted every
+  shot black) with axes(), handle(), underline(). MATLAB figure grey ground F0F0F0, white axes
+  with E3 grid and a 26 hairline, ticks in grey, MATLAB line colours: blue 0072BD for what
+  plays and vowels, orange D95319 for the open corner, captures and zero handles, purple for
+  reads, green for bodies. No filled buttons: text in ink when live, faint when not, blue
+  underline for the active tab. Text removed: room numbers, the vowel-space caption, the LPC
+  sentence on the drop zone ("drop .wav"), "Keep as card Ctrl+S" ("Keep"), "Use these four"
+  ("Use"), "BODY 240 bytes" ("Body"), "Write W" ("Write"), the Perform caption and readout,
+  the cube caption, the F1/F2 numbers on cards. Palette narrowed so the vowel space is the hero.
+  The shot test now checks content (ground pixel, white axes, blue curve), not file size.
+  127 checks, ctest green.

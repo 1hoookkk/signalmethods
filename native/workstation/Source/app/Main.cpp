@@ -1,3 +1,4 @@
+#include "Look.h"
 #include "Screen.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
@@ -7,7 +8,7 @@ class Window : public juce::DocumentWindow
 {
 public:
     Window (hs::Session& session)
-        : juce::DocumentWindow ("HEADSPACE", juce::Colour (0xff0a0e0b), juce::DocumentWindow::allButtons)
+        : juce::DocumentWindow ("HEADSPACE", hs::Look::ground, juce::DocumentWindow::allButtons)
     {
         setUsingNativeTitleBar (true);
         setContentOwned (new hs::Screen (session), true);
@@ -31,6 +32,7 @@ public:
 
     void initialise (const juce::String&) override
     {
+        juce::LookAndFeel::setDefaultLookAndFeel (&look);
         const juce::File root (TRENCH_TABLE_STITCH_ROOT);
         session = std::make_unique<hs::Session> (root, root.getChildFile ("native/workstation/banks/HEADSPACE.quad.json"), true);
         window = std::make_unique<Window> (*session);
@@ -40,9 +42,11 @@ public:
     {
         window.reset();
         session.reset();
+        juce::LookAndFeel::setDefaultLookAndFeel (nullptr);
     }
 
 private:
+    hs::Look look;
     std::unique_ptr<hs::Session> session;
     std::unique_ptr<Window> window;
 };
