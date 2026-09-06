@@ -8,7 +8,7 @@ namespace
 {
 const juce::Colour kPaper (0xffffffff), kInk (0xff1b1e22), kGrey (0xff8a9099), kFaint (0xffd9dde3);
 const juce::Colour kWash (0xffeaf3fb), kLine (0xff9fc3e2), kDot (0xffc4d9ec), kVowel (0xff6f9fd0), kLetter (0xff5b8fc4), kGhost (0xffb7d3ea);
-const juce::Colour kQuad (0x2a1b1e22), kQuadEdge (0xff1b1e22), kHot (0xffd94a3a), kCapture (0xffc48f00);
+const juce::Colour kHot (0xffd94a3a), kCapture (0xffc48f00);
 
 struct Reference { const char* letter; double f1, f2; };
 const Reference kKlatt[] = {
@@ -23,13 +23,6 @@ double xOf (double hzValue, juce::Rectangle<int> r) { return r.getX() + r.getWid
 double yOf (double db, juce::Rectangle<int> r) { return r.getBottom() - r.getHeight() * (db + 30.0) / 60.0; }
 
 constexpr double kF2High = 4000.0, kF2Low = 300.0, kF1Low = 60.0, kF1High = 1500.0;
-
-bool inside (const std::array<juce::Point<float>, 4>& q, juce::Point<float> p)
-{
-    juce::Path path;
-    path.startNewSubPath (q[0]); path.lineTo (q[1]); path.lineTo (q[3]); path.lineTo (q[2]); path.closeSubPath();
-    return path.contains (p);
-}
 }
 
 Screen::Screen (Session& s) : session (s), hz (curveHz())
@@ -44,8 +37,9 @@ void Screen::layout()
 {
     playKey = { 760, 22, 60, 22 }; sawKey = { 830, 22, 60, 22 }; noiseKey = { 900, 22, 110, 22 }; writeKey = { 1020, 22, 130, 22 };
     for (int n = 0; n < 4; ++n) chips[(size_t) n] = { 60 + n * 345, 54, 330, 22 };
-    map = { 120, 104, 1240, 420 };
-    response = { 120, 560, 360, 240 };
+    map = { 110, 110, 700, 420 };
+    pad = { 900, 110, 300, 300 };
+    response = { 900, 480, 300, 200 };
     statusLine = { 60, 812, 1380, 24 };
 }
 
@@ -64,18 +58,22 @@ juce::Point<float> Screen::starPoint (int k) const
     return vowelPoint (f[0] > 0.0 ? f[0] : kF1Low, f[1] > 0.0 ? f[1] : kF2Low);
 }
 
-juce::Point<float> Screen::pinPoint (int n) const
+juce::Point<float> Screen::padCorner (int n) const
 {
-    if (dragging == Drag::frame || (dragging == Drag::pin && dragPin == n)) return dragPoints[(size_t) n];
-    return starPoint (session.quad.pins[(size_t) n]);
+    const float x = (float) (n == 1 || n == 3 ? pad.getRight() : pad.getX());
+    const float y = (float) (n >= 2 ? pad.getY() : pad.getBottom());
+    return { x, y };
 }
 
 juce::Point<float> Screen::puckPoint (double morph, double q) const
 {
-    const double m = morph / 100.0, v = q / 100.0;
-    const auto a = pinPoint (0), b = pinPoint (1), c = pinPoint (2), d = pinPoint (3);
-    const auto low = a + (b - a) * (float) m, high = c + (d - c) * (float) m;
-    return low + (high - low) * (float) v;
+    return { (float) (pad.getX() + morph / 100.0 * pad.getWidth()), (float) (pad.getBottom() - q / 100.0 * pad.getHeight()) };
+}
+
+int Screen::cornerAt (juce::Point<int> p) const
+{
+    for (int n = 0; n < 4; ++n) if (padCorner (n).getDistanceFrom (p.toFloat()) < 26.0f) return n;
+    return -1;
 }
 
 int Screen::nearestStar (juce::Point<float> p, float within) const
@@ -92,7 +90,7 @@ int Screen::nearestStar (juce::Point<float> p, float within) const
 void Screen::refreshHeat()
 {
     if (! session.quad.complete()) { heat.clear(); heatPins = { -2, -2, -2, -2 }; return; }
-    if (heatPins == session.quad.pins) return;
+    if (heatPins == session.quad.pins && ! heat.empty()) return;
     heatPins = session.quad.pins;
     heat = hotCells (cornersOf (session.quad, session.stars), kHeat, hz);
 }
@@ -161,70 +159,85 @@ void Screen::paintMap (juce::Graphics& g)
         bool vowel = false;
         for (auto* v : vowels) vowel = vowel || s.body == v;
         const bool capture = s.kind == "capture";
-        const bool lit = k == session.hovered || k == session.selected;
+        const bool lit = k == session.selected;
         g.setColour (capture ? kCapture : lit ? kInk : vowel ? kVowel : kDot);
         const float radius = capture ? 4.0f : vowel ? 3.5f : 2.5f;
         if (capture) g.fillRect (p.x - radius, p.y - radius, 2.0f * radius, 2.0f * radius);
         else g.fillEllipse (p.x - radius, p.y - radius, 2.0f * radius, 2.0f * radius);
-        if (lit)
-        {
-            g.setColour (kInk); g.drawEllipse (p.x - 8.0f, p.y - 8.0f, 16.0f, 16.0f, 1.0f);
-            g.setFont (sans (11.0f));
-            g.drawText (s.name, (int) p.x + 12, (int) p.y - 8, 220, 16, juce::Justification::centredLeft);
-        }
-    }
-}
-
-void Screen::paintQuad (juce::Graphics& g)
-{
-    const auto& q = session.quad;
-    refreshHeat();
-    std::array<juce::Point<float>, 4> p;
-    for (int n = 0; n < 4; ++n) p[(size_t) n] = pinPoint (n);
-    const bool complete = q.complete() || dragging == Drag::frame;
-    if (complete)
-    {
-        juce::Path outline;
-        outline.startNewSubPath (p[0]); outline.lineTo (p[1]); outline.lineTo (p[3]); outline.lineTo (p[2]); outline.closeSubPath();
-        g.setColour (kQuad); g.fillPath (outline);
-        if (! heat.empty() && dragging != Drag::frame)
-            for (int j = 0; j < kHeat; ++j)
-                for (int i = 0; i < kHeat; ++i)
-                {
-                    const double above = heat[(size_t) (j * kHeat + i)];
-                    if (above <= 3.0) continue;
-                    const float alpha = (float) std::clamp ((above - 3.0) / 12.0, 0.08, 0.55);
-                    const auto c0 = puckPoint (100.0 * i / kHeat, 100.0 * j / kHeat), c1 = puckPoint (100.0 * (i + 1) / kHeat, 100.0 * j / kHeat);
-                    const auto c2 = puckPoint (100.0 * (i + 1) / kHeat, 100.0 * (j + 1) / kHeat), c3 = puckPoint (100.0 * i / kHeat, 100.0 * (j + 1) / kHeat);
-                    juce::Path cell;
-                    cell.startNewSubPath (c0); cell.lineTo (c1); cell.lineTo (c2); cell.lineTo (c3); cell.closeSubPath();
-                    g.setColour (kHot.withAlpha (alpha)); g.fillPath (cell);
-                }
-        g.setColour (kQuadEdge); g.strokePath (outline, juce::PathStrokeType (1.2f));
-    }
-    if (complete && session.hovered < 0)
-    {
-        const double m = q.morph / 100.0, v = q.q / 100.0;
-        const double weights[4] = { (1.0 - m) * (1.0 - v), m * (1.0 - v), (1.0 - m) * v, m * v };
-        for (int n = 0; n < 4; ++n)
-        {
-            const float radius = (float) (8.0 + 46.0 * weights[n]);
-            const auto pt = p[(size_t) n];
-            g.setColour (kVowel.withAlpha ((float) (0.08 + 0.30 * weights[n])));
-            g.fillEllipse (pt.x - radius, pt.y - radius, 2.0f * radius, 2.0f * radius);
-        }
     }
     for (int n = 0; n < 4; ++n)
     {
-        if (q.pins[(size_t) n] < 0 && dragging != Drag::frame) continue;
-        const auto pt = p[(size_t) n];
-        g.setColour (kPaper); g.fillEllipse (pt.x - 7.0f, pt.y - 7.0f, 14.0f, 14.0f);
-        g.setColour (kInk); g.drawEllipse (pt.x - 6.0f, pt.y - 6.0f, 12.0f, 12.0f, 1.6f);
-        g.setFont (serif (10.0f)); g.setColour (kInk);
-        const bool left = n == 0 || n == 2;
-        g.drawText (kPinNames[n], left ? (int) pt.x - 58 : (int) pt.x + 10, (int) pt.y - 6, 48, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
+        const int k = session.quad.pins[(size_t) n];
+        if (k < 0) continue;
+        const auto p = starPoint (k);
+        g.setColour (kInk); g.drawEllipse (p.x - 7.0f, p.y - 7.0f, 14.0f, 14.0f, 1.4f);
+        g.setFont (serif (10.0f));
+        g.drawText (juce::String (n + 1), (int) p.x - 20, (int) p.y - 22, 40, 12, juce::Justification::centred);
     }
-    if (complete && session.hovered < 0)
+    if (session.hovered >= 0)
+    {
+        const auto p = starPoint (session.hovered);
+        g.setColour (kGrey); g.drawEllipse (p.x - 9.0f, p.y - 9.0f, 18.0f, 18.0f, 1.0f);
+        g.setFont (sans (11.0f)); g.setColour (kInk);
+        g.drawText (session.stars[(size_t) session.hovered].name, (int) p.x + 12, (int) p.y - 8, 220, 16, juce::Justification::centredLeft);
+    }
+    if (session.selected >= 0 && session.selected != session.hovered)
+    {
+        const auto p = starPoint (session.selected);
+        g.setFont (sans (11.0f)); g.setColour (kInk);
+        g.drawText (session.stars[(size_t) session.selected].name, (int) p.x + 12, (int) p.y - 8, 220, 16, juce::Justification::centredLeft);
+    }
+    if (session.inPair())
+    {
+        const auto a = starPoint (session.pairA), b = starPoint (session.pairB);
+        g.setColour (kInk); g.drawLine (a.x, a.y, b.x, b.y, 1.2f);
+        g.setFont (sans (11.0f));
+        g.drawText (session.stars[(size_t) session.pairB].name, (int) b.x + 12, (int) b.y - 8, 220, 16, juce::Justification::centredLeft);
+    }
+    if (session.sounding && (session.auditioning == -1 || session.inPair()) && (session.quad.complete() || session.inPair()))
+    {
+        const auto f = formantsOf (session.words);
+        const auto p = vowelPoint (f[0] > 0.0 ? f[0] : kF1Low, f[1] > 0.0 ? f[1] : kF2Low);
+        g.setColour (kInk); g.fillEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f);
+        g.setColour (kPaper); g.drawEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f, 1.5f);
+    }
+}
+
+void Screen::paintPad (juce::Graphics& g)
+{
+    const auto& q = session.quad;
+    refreshHeat();
+    g.setColour (kWash); g.fillRect (pad);
+    if (! heat.empty())
+        for (int j = 0; j < kHeat; ++j)
+            for (int i = 0; i < kHeat; ++i)
+            {
+                const double above = heat[(size_t) (j * kHeat + i)];
+                if (above <= 3.0) continue;
+                const float alpha = (float) std::clamp ((above - 3.0) / 12.0, 0.08, 0.5);
+                const float cw = pad.getWidth() / (float) kHeat, ch = pad.getHeight() / (float) kHeat;
+                g.setColour (kHot.withAlpha (alpha));
+                g.fillRect ((float) pad.getX() + i * cw, (float) pad.getBottom() - (j + 1) * ch, cw, ch);
+            }
+    g.setColour (kFaint);
+    g.fillRect (pad.getCentreX(), pad.getY(), 1, pad.getHeight()); g.fillRect (pad.getX(), pad.getCentreY(), pad.getWidth(), 1);
+    g.setColour (kInk); g.drawRect (pad);
+    g.setFont (serif (10.0f)); g.setColour (kGrey);
+    g.drawText ("MORPH", pad.getX(), pad.getBottom() + 18, pad.getWidth(), 12, juce::Justification::centred);
+    g.drawText ("Q", pad.getX() - 30, pad.getCentreY() - 6, 20, 12, juce::Justification::centred);
+    for (int n = 0; n < 4; ++n)
+    {
+        const auto c = padCorner (n);
+        const bool set = q.pins[(size_t) n] >= 0;
+        g.setColour (kPaper); g.fillEllipse (c.x - 9.0f, c.y - 9.0f, 18.0f, 18.0f);
+        g.setColour (set ? kInk : kFaint); g.drawEllipse (c.x - 9.0f, c.y - 9.0f, 18.0f, 18.0f, 1.4f);
+        g.setFont (serif (10.0f)); g.setColour (kInk);
+        g.drawText (juce::String (n + 1), (int) c.x - 9, (int) c.y - 6, 18, 12, juce::Justification::centred);
+        const bool left = n == 0 || n == 2, top = n >= 2;
+        g.setFont (sans (10.0f)); g.setColour (set ? kInk : kGrey);
+        g.drawText (set ? session.pinName (n) : juce::String (kPinNames[n]), left ? (int) c.x - 12 : (int) c.x - 168, top ? (int) c.y - 30 : (int) c.y + 14, 180, 14, left ? juce::Justification::centredLeft : juce::Justification::centredRight);
+    }
+    if (q.complete())
     {
         const auto pk = puckPoint (q.morph, q.q);
         g.setColour (kInk); g.fillEllipse (pk.x - 6.0f, pk.y - 6.0f, 12.0f, 12.0f);
@@ -245,7 +258,7 @@ void Screen::paintResponse (juce::Graphics& g) const
     g.drawText ("+30", r.getX() - 40, r.getY() - 6, 32, 12, juce::Justification::centredRight);
     g.drawText ("0", r.getX() - 40, (int) yOf (0.0, r) - 6, 32, 12, juce::Justification::centredRight);
     g.drawText ("-30", r.getX() - 40, r.getBottom() - 6, 32, 12, juce::Justification::centredRight);
-    if (session.quad.complete())
+    if (session.quad.complete() && session.auditioning < 0)
     {
         const auto c = cornersOf (session.quad, session.stars);
         paintCurve (g, r, lerp (c, 0.0, session.quad.q / 100.0), kGhost, 1.0f);
@@ -255,14 +268,14 @@ void Screen::paintResponse (juce::Graphics& g) const
     if (session.sounding)
     {
         const double peak = peakDb (session.words, hz);
-        g.setFont (serif (11.0f)); g.setColour (peak > 33.0 ? kHot : kGrey);
-        g.drawText ("peak " + juce::String (peak > 0 ? "+" : "") + juce::String (peak, 1) + " dB", r.getRight() + 40, r.getY() + 30, 200, 12, juce::Justification::centredLeft);
         const auto f = formantsOf (session.words);
         juce::String line;
         const char* names[] = { "F1", "F2", "F3", "F4" };
-        for (int i = 0; i < 4; ++i) if (f[(size_t) i] > 0.0) line += juce::String (names[i]) + " " + juce::String ((int) std::round (f[(size_t) i])) + " Hz      ";
-        g.setFont (serif (12.0f)); g.setColour (kInk);
-        g.drawText (line, response.getRight() + 40, response.getY() + 8, 700, 14, juce::Justification::centredLeft);
+        for (int i = 0; i < 4; ++i) if (f[(size_t) i] > 0.0) line += juce::String (names[i]) + " " + juce::String ((int) std::round (f[(size_t) i])) + "     ";
+        g.setFont (serif (11.0f)); g.setColour (kInk);
+        g.drawText (line, r.getX(), r.getBottom() + 22, r.getWidth() + 200, 14, juce::Justification::centredLeft);
+        g.setColour (peak > 33.0 ? kHot : kGrey);
+        g.drawText ("peak " + juce::String (peak > 0 ? "+" : "") + juce::String (peak, 1) + " dB", r.getX(), r.getBottom() + 38, 200, 12, juce::Justification::centredLeft);
     }
 }
 
@@ -279,46 +292,29 @@ void Screen::paint (juce::Graphics& g)
     {
         const auto r = chips[(size_t) n];
         const bool set = session.quad.pins[(size_t) n] >= 0;
-        g.setColour (kFaint); g.drawRect (r);
+        g.setColour (session.selected >= 0 ? kGrey : kFaint); g.drawRect (r);
         g.setFont (serif (10.0f)); g.setColour (kGrey);
         g.drawText (juce::String (n + 1) + "   " + kPinNames[n], r.reduced (8, 0), juce::Justification::centredLeft);
         g.setFont (sans (11.0f)); g.setColour (set ? kInk : kFaint);
-        g.drawText (set ? session.pinName (n) : juce::String ("click a star, then here"), r.reduced (8, 0).withTrimmedLeft (78), juce::Justification::centredLeft);
+        g.drawText (set ? session.pinName (n) : juce::String ("empty"), r.reduced (8, 0).withTrimmedLeft (78), juce::Justification::centredLeft);
     }
     paintMap (g);
-    paintQuad (g);
+    paintPad (g);
     paintResponse (g);
     g.setFont (serif (12.0f)); g.setColour (kGrey);
-    g.drawText (session.status, statusLine, juce::Justification::centredLeft);
-}
-
-void Screen::puckFrom (juce::Point<float> p)
-{
-    double m = session.quad.morph / 100.0, v = session.quad.q / 100.0;
-    const auto a = pinPoint (0), b = pinPoint (1), c = pinPoint (2), d = pinPoint (3);
-    for (int iteration = 0; iteration < 12; ++iteration)
-    {
-        const auto x = puckPoint (m * 100.0, v * 100.0);
-        const auto dm = (b - a) * (float) (1.0 - v) + (d - c) * (float) v;
-        const auto dv = (c - a) * (float) (1.0 - m) + (d - b) * (float) m;
-        const double det = dm.x * dv.y - dm.y * dv.x;
-        if (std::abs (det) < 1e-6) break;
-        const auto r = p - x;
-        m += (r.x * dv.y - r.y * dv.x) / det;
-        v += (dm.x * r.y - dm.y * r.x) / det;
-        m = std::clamp (m, 0.0, 1.0); v = std::clamp (v, 0.0, 1.0);
-    }
-    session.setPuck (m * 100.0, v * 100.0);
+    juce::String hint = session.status;
+    if (session.selected >= 0 && session.auditioning == session.selected) hint = session.stars[(size_t) session.selected].name + "   press 1 to 4 or click a corner to put it there, or drag toward another star";
+    g.drawText (hint, statusLine, juce::Justification::centredLeft);
 }
 
 void Screen::mouseMove (const juce::MouseEvent& e)
 {
-    if (dragging != Drag::none) return;
-    const int k = nearestStar (e.position, 10.0f);
-    if (k >= 0) session.hover (k); else session.unhover();
+    if (dragging) return;
+    if (map.expanded (30, 30).contains (e.getPosition())) session.hover (nearestStar (e.position, 10.0f));
+    else session.unhover();
 }
 
-void Screen::mouseExit (const juce::MouseEvent&) { if (dragging == Drag::none) session.unhover(); }
+void Screen::mouseExit (const juce::MouseEvent&) { session.unhover(); }
 
 void Screen::mouseDown (const juce::MouseEvent& e)
 {
@@ -329,72 +325,41 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     if (noiseKey.contains (p)) { session.setSource (1); return; }
     if (writeKey.contains (p)) { session.write(); return; }
     for (int n = 0; n < 4; ++n)
-        if (chips[(size_t) n].contains (p))
-        {
-            const int target = session.selected >= 0 ? session.selected : session.hovered;
-            if (target >= 0) session.pin (n, target);
-            return;
-        }
-    const auto& q = session.quad;
-    for (int n = 0; n < 4; ++n)
-        if (q.pins[(size_t) n] >= 0 && pinPoint (n).getDistanceFrom (e.position) < 9.0f)
-        {
-            dragging = Drag::pin; dragPin = n;
-            for (int i = 0; i < 4; ++i) dragPoints[(size_t) i] = pinPoint (i);
-            session.unhover();
-            return;
-        }
-    std::array<juce::Point<float>, 4> corners;
-    for (int n = 0; n < 4; ++n) corners[(size_t) n] = pinPoint (n);
-    if (q.complete() && (puckPoint (q.morph, q.q).getDistanceFrom (e.position) < 12.0f || (inside (corners, e.position) && ! e.mods.isShiftDown())))
+        if (chips[(size_t) n].contains (p)) { if (session.selected >= 0) session.pin (n, session.selected); return; }
+    if (const int n = cornerAt (p); n >= 0 && session.selected >= 0 && session.auditioning == session.selected) { session.pin (n, session.selected); return; }
+    if (pad.expanded (12, 12).contains (p) && session.quad.complete())
     {
-        dragging = Drag::puck;
-        session.unhover();
-        puckFrom (e.position);
+        dragging = true;
+        mouseDrag (e);
         return;
     }
-    if (q.complete() && inside (corners, e.position) && e.mods.isShiftDown())
+    if (map.expanded (30, 30).contains (p))
     {
-        dragging = Drag::frame; dragStart = e.position;
-        for (int n = 0; n < 4; ++n) dragPoints[(size_t) n] = pinPoint (n);
-        session.unhover();
+        if (const int k = nearestStar (e.position, 12.0f); k >= 0) { session.select (k); pairing = true; pairFrom = k; }
         return;
     }
-    const int k = nearestStar (e.position, 10.0f);
-    session.select (k);
 }
 
 void Screen::mouseDrag (const juce::MouseEvent& e)
 {
-    if (dragging == Drag::puck) { puckFrom (e.position); return; }
-    if (dragging == Drag::pin) { dragPoints[(size_t) dragPin] = e.position; repaint(); return; }
-    if (dragging == Drag::frame)
+    const auto p = e.getPosition();
+    if (dragging) { session.setPuck ((p.x - pad.getX()) * 100.0 / pad.getWidth(), (pad.getBottom() - p.y) * 100.0 / pad.getHeight()); return; }
+    if (! pairing || pairFrom < 0) return;
+    int b = -1; float best = 1e9f;
+    for (int k = 0; k < (int) session.stars.size(); ++k)
     {
-        const auto delta = e.position - dragStart;
-        for (int n = 0; n < 4; ++n) dragPoints[(size_t) n] = starPoint (session.quad.pins[(size_t) n]) + delta;
-        repaint();
+        if (k == pairFrom) continue;
+        const float d = starPoint (k).getDistanceFrom (e.position);
+        if (d < best) { best = d; b = k; }
     }
+    if (b < 0) return;
+    const auto a = starPoint (pairFrom), target = starPoint (b);
+    const float span = target.getDistanceFrom (a);
+    if (span < 1.0f) return;
+    session.morphPair (pairFrom, b, a.getDistanceFrom (e.position) / span);
 }
 
-void Screen::mouseUp (const juce::MouseEvent&)
-{
-    if (dragging == Drag::pin)
-    {
-        const int k = nearestStar (dragPoints[(size_t) dragPin], 16.0f);
-        dragging = Drag::none;
-        if (k >= 0 && k != session.quad.pins[(size_t) dragPin]) session.pin (dragPin, k); else repaint();
-    }
-    else if (dragging == Drag::frame)
-    {
-        std::array<int, 4> pins;
-        bool ok = true;
-        for (int n = 0; n < 4; ++n) { pins[(size_t) n] = nearestStar (dragPoints[(size_t) n], 24.0f); ok = ok && pins[(size_t) n] >= 0; }
-        dragging = Drag::none;
-        if (ok && pins != session.quad.pins) session.pinAll (pins); else repaint();
-    }
-    dragging = Drag::none;
-    dragPin = -1;
-}
+void Screen::mouseUp (const juce::MouseEvent&) { dragging = false; pairing = false; pairFrom = -1; }
 
 bool Screen::keyPressed (const juce::KeyPress& k)
 {

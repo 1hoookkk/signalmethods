@@ -19,21 +19,21 @@ public:
     int nearestStar (juce::Point<float> p, float within) const;
     juce::Point<float> starPoint (int k) const;
     juce::Point<float> puckPoint (double morph, double q) const;
+    int cornerAt (juce::Point<int> p) const;
 
-    juce::Rectangle<int> map, response, statusLine;
+    juce::Rectangle<int> map, pad, response, statusLine;
     juce::Rectangle<int> playKey, sawKey, noiseKey, writeKey;
     std::array<juce::Rectangle<int>, 4> chips;
 
 private:
     void layout();
     juce::Point<float> vowelPoint (double f1, double f2) const;
-    juce::Point<float> pinPoint (int n) const;
+    juce::Point<float> padCorner (int n) const;
     void paintMap (juce::Graphics& g);
-    void paintQuad (juce::Graphics& g);
+    void paintPad (juce::Graphics& g);
     void paintResponse (juce::Graphics& g) const;
     void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width) const;
     void paintWord (juce::Graphics& g, juce::Rectangle<int> r, const juce::String& text, bool on, bool enabled) const;
-    void puckFrom (juce::Point<float> p);
     void refreshHeat();
     Session& session;
     std::vector<double> hz;
@@ -41,9 +41,7 @@ private:
     std::vector<double> heat;
     std::array<int, 4> heatPins { -2, -2, -2, -2 };
     static constexpr int kHeat = 9;
-    enum class Drag { none, pin, puck, frame } dragging = Drag::none;
-    int dragPin = -1;
-    juce::Point<float> dragOffset, dragStart;
-    std::array<juce::Point<float>, 4> dragPoints;
+    bool dragging = false, pairing = false;
+    int pairFrom = -1;
 };
 }

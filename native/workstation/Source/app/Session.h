@@ -22,7 +22,9 @@ public:
     size_t libraryCount = 0;
     Quad quad;
     std::vector<Snapshot> history, future;
-    int hovered = -1, selected = -1;
+    int hovered = -1, selected = -1, auditioning = -1;
+    int pairA = -1, pairB = -1;
+    double pairT = 0.0;
     Words words {};
     bool sounding = false;
     juce::String status;
@@ -35,6 +37,8 @@ public:
     void hover (int k);
     void unhover();
     void select (int k);
+    void morphPair (int a, int b, double t);
+    bool inPair() const { return auditioning == -2; }
     void pin (int n, int star);
     void pinAll (const std::array<int, 4>& pins);
     void setPuck (double morph, double q);

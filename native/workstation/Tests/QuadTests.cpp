@@ -66,9 +66,11 @@ int main()
         check (s.quad.complete() && s.pinName (0) == "Talking Hedz M0 Q0" && s.pinName (3) == "Talking Hedz M1 Q1" && s.sounding, "a fresh session boots pinned to Talking Hedz and sounding");
         const auto boot = s.words;
         s.hover (5);
-        check (s.sounding && same (s.words, s.stars[5].words) && s.hovered == 5, "hovering a star plays it exactly");
-        s.unhover();
-        check (same (s.words, boot) && s.hovered == -1, "leaving the star returns to the quad");
+        check (same (s.words, boot) && s.hovered == 5, "hovering a star only names it, the sound stays");
+        s.select (5);
+        check (s.sounding && same (s.words, s.stars[5].words) && s.auditioning == 5, "clicking a star plays it exactly");
+        s.setPuck (s.quad.morph, s.quad.q);
+        check (same (s.words, boot) && s.auditioning == -1, "touching the pad returns to the quad");
     }
 
     {
@@ -165,6 +167,21 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
+        const int a = star (s, "Talking Hedz", "M0 Q0"), b = star (s, "Deep Bouche", "M1 Q0");
+        s.select (a);
+        s.morphPair (a, b, 0.23);
+        hs::Corners c { s.stars[(size_t) a].words, s.stars[(size_t) b].words, s.stars[(size_t) a].words, s.stars[(size_t) b].words };
+        check (s.inPair() && same (s.words, hs::lerp (c, 0.23, 0.0)), "dragging from one star toward another plays the chip's lerp between exactly those two");
+        const auto heard = s.words;
+        s.key (key ('2', false, '2'));
+        check (s.stars.size() == 133 && s.stars.back().kind == "capture" && same (s.stars.back().words, heard) && s.pinName (1) == "C1", "a number key during the drag keeps the sound and pins it in one stroke");
+        check (s.stars.back().parentA == "Talking Hedz M0 Q0" && s.stars.back().parentB == "Deep Bouche M1 Q0" && s.stars.back().morph == 23.0, "the kept star records both ends and the MORPH");
+        s.morphPair (a, b, 1.0);
+        check (same (s.words, s.stars[(size_t) b].words), "at the far star the drag is that star exactly");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
         pinBody (s, "Zoom Peaks");
         const auto heat = hs::hotCells (hs::cornersOf (s.quad, s.stars), 9, hs::curveHz());
         double worst = -1e9;
@@ -195,7 +212,7 @@ int main()
         check (written && file.getSize() > 20000 && image.getWidth() == 1480, "the screen renders to artifacts/shots/headspace.png without a window");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "no window was opened");
         const auto p = screen.puckPoint (40.0, 30.0);
-        check (p.x > 0.0f && p.y > 0.0f && screen.map.toFloat().expanded (40.0f).contains (p), "the puck sits inside the map");
+        check (screen.pad.toFloat().contains (p), "the puck sits inside the pad");
     }
 
     std::printf ("%d failures\n", failures);
