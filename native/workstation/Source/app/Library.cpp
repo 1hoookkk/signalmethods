@@ -121,6 +121,33 @@ std::optional<Star> readWav (const juce::File& wav)
     return s;
 }
 
+Words vowelWords (const std::array<double, 4>& formants)
+{
+    const double widths[4] = { 2.35, 1.63, 2.19, 2.0 };
+    Words w {};
+    for (size_t i = 0; i < kRows; ++i)
+    {
+        trench::core::SectionGeometry g;
+        if (i < 4)
+        {
+            const double hz = std::clamp (formants[i], 60.0, 12000.0);
+            const double poleBw = hz * (std::pow (2.0, widths[i] / 12.0) - 1.0), zeroBw = hz * (std::pow (2.0, 16.0 * widths[i] / 12.0) - 1.0);
+            g.pole = trench::core::ConjugatePair { hz, std::clamp (std::exp (-3.141592653589793 * poleBw / trench::core::kP2kDatumHz), 0.0, 0.9995) };
+            g.zero = trench::core::ConjugatePair { hz, std::clamp (std::exp (-3.141592653589793 * zeroBw / trench::core::kP2kDatumHz), 0.0, 0.9995) };
+        }
+        else
+        {
+            const double bw = 261.6 * (std::pow (2.0, 1.0) - 1.0);
+            const double r = std::exp (-3.141592653589793 * bw / trench::core::kP2kDatumHz);
+            g.pole = trench::core::ConjugatePair { 261.6, r };
+            g.zero = trench::core::ConjugatePair { 261.6, r };
+        }
+        w[i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+    }
+    unityDc (w);
+    return w;
+}
+
 juce::File bodyFile (const juce::File& p2kDir, const juce::String& body)
 {
     return p2kDir.getChildFile (body.toLowerCase().replaceCharacter (' ', '_') + ".body240");
