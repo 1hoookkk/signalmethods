@@ -184,6 +184,17 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
+        check (s.note == 45 && hs::noteName (440.0 * std::pow (2.0, (s.note - 69) / 12.0)) == "A2", "the saw starts on A2, 110 Hz");
+        s.noteIn (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100));
+        check (s.note == 60, "a MIDI note sets the saw's pitch");
+        s.noteIn (juce::MidiMessage::noteOff (1, 60));
+        check (s.note == 60, "note off leaves the drone where it is");
+        s.key (key (']', false, ']')); s.key (key (juce::KeyPress::pageDownKey));
+        check (s.note == 49, "] steps a semitone up and Page Down an octave down");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
         s.setPuck (50.0, 50.0); s.keep();
         s.pin (2, s.starNamed ("e"));
         s.select (13); s.key (key (juce::KeyPress::deleteKey));

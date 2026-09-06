@@ -36,6 +36,7 @@ public:
     juce::String status;
     bool playing = false;
     int source = 1;
+    int note = 45;
     Audio audio;
     bool withAudio = false;
     std::function<void()> onChange;
@@ -64,6 +65,8 @@ public:
     juce::File write (juce::File path = {});
     void setPlaying (bool on);
     void setSource (int s);
+    void setNote (int midi);
+    void noteIn (const juce::MidiMessage& m);
     bool key (const juce::KeyPress& k);
     juce::String pinName (int n) const;
     juce::String cornerName (int corner) const { return pinName (kCornerPin[corner]); }

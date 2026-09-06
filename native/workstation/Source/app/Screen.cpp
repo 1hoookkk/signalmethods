@@ -51,7 +51,7 @@ void Screen::layout()
         const auto box = cornerBox[(size_t) n];
         cornerTag[(size_t) n] = { right ? box.getX() - 44 : box.getRight() + 6, box.getY(), 38, 20 };
     }
-    for (int i = 0; i < 3; ++i) keys[(size_t) i] = { stage.getX() + i * 56, h - 26, 50, 18 };
+    for (int i = 0; i < 3; ++i) keys[(size_t) i] = { stage.getX() + i * 76, h - 26, 70, 18 };
     const int tw = std::min (400, stage.getWidth() - 2 * bw - 40), th = kLine * (kRows + 1) + 8;
     table = { stage.getCentreX() - tw / 2, stage.getBottom() - 36 - th, tw, th };
 }
@@ -204,7 +204,7 @@ void Screen::paintCorners (juce::Graphics& g) const
     for (int i = 0; i < 3; ++i)
     {
         g.setColour (on[i] ? kGreen : kDim);
-        g.drawText (names[i], keys[(size_t) i], juce::Justification::centredLeft);
+        g.drawText (i == 1 ? juce::String ("SAW ") + noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0)) : juce::String (names[i]), keys[(size_t) i], juce::Justification::centredLeft);
     }
     if (session.status.isNotEmpty())
     {

@@ -15,6 +15,11 @@ bool Audio::start()
     if (device == nullptr) { error = "no audio device"; return false; }
     deviceInfo = device->getName() + " " + juce::String (device->getCurrentSampleRate(), 0) + " Hz";
     manager.addAudioCallback (this);
+    for (const auto& device : juce::MidiInput::getAvailableDevices())
+    {
+        manager.setMidiInputDeviceEnabled (device.identifier, true);
+        manager.addMidiInputDeviceCallback (device.identifier, this);
+    }
     open = true;
     return true;
 }
@@ -24,6 +29,7 @@ void Audio::stop()
     playing.store (false);
     if (! open) return;
     manager.removeAudioCallback (this);
+    for (const auto& device : juce::MidiInput::getAvailableDevices()) manager.removeMidiInputDeviceCallback (device.identifier, this);
     manager.closeAudioDevice();
     open = false;
 }
@@ -57,7 +63,7 @@ float Audio::next()
     const int src = source.load (std::memory_order_relaxed);
     if (src == 0)
     {
-        phase += 110.0 / rate;
+        phase += 440.0 * std::pow (2.0, (note.load (std::memory_order_relaxed) - 69) / 12.0) / rate;
         phase -= std::floor (phase);
         return (float) ((2.0 * phase - 1.0) * 0.4);
     }
@@ -83,6 +89,14 @@ void Audio::audioDeviceAboutToStart (juce::AudioIODevice* device)
 }
 
 void Audio::audioDeviceStopped() {}
+
+void Audio::handleIncomingMidiMessage (juce::MidiInput*, const juce::MidiMessage& message)
+{
+    if (! message.isNoteOn()) return;
+    const int n = message.getNoteNumber();
+    note.store (n);
+    if (onNote) juce::MessageManager::callAsync ([this, n] { if (onNote) onNote (n); });
+}
 
 void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* const* out, int numOut, int numSamples, const juce::AudioIODeviceCallbackContext&)
 {
