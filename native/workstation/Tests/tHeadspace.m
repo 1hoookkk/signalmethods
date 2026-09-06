@@ -13,52 +13,48 @@ end
 methods(Test)
     function h01Anatomy(t)
         f=t.app.frames; groups={f.group};
-        t.verifyEqual(numel(f),44);
-        t.verifyEqual([nnz(strcmp(groups,'Klatt 1980')) nnz(strcmp(groups,'DVTD'))],[12 32]);
-        for k=1:44
+        t.verifyEqual(numel(f),30);
+        t.verifyEqual([nnz(strcmp(groups,'Klatt 1980')) nnz(strcmp(groups,'DVTD'))],[12 18]);
+        for k=1:30
             c=f(k).chord; trench.headspace.validate(c);
-            t.verifyEqual(c(:,[1 4]),ones(6,2)); t.verifyGreaterThan(diff(c(1:5,2)),zeros(4,1));
-            t.verifyGreaterThan(c(1:5,6),c(1:5,3)); t.verifyEqual(c(6,[3 6]),[12 12]);
+            t.verifyEqual(c(:,1),ones(6,1)); t.verifyEqual(c(:,4),zeros(6,1)); t.verifyGreaterThan(diff(c(:,2)),zeros(5,1));
             g=trench.bridge.geometry(f(k).words);
-            t.verifyGreaterThan(g(:,3),zeros(6,1)); t.verifyLessThan(g(:,3),ones(6,1));
-            t.verifyEqual(trench.bridge.noteOf(g(1:5,2)),c(1:5,2),'AbsTol',.05);
-            for row=1:5
-                hz=g(row,2)*[.6 1 1.5]; db=trench.bridge.sectionDb(f(k).words,row,hz);
-                t.verifyGreaterThan(db(2),max(db([1 3])));
+            t.verifyGreaterThan(g(:,3),zeros(6,1)); t.verifyLessThan(g(:,3),ones(6,1)); t.verifyEqual(g(:,4),zeros(6,1));
+            t.verifyEqual(trench.bridge.noteOf(g(:,2)),c(:,2),'AbsTol',.05);
+            hz=trench.bridge.curveHz;
+            for row=1:6
+                db=trench.bridge.sectionDb(f(k).words,row,hz); [~,peak]=max(db);
+                if c(row,3)<12, t.verifyLessThan(abs(log2(hz(peak)/g(row,2))),.6); end
             end
         end
     end
     function h02Provenance(t)
         a=t.app;
-        for k=1:44
+        for k=1:30
             f=a.frames(k); p=f.provenance;
-            t.verifyEqual(trench.bridge.hzOf(f.chord(1:5,2)),p.frequencyHz,'AbsTol',1e-9);
-            t.verifyEqual(f.chord(1:5,3),12*log2(1+p.bandwidthHz./p.frequencyHz),'AbsTol',1e-9);
-            t.verifyFalse(any(contains(string(p.frequencyKind),"estimat")));
+            t.verifyEqual(trench.bridge.hzOf(f.chord(:,2)),p.frequencyHz,'RelTol',3e-3);
+            t.verifyEqual(f.chord(:,3),12*log2(1+p.bandwidthHz./p.frequencyHz),'RelTol',3e-3);
+            t.verifyFalse(any(contains(string(p.kind),"estimat")));
             if k<=12
-                t.verifyEqual(p.frequencyHz(4:5),[3300;3750]); t.verifyEqual(p.bandwidthHz(4:5),[250;200]);
-                t.verifyEqual(string(p.frequencyKind),["published_table_II";"published_table_II";"published_table_II";"published_table_I";"published_table_I"]);
-                t.verifyEqual(f.chord(6,2),f.chord(6,5));
+                t.verifyEqual(p.frequencyHz(4:6),[3300;3750;4900]); t.verifyEqual(p.bandwidthHz(4:6),[250;200;1000]);
+                t.verifyEqual(string(p.kind),[repmat("published_table_II",3,1); repmat("published_table_I",3,1)]);
             else
-                t.verifyEqual(string(p.frequencyKind),repmat("measured_response_peak",5,1));
+                t.verifyEqual(string(p.kind),repmat("measured_model_sound_lpc12",6,1));
+                t.verifyTrue(endsWith(p.source,'-model-sound.wav'));
+                t.verifyLessThan(p.frequencyHz(6),5512.5);
             end
         end
-        for group={'Klatt 1980','DVTD'}
-            bank=trench.io.openBank(fullfile(a.root,'native','workstation','banks',[group{1} '.bank.json']));
-            completed=a.frames(strcmp({a.frames.group},group{1}));
-            t.verifyEqual(numel(completed),numel(bank.frames));
-            for k=1:numel(completed)
-                original=trench.model.conformShelf(bank.frames(k));
-                t.verifyEqual(completed(k).chord([1:3 6],:),original.chord([1:3 6],:));
-                if strcmp(group{1},'DVTD'), t.verifyEqual(completed(k).chord,original.chord); end
-            end
-        end
+        klatt=trench.io.openBank(fullfile(a.root,'native','workstation','banks','Klatt 1980.bank.json'));
+        for k=1:12, t.verifyEqual(a.frames(k).chord(1:3,2),klatt.frames(k).chord(1:3,2),'AbsTol',1e-6); end
+        wav=fullfile(a.root,'recipes','vocal','dvtd','subject-1','s1-01-bahn-tense-a','s1-01-bahn-tense-a-model-sound.wav');
+        [chord,poles]=trench.headspace.readSound(wav); i=find(strcmp({a.frames.name},'tense-a bahn s1'),1);
+        t.verifyEqual(size(poles,1),6); fitted=trench.bridge.fitVoices(chord); t.verifyEqual(a.frames(i).chord(:,2),fitted(:,2),'AbsTol',1e-9);
     end
     function h03Lattice(t)
         a=t.app; edges=a.tri.edges; lengths=vecnorm(a.points(edges(:,1),:)-a.points(edges(:,2),:),2,2);
         t.verifyEqual(lengths,ones(size(lengths)),'AbsTol',1e-9);
         t.verifyEqual(numel(unique(conncomp(graph(edges(:,1),edges(:,2))))),1);
-        t.verifyEqual(44-size(edges,1)+size(a.tri.ConnectivityList,1),1);
+        t.verifyEqual(30-size(edges,1)+size(a.tri.ConnectivityList,1),1);
         boundary=freeBoundary(a.tri); components=conncomp(graph(boundary(:,1),boundary(:,2),'omitselfloops'));
         t.verifyEqual(numel(unique(components(unique(boundary)))),1);
         xy=a.points; area=sum(abs(detTriangles(xy,a.tri.ConnectivityList)))/2; hull=convhull(xy);
@@ -69,7 +65,7 @@ methods(Test)
     end
     function h04ExactAnchors(t)
         a=t.app;
-        for k=1:44
+        for k=1:30
             a.setPosition(a.points(k,:));
             t.verifyEqual(a.chord,a.frames(k).chord); t.verifyEqual(a.weights,[1 0 0]);
             t.verifyEqual(a.words,trench.bridge.unityDc(a.frames(k).words));
@@ -183,7 +179,7 @@ methods(Test)
         t.verifyNumElements(a.fieldAxes.Children,8); t.verifyEqual(a.fieldAxes.Children(1),a.positionMark); t.verifyEqual(a.fieldAxes.Children(end),a.shade);
         t.verifyNumElements(a.contours,5); t.verifyTrue(all(isgraphics(a.contours,'contour'))); t.verifyTrue(isgraphics(a.edge,'line'));
         for k=1:5, notes=arrayfun(@(f) f.chord(k,2),a.frames); t.verifyEqual(a.contours(k).LevelList,floor(min(notes)):ceil(max(notes))); end
-        t.verifyEqual(a.shade.EdgeColor,'none'); t.verifyEqual(a.shade.FaceVertexCData,a.brightness); t.verifyTrue(all(isfinite(a.brightness)) && numel(a.brightness)==44); t.verifyEqual(char(a.fieldAxes.Visible),'off');
+        t.verifyEqual(a.shade.EdgeColor,'none'); t.verifyEqual(a.shade.FaceVertexCData,a.brightness); t.verifyTrue(all(isfinite(a.brightness)) && numel(a.brightness)==30); t.verifyEqual(char(a.fieldAxes.Visible),'off');
         t.verifyEmpty(findall(a.fieldAxes,'Type','text')); t.verifyEmpty(findall(a.fieldAxes,'Type','scatter'));
         a.setPosition(mean(a.points(a.tri.ConnectivityList(1,:),:),1)); p=a.probe;
         t.verifyEqual([a.positionMark.XData a.positionMark.YData],p.position,'AbsTol',1e-12);
@@ -197,12 +193,11 @@ methods(Test)
 end
 end
 function chord=expectedBlend(chords,weights)
-chord=ones(6,7);
+chord=repmat([1 60 12 0 60 12 0],6,1);
 for row=1:6
-    for col=[2 5 7], chord(row,col)=dot(squeeze(chords(row,col,:)),weights); end
-    for col=[3 6], chord(row,col)=prod(squeeze(chords(row,col,:)).^weights(:)); end
+    for col=[2 7], chord(row,col)=dot(squeeze(chords(row,col,:)),weights); end
+    chord(row,3)=prod(squeeze(chords(row,3,:)).^weights(:));
 end
-chord(6,[3 6])=12;
 end
 function d=detTriangles(p,v)
 a=p(v(:,2),:)-p(v(:,1),:); b=p(v(:,3),:)-p(v(:,1),:); d=a(:,1).*b(:,2)-a(:,2).*b(:,1);

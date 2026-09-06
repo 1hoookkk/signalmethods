@@ -8,8 +8,7 @@ def main():
     folder = Path(__file__).resolve().parents[1] / 'data'
     anchors = json.loads((folder / 'headspace-anchors.json').read_text())['anchors']
     chords = np.array([a['chord'] for a in anchors])
-    blocks = [chords[:, :5, 1], np.log(chords[:, :5, 2]), np.log(chords[:, :5, 5]),
-              chords[:, :5, 6], chords[:, 5, [1, 2, 4, 5, 6]]]
+    blocks = [chords[:, :, 1], np.log(chords[:, :, 2]), chords[:, :, 6]]
     features = []
     scales = []
     for block in blocks:

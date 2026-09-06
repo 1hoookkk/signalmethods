@@ -1,36 +1,34 @@
 function path=bakeAnchors(root)
-groups={'Klatt 1980','DVTD'}; records=struct([]);
-for g=1:2
-    bank=trench.io.openBank(fullfile(root,'native','workstation','banks',[groups{g} '.bank.json']));
-    for k=1:numel(bank.frames)
-        f=trench.model.conformShelf(bank.frames(k)); c=f.chord;
-        frequency=440*2.^((c(1:5,2)-69)/12);
-        bandwidth=frequency.*(2.^(c(1:5,3)/12)-1);
-        if g==1
-            frequency(4:5)=[3300;3750]; bandwidth(4:5)=[250;200];
-            kind=repmat({'published_table_II'},1,5); kind(4:5)={'published_table_I'};
-            upperSource='Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf';
-            for row=4:5
-                note=69+12*log2(frequency(row)/440); width=12*log2(1+bandwidth(row)/frequency(row));
-                c(row,:)=[1 note width 1 note min(120,16*width) 0];
-            end
-        else
-            kind=repmat({'measured_response_peak'},1,5); upperSource=f.source;
-        end
-        assert(all(diff(frequency)>0) && all(bandwidth>0));
-        provenance=struct('frequencyHz',frequency,'bandwidthHz',bandwidth,'frequencyKind',{kind}, ...
-            'bandwidthKind',{kind},'upperSource',upperSource,'source',f.source, ...
-            'conversion','note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120', ...
-            'shelfKind',pick(g==2,'measured_response_level','unity_no_low_band_data'));
-        record=struct('name',f.name,'group',groups{g},'chord',c,'provenance',provenance);
-        if isempty(records), records=record; else, records(end+1)=record; end
-    end
+records=struct([]);
+klatt=trench.io.openBank(fullfile(root,'native','workstation','banks','Klatt 1980.bank.json'));
+upper=[3300 250; 3750 200; 4900 1000];
+source='Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only';
+for k=1:numel(klatt.frames)
+    c=klatt.frames(k).chord; frequency=440*2.^((c(1:3,2)-69)/12); bandwidth=frequency.*(2.^(c(1:3,3)/12)-1);
+    frequency=[frequency; upper(:,1)]; bandwidth=[bandwidth; upper(:,2)];
+    chord=repmat([0 60 12 0 60 12 0],6,1);
+    for row=1:6, chord(row,1:3)=[1 69+12*log2(frequency(row)/440) 12*log2(1+bandwidth(row)/frequency(row))]; end
+    kind=[repmat({'published_table_II'},1,3) repmat({'published_table_I'},1,3)];
+    records=add(records,klatt.frames(k).name,'Klatt 1980',chord,struct('frequencyHz',frequency,'bandwidthHz',bandwidth, ...
+        'kind',{kind},'source',source,'method','table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)'));
 end
-assert(numel(records)==44);
+files=dir(fullfile(root,'recipes','vocal','dvtd','subject-*','*','*-model-sound.wav'));
+dvtdSource='Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav';
+method='Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros';
+for k=1:numel(files)
+    [~,leaf]=fileparts(files(k).folder); parts=regexp(leaf,'^(s\d)-\d+-([a-z]+)-(.+)$','tokens','once');
+    if isempty(parts) || ~(startsWith(parts{3},'tense-') || startsWith(parts{3},'lax-') || strcmp(parts{3},'schwa')), continue; end
+    [chord,poles]=trench.headspace.readSound(fullfile(files(k).folder,files(k).name));
+    if size(poles,1)<6, fprintf('%s: %d pole pairs, left out\n',leaf,size(poles,1)); continue; end
+    records=add(records,sprintf('%s %s %s',parts{3},parts{2},parts{1}),'DVTD',chord,struct('frequencyHz',poles(1:6,1),'bandwidthHz',poles(1:6,2), ...
+        'kind',{repmat({'measured_model_sound_lpc12'},1,6)},'source',[dvtdSource ' ' files(k).name],'method',method));
+end
 path=fullfile(root,'native','workstation','data','headspace-anchors.json');
 fid=fopen(path,'w','n','UTF-8'); assert(fid>=0); cleanup=onCleanup(@() fclose(fid));
-fwrite(fid,jsonencode(struct('schema','headspace-anchors-v1','anchors',records),PrettyPrint=true),'char');
+fwrite(fid,jsonencode(struct('schema','headspace-anchors-v2','anchors',records),PrettyPrint=true),'char');
 end
-function value=pick(test,a,b)
-value=b; if test, value=a; end
+function records=add(records,name,group,chord,provenance)
+chord=trench.bridge.fitVoices(chord); trench.headspace.validate(chord);
+record=struct('name',name,'group',group,'chord',chord,'provenance',provenance);
+if isempty(records), records=record; else, records(end+1)=record; end
 end

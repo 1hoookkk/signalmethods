@@ -1,5 +1,5 @@
 {
-  "schema": "headspace-anchors-v1",
+  "schema": "headspace-anchors-v2",
   "anchors": [
     {
       "name": "iy",
@@ -9,55 +9,55 @@
           1,
           62.937176300994935,
           2.3466097094136837,
-          1,
-          62.937176300994935,
-          37.54575535061894,
-          -6.9626520042308373
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           95.385358369373961,
           1.6344526031797364,
-          1,
-          95.385358369373961,
-          26.151241650875782,
-          -6.9626520042308373
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           102.00026096389982,
           2.1943686857977251,
-          1,
-          102.00026096389982,
-          35.1098989727636,
-          -6.9626520042308373
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          50.937176300994935,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          50.937176300994935,
-          12,
-          -6.9626520042308373
+          0
         ]
       ],
       "provenance": {
@@ -66,33 +66,27 @@
           2019.9999999999991,
           2959.9999999999977,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           45.000000000000028,
           200.00000000000009,
           399.99999999999955,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -103,55 +97,55 @@
           1,
           67.349957715000784,
           2.0391000173077485,
-          1,
-          67.349957715000784,
-          32.625600276923976,
-          -3.4384636372400128
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           93.38905773230853,
           0.93603014401527806,
-          1,
-          93.38905773230853,
-          14.976482304244449,
-          -3.4384636372400128
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           99.554315166678975,
           0.91829390591992188,
-          1,
-          99.554315166678975,
-          14.69270249471875,
-          -3.4384636372400128
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          55.349957715000784,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          55.349957715000784,
-          12,
-          -3.4384636372400128
+          0
         ]
       ],
       "provenance": {
@@ -160,33 +154,27 @@
           1800,
           2570.0000000000005,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           50.000000000000007,
           100.00000000000004,
           140.00000000000009,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -197,55 +185,55 @@
           1,
           70.506370585006309,
           2.3567665536420397,
-          1,
-          70.506370585006309,
-          37.708264858272635,
-          -4.7467363795976816
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           92.601997632777611,
           0.97835862595918166,
-          1,
-          92.601997632777611,
-          15.653738015346907,
-          -4.7467363795976816
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           99.214179658351441,
           1.3221950130050744,
-          1,
-          99.214179658351441,
-          21.15512020808119,
-          -4.7467363795976816
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          58.506370585006309,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          58.506370585006309,
-          12,
-          -4.7467363795976816
+          0
         ]
       ],
       "provenance": {
@@ -254,33 +242,27 @@
           1720.0000000000002,
           2520.0000000000014,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           69.999999999999972,
           100.00000000000018,
           199.99999999999994,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -291,55 +273,55 @@
           1,
           72.221866031110821,
           1.8566711375837044,
-          1,
-          72.221866031110821,
-          29.70673820133927,
-          -3.4211532254921444
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           92.194629649697561,
           0.90345752765084641,
-          1,
-          92.194629649697561,
-          14.455320442413543,
-          -3.4211532254921444
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
-          99.07623199229748,
+          99.0762319922975,
           1.3323757486649273,
-          1,
-          99.07623199229748,
-          21.318011978638836,
-          -3.4211532254921444
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          60.221866031110821,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          60.221866031110821,
-          12,
-          -3.4211532254921444
+          0
         ]
       ],
       "provenance": {
@@ -348,33 +330,27 @@
           1680.0000000000005,
           2500.0000000000009,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           59.999999999999972,
           90.000000000000071,
           200.00000000000026,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -385,55 +361,55 @@
           1,
           74.937176300994935,
           1.8519377566955246,
-          1,
-          74.937176300994935,
-          29.631004107128394,
-          -5.6004499702949726
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           91.987293752515541,
           1.4976774688353673,
-          1,
-          91.987293752515541,
-          23.962839501365877,
-          -5.6004499702949726
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           98.5845706196218,
           2.1417036576748938,
-          1,
-          98.5845706196218,
-          34.2672585227983,
-          -5.6004499702949726
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          62.937176300994935,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          62.937176300994935,
-          12,
-          -5.6004499702949726
+          0
         ]
       ],
       "provenance": {
@@ -442,33 +418,27 @@
           1660.0000000000009,
           2430,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           69.999999999999929,
           150.00000000000011,
           320.00000000000017,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -479,55 +449,55 @@
           1,
           77.038216779692036,
           2.9490769728235,
-          1,
-          77.038216779692036,
-          47.185231565176,
-          -5.4940211388326414
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           86.655668627107076,
           0.96587901432441337,
-          1,
-          86.655668627107076,
-          15.454064229190614,
-          -5.4940211388326414
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           99.755234332693888,
           1.0338797249965748,
-          1,
-          99.755234332693888,
-          16.542075599945196,
-          -5.4940211388326414
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          65.038216779692036,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          65.038216779692036,
-          12,
-          -5.4940211388326414
+          0
         ]
       ],
       "provenance": {
@@ -536,33 +506,27 @@
           1220.0000000000005,
           2600.0000000000005,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           130.00000000000003,
           69.999999999999972,
           160.00000000000003,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -573,55 +537,55 @@
           1,
           74.36950772365465,
           2.4196063340358052,
-          1,
-          74.36950772365465,
-          38.713701344572883,
-          -5.4701040343090259
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           83.039100017307746,
           1.6659324563678006,
-          1,
-          83.039100017307746,
-          26.65491930188481,
-          -5.4701040343090259
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           99.554315166678975,
           0.53068800308019926,
-          1,
-          99.554315166678975,
-          8.4910080492831881,
-          -5.4701040343090259
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          62.369507723654657,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          62.369507723654657,
-          12,
-          -5.4701040343090259
+          0
         ]
       ],
       "provenance": {
@@ -630,33 +594,27 @@
           989.99999999999977,
           2570.0000000000005,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           89.999999999999915,
           99.999999999999957,
           79.99999999999973,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -667,55 +625,55 @@
           1,
           74.937176300994935,
           2.1010404786970933,
-          1,
-          74.937176300994935,
-          33.616647659153493,
-          -3.3195627149066449
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           86.655668627107076,
           0.6953681905113539,
-          1,
-          86.655668627107076,
-          11.125891048181662,
-          -3.3195627149066449
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           99.419061818658733,
           0.925307108373195,
-          1,
-          99.419061818658733,
-          14.804913733971119,
-          -3.3195627149066449
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          62.937176300994935,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          62.937176300994935,
-          12,
-          -3.3195627149066449
+          0
         ]
       ],
       "provenance": {
@@ -724,33 +682,27 @@
           1220.0000000000005,
           2550.0000000000005,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           79.999999999999915,
           49.999999999999936,
           140.00000000000009,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -761,55 +713,55 @@
           1,
           72.545470602314055,
           2.3917056986808802,
-          1,
-          72.545470602314055,
-          38.267291178894084,
-          -4.2866617816817554
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           84.863137138648341,
           1.0680600727049403,
-          1,
-          84.863137138648341,
-          17.088961163279045,
-          -4.2866617816817554
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           97.632701187684944,
           0.51903837544660747,
-          1,
-          97.632701187684944,
-          8.30461400714572,
-          -4.2866617816817554
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          60.545470602314055,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          60.545470602314055,
-          12,
-          -4.2866617816817554
+          0
         ]
       ],
       "provenance": {
@@ -818,33 +770,27 @@
           1099.9999999999995,
           2300.0000000000014,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           79.999999999999986,
           70.000000000000057,
           70.000000000000142,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -855,55 +801,55 @@
           1,
           69.38905773230853,
           2.8328082988022945,
-          1,
-          69.38905773230853,
-          45.324932780836711,
-          -6.2190022157713321
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           84.863137138648341,
           1.5063705850063058,
-          1,
-          84.863137138648341,
-          24.101929360100893,
-          -6.2190022157713321
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           98.005023935132428,
           0.57954668448937519,
-          1,
-          98.005023935132428,
-          9.272746951830003,
-          -6.2190022157713321
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          57.38905773230853,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          57.38905773230853,
-          12,
-          -6.2190022157713321
+          0
         ]
       ],
       "provenance": {
@@ -912,33 +858,27 @@
           1099.9999999999995,
           2350,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           80.000000000000014,
           99.999999999999872,
           80.000000000000114,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -949,55 +889,55 @@
           1,
           65.038216779692036,
           2.9490769728235,
-          1,
-          65.038216779692036,
-          47.185231565176,
-          -6.8826622060629088
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           87.07623199229748,
           1.4601426790590297,
-          1,
-          87.07623199229748,
-          23.362282864944476,
-          -6.8826622060629088
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           96.863137138648341,
           1.0680600727049403,
-          1,
-          96.863137138648341,
-          17.088961163279045,
-          -6.8826622060629088
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          53.038216779692029,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          53.038216779692029,
-          12,
-          -6.8826622060629088
+          0
         ]
       ],
       "provenance": {
@@ -1006,33 +946,27 @@
           1250,
           2199.9999999999991,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           65.000000000000014,
           110.0000000000001,
           140.00000000000011,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -1043,55 +977,55 @@
           1,
           70.141886796484087,
           3.3396139498452531,
-          1,
-          70.141886796484087,
-          53.433823197524049,
-          -6.7987624319254047
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           87.351036817618422,
           0.79917298474828358,
-          1,
-          87.351036817618422,
-          12.786767755972537,
-          -6.7987624319254047
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           90.688259064691252,
           1.1944280826109726,
-          1,
-          90.688259064691252,
-          19.110849321775561,
-          -6.7987624319254047
+          0,
+          60,
+          12,
+          0
         ],
         [
           1,
           103.88268714730222,
           1.2642360017547425,
-          1,
-          103.88268714730222,
-          20.22777602807588,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
           106.09578200095135,
           0.89954469217466293,
-          1,
-          106.09578200095135,
-          14.392715074794607,
+          0,
+          60,
+          12,
           0
         ],
         [
           1,
-          58.14188679648408,
+          110.72647584438329,
+          3.2151984629595969,
+          0,
+          60,
           12,
-          1,
-          58.14188679648408,
-          12,
-          -6.7987624319254047
+          0
         ]
       ],
       "provenance": {
@@ -1100,33 +1034,27 @@
           1269.9999999999998,
           1540.0000000000005,
           3300,
-          3750
+          3750,
+          4900
         ],
         "bandwidthHz": [
           100.00000000000007,
           59.999999999999879,
           109.99999999999999,
           250,
-          200
+          200,
+          1000
         ],
-        "frequencyKind": [
+        "kind": [
           "published_table_II",
           "published_table_II",
           "published_table_II",
           "published_table_I",
-          "published_table_I"
-        ],
-        "bandwidthKind": [
-          "published_table_II",
-          "published_table_II",
-          "published_table_II",
           "published_table_I",
           "published_table_I"
         ],
-        "upperSource": "Klatt 1980 Table I typical values, F4 3300 Hz B4 250 Hz, F5 3750 Hz B5 200 Hz; F1 to F3 and B1 to B3 per vowel from Table II; evidence/mouths/klatt/Klatt-1980.pdf",
-        "source": "Klatt 1980 Table II; native/core formants.hpp; evidence/mouths/klatt",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "unity_no_low_band_data"
+        "source": "Klatt 1980, evidence/mouths/klatt/Klatt-1980.pdf: F1 to F3 with bandwidths per vowel from Table II; F4 3300/250, F5 3750/200, F6 4900/1000 Hz, the typical values of Table I; a six-resonator cascade, poles only",
+        "method": "table values converted: note = 69 + 12 log2(F / 440), width = 12 log2(1 + B / F)"
       }
     },
     {
@@ -1135,186 +1063,86 @@
       "chord": [
         [
           1,
-          71.8667861345286,
-          1.9527536372931302,
-          1,
-          71.8667861345286,
-          31.244058196690084,
-          -3.9143888125898672
-        ],
-        [
-          1,
-          85.102916213282882,
-          1.2485969048837449,
-          1,
-          85.102916213282882,
-          19.977550478139918,
-          -3.9143888125898672
-        ],
-        [
-          1,
-          97.73347171327066,
-          0.59671752995574812,
-          1,
-          97.73347171327066,
-          9.54748047929197,
-          -3.9143888125898672
-        ],
-        [
-          1,
-          100.4153019906653,
-          1.1879844928961663,
-          1,
-          100.4153019906653,
-          19.00775188633866,
-          -3.9143888125898672
-        ],
-        [
-          1,
-          103.7027068468265,
-          0.67865397033565655,
-          1,
-          103.7027068468265,
-          10.858463525370505,
-          -3.9143888125898672
-        ],
-        [
-          1,
-          59.866786134528596,
+          74.98504922287529,
+          2.0101275453654512,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          59.331705878595805,
+          84.854462231480767,
+          1.7849030898075837,
+          0,
+          60,
           12,
-          -3.9143888125898672
+          0
+        ],
+        [
+          1,
+          97.631204160672908,
+          0.62688625996210778,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          103.41315343099173,
+          0.69518615032318576,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          104.11205862414741,
+          2.931794583148589,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.57368807248393,
+          0.66026915359416327,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          519.24030293625742,
-          1115.3411946424708,
-          2313.4267265493,
-          2701.0442244439396,
-          3265.8706823668595
+          621.716826641444,
+          1099.4489475570629,
+          2299.8011237552878,
+          3211.70239442284,
+          3344.0126714086159,
+          4856.9459612051323
         ],
         "bandwidthHz": [
-          61.998829948881664,
-          83.412162349921829,
-          81.128759604748069,
-          191.85480349435738,
-          130.56648131184787
+          76.545072805368235,
+          119.40269987508056,
+          84.802754027633412,
+          131.59199220791322,
+          617.07471573723114,
+          188.81501025629103
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-e beet s1",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          59.322741288650349,
-          2.7196436113809752,
-          1,
-          59.322741288650349,
-          43.5142977820956,
-          -4.875883252148844
-        ],
-        [
-          1,
-          93.32142835368586,
-          0.5114535535562954,
-          1,
-          93.32142835368586,
-          8.1832568569007265,
-          -4.875883252148844
-        ],
-        [
-          1,
-          98.079514329708658,
-          0.84427148090267679,
-          1,
-          98.079514329708658,
-          13.508343694442829,
-          -4.875883252148844
-        ],
-        [
-          1,
-          102.0590044187459,
-          0.59379356907948877,
-          1,
-          102.0590044187459,
-          9.50069710527182,
-          -4.875883252148844
-        ],
-        [
-          1,
-          105.17338796668807,
-          0.42619573201679734,
-          1,
-          105.17338796668807,
-          6.8191317122687574,
-          -4.875883252148844
-        ],
-        [
-          1,
-          47.322741288650349,
-          12,
-          1,
-          47.509505015401466,
-          12,
-          -4.875883252148844
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          251.5883812484243,
-          1792.982149314679,
-          2360.1332093183732,
-          2970.0607980961927,
-          3555.4309207062283
-        ],
-        "bandwidthHz": [
-          42.796231619524129,
-          53.759756586253289,
-          117.94933898264779,
-          103.63685735970833,
-          88.613983615115359
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-01-bahn-tense-a-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -1323,92 +1151,86 @@
       "chord": [
         [
           1,
-          54.045591387970532,
-          3.5102582869356347,
-          1,
-          54.045591387970532,
-          39.314892813679108,
-          -4.2537245297347246
-        ],
-        [
-          1,
-          93.407939007795392,
-          0.51145355355629163,
-          1,
-          93.407939007795392,
-          8.1832568569006661,
-          -4.2537245297347246
-        ],
-        [
-          1,
-          99.896238066008266,
-          0.67865397033566022,
-          1,
-          99.896238066008266,
-          10.858463525370563,
-          -4.2537245297347246
-        ],
-        [
-          1,
-          103.27015357627897,
-          0.59088369270264085,
-          1,
-          103.27015357627897,
-          9.4541390832422536,
-          -4.2537245297347246
-        ],
-        [
-          1,
-          107.76870758997325,
-          0.34263528333676796,
-          1,
-          107.76870758997325,
-          5.4821645333882874,
-          -4.2537245297347246
-        ],
-        [
-          1,
-          42.045591387970532,
+          59.533235663511725,
+          10.806156932364921,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          43.244099684824825,
+          93.722463350137886,
+          0.83852036000825425,
+          0,
+          60,
           12,
-          -4.2537245297347246
+          0
+        ],
+        [
+          1,
+          99.888444288157928,
+          0.656951075585123,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.44958776785433,
+          0.15755682726851919,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          107.55319218042689,
+          1.3848724128490493,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.46394653169612,
+          0.3485961812397792,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          185.48503650418019,
-          1801.9641963367192,
-          2621.2626785181337,
-          3185.2830092788181,
-          4130.4559948718015
+          254.66602380613946,
+          1835.000820356551,
+          2620.0828876541641,
+          3037.8298710067388,
+          4079.3560825278696,
+          5113.2396331270011
         ],
         "bandwidthHz": [
-          41.693152377988135,
-          54.029069173517485,
-          104.79565108810357,
-          110.59276819138925,
-          82.561776915412324
+          220.72661806226822,
+          91.065532397594012,
+          101.334752947305,
+          27.772988282012193,
+          339.72829585277691,
+          104.00225031747011
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-03-tiere-tense-i-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -1417,186 +1239,86 @@
       "chord": [
         [
           1,
-          60.1878478297454,
-          2.7744174897537528,
-          1,
-          60.1878478297454,
-          44.390679836060045,
-          -5.6551739922251105
-        ],
-        [
-          1,
-          76.538361456441876,
-          1.1708924727049639,
-          1,
-          76.538361456441876,
-          18.734279563279422,
-          -5.6551739922251105
-        ],
-        [
-          1,
-          96.089769285190044,
-          0.5114535535562954,
-          1,
-          96.089769285190044,
-          8.1832568569007265,
-          -5.6551739922251105
-        ],
-        [
-          1,
-          100.67483395299382,
-          0.42830458950740113,
-          1,
-          100.67483395299382,
-          6.8528734321184182,
-          -5.6551739922251105
-        ],
-        [
-          1,
-          105.69245189134512,
-          0.34263528333676796,
-          1,
-          105.69245189134512,
-          5.4821645333882874,
-          -5.6551739922251105
-        ],
-        [
-          1,
-          48.1878478297454,
+          66.1561813848476,
+          4.9923082410262767,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          48.480876048754695,
+          76.0377044044426,
+          6.3441646821029112,
+          0,
+          60,
           12,
-          -5.6551739922251105
+          0
+        ],
+        [
+          1,
+          96.0259158735554,
+          0.77317384963549129,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          100.74013657458534,
+          0.6740450407695705,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          105.46038653274135,
+          0.17144471140854248,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.84845608606537,
+          0.50539915593544837,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          264.47979464453823,
-          680.07804209856761,
-          2103.885517234402,
-          2741.8410258941913,
-          3663.6450945892966
+          373.34738836522672,
+          660.692464763395,
+          2096.1400117927938,
+          2752.2028554628641,
+          3614.8630046784206,
+          5228.0759605256517
         ],
         "bandwidthHz": [
-          45.96978258645818,
-          47.587091262921788,
-          63.081706270804915,
-          68.6787651314764,
-          73.23090946187753
+          124.79021664193206,
+          292.4284712282639,
+          95.736072450790047,
+          109.26862925919485,
+          35.975955913366846,
+          154.87282388808262
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-u bude s1",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          54.824187274956067,
-          3.4314340583473895,
-          1,
-          54.824187274956067,
-          54.902944933558231,
-          -8.5491135972000762
-        ],
-        [
-          1,
-          75.846276223565837,
-          1.331960866708672,
-          1,
-          75.846276223565837,
-          21.311373867338752,
-          -8.5491135972000762
-        ],
-        [
-          1,
-          94.53257751121896,
-          0.51145355355629163,
-          1,
-          94.53257751121896,
-          8.1832568569006661,
-          -8.5491135972000762
-        ],
-        [
-          1,
-          100.4153019906653,
-          0.51145355355632893,
-          1,
-          100.4153019906653,
-          8.1832568569012629,
-          -8.5491135972000762
-        ],
-        [
-          1,
-          104.22177077148351,
-          0.42619573201681604,
-          1,
-          104.22177077148351,
-          6.8191317122690567,
-          -8.5491135972000762
-        ],
-        [
-          1,
-          42.824187274956067,
-          12,
-          1,
-          48.166346981230141,
-          12,
-          -8.5491135972000762
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          194.01736687608508,
-          653.42721438505691,
-          1922.908642076661,
-          2701.0442244439396,
-          3365.2717130107148
-        ],
-        "bandwidthHz": [
-          42.5315630989677,
-          52.257265557260169,
-          57.655398619085993,
-          80.986573173817135,
-          83.8745398484416
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-04-boote-tense-o-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -1605,186 +1327,86 @@
       "chord": [
         [
           1,
-          68.8389132406959,
-          1.7242356496744731,
-          1,
-          68.8389132406959,
-          27.587770394791569,
-          -2.4171636346089591
-        ],
-        [
-          1,
-          91.331683309167261,
-          0.67865397033565655,
-          1,
-          91.331683309167261,
-          10.858463525370505,
-          -2.4171636346089591
-        ],
-        [
-          1,
-          97.2144077886136,
-          0.92424592689714413,
-          1,
-          97.2144077886136,
-          14.787934830354306,
-          -2.4171636346089591
-        ],
-        [
-          1,
-          101.79947245641738,
-          0.76352244127391866,
-          1,
-          101.79947245641738,
-          12.216359060382699,
-          -2.4171636346089591
-        ],
-        [
-          1,
-          103.44317488449799,
-          0.6753362889168657,
-          1,
-          103.44317488449799,
-          10.805380622669851,
-          -2.4171636346089591
-        ],
-        [
-          1,
-          56.8389132406959,
+          71.763773278933257,
+          1.3268826324744445,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          56.340437902515482,
+          91.60820268339495,
+          1.6366636300739206,
+          0,
+          60,
           12,
-          -2.4171636346089591
+          0
+        ],
+        [
+          1,
+          97.221556847710076,
+          0.89572185964907236,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          101.68222394796881,
+          0.28489548188857472,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          105.63729755782016,
+          6.141854336106972,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.87899179828815,
+          1.1329598904597291,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          435.92490436779457,
-          1598.311977353354,
-          2245.0943538469664,
-          2925.8682356789054,
-          3217.2766623152197
+          516.159864065198,
+          1624.0458003976062,
+          2246.021647682976,
+          2906.1196273100322,
+          3651.9918828024133,
+          5237.3054402739308
         ],
         "bandwidthHz": [
-          45.651908802601291,
-          63.899030677592322,
-          123.11491538575245,
-          131.92672453880883,
-          127.98260126409268
+          41.115940336621463,
+          161.02457768148415,
+          119.26547156399268,
+          48.219375909658368,
+          1555.1970509854107,
+          354.20506678178373
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-oe hoehle s1",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          58.198102785226773,
-          3.0002666243324509,
-          1,
-          58.198102785226773,
-          48.004265989319215,
-          -5.6409531429564552
-        ],
-        [
-          1,
-          87.525214528349039,
-          0.678653970335675,
-          1,
-          87.525214528349039,
-          10.8584635253708,
-          -5.6409531429564552
-        ],
-        [
-          1,
-          93.494449661904866,
-          0.5114535535562954,
-          1,
-          93.494449661904866,
-          8.1832568569007265,
-          -5.6409531429564552
-        ],
-        [
-          1,
-          100.93436591532233,
-          0.42619573201677863,
-          1,
-          100.93436591532233,
-          6.819131712268458,
-          -5.6409531429564552
-        ],
-        [
-          1,
-          104.13526011737403,
-          0.42619573201679734,
-          1,
-          104.13526011737403,
-          6.8191317122687574,
-          -5.6409531429564552
-        ],
-        [
-          1,
-          46.198102785226773,
-          12,
-          1,
-          46.847839341362487,
-          12,
-          -5.6409531429564552
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          235.76432353768519,
-          1282.8418337215255,
-          1810.9912394390185,
-          2783.2540256996949,
-          3348.4972239117469
-        ],
-        "bandwidthHz": [
-          44.61260548000152,
-          51.286826882953662,
-          54.299730897650896,
-          69.368589105102217,
-          83.456459920766918
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-06-laehmung-tense-ae-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -1793,92 +1415,86 @@
       "chord": [
         [
           1,
-          50.585165223590316,
-          4.187556027380217,
-          1,
-          50.585165223590316,
-          46.900627506658431,
-          -7.2241720958483944
-        ],
-        [
-          1,
-          88.044278453006072,
-          0.763522441273904,
-          1,
-          88.044278453006072,
-          12.216359060382464,
-          -7.2241720958483944
-        ],
-        [
-          1,
-          93.148407045466854,
-          0.59379356907948877,
-          1,
-          93.148407045466854,
-          9.50069710527182,
-          -7.2241720958483944
-        ],
-        [
-          1,
-          100.76134460710333,
-          0.42830458950741612,
-          1,
-          100.76134460710333,
-          6.852873432118658,
-          -7.2241720958483944
-        ],
-        [
-          1,
-          105.2598986207976,
-          0.51145355355631028,
-          1,
-          105.2598986207976,
-          8.1832568569009645,
-          -7.2241720958483944
-        ],
-        [
-          1,
-          38.585165223590316,
+          65.067165127826883,
+          11.794568604160997,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          48.595457557411656,
+          88.752226978702112,
+          1.5305561176885703,
+          0,
+          60,
           12,
-          -7.2241720958483944
+          0
+        ],
+        [
+          1,
+          94.487221504709353,
+          4.7534931878319426,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          101.4124511087777,
+          1.0603086421467742,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          105.56286559362329,
+          1.9282029675191814,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.51162007511209,
+          0.724156408870708,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          151.88021633851793,
-          1321.8867968651875,
-          1775.1521474819021,
-          2755.5764359377013,
-          3573.2420560405117
+          350.58573232669568,
+          1377.0627901381765,
+          1917.8774731108908,
+          2861.1854721086861,
+          3636.3243634810024,
+          5127.3395287198064
         ],
         "bandwidthHz": [
-          41.56123331626339,
-          59.603571068214322,
-          61.941893586248213,
-          69.022815348633614,
-          107.13805668948282
+          342.31467359665112,
+          127.28765342598263,
+          605.98795211505944,
+          180.71315392422625,
+          428.41958652763617,
+          219.01979325164703
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-08-guete-tense-y-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -1887,92 +1503,86 @@
       "chord": [
         [
           1,
-          72.0398074427476,
-          1.879997698261445,
-          1,
-          72.0398074427476,
-          30.07996317218312,
-          -3.1426858975504417
-        ],
-        [
-          1,
-          82.767128552326241,
-          1.0871678480607265,
-          1,
-          82.767128552326241,
-          17.394685568971624,
-          -3.1426858975504417
-        ],
-        [
-          1,
-          98.252535637927664,
-          0.67865397033567876,
-          1,
-          98.252535637927664,
-          10.85846352537086,
-          -3.1426858975504417
-        ],
-        [
-          1,
-          102.31853638107442,
-          0.92424592689714058,
-          1,
-          102.31853638107442,
-          14.787934830354249,
-          -3.1426858975504417
-        ],
-        [
-          1,
-          104.48130273381204,
-          0.59379356907947023,
-          1,
-          104.48130273381204,
-          9.5006971052715237,
-          -3.1426858975504417
-        ],
-        [
-          1,
-          60.0398074427476,
+          74.6154158649764,
+          1.2448814602646103,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          59.456848431125529,
+          82.6191193530906,
+          1.622417492649606,
+          0,
+          60,
           12,
-          -3.1426858975504417
+          0
+        ],
+        [
+          1,
+          98.643482852426459,
+          1.2997237141164046,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.13504065229419,
+          4.9481115411146384,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          104.15878123679289,
+          1.1888647717273058,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.32568447279829,
+          1.8097558111341108,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          524.45566183726066,
-          974.56893499714647,
-          2383.8388840727525,
-          3014.9208487308879,
-          3416.101062881919
+          608.58334223094084,
+          966.272522376975,
+          2438.2831421096507,
+          2983.1340676454843,
+          3353.0496950582738,
+          4787.8649802412874
         ],
         "bandwidthHz": [
-          60.159516193976195,
-          63.162744456245989,
-          95.303667958518588,
-          165.33012278536236,
-          119.20091966035368
+          45.373291063844363,
+          94.932566779893179,
+          190.10069585287096,
+          986.95519499332283,
+          238.34927015503482,
+          527.59835233625927
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-15-bass-lax-a-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -1981,92 +1591,86 @@
       "chord": [
         [
           1,
-          68.6658919324769,
-          1.8065679175073628,
-          1,
-          68.6658919324769,
-          28.905086680117805,
-          -2.5001885662438443
-        ],
-        [
-          1,
-          90.639598076291207,
-          0.763522441273904,
-          1,
-          90.639598076291207,
-          12.216359060382464,
-          -2.5001885662438443
-        ],
-        [
-          1,
-          97.2144077886136,
-          0.76352244127392233,
-          1,
-          97.2144077886136,
-          12.216359060382757,
-          -2.5001885662438443
-        ],
-        [
-          1,
-          101.97249376463638,
-          0.84427148090268023,
-          1,
-          101.97249376463638,
-          13.508343694442884,
-          -2.5001885662438443
-        ],
-        [
-          1,
-          109.23938870983483,
-          0.42830458950743489,
-          1,
-          109.23938870983483,
-          6.8528734321189582,
-          -2.5001885662438443
-        ],
-        [
-          1,
-          56.665891932476896,
+          71.691249896807037,
+          0.82000983633786939,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          56.181158873156861,
+          90.7480040296494,
+          1.4860632223633377,
+          0,
+          60,
           12,
-          -2.5001885662438443
+          0
+        ],
+        [
+          1,
+          97.396393534690844,
+          2.7076909259151076,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          101.47565383089197,
+          3.2212675012515306,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.27543765042259,
+          1.28034250909773,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.23078243365262,
+          1.6199915866000461,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          431.58992431972126,
-          1535.6774935087603,
-          2245.0943538469664,
-          2955.2562721233421,
-          4496.6725229122148
+          514.00213377433124,
+          1545.3237277523901,
+          2268.8190586685137,
+          2871.6499845200451,
+          3007.4245974191131,
+          5044.8357484979915
         ],
         "bandwidthHz": [
-          47.470790683091622,
-          69.243344316072708,
-          101.2307870777643,
-          147.69103813506518,
-          112.63450840427895
+          24.931827332947289,
+          138.50768337745009,
+          384.10332476506471,
+          587.26336623637,
+          230.84651594367776,
+          494.85944149835069
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-16-bett-lax-ae-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -2075,92 +1679,86 @@
       "chord": [
         [
           1,
-          62.091082220154505,
-          2.2688857173402535,
-          1,
-          62.091082220154505,
-          36.302171477444055,
-          -3.78228148061933
-        ],
-        [
-          1,
-          89.774491535196148,
-          0.84427148090268023,
-          1,
-          89.774491535196148,
-          13.508343694442884,
-          -3.78228148061933
-        ],
-        [
-          1,
-          95.657216014642515,
-          0.59671752995577054,
-          1,
-          95.657216014642515,
-          9.5474804792923287,
-          -3.78228148061933
-        ],
-        [
-          1,
-          101.97249376463638,
-          0.5114535535562954,
-          1,
-          101.97249376463638,
-          8.1832568569007265,
-          -3.78228148061933
-        ],
-        [
-          1,
-          104.22177077148351,
-          0.42619573201681604,
-          1,
-          104.22177077148351,
-          6.8191317122690567,
-          -3.78228148061933
-        ],
-        [
-          1,
-          50.091082220154505,
+          66.553904224166871,
+          1.5544218219821813,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          50.252655701517945,
+          90.164083823229376,
+          2.1362760772446445,
+          0,
+          60,
           12,
-          -3.78228148061933
+          0
+        ],
+        [
+          1,
+          96.022378760364234,
+          1.8905203405318625,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.218329504328,
+          0.58483056213740992,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          103.77994560838482,
+          2.1199892880267281,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.12350428169376,
+          1.0727611351555506,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          295.21384349270994,
-          1460.824692603735,
-          2051.9706514091959,
-          2955.2562721233421,
-          3365.2717130107148
+          382.02371750136172,
+          1494.0713857525293,
+          2095.7117896740451,
+          2997.5203628270096,
+          3280.4738698304427,
+          5013.6714293444429
         ],
         "bandwidthHz": [
-          41.339265784647992,
-          73.005755006474246,
-          71.959847175489813,
-          88.608722568752071,
-          83.8745398484416
+          35.887754095039966,
+          196.22013607884986,
+          241.81627658304896,
+          102.98940468203405,
+          427.3430333449511,
+          320.50008393904045
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-17-mit-lax-i-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -2169,186 +1767,86 @@
       "chord": [
         [
           1,
-          65.551508384534714,
-          2.0344149071100515,
-          1,
-          65.551508384534714,
-          32.550638513760823,
-          -3.3913344405601045
-        ],
-        [
-          1,
-          78.7011278091795,
-          1.0924457930356675,
-          1,
-          78.7011278091795,
-          17.479132688570679,
-          -3.3913344405601045
-        ],
-        [
-          1,
-          97.906493021489652,
-          0.42619573201679734,
-          1,
-          97.906493021489652,
-          6.8191317122687574,
-          -3.3913344405601045
-        ],
-        [
-          1,
-          102.40504703518391,
-          0.42619573201679734,
-          1,
-          102.40504703518391,
-          6.8191317122687574,
-          -3.3913344405601045
-        ],
-        [
-          1,
-          106.64406908654968,
-          0.42830458950741612,
-          1,
-          106.64406908654968,
-          6.852873432118658,
-          -3.3913344405601045
-        ],
-        [
-          1,
-          53.551508384534714,
+          68.826070767452435,
+          5.6083874555581339,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          53.328207520342346,
+          79.002641111227987,
+          1.964985630865695,
+          0,
+          60,
           12,
-          -3.3913344405601045
+          0
+        ],
+        [
+          1,
+          99.096923450739069,
+          1.9332325283699738,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.56899887664613,
+          0.50050579275517559,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          106.57528421264848,
+          0.55157574665632125,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          109.3934784132697,
+          2.4265410637672682,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          360.53247655861844,
-          770.5725752082393,
-          2336.6632715591891,
-          3030.0242678259224,
-          3870.6642918122679
+          435.60165067610262,
+          784.11048404287544,
+          2502.9897500638394,
+          3058.8555978847203,
+          3855.3159950011382,
+          4536.8741159315168
         ],
         "bandwidthHz": [
-          44.95681016443983,
-          50.191730377516748,
-          58.237959189165885,
-          75.518981189822838,
-          96.953995979209338
+          166.6535899334028,
+          94.24549517755672,
+          295.70684511959666,
+          89.723297290956864,
+          124.80905458393977,
+          682.62144958210934
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "lax-u butter s1",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          59.322741288650349,
-          2.7872548430247024,
-          1,
-          59.322741288650349,
-          44.596077488395238,
-          -5.8338896260495341
-        ],
-        [
-          1,
-          76.019297531784844,
-          1.2485969048837449,
-          1,
-          76.019297531784844,
-          19.977550478139918,
-          -5.8338896260495341
-        ],
-        [
-          1,
-          96.435811901628043,
-          0.42619573201678229,
-          1,
-          96.435811901628043,
-          6.8191317122685167,
-          -5.8338896260495341
-        ],
-        [
-          1,
-          101.19389787765084,
-          0.34263528333678306,
-          1,
-          101.19389787765084,
-          5.4821645333885289,
-          -5.8338896260495341
-        ],
-        [
-          1,
-          104.56781338792156,
-          0.34263528333674909,
-          1,
-          104.56781338792156,
-          5.4821645333879854,
-          -5.8338896260495341
-        ],
-        [
-          1,
-          47.322741288650349,
-          12,
-          1,
-          47.639762299870583,
-          12,
-          -5.8338896260495341
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          251.5883812484243,
-          659.990374870539,
-          2146.3615081664275,
-          2825.2925309727634,
-          3433.2142172937279
-        ],
-        "bandwidthHz": [
-          43.948162674448938,
-          49.358191522491154,
-          53.494962427504468,
-          56.473467324811466,
-          68.6249330976854
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-18-offen-lax-o-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -2357,92 +1855,86 @@
       "chord": [
         [
           1,
-          62.523635490702027,
-          2.25828275817752,
-          1,
-          62.523635490702027,
-          36.132524130840324,
-          -3.6958540049664785
-        ],
-        [
-          1,
-          85.881512100268424,
-          0.84427148090268023,
-          1,
-          85.881512100268424,
-          13.508343694442884,
-          -3.6958540049664785
-        ],
-        [
-          1,
-          95.657216014642515,
-          0.51145355355629163,
-          1,
-          95.657216014642515,
-          8.1832568569006661,
-          -3.6958540049664785
-        ],
-        [
-          1,
-          101.36691918586986,
-          0.42830458950743489,
-          1,
-          101.36691918586986,
-          6.8528734321189582,
-          -3.6958540049664785
-        ],
-        [
-          1,
-          107.50917562764471,
-          0.42830458950743489,
-          1,
-          107.50917562764471,
-          6.8528734321189582,
-          -3.6958540049664785
-        ],
-        [
-          1,
-          50.523635490702027,
+          66.55669123108936,
+          1.3784420417376935,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          50.570868173793485,
+          86.198823636811653,
+          1.938166869352306,
+          0,
+          60,
           12,
-          -3.6958540049664785
+          0
+        ],
+        [
+          1,
+          95.810833303456022,
+          1.2914975647795444,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          101.4626070444389,
+          0.28170841910958289,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          106.79561907607039,
+          1.0830803537319278,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.96785328705386,
+          1.4082291202601565,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          302.68275493359334,
-          1166.6470019972883,
-          2051.9706514091959,
-          2853.6703638682907,
-          4068.9975107618989
+          382.08522209401718,
+          1188.2272105561246,
+          2070.2593873517026,
+          2869.486690057161,
+          3904.6963250863096,
+          4968.7967736272785
         ],
         "bandwidthHz": [
-          42.173876919246986,
-          58.304015285395742,
-          61.525120472648105,
-          71.47991252296039,
-          101.92192826754541
+          31.666303027165338,
+          140.75762033980956,
+          160.34758192772836,
+          47.074584197174318,
+          252.08555783043,
+          421.06757097729951
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-20-muetter-lax-y-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -2451,92 +1943,86 @@
       "chord": [
         [
           1,
-          67.022189504396309,
-          1.8889200116900049,
-          1,
-          67.022189504396309,
-          30.222720187040078,
-          -2.6484982804687718
-        ],
-        [
-          1,
-          86.573597333144477,
-          0.84427148090268023,
-          1,
-          86.573597333144477,
-          13.508343694442884,
-          -2.6484982804687718
-        ],
-        [
-          1,
-          95.830237322861535,
-          0.51145355355631028,
-          1,
-          95.830237322861535,
-          8.1832568569009645,
-          -2.6484982804687718
-        ],
-        [
-          1,
-          103.27015357627897,
-          0.51145355355629163,
-          1,
-          103.27015357627897,
-          8.1832568569006661,
-          -2.6484982804687718
-        ],
-        [
-          1,
-          105.51943058312611,
-          0.59379356907948877,
-          1,
-          105.51943058312611,
-          9.50069710527182,
-          -2.6484982804687718
-        ],
-        [
-          1,
-          55.022189504396309,
+          68.550100135918484,
+          2.9356406634881287,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          54.693829046995084,
+          86.769558306430355,
+          1.5800936183699017,
+          0,
+          60,
           12,
-          -2.6484982804687718
+          0
+        ],
+        [
+          1,
+          96.980395319529421,
+          2.2436423147731879,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          103.14272686137511,
+          0.6781058336948137,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          105.62428092853331,
+          2.3107589297303228,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          109.78920225482557,
+          0.46938219356876687,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          392.4981849392517,
-          1214.2301261283744,
-          2072.5810765647702,
-          3185.2830092788181,
-          3627.2126076422633
+          428.71291183027165,
+          1228.0522584841306,
+          2214.9513923364507,
+          3161.9239469900394,
+          3649.24709169113,
+          4641.7718594905555
         ],
         "bandwidthHz": [
-          45.248418157740609,
-          60.682015821904365,
-          62.143091733505607,
-          95.50571337400568,
-          126.56741433458765
+          79.223743618436714,
+          117.35824154516619,
+          306.48395221069245,
+          126.30667488870519,
+          521.0844532301428,
+          127.57199290402954
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-21-goetter-lax-oe-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -2545,374 +2031,86 @@
       "chord": [
         [
           1,
-          64.426869881111145,
-          2.4898657597900558,
-          1,
-          64.426869881111145,
-          39.837852156640892,
-          -4.1676396859683909
-        ],
-        [
-          1,
-          91.072151346838751,
-          0.7597989008388768,
-          1,
-          91.072151346838751,
-          12.156782413422029,
-          -4.1676396859683909
-        ],
-        [
-          1,
-          97.3009184427231,
-          0.59671752995577054,
-          1,
-          97.3009184427231,
-          9.5474804792923287,
-          -4.1676396859683909
-        ],
-        [
-          1,
-          102.83760030573144,
-          0.59671752995576677,
-          1,
-          102.83760030573144,
-          9.5474804792922683,
-          -4.1676396859683909
-        ],
-        [
-          1,
-          104.91385600435956,
-          0.67865397033566022,
-          1,
-          104.91385600435956,
-          10.858463525370563,
-          -4.1676396859683909
-        ],
-        [
-          1,
-          52.426869881111145,
+          67.420680971116553,
+          0.67080002549144635,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          52.068778139947526,
+          90.56079689952054,
+          1.8499249786354142,
+          0,
+          60,
           12,
-          -4.1676396859683909
+          0
+        ],
+        [
+          1,
+          97.163919717758489,
+          1.128791254719125,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.55025623430554,
+          0.97660574005108369,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          103.69726518164317,
+          1.6598431876929016,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.47527076616669,
+          2.22103720763081,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          337.85620396069635,
-          1574.5301403395267,
-          2256.3412829158756,
-          3106.68389412383,
-          3502.5284336647615
+          401.63739640182723,
+          1528.7033815380892,
+          2238.5565110220764,
+          3055.5458192976575,
+          3264.8443057166469,
+          4829.4134955934487
         ],
         "bandwidthHz": [
-          52.25844157604341,
-          70.6413194630961,
-          79.126849978516887,
-          108.94722012236237,
-          140.02783874678167
+          15.867641662667729,
+          172.39775710464284,
+          150.82077701859211,
+          177.32066631140438,
+          328.51813760546526,
+          661.07467029226473
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-a bahn s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          78.268574538631981,
-          1.2546305394819204,
-          1,
-          78.268574538631981,
-          20.074088631710726,
-          -1.7670700482080361
-        ],
-        [
-          1,
-          89.168916956429626,
-          1.40856441436728,
-          1,
-          89.168916956429626,
-          22.53703062987648,
-          -1.7670700482080361
-        ],
-        [
-          1,
-          103.09713226805997,
-          0.59671752995576677,
-          1,
-          103.09713226805997,
-          9.5474804792922683,
-          -1.7670700482080361
-        ],
-        [
-          1,
-          107.2496436653162,
-          0.92875398175682189,
-          1,
-          107.2496436653162,
-          14.86006370810915,
-          -1.7670700482080361
-        ],
-        [
-          1,
-          113.04585749065305,
-          0.84427148090269488,
-          1,
-          113.04585749065305,
-          13.508343694443118,
-          -1.7670700482080361
-        ],
-        [
-          1,
-          66.268574538631981,
-          12,
-          1,
-          65.56506925379044,
-          12,
-          -1.7670700482080361
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          751.55815093333661,
-          1410.6093510107257,
-          3153.6075116086031,
-          4008.45348870505,
-          5602.4720762002071
-        ],
-        "bandwidthHz": [
-          56.487768408346689,
-          119.56800234060638,
-          110.59276819138883,
-          220.9139361509479,
-          279.9875343677819
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-e beet s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          63.388742031797079,
-          2.2688857173402535,
-          1,
-          63.388742031797079,
-          36.302171477444055,
-          -3.4700257709442486
-        ],
-        [
-          1,
-          99.031131524913221,
-          0.59379356907948877,
-          1,
-          99.031131524913221,
-          9.50069710527182,
-          -3.4700257709442486
-        ],
-        [
-          1,
-          102.0590044187459,
-          1.0034567285409279,
-          1,
-          102.0590044187459,
-          16.055307656654847,
-          -3.4700257709442486
-        ],
-        [
-          1,
-          108.54730347695879,
-          0.51145355355631028,
-          1,
-          108.54730347695879,
-          8.1832568569009645,
-          -3.4700257709442486
-        ],
-        [
-          1,
-          112.61330422010552,
-          0.91529363809177533,
-          1,
-          112.61330422010552,
-          14.644698209468405,
-          -3.4700257709442486
-        ],
-        [
-          1,
-          51.388742031797079,
-          12,
-          1,
-          51.154103139194532,
-          12,
-          -3.4700257709442486
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          318.19224906190391,
-          2493.4957129773525,
-          2970.0607980961927,
-          4320.4573868928082,
-          5464.2271081433282
-        ],
-        "bandwidthHz": [
-          44.55696859930547,
-          87.007666542894981,
-          177.23735896496794,
-          129.54213601592306,
-          296.66371515096512
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-i tiere s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          56.727421665365185,
-          3.2888278009683081,
-          1,
-          56.727421665365185,
-          52.621244815492929,
-          -6.080179987620971
-        ],
-        [
-          1,
-          99.117642179022724,
-          0.42619573201679734,
-          1,
-          99.117642179022724,
-          6.8191317122687574,
-          -6.080179987620971
-        ],
-        [
-          1,
-          104.91385600435956,
-          0.76352244127388547,
-          1,
-          104.91385600435956,
-          12.216359060382167,
-          -6.080179987620971
-        ],
-        [
-          1,
-          108.02823955230176,
-          0.84427148090268023,
-          1,
-          108.02823955230176,
-          13.508343694442884,
-          -6.080179987620971
-        ],
-        [
-          1,
-          111.31564440846296,
-          0.430423752653859,
-          1,
-          111.31564440846296,
-          6.8867800424617442,
-          -6.080179987620971
-        ],
-        [
-          1,
-          44.727421665365185,
-          12,
-          1,
-          45.320166714126586,
-          12,
-          -6.080179987620971
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          216.5632828655371,
-          2505.9870229169246,
-          3502.5284336647615,
-          4192.8427531472871,
-          5069.6253320684109
-        ],
-        "bandwidthHz": [
-          45.307961035158485,
-          62.458109281544523,
-          157.92819998614794,
-          209.54030443677291,
-          127.62221072536823
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s1-22-ehe-schwa-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -2921,280 +2119,86 @@
       "chord": [
         [
           1,
-          67.973806699600871,
-          1.8065679175073592,
-          1,
-          67.973806699600871,
-          28.905086680117748,
-          -2.4959477542279229
-        ],
-        [
-          1,
-          81.382958086574149,
-          1.0083400045744468,
-          1,
-          81.382958086574149,
-          16.133440073191149,
-          -2.4959477542279229
-        ],
-        [
-          1,
-          103.18364292216947,
-          0.42830458950743489,
-          1,
-          103.18364292216947,
-          6.8528734321189582,
-          -2.4959477542279229
-        ],
-        [
-          1,
-          107.50917562764471,
-          0.426195732016801,
-          1,
-          107.50917562764471,
-          6.819131712268816,
-          -2.4959477542279229
-        ],
-        [
-          1,
-          110.45053786736788,
-          0.426195732016801,
-          1,
-          110.45053786736788,
-          6.819131712268816,
-          -2.4959477542279229
-        ],
-        [
-          1,
-          55.973806699600864,
+          71.633072258713668,
+          1.1493965619196391,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          55.692126281199691,
+          80.165231408000963,
+          1.5222556641973171,
+          0,
+          60,
           12,
-          -2.4959477542279229
+          0
+        ],
+        [
+          1,
+          100.23770967450065,
+          7.0437499311631564,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.94133564375306,
+          1.0747839992472394,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          107.34624605328169,
+          1.4000517266034969,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.97016498063513,
+          1.0638296528143338,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          414.67682316968489,
-          899.682959436388,
-          3169.4056895040962,
-          4068.9975107618989,
-          4822.5189850336837
+          512.27774292453125,
+          838.57479883177973,
+          2673.4781794972519,
+          3125.3549896425138,
+          4030.8830699211935,
+          4969.4602946876475
         ],
         "bandwidthHz": [
-          45.610510265839338,
-          53.957226363222375,
-          79.388581212452181,
-          101.41388956503251,
-          120.19432464137898
+          35.165446917034068,
+          77.073848173433049,
+          1342.3486609671825,
+          200.17757684728596,
+          339.521723606452,
+          314.94693407026892
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-u bude s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          64.340359227001628,
-          2.25828275817752,
-          1,
-          64.340359227001628,
-          36.132524130840324,
-          -4.2036914587253849
-        ],
-        [
-          1,
-          80.777383507807627,
-          1.2485969048837413,
-          1,
-          80.777383507807627,
-          19.977550478139861,
-          -4.2036914587253849
-        ],
-        [
-          1,
-          100.5883232988843,
-          0.42830458950743489,
-          1,
-          100.5883232988843,
-          6.8528734321189582,
-          -4.2036914587253849
-        ],
-        [
-          1,
-          106.99011170298769,
-          0.34263528333678683,
-          1,
-          106.99011170298769,
-          5.4821645333885893,
-          -4.2036914587253849
-        ],
-        [
-          1,
-          109.84496328860135,
-          0.42830458950743489,
-          1,
-          109.84496328860135,
-          6.8528734321189582,
-          -4.2036914587253849
-        ],
-        [
-          1,
-          52.340359227001628,
-          12,
-          1,
-          52.453389332406942,
-          12,
-          -4.2036914587253849
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          336.17213037209137,
-          868.75667008610071,
-          2728.1740811948453,
-          3948.8103221039059,
-          4656.746569357565
-        ],
-        "bandwidthHz": [
-          46.840072052020687,
-          64.971035550272248,
-          68.33642986251229,
-          78.930945469365085,
-          116.64410915634325
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "tense-ae laehmung s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          76.538361456441876,
-          1.40856441436728,
-          1,
-          76.538361456441876,
-          22.53703062987648,
-          -1.6971787397330824
-        ],
-        [
-          1,
-          94.359556202999926,
-          1.0871678480607265,
-          1,
-          94.359556202999926,
-          17.394685568971624,
-          -1.6971787397330824
-        ],
-        [
-          1,
-          101.28040853176034,
-          1.0083400045744286,
-          1,
-          101.28040853176034,
-          16.133440073190858,
-          -1.6971787397330824
-        ],
-        [
-          1,
-          107.50917562764471,
-          1.0083400045744324,
-          1,
-          107.50917562764471,
-          16.133440073190918,
-          -1.6971787397330824
-        ],
-        [
-          1,
-          111.48866571668196,
-          1.2667822535049549,
-          1,
-          111.48866571668196,
-          20.268516056079278,
-          -1.6971787397330824
-        ],
-        [
-          1,
-          64.538361456441876,
-          12,
-          1,
-          61.33456244745247,
-          12,
-          -1.6971787397330824
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          680.07804209856761,
-          1903.7866086389051,
-          2839.4459961223783,
-          4068.9975107618989,
-          5120.5457160425358
-        ],
-        "bandwidthHz": [
-          57.645706709070467,
-          123.38623030400045,
-          170.29179974120692,
-          244.03243104338054,
-          388.73035969505031
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s2-04-boote-tense-o-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -3203,92 +2207,86 @@
       "chord": [
         [
           1,
-          66.762657542067785,
-          2.1160990004991644,
-          1,
-          66.762657542067785,
-          33.857584007986631,
-          -2.9380547478412291
-        ],
-        [
-          1,
-          91.331683309167261,
-          0.67865397033565655,
-          1,
-          91.331683309167261,
-          10.858463525370505,
-          -2.9380547478412291
-        ],
-        [
-          1,
-          97.819982367380135,
-          0.51145355355631028,
-          1,
-          97.819982367380135,
-          8.1832568569009645,
-          -2.9380547478412291
-        ],
-        [
-          1,
-          105.60594123723561,
-          0.34263528333676796,
-          1,
-          105.60594123723561,
-          5.4821645333882874,
-          -2.9380547478412291
-        ],
-        [
-          1,
-          111.66168702490097,
-          0.832006321316346,
-          1,
-          111.66168702490097,
-          13.312101141061536,
-          -2.9380547478412291
-        ],
-        [
-          1,
-          54.762657542067792,
+          69.312238075944236,
+          1.0196069879761969,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          54.419180116966437,
+          91.150253949196539,
+          0.46393704700184263,
+          0,
+          60,
           12,
-          -2.9380547478412291
+          0
+        ],
+        [
+          1,
+          97.499890298168737,
+          1.6210388080780398,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          102.17850535084692,
+          5.6630612974459282,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          105.3537883552352,
+          0.6676574488531104,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.46759646935033,
+          2.448721043017458,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          386.65806861984231,
-          1598.311977353354,
-          2325.0159705625979,
-          3645.3833374586316,
-          5171.9775550718641
+          448.00764876825065,
+          1581.6494961877254,
+          2282.4231532774797,
+          2990.6329915549286,
+          3592.67340476361,
+          5114.3177642652263
         ],
         "bandwidthHz": [
-          50.271245833302252,
-          63.899030677592322,
-          69.711955963630473,
-          72.8658836341778,
-          254.6273507616948
+          27.177784886682733,
+          42.958156400893678,
+          224.03970241100427,
+          1157.2426745443311,
+          141.25926344819189,
+          777.04703224129457
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s2-07-hoehle-tense-oe-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -3297,468 +2295,86 @@
       "chord": [
         [
           1,
-          62.350614182483021,
-          2.4091255643468705,
-          1,
-          62.350614182483021,
-          38.546009029549928,
-          -3.8447819976414275
-        ],
-        [
-          1,
-          92.542832466700332,
-          0.75979890083885848,
-          1,
-          92.542832466700332,
-          12.156782413421736,
-          -3.8447819976414275
-        ],
-        [
-          1,
-          97.3009184427231,
-          0.5114535535562954,
-          1,
-          97.3009184427231,
-          8.1832568569007265,
-          -3.8447819976414275
-        ],
-        [
-          1,
-          106.29802647011164,
-          0.42830458950743489,
-          1,
-          106.29802647011164,
-          6.8528734321189582,
-          -3.8447819976414275
-        ],
-        [
-          1,
-          110.5370485214774,
-          0.42830458950741612,
-          1,
-          110.5370485214774,
-          6.852873432118658,
-          -3.8447819976414275
-        ],
-        [
-          1,
-          50.350614182483021,
+          68.05831458036532,
+          1.058994491541273,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          50.298052552729473,
+          92.205843570638535,
+          2.8010162331256909,
+          0,
+          60,
           12,
-          -3.8447819976414275
+          0
+        ],
+        [
+          1,
+          97.330486646327557,
+          1.8111751674994172,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          100.06934456185901,
+          7.1997846265653518,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          106.0608482721105,
+          1.2780530749649039,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          111.14225942655088,
+          0.974333119070953,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          299.67277846657794,
-          1714.131908765587,
-          2256.3412829158756,
-          3794.0647531351133,
-          4846.6776707767622
+          416.70596122132218,
+          1681.0885581897389,
+          2260.1982405533058,
+          2647.6042204782116,
+          3742.4406869583927,
+          5019.1058815342913
         ],
         "bandwidthHz": [
-          44.742347138072866,
-          76.90455499497925,
-          67.652853204052178,
-          95.035299134172263,
-          121.40158173857068
+          26.285619453645396,
+          295.2275828762443,
+          249.26807328522025,
+          1365.3634345997025,
+          286.73265614961264,
+          290.57371851342742
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "lax-a bass s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          76.8844040728799,
-          1.3319608667086542,
-          1,
-          76.8844040728799,
-          21.311373867338467,
-          -1.4870414048689939
-        ],
-        [
-          1,
-          86.48708667903496,
-          1.2485969048837449,
-          1,
-          86.48708667903496,
-          19.977550478139918,
-          -1.4870414048689939
-        ],
-        [
-          1,
-          102.23202572696491,
-          0.51145355355631028,
-          1,
-          102.23202572696491,
-          8.1832568569009645,
-          -1.4870414048689939
-        ],
-        [
-          1,
-          108.54730347695879,
-          0.75979890083885848,
-          1,
-          108.54730347695879,
-          12.156782413421736,
-          -1.4870414048689939
-        ],
-        [
-          1,
-          115.81419842215722,
-          0.92424592689714058,
-          1,
-          115.81419842215722,
-          14.787934830354249,
-          -1.4870414048689939
-        ],
-        [
-          1,
-          64.8844040728799,
-          12,
-          1,
-          64.296292837686636,
-          12,
-          -1.4870414048689939
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          693.80834658168556,
-          1208.177690619038,
-          2999.892713939932,
-          4320.4573868928082,
-          6573.9415567148944
-        ],
-        "bandwidthHz": [
-          55.486711013840171,
-          90.355053827069838,
-          89.947076242746149,
-          193.83738848490239,
-          360.49721345519936
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "lax-ae bett s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          73.6835098708282,
-          1.4153399457178872,
-          1,
-          73.6835098708282,
-          22.645439131486196,
-          -1.5223448225891056
-        ],
-        [
-          1,
-          92.542832466700332,
-          0.76352244127392233,
-          1,
-          92.542832466700332,
-          12.216359060382757,
-          -1.5223448225891056
-        ],
-        [
-          1,
-          100.4153019906653,
-          0.76352244127392233,
-          1,
-          100.4153019906653,
-          12.216359060382757,
-          -1.5223448225891056
-        ],
-        [
-          1,
-          106.99011170298769,
-          1.3578244604470422,
-          1,
-          106.99011170298769,
-          21.725191367152675,
-          -1.5223448225891056
-        ],
-        [
-          1,
-          115.46815580571921,
-          0.68198763141781871,
-          1,
-          115.46815580571921,
-          10.9118021026851,
-          -1.5223448225891056
-        ],
-        [
-          1,
-          61.683509870828196,
-          12,
-          1,
-          60.398342968923487,
-          12,
-          -1.5223448225891056
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          576.69000287587528,
-          1714.131908765587,
-          2701.0442244439396,
-          3948.8103221039059,
-          6443.8447948747889
-        ],
-        "bandwidthHz": [
-          49.127066215018523,
-          77.2898127787456,
-          121.78946167843213,
-          322.17846133501888,
-          258.90949613825939
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "lax-i mit s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          65.638019038644217,
-          1.962002062387231,
-          1,
-          65.638019038644217,
-          31.392032998195695,
-          -2.8375190730417814
-        ],
-        [
-          1,
-          95.051641435875979,
-          0.59379356907947023,
-          1,
-          95.051641435875979,
-          9.5006971052715237,
-          -2.8375190730417814
-        ],
-        [
-          1,
-          99.982748720117769,
-          1.0871678480607407,
-          1,
-          99.982748720117769,
-          17.394685568971852,
-          -2.8375190730417814
-        ],
-        [
-          1,
-          106.03849450778314,
-          0.68198763141783725,
-          1,
-          106.03849450778314,
-          10.911802102685396,
-          -2.8375190730417814
-        ],
-        [
-          1,
-          114.25700664818612,
-          0.42619573201679734,
-          1,
-          114.25700664818612,
-          6.8191317122687574,
-          -2.8375190730417814
-        ],
-        [
-          1,
-          53.638019038644217,
-          12,
-          1,
-          53.313239883337495,
-          12,
-          -2.8375190730417814
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          362.33858470010705,
-          1981.4348727349673,
-          2634.3940444073928,
-          3737.6115507206678,
-          6008.44909495404
-        ],
-        "bandwidthHz": [
-          43.481035107958284,
-          69.139892154668388,
-          170.73759674522151,
-          150.17480311247266,
-          149.75192080141807
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "lax-o offen s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          70.050062398228974,
-          1.6497688238357466,
-          1,
-          70.050062398228974,
-          26.396301181371946,
-          -2.632691379585733
-        ],
-        [
-          1,
-          84.410830980406828,
-          1.331960866708658,
-          1,
-          84.410830980406828,
-          21.311373867338528,
-          -2.632691379585733
-        ],
-        [
-          1,
-          102.66457899751244,
-          0.59671752995576677,
-          1,
-          102.66457899751244,
-          9.5474804792922683,
-          -2.632691379585733
-        ],
-        [
-          1,
-          107.42266497353523,
-          0.76352244127392233,
-          1,
-          107.42266497353523,
-          12.216359060382757,
-          -2.632691379585733
-        ],
-        [
-          1,
-          108.97985674750632,
-          0.5114535535562954,
-          1,
-          108.97985674750632,
-          8.1832568569007265,
-          -2.632691379585733
-        ],
-        [
-          1,
-          58.050062398228981,
-          12,
-          1,
-          57.408007152997911,
-          12,
-          -2.632691379585733
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          467.51372635007527,
-          1071.6333196925987,
-          3075.7900118019907,
-          4048.7152393113897,
-          4429.7649763507889
-        ],
-        "bandwidthHz": [
-          46.743249503320392,
-          85.702930233608683,
-          107.86381327684516,
-          182.55563719491141,
-          132.81955258391864
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s2-08-guete-tense-y-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -3767,92 +2383,86 @@
       "chord": [
         [
           1,
-          66.416614925629759,
-          1.8799976982614313,
-          1,
-          66.416614925629759,
-          30.0799631721829,
-          -2.9633715465354955
-        ],
-        [
-          1,
-          84.756873596844869,
-          1.1708924727049459,
-          1,
-          84.756873596844869,
-          18.734279563279134,
-          -2.9633715465354955
-        ],
-        [
-          1,
-          102.23202572696491,
-          0.42830458950743489,
-          1,
-          102.23202572696491,
-          6.8528734321189582,
-          -2.9633715465354955
-        ],
-        [
-          1,
-          106.47104777833067,
-          0.42830458950743489,
-          1,
-          106.47104777833067,
-          6.8528734321189582,
-          -2.9633715465354955
-        ],
-        [
-          1,
-          108.37428216873977,
-          0.42619573201681232,
-          1,
-          108.37428216873977,
-          6.8191317122689972,
-          -2.9633715465354955
-        ],
-        [
-          1,
-          54.416614925629759,
+          70.456242528246008,
+          0.76683639465175268,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          54.144385469695273,
+          84.733694227776809,
+          0.4749664402547642,
+          0,
+          60,
           12,
-          -2.9633715465354955
+          0
+        ],
+        [
+          1,
+          102.10616454215557,
+          0.60883268637666,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          103.51613255145557,
+          13.638601944231839,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          104.65922314332056,
+          1.8691947512781069,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          109.14533954964091,
+          1.2585671280135711,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          379.00619611187773,
-          1093.268853944272,
-          2999.892713939932,
-          3832.1731381532891,
-          4277.4933433544038
+          478.612165365818,
+          1091.8060635602887,
+          2978.1624979036496,
+          3230.8635186921415,
+          3451.3896480982039,
+          4472.3106159258723
         ],
         "bandwidthHz": [
-          43.475227844303028,
-          76.499286121657789,
-          75.1425502698985,
-          95.989853683282135,
-          106.61034723928609
+          21.676269023689883,
+          30.368526925246762,
+          106.59810469528612,
+          3872.3407317626361,
+          393.50371685132035,
+          337.23628078295604
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s2-19-butter-lax-u-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -3861,92 +2471,86 @@
       "chord": [
         [
           1,
-          67.973806699600871,
-          1.8065679175073592,
-          1,
-          67.973806699600871,
-          28.905086680117748,
-          -2.0927794256432164
-        ],
-        [
-          1,
-          92.629343120809835,
-          0.67865397033566022,
-          1,
-          92.629343120809835,
-          10.858463525370563,
-          -2.0927794256432164
-        ],
-        [
-          1,
-          98.7715995625847,
-          0.42619573201681604,
-          1,
-          98.7715995625847,
-          6.8191317122690567,
-          -2.0927794256432164
-        ],
-        [
-          1,
-          106.29802647011164,
-          0.42619573201679734,
-          1,
-          106.29802647011164,
-          6.8191317122687574,
-          -2.0927794256432164
-        ],
-        [
-          1,
-          110.10449525092989,
-          0.51145355355631028,
-          1,
-          110.10449525092989,
-          8.1832568569009645,
-          -2.0927794256432164
-        ],
-        [
-          1,
-          55.973806699600864,
+          70.085689072380518,
+          0.69207068014152484,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          55.618375256604111,
+          73.137004389585883,
+          33.055587185938506,
+          0,
+          60,
           12,
-          -2.0927794256432164
+          0
+        ],
+        [
+          1,
+          92.836540314753137,
+          1.4025441241794794,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          98.9004092145128,
+          1.1120816749303095,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          104.33454802041446,
+          2.2250314174608281,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.84710687430483,
+          0.52700520351875513,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          414.67682316968489,
-          1722.7189509803636,
-          2456.3941273789624,
-          3794.0647531351133,
-          4727.082465184425
+          468.47680288625952,
+          558.76973821192678,
+          1743.4606326552421,
+          2474.7386883512841,
+          3387.26555850471,
+          4934.2620444581653
         ],
         "bandwidthHz": [
-          45.610510265839338,
-          68.872706115764828,
-          61.222077945082923,
-          94.5615874326197,
-          141.73415100010993
+          19.106989227387217,
+          3212.2587782417963,
+          147.12404185868044,
+          164.18506919574349,
+          464.55469798721538,
+          152.5134968517329
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s2-20-muetter-lax-y-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     },
     {
@@ -3955,186 +2559,86 @@
       "chord": [
         [
           1,
-          72.385850059185628,
-          1.40856441436728,
-          1,
-          72.385850059185628,
-          22.53703062987648,
-          -1.8663981863885948
-        ],
-        [
-          1,
-          89.947512843415154,
-          0.84427148090268389,
-          1,
-          89.947512843415154,
-          13.508343694442942,
-          -1.8663981863885948
-        ],
-        [
-          1,
-          98.512067600256174,
-          0.51145355355631028,
-          1,
-          98.512067600256174,
-          8.1832568569009645,
-          -1.8663981863885948
-        ],
-        [
-          1,
-          107.42266497353523,
-          1.5300904758628351,
-          1,
-          107.42266497353523,
-          24.481447613805361,
-          -1.8663981863885948
-        ],
-        [
-          1,
-          110.96960179202492,
-          0.42619573201679734,
-          1,
-          110.96960179202492,
-          6.8191317122687574,
-          -1.8663981863885948
-        ],
-        [
-          1,
-          60.385850059185621,
+          73.3955727351878,
+          1.1773110806387956,
+          0,
+          60,
           12,
+          0
+        ],
+        [
           1,
-          59.261630357310636,
+          89.71534689341506,
+          0.46135268105893451,
+          0,
+          60,
           12,
-          -1.8663981863885948
+          0
+        ],
+        [
+          1,
+          98.151587522897429,
+          1.3358858032817826,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          100.31911576249391,
+          2.9101095549511546,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          106.94160404718517,
+          0.98812639695351145,
+          0,
+          60,
+          12,
+          0
+        ],
+        [
+          1,
+          110.63416223577715,
+          1.3244051099117549,
+          0,
+          60,
+          12,
+          0
         ]
       ],
       "provenance": {
         "frequencyHz": [
-          535.04405828467475,
-          1475.4975233148591,
-          2419.8445891118554,
-          4048.7152393113897,
-          4969.2986355569328
+          567.17787342426209,
+          1455.8425507720958,
+          2369.9791863051232,
+          2686.0790112740156,
+          3937.7615888132514,
+          4873.941545424741
         ],
         "bandwidthHz": [
-          45.352137476949913,
-          73.739040177221867,
-          72.5552433062108,
-          374.12066449080106,
-          123.85259556171856
+          39.912168286802277,
+          39.317983055513196,
+          190.11733854433669,
+          491.68253626371666,
+          231.29117914135119,
+          387.49239042799996
         ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
+        "kind": [
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12",
+          "measured_model_sound_lpc12"
         ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
-      }
-    },
-    {
-      "name": "schwa ehe s2",
-      "group": "DVTD",
-      "chord": [
-        [
-          1,
-          71.607254172200072,
-          1.4085644143672975,
-          1,
-          71.607254172200072,
-          22.53703062987676,
-          -1.4318528951480047
-        ],
-        [
-          1,
-          90.293555459853209,
-          0.678653970335675,
-          1,
-          90.293555459853209,
-          10.8584635253708,
-          -1.4318528951480047
-        ],
-        [
-          1,
-          99.636706103679742,
-          0.59379356907948877,
-          1,
-          99.636706103679742,
-          9.50069710527182,
-          -1.4318528951480047
-        ],
-        [
-          1,
-          104.13526011737403,
-          1.0083400045744142,
-          1,
-          104.13526011737403,
-          16.133440073190627,
-          -1.4318528951480047
-        ],
-        [
-          1,
-          107.42266497353523,
-          0.42619573201679734,
-          1,
-          107.42266497353523,
-          6.8191317122687574,
-          -1.4318528951480047
-        ],
-        [
-          1,
-          59.607254172200072,
-          12,
-          1,
-          58.956582940340589,
-          12,
-          -1.4318528951480047
-        ]
-      ],
-      "provenance": {
-        "frequencyHz": [
-          511.5143467835112,
-          1505.2867960234535,
-          2582.2600040251509,
-          3348.4972239117469,
-          4048.7152393113897
-        ],
-        "bandwidthHz": [
-          43.357679835060424,
-          60.1799701939011,
-          90.104994441318155,
-          200.82143469784867,
-          100.90838322555371
-        ],
-        "frequencyKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "bandwidthKind": [
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak",
-          "measured_response_peak"
-        ],
-        "upperSource": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), measured vocal tract transfer functions of 3D-printed MRI vocal tracts, recipes/vocal/dvtd/*/*-vvtf-measured.txt; peaks read off the measured magnitude smoothed 25 Hz either side, prominence 3 dB, 3 dB bandwidth under the frequency, the five lowest as F1..F5; the low shelf is the level at 100 Hz over the median, cornered at half F1; 44,100 Hz datum",
-        "conversion": "note = 69 + 12 log2(F / 440); width = 12 log2(1 + B / F) semitones; zero on the pole note sixteen times wider, capped at 120",
-        "shelfKind": "measured_response_level"
+        "source": "Birkholz et al., Dresden Vocal Tract Dataset (DVTD), model sound of the 3D-printed MRI vocal tract, recipes/vocal/dvtd/*/*-model-sound.wav s2-21-goetter-lax-oe-model-sound.wav",
+        "method": "Spectrogram envelope, the E-mu P2K method: the middle half of the sound resampled to 11,025 Hz, Hann window, order-12 LPC, the six conjugate pole pairs as the six sections; note from the angle, width from the radius; no zeros"
       }
     }
   ]

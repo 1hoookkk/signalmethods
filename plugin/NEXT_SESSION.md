@@ -1971,3 +1971,11 @@ Open, in order:
   per semitone, five families in five colours, straight within triangles, over the brightness
   fill at 30 percent, with the hexagon outline. True geometry, not decoration. tHeadspace 15,
   tShot 1.
+- 2026-09-06 ~15:30, Tyson: the Spectrogram envelope method is the E-mu P2K method; "Use wav
+  files. Or measured tfs". Measured on the P2K corners: 62 percent of sharp poles under
+  5,512 Hz, the LPC band, 32 percent above 8 kHz voiced by hand. HEADSPACE anchors are now
+  read the P2K way from the DVTD model sounds (LPC-12 at 11,025 Hz, six pole pairs, no
+  zeros) with Klatt as six-resonator cascades (Table I F6 4900/1000); five bells and shelf
+  retired; six subject-2 tracts yield fewer than six pairs and stay out. 30 anchors on a
+  30-point lattice hexagon. Comparison plots in artifacts/shots (dvtd_vs_envelope.png,
+  dvtd_methods.png). tHeadspace 15, tShot 1, tBridge 13, tEnvelope 5.
