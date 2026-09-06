@@ -1,5 +1,5 @@
-#include "Look.h"
-#include "Screen.h"
+#include "ui/Look.h"
+#include "ui/Screen.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
 namespace
@@ -13,7 +13,7 @@ public:
         setUsingNativeTitleBar (true);
         setContentOwned (new hs::Screen (session), true);
         setResizable (true, false);
-        setResizeLimits (820, 520, 4000, 3000);
+        setResizeLimits (1000, 640, 4000, 3000);
         const auto area = juce::Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
         const int w = std::min (1120, area.getWidth() - 40), h = std::min (700, area.getHeight() - 80);
         centreWithSize (w, h);

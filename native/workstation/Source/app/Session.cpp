@@ -80,14 +80,14 @@ void Session::audition()
         }
         words = cubeWordsAt (cube, stars);
         status = "";
-        playingLabel = "cube " + juce::String (cube.x * 100.0, 0) + " " + juce::String (cube.y * 100.0, 0) + " at depth " + juce::String (cube.z * 100.0, 0);
+        playingLabel = "cube " + juce::String (std::lround (cube.x * 100.0)) + " " + juce::String (std::lround (cube.y * 100.0)) + " at depth " + juce::String (std::lround (cube.z * 100.0));
     }
     else if (auditioning == kPair && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
     {
         Corners c { stars[(size_t) pairA].words, stars[(size_t) pairB].words, stars[(size_t) pairA].words, stars[(size_t) pairB].words };
         words = lerp (c, pairT, 0.0);
         sounding = true;
-        status = stars[(size_t) pairA].name + " > " + stars[(size_t) pairB].name + "  " + juce::String (pairT * 100.0, 0);
+        status = stars[(size_t) pairA].name + " > " + stars[(size_t) pairB].name + "  " + juce::String (std::lround (pairT * 100.0));
         playingLabel = status;
     }
     else if (auditioning == kMade && madeLive)
@@ -108,8 +108,8 @@ void Session::audition()
     {
         words = wordsAt (quad, stars);
         sounding = true;
-        status = juce::String (quad.morph, 0) + " " + juce::String (quad.q, 0);
-        playingLabel = "pad " + status;
+        status = juce::String (std::lround (quad.morph)) + " " + juce::String (std::lround (quad.q));
+        playingLabel = "pad " + juce::String (std::lround (quad.morph)) + " " + juce::String (std::lround (quad.q));
     }
     else
     {
@@ -118,8 +118,7 @@ void Session::audition()
         playingLabel = "";
         return;
     }
-    heard = tracking ? transposed (words, std::pow (2.0, (note - 45) / 12.0)) : words;
-    if (tracking) playingLabel += "   track " + noteName (440.0 * std::pow (2.0, (note - 69) / 12.0));
+    heard = words;
     if (withAudio) audio.publish (flat (heard));
 }
 
@@ -231,6 +230,7 @@ bool Session::placeable() const
 void Session::toCorner (int corner)
 {
     if (! placeable()) return;
+    working = std::clamp (corner, 0, 3);
     if (auditioning == -1 && quad.complete()) { keep(); pinCorner (corner, selected); return; }
     pinCorner (corner, currentStar());
 }
@@ -261,10 +261,11 @@ void Session::edit (int corner)
 {
     if (editingCube) editing = -1;
     editingCube = false;
-    if (corner < 0 || corner > 3 || corner == editing) { editing = -1; auditioning = -1; audition(); changed(); return; }
+    if (corner < 0 || corner > 3) { editing = -1; auditioning = -1; audition(); changed(); return; }
     const int star = quad.pins[(size_t) kCornerPin[corner]];
     if (star < 0) return;
     editing = corner;
+    working = corner;
     selected = star;
     auditioning = star;
     audition();
@@ -347,10 +348,10 @@ void Session::setSection (int corner, int row, const Section& section, bool keep
     if (corner < 0 || corner >= (editingCube ? 8 : 4) || row < 0 || row >= kRows) return;
     const int star = editingCube ? cube.pins[(size_t) corner] : quad.pins[(size_t) kCornerPin[corner]];
     if (star < 0 || star >= (int) stars.size()) return;
-    setSectionWords (corner, row, sectionWords (section, stars[(size_t) star].words[(size_t) row][4], keepFifth));
+    setSectionWords (corner, row, sectionWords (section, stars[(size_t) star].words[(size_t) row][4], keepFifth), keepFifth);
 }
 
-void Session::setSectionWords (int corner, int row, const trench::core::PackedSection& words)
+void Session::setSectionWords (int corner, int row, const trench::core::PackedSection& words, bool balance)
 {
     if (corner < 0 || corner >= (editingCube ? 8 : 4) || row < 0 || row >= kRows) return;
     int& anchor = editingCube ? cube.pins[(size_t) corner] : quad.pins[(size_t) kCornerPin[corner]];
@@ -366,6 +367,7 @@ void Session::setSectionWords (int corner, int row, const trench::core::PackedSe
     }
     auto& s = stars[(size_t) star];
     s.words[(size_t) row] = words;
+    if (balance) unityDc (s.words);
     const auto name = formantName (s.words);
     if (s.name != name) { s.name = uniqueName (name); s.body = s.name; }
     editing = corner;
@@ -376,8 +378,7 @@ void Session::setSectionWords (int corner, int row, const trench::core::PackedSe
 
 Words Session::editWords() const
 {
-    if (editing < 0) return {};
-    const int star = editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]];
+    const int star = editing < 0 ? quad.pins[(size_t) kCornerPin[working]] : editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]];
     return star >= 0 && star < (int) stars.size() ? stars[(size_t) star].words : Words {};
 }
 
@@ -478,7 +479,6 @@ void Session::setNote (int midi)
 {
     note = std::clamp (midi, 0, 127);
     if (withAudio) audio.setNote (note);
-    if (tracking) audition();
     changed();
 }
 
@@ -486,20 +486,12 @@ void Session::noteOn (int midi)
 {
     note = std::clamp (midi, 0, 127);
     if (withAudio) audio.noteOn (note);
-    if (tracking) audition();
     changed();
 }
 
 void Session::noteOff()
 {
     if (withAudio) audio.noteOff();
-}
-
-void Session::setTracking (bool on)
-{
-    tracking = on;
-    audition();
-    changed();
 }
 
 bool Session::setLoop (const juce::File& wav)
@@ -548,7 +540,6 @@ bool Session::key (const juce::KeyPress& k)
     if (c == 'n' || c == 'N') { setSource (1); return true; }
     if ((c == 'l' || c == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }
     if (c == 's' || c == 'S') { setSource (0); return true; }
-    if (c == 'k' || c == 'K') { setTracking (! tracking); return true; }
     if (c == '[') { setNote (note - 1); return true; }
     if (c == ']') { setNote (note + 1); return true; }
     if (code == juce::KeyPress::pageDownKey) { setNote (note - 12); return true; }

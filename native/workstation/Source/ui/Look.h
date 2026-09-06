@@ -15,5 +15,8 @@ struct Look : public juce::LookAndFeel_V4
     static void axes (juce::Graphics& g, juce::Rectangle<int> r);
     static void handle (juce::Graphics& g, juce::Point<float> p, juce::Colour colour, bool square, bool lit);
     static void underline (juce::Graphics& g, juce::Rectangle<int> r, juce::Colour colour);
+    enum class Glyph { play, saw, noise, loop, write, caret, arrow, keep, use, count };
+    static bool hasGlyph (Glyph which);
+    static void glyph (juce::Graphics& g, Glyph which, juce::Rectangle<int> r, juce::Colour colour);
 };
 }

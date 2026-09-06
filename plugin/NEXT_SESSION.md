@@ -2124,3 +2124,19 @@ Open, in order:
   the cube caption, the F1/F2 numbers on cards. Palette narrowed so the vowel space is the hero.
   The shot test now checks content (ground pixel, white axes, blue curve), not file size.
   127 checks, ctest green.
+- 2026-09-07, later: Tyson's rulings in sequence: "it should all be one screen"; "the mother"
+  (his name for the cube), "the biggest quarter in the left top side"; delete the table, full
+  direct manipulation on the plot (peak handles, wheel for width, valley squares, ceiling
+  blade); minimal text; rip out Track ("all the key tracking is doing is transposing the
+  playback"); DC unity after every pole or zero edit; the Stage always on the working corner;
+  JUCE 9 SVG glyphs for the controls; "make screen.h into modular subcomponents with a clear
+  folder structure, delete the previous editors and code and specs". Gemini was editing the
+  same checkout (Screen.h reverted under me at 01:41); Tyson told it to stop.
+  Built: Source/ui with Look, Plot (axis maths + cached curves + the shared cell), Mother,
+  Stage, Palette, Body, Engine, Keyboard, PinMenu, and Screen as composer/dispatcher; the old
+  Screen, the table, the rooms, Track, the isometric cube and native/WORKSTATION_{EDIT,ONE_SHOT_*}
+  specs deleted; HEADSPACE_SPEC.md rewritten for the one screen. Session gained `working`,
+  `target()`, editWords() falls back to the working corner. The stage's solver now re-levels
+  before it measures, so the handle lands where the finger is after DC unity. Min window
+  1000x640. 120 checks, ctest x4 green. Shots: headspace.png, headspace_mother.png,
+  headspace_raw.png.

@@ -31,13 +31,14 @@ public:
     int pairA = -1, pairB = -1;
     double pairT = 0.0;
     int editing = -1;
+    int working = 0;
+    int target() const { return editing >= 0 ? editing : working; }
     Star made;
     bool madeLive = false;
     Words words {};
     bool sounding = false;
     juce::String status;
     bool playing = false;
-    bool tracking = false;
     int source = 1;
     int note = 45;
     Words heard {};
@@ -69,7 +70,7 @@ public:
     void beginRowEdit();
     void setRow (int corner, int row, Row r);
     void setSection (int corner, int row, const Section& section, bool keepFifth = true);
-    void setSectionWords (int corner, int row, const trench::core::PackedSection& words);
+    void setSectionWords (int corner, int row, const trench::core::PackedSection& words, bool balance = true);
     Words editWords() const;
     void setPuck (double morph, double q);
     void nudge (double dm, double dq);
@@ -83,7 +84,6 @@ public:
     void setNote (int midi);
     void noteOn (int midi);
     void noteOff();
-    void setTracking (bool on);
     bool setLoop (const juce::File& wav);
     void noteIn (const juce::MidiMessage& m);
     bool key (const juce::KeyPress& k);

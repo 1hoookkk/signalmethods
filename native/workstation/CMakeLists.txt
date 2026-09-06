@@ -1,17 +1,26 @@
 set(TRENCH_HEADSPACE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/app")
+set(TRENCH_HEADSPACE_UI "${CMAKE_CURRENT_SOURCE_DIR}/Source/ui")
 set(TRENCH_HEADSPACE_SOURCES
   "${TRENCH_HEADSPACE_DIR}/Quad.h" "${TRENCH_HEADSPACE_DIR}/Quad.cpp"
   "${TRENCH_HEADSPACE_DIR}/Library.h" "${TRENCH_HEADSPACE_DIR}/Library.cpp"
   "${TRENCH_HEADSPACE_DIR}/Audio.h" "${TRENCH_HEADSPACE_DIR}/Audio.cpp"
   "${TRENCH_HEADSPACE_DIR}/Session.h" "${TRENCH_HEADSPACE_DIR}/Session.cpp"
-  "${TRENCH_HEADSPACE_DIR}/Screen.h" "${TRENCH_HEADSPACE_DIR}/Screen.cpp"
-  "${TRENCH_HEADSPACE_DIR}/Look.h" "${TRENCH_HEADSPACE_DIR}/Look.cpp")
+  "${TRENCH_HEADSPACE_UI}/Look.h" "${TRENCH_HEADSPACE_UI}/Look.cpp"
+  "${TRENCH_HEADSPACE_UI}/Plot.h" "${TRENCH_HEADSPACE_UI}/Plot.cpp"
+  "${TRENCH_HEADSPACE_UI}/Palette.h" "${TRENCH_HEADSPACE_UI}/Palette.cpp"
+  "${TRENCH_HEADSPACE_UI}/Mother.h" "${TRENCH_HEADSPACE_UI}/Mother.cpp"
+  "${TRENCH_HEADSPACE_UI}/Stage.h" "${TRENCH_HEADSPACE_UI}/Stage.cpp"
+  "${TRENCH_HEADSPACE_UI}/Body.h" "${TRENCH_HEADSPACE_UI}/Body.cpp"
+  "${TRENCH_HEADSPACE_UI}/Engine.h" "${TRENCH_HEADSPACE_UI}/Engine.cpp"
+  "${TRENCH_HEADSPACE_UI}/Keyboard.h" "${TRENCH_HEADSPACE_UI}/Keyboard.cpp"
+  "${TRENCH_HEADSPACE_UI}/PinMenu.h" "${TRENCH_HEADSPACE_UI}/PinMenu.cpp"
+  "${TRENCH_HEADSPACE_UI}/Screen.h" "${TRENCH_HEADSPACE_UI}/Screen.cpp")
 
 option(TRENCH_HEADSPACE_LTO "Enable link-time optimization for HEADSPACE and its acceptance tests" OFF)
 
 add_library(TRENCH_Headspace_Shared INTERFACE)
 target_sources(TRENCH_Headspace_Shared INTERFACE ${TRENCH_HEADSPACE_SOURCES})
-target_include_directories(TRENCH_Headspace_Shared INTERFACE "${TRENCH_HEADSPACE_DIR}")
+target_include_directories(TRENCH_Headspace_Shared INTERFACE "${TRENCH_HEADSPACE_DIR}" "${TRENCH_HEADSPACE_DIR}/..")
 target_compile_features(TRENCH_Headspace_Shared INTERFACE cxx_std_20)
 target_compile_definitions(TRENCH_Headspace_Shared INTERFACE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_Headspace_Shared INTERFACE

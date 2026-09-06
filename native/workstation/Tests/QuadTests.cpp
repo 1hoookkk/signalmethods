@@ -1,5 +1,5 @@
-#include "Look.h"
-#include "Screen.h"
+#include "ui/Look.h"
+#include "ui/Screen.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <cstdio>
 #include <memory>
@@ -35,6 +35,17 @@ std::vector<std::uint8_t> bytesOf (const juce::File& f)
 }
 
 bool same (const hs::Words& a, const hs::Words& b) { return a == b; }
+
+bool shape (const trench::core::PackedSection& a, const trench::core::PackedSection& b) { return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3]; }
+
+double dcDb (const hs::Words& w) { return hs::responseDb (w, { 1.0 })[0]; }
+
+bool levelled (const hs::Words& w)
+{
+    bool equal = true;
+    for (size_t r = 1; r < hs::kRows; ++r) equal = equal && w[r][4] == w[0][4];
+    return equal && std::abs (dcDb (w)) < 0.1;
+}
 
 juce::String ipa (const char* utf8) { return juce::String (juce::CharPointer_UTF8 (utf8)); }
 
@@ -273,28 +284,28 @@ int main()
         s.beginRowEdit(); s.setSection (0, 1, sec);
         const auto after = s.editWords();
         const auto got = hs::sectionOf (after[1]);
-        check (after[1][0] == before[1][0] && after[1][1] == before[1][1] && after[1][4] == before[1][4] && std::abs (1200.0 * std::log2 (got.poleHz / sec.poleHz)) < 10.0 && std::abs (got.poleRadius - sec.poleRadius) < 1e-3, "moving a pole a semitone leaves the zero words and the fifth word exactly and lands within 10 cents");
+        check (after[1][0] == before[1][0] && after[1][1] == before[1][1] && levelled (after) && std::abs (1200.0 * std::log2 (got.poleHz / sec.poleHz)) < 10.0 && std::abs (got.poleRadius - sec.poleRadius) < 1e-3, "moving a pole a semitone leaves the zero words exactly, lands within 10 cents, and the corner stays at 0 dB DC");
         auto z = hs::sectionOf (after[2]);
         z.zeroHz *= 1.5;
         s.beginRowEdit(); s.setSection (0, 2, z);
         const auto moved = s.editWords();
-        check (moved[2][2] == after[2][2] && moved[2][3] == after[2][3] && moved[2][4] == after[2][4] && std::abs (hs::sectionOf (moved[2]).zeroHz / z.zeroHz - 1.0) < 0.01, "moving a zero leaves the pole words and the fifth word exactly");
-        check (std::abs (screen.cascadeDb (1) - hs::responseDb (moved, { hs::sectionOf (moved[1]).poleHz })[0]) < 0.01, "the Cascade column is the whole cascade at the pole, the number under the handle");
-        const auto zp = screen.zeroPoint (2).roundToInt().toFloat();
-        check (screen.zeroAt (zp.toInt()) == 2 && screen.peakAt (zp.toInt()) != 2, "a zero handle is hit on the plot apart from the pole handle");
+        check (moved[2][2] == after[2][2] && moved[2][3] == after[2][3] && levelled (moved) && std::abs (hs::sectionOf (moved[2]).zeroHz / z.zeroHz - 1.0) < 0.01, "moving a zero leaves the pole words exactly and the corner at 0 dB DC");
+        check (std::abs (screen.stage.cascadeDb (1) - hs::responseDb (moved, { hs::sectionOf (moved[1]).poleHz })[0]) < 0.01, "the Cascade column is the whole cascade at the pole, the number under the handle");
+        const auto zp = screen.stage.zeroPoint (2).roundToInt().toFloat();
+        check (screen.stage.zeroAt (zp.toInt()) == 2 && screen.stage.peakAt (zp.toInt()) != 2, "a zero handle is hit on the plot apart from the pole handle");
         screen.mouseDown (mouse (screen, zp, zp));
-        screen.mouseDrag (mouse (screen, { zp.x, (float) screen.magnitude.getBottom() }, zp));
-        screen.mouseUp (mouse (screen, { zp.x, (float) screen.magnitude.getBottom() }, zp));
+        screen.mouseDrag (mouse (screen, { zp.x, (float) screen.stage.magnitude.getBottom() }, zp));
+        screen.mouseUp (mouse (screen, { zp.x, (float) screen.stage.magnitude.getBottom() }, zp));
         const auto notched = s.editWords();
         const auto zn = hs::sectionOf (notched[2]);
-        check (zn.zero && zn.zeroRadius > 0.999 && hs::responseDb (notched, { zn.zeroHz })[0] < -30.0 && notched[2][2] == moved[2][2] && notched[2][3] == moved[2][3] && notched[2][4] == moved[2][4], "a zero dragged to the floor sits on the circle, a notch, the pole and the fifth word untouched");
+        check (zn.zero && zn.zeroRadius > 0.999 && hs::responseDb (notched, { zn.zeroHz })[0] < -30.0 && notched[2][2] == moved[2][2] && notched[2][3] == moved[2][3] && levelled (notched), "a zero dragged to the floor sits on the circle, a notch, the pole untouched, the corner at 0 dB DC");
         const auto rest = hs::sectionOf (notched[3]);
         hs::Section only;
         only.zero = true; only.zeroHz = 3000.0; only.zeroRadius = 0.9;
         s.beginRowEdit(); s.setSection (0, 3, only);
         const auto dipped = s.editWords();
         bool others = true;
-        for (size_t r = 0; r < hs::kRows; ++r) if (r != 3) others = others && dipped[r] == notched[r];
+        for (size_t r = 0; r < hs::kRows; ++r) if (r != 3) others = others && shape (dipped[r], notched[r]);
         const double dip = hs::responseDb (dipped, { 3000.0 })[0] - hs::responseDb (notched, { 3000.0 })[0];
         const double far = hs::responseDb (dipped, { 300.0 })[0] - hs::responseDb (notched, { 300.0 })[0];
         std::printf ("      zero alone on row 4: %.1f dB at 3 kHz, %.1f dB at 300 Hz\n", dip, far);
@@ -315,7 +326,7 @@ int main()
         const auto p1 = hs::sectionOf (before[0]), p2 = hs::sectionOf (before[1]);
         const double valley = std::sqrt (p1.poleHz * p2.poleHz);
         const double floorBefore = hs::responseDb (before, { valley })[0];
-        const auto start = screen.carveKey.getCentre().toFloat();
+        const auto start = screen.stage.carveKey.getCentre().toFloat();
         screen.mouseDown (mouse (screen, start, start));
         screen.mouseDrag (mouse (screen, start.translated (240.0f, 0.0f), start));
         screen.mouseUp (mouse (screen, start.translated (240.0f, 0.0f), start));
@@ -324,8 +335,8 @@ int main()
         const double floorAfter = hs::responseDb (after, { valley })[0];
         std::printf ("      carve: pole 1 %.0f zero %.0f r %.3f, pole 2 %.0f zero %.0f r %.3f, valley %.0f Hz %.1f -> %.1f dB\n", z1.poleHz, z1.zeroHz, z1.zeroRadius, z2.poleHz, z2.zeroHz, z2.zeroRadius, valley, floorBefore, floorAfter);
         bool polesKept = true;
-        for (size_t r = 0; r < hs::kRows; ++r) polesKept = polesKept && after[r][2] == before[r][2] && after[r][3] == before[r][3] && after[r][4] == before[r][4];
-        check (polesKept && after[5] == before[5], "carving moves only zeros; every pole, fifth word and the ceiling row keep their words");
+        for (size_t r = 0; r < hs::kRows; ++r) polesKept = polesKept && after[r][2] == before[r][2] && after[r][3] == before[r][3];
+        check (polesKept && shape (after[5], before[5]) && levelled (after), "carving moves only zeros; every pole and the ceiling row keep their shape and the corner stays at 0 dB DC");
         check (z1.zero && z1.zeroHz > p1.poleHz * 1.2 && z1.zeroHz < p2.poleHz && std::abs (z1.zeroRadius - 0.97) < 0.01 && z2.zeroHz > p2.poleHz, "at full carve each zero sits in the valley above its pole at radius 0.97");
         check (floorAfter < floorBefore - 6.0, "the floor between the first two peaks drops by more than 6 dB");
         check (s.history.size() == 1, "one carve gesture is one undo");
@@ -449,16 +460,17 @@ int main()
         s.setRow (0, 1, { hs::RowType::peak, 70, 10 });
         const int edited = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
         bool untouched = true;
-        for (size_t r = 0; r < hs::kRows; ++r) if (r != 1) untouched = untouched && s.stars[(size_t) edited].words[r] == before[r];
+        for (size_t r = 0; r < hs::kRows; ++r) if (r != 1) untouched = untouched && shape (s.stars[(size_t) edited].words[r], before[r]);
         check (edited != vowel && s.stars[(size_t) edited].kind == "capture" && s.stars[(size_t) edited].name == hs::formantName (s.stars[(size_t) edited].words) && s.cornerName (0) == s.stars[(size_t) edited].name, "editing a vowel makes a capture named by its formants and puts it in that corner");
-        check (untouched && s.stars[(size_t) edited].words[1] == hs::rowWords ({ hs::RowType::peak, 70, 10 }, before[1][4]) && same (s.stars[(size_t) vowel].words, before), "only the edited row changes, its fifth word is kept, and the vowel is untouched");
+        std::printf ("      after a row edit the corner sits at %.3f dB DC\n", dcDb (s.stars[(size_t) edited].words));
+        check (untouched && shape (s.stars[(size_t) edited].words[1], hs::rowWords ({ hs::RowType::peak, 70, 10 }, before[1][4])) && levelled (s.stars[(size_t) edited].words) && same (s.stars[(size_t) vowel].words, before), "only the edited row's shape changes, the corner is re-levelled to 0 dB DC, and the vowel is untouched");
         s.setRow (0, 1, { hs::RowType::peak, 71, 10 });
         check (s.quad.pins[(size_t) hs::Session::kCornerPin[0]] == edited && s.stars.size() == s.libraryCount + 1 && same (s.words, s.stars[(size_t) edited].words), "a second edit stays in the same capture and is what plays");
         const auto path = juce::File::createTempFile ("edited.body240");
         s.write (path);
         const auto bytes = bytesOf (path);
         const auto body = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> (bytes.data(), bytes.size()));
-        check (body.words[2][1] == hs::rowWords ({ hs::RowType::peak, 71, 10 }, before[1][4]), "W writes the edited row into the M0 Q1 corner of the 240 bytes");
+        check (shape (body.words[2][1], hs::rowWords ({ hs::RowType::peak, 71, 10 }, before[1][4])), "W writes the edited row into the M0 Q1 corner of the 240 bytes");
         s.undo();
         check (s.editing == -1 && s.cornerName (0) == "i" && s.stars.size() == s.libraryCount, "one undo removes the edit and its capture");
         s.edit (2); s.setPuck (10.0, 10.0);
@@ -479,29 +491,32 @@ int main()
         const bool written = out.openedOk() && png.writeImageToStream (image, out);
         out.flush();
         bool curve = false;
-        for (int y = screen.playing.getY(); y < screen.playing.getBottom() && ! curve; ++y)
-            for (int x = screen.playing.getX(); x < screen.playing.getRight() && ! curve; ++x)
+        for (int y = screen.engine.playing.getY(); y < screen.engine.playing.getBottom() && ! curve; ++y)
+            for (int x = screen.engine.playing.getX(); x < screen.engine.playing.getRight() && ! curve; ++x)
                 curve = image.getPixelAt (x, y).getARGB() == hs::Look::blue.getARGB();
-        check (written && file.getSize() > 4000 && image.getWidth() == 1120 && image.getPixelAt (4, 4) == hs::Look::ground && image.getPixelAt (screen.chart.getX() + 2, screen.chart.getBottom() - 3) == hs::Look::panel && curve, "the screen renders to artifacts/shots/headspace.png without a window: ground, white axes and the blue curve of what plays");
+        check (written && file.getSize() > 4000 && image.getWidth() == 1120 && image.getPixelAt (4, 4) == hs::Look::ground && image.getPixelAt (screen.palette.chart.getX() + 2, screen.palette.chart.getBottom() - 3) == hs::Look::panel && curve, "the screen renders to artifacts/shots/headspace.png without a window: ground, white axes and the blue curve of what plays");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "no window was opened");
-        check (screen.stage.toFloat().contains (screen.puckPoint()), "the puck sits inside the stage");
-        const auto f = screen.formantsAt (screen.chartPoint (700.0, 1100.0).toInt());
-        check (std::abs (f.first - 700.0) < 6.0 && std::abs (f.second - 1100.0) < 10.0 && screen.chart.toFloat().contains (screen.chartPoint (hs::kSchwaF1, hs::kSchwaF2)), "the chart maps F1 and F2 both ways and schwa sits inside it");
-        check (screen.pointAt (screen.chartPoint (hs::kSchwaF1, hs::kSchwaF2).toInt()) == s.starNamed (ipa ("\xc9\x99")), "schwa is found at the chart's origin");
+        bool glyphs = true;
+        for (int k = 0; k < (int) hs::Look::Glyph::count; ++k) glyphs = glyphs && hs::Look::hasGlyph ((hs::Look::Glyph) k);
+        check (glyphs && image.getPixelAt (screen.engine.keys[0].getCentreX(), screen.engine.keys[0].getCentreY()) == hs::Look::dim, "every control glyph parses from its SVG and the play glyph is drawn in the engine");
+        check (screen.body.area.toFloat().contains (screen.body.puckPoint()), "the puck sits on the body");
+        const auto f = screen.palette.formantsAt (screen.palette.chartPoint (700.0, 1100.0).toInt());
+        check (std::abs (f.first - 700.0) < 6.0 && std::abs (f.second - 1100.0) < 10.0 && screen.palette.chart.toFloat().contains (screen.palette.chartPoint (hs::kSchwaF1, hs::kSchwaF2)), "the vowel space maps F1 and F2 both ways and schwa sits inside it");
+        check (screen.palette.pointAt (screen.palette.chartPoint (hs::kSchwaF1, hs::kSchwaF2).toInt()) == s.starNamed (ipa ("\xc9\x99")), "schwa is found at the chart's origin");
         {
-            const auto at = [&] (const juce::String& name) { const auto f = hs::formantsOf (s.stars[(size_t) s.starNamed (name)].words); return screen.chartPoint (f[0], f[1]); };
+            const auto at = [&] (const juce::String& name) { const auto ff = hs::formantsOf (s.stars[(size_t) s.starNamed (name)].words); return screen.palette.chartPoint (ff[0], ff[1]); };
             const auto pi = at ("i"), pu = at ("u"), pa = at (ipa ("\xc9\x91"));
-            check (pi.x < pu.x && pi.x < pa.x && pi.y < pa.y && pu.y < pa.y && pu.x > screen.chart.getCentreX(), "the vowel chart is the standard one: i top-left, u top-right, a at the bottom");
+            check (pi.x < pu.x && pi.x < pa.x && pi.y < pa.y && pu.y < pa.y && pu.x > screen.palette.chart.getCentreX(), "the vowel chart is the standard one: i top-left, u top-right, a at the bottom");
             const int violin = s.starNamed ("Violin Body Resonant");
             const auto fv = hs::formantsOf (s.stars[(size_t) violin].words);
-            check (screen.pointAt (screen.chartPoint (fv[0], fv[1]).toInt()) != violin, "bodies are never on the vowel chart");
+            check (screen.palette.pointAt (screen.palette.chartPoint (fv[0], fv[1]).toInt()) != violin, "bodies are never on the vowel chart");
         }
         const auto u = hs::formantsOf (s.stars[(size_t) s.starNamed ("u")].words), iy = hs::formantsOf (s.stars[(size_t) s.starNamed ("i")].words);
         std::printf ("      u reads %.0f %.0f, i reads %.0f %.0f\n", u[0], u[1], iy[0], iy[1]);
         check (u[0] > 250.0 && u[0] < 400.0 && u[1] > 1150.0 && u[1] < 1350.0 && iy[1] > 1900.0, "the Klatt vowels sit at their own Table II F1 and F2, the wide tilt row is not a formant");
         {
-            const auto from = screen.chartPoint (iy[0], iy[1]);
-            const auto to = screen.chartPoint (iy[0] * 1.3, iy[1]);
+            const auto from = screen.palette.chartPoint (iy[0], iy[1]);
+            const auto to = screen.palette.chartPoint (iy[0] * 1.3, iy[1]);
             const auto shift = juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier | juce::ModifierKeys::shiftModifier);
             screen.mouseDown (mouse (screen, from, from, shift));
             screen.mouseDrag (mouse (screen, to, from, shift));
@@ -511,49 +526,54 @@ int main()
             screen.mouseUp (mouse (screen, to, from, shift));
             check (s.inMade() && s.stars.size() == s.libraryCount, "letting go leaves the transposed sound playing, unkept");
         }
-        screen.setSize (900, 560);
-        check (screen.stage.getWidth() > 300 && screen.stage.contains (screen.picker) && screen.stage.contains (screen.chart) && ! screen.picker.intersects (screen.chart), "the layout follows the window size and the palette never overlaps the vowel space");
-        bool hudPinned = screen.hud.getRight() == 900 - 20 && screen.hud.getBottom() == 560 - 20 && ! screen.hud.intersects (screen.stage) && ! screen.hud.intersects (screen.keyboard);
-        for (int n = 0; n < 4; ++n) hudPinned = hudPinned && screen.hud.contains (screen.cornerBox[(size_t) n]) && screen.cornerBox[(size_t) n].contains (screen.cornerPlot[(size_t) n]);
-        hudPinned = hudPinned && screen.cornerBox[0].getRight() == screen.cornerBox[1].getX() && screen.cornerBox[0].getBottom() == screen.cornerBox[2].getY() && screen.cornerBox[3].getX() > screen.cornerBox[2].getX() && screen.hud.contains (screen.writeKey);
-        check (hudPinned, "the 2x2 body sits in the bottom-right corner with A B over C D and the write key, clear of the room and the keyboard");
-        check (screen.cornerAt (screen.cornerPlot[2].getCentre()) == 2 && screen.cornerAt (screen.chart.getCentre()) < 0, "a drop on the third cell lands in corner C");
-        check (screen.keyboard.getRight() <= screen.stage.getRight() && screen.keys[0].getY() > screen.stage.getBottom() && screen.toKeys[3].getRight() <= screen.stage.getRight(), "the audition strip, Track and the to-corner buttons run under the room and beside the body");
-        screen.setSize (820, 520);
-        check (screen.toKeys[3].getRight() <= screen.stage.getRight() && ! screen.hud.intersects (screen.stage), "the strip still fits at the smallest window");
-        check (screen.playing.getY() >= screen.stage.getBottom() && screen.playing.getBottom() <= screen.keys[0].getY() && ! screen.playing.intersects (screen.hud) && screen.playing.getWidth() * 2 == screen.playing.getHeight() * 3 && screen.playingLabel.getX() > screen.playing.getRight() && screen.playingLabel.getRight() <= screen.stage.getRight(), "what plays is drawn in the strip, a 3:2 plot with its name, under the room and clear of the body");
-        screen.setSize (900, 560);
+        auto fits = [&] {
+            const auto& m = screen.mother.area; const auto& st = screen.stage.area; const auto& pl = screen.palette.area; const auto& bt = screen.bottom;
+            bool ok = m.getX() < st.getX() && m.getY() == st.getY() && m.getWidth() > st.getWidth() && m.getHeight() > pl.getHeight()
+                && ! m.intersects (st) && ! m.intersects (pl) && ! st.intersects (bt) && ! pl.intersects (bt) && pl.getY() > m.getBottom() && bt.getX() > pl.getRight();
+            ok = ok && m.contains (screen.mother.face[0]) && m.contains (screen.mother.face[1]) && ! screen.mother.face[0].intersects (screen.mother.face[1]) && m.contains (screen.mother.depth) && m.contains (screen.mother.bakeKey);
+            for (int i = 0; i < 8; ++i) ok = ok && screen.mother.face[(size_t) (i / 4)].contains (screen.mother.cell[(size_t) i]) && screen.mother.cell[(size_t) i].contains (screen.mother.plot[(size_t) i]);
+            ok = ok && st.contains (screen.stage.magnitude) && screen.stage.magnitude.getWidth() * 2 == screen.stage.magnitude.getHeight() * 3 && st.contains (screen.stage.carveKey) && screen.stage.magnitude.getWidth() >= 300;
+            ok = ok && pl.contains (screen.palette.chart) && pl.contains (screen.palette.picker) && ! screen.palette.chart.intersects (screen.palette.picker) && pl.contains (screen.palette.dropZone);
+            ok = ok && bt.contains (screen.body.area) && bt.contains (screen.engine.area) && bt.contains (screen.keyboard.area) && ! screen.body.area.intersects (screen.engine.area)
+                && screen.keyboard.area.getY() >= screen.body.area.getBottom() && screen.keyboard.area.getY() >= screen.engine.area.getBottom()
+                && screen.engine.area.contains (screen.engine.playing) && screen.engine.area.contains (screen.engine.writeKey) && screen.engine.area.contains (screen.engine.keys[3]);
+            ok = ok && screen.body.box[0].getRight() == screen.body.box[1].getX() && screen.body.box[0].getBottom() == screen.body.box[2].getY();
+            return ok;
+        };
+        check (fits(), "one screen: the mother is the largest quarter top-left, the stage top-right, the palette below the mother, the body, engine and keyboard bottom-right, nothing overlapping");
+        check (screen.body.cornerAt (screen.body.plot[2].getCentre()) == 2 && screen.body.cornerAt (screen.palette.chart.getCentre()) < 0, "a drop on the third cell lands in corner C");
+        check (screen.mother.pinAt (screen.mother.cell[0].getCentre()) == 2 && screen.mother.pinAt (screen.mother.cell[1].getCentre()) == 3 && screen.mother.pinAt (screen.mother.cell[6].getCentre()) == 4 && screen.mother.pinAt (screen.mother.cell[7].getCentre()) == 5, "the mother's cells are laid out like the body: front A B C D are pins 3 4 1 2, back A B C D are pins 7 8 5 6");
+        screen.setSize (1000, 640);
+        check (fits(), "the one screen still fits at the smallest window");
         screen.setSize (1120, 700);
-        for (int room = 0; room < 4; ++room)
         {
-            screen.showView ((hs::Screen::View) room);
-            const char* files[4] = { "headspace.png", "headspace_cube.png", "headspace_rows.png", "headspace_perform.png" };
-            if (room == 0 || room == 2) continue;
-            const auto roomFile = folder.getChildFile (files[room]);
-            roomFile.deleteFile();
-            juce::FileOutputStream roomOut (roomFile);
-            check (roomOut.openedOk() && png.writeImageToStream (screen.shot(), roomOut), room == 1 ? "the cube room renders to artifacts/shots/headspace_cube.png" : "the perform room renders to artifacts/shots/headspace_perform.png");
-            roomOut.flush();
+            const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
+            for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
+            const auto press = screen.mother.plot[0].getCentre().toFloat();
+            const auto& front = screen.mother.face[0];
+            const double wantX = (press.x - front.getX()) / front.getWidth(), wantY = (front.getBottom() - press.y) / front.getHeight();
+            screen.mouseDown (mouse (screen, press, press));
+            screen.mouseUp (mouse (screen, press, press));
+            check (std::abs (s.cube.x - wantX) < 0.01 && std::abs (s.cube.y - wantY) < 0.01 && s.auditioning == hs::Session::kCube && s.playingLabel.startsWith ("cube "), "pressing the front face moves the probe there and the mother plays");
+            const auto rail = juce::Point<float> ((float) (screen.mother.depth.getX() + screen.mother.depth.getWidth() * 3 / 4), (float) screen.mother.depth.getCentreY());
+            screen.mouseDown (mouse (screen, rail, rail));
+            screen.mouseUp (mouse (screen, rail, rail));
+            check (std::abs (s.cube.z - 0.75) < 0.02, "the depth rail sets the depth");
+            const auto mothered = screen.shot();
+            const auto motherFile = folder.getChildFile ("headspace_mother.png");
+            motherFile.deleteFile();
+            juce::FileOutputStream motherOut (motherFile);
+            check (motherOut.openedOk() && png.writeImageToStream (mothered, motherOut), "the filled mother renders to artifacts/shots/headspace_mother.png");
+            motherOut.flush();
         }
-        check (screen.view == hs::Screen::View::perform && screen.stage.contains (screen.morph) && screen.morph.getWidth() == screen.morph.getHeight() && screen.morph.toFloat().contains (screen.puckPoint()), "the perform room is a square pad inside the room with the puck on it");
-        screen.showView (hs::Screen::View::cube);
-        check (screen.stage.contains (screen.cubeArea) && screen.stage.contains (screen.depth) && screen.stage.contains (screen.cubeBox[0]) && screen.stage.contains (screen.cubeBox[7]), "the cube, its eight name boxes and the depth rail sit inside the room");
-        screen.showView (hs::Screen::View::picker);
         s.edit (0);
-        check (screen.view == hs::Screen::View::stage, "opening a corner's rows goes to the stage room");
-        const auto rows = screen.shot();
-        const auto rowsFile = folder.getChildFile ("headspace_rows.png");
-        rowsFile.deleteFile();
-        juce::FileOutputStream rowsOut (rowsFile);
-        const bool rowsWritten = rowsOut.openedOk() && png.writeImageToStream (rows, rowsOut);
-        rowsOut.flush();
-        check (rowsWritten && screen.stage.contains (screen.table) && screen.cell (5, 4).getBottom() <= screen.table.getBottom(), "the six rows render inside the stage to artifacts/shots/headspace_rows.png");
-        screen.keyPressed (key ('H', false, 'h'));
-        const auto rawFile = folder.getChildFile ("headspace_rows_raw.png");
+        screen.stage.showHardware = true;
+        const auto rawFile = folder.getChildFile ("headspace_raw.png");
         rawFile.deleteFile();
         juce::FileOutputStream rawOut (rawFile);
-        check (rawOut.openedOk() && png.writeImageToStream (screen.shot(), rawOut), "the H view renders raw Hz and radius words headlessly");
+        check (rawOut.openedOk() && png.writeImageToStream (screen.shot(), rawOut), "the H view renders the raw words over the plot headlessly");
         rawOut.flush();
+        screen.stage.showHardware = false;
     }
 
     {
@@ -564,8 +584,8 @@ int main()
         s.setRow (0, 0, { hs::RowType::peak, 50, 10 });
         const auto before = s.editWords();
         const auto history = s.history.size();
-        const auto start = screen.peakPoint (0).roundToInt().toFloat();
-        check (screen.peakAt (start.toInt()) == 0, "a formant handle is hit on the magnitude response");
+        const auto start = screen.stage.peakPoint (0).roundToInt().toFloat();
+        check (screen.stage.peakAt (start.toInt()) == 0, "a formant handle is hit on the magnitude response");
         screen.mouseDown (mouse (screen, start, start));
         screen.mouseUp (mouse (screen, start, start));
         check (same (s.editWords(), before) && s.history.size() == history, "clicking a peak leaves its exact words and undo history intact");
@@ -575,34 +595,27 @@ int main()
         const auto edited = s.editWords();
         const double oldHz = hs::rowHz (before[0]), newHz = hs::rowHz (edited[0]);
         const double oldDb = hs::responseDb (before, { oldHz })[0], newDb = hs::responseDb (edited, { newHz })[0];
-        const double expectedHz = oldHz * std::pow (1000.0, 20.0 / screen.magnitude.getWidth());
-        const double expectedDb = oldDb + 20.0 * 60.0 / screen.magnitude.getHeight();
+        const double expectedHz = oldHz * std::pow (1000.0, 20.0 / screen.stage.magnitude.getWidth());
+        const double expectedDb = oldDb + 20.0 * 60.0 / screen.stage.magnitude.getHeight();
         check (newHz > oldHz && newDb > oldDb && std::abs (12.0 * std::log2 (newHz / expectedHz)) < 1.0 && std::abs (newDb - expectedDb) < 1.5,
             "dragging a formant right and up follows the plot's frequency and cascade dB axes within word resolution");
         screen.mouseDrag (mouse (screen, end.translated (4.0f, -4.0f), start));
         screen.mouseUp (mouse (screen, end, start));
-        bool untouched = s.editWords()[0][4] == before[0][4] && s.editWords()[0][0] == before[0][0] && s.editWords()[0][1] == before[0][1];
-        for (int r = 1; r < hs::kRows; ++r) untouched = untouched && s.editWords()[(size_t) r] == before[(size_t) r];
-        check (untouched && s.history.size() == history + 1 && same (s.words, s.editWords()), "one peak gesture preserves the other five sections, the row's zero and its fifth word, plays the edit, and records one undo");
+        bool untouched = s.editWords()[0][0] == before[0][0] && s.editWords()[0][1] == before[0][1];
+        for (int r = 1; r < hs::kRows; ++r) untouched = untouched && shape (s.editWords()[(size_t) r], before[(size_t) r]);
+        check (untouched && levelled (s.editWords()) && s.history.size() == history + 1 && same (s.words, s.editWords()), "one peak gesture preserves the other five sections and the row's zero, re-levels the corner, plays the edit, and records one undo");
         s.undo();
         if (s.editing < 0) s.edit (0);
         check (same (s.editWords(), before), "undo restores the exact words from before the peak gesture");
-        check (! screen.showHardware, "raw Hz and radius words are hidden by default");
-        bool fits = true;
-        for (const auto size : { juce::Point<int> { 1120, 700 }, juce::Point<int> { 900, 560 }, juce::Point<int> { 820, 520 } })
-        {
-            screen.setSize (size.x, size.y);
-            for (int mode = 0; mode < 2; ++mode)
-            {
-                fits = fits && screen.magnitude.getWidth() * 2 == screen.magnitude.getHeight() * 3
-                    && screen.stage.contains (screen.magnitude) && ! screen.magnitude.intersects (screen.table)
-                    && screen.table.contains (screen.cell (5, 6));
-                screen.keyPressed (key ('H', false, 'h'));
-                fits = fits && screen.showHardware == (mode == 0);
-            }
-        }
-        check (fits, "the isolated 3:2 plot and six-column editor fit down to the minimum window size with H toggled on and off");
-        check (juce::Desktop::getInstance().getNumComponents() == 0, "peak gestures and hardware toggles stay headless");
+        check (! screen.stage.showHardware, "raw words are hidden by default");
+        const auto p0 = screen.stage.peakPoint (0).roundToInt().toFloat();
+        const auto s0 = hs::sectionOf (s.editWords()[0]);
+        juce::MouseWheelDetails wheel;
+        wheel.deltaX = 0.0f; wheel.deltaY = 1.0f; wheel.isReversed = false; wheel.isSmooth = false; wheel.isInertial = false;
+        screen.mouseWheelMove (mouse (screen, p0, p0), wheel);
+        const auto s1 = hs::sectionOf (s.editWords()[0]);
+        check (hs::widthSt (s1.poleHz, s1.poleRadius) < hs::widthSt (s0.poleHz, s0.poleRadius) && std::abs (s1.poleHz / s0.poleHz - 1.0) < 0.01, "the wheel over a pole narrows it and leaves its pitch");
+        check (juce::Desktop::getInstance().getNumComponents() == 0, "peak gestures stay headless");
     }
 
     {
@@ -651,20 +664,6 @@ int main()
         check (s.playingLabel == "cube 50 50 at depth 25", "the cube point says where it is");
         s.setPuck (40.0, 30.0);
         check (s.playingLabel == "pad 40 30", "the pad says MORPH and Q");
-    }
-
-    {
-        hs::Session s (root, tempQuad(), false);
-        s.select (s.starNamed ("i"));
-        const auto base = hs::formantsOf (s.heard);
-        s.setTracking (true);
-        s.noteOn (57);
-        const auto up = hs::formantsOf (s.heard);
-        std::printf ("      track: %.0f %.0f at A2, %.0f %.0f at A3\n", base[0], base[1], up[0], up[1]);
-        check (s.tracking && std::abs (up[0] / base[0] - 2.0) < 0.05 && std::abs (up[1] / base[1] - 2.0) < 0.05 && same (s.words, s.stars[(size_t) s.starNamed ("i")].words), "with Track on an octave up doubles every formant of what plays while the card's words stay");
-        check (s.playingLabel == "i   track A3", "the label says the card is tracked and at which note");
-        s.key (key ('K', false, 'k'));
-        check (! s.tracking && same (s.heard, s.words), "K turns tracking off and what plays is the words again");
     }
 
     std::printf ("%d failures\n", failures);
