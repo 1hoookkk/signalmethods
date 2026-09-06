@@ -69,6 +69,42 @@ Row rowOf (const trench::core::PackedSection& words)
     return row;
 }
 
+Section sectionOf (const trench::core::PackedSection& words)
+{
+    const auto g = trench::core::geometry_from_words (words, trench::core::kP2kDatumHz);
+    Section s;
+    s.scale = g.scale;
+    if (const auto* p = std::get_if<trench::core::ConjugatePair> (&g.pole); p != nullptr && p->radius >= 0.05 && p->hz > 0.0) { s.pole = true; s.poleHz = p->hz; s.poleRadius = p->radius; }
+    if (const auto* z = std::get_if<trench::core::ConjugatePair> (&g.zero); z != nullptr && z->radius >= 0.05 && z->hz > 0.0) { s.zero = true; s.zeroHz = z->hz; s.zeroRadius = z->radius; }
+    return s;
+}
+
+trench::core::PackedSection sectionWords (const Section& section, std::uint16_t fifth, bool keepFifth)
+{
+    trench::core::SectionGeometry g;
+    g.pole = section.pole ? trench::core::ConjugatePair { std::clamp (section.poleHz, 20.0, 20000.0), std::clamp (section.poleRadius, 0.05, 0.99999) }
+                          : trench::core::ConjugatePair { 1000.0, 0.0 };
+    g.zero = section.zero ? trench::core::ConjugatePair { std::clamp (section.zeroHz, 20.0, 20000.0), std::clamp (section.zeroRadius, 0.05, 1.0) }
+                          : trench::core::ConjugatePair { 1000.0, 0.0 };
+    g.scale = std::clamp (section.scale, 0.0, 4.0);
+    auto w = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+    if (keepFifth) w[4] = fifth;
+    return w;
+}
+
+double widthSt (double hz, double radius)
+{
+    if (hz <= 0.0) return 0.0;
+    const double bw = -std::log (std::clamp (radius, 1e-9, 1.0)) * trench::core::kP2kDatumHz / 3.141592653589793;
+    return 24.0 * std::asinh (bw / (2.0 * hz)) / std::log (2.0);
+}
+
+double radiusForWidth (double hz, double st)
+{
+    const double bw = 2.0 * std::max (hz, 1.0) * std::sinh (std::max (0.0, st) * std::log (2.0) / 24.0);
+    return std::clamp (std::exp (-3.141592653589793 * bw / trench::core::kP2kDatumHz), 0.0, 1.0);
+}
+
 double rowHz (const trench::core::PackedSection& words)
 {
     const auto g = trench::core::geometry_from_words (words, trench::core::kP2kDatumHz);

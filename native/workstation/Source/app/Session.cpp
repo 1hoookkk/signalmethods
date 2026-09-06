@@ -337,6 +337,22 @@ void Session::beginRowEdit() { history.push_back (snapshot()); future.clear(); }
 void Session::setRow (int corner, int row, Row r)
 {
     if (corner < 0 || corner >= (editingCube ? 8 : 4) || row < 0 || row >= kRows) return;
+    const int star = editingCube ? cube.pins[(size_t) corner] : quad.pins[(size_t) kCornerPin[corner]];
+    if (star < 0 || star >= (int) stars.size()) return;
+    setSectionWords (corner, row, rowWords (r, stars[(size_t) star].words[(size_t) row][4]));
+}
+
+void Session::setSection (int corner, int row, const Section& section, bool keepFifth)
+{
+    if (corner < 0 || corner >= (editingCube ? 8 : 4) || row < 0 || row >= kRows) return;
+    const int star = editingCube ? cube.pins[(size_t) corner] : quad.pins[(size_t) kCornerPin[corner]];
+    if (star < 0 || star >= (int) stars.size()) return;
+    setSectionWords (corner, row, sectionWords (section, stars[(size_t) star].words[(size_t) row][4], keepFifth));
+}
+
+void Session::setSectionWords (int corner, int row, const trench::core::PackedSection& words)
+{
+    if (corner < 0 || corner >= (editingCube ? 8 : 4) || row < 0 || row >= kRows) return;
     int& anchor = editingCube ? cube.pins[(size_t) corner] : quad.pins[(size_t) kCornerPin[corner]];
     int star = anchor;
     if (star < 0 || star >= (int) stars.size()) return;
@@ -349,7 +365,7 @@ void Session::setRow (int corner, int row, Row r)
         anchor = star;
     }
     auto& s = stars[(size_t) star];
-    s.words[(size_t) row] = rowWords (r, s.words[(size_t) row][4]);
+    s.words[(size_t) row] = words;
     const auto name = formantName (s.words);
     if (s.name != name) { s.name = uniqueName (name); s.body = s.name; }
     editing = corner;

@@ -142,14 +142,25 @@ std::optional<Star> readWav (const juce::File& wav)
     s.kind = "read";
     s.body = wav.getFileNameWithoutExtension();
     s.name = s.body;
+    const double support[2] = { 3500.0, 4500.0 };
+    size_t supported = 0;
     for (size_t i = 0; i < kRows - 1; ++i)
     {
-        if (i >= found.size()) { s.words[i] = rowWords ({ RowType::rest, 0, 0 }, 0); continue; }
         trench::core::SectionGeometry g;
-        const double hz = std::clamp (found[i].hz, 60.0, 12000.0);
-        const double poleRadius = std::clamp (std::exp (-3.141592653589793 * std::max (10.0, found[i].bw_hz) / trench::core::kP2kDatumHz), 0.0, 0.9995);
-        g.pole = trench::core::ConjugatePair { hz, poleRadius };
-        g.zero = trench::core::ConjugatePair { hz, std::pow (poleRadius, 16.0) };
+        if (i < found.size())
+        {
+            const double hz = std::clamp (found[i].hz, 60.0, 12000.0);
+            const double poleRadius = std::clamp (std::exp (-3.141592653589793 * std::max (10.0, found[i].bw_hz) / trench::core::kP2kDatumHz), 0.0, 0.9995);
+            const double prominence = std::clamp (found[i].gain_db, 3.0, 30.0);
+            g.pole = trench::core::ConjugatePair { hz, poleRadius };
+            g.zero = trench::core::ConjugatePair { hz, std::clamp (1.0 - (1.0 - poleRadius) * std::pow (10.0, prominence / 20.0), 0.05, poleRadius - 1e-4) };
+        }
+        else
+        {
+            const double hz = support[std::min<size_t> (supported++, 1)] * (supported > 2 ? 1.0 + 0.2 * (double) (supported - 2) : 1.0);
+            g.pole = trench::core::ConjugatePair { hz, radiusForWidth (hz, 4.0) };
+            g.zero = trench::core::ConjugatePair { hz, radiusForWidth (hz, 6.0) };
+        }
         s.words[i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
     }
     s.words[kRows - 1] = rowWords ({ RowType::notch, kFreqCodes - 1, 0 }, 0);

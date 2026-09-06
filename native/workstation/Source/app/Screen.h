@@ -35,6 +35,9 @@ public:
     juce::Rectangle<int> cell (int row, int column) const;
     juce::Point<float> peakPoint (int row) const;
     int peakAt (juce::Point<int> p) const;
+    juce::Point<float> zeroPoint (int row) const;
+    int zeroAt (juce::Point<int> p) const;
+    double cascadeDb (int row) const;
     juce::Rectangle<int> pianoKey (int midi) const;
     int noteAt (juce::Point<int> p) const;
     juce::Rectangle<int> card (int index) const;
@@ -47,7 +50,7 @@ public:
     bool showHardware = false;
     int palette = 0;
     std::vector<int> cards() const;
-    static constexpr int kLine = 20, kColumns = 6;
+    static constexpr int kLine = 20, kColumns = 7;
     static constexpr double kF1Low = 200.0, kF1High = 1100.0, kF2Low = 600.0, kF2High = 3500.0;
     struct Menu { bool open = false, cube = false; int target = -1; juce::Rectangle<int> rect; int scroll = 0; } menu;
 
@@ -80,9 +83,9 @@ private:
     void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill, bool cached = true) const;
     Session& session;
     std::vector<double> hz;
-    enum class Drag { none, puck, made, card, row, peak, keyboard, cube, depth, slice, transpose } dragging = Drag::none;
+    enum class Drag { none, puck, made, card, row, peak, zero, keyboard, cube, depth, slice, transpose } dragging = Drag::none;
     int dragStar = -1, dragRow = -1, dragColumn = -1;
-    Row dragBase;
+    Section dragSection;
     Words dragWords {};
     bool peakEditStarted = false;
     int browserScroll = 0;

@@ -81,7 +81,12 @@ int main()
         {
             if (e.kind == "vowel" && (e.body == "Klatt 1980" || e.body == "neutral")) { ++klatt; named = named && e.name.isNotEmpty() && e.name.length() <= 2 && ! e.name.containsAnyOf ("0123456789"); }
             else if (e.kind == "vowel" && e.body == "Hillenbrand 1995") { ++h95; named = named && juce::StringArray::fromTokens (e.name, " ", "").size() == 2 && e.name.length() <= 8 && ! e.name.startsWith ("vowel"); }
-            else if (e.kind == "body") { ++bodies; notch = notch && hs::rowOf (e.words[5]).type == hs::RowType::notch; }
+            else if (e.kind == "body")
+            {
+                ++bodies;
+                notch = notch && hs::rowOf (e.words[5]).type == hs::RowType::notch;
+                for (size_t r = 0; r + 1 < hs::kRows; ++r) notch = notch && hs::sectionOf (e.words[r]).pole && hs::sectionOf (e.words[r]).zero;
+            }
             else ++other;
             bool hasZero = false;
             for (const auto& row : e.words) hasZero = hasZero || row[1] < 0xFF00;
@@ -90,7 +95,7 @@ int main()
         std::printf ("      palette: %d Klatt, %d Hillenbrand, %d bodies, %d other\n", klatt, h95, bodies, other);
         check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && bodies == 12 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians and the 12 measured bodies, no E-mu preset");
         check (named, "Klatt vowels are named by symbol alone, Hillenbrand vowels by symbol and speaker group");
-        check (zeros && notch, "every card carries zeros and every measured body ends in the ceiling notch");
+        check (zeros && notch, "every card carries zeros and every measured body has five live pole-zero rows under the ceiling notch");
         const int men = s.starNamed ("i men");
         const auto fm = men >= 0 ? hs::formantsOf (s.stars[(size_t) men].words) : std::array<double, 4> {};
         std::printf ("      i men reads %.0f %.0f %.0f\n", fm[0], fm[1], fm[2]);
@@ -245,6 +250,59 @@ int main()
             ok = original.size() == bytes.size() && std::equal (bytes.begin(), bytes.end(), original.begin());
         }
         check (ok, "the pack of four factory corners is the factory's own 240 bytes, for every body");
+        int ceilings = 0, corners = 0;
+        for (const auto& corner : library)
+        {
+            ++corners;
+            const auto s = hs::sectionOf (corner.words[5]);
+            if (s.zero && s.zeroRadius > 0.999) ++ceilings;
+        }
+        std::printf ("      factory row 6: %d of %d corners carry a zero on the circle\n", ceilings, corners);
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        hs::Screen screen (s);
+        const int i = s.starNamed ("i");
+        const auto before = s.stars[(size_t) i].words;
+        s.edit (0);
+        auto sec = hs::sectionOf (before[1]);
+        check (sec.pole && sec.zero && std::abs (sec.poleHz - 2020.0) < 40.0, "a Klatt row reads as its own pole and zero");
+        sec.poleHz *= std::pow (2.0, 1.0 / 12.0);
+        s.beginRowEdit(); s.setSection (0, 1, sec);
+        const auto after = s.editWords();
+        const auto got = hs::sectionOf (after[1]);
+        check (after[1][0] == before[1][0] && after[1][1] == before[1][1] && after[1][4] == before[1][4] && std::abs (1200.0 * std::log2 (got.poleHz / sec.poleHz)) < 10.0 && std::abs (got.poleRadius - sec.poleRadius) < 1e-3, "moving a pole a semitone leaves the zero words and the fifth word exactly and lands within 10 cents");
+        auto z = hs::sectionOf (after[2]);
+        z.zeroHz *= 1.5;
+        s.beginRowEdit(); s.setSection (0, 2, z);
+        const auto moved = s.editWords();
+        check (moved[2][2] == after[2][2] && moved[2][3] == after[2][3] && moved[2][4] == after[2][4] && std::abs (hs::sectionOf (moved[2]).zeroHz / z.zeroHz - 1.0) < 0.01, "moving a zero leaves the pole words and the fifth word exactly");
+        check (std::abs (screen.cascadeDb (1) - hs::responseDb (moved, { hs::sectionOf (moved[1]).poleHz })[0]) < 0.01, "the Cascade column is the whole cascade at the pole, the number under the handle");
+        const auto zp = screen.zeroPoint (2).roundToInt().toFloat();
+        check (screen.zeroAt (zp.toInt()) == 2 && screen.peakAt (zp.toInt()) != 2, "a zero handle is hit on the plot apart from the pole handle");
+        screen.mouseDown (mouse (screen, zp, zp));
+        screen.mouseDrag (mouse (screen, { zp.x, (float) screen.magnitude.getBottom() }, zp));
+        screen.mouseUp (mouse (screen, { zp.x, (float) screen.magnitude.getBottom() }, zp));
+        const auto notched = s.editWords();
+        const auto zn = hs::sectionOf (notched[2]);
+        check (zn.zero && zn.zeroRadius > 0.999 && hs::responseDb (notched, { zn.zeroHz })[0] < -30.0 && notched[2][2] == moved[2][2] && notched[2][3] == moved[2][3] && notched[2][4] == moved[2][4], "a zero dragged to the floor sits on the circle, a notch, the pole and the fifth word untouched");
+        const auto rest = hs::sectionOf (notched[3]);
+        hs::Section only;
+        only.zero = true; only.zeroHz = 3000.0; only.zeroRadius = 0.9;
+        s.beginRowEdit(); s.setSection (0, 3, only);
+        const auto dipped = s.editWords();
+        bool others = true;
+        for (size_t r = 0; r < hs::kRows; ++r) if (r != 3) others = others && dipped[r] == notched[r];
+        const double dip = hs::responseDb (dipped, { 3000.0 })[0] - hs::responseDb (notched, { 3000.0 })[0];
+        const double far = hs::responseDb (dipped, { 300.0 })[0] - hs::responseDb (notched, { 300.0 })[0];
+        std::printf ("      zero alone on row 4: %.1f dB at 3 kHz, %.1f dB at 300 Hz\n", dip, far);
+        check (! rest.pole && ! rest.zero && others && dip < -6.0 && dip < far - 6.0, "a zero placed on a rest row dips most at its own frequency and no other row changes");
+        const int pin = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
+        s.undo();
+        check (s.stars[(size_t) pin].words[3] == notched[3] && s.stars[(size_t) pin].words[2] == notched[2], "one undo takes the placed zero away and leaves the notch");
+        s.undo();
+        check (s.stars[(size_t) pin].words[2] == moved[2], "the next undo restores the zero's exact words from before the drag");
     }
 
     {
@@ -491,9 +549,9 @@ int main()
             "dragging a formant right and up follows the plot's frequency and cascade dB axes within word resolution");
         screen.mouseDrag (mouse (screen, end.translated (4.0f, -4.0f), start));
         screen.mouseUp (mouse (screen, end, start));
-        bool untouched = s.editWords()[0][4] == before[0][4];
+        bool untouched = s.editWords()[0][4] == before[0][4] && s.editWords()[0][0] == before[0][0] && s.editWords()[0][1] == before[0][1];
         for (int r = 1; r < hs::kRows; ++r) untouched = untouched && s.editWords()[(size_t) r] == before[(size_t) r];
-        check (untouched && s.history.size() == history + 1 && same (s.words, s.editWords()), "one peak gesture preserves the other five sections and fifth word, plays the edit, and records one undo");
+        check (untouched && s.history.size() == history + 1 && same (s.words, s.editWords()), "one peak gesture preserves the other five sections, the row's zero and its fifth word, plays the edit, and records one undo");
         s.undo();
         if (s.editing < 0) s.edit (0);
         check (same (s.editWords(), before), "undo restores the exact words from before the peak gesture");
@@ -506,7 +564,7 @@ int main()
             {
                 fits = fits && screen.magnitude.getWidth() * 2 == screen.magnitude.getHeight() * 3
                     && screen.stage.contains (screen.magnitude) && ! screen.magnitude.intersects (screen.table)
-                    && screen.table.contains (screen.cell (5, 5));
+                    && screen.table.contains (screen.cell (5, 6));
                 screen.keyPressed (key ('H', false, 'h'));
                 fits = fits && screen.showHardware == (mode == 0);
             }

@@ -16,10 +16,36 @@ juce::Font typeface (float height) { return juce::Font (juce::FontOptions (juce:
 double xOf (double hzValue, juce::Rectangle<int> r) { return r.getX() + r.getWidth() * std::log (hzValue / 20.0) / std::log (1000.0); }
 double yOf (double db, juce::Rectangle<int> r) { return r.getBottom() - r.getHeight() * (db + 30.0) / 60.0; }
 
-double sectionDb (const trench::core::PackedSection& words, double frequency)
+double hzAt (int x, juce::Rectangle<int> r) { return std::clamp (20.0 * std::pow (1000.0, (x - r.getX()) / (double) r.getWidth()), 20.0, 20000.0); }
+double dbAt (int y, juce::Rectangle<int> r) { return std::clamp ((r.getBottom() - y) * 60.0 / r.getHeight() - 30.0, -30.0, 30.0); }
+
+Words solved (const Words& words, int row, bool zero, double hz, double targetDb)
 {
-    const std::array<trench::core::Biquad, 1> section { trench::core::section_words_to_biquad (words) };
-    return trench::core::cascade_response_db (section, frequency, trench::core::kP2kDatumHz);
+    Section s = sectionOf (words[(size_t) row]);
+    if (zero) { s.zero = true; s.zeroHz = hz; } else { s.pole = true; s.poleHz = hz; }
+    auto with = [&] (double radius) {
+        Words w = words;
+        if (zero) s.zeroRadius = radius; else s.poleRadius = radius;
+        w[(size_t) row] = sectionWords (s, words[(size_t) row][4]);
+        return w;
+    };
+    if (zero && targetDb <= -29.9) return with (1.0);
+    double lo = 0.05, hi = zero ? 1.0 : 0.99999;
+    for (int i = 0; i < 40; ++i)
+    {
+        const double mid = 0.5 * (lo + hi);
+        const bool below = responseDb (with (mid), { hz })[0] < targetDb;
+        if (zero == below) hi = mid; else lo = mid;
+    }
+    return with (0.5 * (lo + hi));
+}
+
+Section seedSection (double hz)
+{
+    Section s;
+    s.pole = true; s.poleHz = hz; s.poleRadius = radiusForWidth (hz, 2.0);
+    s.zero = true; s.zeroHz = hz; s.zeroRadius = radiusForWidth (hz, 32.0);
+    return s;
 }
 
 juce::String signedValue (double value, int decimals)
@@ -33,15 +59,6 @@ juce::String noteAndCents (double frequency)
     const double midi = 69.0 + 12.0 * std::log2 (frequency / 440.0);
     const int nearest = (int) std::lround (midi);
     return noteName (440.0 * std::pow (2.0, (nearest - 69) / 12.0)) + " " + signedValue (std::round ((midi - nearest) * 100.0), 0) + "c";
-}
-
-double bandwidthSt (const trench::core::PackedSection& words)
-{
-    const auto geometry = trench::core::geometry_from_words (words, trench::core::kP2kDatumHz);
-    const auto* pole = std::get_if<trench::core::ConjugatePair> (&geometry.pole);
-    if (pole == nullptr || pole->hz <= 0.0) return 0.0;
-    const double width = -std::log (std::clamp (pole->radius, 1e-9, 1.0)) * trench::core::kP2kDatumHz / juce::MathConstants<double>::pi;
-    return 24.0 * std::asinh (width / (2.0 * pole->hz)) / std::log (2.0);
 }
 
 juce::Colour inkOf (const Star& s)
@@ -187,7 +204,7 @@ bool Screen::inPlane (juce::Point<int> p) const
 
 juce::Rectangle<int> Screen::cell (int row, int column) const
 {
-    static const int widths[kColumns] = { 9, 7, 15, 12, 11, 11 };
+    static const int widths[kColumns] = { 6, 13, 8, 13, 8, 8, 10 };
     int total = 0;
     for (int w : widths) total += w;
     int x = table.getX() + 6;
@@ -198,7 +215,15 @@ juce::Rectangle<int> Screen::cell (int row, int column) const
 juce::Point<float> Screen::peakPoint (int row) const
 {
     const auto words = session.editWords();
-    const double frequency = rowHz (words[(size_t) row]);
+    const double frequency = sectionOf (words[(size_t) row]).poleHz;
+    const double db = responseDb (words, { frequency })[0];
+    return { (float) xOf (frequency, magnitude), (float) std::clamp (yOf (db, magnitude), (double) magnitude.getY(), (double) magnitude.getBottom()) };
+}
+
+juce::Point<float> Screen::zeroPoint (int row) const
+{
+    const auto words = session.editWords();
+    const double frequency = sectionOf (words[(size_t) row]).zeroHz;
     const double db = responseDb (words, { frequency })[0];
     return { (float) xOf (frequency, magnitude), (float) std::clamp (yOf (db, magnitude), (double) magnitude.getY(), (double) magnitude.getBottom()) };
 }
@@ -209,13 +234,36 @@ int Screen::peakAt (juce::Point<int> p) const
     const auto words = session.editWords();
     int best = -1;
     float distance = 10.0f;
-    for (int row = 0; row < kRows - 1; ++row)
+    for (int row = 0; row < kRows; ++row)
     {
-        if (rowOf (words[(size_t) row]).type != RowType::peak || rowDb (words[(size_t) row]) <= 0.0) continue;
+        if (! sectionOf (words[(size_t) row]).pole) continue;
         const float d = peakPoint (row).getDistanceFrom (p.toFloat());
         if (d < distance) { best = row; distance = d; }
     }
     return best;
+}
+
+int Screen::zeroAt (juce::Point<int> p) const
+{
+    if (session.editing < 0 || ! magnitude.expanded (8).contains (p)) return -1;
+    const auto words = session.editWords();
+    int best = -1;
+    float distance = 10.0f;
+    for (int row = 0; row < kRows; ++row)
+    {
+        if (! sectionOf (words[(size_t) row]).zero) continue;
+        const float d = zeroPoint (row).getDistanceFrom (p.toFloat());
+        if (d < distance) { best = row; distance = d; }
+    }
+    return best;
+}
+
+double Screen::cascadeDb (int row) const
+{
+    const auto words = session.editWords();
+    const auto s = sectionOf (words[(size_t) row]);
+    const double hz = s.pole ? s.poleHz : s.zero ? s.zeroHz : 0.0;
+    return hz > 0.0 ? responseDb (words, { hz })[0] : 0.0;
 }
 
 juce::Point<float> Screen::cornerPoint (int corner) const
@@ -592,13 +640,24 @@ void Screen::paintMagnitude (juce::Graphics& g) const
     g.setColour (kDim); g.drawRect (r);
     if (session.editing < 0) return;
     const auto words = session.editWords();
-    for (int row = 0; row < kRows - 1; ++row)
+    for (int row = 0; row < kRows; ++row)
     {
-        if (rowOf (words[(size_t) row]).type != RowType::peak || rowDb (words[(size_t) row]) <= 0.0) continue;
-        const auto p = peakPoint (row);
-        g.setColour (kPlotBack); g.fillEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f);
-        g.setColour (kPlotInk); g.drawEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f, 1.5f);
-        g.drawText (juce::String (row + 1), (int) p.x + 7, (int) p.y - 16, 16, 14, juce::Justification::centredLeft);
+        const auto s = sectionOf (words[(size_t) row]);
+        const bool lit = (dragging == Drag::peak || dragging == Drag::zero || dragging == Drag::row) && dragRow == row;
+        if (s.zero)
+        {
+            const auto z = zeroPoint (row);
+            g.setColour (kPlotBack); g.fillRect (z.x - 4.5f, z.y - 4.5f, 9.0f, 9.0f);
+            g.setColour (lit ? kPlotInk : kPlotInk.withAlpha (0.75f)); g.drawRect (z.x - 4.5f, z.y - 4.5f, 9.0f, 9.0f, 1.2f);
+            if (! s.pole) g.drawText (juce::String (row + 1), (int) z.x + 7, (int) z.y - 16, 16, 14, juce::Justification::centredLeft);
+        }
+        if (s.pole)
+        {
+            const auto p = peakPoint (row);
+            g.setColour (kPlotBack); g.fillEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f);
+            g.setColour (kPlotInk); g.drawEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f, lit ? 2.2f : 1.5f);
+            g.drawText (juce::String (row + 1), (int) p.x + 7, (int) p.y - 16, 16, 14, juce::Justification::centredLeft);
+        }
     }
 }
 
@@ -607,7 +666,7 @@ void Screen::paintTable (juce::Graphics& g) const
     g.setColour (kBack.withAlpha (0.92f)); g.fillRect (table);
     g.setColour (kDim); g.drawRect (table);
     g.setFont (typeface (table.getWidth() < 450 ? 11.0f : 12.0f));
-    const juce::String heads[kColumns] = { "#", "Type", "Note", noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0)) + " +st", "BW st", "Peak dB" };
+    const juce::String heads[kColumns] = { "#", "Pole", "Width st", "Zero", "Depth st", "Gain dB", "Cascade dB" };
     g.setColour (kDim);
     for (int c = 0; c < kColumns; ++c) g.drawText (heads[c], cell (-1, c), juce::Justification::centredLeft);
     if (session.editing < 0) return;
@@ -615,22 +674,25 @@ void Screen::paintTable (juce::Graphics& g) const
     for (int r = 0; r < kRows; ++r)
     {
         const auto& w = words[(size_t) r];
-        const auto row = rowOf (w);
-        const double hzValue = rowHz (w), db = rowDb (w);
-        const bool rest = row.type == RowType::rest;
-        const bool lit = (dragging == Drag::row || dragging == Drag::peak) && dragRow == r;
+        const auto s = sectionOf (w);
+        const bool rest = ! s.pole && ! s.zero;
+        const bool lit = (dragging == Drag::row || dragging == Drag::peak || dragging == Drag::zero) && dragRow == r;
         g.setColour (lit ? kAccent : rest ? kDim : kText);
         g.drawText (r == kRows - 1 ? "CEILING" : juce::String (r + 1), cell (r, 0), juce::Justification::centredLeft);
-        g.drawText (rest ? "Rest" : row.type == RowType::notch ? "Notch" : "Peak", cell (r, 1), juce::Justification::centredLeft);
-        g.drawText (noteAndCents (hzValue), cell (r, 2), juce::Justification::centredLeft);
-        g.drawText (rest ? "--" : signedValue (69.0 + 12.0 * std::log2 (hzValue / 440.0) - session.note, 1), cell (r, 3), juce::Justification::centredLeft);
-        g.drawText (rest ? "--" : juce::String (bandwidthSt (w), 1), cell (r, 4), juce::Justification::centredLeft);
-        g.drawText (rest ? "--" : signedValue (db, 1), cell (r, 5), juce::Justification::centredLeft);
+        g.drawText (rest ? "Rest" : s.pole ? noteAndCents (s.poleHz) : "--", cell (r, 1), juce::Justification::centredLeft);
+        g.drawText (s.pole ? juce::String (widthSt (s.poleHz, s.poleRadius), 1) : "--", cell (r, 2), juce::Justification::centredLeft);
+        g.drawText (s.zero ? noteAndCents (s.zeroHz) : "--", cell (r, 3), juce::Justification::centredLeft);
+        g.drawText (s.zero ? (s.zeroRadius > 0.999 ? juce::String ("notch") : juce::String (widthSt (s.zeroHz, s.zeroRadius), 1)) : "--", cell (r, 4), juce::Justification::centredLeft);
+        g.drawText (signedValue (20.0 * std::log10 (std::max (1e-6, s.scale)), 1), cell (r, 5), juce::Justification::centredLeft);
+        g.drawText (rest ? "--" : signedValue (cascadeDb (r), 1), cell (r, 6), juce::Justification::centredLeft);
         if (showHardware)
         {
             g.setColour (kDim);
-            const auto raw = juce::String (hzValue, 1) + " Hz   radius words Z 0x" + juce::String::toHexString ((int) w[1]).paddedLeft ('0', 4).toUpperCase()
-                + "  P 0x" + juce::String::toHexString ((int) w[3]).paddedLeft ('0', 4).toUpperCase();
+            const auto raw = "words 0x" + juce::String::toHexString ((int) w[0]).paddedLeft ('0', 4).toUpperCase() + " 0x" + juce::String::toHexString ((int) w[1]).paddedLeft ('0', 4).toUpperCase()
+                + "  0x" + juce::String::toHexString ((int) w[2]).paddedLeft ('0', 4).toUpperCase() + " 0x" + juce::String::toHexString ((int) w[3]).paddedLeft ('0', 4).toUpperCase()
+                + "  0x" + juce::String::toHexString ((int) w[4]).paddedLeft ('0', 4).toUpperCase()
+                + "   pole " + (s.pole ? juce::String (s.poleHz, 1) + " Hz r " + juce::String (s.poleRadius, 5) : juce::String ("none"))
+                + "   zero " + (s.zero ? juce::String (s.zeroHz, 1) + " Hz r " + juce::String (s.zeroRadius, 5) : juce::String ("none"));
             g.drawText (raw, table.getX() + 6, cell (r, 0).getBottom(), table.getWidth() - 12, 14, juce::Justification::centredLeft);
         }
     }
@@ -891,27 +953,66 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         {
             dragging = Drag::peak; dragRow = row; dragOrigin = p; dragPoint = p;
             peakEditStarted = false;
-            dragWords = session.editWords(); dragBase = rowOf (dragWords[(size_t) row]);
+            dragWords = session.editWords();
+            return;
+        }
+        if (const int row = zeroAt (p); row >= 0)
+        {
+            dragging = Drag::zero; dragRow = row; dragOrigin = p; dragPoint = p;
+            peakEditStarted = false;
+            dragWords = session.editWords();
+            return;
+        }
+        if (session.editing >= 0 && magnitude.contains (p) && e.mods.isAltDown())
+        {
+            const auto words = session.editWords();
+            const double hz = hzAt (p.x, magnitude);
+            int row = -1;
+            double nearest = 1e9;
+            for (int r = 0; r < kRows; ++r)
+            {
+                const auto s = sectionOf (words[(size_t) r]);
+                if (s.zero) continue;
+                const double d = s.pole ? std::abs (std::log (s.poleHz / hz)) : 1e8 + r;
+                if (d < nearest) { nearest = d; row = r; }
+            }
+            if (row < 0) return;
+            Section s = sectionOf (words[(size_t) row]);
+            s.zero = true; s.zeroHz = hz; s.zeroRadius = 0.5;
+            session.beginRowEdit();
+            session.setSection (session.editing, row, s);
             return;
         }
         if (session.editing < 0 || ! table.contains (p)) return;
         for (int r = 0; r < kRows; ++r)
-            for (int c = 1; c < kColumns; ++c)
+            for (int c = 0; c < kColumns; ++c)
                 if (cell (r, c).contains (p))
                 {
-                    if (c == 4) return;
+                    if (c == 6) return;
                     const auto words = session.editWords();
-                    Row row = rowOf (words[(size_t) r]);
-                    session.beginRowEdit();
-                    if (c == 1)
+                    Section s = sectionOf (words[(size_t) r]);
+                    const bool rest = ! s.pole && ! s.zero;
+                    if (c == 0)
                     {
-                        row.type = row.type == RowType::rest ? RowType::peak : row.type == RowType::peak ? RowType::notch : RowType::rest;
-                        if (row.type == RowType::peak && r == kRows - 1 && rowHz (words[(size_t) r]) <= 0.0) { row.type = RowType::notch; row.f = kFreqCodes - 1; row.g = 0; }
-                        session.setRow (session.editing, r, row);
+                        session.beginRowEdit();
+                        session.setSection (session.editing, r, rest ? seedSection (1000.0) : Section {});
                         return;
                     }
-                    if (row.type == RowType::rest) { row.type = RowType::peak; session.setRow (session.editing, r, row); }
-                    dragging = Drag::row; dragRow = r; dragColumn = c; dragOrigin = p; dragPoint = p; dragBase = row;
+                    if (rest) { session.beginRowEdit(); session.setSection (session.editing, r, seedSection (1000.0)); return; }
+                    if ((c == 1 || c == 2) && ! s.pole)
+                    {
+                        s.pole = true; s.poleHz = s.zeroHz; s.poleRadius = radiusForWidth (s.poleHz, 2.0);
+                        session.beginRowEdit(); session.setSection (session.editing, r, s);
+                        return;
+                    }
+                    if ((c == 3 || c == 4) && ! s.zero)
+                    {
+                        s.zero = true; s.zeroHz = s.poleHz; s.zeroRadius = 0.5;
+                        session.beginRowEdit(); session.setSection (session.editing, r, s);
+                        return;
+                    }
+                    session.beginRowEdit();
+                    dragging = Drag::row; dragRow = r; dragColumn = c; dragOrigin = p; dragPoint = p; dragSection = s;
                     return;
                 }
         return;
@@ -929,46 +1030,24 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
     dragPoint = p;
     if (dragging == Drag::row)
     {
-        Row row = dragBase;
+        Section s = dragSection;
         const int steps = (p.x - dragOrigin.x) / 4;
-        if (dragColumn == 5) row.g = std::clamp (dragBase.g + steps, kGainMin, kGainMax);
-        else row.f = std::clamp (dragBase.f + steps, 0, kFreqCodes - 1);
-        session.setRow (session.editing, dragRow, row);
+        if (dragColumn == 1) s.poleHz = std::clamp (dragSection.poleHz * std::pow (2.0, steps * 10.0 / 1200.0), 20.0, 20000.0);
+        else if (dragColumn == 2) s.poleRadius = radiusForWidth (s.poleHz, std::max (0.05, widthSt (dragSection.poleHz, dragSection.poleRadius) + 0.1 * steps));
+        else if (dragColumn == 3) s.zeroHz = std::clamp (dragSection.zeroHz * std::pow (2.0, steps * 10.0 / 1200.0), 20.0, 20000.0);
+        else if (dragColumn == 4) s.zeroRadius = radiusForWidth (s.zeroHz, std::max (0.0, widthSt (dragSection.zeroHz, dragSection.zeroRadius) + 0.1 * steps));
+        else if (dragColumn == 5) s.scale = std::pow (10.0, (20.0 * std::log10 (std::max (1e-6, dragSection.scale)) + 0.5 * steps) / 20.0);
+        session.setSection (session.editing, dragRow, s, dragColumn != 5);
         return;
     }
-    if (dragging == Drag::peak)
+    if (dragging == Drag::peak || dragging == Drag::zero)
     {
         if (session.editing < 0 || (p == dragOrigin && ! peakEditStarted)) return;
-        const auto& original = dragWords[(size_t) dragRow];
-        const double baseHz = rowHz (original);
-        const double targetHz = std::clamp (baseHz * std::pow (1000.0, (p.x - dragOrigin.x) / (double) magnitude.getWidth()), 20.0, 20000.0);
-        const double baseDb = responseDb (dragWords, { baseHz })[0];
-        const double targetDb = std::clamp (baseDb + (dragOrigin.y - p.y) * 60.0 / magnitude.getHeight(), -30.0, 30.0);
-        double best = std::numeric_limits<double>::max();
-        Row chosen = dragBase;
-        for (int gain = kGainMin; gain <= kGainMax; ++gain)
-        {
-            Row candidate { RowType::peak, 0, gain };
-            double pitchError = std::numeric_limits<double>::max();
-            for (int f = 0; f < kFreqCodes; ++f)
-            {
-                const double frequency = rowHz (rowWords ({ RowType::peak, f, gain }, original[4]));
-                if (frequency <= 0.0) continue;
-                const double error = std::abs (12.0 * std::log2 (frequency / targetHz));
-                if (error < pitchError) { pitchError = error; candidate.f = f; }
-            }
-            const auto words = rowWords (candidate, original[4]);
-            const double frequency = rowHz (words);
-            if (frequency <= 0.0) continue;
-            double db = sectionDb (words, frequency);
-            for (int r = 0; r < kRows; ++r) if (r != dragRow) db += sectionDb (dragWords[(size_t) r], frequency);
-            const double error = std::abs (db - targetDb) + 12.0 * pitchError;
-            if (error < best) { best = error; chosen = candidate; }
-        }
-        if (rowWords (chosen, original[4]) != session.editWords()[(size_t) dragRow])
+        const auto words = solved (dragWords, dragRow, dragging == Drag::zero, hzAt (p.x, magnitude), dbAt (p.y, magnitude));
+        if (words[(size_t) dragRow] != session.editWords()[(size_t) dragRow])
         {
             if (! peakEditStarted) { session.beginRowEdit(); peakEditStarted = true; }
-            session.setRow (session.editing, dragRow, chosen);
+            session.setSectionWords (session.editing, dragRow, words[(size_t) dragRow]);
         }
         return;
     }

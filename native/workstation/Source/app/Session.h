@@ -68,6 +68,8 @@ public:
     bool takeSlice();
     void beginRowEdit();
     void setRow (int corner, int row, Row r);
+    void setSection (int corner, int row, const Section& section, bool keepFifth = true);
+    void setSectionWords (int corner, int row, const trench::core::PackedSection& words);
     Words editWords() const;
     void setPuck (double morph, double q);
     void nudge (double dm, double dq);

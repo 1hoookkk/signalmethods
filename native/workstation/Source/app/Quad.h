@@ -50,6 +50,16 @@ struct Row
 };
 constexpr int kFreqCodes = 128, kGainMin = -32, kGainMax = 31;
 
+struct Section
+{
+    bool pole = false, zero = false;
+    double poleHz = 0.0, poleRadius = 0.0, zeroHz = 0.0, zeroRadius = 0.0, scale = 1.0;
+};
+Section sectionOf (const trench::core::PackedSection& words);
+trench::core::PackedSection sectionWords (const Section& section, std::uint16_t fifth, bool keepFifth = true);
+double widthSt (double hz, double radius);
+double radiusForWidth (double hz, double st);
+
 trench::core::PackedSection rowWords (Row row, std::uint16_t fifth);
 Row rowOf (const trench::core::PackedSection& words);
 double rowHz (const trench::core::PackedSection& words);

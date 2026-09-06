@@ -2075,3 +2075,28 @@ Open, in order:
   keyboard silent 0, held rms 0.32, release tail 0.0005; Track A2 310/2020 -> A3 620/4040.
   102 checks. Paste claims about JOS licensing to E-mu are not in evidence; the citation of
   Smith 1983 in US5248845 and ICMC 1992 is.
+- 2026-09-07: plan approved (.claude/plans/make-a-plan-for-radiant-elephant.md): three rooms,
+  AUTHOR with picker and cube layers, Stage on real words with surgical zeros, working corner,
+  vector + span, row reorder. Slice 2 (8c331673): the strip carries a 3:2 plot of what plays
+  and a label per state ("i", "made 700/1100", "i moved to 465/3030", "i > u  23", "B  u",
+  "cube 50 50 at depth 25", "pad 40 30", "+ track A3"). Answers "is the picker interpolating?":
+  it never lerps on click; made and transposed frames are compiles and now say so.
+- 2026-09-07 later: Slice 2b. Tyson: "Stop synthesizing / overwriting real words with toy
+  formulas" and "allow for direct zero placement and control at a surgical level". The Stage
+  now reads each row through the core's geometry_from_words and writes back through
+  words_from_geometry: pole note + width st, zero note + depth st (notch at radius 1), gain dB
+  (fifth word), and Cascade dB, the whole cascade at the pole, the number under the handle.
+  rowWords no longer touches an existing row; it remains the seed for made vowels, reads and
+  the ceiling. Pole handles solve the pole radius by bisection against the whole cascade; zero
+  handles (squares) do the same for the zero, the floor of the frame snaps a zero to the
+  circle; Alt-click drops a zero on the nearest zero-less row; the Depth cell of a row without a
+  zero places one; "#" parks a row or wakes a rest row at 1 kHz. Reads never leave rest rows:
+  measured poles keep their slots (up to five), support poles at 3500/4500 Hz with gentle zeros
+  fill the remainder, the zero of each measured pole is set from the LPC prominence
+  (1 - (1 - r) * 10^(prom/20)), the ceiling and unityDc as before. Data: all 132 factory
+  corners carry a zero on the circle in row 6. A zero alone is not local (-22 dB at 3 kHz and
+  -15 dB at 300 Hz for one at 3 kHz r 0.9): the test says "dips most at its own frequency", not
+  "nothing else changes". Tyson mid-slice: "if I want 6 active stages what happens to my
+  3-stage anchors" -> rest rows are parked pairs; wake one on the Stage or let the lerp bring the
+  neighbour's row in. "make the peaks shine by carving" -> the zero handles. 122 checks, ctest
+  x3 green.
