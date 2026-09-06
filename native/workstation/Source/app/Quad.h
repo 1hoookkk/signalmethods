@@ -59,6 +59,7 @@ Section sectionOf (const trench::core::PackedSection& words);
 trench::core::PackedSection sectionWords (const Section& section, std::uint16_t fifth, bool keepFifth = true);
 double widthSt (double hz, double radius);
 double radiusForWidth (double hz, double st);
+Words carved (const Words& words, double amount);
 
 trench::core::PackedSection rowWords (Row row, std::uint16_t fifth);
 Row rowOf (const trench::core::PackedSection& words);

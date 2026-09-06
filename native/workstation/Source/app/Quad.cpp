@@ -105,6 +105,29 @@ double radiusForWidth (double hz, double st)
     return std::clamp (std::exp (-3.141592653589793 * bw / trench::core::kP2kDatumHz), 0.0, 1.0);
 }
 
+Words carved (const Words& words, double amount)
+{
+    const double a = std::clamp (amount, 0.0, 1.0);
+    std::vector<std::pair<double, size_t>> poles;
+    for (size_t r = 0; r + 1 < kRows; ++r)
+        if (const auto s = sectionOf (words[r]); s.pole) poles.emplace_back (s.poleHz, r);
+    std::sort (poles.begin(), poles.end());
+    Words out = words;
+    for (size_t k = 0; k < poles.size(); ++k)
+    {
+        const size_t r = poles[k].second;
+        Section s = sectionOf (words[r]);
+        const double above = k + 1 < poles.size() ? poles[k + 1].first : k > 0 ? s.poleHz * s.poleHz / poles[k - 1].first : s.poleHz * 2.25;
+        const double target = std::clamp (std::sqrt (s.poleHz * above), 20.0, 20000.0);
+        const double fromHz = s.zero ? s.zeroHz : s.poleHz, fromRadius = s.zero ? s.zeroRadius : 0.5;
+        s.zero = true;
+        s.zeroHz = fromHz * std::pow (target / fromHz, a);
+        s.zeroRadius = fromRadius + (0.97 - fromRadius) * a;
+        out[r] = sectionWords (s, words[r][4]);
+    }
+    return out;
+}
+
 double rowHz (const trench::core::PackedSection& words)
 {
     const auto g = trench::core::geometry_from_words (words, trench::core::kP2kDatumHz);

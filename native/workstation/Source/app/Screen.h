@@ -46,7 +46,8 @@ public:
     std::array<juce::Rectangle<int>, 4> navigation, cornerBox, cornerTag, cornerPlot, keys, toKeys, stageTags, padTags;
     std::array<juce::Rectangle<int>, 8> cubeBox, cubeTags;
     std::array<juce::Rectangle<int>, 3> paletteTabs;
-    juce::Rectangle<int> table, magnitude, morph, keyboard, status, cubeArea, depth, dropZone, keepKey, playing, playingLabel;
+    juce::Rectangle<int> table, magnitude, morph, keyboard, status, cubeArea, depth, dropZone, keepKey, playing, playingLabel, carveKey;
+    double carve = 0.0;
     bool showHardware = false;
     int palette = 0;
     std::vector<int> cards() const;
@@ -83,7 +84,7 @@ private:
     void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill, bool cached = true) const;
     Session& session;
     std::vector<double> hz;
-    enum class Drag { none, puck, made, card, row, peak, zero, keyboard, cube, depth, slice, transpose } dragging = Drag::none;
+    enum class Drag { none, puck, made, card, row, peak, zero, keyboard, cube, depth, slice, transpose, carve } dragging = Drag::none;
     int dragStar = -1, dragRow = -1, dragColumn = -1;
     Section dragSection;
     Words dragWords {};

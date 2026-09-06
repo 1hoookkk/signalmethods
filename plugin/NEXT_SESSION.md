@@ -2100,3 +2100,12 @@ Open, in order:
   3-stage anchors" -> rest rows are parked pairs; wake one on the Stage or let the lerp bring the
   neighbour's row in. "make the peaks shine by carving" -> the zero handles. 122 checks, ctest
   x3 green.
+- 2026-09-07: Carve on the Stage. Tyson: "make the peaks shine by carving". One drag number,
+  0 to 100: each pole's zero swings from where it is toward the valley above its pole (the
+  geometric mean to the next pole up) and its radius toward 0.97; poles, fifth words and the
+  ceiling row untouched; one undo. i at full carve: zero 1 310 -> 791 Hz, valley floor
+  -9.8 -> -38.7 dB. The read itself stays faithful (zero depth from measured prominence on the
+  pole's angle); the valley zero is the designer's move, by hand. Not adopted from the paste:
+  rewriting readWav to place zeros in valleys by default. 127 checks, ctest x3 green.
+  Tyson, after: "the design and aesthetic sucks. reads as amateur" -> design pass pending his
+  direction.

@@ -137,6 +137,7 @@ void Screen::layout()
     sliceKey = { cubeArea.getRight() - 150, depth.getBottom() + 8, 150, 24 };
 
     for (int i = 0; i < 4; ++i) stageTags[(size_t) i] = { stage.getX() + i * 40, stage.getY(), 34, 24 };
+    carveKey = { stage.getRight() - 120, stage.getY(), 120, 24 };
     const int th = kLine * (kRows + 1) + 8 + (showHardware ? 14 * kRows : 0);
     table = { stage.getX(), stage.getBottom() - th, stage.getWidth(), th };
     const int plotWidth = stage.getWidth() - 60, plotHeight = table.getY() - (stage.getY() + 36) - 26;
@@ -611,7 +612,13 @@ void Screen::paintEditor (juce::Graphics& g) const
     const juce::String title = session.editing < 0 ? juce::String ("what plays")
         : session.editingCube ? "cube " + juce::String (session.editing + 1) + "  " + session.stars[(size_t) session.cube.pins[(size_t) session.editing]].name
         : juce::String::charToString (Session::kCornerLetters[session.editing]) + "  " + session.cornerName (session.editing);
-    g.drawText (title, juce::Rectangle<int> (stageTags[3].getRight() + 16, stage.getY(), std::max (40, stage.getWidth() - 200), 24), juce::Justification::centredLeft);
+    g.drawText (title, juce::Rectangle<int> (stageTags[3].getRight() + 16, stage.getY(), std::max (40, stage.getWidth() - 330), 24), juce::Justification::centredLeft);
+    if (session.editing >= 0)
+    {
+        g.setColour (dragging == Drag::carve ? kBox : kBack); g.fillRect (carveKey);
+        g.setColour (dragging == Drag::carve ? kAccent : kDim);
+        g.drawText ("Carve  " + juce::String (carve * 100.0, 0), carveKey, juce::Justification::centredRight);
+    }
     paintMagnitude (g);
     paintTable (g);
 }
@@ -949,6 +956,13 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     if (view == View::stage)
     {
         for (int i = 0; i < 4; ++i) if (stageTags[(size_t) i].contains (p)) { if (session.editingCube || session.editing != i) session.edit (i); return; }
+        if (session.editing >= 0 && carveKey.contains (p))
+        {
+            dragging = Drag::carve; dragOrigin = p; dragPoint = p;
+            peakEditStarted = false; carve = 0.0;
+            dragWords = session.editWords();
+            return;
+        }
         if (const int row = peakAt (p); row >= 0)
         {
             dragging = Drag::peak; dragRow = row; dragOrigin = p; dragPoint = p;
@@ -1038,6 +1052,18 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
         else if (dragColumn == 4) s.zeroRadius = radiusForWidth (s.zeroHz, std::max (0.0, widthSt (dragSection.zeroHz, dragSection.zeroRadius) + 0.1 * steps));
         else if (dragColumn == 5) s.scale = std::pow (10.0, (20.0 * std::log10 (std::max (1e-6, dragSection.scale)) + 0.5 * steps) / 20.0);
         session.setSection (session.editing, dragRow, s, dragColumn != 5);
+        return;
+    }
+    if (dragging == Drag::carve)
+    {
+        if (session.editing < 0) return;
+        const double amount = std::clamp ((p.x - dragOrigin.x) / 240.0, 0.0, 1.0);
+        if (amount == carve) return;
+        carve = amount;
+        const auto words = carved (dragWords, amount);
+        if (! peakEditStarted) { session.beginRowEdit(); peakEditStarted = true; }
+        for (size_t r = 0; r + 1 < kRows; ++r)
+            if (words[r] != session.editWords()[r]) session.setSectionWords (session.editing, (int) r, words[r]);
         return;
     }
     if (dragging == Drag::peak || dragging == Drag::zero)

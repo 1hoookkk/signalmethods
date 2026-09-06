@@ -307,6 +307,33 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
+        hs::Screen screen (s);
+        const int i = s.starNamed ("i");
+        const auto before = s.stars[(size_t) i].words;
+        s.edit (0);
+        const auto p1 = hs::sectionOf (before[0]), p2 = hs::sectionOf (before[1]);
+        const double valley = std::sqrt (p1.poleHz * p2.poleHz);
+        const double floorBefore = hs::responseDb (before, { valley })[0];
+        const auto start = screen.carveKey.getCentre().toFloat();
+        screen.mouseDown (mouse (screen, start, start));
+        screen.mouseDrag (mouse (screen, start.translated (240.0f, 0.0f), start));
+        screen.mouseUp (mouse (screen, start.translated (240.0f, 0.0f), start));
+        const auto after = s.editWords();
+        const auto z1 = hs::sectionOf (after[0]), z2 = hs::sectionOf (after[1]);
+        const double floorAfter = hs::responseDb (after, { valley })[0];
+        std::printf ("      carve: pole 1 %.0f zero %.0f r %.3f, pole 2 %.0f zero %.0f r %.3f, valley %.0f Hz %.1f -> %.1f dB\n", z1.poleHz, z1.zeroHz, z1.zeroRadius, z2.poleHz, z2.zeroHz, z2.zeroRadius, valley, floorBefore, floorAfter);
+        bool polesKept = true;
+        for (size_t r = 0; r < hs::kRows; ++r) polesKept = polesKept && after[r][2] == before[r][2] && after[r][3] == before[r][3] && after[r][4] == before[r][4];
+        check (polesKept && after[5] == before[5], "carving moves only zeros; every pole, fifth word and the ceiling row keep their words");
+        check (z1.zero && z1.zeroHz > p1.poleHz * 1.2 && z1.zeroHz < p2.poleHz && std::abs (z1.zeroRadius - 0.97) < 0.01 && z2.zeroHz > p2.poleHz, "at full carve each zero sits in the valley above its pole at radius 0.97");
+        check (floorAfter < floorBefore - 6.0, "the floor between the first two peaks drops by more than 6 dB");
+        check (s.history.size() == 1, "one carve gesture is one undo");
+        s.undo();
+        check (same (s.stars[(size_t) s.quad.pins[(size_t) hs::Session::kCornerPin[0]]].words, before), "undo returns the exact words");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
         s.setPuck (23.0, 40.0);
         const auto heard = s.words;
         s.key (key ('S', true, 's'));
