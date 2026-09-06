@@ -29,7 +29,7 @@ public:
 
     juce::Rectangle<int> picker, chart, stage;
     std::array<juce::Rectangle<int>, 4> cornerBox, cornerTag;
-    std::array<juce::Rectangle<int>, 3> keys;
+    std::array<juce::Rectangle<int>, 4> keys;
     juce::Rectangle<int> table;
     static constexpr int kLine = 16, kColumns = 5;
     static constexpr double kF1Low = 150.0, kF1High = 1200.0, kF2Low = 450.0, kF2High = 3400.0;

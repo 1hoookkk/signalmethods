@@ -67,6 +67,18 @@ float Audio::next()
         phase -= std::floor (phase);
         return (float) ((2.0 * phase - 1.0) * 0.4);
     }
+    if (src == 2)
+    {
+        if (auto next = loop.load(); next != playingLoop) { playingLoop = next; loopPos = 0.0; }
+        if (playingLoop == nullptr || playingLoop->samples.size() < 2) return 0.0f;
+        const auto& s = playingLoop->samples;
+        const size_t i = (size_t) loopPos;
+        const double frac = loopPos - (double) i;
+        const float y = (float) ((1.0 - frac) * s[i] + frac * s[(i + 1) % s.size()]);
+        loopPos += playingLoop->rate / rate;
+        if (loopPos >= (double) s.size()) loopPos -= (double) s.size();
+        return y * 0.8f;
+    }
     random ^= random << 13; random ^= random >> 17; random ^= random << 5;
     const double white = double (random) / 4294967295.0 * 2.0 - 1.0;
     pink0 = 0.99765 * pink0 + white * 0.0990460;

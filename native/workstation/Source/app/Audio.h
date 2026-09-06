@@ -7,6 +7,8 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
+#include <vector>
 
 namespace hs
 {
@@ -21,6 +23,8 @@ public:
     void setPlaying (bool on) { playing.store (on); }
     void setSource (int s) { source.store (s); }
     void setNote (int midi) { note.store (midi); }
+    struct Clip { std::vector<float> samples; double rate = 44100.0; };
+    void setLoop (std::shared_ptr<const Clip> clip) { loop.store (std::move (clip)); }
     bool isOpen() const { return open; }
     juce::String error, deviceInfo;
 
@@ -42,6 +46,9 @@ private:
     std::atomic<bool> playing { false };
     std::atomic<int> source { 1 };
     std::atomic<int> note { 45 };
+    std::atomic<std::shared_ptr<const Clip>> loop;
+    std::shared_ptr<const Clip> playingLoop;
+    double loopPos = 0.0;
     std::array<Slot, 2> slots;
     std::atomic<unsigned long long> published { 0 };
     unsigned long long consumed = 0;

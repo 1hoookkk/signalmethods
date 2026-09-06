@@ -1,5 +1,6 @@
 #include "Session.h"
 #include <algorithm>
+#include <trench/core/body_from_audio.hpp>
 
 namespace hs
 {
@@ -340,6 +341,19 @@ void Session::setNote (int midi)
     changed();
 }
 
+bool Session::setLoop (const juce::File& wav)
+{
+    const auto clip = trench::core::audio::read_wav_mono (std::filesystem::path (wav.getFullPathName().toWideCharPointer()));
+    if (! clip || clip->samples.size() < 2) { status = "cannot read " + wav.getFileName(); changed(); return false; }
+    auto shared = std::make_shared<Audio::Clip>();
+    shared->samples = clip->samples;
+    shared->rate = clip->sample_rate_hz;
+    loopName = wav.getFileNameWithoutExtension();
+    if (withAudio) audio.setLoop (shared);
+    setSource (2);
+    return true;
+}
+
 void Session::noteIn (const juce::MidiMessage& m)
 {
     if (m.isNoteOn()) setNote (m.getNoteNumber());
@@ -371,6 +385,7 @@ bool Session::key (const juce::KeyPress& k)
     if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }
     if (c == 'w' || c == 'W') { write(); return true; }
     if (c == 'n' || c == 'N') { setSource (1); return true; }
+    if ((c == 'l' || c == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }
     if (c == 's' || c == 'S') { setSource (0); return true; }
     if (c == '[') { setNote (note - 1); return true; }
     if (c == ']') { setNote (note + 1); return true; }

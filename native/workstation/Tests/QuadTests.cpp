@@ -191,6 +191,11 @@ int main()
         check (s.note == 60, "note off leaves the drone where it is");
         s.key (key (']', false, ']')); s.key (key (juce::KeyPress::pageDownKey));
         check (s.note == 49, "] steps a semitone up and Page Down an octave down");
+        const auto loop = voiceWav();
+        check (s.setLoop (loop) && s.source == 2 && s.loopName == loop.getFileNameWithoutExtension(), "a wav dropped on the stage becomes the loop and plays through the cascade");
+        s.key (key ('S', false, 's')); s.key (key ('L', false, 'l'));
+        check (s.source == 2, "L returns to the loop");
+        check (! s.setLoop (juce::File ("C:/nowhere/none.wav")) && s.status.startsWith ("cannot read"), "a missing wav says so");
     }
 
     {

@@ -51,7 +51,7 @@ void Screen::layout()
         const auto box = cornerBox[(size_t) n];
         cornerTag[(size_t) n] = { right ? box.getX() - 44 : box.getRight() + 6, box.getY(), 38, 20 };
     }
-    for (int i = 0; i < 3; ++i) keys[(size_t) i] = { stage.getX() + i * 76, h - 26, 70, 18 };
+    for (int i = 0; i < 4; ++i) keys[(size_t) i] = { stage.getX() + i * 76, h - 26, i == 3 ? 160 : 70, 18 };
     const int tw = std::min (400, stage.getWidth() - 2 * bw - 40), th = kLine * (kRows + 1) + 8;
     table = { stage.getCentreX() - tw / 2, stage.getBottom() - 36 - th, tw, th };
 }
@@ -199,12 +199,12 @@ void Screen::paintCorners (juce::Graphics& g) const
         g.setColour (session.editing == n ? kGreen : kDim);
         g.drawText ("rows", cornerTag[(size_t) n], right ? juce::Justification::centredRight : juce::Justification::centredLeft);
     }
-    const char* names[] = { "PLAY", "SAW", "NOISE" };
-    const bool on[] = { session.playing, session.source == 0, session.source == 1 };
-    for (int i = 0; i < 3; ++i)
+    const juce::String names[] = { "PLAY", "SAW " + noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0)), "NOISE", session.loopName.isNotEmpty() ? "LOOP " + session.loopName : "LOOP: drop a wav here" };
+    const bool on[] = { session.playing, session.source == 0, session.source == 1, session.source == 2 };
+    for (int i = 0; i < 4; ++i)
     {
         g.setColour (on[i] ? kGreen : kDim);
-        g.drawText (i == 1 ? juce::String ("SAW ") + noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0)) : juce::String (names[i]), keys[(size_t) i], juce::Justification::centredLeft);
+        g.drawText (names[i], keys[(size_t) i], juce::Justification::centredLeft);
     }
     if (session.status.isNotEmpty())
     {
@@ -350,10 +350,12 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         repaint();
         return;
     }
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 4; ++i)
         if (keys[(size_t) i].contains (p))
         {
-            if (i == 0) session.setPlaying (! session.playing); else session.setSource (i == 1 ? 0 : 1);
+            if (i == 0) session.setPlaying (! session.playing);
+            else if (i == 3) { if (session.loopName.isNotEmpty()) session.setSource (2); }
+            else session.setSource (i == 1 ? 0 : 1);
             return;
         }
     for (int n = 0; n < 4; ++n) if (cornerBox[(size_t) n].contains (p)) { openMenu (n, cornerBox[(size_t) n]); return; }
@@ -464,9 +466,11 @@ bool Screen::isInterestedInFileDrag (const juce::StringArray& files)
 void Screen::filesDropped (const juce::StringArray& files, int x, int y)
 {
     const int corner = cornerAt ({ x, y });
+    const bool asLoop = corner < 0 && ! picker.contains (juce::Point<int> (x, y));
     for (const auto& f : files)
     {
         if (! f.endsWithIgnoreCase (".wav")) continue;
+        if (asLoop) { session.setLoop (juce::File (f)); continue; }
         const int k = session.addRead (juce::File (f));
         if (k >= 0 && corner >= 0) session.pinCorner (corner, k);
     }

@@ -37,6 +37,7 @@ public:
     bool playing = false;
     int source = 1;
     int note = 45;
+    juce::String loopName;
     Audio audio;
     bool withAudio = false;
     std::function<void()> onChange;
@@ -66,6 +67,7 @@ public:
     void setPlaying (bool on);
     void setSource (int s);
     void setNote (int midi);
+    bool setLoop (const juce::File& wav);
     void noteIn (const juce::MidiMessage& m);
     bool key (const juce::KeyPress& k);
     juce::String pinName (int n) const;
