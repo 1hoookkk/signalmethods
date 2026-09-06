@@ -66,7 +66,7 @@ std::vector<Star> loadVowels (const juce::File& bankFile)
         s.body = "Klatt 1980";
         const auto klatt = f.getProperty ("name", "").toString();
         s.corner = klatt;
-        s.name = juce::String (juce::CharPointer_UTF8 (ipaOf (klatt))) + "  " + klatt;
+        s.name = juce::String (juce::CharPointer_UTF8 (ipaOf (klatt)));
         auto* rows = f.getProperty ("rawWords", juce::var()).getArray();
         if (rows == nullptr || rows->size() != kRows) continue;
         bool ok = true;
@@ -122,29 +122,48 @@ std::optional<Star> readWav (const juce::File& wav)
 
 Words vowelWords (const std::array<double, 4>& formants)
 {
-    const double widths[4] = { 2.35, 1.63, 2.19, 2.0 };
+    const double hzs[5] = { formants[0], formants[1], formants[2], formants[3], 3750.0 };
+    const double widths[5] = { 2.35, 1.63, 2.19, 2.0, 0.9 };
     Words w {};
-    for (size_t i = 0; i < kRows; ++i)
+    for (size_t i = 0; i < 5; ++i)
     {
         trench::core::SectionGeometry g;
-        if (i < 4)
-        {
-            const double hz = std::clamp (formants[i], 60.0, 12000.0);
-            const double poleBw = hz * (std::pow (2.0, widths[i] / 12.0) - 1.0), zeroBw = hz * (std::pow (2.0, 16.0 * widths[i] / 12.0) - 1.0);
-            g.pole = trench::core::ConjugatePair { hz, std::clamp (std::exp (-3.141592653589793 * poleBw / trench::core::kP2kDatumHz), 0.0, 0.9995) };
-            g.zero = trench::core::ConjugatePair { hz, std::clamp (std::exp (-3.141592653589793 * zeroBw / trench::core::kP2kDatumHz), 0.0, 0.9995) };
-        }
-        else
-        {
-            const double bw = 261.6 * (std::pow (2.0, 1.0) - 1.0);
-            const double r = std::exp (-3.141592653589793 * bw / trench::core::kP2kDatumHz);
-            g.pole = trench::core::ConjugatePair { 261.6, r };
-            g.zero = trench::core::ConjugatePair { 261.6, r };
-        }
+        const double hz = std::clamp (hzs[i], 60.0, 12000.0);
+        const double poleBw = hz * (std::pow (2.0, widths[i] / 12.0) - 1.0), zeroBw = hz * (std::pow (2.0, 16.0 * widths[i] / 12.0) - 1.0);
+        g.pole = trench::core::ConjugatePair { hz, std::clamp (std::exp (-3.141592653589793 * poleBw / trench::core::kP2kDatumHz), 0.0, 0.9995) };
+        g.zero = trench::core::ConjugatePair { hz, std::clamp (std::exp (-3.141592653589793 * zeroBw / trench::core::kP2kDatumHz), 0.0, 0.9995) };
         w[i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
     }
+    w[5] = rowWords ({ RowType::notch, kFreqCodes - 1, 0 }, 0);
     unityDc (w);
     return w;
+}
+
+juce::String formantName (const Words& words)
+{
+    const auto f = formantsOf (words);
+    if (f[0] <= 0.0) return "sound";
+    return juce::String ((int) std::lround (f[0])) + "/" + juce::String ((int) std::lround (f[1]));
+}
+
+Star madeVowel (double f1, double f2)
+{
+    Star s;
+    s.kind = "made";
+    s.words = vowelWords ({ f1, f2, kNeutralF3, kNeutralF4 });
+    s.name = juce::String ((int) std::lround (f1)) + "/" + juce::String ((int) std::lround (f2));
+    s.body = s.name;
+    return s;
+}
+
+Star schwa()
+{
+    Star s = madeVowel (kSchwaF1, kSchwaF2);
+    s.kind = "vowel";
+    s.name = juce::String (juce::CharPointer_UTF8 ("ə"));
+    s.body = "neutral";
+    s.corner = "schwa";
+    return s;
 }
 
 juce::File bodyFile (const juce::File& p2kDir, const juce::String& body)

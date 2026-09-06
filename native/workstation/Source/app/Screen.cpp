@@ -36,25 +36,24 @@ void Screen::resized() { layout(); repaint(); }
 void Screen::layout()
 {
     const int w = std::max (600, getWidth()), h = std::max (400, getHeight());
-    const int railW = w < 1000 ? 100 : 124;
-    rails[0] = { 0, 0, railW, h };
-    rails[1] = { w - railW, 0, railW, h };
-    stage = { railW + 48, 44, w - 2 * railW - 96, h - 44 - 40 };
-    presetBox = { w / 2 - 110, 10, 220, 20 };
+    const int pickerW = std::max (300, w * 2 / 5);
+    picker = { 0, 0, pickerW, h };
+    chart = picker.reduced (44, 40).withTrimmedBottom (24);
+    stage = { pickerW + 40, 44, w - pickerW - 80, h - 44 - 40 };
     const int bw = std::min (150, stage.getWidth() / 3);
-    cornerBox[0] = { stage.getX() + 8, stage.getY() + 22, bw, 20 };
-    cornerBox[1] = { stage.getRight() - 8 - bw, stage.getY() + 22, bw, 20 };
-    cornerBox[2] = { stage.getX() + 8, stage.getBottom() - 42, bw, 20 };
-    cornerBox[3] = { stage.getRight() - 8 - bw, stage.getBottom() - 42, bw, 20 };
-    for (int i = 0; i < 3; ++i) keys[(size_t) i] = { stage.getX() + i * 56, h - 26, 50, 18 };
+    cornerBox[0] = { stage.getX() + 8, stage.getY() + 8, bw, 20 };
+    cornerBox[1] = { stage.getRight() - 8 - bw, stage.getY() + 8, bw, 20 };
+    cornerBox[2] = { stage.getX() + 8, stage.getBottom() - 28, bw, 20 };
+    cornerBox[3] = { stage.getRight() - 8 - bw, stage.getBottom() - 28, bw, 20 };
     for (int n = 0; n < 4; ++n)
     {
-        const bool right = n == 1 || n == 3, bottom = n >= 2;
+        const bool right = n == 1 || n == 3;
         const auto box = cornerBox[(size_t) n];
-        cornerTag[(size_t) n] = { right ? box.getRight() - 120 : box.getX(), bottom ? box.getBottom() + 4 : box.getY() - 18, 120, 14 };
+        cornerTag[(size_t) n] = { right ? box.getX() - 44 : box.getRight() + 6, box.getY(), 38, 20 };
     }
+    for (int i = 0; i < 3; ++i) keys[(size_t) i] = { stage.getX() + i * 56, h - 26, 50, 18 };
     const int tw = std::min (400, stage.getWidth() - 2 * bw - 40), th = kLine * (kRows + 1) + 8;
-    table = { stage.getCentreX() - tw / 2, stage.getBottom() - 46 - th, tw, th };
+    table = { stage.getCentreX() - tw / 2, stage.getBottom() - 36 - th, tw, th };
 }
 
 juce::Rectangle<int> Screen::cell (int row, int column) const
@@ -78,40 +77,44 @@ juce::Point<float> Screen::puckPoint() const
     return { (float) (stage.getX() + session.quad.morph / 100.0 * stage.getWidth()), (float) (stage.getBottom() - session.quad.q / 100.0 * stage.getHeight()) };
 }
 
+juce::Point<float> Screen::chartPoint (double f1, double f2) const
+{
+    const double u = std::log (std::clamp (f1, kF1Low, kF1High) / kF1Low) / std::log (kF1High / kF1Low);
+    const double v = std::log (std::clamp (f2, kF2Low, kF2High) / kF2Low) / std::log (kF2High / kF2Low);
+    return { (float) (chart.getX() + u * chart.getWidth()), (float) (chart.getBottom() - v * chart.getHeight()) };
+}
+
+std::pair<double, double> Screen::formantsAt (juce::Point<int> p) const
+{
+    const double u = std::clamp ((p.x - chart.getX()) / (double) chart.getWidth(), 0.0, 1.0);
+    const double v = std::clamp ((chart.getBottom() - p.y) / (double) chart.getHeight(), 0.0, 1.0);
+    return { kF1Low * std::pow (kF1High / kF1Low, u), kF2Low * std::pow (kF2High / kF2Low, v) };
+}
+
 int Screen::cornerAt (juce::Point<int> p) const
 {
     for (int n = 0; n < 4; ++n) if (cornerBox[(size_t) n].expanded (10, 16).contains (p)) return n;
     return -1;
 }
 
-std::vector<int> Screen::railStars (int rail) const
+int Screen::pointAt (juce::Point<int> p) const
 {
-    std::vector<int> out;
-    const int n = (int) session.stars.size();
-    if (rail == 0) for (int k = 0; k < (int) session.factoryCount; ++k) out.push_back (k);
-    else for (int k = (int) session.factoryCount; k < n; ++k) out.push_back (k);
-    return out;
+    int best = -1;
+    double bestD = 10.0;
+    for (int k = 0; k < (int) session.stars.size(); ++k)
+    {
+        const auto f = formantsOf (session.stars[(size_t) k].words);
+        if (f[0] <= 0.0 || f[1] <= 0.0) continue;
+        const double d = chartPoint (f[0], f[1]).getDistanceFrom (p.toFloat());
+        if (d < bestD) { bestD = d; best = k; }
+    }
+    return best;
 }
 
-juce::Rectangle<int> Screen::cardRect (int rail, int index) const
-{
-    const auto r = rails[(size_t) rail];
-    return { r.getX() + 14, r.getY() + 20 + index * kCard - scroll[(size_t) rail], r.getWidth() - 28, 40 };
-}
-
-int Screen::cardAt (juce::Point<int> p, int rail) const
-{
-    if (! rails[(size_t) rail].contains (p)) return -1;
-    const auto list = railStars (rail);
-    for (int i = 0; i < (int) list.size(); ++i) if (cardRect (rail, i).expanded (0, 12).contains (p)) return list[(size_t) i];
-    return -1;
-}
-
-int Screen::menuCount() const { return menu.target == 4 ? (int) session.bodies.size() : (int) session.stars.size(); }
+int Screen::menuCount() const { return (int) session.stars.size(); }
 
 juce::String Screen::menuItem (int i) const
 {
-    if (menu.target == 4) return i >= 0 && i < (int) session.bodies.size() ? session.bodies[(size_t) i] : juce::String();
     return i >= 0 && i < (int) session.stars.size() ? session.stars[(size_t) i].name : juce::String();
 }
 
@@ -129,11 +132,8 @@ void Screen::openMenu (int target, juce::Rectangle<int> anchor)
     int y = anchor.getBottom() + 2;
     if (y + h > getHeight() - 8) y = std::max (8, anchor.getY() - h - 2);
     menu.rect = { anchor.getX(), y, std::max (anchor.getWidth(), 200), h };
-    if (target < 4)
-    {
-        const int pinned = session.quad.pins[(size_t) Session::kCornerPin[target]];
-        if (pinned > 4) menu.scroll = std::min (pinned * 18 - 36, std::max (0, 18 * menuCount() - h));
-    }
+    const int pinned = session.quad.pins[(size_t) Session::kCornerPin[target]];
+    if (pinned > 4) menu.scroll = std::min (pinned * 18 - 36, std::max (0, 18 * menuCount() - h));
     repaint();
 }
 
@@ -192,18 +192,13 @@ void Screen::paintCorners (juce::Graphics& g) const
         g.fillRect ((int) c.x - (right ? 10 : 0), (int) c.y - (bottom ? 1 : 0), 10, 1);
         const auto box = cornerBox[(size_t) n];
         const juce::String name = session.cornerName (n);
-        const juce::String label = juce::String::charToString ((juce::juce_wchar) Session::kCornerLetters[n]) + (name.isNotEmpty() ? "  READY" : "  EMPTY");
-        g.setColour (session.editing == n ? kText : kGreen);
-        g.drawText (session.editing == n ? label + "  ROWS" : label, cornerTag[(size_t) n], right ? juce::Justification::centredRight : juce::Justification::centredLeft);
         g.setColour (kBox); g.fillRect (box);
         g.setColour (kText);
         g.drawText (name.isNotEmpty() ? name : juce::String ("choose"), box.reduced (6, 0).withTrimmedRight (14), juce::Justification::centredLeft);
         g.drawText (juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xbe")), box.withTrimmedLeft (box.getWidth() - 16), juce::Justification::centred);
+        g.setColour (session.editing == n ? kGreen : kDim);
+        g.drawText ("rows", cornerTag[(size_t) n], right ? juce::Justification::centredRight : juce::Justification::centredLeft);
     }
-    g.setColour (kBox); g.fillRect (presetBox);
-    g.setColour (kText);
-    g.drawText ("PRESET", presetBox.reduced (6, 0), juce::Justification::centredLeft);
-    g.drawText (juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xbe")), presetBox.withTrimmedLeft (presetBox.getWidth() - 16), juce::Justification::centred);
     const char* names[] = { "PLAY", "SAW", "NOISE" };
     const bool on[] = { session.playing, session.source == 0, session.source == 1 };
     for (int i = 0; i < 3; ++i)
@@ -218,34 +213,55 @@ void Screen::paintCorners (juce::Graphics& g) const
     }
 }
 
-void Screen::paintRails (juce::Graphics& g) const
+void Screen::paintPicker (juce::Graphics& g) const
 {
-    for (int rail = 0; rail < 2; ++rail)
+    g.setColour (kGrid); g.fillRect (picker.getRight() - 1, 0, 1, getHeight());
+    g.setFont (mono (10.0f));
+    for (double f : { 200.0, 300.0, 500.0, 700.0, 1000.0 })
     {
-        const auto list = railStars (rail);
-        g.setColour (kGrid); g.fillRect (rails[(size_t) rail].getX() + (rail == 0 ? rails[(size_t) rail].getWidth() - 1 : 0), 0, 1, getHeight());
-        for (int i = 0; i < (int) list.size(); ++i)
-        {
-            const auto r = cardRect (rail, i);
-            if (r.getBottom() < -20 || r.getY() > getHeight() + 20) continue;
-            const int k = list[(size_t) i];
-            const auto& s = session.stars[(size_t) k];
-            const bool lit = k == session.selected || k == session.hovered || k == session.auditioning;
-            bool pinned = false;
-            for (int p : session.quad.pins) pinned = pinned || p == k;
-            const auto ink = inkOf (s);
-            g.setColour (kBack); g.fillRect (r);
-            g.setColour (lit ? ink : pinned ? ink.withAlpha (0.8f) : ink.withAlpha (0.35f)); g.drawRect (r, lit ? 2 : 1);
-            paintCurve (g, r.reduced (3, 3), s.words, lit ? ink : ink.withAlpha (0.7f), 1.0f, false);
-            g.setFont (mono (9.5f)); g.setColour (lit ? ink : kText.withAlpha (0.7f));
-            g.drawText (s.name, r.getX() - 8, r.getY() - 14, r.getWidth() + 16, 12, juce::Justification::centred);
-            if (pinned)
-            {
-                juce::String tags;
-                for (int c = 0; c < 4; ++c) if (session.quad.pins[(size_t) Session::kCornerPin[c]] == k) tags += juce::String::charToString ((juce::juce_wchar) Session::kCornerLetters[c]);
-                g.setColour (ink); g.drawText (tags, r.getRight() - 30, r.getY() + 2, 26, 12, juce::Justification::centredRight);
-            }
-        }
+        const int x = (int) std::round (chartPoint (f, kF2Low).x);
+        g.setColour (kGrid); g.fillRect (x, chart.getY(), 1, chart.getHeight());
+        g.setColour (kDim); g.drawText (juce::String ((int) f), x - 20, chart.getBottom() + 4, 40, 12, juce::Justification::centred);
+    }
+    for (double f : { 500.0, 700.0, 1000.0, 1500.0, 2000.0, 3000.0 })
+    {
+        const int y = (int) std::round (chartPoint (kF1Low, f).y);
+        g.setColour (kGrid); g.fillRect (chart.getX(), y, chart.getWidth(), 1);
+        g.setColour (kDim); g.drawText (juce::String ((int) f), chart.getX() - 42, y - 6, 38, 12, juce::Justification::centredRight);
+    }
+    g.setColour (kDim);
+    g.drawText ("F1", chart.getRight() - 20, chart.getBottom() + 4, 20, 12, juce::Justification::centredRight);
+    g.drawText ("F2", chart.getX() - 42, chart.getY() - 16, 38, 12, juce::Justification::centredRight);
+    const auto origin = chartPoint (kSchwaF1, kSchwaF2);
+    g.setColour (kDim.withAlpha (0.8f));
+    g.drawLine (origin.x, (float) chart.getY(), origin.x, (float) chart.getBottom(), 1.0f);
+    g.drawLine ((float) chart.getX(), origin.y, (float) chart.getRight(), origin.y, 1.0f);
+    g.setFont (mono (11.0f));
+    for (int k = 0; k < (int) session.stars.size(); ++k)
+    {
+        const auto& s = session.stars[(size_t) k];
+        const auto f = formantsOf (s.words);
+        if (f[0] <= 0.0 || f[1] <= 0.0) continue;
+        const auto p = chartPoint (f[0], f[1]);
+        const bool lit = k == session.selected || k == session.hovered || k == session.auditioning;
+        bool pinned = false;
+        for (int pin : session.quad.pins) pinned = pinned || pin == k;
+        const auto ink = inkOf (s);
+        g.setColour (lit ? ink : ink.withAlpha (pinned ? 0.9f : 0.55f));
+        if (pinned) g.fillEllipse (p.x - 4.5f, p.y - 4.5f, 9.0f, 9.0f);
+        else g.drawEllipse (p.x - 4.0f, p.y - 4.0f, 8.0f, 8.0f, lit ? 2.0f : 1.0f);
+        g.setColour (lit ? ink : kText.withAlpha (0.8f));
+        g.drawText (s.name, (int) p.x + 8, (int) p.y - 7, 90, 14, juce::Justification::centredLeft);
+    }
+    if (session.madeLive)
+    {
+        const auto f = formantsOf (session.made.words);
+        const auto p = chartPoint (f[0], f[1]);
+        g.setColour (session.inMade() ? kGreen : kDim);
+        g.drawEllipse (p.x - 6.0f, p.y - 6.0f, 12.0f, 12.0f, 1.5f);
+        g.drawLine (p.x - 10.0f, p.y, p.x + 10.0f, p.y, 1.0f);
+        g.drawLine (p.x, p.y - 10.0f, p.x, p.y + 10.0f, 1.0f);
+        g.drawText (session.made.name, (int) p.x + 10, (int) p.y + 6, 90, 14, juce::Justification::centredLeft);
     }
     if (dragging == Drag::card && dragStar >= 0)
     {
@@ -254,11 +270,6 @@ void Screen::paintRails (juce::Graphics& g) const
         g.setColour (kBack.withAlpha (0.9f)); g.fillRect (ghost);
         g.setColour (inkOf (s)); g.drawRect (ghost);
         paintCurve (g, ghost.reduced (3, 3), s.words, inkOf (s), 1.0f, false);
-    }
-    if (dragging == Drag::rail && session.inPair())
-    {
-        g.setFont (mono (10.0f)); g.setColour (kGreen);
-        g.drawText (juce::String (session.pairT * 100.0, 0), dragPoint.x + 12, dragPoint.y - 6, 40, 12, juce::Justification::centredLeft);
     }
 }
 
@@ -276,14 +287,14 @@ void Screen::paintTable (juce::Graphics& g) const
     {
         const auto& w = words[(size_t) r];
         const auto row = rowOf (w);
-        const double hz = rowHz (w), db = rowDb (w);
+        const double hzValue = rowHz (w), db = rowDb (w);
         const bool rest = row.type == RowType::rest;
         const bool lit = dragging == Drag::row && dragRow == r;
         g.setColour (lit ? kGreen : rest ? kDim : kText);
         g.drawText (juce::String (r + 1), cell (r, 0), juce::Justification::centredLeft);
         g.drawText (rest ? "rest" : row.type == RowType::notch ? "notch" : "peak", cell (r, 1), juce::Justification::centredLeft);
-        g.drawText (noteName (hz), cell (r, 2), juce::Justification::centredLeft);
-        g.drawText (rest ? "" : juce::String (hz, hz < 1000.0 ? 1 : 0), cell (r, 3), juce::Justification::centredLeft);
+        g.drawText (noteName (hzValue), cell (r, 2), juce::Justification::centredLeft);
+        g.drawText (rest ? "" : juce::String (hzValue, hzValue < 1000.0 ? 1 : 0), cell (r, 3), juce::Justification::centredLeft);
         g.drawText (rest ? "" : juce::String (db, 1) + " dB", cell (r, 4), juce::Justification::centredLeft);
     }
 }
@@ -300,9 +311,9 @@ void Screen::paintMenu (juce::Graphics& g) const
     for (int i = first; i < last; ++i)
     {
         juce::Rectangle<int> line (menu.rect.getX(), menu.rect.getY() + i * 18 - menu.scroll, menu.rect.getWidth(), 18);
-        const bool current = menu.target < 4 ? session.quad.pins[(size_t) Session::kCornerPin[menu.target]] == i : false;
+        const bool current = session.quad.pins[(size_t) Session::kCornerPin[menu.target]] == i;
         if (current) { g.setColour (kDim); g.fillRect (line); }
-        g.setColour (menu.target == 4 ? kText : inkOf (session.stars[(size_t) i]));
+        g.setColour (inkOf (session.stars[(size_t) i]));
         g.drawText (menuItem (i), line.reduced (8, 0), juce::Justification::centredLeft);
     }
     g.restoreState();
@@ -313,7 +324,7 @@ void Screen::paint (juce::Graphics& g)
     g.fillAll (kBack);
     paintStage (g);
     paintCorners (g);
-    paintRails (g);
+    paintPicker (g);
     paintTable (g);
     paintMenu (g);
 }
@@ -321,10 +332,7 @@ void Screen::paint (juce::Graphics& g)
 void Screen::mouseMove (const juce::MouseEvent& e)
 {
     if (dragging != Drag::none) return;
-    const auto p = e.getPosition();
-    int k = -1;
-    for (int rail = 0; rail < 2 && k < 0; ++rail) k = cardAt (p, rail);
-    session.hover (k);
+    session.hover (chart.contains (e.getPosition()) ? pointAt (e.getPosition()) : -1);
 }
 
 void Screen::mouseExit (const juce::MouseEvent&) { if (dragging == Drag::none) session.unhover(); }
@@ -338,11 +346,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         const int i = menuItemAt (p);
         const int target = menu.target;
         menu.open = false;
-        if (i >= 0)
-        {
-            if (target == 4) session.loadPreset (session.bodies[(size_t) i]);
-            else session.pinCorner (target, i);
-        }
+        if (i >= 0) session.pinCorner (target, i);
         repaint();
         return;
     }
@@ -352,7 +356,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
             if (i == 0) session.setPlaying (! session.playing); else session.setSource (i == 1 ? 0 : 1);
             return;
         }
-    if (presetBox.contains (p)) { openMenu (4, presetBox); return; }
+    for (int n = 0; n < 4; ++n) if (cornerBox[(size_t) n].contains (p)) { openMenu (n, cornerBox[(size_t) n]); return; }
     for (int n = 0; n < 4; ++n) if (cornerTag[(size_t) n].contains (p)) { session.edit (n); return; }
     if (session.editing >= 0 && table.contains (p))
     {
@@ -376,14 +380,19 @@ void Screen::mouseDown (const juce::MouseEvent& e)
                 }
         return;
     }
-    for (int n = 0; n < 4; ++n) if (cornerBox[(size_t) n].contains (p)) { openMenu (n, cornerBox[(size_t) n]); return; }
-    for (int rail = 0; rail < 2; ++rail)
-        if (const int k = cardAt (p, rail); k >= 0)
+    if (chart.expanded (8, 8).contains (p))
+    {
+        if (const int k = pointAt (p); k >= 0)
         {
             session.select (k);
-            dragging = Drag::rail; dragStar = k; dragRail = rail; dragOrigin = p; dragPoint = p;
+            dragging = Drag::card; dragStar = k; dragOrigin = p; dragPoint = p;
             return;
         }
+        dragging = Drag::made;
+        const auto f = formantsAt (p);
+        session.setMade (f.first, f.second);
+        return;
+    }
     if (stage.expanded (12, 12).contains (p) && session.quad.complete())
     {
         dragging = Drag::puck;
@@ -409,27 +418,13 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
         session.setPuck ((p.x - stage.getX()) * 100.0 / stage.getWidth(), (stage.getBottom() - p.y) * 100.0 / stage.getHeight());
         return;
     }
-    if (dragging == Drag::rail || dragging == Drag::card)
+    if (dragging == Drag::made)
     {
-        const auto rail = rails[(size_t) dragRail];
-        if (rail.expanded (30, 0).contains (p) && dragging == Drag::rail)
-        {
-            const auto list = railStars (dragRail);
-            int from = -1;
-            for (int i = 0; i < (int) list.size(); ++i) if (list[(size_t) i] == dragStar) from = i;
-            if (from < 0) return;
-            const int dir = p.y < dragOrigin.y ? -1 : 1;
-            const int to = from + dir;
-            if (to < 0 || to >= (int) list.size()) return;
-            const float span = (float) std::abs (cardRect (dragRail, to).getCentreY() - cardRect (dragRail, from).getCentreY());
-            const float travel = (float) std::abs (p.y - dragOrigin.y);
-            session.morphPair (dragStar, list[(size_t) to], span > 1.0f ? travel / span : 0.0);
-            repaint();
-            return;
-        }
-        dragging = Drag::card;
-        repaint();
+        const auto f = formantsAt (p);
+        session.setMade (f.first, f.second);
+        return;
     }
+    if (dragging == Drag::card) repaint();
 }
 
 void Screen::mouseUp (const juce::MouseEvent& e)
@@ -439,26 +434,17 @@ void Screen::mouseUp (const juce::MouseEvent& e)
     {
         if (const int n = cornerAt (p); n >= 0 && dragStar >= 0) session.pinCorner (n, dragStar);
     }
-    dragging = Drag::none; dragStar = -1; dragRail = -1; dragRow = -1; dragColumn = -1;
+    dragging = Drag::none; dragStar = -1; dragRow = -1; dragColumn = -1;
     repaint();
 }
 
 void Screen::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel)
 {
-    const int lines = wheel.deltaY > 0 ? -kCard : kCard;
     if (menu.open && menu.rect.contains (e.getPosition()))
     {
         menu.scroll = std::clamp (menu.scroll + (wheel.deltaY > 0 ? -54 : 54), 0, std::max (0, 18 * menuCount() - menu.rect.getHeight()));
         repaint();
-        return;
     }
-    for (int rail = 0; rail < 2; ++rail)
-        if (rails[(size_t) rail].contains (e.getPosition()))
-        {
-            const int total = (int) railStars (rail).size() * kCard;
-            scroll[(size_t) rail] = std::clamp (scroll[(size_t) rail] + lines, 0, std::max (0, total - getHeight() + 40));
-            repaint();
-        }
 }
 
 bool Screen::keyPressed (const juce::KeyPress& k)

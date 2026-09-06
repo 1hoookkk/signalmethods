@@ -16,14 +16,12 @@ std::array<std::uint16_t, 30> flat (const Words& w)
 Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool audioOn)
     : root (rootDir), file (quadFile), withAudio (audioOn)
 {
-    stars = loadLibrary (root.getChildFile ("plugin/presets/p2k"));
-    factoryCount = stars.size();
-    for (const auto& s : stars) if (bodies.empty() || bodies.back() != s.body) bodies.push_back (s.body);
-    const auto vowels = loadVowels (root.getChildFile ("native/workstation/banks/Klatt 1980.bank.json"));
-    stars.insert (stars.end(), vowels.begin(), vowels.end());
+    stars = loadVowels (root.getChildFile ("native/workstation/banks/Klatt 1980.bank.json"));
+    stars.push_back (schwa());
     libraryCount = stars.size();
     const bool had = open (quad, stars, libraryCount, file);
-    if (! had && ! quad.complete()) loadPreset ("Talking Hedz");
+    if (! had || ! quad.complete())
+        pinAll ({ starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x91"))), starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x99"))), starNamed ("i"), starNamed ("u") });
     history.clear(); future.clear();
     audition();
 }
@@ -31,6 +29,18 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
 Session::~Session() { audio.stop(); }
 
 void Session::changed() { if (onChange) onChange(); }
+
+int Session::starNamed (const juce::String& name) const
+{
+    for (int i = 0; i < (int) stars.size(); ++i) if (stars[(size_t) i].name == name) return i;
+    return -1;
+}
+
+juce::String Session::uniqueName (const juce::String& name) const
+{
+    if (starNamed (name) < 0) return name;
+    for (int n = 2;; ++n) if (starNamed (name + " " + juce::String (n)) < 0) return name + " " + juce::String (n);
+}
 
 juce::String Session::pinName (int n) const
 {
@@ -40,7 +50,7 @@ juce::String Session::pinName (int n) const
 
 int Session::currentStar() const
 {
-    if (auditioning >= 0) return auditioning;
+    if (auditioning >= 0 || auditioning == kMade) return auditioning;
     return selected;
 }
 
@@ -51,14 +61,20 @@ void Session::audition()
         auditioning = quad.pins[(size_t) kCornerPin[editing]];
         words = editWords();
         sounding = true;
-        status = juce::String::charToString ((juce::juce_wchar) kCornerLetters[editing]) + "  " + cornerName (editing);
+        status = cornerName (editing);
     }
-    else if (auditioning == -2 && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
+    else if (auditioning == kPair && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
     {
         Corners c { stars[(size_t) pairA].words, stars[(size_t) pairB].words, stars[(size_t) pairA].words, stars[(size_t) pairB].words };
         words = lerp (c, pairT, 0.0);
         sounding = true;
         status = stars[(size_t) pairA].name + " > " + stars[(size_t) pairB].name + "  " + juce::String (pairT * 100.0, 0);
+    }
+    else if (auditioning == kMade && madeLive)
+    {
+        words = made.words;
+        sounding = true;
+        status = made.name;
     }
     else if (auditioning >= 0 && auditioning < (int) stars.size())
     {
@@ -128,7 +144,17 @@ void Session::morphPair (int a, int b, double t)
 {
     if (a < 0 || b < 0 || a >= (int) stars.size() || b >= (int) stars.size()) return;
     pairA = a; pairB = b; pairT = std::clamp (t, 0.0, 1.0);
-    auditioning = -2;
+    auditioning = kPair;
+    audition();
+    changed();
+}
+
+void Session::setMade (double f1, double f2)
+{
+    made = madeVowel (std::clamp (f1, 100.0, 1500.0), std::clamp (f2, 300.0, 4000.0));
+    madeLive = true;
+    auditioning = kMade;
+    editing = -1;
     audition();
     changed();
 }
@@ -145,7 +171,7 @@ void Session::pin (int n, int star)
 void Session::pinCorner (int corner, int star)
 {
     if (corner < 0 || corner > 3) return;
-    if (inPair()) { keep(); star = selected; }
+    if (inPair() || inMade() || star == kMade) { keep(); star = selected; }
     pin (kCornerPin[corner], star);
 }
 
@@ -158,20 +184,12 @@ void Session::pinAll (const std::array<int, 4>& pins)
     apply();
 }
 
-void Session::loadPreset (const juce::String& body)
-{
-    std::array<int, 4> pins { -1, -1, -1, -1 };
-    for (int n = 0; n < 4; ++n)
-        for (int k = 0; k < (int) factoryCount; ++k)
-            if (stars[(size_t) k].body == body && stars[(size_t) k].corner == kPinNames[n]) pins[(size_t) n] = k;
-    pinAll (pins);
-}
-
 int Session::addRead (const juce::File& wav)
 {
     auto star = readWav (wav);
     if (! star) { status = "cannot read " + wav.getFileName(); changed(); return -1; }
     history.push_back (snapshot()); future.clear();
+    star->name = uniqueName (star->name);
     stars.push_back (*star);
     selected = (int) stars.size() - 1;
     auditioning = selected;
@@ -203,15 +221,14 @@ void Session::setRow (int corner, int row, Row r)
     {
         Star s = stars[(size_t) star];
         s.kind = "capture"; s.parentA = s.name; s.parentB = ""; s.corner = ""; s.morph = 0.0; s.q = 0.0;
-        quad.captures += 1;
-        s.name = "C" + juce::String (quad.captures);
-        s.body = s.name;
         stars.push_back (s);
         star = (int) stars.size() - 1;
         quad.pins[(size_t) pin] = star;
     }
-    auto& words = stars[(size_t) star].words;
-    words[(size_t) row] = rowWords (r, words[(size_t) row][4]);
+    auto& s = stars[(size_t) star];
+    s.words[(size_t) row] = rowWords (r, s.words[(size_t) row][4]);
+    const auto name = formantName (s.words);
+    if (s.name != name) { s.name = uniqueName (name); s.body = s.name; }
     editing = corner;
     selected = star;
     auditioning = star;
@@ -238,17 +255,18 @@ void Session::nudge (double dm, double dq) { setPuck (quad.morph + dm, quad.q + 
 
 void Session::keep()
 {
-    const bool pair = inPair();
-    if (! pair && ! quad.complete()) return;
+    const bool pair = inPair(), fromMade = inMade();
+    if (! pair && ! fromMade && ! quad.complete()) return;
     history.push_back (snapshot()); future.clear();
     Star s;
     s.kind = "capture";
-    s.words = pair ? words : wordsAt (quad, stars);
-    s.parentA = pair ? stars[(size_t) pairA].name : pinName (0);
-    s.parentB = pair ? stars[(size_t) pairB].name : pinName (1);
-    s.morph = pair ? pairT * 100.0 : quad.morph; s.q = pair ? 0.0 : quad.q;
+    s.words = pair ? words : fromMade ? made.words : wordsAt (quad, stars);
+    s.parentA = pair ? stars[(size_t) pairA].name : fromMade ? juce::String ("made") : pinName (0);
+    s.parentB = pair ? stars[(size_t) pairB].name : fromMade ? juce::String() : pinName (1);
+    s.morph = pair ? pairT * 100.0 : fromMade ? 0.0 : quad.morph;
+    s.q = pair || fromMade ? 0.0 : quad.q;
     quad.captures += 1;
-    s.name = "C" + juce::String (quad.captures);
+    s.name = uniqueName (fromMade ? made.name : formantName (s.words));
     s.body = s.name;
     stars.push_back (s);
     selected = (int) stars.size() - 1;
@@ -342,9 +360,9 @@ bool Session::key (const juce::KeyPress& k)
     if (c == 'n' || c == 'N') { setSource (1); return true; }
     if (c == 's' || c == 'S') { setSource (0); return true; }
     for (int corner = 0; corner < 4; ++corner)
-        if (c == kCornerLetters[corner] || c == (juce::juce_wchar) (kCornerLetters[corner] + 32) || c == (juce::juce_wchar) ('1' + corner))
+        if (c == (juce::juce_wchar) ('1' + corner))
         {
-            if (inPair() || target >= 0) pinCorner (corner, target);
+            if (inPair() || target == kMade || target >= 0) pinCorner (corner, target);
             return true;
         }
     return false;

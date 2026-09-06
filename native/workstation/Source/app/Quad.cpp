@@ -217,7 +217,7 @@ std::array<double, 4> formantsOf (const Words& words)
         if (const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole))
         {
             const double width = 12.0 * std::log2 (1.0 + (-std::log (std::max (pole->radius, 1e-9)) * trench::core::kP2kDatumHz / 3.141592653589793) / std::max (pole->hz, 1.0));
-            if (pole->hz >= 60.0 && pole->hz <= 6000.0 && width < 12.0) peaks.push_back (pole->hz);
+            if (pole->hz >= 60.0 && pole->hz <= 6000.0 && width < 6.0) peaks.push_back (pole->hz);
         }
     }
     std::sort (peaks.begin(), peaks.end());
