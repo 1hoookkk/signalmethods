@@ -22,7 +22,7 @@ struct Origin
     bool operator== (const Origin& o) const { return kind == o.kind && body == o.body && corner == o.corner && parentA == o.parentA && parentB == o.parentB && morph == o.morph; }
 };
 
-struct Column
+struct Anchor
 {
     juce::String name;
     Origin origin;
@@ -31,17 +31,17 @@ struct Column
 
 struct Strip
 {
-    std::vector<Column> columns;
+    std::vector<Anchor> anchors;
     int square = 1;
     double morph = 0.0, q = 0.0;
     int selected = 0;
     int captures = 0;
-    int count() const { return (int) columns.size(); }
+    int count() const { return (int) anchors.size(); }
     int squares() const { return std::max (1, count() - 1); }
 };
 
 bool admit (const Words& words);
-Strip insert (Strip s, int k, const Column& c);
+Strip insert (Strip s, int k, const Anchor& c);
 Strip keep (Strip s);
 Strip move (Strip s, int k, int direction);
 Strip remove (Strip s, int k);
@@ -57,4 +57,5 @@ bool save (const Strip& s, const juce::File& file);
 Strip open (const juce::File& file);
 std::vector<double> curveHz();
 std::vector<double> responseDb (const Words& words, const std::vector<double>& hz);
+std::array<double, 4> formantsOf (const Words& words);
 }

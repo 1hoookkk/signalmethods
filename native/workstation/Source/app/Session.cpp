@@ -27,13 +27,13 @@ void Session::changed() { if (onChange) onChange(); }
 
 void Session::audition()
 {
-    if (strip.count() == 0) { sounding = false; status = "place a column"; return; }
+    if (strip.count() == 0) { sounding = false; status = "place an anchor"; return; }
     words = wordsAt (strip);
     sounding = true;
     if (withAudio) audio.publish (flat (words));
     const int n = strip.count(), k = std::clamp (strip.square, 1, strip.squares());
-    const auto& a = strip.columns[(size_t) k - 1].name;
-    const auto& b = strip.columns[(size_t) std::min (k + 1, n) - 1].name;
+    const auto& a = strip.anchors[(size_t) k - 1].name;
+    const auto& b = strip.anchors[(size_t) std::min (k + 1, n) - 1].name;
     status = a + " -> " + b + "   MORPH " + juce::String (strip.morph, 1) + "   Q " + juce::String (strip.q, 1);
 }
 
@@ -50,7 +50,7 @@ void Session::hear (int k)
 {
     if (k < 0 || k >= (int) library.size()) return;
     librarySelected = k;
-    words = library[(size_t) k].words;
+    words = library[(size_t) k].q0;
     sounding = true;
     if (withAudio) audio.publish (flat (words));
     status = library[(size_t) k].name + "   library";
@@ -61,7 +61,7 @@ void Session::place()
 {
     auto s = strip;
     const int k = s.selected > 0 ? s.selected + 1 : s.count() + 1;
-    s = insert (s, k, factoryColumn (library, librarySelected));
+    s = insert (s, k, factoryAnchor (library, librarySelected));
     if (s.count() == strip.count()) return;
     s = jumpTo (s, k);
     s.q = 0.0;
@@ -70,9 +70,9 @@ void Session::place()
 
 void Session::keep()
 {
-    if (strip.count() < 2) { status = "two columns before a capture"; changed(); return; }
+    if (strip.count() < 2) { status = "two anchors before a capture"; changed(); return; }
     apply (hs::keep (strip), true);
-    const auto& c = strip.columns[(size_t) strip.selected - 1];
+    const auto& c = strip.anchors[(size_t) strip.selected - 1];
     status = c.name + " = " + c.origin.parentA + " -> " + c.origin.parentB + " at MORPH " + juce::String (c.origin.morph, 1);
     changed();
 }
@@ -99,7 +99,7 @@ void Session::setPosition (int square, double morph, double q)
     apply (s, false);
 }
 
-void Session::moveColumn (int direction)
+void Session::moveAnchor (int direction)
 {
     if (strip.selected < 1) return;
     auto s = move (strip, strip.selected, direction);
@@ -108,7 +108,7 @@ void Session::moveColumn (int direction)
     apply (s, true);
 }
 
-void Session::removeColumn()
+void Session::removeAnchor()
 {
     if (strip.selected < 1) return;
     apply (remove (strip, strip.selected), true);
@@ -138,7 +138,7 @@ void Session::redo()
 
 juce::File Session::write (juce::File path)
 {
-    if (strip.count() == 0) { status = "place a column first"; changed(); return {}; }
+    if (strip.count() == 0) { status = "place an anchor first"; changed(); return {}; }
     if (path == juce::File())
     {
         const auto folder = root.getChildFile ("plugin/presets/user");
@@ -183,14 +183,14 @@ bool Session::key (const juce::KeyPress& k)
     if (code == juce::KeyPress::downKey) { walk (0.0, -nudge); return true; }
     if (code == juce::KeyPress::spaceKey) { setPlaying (! playing); return true; }
     if (code == juce::KeyPress::returnKey) { place(); return true; }
-    if (code == juce::KeyPress::deleteKey) { removeColumn(); return true; }
+    if (code == juce::KeyPress::deleteKey) { removeAnchor(); return true; }
     if (code == juce::KeyPress::homeKey) { jump (1); return true; }
     if (code == juce::KeyPress::endKey) { jump (strip.count()); return true; }
     if (control && (c == 's' || c == 'S' || code == 'S')) { keep(); return true; }
     if (control && (c == 'z' || c == 'Z' || code == 'Z')) { undo(); return true; }
     if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }
-    if (c == '[') { moveColumn (-1); return true; }
-    if (c == ']') { moveColumn (1); return true; }
+    if (c == '[') { moveAnchor (-1); return true; }
+    if (c == ']') { moveAnchor (1); return true; }
     if (c == 'w' || c == 'W') { write(); return true; }
     if (c >= '1' && c <= '9') { jump ((int) (c - '0')); return true; }
     return false;

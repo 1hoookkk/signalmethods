@@ -19,7 +19,6 @@ juce::String titleOf (const juce::String& stem)
 
 std::vector<Entry> loadLibrary (const juce::File& p2kDir)
 {
-    static const char* tags[] = { "M0 Q0", "M1 Q0", "M0 Q1", "M1 Q1" };
     std::vector<Entry> out;
     auto files = p2kDir.findChildFiles (juce::File::findFiles, false, "*.body240");
     files.sort();
@@ -28,39 +27,28 @@ std::vector<Entry> loadLibrary (const juce::File& p2kDir)
         juce::MemoryBlock mb;
         if (! file.loadFileAsData (mb) || mb.getSize() != trench::core::kLegacyBodyBytes) continue;
         const auto body = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> ((const std::uint8_t*) mb.getData(), mb.getSize()));
-        for (int c = 0; c < 4; ++c)
+        for (int side = 0; side < 2; ++side)
         {
             Entry e;
             e.body = titleOf (file.getFileNameWithoutExtension());
-            e.corner = tags[c];
-            e.name = e.body + " " + juce::String (juce::CharPointer_UTF8 ("\xc2\xb7")) + " " + e.corner;
-            for (size_t s = 0; s < kRows; ++s) e.words[s] = body.words[(size_t) c][s];
+            e.side = side == 0 ? "M0" : "M1";
+            e.name = e.body + " " + e.side;
+            for (size_t s = 0; s < kRows; ++s) { e.q0[s] = body.words[(size_t) side][s]; e.q1[s] = body.words[(size_t) side + 2][s]; }
             out.push_back (e);
         }
     }
     return out;
 }
 
-int partnerOf (const std::vector<Entry>& library, int k, const juce::String& q)
+Anchor factoryAnchor (const std::vector<Entry>& library, int k)
 {
-    if (k < 0 || k >= (int) library.size()) return -1;
+    Anchor a;
+    if (k < 0 || k >= (int) library.size()) return a;
     const auto& e = library[(size_t) k];
-    const auto corner = e.corner.substring (0, 2) + " " + q;
-    for (int i = 0; i < (int) library.size(); ++i)
-        if (library[(size_t) i].body == e.body && library[(size_t) i].corner == corner) return i;
-    return -1;
-}
-
-Column factoryColumn (const std::vector<Entry>& library, int k)
-{
-    Column c;
-    const int q0 = partnerOf (library, k, "Q0"), q1 = partnerOf (library, k, "Q1");
-    if (q0 < 0 || q1 < 0) return c;
-    const auto& e = library[(size_t) k];
-    c.origin.kind = "factory"; c.origin.body = e.body; c.origin.corner = e.corner.substring (0, 2);
-    c.name = e.body + " " + c.origin.corner;
-    c.q0 = library[(size_t) q0].words; c.q1 = library[(size_t) q1].words;
-    return c;
+    a.origin.kind = "factory"; a.origin.body = e.body; a.origin.corner = e.side;
+    a.name = e.name;
+    a.q0 = e.q0; a.q1 = e.q1;
+    return a;
 }
 
 juce::File bodyFile (const juce::File& p2kDir, const juce::String& body)

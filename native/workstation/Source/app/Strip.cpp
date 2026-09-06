@@ -48,11 +48,11 @@ bool admit (const Words& words)
     return true;
 }
 
-Strip insert (Strip s, int k, const Column& c)
+Strip insert (Strip s, int k, const Anchor& c)
 {
     if (! admit (c.q0) || ! admit (c.q1)) return s;
     k = clampInt (k, 1, s.count() + 1);
-    s.columns.insert (s.columns.begin() + (k - 1), c);
+    s.anchors.insert (s.anchors.begin() + (k - 1), c);
     s.selected = k;
     return s;
 }
@@ -63,7 +63,7 @@ Corners cornersOf (const Strip& s, int k)
     if (k <= 0) k = s.square;
     const int a = clampInt (k, 1, std::max (1, n)), b = std::min (a + 1, std::max (1, n));
     if (n == 0) return {};
-    return { s.columns[(size_t) a - 1].q0, s.columns[(size_t) b - 1].q0, s.columns[(size_t) a - 1].q1, s.columns[(size_t) b - 1].q1 };
+    return { s.anchors[(size_t) a - 1].q0, s.anchors[(size_t) b - 1].q0, s.anchors[(size_t) a - 1].q1, s.anchors[(size_t) b - 1].q1 };
 }
 
 trench::core::PackedBody bodyOf (const Corners& c)
@@ -97,12 +97,12 @@ Strip keep (Strip s)
     if (n < 2) return s;
     const int k = clampInt (s.square, 1, n - 1);
     const auto c = cornersOf (s, k);
-    Column col;
+    Anchor col;
     col.q0 = lerp (c, s.morph / 100.0, 0.0);
     col.q1 = lerp (c, s.morph / 100.0, 1.0);
     col.origin.kind = "capture";
-    col.origin.parentA = s.columns[(size_t) k - 1].name;
-    col.origin.parentB = s.columns[(size_t) k].name;
+    col.origin.parentA = s.anchors[(size_t) k - 1].name;
+    col.origin.parentB = s.anchors[(size_t) k].name;
     col.origin.morph = s.morph;
     s.captures += 1;
     col.name = "C" + juce::String (s.captures);
@@ -116,7 +116,7 @@ Strip move (Strip s, int k, int direction)
 {
     const int n = s.count(), j = k + (direction > 0 ? 1 : -1);
     if (k < 1 || k > n || j < 1 || j > n) return s;
-    std::swap (s.columns[(size_t) k - 1], s.columns[(size_t) j - 1]);
+    std::swap (s.anchors[(size_t) k - 1], s.anchors[(size_t) j - 1]);
     s.selected = j;
     return s;
 }
@@ -125,7 +125,7 @@ Strip remove (Strip s, int k)
 {
     const int n = s.count();
     if (k < 1 || k > n) return s;
-    s.columns.erase (s.columns.begin() + (k - 1));
+    s.anchors.erase (s.anchors.begin() + (k - 1));
     s.selected = std::min (k, s.count());
     s.square = clampInt (s.square, 1, s.squares());
     if (s.count() == 0) { s.square = 1; s.morph = 0.0; }
@@ -170,15 +170,15 @@ bool save (const Strip& s, const juce::File& file)
     d->setProperty ("schema", "trench-strip-v1");
     d->setProperty ("square", s.square); d->setProperty ("morph", s.morph); d->setProperty ("q", s.q);
     d->setProperty ("selected", s.selected); d->setProperty ("captures", s.captures);
-    juce::Array<juce::var> columns;
-    for (const auto& c : s.columns)
+    juce::Array<juce::var> anchors;
+    for (const auto& c : s.anchors)
     {
         auto* e = new juce::DynamicObject();
         e->setProperty ("name", c.name); e->setProperty ("origin", originVar (c.origin));
         e->setProperty ("q0", wordsVar (c.q0)); e->setProperty ("q1", wordsVar (c.q1));
-        columns.add (juce::var (e));
+        anchors.add (juce::var (e));
     }
-    d->setProperty ("columns", columns);
+    d->setProperty ("anchors", anchors);
     file.getParentDirectory().createDirectory();
     return file.replaceWithText (juce::JSON::toString (juce::var (d)));
 }
@@ -189,10 +189,12 @@ Strip open (const juce::File& file)
     if (! file.existsAsFile()) return s;
     const auto v = juce::JSON::parse (file);
     if (v.getProperty ("schema", "").toString() != "trench-strip-v1") return s;
-    if (auto* columns = v.getProperty ("columns", juce::var()).getArray())
-        for (const auto& e : *columns)
+    auto list = v.getProperty ("anchors", juce::var());
+    if (! list.isArray()) list = v.getProperty ("columns", juce::var());
+    if (auto* anchors = list.getArray())
+        for (const auto& e : *anchors)
         {
-            Column c;
+            Anchor c;
             c.name = e.getProperty ("name", "").toString();
             c.origin = originFrom (e.getProperty ("origin", juce::var()));
             c.q0 = wordsFrom (e.getProperty ("q0", juce::var())); c.q1 = wordsFrom (e.getProperty ("q1", juce::var()));
@@ -213,6 +215,24 @@ std::vector<double> responseDb (const Words& words, const std::vector<double>& h
     for (size_t s = 0; s < kRows; ++s) cascade[s] = trench::core::section_words_to_biquad (words[s]);
     std::vector<double> out (hz.size());
     for (size_t i = 0; i < hz.size(); ++i) out[i] = trench::core::cascade_response_db (cascade, hz[i], trench::core::kP2kDatumHz);
+    return out;
+}
+
+std::array<double, 4> formantsOf (const Words& words)
+{
+    std::vector<double> peaks;
+    for (const auto& row : words)
+    {
+        const auto g = trench::core::geometry_from_words (row, trench::core::kP2kDatumHz);
+        if (const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole))
+        {
+            const double width = 12.0 * std::log2 (1.0 + (-std::log (std::max (pole->radius, 1e-9)) * trench::core::kP2kDatumHz / 3.141592653589793) / std::max (pole->hz, 1.0));
+            if (pole->hz >= 60.0 && pole->hz <= 6000.0 && width < 12.0) peaks.push_back (pole->hz);
+        }
+    }
+    std::sort (peaks.begin(), peaks.end());
+    std::array<double, 4> out { 0.0, 0.0, 0.0, 0.0 };
+    for (size_t i = 0; i < std::min<size_t> (4, peaks.size()); ++i) out[i] = peaks[i];
     return out;
 }
 }

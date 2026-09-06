@@ -34,8 +34,8 @@ public:
     void keep();
     void walk (double dm, double dq);
     void jump (int k);
-    void moveColumn (int direction);
-    void removeColumn();
+    void moveAnchor (int direction);
+    void removeAnchor();
     void undo();
     void redo();
     void setPosition (int square, double morph, double q);

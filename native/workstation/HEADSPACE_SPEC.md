@@ -5,7 +5,10 @@ whose corners lerp 0 to 100 MORPH, every morph equal. The surface-and-pad screen
 MATLAB shell are gone. HEADSPACE is a JUCE app in the plugin's CMake tree, linked to
 `native/core`, everything painted by hand, built alone by the `headspace` preset.
 
-Words used here, and nothing else: a state, a column, a square, a morph.
+Words used here, and nothing else: a state, an anchor, a square, a morph. An anchor is one
+sound with its Q range built in, Q0 and Q1, as the factory made them; the library is 66 of
+them, two per body. Picking one fills one. The screen is the vowel chart, F1 down and F2
+across, with the anchors as dots and the strip as a path through it.
 
 ## From the filter up
 
@@ -23,8 +26,8 @@ Words used here, and nothing else: a state, a column, a square, a morph.
    morph sounds like, and it is heard and kept or not.
 4. A body is four states and the bilinear word lerp between them, MORPH one way, Q the other.
    The app calls `PackedBody::interpolate_words`, the plugin's own law, and nothing else.
-5. The strip is bodies sharing edges. Two rows of states, Q0 and Q1. A column is a state and
-   its Q partner. Two neighbouring columns make a square, and a square is a body. The morph
+5. The strip is bodies sharing edges. An anchor holds Q0 and Q1. Two neighbouring anchors
+   make a square, and a square is a body. The morph
    is the MORPH 0 to 100 between two neighbouring columns. The position is a square, a MORPH
    inside it and a Q. What plays is that square's lerp there. Nothing else exists.
 

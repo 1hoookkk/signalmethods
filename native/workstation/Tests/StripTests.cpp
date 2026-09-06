@@ -14,16 +14,16 @@ void check (bool ok, const char* what)
 
 juce::File tempStrip() { return juce::File::createTempFile ("strip").getSiblingFile (juce::Uuid().toString() + "_HEADSPACE.strip.json"); }
 
-int entry (const hs::Session& s, const char* body, const char* corner)
+int entry (const hs::Session& s, const char* body, const char* side)
 {
     for (int i = 0; i < (int) s.library.size(); ++i)
-        if (s.library[(size_t) i].body == body && s.library[(size_t) i].corner == corner) return i;
+        if (s.library[(size_t) i].body == body && s.library[(size_t) i].side == side) return i;
     return -1;
 }
 
-void placeCorner (hs::Session& s, const char* body, const char* corner)
+void placeCorner (hs::Session& s, const char* body, const char* side)
 {
-    s.hear (entry (s, body, corner));
+    s.hear (entry (s, body, side));
     s.place();
 }
 
@@ -50,49 +50,49 @@ int main()
 
     {
         hs::Session s (root, tempStrip(), false);
-        check (s.library.size() == 132, "library holds 132 factory corners");
+        check (s.library.size() == 66, "library holds 66 factory anchors, two per body");
         bool admitted = true, files = true;
-        for (const auto& e : s.library) { admitted = admitted && hs::admit (e.words); files = files && hs::bodyFile (p2k, e.body).existsAsFile(); }
+        for (const auto& e : s.library) { admitted = admitted && hs::admit (e.q0) && hs::admit (e.q1); files = files && hs::bodyFile (p2k, e.body).existsAsFile(); }
         check (admitted, "every factory corner has six active sections");
         check (files, "every body name maps to its preset file");
-        check (s.library[0].name.endsWith ("M0 Q0") && s.library[3].name.endsWith ("M1 Q1"), "corners are named M0 Q0 .. M1 Q1");
+        check (s.library[0].name.endsWith ("M0") && s.library[1].name.endsWith ("M1"), "anchors are named by body and side");
         s.hear (5);
-        check (same (s.words, s.library[5].words) && s.librarySelected == 5, "hear plays the library entry exactly");
+        check (same (s.words, s.library[5].q0) && s.librarySelected == 5, "hear plays the anchor exactly");
     }
 
     {
         hs::Session s (root, tempStrip(), false);
-        placeCorner (s, "Talking Hedz", "M0 Q0"); placeCorner (s, "Deep Bouche", "M1 Q0");
-        const auto& c = s.strip.columns;
-        check (s.strip.count() == 2 && c[0].name == "Talking Hedz M0" && c[1].name == "Deep Bouche M1", "place puts two factory columns in the row");
-        check (same (c[0].q0, s.library[(size_t) entry (s, "Talking Hedz", "M0 Q0")].words) && same (c[0].q1, s.library[(size_t) entry (s, "Talking Hedz", "M0 Q1")].words), "a factory corner brings its Q partner");
-        check (s.strip.square == 1 && s.strip.morph == 100.0 && s.strip.selected == 2, "the mark stands on the placed column");
-        check (same (s.words, c[1].q0), "at MORPH 100 the words are the right column exactly");
+        placeCorner (s, "Talking Hedz", "M0"); placeCorner (s, "Deep Bouche", "M1");
+        const auto& c = s.strip.anchors;
+        check (s.strip.count() == 2 && c[0].name == "Talking Hedz M0" && c[1].name == "Deep Bouche M1", "place puts two factory anchors in the row");
+        check (same (c[0].q0, s.library[(size_t) entry (s, "Talking Hedz", "M0")].q0) && same (c[0].q1, s.library[(size_t) entry (s, "Talking Hedz", "M0")].q1), "an anchor holds its own Q0 and Q1 states");
+        check (s.strip.square == 1 && s.strip.morph == 100.0 && s.strip.selected == 2, "the mark stands on the placed anchor");
+        check (same (s.words, c[1].q0), "at MORPH 100 the words are the right anchor exactly");
         s.key (key (juce::KeyPress::rightKey));
         s.key (key (juce::KeyPress::rightKey, true));
-        check (std::abs (s.strip.morph - 100.0) < 1e-9, "walking past the last column clamps at 100");
+        check (std::abs (s.strip.morph - 100.0) < 1e-9, "walking past the last anchor clamps at 100");
         s.jump (1);
         s.key (key (juce::KeyPress::rightKey)); s.key (key (juce::KeyPress::rightKey, true));
         check (std::abs (s.strip.morph - 1.2) < 1e-9 && same (s.words, hs::lerp (hs::cornersOf (s.strip, 1), 0.012, 0.0)), "arrow and ctrl arrow move MORPH by 1 and 0.2 through the chip's lerp");
         s.key (key (juce::KeyPress::upKey));
         check (s.strip.q == 1.0, "up moves Q by 1");
-        placeCorner (s, "Zoom Peaks", "M0 Q0");
+        placeCorner (s, "Zoom Peaks", "M0");
         s.jump (1); s.walk (150.0, 0.0);
         check (s.strip.square == 2 && std::abs (s.strip.morph - 50.0) < 1e-9 && same (s.words, hs::lerp (hs::cornersOf (s.strip, 2), 0.5, 0.0)), "walking past 100 enters the next square");
         s.walk (500.0, 0.0);
-        check (s.strip.square == 2 && s.strip.morph == 100.0 && same (s.words, s.strip.columns[2].q0), "the last square clamps at its right column");
+        check (s.strip.square == 2 && s.strip.morph == 100.0 && same (s.words, s.strip.anchors[2].q0), "the last square clamps at its right anchor");
         s.walk (-500.0, -500.0);
-        check (s.strip.square == 1 && s.strip.morph == 0.0 && s.strip.q == 0.0 && same (s.words, s.strip.columns[0].q0), "walking back lands on the first column");
+        check (s.strip.square == 1 && s.strip.morph == 0.0 && s.strip.q == 0.0 && same (s.words, s.strip.anchors[0].q0), "walking back lands on the first anchor");
     }
 
     {
         hs::Session s (root, tempStrip(), false);
-        placeCorner (s, "Talking Hedz", "M0 Q0"); placeCorner (s, "Deep Bouche", "M1 Q0");
+        placeCorner (s, "Talking Hedz", "M0"); placeCorner (s, "Deep Bouche", "M1");
         s.jump (1); s.walk (23.0, 0.0);
         const auto heard = s.words;
         const auto corners = hs::cornersOf (s.strip, 1);
         s.key (key ('S', true, 's'));
-        const auto& c = s.strip.columns;
+        const auto& c = s.strip.anchors;
         check (s.strip.count() == 3 && c[1].name == "C1" && c[0].name == "Talking Hedz M0" && c[2].name == "Deep Bouche M1", "keep inserts the capture between its parents");
         check (same (c[1].q0, heard) && same (c[1].q0, hs::lerp (corners, 0.23, 0.0)) && same (c[1].q1, hs::lerp (corners, 0.23, 1.0)), "the capture holds both rows at that MORPH");
         check (s.strip.square == 2 && s.strip.morph == 0.0 && same (s.words, heard), "after keeping, the mark stands on the capture and the sound is unchanged");
@@ -105,8 +105,8 @@ int main()
         const auto reopened = hs::open (s.stripFile);
         bool equal = reopened.count() == 3 && reopened.square == saved.square && reopened.morph == saved.morph && reopened.q == saved.q && reopened.selected == saved.selected && reopened.captures == saved.captures;
         for (int k = 0; k < 3 && equal; ++k)
-            equal = reopened.columns[(size_t) k].name == saved.columns[(size_t) k].name && reopened.columns[(size_t) k].origin == saved.columns[(size_t) k].origin
-                 && same (reopened.columns[(size_t) k].q0, saved.columns[(size_t) k].q0) && same (reopened.columns[(size_t) k].q1, saved.columns[(size_t) k].q1);
+            equal = reopened.anchors[(size_t) k].name == saved.anchors[(size_t) k].name && reopened.anchors[(size_t) k].origin == saved.anchors[(size_t) k].origin
+                 && same (reopened.anchors[(size_t) k].q0, saved.anchors[(size_t) k].q0) && same (reopened.anchors[(size_t) k].q1, saved.anchors[(size_t) k].q1);
         check (equal, "save then reopen restores order, names, origins and words");
         hs::Session again (root, s.stripFile, false);
         check (same (again.words, s.words) && again.strip.count() == 3, "a new session on the same file plays the same words");
@@ -114,7 +114,7 @@ int main()
 
     {
         hs::Session s (root, tempStrip(), false);
-        placeCorner (s, "Talking Hedz", "M0 Q0"); placeCorner (s, "Deep Bouche", "M1 Q0"); placeCorner (s, "Zoom Peaks", "M1 Q0");
+        placeCorner (s, "Talking Hedz", "M0"); placeCorner (s, "Deep Bouche", "M1"); placeCorner (s, "Zoom Peaks", "M1");
         bool ok = true;
         for (int k = 1; k <= 2 && ok; ++k)
         {
@@ -143,25 +143,25 @@ int main()
         for (const auto& body : bodies)
         {
             s.strip = hs::Strip();
-            placeCorner (s, body.toRawUTF8(), "M0 Q0"); placeCorner (s, body.toRawUTF8(), "M1 Q0");
+            placeCorner (s, body.toRawUTF8(), "M0"); placeCorner (s, body.toRawUTF8(), "M1");
             const auto path = juce::File::createTempFile ("factory.body240");
             s.write (path);
             if (bytesOf (path) != bytesOf (hs::bodyFile (p2k, body))) { ok = false; std::printf ("      %s differs\n", body.toRawUTF8()); }
         }
-        check (ok, "every factory body placed as two columns writes its original bytes");
+        check (ok, "every factory body placed as two anchors writes its original bytes");
     }
 
     {
         hs::Session s (root, tempStrip(), false);
-        auto w = s.library[0].words;
+        auto w = s.library[0].q0;
         check (hs::admit (w), "a factory state is admitted");
         w[3] = trench::core::kIdentitySection;
         check (! hs::admit (w), "an identity section is refused");
-        hs::Column c; c.name = "x"; c.q0 = w; c.q1 = s.library[0].words;
+        hs::Anchor c; c.name = "x"; c.q0 = w; c.q1 = s.library[0].q0;
         check (hs::insert (hs::Strip(), 1, c).count() == 0, "insert refuses a state with an identity section");
         bool real = false;
         for (const auto& e : s.library)
-            for (const auto& row : e.words)
+            for (const auto& row : e.q0)
             {
                 const auto g = trench::core::geometry_from_words (row, trench::core::kP2kDatumHz);
                 real = real || std::holds_alternative<trench::core::RealPair> (g.pole);
@@ -172,41 +172,41 @@ int main()
     {
         hs::Session s (root, tempStrip(), false);
         const char* picks[] = { "Talking Hedz", "Deep Bouche", "Zoom Peaks", "Ooh To Eee", "Boland Bass" };
-        for (auto* p : picks) placeCorner (s, p, "M0 Q0");
-        check (s.strip.count() == 5 && s.strip.squares() == 4, "five columns make four squares");
+        for (auto* p : picks) placeCorner (s, p, "M0");
+        check (s.strip.count() == 5 && s.strip.squares() == 4, "five anchors make four squares");
         s.jump (1);
         bool ok = s.strip.square == 1 && s.strip.morph == 0.0;
-        for (int k = 1; k <= 4 && ok; ++k) { s.walk (100.0, 0.0); ok = s.strip.square == k && s.strip.morph == 100.0 && same (s.words, s.strip.columns[(size_t) k].q0); }
-        check (ok, "each morph of 100 lands on the next column exactly");
+        for (int k = 1; k <= 4 && ok; ++k) { s.walk (100.0, 0.0); ok = s.strip.square == k && s.strip.morph == 100.0 && same (s.words, s.strip.anchors[(size_t) k].q0); }
+        check (ok, "each morph of 100 lands on the next anchor exactly");
         s.walk (1.0, 0.0);
-        check (s.strip.square == 4 && s.strip.morph == 100.0, "MORPH 100 of the last square is the last column");
+        check (s.strip.square == 4 && s.strip.morph == 100.0, "MORPH 100 of the last square is the last anchor");
         s.key (key (juce::KeyPress::homeKey)); const bool home = s.strip.square == 1 && s.strip.morph == 0.0 && s.strip.selected == 1;
         s.key (key (juce::KeyPress::endKey)); const bool end = s.strip.square == 4 && s.strip.morph == 100.0 && s.strip.selected == 5;
         s.key (key ('3', false, '3')); const bool three = s.strip.square == 2 && s.strip.morph == 100.0 && s.strip.selected == 3;
-        check (home && end && three, "Home, End and the number keys jump to columns");
+        check (home && end && three, "Home, End and the number keys jump to anchors");
     }
 
     {
         hs::Session s (root, tempStrip(), false);
-        placeCorner (s, "Talking Hedz", "M0 Q0"); placeCorner (s, "Deep Bouche", "M1 Q0"); s.jump (1); s.walk (23.0, 0.0); s.keep();
+        placeCorner (s, "Talking Hedz", "M0"); placeCorner (s, "Deep Bouche", "M1"); s.jump (1); s.walk (23.0, 0.0); s.keep();
         s.jump (3); s.key (key ('[', false, '[')); s.jump (1); s.key (key (juce::KeyPress::deleteKey));
         std::vector<juce::String> final;
-        for (const auto& c : s.strip.columns) final.push_back (c.name);
+        for (const auto& c : s.strip.anchors) final.push_back (c.name);
         check (final.size() == 2 && final[0] == "Deep Bouche M1" && final[1] == "C1" && s.history.size() == 5, "place, keep, move and delete record five edits");
         for (int i = 0; i < 5; ++i) s.key (key ('Z', true, 'z'));
         check (s.strip.count() == 0 && s.history.empty() && s.future.size() == 5 && hs::open (s.stripFile).count() == 0, "five undos return to an empty strip and the file follows");
         for (int i = 0; i < 5; ++i) s.key (key ('Y', true, 'y'));
         std::vector<juce::String> again;
-        for (const auto& c : s.strip.columns) again.push_back (c.name);
-        check (again == final && same (s.words, s.strip.columns[0].q0), "five redos restore the sequence");
+        for (const auto& c : s.strip.anchors) again.push_back (c.name);
+        check (again == final && same (s.words, s.strip.anchors[0].q0), "five redos restore the sequence");
         s.key (key ('Z', true, 'z'));
-        check (s.strip.count() == 3 && s.strip.columns[0].name == "Talking Hedz M0" && s.strip.columns[2].name == "C1", "one undo restores the deleted column");
+        check (s.strip.count() == 3 && s.strip.anchors[0].name == "Talking Hedz M0" && s.strip.anchors[2].name == "C1", "one undo restores the deleted anchor");
     }
 
     {
         hs::Session s (root, tempStrip(), false);
         const char* picks[] = { "Talking Hedz", "Deep Bouche", "Ooh To Eee", "Zoom Peaks" };
-        for (auto* p : picks) placeCorner (s, p, "M0 Q0");
+        for (auto* p : picks) placeCorner (s, p, "M0");
         s.jump (1); s.walk (23.0, 0.0); s.keep(); s.jump (3); s.walk (40.0, 30.0);
         hs::Screen screen (s);
         const auto image = screen.shot();
