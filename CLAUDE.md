@@ -4,12 +4,15 @@ This file is canonical. AGENTS.md is a stub; do not rely on it.
 
 ## What this is
 - `plugin/` is the TRENCH VST3, "a musical filter by Signal Methods". It ships.
-- `native/workstation/` is HEADSPACE, the authoring tool: one screen, a strip of frames with a log
-  lerp between them, four corners, Ctrl+S saves what you hear, WRITE BODY FILE for the plugin.
-  A MATLAB R2025b toolbox (`toolbox/+trench`) over two MEX files, `trench_bridge` (the model in
-  `native/workstation/Source/model` plus the readers) and `trench_audio` (the engine on the
-  sound card). `native/core` is the C++ engine both products share. Run it with `trench.setup`
-  then `trench.launch`; see `native/workstation/README.md`.
+- `native/workstation/` is HEADSPACE, the authoring tool: a JUCE app in the plugin's CMake
+  tree, built alone by the `headspace` preset, linked straight to `native/core`, everything
+  painted by hand. A body is four sounds; the tool chooses them and plays what the chip does
+  between them. The screen is the vowel chart with every factory corner as a star at its own
+  F1 and F2; hover a star to hear it; pin four to M0 Q0, M1 Q0, M0 Q1, M1 Q1; the puck is the
+  plugin's MORPH and Q and plays `PackedBody::interpolate_words` of the four; Ctrl+S keeps what
+  you hear as a new star; W writes the four pins as `legacy_bytes`. Nothing transforms on the
+  path, the tool passes no verdicts, the ear decides. Words: star, pin, puck, keep, write.
+  Read `native/workstation/HEADSPACE_SPEC.md` before touching it.
 - `evidence/` is the ONLY evidence root. Bodies, ROM dumps, manuals, patents, papers and
   research results live under `C:\Users\hooki\trench-native\evidence`. Do not go to
   trench-x3-clean or other repos for evidence; if something is needed from there, copy it
@@ -43,13 +46,11 @@ engine rewarps to the host rate from that datum.
 - Plugin tree: `out/build/vst3` (Ninja, Release). Targets: TRENCH_VST3 (ship),
   TRENCH_Dev_VST3 (dev build with the drawer and the 33-body roster), TRENCH_Tests,
   TRENCH_ReviewTests, TRENCH_FaceShot (headless face render).
-- Workstation: `native/workstation/build_mex.cmd` (or `buildtool mex` in MATLAB) builds
-  trench_bridge, trench_audio, TRENCH_WorkstationTests, trench_core_tests and
-  trench_core_from_audio_tests in the same `out/build/vst3` tree and copies the MEX files into
-  `native/workstation/toolbox/mex`; MATLAB must have released the old files first. ctest names:
-  trench_core, trench_core_from_audio, trench_workstation (C++), trench_workstation_bridge,
-  trench_workstation_headspace, trench_workstation_envelope, trench_workstation_shot (each
-  `matlab -batch` on a `matlab.unittest` class in `native/workstation/Tests`).
+- Workstation: `native/workstation/build_headspace.cmd` configures the `vst3` preset, builds
+  the `headspace` build preset (TRENCH_Headspace_App and TRENCH_QuadTests only) and runs
+  `ctest --preset headspace` (test name trench_quad). The app is
+  `out/build/vst3/plugin/workstation/TRENCH_Headspace_App_artefacts/Release/HEADSPACE.exe`;
+  close it before relinking. No MATLAB, no MEX.
 - All test runs headless. Never open windows on the user's screen. Tests are acceptance
   tests: fix the code, never loosen a threshold.
 - Install: copy the built .vst3 over `C:\Program Files\Common Files\VST3\...`; if FL holds

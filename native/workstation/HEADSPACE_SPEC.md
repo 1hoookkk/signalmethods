@@ -1,112 +1,70 @@
-# HEADSPACE, the strip
+# HEADSPACE
 
-Tyson, 2026-09-06: the space is the authoring method. It plays one big packed-word preset
-whose corners lerp 0 to 100 MORPH, every morph equal. The surface-and-pad screen and the
-MATLAB shell are gone. HEADSPACE is a JUCE app in the plugin's CMake tree, linked to
-`native/core`, everything painted by hand, built alone by the `headspace` preset.
+The authoring tool for TRENCH bodies. A JUCE app in the plugin's CMake tree, built alone by the
+`headspace` preset, linked straight to `native/core`. Everything painted by hand.
 
-Words used here, and nothing else: a state, an anchor, a square, a morph. An anchor is one
-sound with its Q range built in, Q0 and Q1, as the factory made them; the library is 66 of
-them, two per body. Picking one fills one. The screen is the vowel chart, F1 down and F2
-across, with the anchors as dots and the strip as a path through it.
+## The workflow, in Tyson's terms
 
-## From the filter up
+A body is four sounds. The tool is for choosing them and hearing what the chip does between
+them. That is all it does.
 
-1. The filter is six second-order sections in series. Gains multiply, responses add in dB.
-   A P2K corner uses all six, always: of the 792 factory sections, 710 are peaks under an
-   octave wide, 64 are broad poles, 3 are tilts, 15 are real pairs, none are off.
-2. A section is five 16-bit words: pole, zero, gain, as ARMAdillo codes. The pole frequency
-   word is linear in octaves, the resonance word in dB of peak height, the gain word in dB.
-   A state is 6 x 5 words, 30 integers. That is the whole truth of a sound.
-3. The chip lerps the words linearly. Halfway between two states every pole has moved half its
-   semitones and half its dB. Measured over every factory pair: DC unity survives the lerp,
-   0.7 dB off at the median, 5 dB at worst. Peaks do not: in 23 percent of steps the
-   response mid-morph rises more than 3 dB above either end, and Zoom Peaks rises 37 dB,
-   because a zero that hides a pole at one corner has moved off it halfway. That is what a
-   morph sounds like, and it is heard and kept or not.
-4. A body is four states and the bilinear word lerp between them, MORPH one way, Q the other.
-   The app calls `PackedBody::interpolate_words`, the plugin's own law, and nothing else.
-5. The strip is bodies sharing edges. An anchor holds Q0 and Q1. Two neighbouring anchors
-   make a square, and a square is a body. The morph
-   is the MORPH 0 to 100 between two neighbouring columns. The position is a square, a MORPH
-   inside it and a Q. What plays is that square's lerp there. Nothing else exists.
+1. The screen is the vowel chart: F1 down, F2 across, the twelve Klatt 1980 vowels as letters,
+   and every factory corner as a star at its own F1 and F2. Captures are stars too.
+2. Hover a star and you hear it, exactly, its own thirty words. Sounds are picked by ear from
+   the map, never by name from a list.
+3. Pin four stars to M0 Q0, M1 Q0, M0 Q1 and M1 Q1. Press 1 to 4 over a star, or click a chip.
+   Every pin is chosen. Nothing fills in a partner for you.
+4. The puck inside the quad is the plugin's MORPH and Q. What plays is
+   `PackedBody::interpolate_words` of the four pins, the chip's own lerp of the words. Nothing
+   fits, leads, matches, normalises or re-scales on the way from a pin to the ear.
+5. Ctrl+S keeps what you hear as a new star, with its parents and its position. That is the
+   point of the tool: the in-betweens and the slight nudges, kept exactly and pinned again.
+6. W writes the four pins as 240 bytes, `legacy_bytes`, the factory layout. A factory body
+   pinned at its four corners writes its own bytes back. The written file, reloaded through the
+   plugin's lerp, equals what the puck played.
 
-## What you do
+## How to read this, so it is not misread again
 
-- The library is the 132 factory corners, "Body cN". Click one to hear it exactly.
-- Place it in a column. A factory corner brings its Q partner into the row above (c0 with
-  c2, c1 with c3).
-- Walk: Left and Right move MORPH by 1, Ctrl by 0.2; Up and Down move Q the same. Past 100 is
-  the next square at 0. Dragging on the strip does the same. Space plays.
-- Ctrl+S keeps the column: both rows at this MORPH, as C1, C2, ... It is inserted where you
-  stood, between the two columns it came from, and is a state like any other.
-- [ and ] move the selected column. Delete removes it. Pair distant states by moving one next
-  to the other.
-- W writes the square you stand in: its four states, raw words, to 240 bytes in
-  `plugin/presets/user/`. What you write is what you walked.
+- Six sections, all active, in whatever role the sound needs. Not six bells. Not F1 to F6 in
+  row order. Real pairs are legal.
+- The tool measures nothing and warns of nothing. What is on the screen is the words, drawn.
+  Peaks stack in a serial cascade because responses add in dB; the factory ships that, and the
+  ear decides whether to keep it.
+- The map is where sounds sit, not how they blend. Only four sounds ever blend, and only the
+  chip's way. No lattices, fields, kernels or many-way blends.
+- Q corners are chosen like any other corner. The factory made them by copying and re-voicing
+  by hand; that is the row editor's job later, not a formula here.
+- Word space is the whole truth. A sound is thirty integers. The file is the words. The plot is
+  the words drawn.
+- Magnitude plots are 3:2 boxes on the fixed grid, 30 dB either side of a hard 0 dB line.
+  Never a wide strip, never auto-scaled, never a frame above the ruled range.
+- Words: star, pin, puck, keep, write, body. Not column, hop, lattice, field, anchor space.
+- The smallest end-to-end surface first. Stop when a slice adds a layer the ear cannot reach.
 
-## Screen, always the same four things
+## Screen
 
-- The navigator: the whole strip as one bar, one tick per column, the mark on it. Always
-  visible however long the row gets. Click it to jump.
-- The squares: the square you stand in and its neighbours, two rows, each its response on
-  the fixed grid, 30 dB either side of a hard 0 dB line, names under the columns, the mark
-  at its MORPH and Q.
-- The live response below on the same grid.
-- The column list: every column in order, name and origin, the selected one marked. Always
-  visible. The library list beside it. One status line under everything.
+Header with PLAY, SAW, PINK NOISE, WRITE BODY FILE. Four pin chips. The chart with the quad,
+the puck, halos on the pins scaled by their bilinear weight, and a quiet red tint on cells
+where the lerp's peak rises more than 3 dB above the corners. A 3:2 response box with the
+two MORPH ends at the current Q as ghosts under the live curve, the four lowest formants and
+the peak level as numbers. One status line.
 
-## Workflow
+## Keys
 
-- Keyboard first. Every action is one key, no dialogs, no modes. Enter always places the
-  library entry after the selected column. 1 to 9 jump to that column, Home and End to the
-  first and last, a click on the column list jumps too. Ctrl+S keeps, W writes. Audio is
-  sent before anything is drawn.
-- State is one struct: columns, position, selection. Every gesture is a function from that
-  state to the next; the screen draws from it; the file is it serialised. Ctrl+Z undoes and
-  Ctrl+Y redoes any edit of the strip, unbounded within the session, and puts the mark back
-  where the edit was made.
-- One screen, no floating windows, no JUCE widgets. Rebindable keys and saved layout come
-  after the strip has been walked.
+Arrows move the puck by 1, with Ctrl by 0.2. 1 to 4 pin the hovered star. Drag a pin onto a
+star. Shift-drag inside the quad moves all four pins. Ctrl+S keeps. Delete removes a selected
+capture. Ctrl+Z and Ctrl+Y undo and redo. W writes. Space plays.
 
-## Open
+## Files
 
-- Tyson to rule: a key that reorders the selected column's rows to its left neighbour by
-  nearest pole, words untouched, sound at the column unchanged, never automatic.
+`Source/app/Quad.*` the model. `Library.*` the 132 factory corners as stars. `Session.*` hover,
+pins, captures, undo, keys, `banks/HEADSPACE.quad.json`. `Audio.*` the device callback into
+the core cascade through a lock-free slot. `Screen.*` the painting. `Tests/QuadTests.cpp` the
+acceptance, headless, rendering `artifacts/shots/headspace.png` without a window.
 
-## File and structure
+## Later, each only when Tyson asks
 
-- `banks/HEADSPACE.strip.json`, `trench-strip-v1`: `columns[]`, each `name`, `origin`
-  (factory body and corner, or capture parents and MORPH), `q0` and `q1` as 30 integers.
-  Words verbatim both ways. Saved on every change.
-- Screen paints and takes input; Session and Strip are the model with undo, redo and the
-  file; Audio hands words to JUCE's device callback through a lock-free slot, nothing
-  allocates or locks there; the core runs the cascade. The 240-byte file is
-  `PackedBody::legacy_bytes`, so the factory layout holds by construction.
-
-## Acceptance, headless
-
-1. Keep then recall: the capture's words equal the live words at its position, both rows.
-2. Save then reopen: order, names, origins and words identical.
-3. Write then reload: `bodyLerp` of the file equals the live words on a 5 x 5 grid per square.
-4. Factory round trip: a body's c0 and c1 placed as neighbours write its original bytes.
-5. Every state in the strip has six active sections; a real pair passes, an identity section
-   is refused.
-6. n columns make n - 1 morphs; MORPH 100 of the last is the last column exactly.
-7. The tests render the screen to `artifacts/shots/headspace.png` without a window.
-8. Undo: a sequence of place, keep, move and delete, then undo to the start, restores the
-   strip exactly; redo to the end restores the sequence.
-
-## Refused
-
-Voice leading, section matching, cancelling pairs, recompilation, unity DC or any gain rule
-on the path. Fields, lattices, blends of more than four states, fitting on capture, Q by
-formula, verdicts on a morph, a third axis. The plugin has MORPH and Q; the row is the rest.
-
-## Order
-
-Built 2026-09-06: model, file, screen, audio, 39 checks green. Next: Tyson's test by ear, a
-corner, a far corner, a slight nudge, keep, build on from it. Later and separately: delete
-`Source/model` and its old tests; the row editor, six bands of frequency, width and gain per
-column, which is the patent's manual mode and the UltraProteus page; a note in with FOLLOW;
-transpose; the reorder key if ruled; the averaged-spectrum reader.
+The row editor, six parametric bands per corner, which is E-mu's own manual mode. A note in
+with FOLLOW so a tracked body can be judged. Transpose in word space. Reordering a corner's
+rows to a neighbour's. The reader, averaged across notes for a fixed formant, per note for a
+tracked one. A second map by the three principal components of the factory corners.
