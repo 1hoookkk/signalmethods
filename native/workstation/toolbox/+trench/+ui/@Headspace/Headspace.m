@@ -4,8 +4,6 @@ properties
     figure
     frames
     points
-    low
-    span
     tri
     bankPath
     position = [0 0]
@@ -19,10 +17,6 @@ properties
     source = 'noise'
     status = ''
     fieldAxes
-    positionMark
-    referenceLabels
-    quadrilateral
-    formantBoxes
     liveAxes
     liveCurve
     cornerLabels
@@ -35,22 +29,18 @@ methods
     function app=Headspace(root,visible)
         if nargin<2, visible='on'; end
         app.root=root; app.frames=app.referenceFrames;
-        app.points=zeros(numel(app.frames),2);
-        for k=1:numel(app.frames), app.points(k,:)=app.frames(k).chord([2 1],2)'; end
-        app.low=min(app.points); app.span=max(app.points)-app.low; app.span(app.span==0)=1;
-        scaled=(app.points-app.low)./app.span;
-        app.tri=triangulation(delaunay(scaled(:,1),scaled(:,2)),scaled);
-        app.quadrilateral=reshape(trench.bridge.noteOf([4400 120;400 120;1250 1200;2900 1200]),4,2);
+        layout=jsondecode(fileread(fullfile(root,'native','workstation','data','headspace-layout.json')));
+        assert(isequal(string(layout.names(:)),string({app.frames.group})'+": "+string({app.frames.name})'));
+        app.points=layout.points;
+        app.tri=triangulation(layout.triangles,app.points);
         app.bankPath=fullfile(root,'native','workstation','banks','HEADSPACE.bank.json');
-        app.build(visible); app.loadCorners; app.setPosition(app.points(1,:)); app.setSource('noise');
+        app.build(visible); app.loadCorners; trench.audio.wet(true); app.setPosition(app.points(1,:)); app.setSource('noise');
     end
     build(app,visible)
-    arrangeReferences(app)
     refresh(app)
     setPosition(app,xy)
     onField(app,phase,point)
     frames=referenceFrames(app)
-    setFormant(app,row,hz)
     point=limitPosition(app,point)
     [chord,vertices,weights]=chordAt(app,point)
     onKey(app,event)

@@ -1,43 +1,50 @@
 # HEADSPACE
 
-One vowel space, one sound. Drag the gold mark or type F1 and F2 in Hz. The canvas uses note spacing: F2 decreases to the right, F1 increases downwards. Reference names sit at their measured formants: 12 Klatt 1980 vowels, 48 Hillenbrand 1995 vowels, and 16 DVTD subject-1 vowels.
-
-The mark sets the first two formants. The surrounding references supply the other formants, widths, gains and row-6 low shelf through the existing chord blend. The response beside the canvas is the sound sent to the audio engine.
+The authoring tool for TRENCH bodies, one screen. A hidden plane of 76 vowel anchors (Klatt 1980,
+Hillenbrand 1995, DVTD subject 1), every one five bells in rows 1 to 5 and a low shelf in row 6,
+laid out on an equal-hop triangular lattice by likeness. Drag anywhere on the plane and hear the
+blend of the three anchors around you, stage to stage: F1 with F1 through F5, shelf with shelf.
+Nothing is drawn on the plane. A MATLAB R2025b toolbox over two MEX files, `trench_bridge` (the
+model) and `trench_audio` (the engine on the sound card). The plugin plays what this writes.
 
 ## Run
 
-In MATLAB R2025b:
+Double-click `HEADSPACE.cmd`, or in MATLAB:
 
-```matlab
-cd('C:\Users\hooki\trench-native\native\workstation')
-addpath toolbox
-trench.setup;
-app = trench.launch;
-```
+    cd C:\Users\hooki\trench-native\native\workstation
+    addpath toolbox
+    trench.setup
+    app = trench.launch;
 
-- PLAY starts or stops sound; SAW and PINK NOISE choose the source.
-- Click a reference name to hear it exactly; dragging within six pixels of its position also snaps to it.
-- Arrow keys move the mark one semitone in the indicated screen direction. Ctrl+arrows move 0.2 semitone. Typing in an Hz box keeps the normal text-editing keys.
-- Keys 1 to 4, or the four bottom buttons, choose the current corner. Ctrl+S saves the current chord into that corner. Saved corners persist in `banks/HEADSPACE.bank.json`.
-- WRITE BODY FILE becomes available when four corners are filled. It writes 240 bytes to `plugin/presets/user/headspace_<stamp>.body240`; hover over the button to see the written path.
+PLAY, SAW, PINK NOISE. Drag the plane; plain arrows move a twentieth of a lattice edge, Ctrl+arrows
+a hundredth. Keys 1 to 4 choose a corner without moving you; Ctrl+S saves the live sound into it;
+Space plays. WRITE BODY FILE, once four corners are filled, writes
+`plugin/presets/user/headspace_<stamp>.body240`. The corners persist in `banks/HEADSPACE.bank.json`.
 
-Use a fresh MATLAB session after updating the class files. `delete(app)` closes the tool.
+## Data
 
-## Build and test
+`data/headspace-anchors.json` holds the 76 anchors with provenance per value (measured, published
+default, estimated); `trench.headspace.bakeAnchors` writes it from the factory banks and the
+Hillenbrand CSV. `data/headspace-layout.json` is the stored lattice arrangement;
+`tools/arrange_headspace.py` computes it (seed 19801995). Neither is rebuilt at launch.
 
-The existing `trench_bridge` and `trench_audio` MEX files and the model are unchanged by this screen reduction. If a build is needed, run `build_mex.cmd` through its MSVC environment wrapper, or `buildtool mex` in MATLAB.
+## Build
 
-All tests use invisible figures. `buildtool check` runs `tHeadspace`; `buildtool test` runs the C++ and MATLAB suites. For this slice:
+The MEX files come from the plugin's CMake tree through MSVC vcvars64:
 
-```matlab
-r = runtests({'Tests/tHeadspace.m','Tests/tShot.m'});
-assertSuccess(r);
-```
+    build_mex.cmd
 
-`tShot` writes `artifacts/shots/headspace.png`. CTest registrations remain `trench_workstation_headspace` and `trench_workstation_shot`.
+or `buildtool mex` in MATLAB. The build copies `trench_bridge.mexw64` and `trench_audio.mexw64`
+into `toolbox/mex`; MATLAB must not hold the old files (close HEADSPACE or `clear mex` first).
 
-## Data and decisions
+## Test
 
-Reference frames come from the existing three factory banks. Table rows without measured F4/F5 keep those slots inactive; no upper formants are invented. The four-corner bank is separate from the reference data.
+All headless, figures invisible. `buildtool test` runs the C++ suites through ctest and the four
+MATLAB suites (`tBridge`, `tHeadspace`, `tEnvelope`, `tShot`); `buildtool check` runs `tHeadspace`
+alone. From a shell:
 
-See [DECISIONS.md](DECISIONS.md) for the quadrilateral bounds, interpolation and source evidence.
+    matlab -batch "addpath toolbox; trench.setup; r=runtests('Tests'); assertSuccess(r)"
+
+## Record
+
+`DECISIONS.md` here, one entry per decision; `plugin/NEXT_SESSION.md` for the running brief.

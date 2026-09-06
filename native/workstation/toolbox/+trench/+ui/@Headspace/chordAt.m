@@ -1,17 +1,16 @@
 function [chord,vertices,weights]=chordAt(app,point)
-xy=(point-app.low)./app.span;
-if isnan(pointLocation(app.tri,xy))
-    edges=freeBoundary(app.tri); best=Inf; projected=xy;
-    for k=1:size(edges,1)
-        a=app.tri.Points(edges(k,1),:); b=app.tri.Points(edges(k,2),:); d=b-a;
-        t=max(0,min(1,dot(xy-a,d)/dot(d,d))); candidate=a+t*d;
-        distance=sum((xy-candidate).^2);
-        if distance<best, best=distance; projected=candidate; end
+point=app.limitPosition(point);
+triangle=pointLocation(app.tri,point);
+if isnan(triangle)
+    triangles=app.tri.ConnectivityList;
+    for k=1:size(triangles,1)
+        w=cartesianToBarycentric(app.tri,k,point);
+        if min(w)>=-1e-12, triangle=k; break; end
     end
-    xy=projected;
 end
-[~,chord,vertices,weights]=trench.model.blendAt(app.frames,app.tri,xy);
-notes=point([2 1])';
-chord(1:2,5)=chord(1:2,5)+notes-chord(1:2,2);
-chord(1:2,2)=notes;
+assert(~isnan(triangle),'Point outside lattice.');
+vertices=app.tri.ConnectivityList(triangle,:);
+weights=cartesianToBarycentric(app.tri,triangle,point);
+weights=max(0,weights); weights=weights/sum(weights);
+chord=trench.headspace.blend(cat(3,app.frames(vertices).chord),weights);
 end

@@ -1945,3 +1945,13 @@ Open, in order:
   frequency, five lowest = F1..F5, shelf = level at 100 Hz over the median): 32 frames, five
   resonances each, where the LPC reader gave 2.25. Klatt F4/F5 blocked: the paper is not in
   evidence (man page gives ranges, examples vary); Tyson to drop it in evidence/mouths/klatt.
+- 2026-09-06 ~13:30, the hidden plane. Tyson's brief to Codex: one hidden, equal-hop plane of
+  76 vowel anchors, five bells and a shelf each, no chart, names, axes or mark; drag, nudge,
+  Ctrl+S to corners, WRITE BODY FILE. Codex built it to its usage limit; finished here: a
+  lattice test's invalid indexing and two on-off comparisons fixed, the Klatt 1980 paper
+  fetched into evidence/mouths/klatt (Table I: F4 3300/250, F5 3750/200, the values Codex
+  had taken from the web), provenance repointed, anchors rebaked unchanged, DECISIONS and
+  README written. tHeadspace 15, tShot 1, tBridge 13, tEnvelope 5. Open: Tyson's steer to
+  Codex just before it stopped, P2K pole structures as the anchors and four listening
+  examples (low/relaxed, high/relaxed, low/stressed, high/stressed) as the corners to fill
+  between; the plane's mechanics take any anchor set.

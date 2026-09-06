@@ -1,13 +1,9 @@
 function refresh(app)
 if app.closing || isempty(app.figure) || ~isgraphics(app.figure), return; end
-set(app.positionMark,'XData',app.position(1),'YData',app.position(2));
 set(app.liveCurve,'YData',trench.bridge.responseDb(app.words,trench.bridge.curveHz));
-for k=1:2
-    set(app.formantBoxes(k),'String',sprintf('%.2f',trench.bridge.hzOf(app.position(3-k))));
-end
 for k=1:4
     label=num2str(k);
-    if ~isempty(app.corners{k}), label=[label '   ' app.corners{k}.name]; end
+    set(app.cornerLabels(k),'FontWeight',pick(isempty(app.corners{k}),'normal','bold'));
     set(app.cornerLabels(k),'String',label,'Value',double(k==app.current), ...
         'ForegroundColor',pick(k==app.current,'w','k'), ...
         'BackgroundColor',pick(k==app.current,[217 83 25]/255,[226 226 226]/255));
