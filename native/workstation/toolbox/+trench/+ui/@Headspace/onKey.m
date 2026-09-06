@@ -1,13 +1,13 @@
 function onKey(app,event)
 key=char(event.Key); mods=cellstr(event.Modifier); control=any(strcmp(mods,'control'));
-nudge=.05; if control, nudge=.01; end
+nudge=1; if control, nudge=.2; end
 switch key
-    case 'rightarrow', app.setPosition(app.position+[nudge 0]);
-    case 'leftarrow', app.setPosition(app.position+[-nudge 0]);
-    case 'uparrow', app.setPosition(app.position+[0 -nudge]);
-    case 'downarrow', app.setPosition(app.position+[0 nudge]);
+    case {'1','2','3','4'}, app.placeCorner(str2double(key));
+    case 's', if control, app.placeCorner(app.current); end
     case 'space', app.setPlaying(~app.playing);
-    case {'1','2','3','4'}, app.setCorner(str2double(key));
-    case 's', if control, app.saveCorner; end
+    case 'rightarrow', app.setWheel(app.morph+nudge,app.q);
+    case 'leftarrow', app.setWheel(app.morph-nudge,app.q);
+    case 'uparrow', app.setWheel(app.morph,app.q+nudge);
+    case 'downarrow', app.setWheel(app.morph,app.q-nudge);
 end
 end

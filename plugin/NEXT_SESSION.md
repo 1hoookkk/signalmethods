@@ -1979,3 +1979,13 @@ Open, in order:
   retired; six subject-2 tracts yield fewer than six pairs and stay out. 30 anchors on a
   30-point lattice hexagon. Comparison plots in artifacts/shots (dvtd_vs_envelope.png,
   dvtd_methods.png). tHeadspace 15, tShot 1, tBridge 13, tEnvelope 5.
+- 2026-09-06 ~17:30, Tyson: "We are measuring the wrong thing" -> "You fit corners. The main
+  surface is every corner of the vowels at the moment. I select what goes where." HEADSPACE
+  rebuilt as pick and place: 55 vowel corners on a ROOT x F2 surface (24 P2K vowel-body corners,
+  schwa, 12 Klatt, 18 DVTD), click to hear exactly, keys 1-4 to place, a MORPH x Q pad playing
+  the plugin's own word lerp of the placed corners (equal to bodyLerp of the exported bytes), a
+  hop score per placement, WRITE BODY FILE. The lattice plane, its blend and layout are gone.
+  Gemini's outside assessment agreed on the two points that matter (audition in the chip's
+  lerp; the 132 corners as the material); its PCA figures are real (72.7/14.0/4.5), its archetype
+  and byte-identity claims unverified. Research notes: E-mu's dials were the chip's own codes
+  (ARMAdillo), so design space and lerp space were one. tHeadspace 8, tShot 1.

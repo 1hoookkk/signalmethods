@@ -1,12 +1,12 @@
 # HEADSPACE
 
-The authoring tool for TRENCH bodies, one screen. A hidden plane of 30 vowel anchors (12 Klatt 1980 vowels and 18 DVTD
-tracts read from their model sounds by order-12 LPC at 11,025 Hz, the E-mu P2K method), every one
-six pole pairs and nothing else,
-laid out on an equal-hop triangular lattice by likeness. Drag anywhere on the plane and hear the
-blend of the three anchors around you, stage to stage, pole 1 with pole 1 through pole 6.
-The plane is painted by brightness, the gold mark shows where you are, and the three anchors around you are named beneath it; the lattice itself is not drawn. A MATLAB R2025b toolbox over two MEX files, `trench_bridge` (the
-model) and `trench_audio` (the engine on the sound card). The plugin plays what this writes.
+The authoring tool for TRENCH bodies, one screen. The surface shows every vowel corner: the 24
+corners of the six P2K vowel bodies, the schwa, the 12 Klatt 1980 vowels and 18 DVTD tracts read
+by the E-mu P2K method (order-12 LPC at 11,025 Hz), placed by ROOT and F2 AND ABOVE. Click a
+square to hear that corner exactly. Keys 1 to 4 place it into M0 Q0, M1 Q0, M0 Q1, M1 Q1. The
+pad plays the plugin's own MORPH by Q lerp of the four you placed, word for word what WRITE BODY
+FILE exports. A MATLAB R2025b toolbox over two MEX files, `trench_bridge` (the model) and
+`trench_audio` (the engine on the sound card).
 
 ## Run
 
@@ -24,10 +24,9 @@ Space plays. WRITE BODY FILE, once four corners are filled, writes
 
 ## Data
 
-`data/headspace-anchors.json` holds the 30 anchors with provenance per value (measured model sound
-or published table); `trench.headspace.bakeAnchors` writes it from the Klatt bank and the DVTD
-model-sound WAVs through `trench.headspace.readSound`. `data/headspace-layout.json` is the stored lattice arrangement;
-`tools/arrange_headspace.py` computes it (seed 19801995). Neither is rebuilt at launch.
+`data/headspace-anchors.json` holds the fitted vowel corners with provenance per value (measured
+model sound or published table); `trench.headspace.bakeAnchors` writes it from the Klatt bank and
+the DVTD model-sound WAVs through `trench.headspace.readSound`. The P2K corners come from the library.
 
 ## Build
 
