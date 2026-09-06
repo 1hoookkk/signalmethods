@@ -21,14 +21,14 @@ set(panel,'ButtonDownFcn',@(~,~) app.onField('press'));
 app.shade=patch(app.fieldAxes,'Faces',app.tri.ConnectivityList,'Vertices',app.points,'FaceVertexCData',app.brightness, ...
     'FaceColor','interp','EdgeColor','none','HitTest','off');
 colormap(app.fieldAxes,parula(256)); clim(app.fieldAxes,[min(app.brightness) max(app.brightness)]);
-set(app.shade,'FaceAlpha',.3);
-colors=[0 114 189; 217 83 25; 196 143 0; 110 110 110; 176 176 176]/255;
+set(app.shade,'FaceAlpha',.15);
+colors=[0 114 189; 217 83 25; 214 214 214; 214 214 214; 214 214 214]/255; widths=[1 1 .4 .4 .4];
 [x,y]=meshgrid(linspace(min(app.points(:,1)),max(app.points(:,1)),320),linspace(min(app.points(:,2)),max(app.points(:,2)),280));
 app.contours=gobjects(1,5);
 for k=1:5
     notes=arrayfun(@(f) f.chord(k,2),app.frames);
     field=scatteredInterpolant(app.points(:,1),app.points(:,2),notes(:),'linear','none'); z=field(x,y);
-    [~,app.contours(k)]=contour(app.fieldAxes,x,y,z,floor(min(notes)):ceil(max(notes)),'LineColor',colors(k,:),'LineWidth',.6,'HitTest','off');
+    [~,app.contours(k)]=contour(app.fieldAxes,x,y,z,floor(min(notes)):ceil(max(notes)),'LineColor',colors(k,:),'LineWidth',widths(k),'HitTest','off');
 end
 rim=freeBoundary(app.tri); loop=rim(1,:); rim(1,:)=[];
 while ~isempty(rim)
