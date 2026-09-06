@@ -1,32 +1,52 @@
 # HEADSPACE
 
 The authoring tool for TRENCH bodies. A JUCE app in the plugin's CMake tree, built alone by the
-`headspace` preset, linked straight to `native/core`. Everything painted by hand, one monospace
-font, black ground, green ink. The window resizes and the surface is drawn from its size.
+`headspace` preset, linked straight to `native/core`. Everything painted by hand, one sans serif
+font, warm grey ground, charcoal plots, muted blue and sand accents. The window resizes and the
+surface is drawn from its size.
 
 ## The workflow, in Tyson's terms
 
 A body is four sounds. The tool is for choosing them and hearing what the chip does between
-them. That is all it does.
+them. That is all it does. The surface is four rooms, one at a time, with the body and the
+audition strip always in view.
 
-1. The stage is the body. Its four corners are the four sounds: A top-left is M0 Q1, B
-   top-right is M1 Q1, C bottom-left is M0 Q0, D bottom-right is M1 Q0. Each corner has a name
-   box; click it and choose from the palette. PRESET at the top loads a factory body into all
-   four.
-2. The puck is the plugin's MORPH and Q. Drag it anywhere on the stage. What plays is
-   `PackedBody::interpolate_words` of the four corners, the chip's own lerp of the words, and
-   the response drawn across the stage is those words. Nothing fits, leads, matches,
-   normalises or re-scales on the way from a corner to the ear.
-3. The rails are the palette: cards with their own curves, factory corners on the left,
-   Klatt vowels, reads and captures on the right. Click a card to hear it exactly. Slide up or
-   down a rail from a card and you hear the chip's lerp to its neighbour. Drag a card onto a
-   corner, or press A, B, C or D, to put the playing sound there.
-4. Drop a .wav on the stage or on a corner and it is read the E-mu way, order-12 LPC at
-   11,025 Hz, and becomes a card.
-5. Ctrl+S keeps what you hear as a card. In-betweens and slight nudges, kept exactly.
-6. W writes the four corners as 240 bytes, `legacy_bytes`. A factory body loaded as a preset
-   writes its own bytes back. The written file, reloaded through the plugin's lerp, equals
-   what the puck played.
+1. Picker (F1). The vowel space on the left, F1 across and F2 up, every card drawn at its own
+   first two formants; the palette on the right in three tabs, Vowels, Reads, Captures, each card
+   with its name, its F1/F2 and its curve. Click a card or a point to hear it exactly. Click
+   empty space in the vowel chart and a vowel is made at that F1 and F2 and plays; drag to move
+   it. Drop a .wav on the palette and it is read the E-mu way, order-12 LPC at 11,025 Hz, each
+   pole paired with a zero on the same angle, row 6 the ceiling notch, then `unityDc`, and it
+   becomes a card under Reads. Keep as card, or Ctrl+S, keeps what plays as a capture.
+2. Cube (F2). Eight name boxes, one per corner of the chip's three-axis lerp: 1 to 4 the front
+   face, 5 to 8 the back, MORPH across, Q up, Z the depth rail. Click a box to choose its card;
+   click its number to open its rows. The plane sits at Z; press on the plane to move the point,
+   and what plays is `interpolate_words` of the eight at that point. Drag the point onto a cell
+   of the body to keep that sound there. Slice into body puts the plane's four corners into the
+   body at once and goes to Perform.
+3. Stage (F3). One corner's rows. The 3:2 magnitude plot on the fixed frame, +30 to -30 dB, hard
+   0 dB line, 20 Hz to 20 kHz; numbered handles on the peaks, drag one and the row's frequency
+   and gain codes follow the plot's axes. Under it the six rows: number, type, note and cents,
+   semitones above the saw's note, width in semitones, peak dB at the note. Row 6 is CEILING.
+   Click a type to cycle Rest, Peak, Notch; drag a number to step its code. H shows the raw Hz
+   and radius words under each row. A B C D at the top pick the corner. Editing a vowel makes a
+   capture named by its formants and puts it in that corner; the vowel is untouched.
+4. Perform (F4). The pad is the plugin's MORPH and Q. Drag anywhere on it. What plays is
+   `PackedBody::interpolate_words` of the four corners, the chip's own lerp of the words. Nothing
+   fits, leads, matches, normalises or re-scales on the way from a corner to the ear.
+
+Always in view:
+
+- The body, bottom right, a 2x2 of the four corners: A top-left is M0 Q1, B top-right is M1 Q1,
+  C bottom-left is M0 Q0, D bottom-right is M1 Q0. Each cell draws its corner's words. Click a
+  cell's name to choose from the palette; click its plot to open its rows in Stage. Drag a card,
+  a chart point or the cube point onto a cell to put that sound there; drop a .wav on a cell to
+  read it straight into that corner. W, or the write key on the body, writes the four corners as
+  240 bytes, `legacy_bytes`. The written file, reloaded through the plugin's lerp, equals what
+  the pad played.
+- The audition strip, bottom: Play, Saw with its note, Noise, Loop; > A > B > C > D put what
+  plays into that corner; the status; the three-octave keyboard, click a key or send MIDI to set
+  the saw's note.
 
 ## How to read this, so it is not misread again
 
@@ -35,29 +55,34 @@ them. That is all it does.
 - The tool measures nothing and warns of nothing. What is on the screen is the words, drawn.
   Peaks stack in a serial cascade because responses add in dB; the factory ships that, and the
   ear decides whether to keep it.
-- Only four sounds ever blend, and only the chip's way. A rail slide is two of them.
+- Only the chip blends, and only its way: four corners on the pad, eight in the cube, two on a
+  pair. A capture is the exact words that were playing.
 - Word space is the whole truth. A sound is thirty integers. The file is the words. The plot is
   the words drawn.
-- Words: corner, card, puck, keep, write, body. Not column, hop, lattice, field, star.
+- Words: room, corner, card, point, cell, keep, write, body. Not column, hop, lattice, field, star.
 - The smallest end-to-end surface first. Stop when a slice adds a layer the ear cannot reach.
 
 ## Keys
 
-Arrows move the puck by 1, with Ctrl by 0.2. A B C D, or 1 to 4, put the playing card in that
-corner. Ctrl+S keeps. Delete removes a selected capture or read. Ctrl+Z and Ctrl+Y undo and
-redo. W writes. Space plays. S saw, N noise. Escape closes a menu.
+F1 to F4 change room. Arrows move the puck by 1, with Ctrl by 0.2. 1 to 4, or A B C D, put the
+playing sound in that corner. Ctrl+S keeps. Delete removes a selected capture or read. Ctrl+Z and
+Ctrl+Y undo and redo. W writes. Space plays. S saw, N noise, L loop. [ and ] step the saw's note
+by a semitone, Page Up and Page Down by an octave. H shows the raw words in Stage. Escape closes
+a menu or the rows.
 
 ## Files
 
-`Source/app/Quad.*` the model: cards, the four corners, the puck, the lerp, the file, the pack.
-`Library.*` the 132 factory corners, the 12 Klatt vowels from `banks/Klatt 1980.bank.json`,
-the wav reader. `Session.*` selection, corners, captures, reads, undo, keys,
-`banks/HEADSPACE.quad.json`. `Audio.*` the device callback into the core cascade through a
-lock-free slot. `Screen.*` the painting. `Tests/QuadTests.cpp` the acceptance, headless,
-rendering `artifacts/shots/headspace.png` without a window.
+`Source/app/Quad.*` the model: cards, the four corners, the eight-corner cube, the puck, the
+lerp, the row grammar, the file, the pack. `Library.*` the 12 Klatt vowels and schwa from
+`banks/Klatt 1980.bank.json`, the made vowel, the wav reader. `Session.*` selection, corners,
+cube, captures, reads, undo, keys, `banks/HEADSPACE.quad.json`. `Audio.*` the device callback
+into the core cascade through a lock-free slot, the saw, the noise, the loop, MIDI in.
+`Screen.*` the four rooms, the body, the strip, the painting. `Tests/QuadTests.cpp` the
+acceptance, headless, rendering `artifacts/shots/headspace*.png` without a window.
 
 ## Later, each only when Tyson asks
 
-The flat grid of bodies sharing edges. The row editor, six parametric bands per corner, which
-is E-mu's own manual mode. A note in with FOLLOW. Transpose in word space. Reordering a
-corner's rows to a neighbour's. The averaged-spectrum reader for fixed formants.
+More basis cards: Hillenbrand 1995, Peterson and Barney 1952, the measured bodies in
+`evidence/measured-bodies/ir_library`. The flat grid of bodies sharing edges. A note in with
+FOLLOW. Transpose in word space. Reordering a corner's rows to a neighbour's. The
+averaged-spectrum reader for fixed formants.

@@ -2016,3 +2016,23 @@ Open, in order:
   build script (no reconfigure) after Tyson called the builds "a monolithic churn". Spec
   untouched by ruling; rows text parked in a todo. Bristow/Lovejoy/Wallace were the voicers
   (SOS Oct 1995), Rossum built the chip; FOLLOW (Freq. Tracking axis) remains "later".
+- 2026-09-06 night: Tyson's four rooms built on Astra's 8-corner model, on top of the C2662
+  build break (const rect removeFromRight in paintCube). F1 Picker: vowel space left, palette
+  right in Vowels / Reads / Captures tabs, each card with name, F1/F2 and its curve, a .wav drop
+  zone, Keep as card. F2 Cube: eight name boxes, plane at Z, press the plane to move the point,
+  drag the point onto a body cell to keep the slice sound there, Slice into body takes the
+  plane's four corners. F3 Stage: A B C D tags, the 3:2 plot on the fixed frame, six rows,
+  H raw words. F4 Perform: the MORPH x Q pad alone. Always in view: the 2x2 body bottom right
+  (name opens the palette menu, plot opens the rows, drop targets for cards, chart points, the
+  cube point and .wav files, W write) and the strip (Play / Saw / Noise / Loop, > A > B > C > D
+  buttons doing what keys 1-4 and A-D do to what plays, status, keyboard). Tyson mid-slice:
+  "you should be able to copy to one of the corners with a button" -> the > A..D buttons and
+  Session::toCorner. Direct rule for reads applied: each LPC pole paired with a zero on its own
+  angle (zero radius = pole radius^16), row 6 the ceiling notch, then unityDc; the sixth LPC pole
+  is dropped for the notch. Gemini's compileAcousticFrame paste rejected on one point: its
+  log2(20..12000) frequency code is not the DLL's freqCode table that rowWords uses; the rest
+  restates rowWords. Keys 1-4 stay corner keys (tests); rooms are F1-F4. Cube pins start empty
+  by design (no seeding, per the 8-from-one-pair ruling). 87 checks green, four shots
+  (headspace, headspace_cube, headspace_rows, headspace_perform). Not built: Hillenbrand /
+  Peterson-Barney / measured-body cards for the palette; Tyson's three-level table (anchors and
+  movement / a resonance / six ordered sections) maps to Perform+Cube / Stage / H view as built.

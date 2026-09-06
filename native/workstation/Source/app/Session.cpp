@@ -20,7 +20,7 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     stars = loadVowels (root.getChildFile ("native/workstation/banks/Klatt 1980.bank.json"));
     stars.push_back (schwa());
     libraryCount = stars.size();
-    const bool had = open (quad, stars, libraryCount, file);
+    const bool had = open (quad, stars, libraryCount, file, &cube);
     if (! had || ! quad.complete())
         pinAll ({ starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x91"))), starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x99"))), starNamed ("i"), starNamed ("u") });
     history.clear(); future.clear();
@@ -58,12 +58,24 @@ int Session::currentStar() const
 
 void Session::audition()
 {
-    if (editing >= 0 && quad.pins[(size_t) kCornerPin[editing]] >= 0)
+    if (editing >= 0 && (editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]]) >= 0)
     {
-        auditioning = quad.pins[(size_t) kCornerPin[editing]];
+        auditioning = editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]];
         words = editWords();
         sounding = true;
-        status = cornerName (editing);
+        status = stars[(size_t) auditioning].name;
+    }
+    else if (auditioning == kCube)
+    {
+        sounding = cube.complete();
+        if (! sounding)
+        {
+            playing = false;
+            if (withAudio) audio.setPlaying (false);
+            return;
+        }
+        words = cubeWordsAt (cube, stars);
+        status = "";
     }
     else if (auditioning == kPair && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
     {
@@ -103,6 +115,7 @@ Session::Snapshot Session::snapshot() const
 {
     Snapshot s;
     s.quad = quad;
+    s.cube = cube;
     s.added.assign (stars.begin() + (long) libraryCount, stars.end());
     return s;
 }
@@ -110,16 +123,18 @@ Session::Snapshot Session::snapshot() const
 void Session::restore (const Snapshot& s)
 {
     quad = s.quad;
+    cube = s.cube;
     stars.resize (libraryCount);
     stars.insert (stars.end(), s.added.begin(), s.added.end());
     for (auto& p : quad.pins) if (p >= (int) stars.size()) p = -1;
+    for (auto& p : cube.pins) if (p >= (int) stars.size()) p = -1;
     if (selected >= (int) stars.size()) selected = -1;
-    if (editing >= 0 && quad.pins[(size_t) kCornerPin[editing]] < 0) editing = -1;
+    if (editing >= 0 && (editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]]) < 0) editing = -1;
 }
 
 void Session::apply()
 {
-    save (quad, stars, libraryCount, file);
+    save (quad, stars, libraryCount, file, &cube);
     audition();
     changed();
 }
@@ -137,6 +152,7 @@ void Session::select (int k)
 {
     if (k < 0 || k >= (int) stars.size()) return;
     selected = k;
+    editing = -1; editingCube = false;
     auditioning = k;
     audition();
     changed();
@@ -173,8 +189,18 @@ void Session::pin (int n, int star)
 void Session::pinCorner (int corner, int star)
 {
     if (corner < 0 || corner > 3) return;
-    if (inPair() || inMade() || star == kMade) { keep(); star = selected; }
+    if (inPair() || inMade() || auditioning == kCube || star == kMade || star == kCube) { keep(); star = selected; }
     pin (kCornerPin[corner], star);
+}
+
+bool Session::placeable() const
+{
+    return inPair() || inMade() || (auditioning == kCube && cube.complete()) || currentStar() >= 0;
+}
+
+void Session::toCorner (int corner)
+{
+    if (placeable()) pinCorner (corner, currentStar());
 }
 
 void Session::pinAll (const std::array<int, 4>& pins)
@@ -201,6 +227,8 @@ int Session::addRead (const juce::File& wav)
 
 void Session::edit (int corner)
 {
+    if (editingCube) editing = -1;
+    editingCube = false;
     if (corner < 0 || corner > 3 || corner == editing) { editing = -1; auditioning = -1; audition(); changed(); return; }
     const int star = quad.pins[(size_t) kCornerPin[corner]];
     if (star < 0) return;
@@ -211,13 +239,74 @@ void Session::edit (int corner)
     changed();
 }
 
+void Session::editCube (int corner)
+{
+    if (corner < 0 || corner >= 8 || (editingCube && editing == corner))
+    {
+        setCubePoint (cube.x, cube.y, cube.z);
+        return;
+    }
+    const int star = cube.pins[(size_t) corner];
+    if (star < 0 || star >= (int) stars.size()) return;
+    editingCube = true; editing = corner; selected = star;
+    audition(); changed();
+}
+
+void Session::pinCube (int corner, int star)
+{
+    if (corner < 0 || corner >= 8) return;
+    if (inMade() || inPair()) { keep(); star = selected; }
+    if (star < 0 || star >= (int) stars.size()) return;
+    history.push_back (snapshot()); future.clear();
+    cube.pins[(size_t) corner] = star;
+    editing = -1; editingCube = false; auditioning = star;
+    apply();
+}
+
+void Session::setCubePoint (double x, double y, double z)
+{
+    cube.x = std::clamp (x, 0.0, 1.0); cube.y = std::clamp (y, 0.0, 1.0); cube.z = std::clamp (z, 0.0, 1.0);
+    editing = -1; editingCube = false; auditioning = kCube;
+    apply();
+}
+
+bool Session::takeSlice()
+{
+    if (! cube.complete()) return false;
+    history.push_back (snapshot()); future.clear();
+    const auto body = cubeBodyOf (cube, stars);
+    for (int corner = 0; corner < 4; ++corner)
+    {
+        const auto sample = body.interpolate_words ((float) (corner & 1), (float) ((corner >> 1) & 1), (float) cube.z);
+        Words captured;
+        std::copy_n (sample.begin(), kRows, captured.begin());
+        int pin = -1;
+        for (int i = 0; i < (int) stars.size(); ++i) if (stars[(size_t) i].words == captured) { pin = i; break; }
+        if (pin < 0)
+        {
+            Star star;
+            star.kind = "capture"; star.words = captured; star.name = uniqueName (formantName (captured)); star.body = star.name;
+            star.parentA = stars[(size_t) cube.pins[(size_t) corner]].name;
+            star.parentB = stars[(size_t) cube.pins[(size_t) corner + 4]].name;
+            star.morph = cube.z * 100.0;
+            stars.push_back (star);
+            pin = (int) stars.size() - 1;
+        }
+        quad.pins[(size_t) corner] = pin;
+    }
+    quad.morph = cube.x * 100.0; quad.q = cube.y * 100.0;
+    editing = -1; editingCube = false; auditioning = -1;
+    apply();
+    return true;
+}
+
 void Session::beginRowEdit() { history.push_back (snapshot()); future.clear(); }
 
 void Session::setRow (int corner, int row, Row r)
 {
-    if (corner < 0 || corner > 3 || row < 0 || row >= kRows) return;
-    const int pin = kCornerPin[corner];
-    int star = quad.pins[(size_t) pin];
+    if (corner < 0 || corner >= (editingCube ? 8 : 4) || row < 0 || row >= kRows) return;
+    int& anchor = editingCube ? cube.pins[(size_t) corner] : quad.pins[(size_t) kCornerPin[corner]];
+    int star = anchor;
     if (star < 0 || star >= (int) stars.size()) return;
     if (stars[(size_t) star].kind != "capture")
     {
@@ -225,7 +314,7 @@ void Session::setRow (int corner, int row, Row r)
         s.kind = "capture"; s.parentA = s.name; s.parentB = ""; s.corner = ""; s.morph = 0.0; s.q = 0.0;
         stars.push_back (s);
         star = (int) stars.size() - 1;
-        quad.pins[(size_t) pin] = star;
+        anchor = star;
     }
     auto& s = stars[(size_t) star];
     s.words[(size_t) row] = rowWords (r, s.words[(size_t) row][4]);
@@ -240,7 +329,7 @@ void Session::setRow (int corner, int row, Row r)
 Words Session::editWords() const
 {
     if (editing < 0) return {};
-    const int star = quad.pins[(size_t) kCornerPin[editing]];
+    const int star = editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]];
     return star >= 0 && star < (int) stars.size() ? stars[(size_t) star].words : Words {};
 }
 
@@ -250,6 +339,7 @@ void Session::setPuck (double morph, double q)
     quad.q = std::clamp (q, 0.0, 100.0);
     auditioning = -1;
     editing = -1;
+    editingCube = false;
     apply();
 }
 
@@ -257,16 +347,16 @@ void Session::nudge (double dm, double dq) { setPuck (quad.morph + dm, quad.q + 
 
 void Session::keep()
 {
-    const bool pair = inPair(), fromMade = inMade();
-    if (! pair && ! fromMade && ! quad.complete()) return;
+    const bool pair = inPair(), fromMade = inMade(), fromCube = auditioning == kCube;
+    if (fromCube ? ! cube.complete() : (! pair && ! fromMade && ! quad.complete())) return;
     history.push_back (snapshot()); future.clear();
     Star s;
     s.kind = "capture";
-    s.words = pair ? words : fromMade ? made.words : wordsAt (quad, stars);
-    s.parentA = pair ? stars[(size_t) pairA].name : fromMade ? juce::String ("made") : pinName (0);
-    s.parentB = pair ? stars[(size_t) pairB].name : fromMade ? juce::String() : pinName (1);
-    s.morph = pair ? pairT * 100.0 : fromMade ? 0.0 : quad.morph;
-    s.q = pair || fromMade ? 0.0 : quad.q;
+    s.words = pair || fromCube ? words : fromMade ? made.words : wordsAt (quad, stars);
+    s.parentA = pair ? stars[(size_t) pairA].name : fromMade ? juce::String ("made") : fromCube ? juce::String ("cube") : pinName (0);
+    s.parentB = pair ? stars[(size_t) pairB].name : fromMade || fromCube ? juce::String() : pinName (1);
+    s.morph = pair ? pairT * 100.0 : fromMade ? 0.0 : fromCube ? cube.x * 100.0 : quad.morph;
+    s.q = pair || fromMade ? 0.0 : fromCube ? cube.y * 100.0 : quad.q;
     quad.captures += 1;
     s.name = uniqueName (fromMade ? made.name : formantName (s.words));
     s.body = s.name;
@@ -282,6 +372,8 @@ void Session::removeAdded()
     history.push_back (snapshot()); future.clear();
     stars.erase (stars.begin() + selected);
     for (auto& p : quad.pins) { if (p == selected) p = -1; else if (p > selected) --p; }
+    for (auto& p : cube.pins) { if (p == selected) p = -1; else if (p > selected) --p; }
+    editing = -1; editingCube = false;
     if (hovered == selected) hovered = -1; else if (hovered > selected) --hovered;
     selected = -1; auditioning = -1;
     apply();
@@ -372,7 +464,6 @@ bool Session::key (const juce::KeyPress& k)
     const double step = control ? 0.2 : 1.0;
     const int code = k.getKeyCode();
     const auto c = k.getTextCharacter();
-    const int target = currentStar();
     if (code == juce::KeyPress::rightKey) { nudge (step, 0.0); return true; }
     if (code == juce::KeyPress::leftKey) { nudge (-step, 0.0); return true; }
     if (code == juce::KeyPress::upKey) { nudge (0.0, step); return true; }
@@ -392,11 +483,7 @@ bool Session::key (const juce::KeyPress& k)
     if (code == juce::KeyPress::pageDownKey) { setNote (note - 12); return true; }
     if (code == juce::KeyPress::pageUpKey) { setNote (note + 12); return true; }
     for (int corner = 0; corner < 4; ++corner)
-        if (c == (juce::juce_wchar) ('1' + corner))
-        {
-            if (inPair() || target == kMade || target >= 0) pinCorner (corner, target);
-            return true;
-        }
+        if (c == (juce::juce_wchar) ('1' + corner) || c == (juce::juce_wchar) ('a' + corner) || c == (juce::juce_wchar) ('A' + corner)) { toCorner (corner); return true; }
     return false;
 }
 }

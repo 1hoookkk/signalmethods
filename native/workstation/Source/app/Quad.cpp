@@ -129,6 +129,27 @@ Words wordsAt (const Quad& quad, const std::vector<Star>& stars)
     return lerp (cornersOf (quad, stars), quad.morph / 100.0, quad.q / 100.0);
 }
 
+trench::core::PackedBody cubeBodyOf (const AuthoringCube& cube, const std::vector<Star>& stars)
+{
+    trench::core::PackedBody body;
+    for (size_t corner = 0; corner < cube.pins.size(); ++corner)
+    {
+        body.words[corner].fill (trench::core::kIdentitySection);
+        const int pin = cube.pins[corner];
+        if (pin >= 0 && pin < (int) stars.size())
+            std::copy (stars[(size_t) pin].words.begin(), stars[(size_t) pin].words.end(), body.words[corner].begin());
+    }
+    return body;
+}
+
+Words cubeWordsAt (const AuthoringCube& cube, const std::vector<Star>& stars)
+{
+    const auto corner = cubeBodyOf (cube, stars).interpolate_words ((float) cube.x, (float) cube.y, (float) cube.z);
+    Words words;
+    std::copy_n (corner.begin(), kRows, words.begin());
+    return words;
+}
+
 Bytes bytesOf (const Corners& c) { return bodyOf (c).legacy_bytes(); }
 
 bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::File& file)
@@ -139,7 +160,7 @@ bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::Fi
     return file.replaceWithData (b.data(), b.size());
 }
 
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file)
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube)
 {
     auto* d = new juce::DynamicObject();
     d->setProperty ("schema", "trench-quad-v1");
@@ -147,6 +168,15 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     juce::Array<juce::var> pins;
     for (int p : quad.pins) pins.add (p >= 0 && p < (int) stars.size() ? stars[(size_t) p].name : juce::String());
     d->setProperty ("pins", pins);
+    if (cube != nullptr)
+    {
+        auto* c = new juce::DynamicObject();
+        juce::Array<juce::var> anchors;
+        for (int pin : cube->pins) anchors.add (pin >= 0 && pin < (int) stars.size() ? stars[(size_t) pin].name : juce::String());
+        c->setProperty ("anchors", anchors);
+        c->setProperty ("x", cube->x); c->setProperty ("y", cube->y); c->setProperty ("z", cube->z);
+        d->setProperty ("cube", juce::var (c));
+    }
     juce::Array<juce::var> captures;
     for (size_t i = libraryCount; i < stars.size(); ++i)
     {
@@ -162,9 +192,10 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     return file.replaceWithText (juce::JSON::toString (juce::var (d)));
 }
 
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file)
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube)
 {
     quad = Quad();
+    if (cube != nullptr) *cube = AuthoringCube();
     stars.resize (libraryCount);
     if (! file.existsAsFile()) return false;
     const auto v = juce::JSON::parse (file);
@@ -182,6 +213,15 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
         }
     if (auto* pins = v.getProperty ("pins", juce::var()).getArray())
         for (int i = 0; i < std::min (4, pins->size()); ++i) quad.pins[(size_t) i] = indexOf (stars, (*pins)[i].toString());
+    if (cube != nullptr)
+    {
+        const auto c = v.getProperty ("cube", juce::var());
+        if (auto* anchors = c.getProperty ("anchors", juce::var()).getArray())
+            for (int i = 0; i < std::min (8, anchors->size()); ++i) cube->pins[(size_t) i] = indexOf (stars, (*anchors)[i].toString());
+        cube->x = std::clamp ((double) c.getProperty ("x", 0.5), 0.0, 1.0);
+        cube->y = std::clamp ((double) c.getProperty ("y", 0.5), 0.0, 1.0);
+        cube->z = std::clamp ((double) c.getProperty ("z", 0.5), 0.0, 1.0);
+    }
     quad.morph = std::clamp ((double) v.getProperty ("morph", 0.0), 0.0, 100.0);
     quad.q = std::clamp ((double) v.getProperty ("q", 0.0), 0.0, 100.0);
     quad.captures = (int) v.getProperty ("captures", 0);
