@@ -77,7 +77,7 @@ private:
     void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill) const;
     Session& session;
     std::vector<double> hz;
-    enum class Drag { none, puck, made, card, row, peak, keyboard, cube, depth, slice } dragging = Drag::none;
+    enum class Drag { none, puck, made, card, row, peak, keyboard, cube, depth, slice, transpose } dragging = Drag::none;
     int dragStar = -1, dragRow = -1, dragColumn = -1;
     Row dragBase;
     Words dragWords {};

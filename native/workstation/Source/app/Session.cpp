@@ -177,6 +177,24 @@ void Session::setMade (double f1, double f2)
     changed();
 }
 
+void Session::setTransposed (int star, double f1)
+{
+    if (star < 0 || star >= (int) stars.size()) return;
+    const auto f = formantsOf (stars[(size_t) star].words);
+    if (f[0] <= 0.0 || f1 <= 0.0) return;
+    made = stars[(size_t) star];
+    made.kind = "made";
+    made.words = transposed (stars[(size_t) star].words, f1 / f[0]);
+    made.name = stars[(size_t) star].name + " " + formantName (made.words);
+    made.body = made.name; made.corner = ""; made.parentA = stars[(size_t) star].name; made.parentB = "";
+    made.morph = 0.0; made.q = 0.0;
+    madeLive = true;
+    auditioning = kMade;
+    editing = -1;
+    audition();
+    changed();
+}
+
 void Session::pin (int n, int star)
 {
     if (n < 0 || n > 3 || star < 0 || star >= (int) stars.size()) return;
@@ -353,7 +371,7 @@ void Session::keep()
     Star s;
     s.kind = "capture";
     s.words = pair || fromCube ? words : fromMade ? made.words : wordsAt (quad, stars);
-    s.parentA = pair ? stars[(size_t) pairA].name : fromMade ? juce::String ("made") : fromCube ? juce::String ("cube") : pinName (0);
+    s.parentA = pair ? stars[(size_t) pairA].name : fromMade ? (made.parentA.isNotEmpty() ? made.parentA : juce::String ("made")) : fromCube ? juce::String ("cube") : pinName (0);
     s.parentB = pair ? stars[(size_t) pairB].name : fromMade || fromCube ? juce::String() : pinName (1);
     s.morph = pair ? pairT * 100.0 : fromMade ? 0.0 : fromCube ? cube.x * 100.0 : quad.morph;
     s.q = pair || fromMade ? 0.0 : fromCube ? cube.y * 100.0 : quad.q;

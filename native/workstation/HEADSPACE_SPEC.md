@@ -17,7 +17,10 @@ audition strip always in view.
    empty space in the vowel chart and a vowel is made at that F1 and F2 and plays; drag to move
    it. Drop a .wav on the palette and it is read the E-mu way, order-12 LPC at 11,025 Hz, each
    pole paired with a zero on the same angle, row 6 the ceiling notch, then `unityDc`, and it
-   becomes a card under Reads. Keep as card, or Ctrl+S, keeps what plays as a capture.
+   becomes a card under Reads. Shift-drag a point and the sound transposes: its first formant is
+   the anchor, it goes where you put it and every other row goes by the same ratio, each keeping
+   its width in semitones, row 6 left as the ceiling; it plays as it moves. Keep as card, or
+   Ctrl+S, keeps what plays as a capture.
 2. Cube (F2). Eight name boxes, one per corner of the chip's three-axis lerp: 1 to 4 the front
    face, 5 to 8 the back, MORPH across, Q up, Z the depth rail. Click a box to choose its card;
    click its number to open its rows. The plane sits at Z; press on the plane to move the point,
@@ -65,7 +68,7 @@ Always in view:
 ## Keys
 
 F1 to F4 change room. Arrows move the puck by 1, with Ctrl by 0.2. 1 to 4, or A B C D, put the
-playing sound in that corner. Ctrl+S keeps. Delete removes a selected capture or read. Ctrl+Z and
+playing sound in that corner. Shift-drag a chart point transposes it by its first formant. Ctrl+S keeps. Delete removes a selected capture or read. Ctrl+Z and
 Ctrl+Y undo and redo. W writes. Space plays. S saw, N noise, L loop. [ and ] step the saw's note
 by a semitone, Page Up and Page Down by an octave. H shows the raw words in Stage. Escape closes
 a menu or the rows.
@@ -84,5 +87,5 @@ acceptance, headless, rendering `artifacts/shots/headspace*.png` without a windo
 
 More basis cards: Hillenbrand 1995, Peterson and Barney 1952, the measured bodies in
 `evidence/measured-bodies/ir_library`. The flat grid of bodies sharing edges. A note in with
-FOLLOW. Transpose in word space. Reordering a corner's rows to a neighbour's. The
+FOLLOW, key to MORPH in the plugin. Reordering a corner's rows to a neighbour's. The
 averaged-spectrum reader for fixed formants.

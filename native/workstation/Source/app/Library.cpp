@@ -141,6 +141,27 @@ Words vowelWords (const std::array<double, 4>& formants)
     return w;
 }
 
+Words transposed (const Words& words, double ratio)
+{
+    Words out = words;
+    if (ratio <= 0.0) return out;
+    for (size_t r = 0; r + 1 < kRows; ++r)
+    {
+        auto g = trench::core::geometry_from_words (words[r], trench::core::kP2kDatumHz);
+        auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+        if (pole == nullptr || pole->radius < 0.05) continue;
+        auto shift = [ratio] (trench::core::ConjugatePair& p) {
+            p.hz = std::clamp (p.hz * ratio, 20.0, 20000.0);
+            p.radius = std::clamp (std::pow (std::clamp (p.radius, 1e-9, 1.0), ratio), 0.0, 0.99999);
+        };
+        shift (*pole);
+        if (auto* zero = std::get_if<trench::core::ConjugatePair> (&g.zero); zero != nullptr && zero->radius > 0.05) shift (*zero);
+        out[r] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+        out[r][4] = words[r][4];
+    }
+    return out;
+}
+
 juce::String formantName (const Words& words)
 {
     const auto f = formantsOf (words);

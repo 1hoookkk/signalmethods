@@ -2036,3 +2036,14 @@ Open, in order:
   (headspace, headspace_cube, headspace_rows, headspace_perform). Not built: Hillenbrand /
   Peterson-Barney / measured-body cards for the palette; Tyson's three-level table (anchors and
   movement / a resonance / six ordered sections) maps to Perform+Cube / Stage / H view as built.
+- 2026-09-06 later: Tyson asked whether playing a note is transposing. Ruled in the reply and
+  agreed: no. The note is the source; the body is absolute words; the only thing that moves a
+  filter while it plays is the lerp along MORPH, so the note reaches the filter only through
+  MORPH (E-mu's Freq. Tracking cube = a corner voiced as the other transposed, key drives
+  MORPH). Transpose is therefore a card-making gesture in the Picker, and FOLLOW is the plugin's
+  job later. Tyson: "Not semitones, but anchors, spectral anchors" -> the unit is where a
+  formant lands. Built: Shift-drag a chart point, F1 is the anchor, every pole and zero moves by
+  the same ratio with radius^ratio (constant width in semitones), row 6 and every fifth word
+  untouched, plays live, Keep / Ctrl+S / corner keys keep it as a capture named source +
+  formants with parentA = source. i 310/2020/2960 -> 465/3030/4440 at 1.5x. 92 checks. Tyson:
+  "The abstraction really clicks once you get it!"

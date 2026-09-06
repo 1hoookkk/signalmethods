@@ -391,7 +391,7 @@ void Screen::paintPicker (juce::Graphics& g) const
         if (palette == i) g.fillRect (r.withY (r.getBottom() - 2).withHeight (2).withWidth (r.getWidth() - 12));
     }
     g.setColour (kDim);
-    g.drawText ("Vowel space   F1 across, F2 up", juce::Rectangle<int> (chart.getX(), stage.getY(), chart.getWidth(), 20), juce::Justification::centredLeft);
+    g.drawText ("Vowel space   F1 across, F2 up   Shift-drag a point to transpose it", juce::Rectangle<int> (chart.getX(), stage.getY(), chart.getWidth(), 20), juce::Justification::centredLeft);
     {
         juce::Graphics::ScopedSaveState saved (g);
         g.reduceClipRegion (picker.withTrimmedTop (28).withTrimmedBottom (28));
@@ -468,6 +468,12 @@ void Screen::paintPicker (juce::Graphics& g) const
     {
         const auto f = formantsOf (session.made.words);
         const auto p = chartPoint (f[0], f[1]);
+        if (dragging == Drag::transpose && dragStar >= 0)
+        {
+            const auto source = formantsOf (session.stars[(size_t) dragStar].words);
+            const auto from = chartPoint (source[0], source[1]);
+            g.setColour (kDim); g.drawLine (from.x, from.y, p.x, p.y, 1.0f);
+        }
         g.setColour (session.inMade() ? kAccent : kDim);
         g.drawEllipse (p.x - 6.0f, p.y - 6.0f, 12.0f, 12.0f, 1.5f);
         g.drawLine (p.x - 10.0f, p.y, p.x + 10.0f, p.y, 1.0f);
@@ -807,6 +813,12 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         {
             if (const int k = pointAt (p); k >= 0)
             {
+                if (e.mods.isShiftDown())
+                {
+                    dragging = Drag::transpose; dragStar = k; dragOrigin = p; dragPoint = p;
+                    session.setTransposed (k, formantsOf (session.stars[(size_t) k].words)[0]);
+                    return;
+                }
                 session.select (k);
                 dragging = Drag::card; dragStar = k; dragOrigin = p; dragPoint = p;
                 return;
@@ -938,6 +950,11 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
     {
         const auto f = formantsAt (p);
         session.setMade (f.first, f.second);
+        return;
+    }
+    if (dragging == Drag::transpose)
+    {
+        if (dragStar >= 0) session.setTransposed (dragStar, formantsAt (p).first);
         return;
     }
     if (dragging == Drag::cube)

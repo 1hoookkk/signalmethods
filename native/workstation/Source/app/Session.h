@@ -51,6 +51,7 @@ public:
     bool inPair() const { return auditioning == kPair; }
     bool inMade() const { return auditioning == kMade; }
     void setMade (double f1, double f2);
+    void setTransposed (int star, double f1);
     void pin (int n, int star);
     void pinCorner (int corner, int star);
     void toCorner (int corner);

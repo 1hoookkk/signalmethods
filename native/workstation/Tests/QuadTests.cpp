@@ -20,9 +20,9 @@ juce::KeyPress key (int code, bool control = false, juce::juce_wchar text = 0)
     return juce::KeyPress (code, control ? juce::ModifierKeys::ctrlModifier : juce::ModifierKeys::noModifiers, text);
 }
 
-juce::MouseEvent mouse (hs::Screen& screen, juce::Point<float> position, juce::Point<float> origin)
+juce::MouseEvent mouse (hs::Screen& screen, juce::Point<float> position, juce::Point<float> origin, juce::ModifierKeys mods = juce::ModifierKeys::leftButtonModifier)
 {
-    return { juce::Desktop::getInstance().getMainMouseSource(), position, juce::ModifierKeys::leftButtonModifier,
+    return { juce::Desktop::getInstance().getMainMouseSource(), position, mods,
         1.0f, 0.0f, 0.0f, 0.0f, 0.0f, &screen, &screen, juce::Time::getCurrentTime(), origin, juce::Time::getCurrentTime(), 1, position != origin };
 }
 
@@ -121,6 +121,30 @@ int main()
         s.select (s.starNamed ("o"));
         s.toCorner (1);
         check (s.cornerName (1) == "o" && s.placeable(), "the to-corner button does what the key does");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        const int i = s.starNamed ("i");
+        const auto source = s.stars[(size_t) i].words;
+        const auto before = hs::formantsOf (source);
+        s.setTransposed (i, before[0] * 1.5);
+        const auto after = hs::formantsOf (s.words);
+        std::printf ("      i %.0f %.0f %.0f -> %.0f %.0f %.0f\n", before[0], before[1], before[2], after[0], after[1], after[2]);
+        check (s.inMade() && std::abs (after[0] / before[0] - 1.5) < 0.06 && std::abs (after[1] / before[1] - 1.5) < 0.06 && std::abs (after[2] / before[2] - 1.5) < 0.06, "transposing i to a first formant half again as high moves every formant by the same ratio");
+        bool fifth = s.words[5] == source[5];
+        for (size_t r = 0; r < hs::kRows; ++r) fifth = fifth && s.words[r][4] == source[r][4];
+        double widthBefore = 0.0, widthAfter = 0.0;
+        {
+            const auto a = trench::core::geometry_from_words (source[0], trench::core::kP2kDatumHz), b = trench::core::geometry_from_words (s.words[0], trench::core::kP2kDatumHz);
+            const auto* pa = std::get_if<trench::core::ConjugatePair> (&a.pole);
+            const auto* pb = std::get_if<trench::core::ConjugatePair> (&b.pole);
+            if (pa != nullptr && pb != nullptr) { widthBefore = -std::log (pa->radius) / pa->hz; widthAfter = -std::log (pb->radius) / pb->hz; }
+        }
+        check (fifth && widthBefore > 0.0 && std::abs (widthAfter / widthBefore - 1.0) < 0.05, "the ceiling row and every fifth word are untouched and each row keeps its width in semitones");
+        const auto heard = s.words;
+        s.key (key ('S', true, 's'));
+        check (s.stars.size() == 14 && s.stars.back().kind == "capture" && s.stars.back().name.startsWith ("i ") && s.stars.back().parentA == "i" && same (s.stars.back().words, heard), "Ctrl+S keeps the transposed sound as a card named by its source and formants");
     }
 
     {
@@ -349,6 +373,18 @@ int main()
         const auto u = hs::formantsOf (s.stars[(size_t) s.starNamed ("u")].words), iy = hs::formantsOf (s.stars[(size_t) s.starNamed ("i")].words);
         std::printf ("      u reads %.0f %.0f, i reads %.0f %.0f\n", u[0], u[1], iy[0], iy[1]);
         check (u[0] > 250.0 && u[0] < 400.0 && u[1] > 1150.0 && u[1] < 1350.0 && iy[1] > 1900.0, "the Klatt vowels sit at their own Table II F1 and F2, the wide tilt row is not a formant");
+        {
+            const auto from = screen.chartPoint (iy[0], iy[1]);
+            const auto to = screen.chartPoint (iy[0] * 1.3, iy[1]);
+            const auto shift = juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier | juce::ModifierKeys::shiftModifier);
+            screen.mouseDown (mouse (screen, from, from, shift));
+            screen.mouseDrag (mouse (screen, to, from, shift));
+            const auto moved = hs::formantsOf (s.words);
+            std::printf ("      i shifted to %.0f %.0f\n", moved[0], moved[1]);
+            check (s.inMade() && std::abs (moved[0] / iy[0] - 1.3) < 0.06 && std::abs (moved[1] / iy[1] - 1.3) < 0.06 && s.made.name.startsWith ("i "), "Shift-dragging a point in the vowel space transposes it live, every formant by the same ratio");
+            screen.mouseUp (mouse (screen, to, from, shift));
+            check (s.inMade() && s.stars.size() == 13, "letting go leaves the transposed sound playing, unkept");
+        }
         screen.setSize (900, 560);
         check (screen.stage.getWidth() > 300 && screen.stage.contains (screen.picker) && screen.stage.contains (screen.chart) && ! screen.picker.intersects (screen.chart), "the layout follows the window size and the palette never overlaps the vowel space");
         bool hudPinned = screen.hud.getRight() == 900 - 20 && screen.hud.getBottom() == 560 - 20 && ! screen.hud.intersects (screen.stage) && ! screen.hud.intersects (screen.keyboard);
