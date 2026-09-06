@@ -108,12 +108,11 @@ std::optional<Star> readWav (const juce::File& wav)
     s.name = s.body;
     for (size_t i = 0; i < kRows; ++i)
     {
+        if (i >= found.size()) { s.words[i] = rowWords ({ i == kRows - 1 ? RowType::notch : RowType::rest, kFreqCodes - 1, 0 }, 0); continue; }
         trench::core::SectionGeometry g;
-        g.pole = trench::core::ConjugatePair { 20000.0, 0.0 };
         g.zero = trench::core::ConjugatePair { 20000.0, 0.0 };
-        if (i < found.size())
-            g.pole = trench::core::ConjugatePair { std::clamp (found[i].hz, 20.0, 20000.0),
-                                                   std::clamp (std::exp (-3.141592653589793 * std::max (10.0, found[i].bw_hz) / trench::core::kP2kDatumHz), 0.0, 0.9995) };
+        g.pole = trench::core::ConjugatePair { std::clamp (found[i].hz, 20.0, 20000.0),
+                                               std::clamp (std::exp (-3.141592653589793 * std::max (10.0, found[i].bw_hz) / trench::core::kP2kDatumHz), 0.0, 0.9995) };
         s.words[i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
     }
     unityDc (s.words);

@@ -27,6 +27,7 @@ public:
     std::vector<Snapshot> history, future;
     int hovered = -1, selected = -1, auditioning = -1;
     int pairA = -1, pairB = -1;
+    int editing = -1;
     double pairT = 0.0;
     Words words {};
     bool sounding = false;
@@ -47,6 +48,10 @@ public:
     void pinAll (const std::array<int, 4>& pins);
     void loadPreset (const juce::String& body);
     int addRead (const juce::File& wav);
+    void edit (int corner);
+    void beginRowEdit();
+    void setRow (int corner, int row, Row r);
+    Words editWords() const;
     void setPuck (double morph, double q);
     void nudge (double dm, double dq);
     void keep();

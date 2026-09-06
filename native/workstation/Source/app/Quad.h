@@ -32,6 +32,20 @@ struct Quad
 
 extern const char* const kPinNames[4];
 
+enum class RowType { rest, peak, notch };
+struct Row
+{
+    RowType type = RowType::rest;
+    int f = 64, g = 0;
+};
+constexpr int kFreqCodes = 128, kGainMin = -32, kGainMax = 31;
+
+trench::core::PackedSection rowWords (Row row, std::uint16_t fifth);
+Row rowOf (const trench::core::PackedSection& words);
+double rowHz (const trench::core::PackedSection& words);
+double rowDb (const trench::core::PackedSection& words);
+juce::String noteName (double hz);
+
 bool admit (const Words& words);
 Corners cornersOf (const Quad& quad, const std::vector<Star>& stars);
 trench::core::PackedBody bodyOf (const Corners& c);

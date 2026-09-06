@@ -47,6 +47,24 @@ void Screen::layout()
     cornerBox[2] = { stage.getX() + 8, stage.getBottom() - 42, bw, 20 };
     cornerBox[3] = { stage.getRight() - 8 - bw, stage.getBottom() - 42, bw, 20 };
     for (int i = 0; i < 3; ++i) keys[(size_t) i] = { stage.getX() + i * 56, h - 26, 50, 18 };
+    for (int n = 0; n < 4; ++n)
+    {
+        const bool right = n == 1 || n == 3, bottom = n >= 2;
+        const auto box = cornerBox[(size_t) n];
+        cornerTag[(size_t) n] = { right ? box.getRight() - 120 : box.getX(), bottom ? box.getBottom() + 4 : box.getY() - 18, 120, 14 };
+    }
+    const int tw = std::min (400, stage.getWidth() - 2 * bw - 40), th = kLine * (kRows + 1) + 8;
+    table = { stage.getCentreX() - tw / 2, stage.getBottom() - 46 - th, tw, th };
+}
+
+juce::Rectangle<int> Screen::cell (int row, int column) const
+{
+    static const int widths[kColumns] = { 3, 7, 9, 9, 8 };
+    int total = 0;
+    for (int w : widths) total += w;
+    int x = table.getX() + 6;
+    for (int c = 0; c < column; ++c) x += (table.getWidth() - 12) * widths[c] / total;
+    return { x, table.getY() + 4 + (row + 1) * kLine, (table.getWidth() - 12) * widths[column] / total, kLine };
 }
 
 juce::Point<float> Screen::cornerPoint (int corner) const
@@ -175,8 +193,8 @@ void Screen::paintCorners (juce::Graphics& g) const
         const auto box = cornerBox[(size_t) n];
         const juce::String name = session.cornerName (n);
         const juce::String label = juce::String::charToString ((juce::juce_wchar) Session::kCornerLetters[n]) + (name.isNotEmpty() ? "  READY" : "  EMPTY");
-        g.setColour (kGreen);
-        g.drawText (label, right ? box.getRight() - 120 : box.getX(), bottom ? box.getBottom() + 4 : box.getY() - 18, 120, 14, right ? juce::Justification::centredRight : juce::Justification::centredLeft);
+        g.setColour (session.editing == n ? kText : kGreen);
+        g.drawText (session.editing == n ? label + "  ROWS" : label, cornerTag[(size_t) n], right ? juce::Justification::centredRight : juce::Justification::centredLeft);
         g.setColour (kBox); g.fillRect (box);
         g.setColour (kText);
         g.drawText (name.isNotEmpty() ? name : juce::String ("choose"), box.reduced (6, 0).withTrimmedRight (14), juce::Justification::centredLeft);
@@ -244,6 +262,32 @@ void Screen::paintRails (juce::Graphics& g) const
     }
 }
 
+void Screen::paintTable (juce::Graphics& g) const
+{
+    if (session.editing < 0) return;
+    const auto words = session.editWords();
+    g.setColour (kBack.withAlpha (0.92f)); g.fillRect (table);
+    g.setColour (kDim); g.drawRect (table);
+    g.setFont (mono (10.5f));
+    const char* heads[kColumns] = { "", "TYPE", "NOTE", "HZ", "GAIN" };
+    g.setColour (kDim);
+    for (int c = 0; c < kColumns; ++c) g.drawText (heads[c], cell (-1, c), juce::Justification::centredLeft);
+    for (int r = 0; r < kRows; ++r)
+    {
+        const auto& w = words[(size_t) r];
+        const auto row = rowOf (w);
+        const double hz = rowHz (w), db = rowDb (w);
+        const bool rest = row.type == RowType::rest;
+        const bool lit = dragging == Drag::row && dragRow == r;
+        g.setColour (lit ? kGreen : rest ? kDim : kText);
+        g.drawText (juce::String (r + 1), cell (r, 0), juce::Justification::centredLeft);
+        g.drawText (rest ? "rest" : row.type == RowType::notch ? "notch" : "peak", cell (r, 1), juce::Justification::centredLeft);
+        g.drawText (noteName (hz), cell (r, 2), juce::Justification::centredLeft);
+        g.drawText (rest ? "" : juce::String (hz, hz < 1000.0 ? 1 : 0), cell (r, 3), juce::Justification::centredLeft);
+        g.drawText (rest ? "" : juce::String (db, 1) + " dB", cell (r, 4), juce::Justification::centredLeft);
+    }
+}
+
 void Screen::paintMenu (juce::Graphics& g) const
 {
     if (! menu.open) return;
@@ -270,6 +314,7 @@ void Screen::paint (juce::Graphics& g)
     paintStage (g);
     paintCorners (g);
     paintRails (g);
+    paintTable (g);
     paintMenu (g);
 }
 
@@ -308,6 +353,29 @@ void Screen::mouseDown (const juce::MouseEvent& e)
             return;
         }
     if (presetBox.contains (p)) { openMenu (4, presetBox); return; }
+    for (int n = 0; n < 4; ++n) if (cornerTag[(size_t) n].contains (p)) { session.edit (n); return; }
+    if (session.editing >= 0 && table.contains (p))
+    {
+        for (int r = 0; r < kRows; ++r)
+            for (int c = 1; c < kColumns; ++c)
+                if (cell (r, c).contains (p))
+                {
+                    const auto words = session.editWords();
+                    Row row = rowOf (words[(size_t) r]);
+                    session.beginRowEdit();
+                    if (c == 1)
+                    {
+                        row.type = row.type == RowType::rest ? RowType::peak : row.type == RowType::peak ? RowType::notch : RowType::rest;
+                        if (row.type == RowType::peak && r == kRows - 1 && rowHz (words[(size_t) r]) <= 0.0) { row.type = RowType::notch; row.f = kFreqCodes - 1; row.g = 0; }
+                        session.setRow (session.editing, r, row);
+                        return;
+                    }
+                    if (row.type == RowType::rest) { row.type = RowType::peak; session.setRow (session.editing, r, row); }
+                    dragging = Drag::row; dragRow = r; dragColumn = c; dragOrigin = p; dragPoint = p; dragBase = row;
+                    return;
+                }
+        return;
+    }
     for (int n = 0; n < 4; ++n) if (cornerBox[(size_t) n].contains (p)) { openMenu (n, cornerBox[(size_t) n]); return; }
     for (int rail = 0; rail < 2; ++rail)
         if (const int k = cardAt (p, rail); k >= 0)
@@ -327,6 +395,15 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
 {
     const auto p = e.getPosition();
     dragPoint = p;
+    if (dragging == Drag::row)
+    {
+        Row row = dragBase;
+        const int steps = (p.x - dragOrigin.x) / 4;
+        if (dragColumn == 4) row.g = std::clamp (dragBase.g + steps, kGainMin, kGainMax);
+        else row.f = std::clamp (dragBase.f + steps, 0, kFreqCodes - 1);
+        session.setRow (session.editing, dragRow, row);
+        return;
+    }
     if (dragging == Drag::puck)
     {
         session.setPuck ((p.x - stage.getX()) * 100.0 / stage.getWidth(), (stage.getBottom() - p.y) * 100.0 / stage.getHeight());
@@ -362,7 +439,7 @@ void Screen::mouseUp (const juce::MouseEvent& e)
     {
         if (const int n = cornerAt (p); n >= 0 && dragStar >= 0) session.pinCorner (n, dragStar);
     }
-    dragging = Drag::none; dragStar = -1; dragRail = -1;
+    dragging = Drag::none; dragStar = -1; dragRail = -1; dragRow = -1; dragColumn = -1;
     repaint();
 }
 

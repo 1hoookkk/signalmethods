@@ -1989,3 +1989,20 @@ Open, in order:
   lerp; the 132 corners as the material); its PCA figures are real (72.7/14.0/4.5), its archetype
   and byte-identity claims unverified. Research notes: E-mu's dials were the chip's own codes
   (ARMAdillo), so design space and lerp space were one. tHeadspace 8, tShot 1.
+- 2026-09-06 evening, Tyson ruled on the 12-point E-mu tool comparison (research notes vs
+  HEADSPACE): ACCEPT row grammar (frequency + gain, zero paired to the pole, radius follows
+  frequency), poles AND zeros in every authored row with row 6 a high safety notch, Morpheus
+  palette ingestion, wav loop as audition source, "Sharpen Q0 -> Q1" as a utility gesture only,
+  admit() must allow rest rows, ring leveller OFF on the tool's audio path (+44 dB ceiling on the
+  display instead). REJECT a seventh lowpass stage (six sections, 240 bytes, stands). CONFIRMED
+  the vowel picker holds no E-mu presets. DEFERRED trajectory scrubbing and MIDI key tracking.
+  Slice 1 built: rowWords/rowOf in Quad.cpp are the Morph Designer Type 1 formula from
+  EmulatorX.dll (FUN_1802c6590) verified through the core: F 0..127 = 81 Hz..11.6 kHz at 44.1k,
+  gain step ~0.75 dB, +8 = +6.01 dB at the note, the note moves under 10 cents with gain; the
+  radius words run backwards (smaller word = larger radius; identity = everything at the
+  origin), so a notch is zero word 0x0000, not 0xFFFF; Type 2 of the DLL decodes as a
+  near-circle pole, not a notch, and was not used. Fifth word never touched by the editor.
+  Corner letter opens six rows on the stage; editing a factory card makes a capture. 48 checks.
+  Gemini pastes are Tyson's slice sentences (memory: gemini-pastes-are-the-sentence); the
+  Sandell-Martens centering paste is picker geometry, not a path rule (a constant prototype
+  changes nothing in a linear lerp); the Rossum-keyboard paste reopens note-in as slice 2.

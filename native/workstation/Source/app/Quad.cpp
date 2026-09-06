@@ -30,10 +30,70 @@ int indexOf (const std::vector<Star>& stars, const juce::String& name)
 }
 }
 
-bool admit (const Words& words)
+bool admit (const Words&) { return true; }
+
+namespace
 {
-    for (const auto& row : words) if (row == trench::core::kIdentitySection) return false;
-    return true;
+int freqCode (int f) { return ((220 * std::clamp (f, 0, kFreqCodes - 1)) >> 7) + 18; }
+int radCode (int freq) { return ((freq * 0x7c) >> 8) + 0x76; }
+std::uint16_t byteWord (int code) { return (std::uint16_t) (std::clamp (code, 0, 255) << 8); }
+}
+
+trench::core::PackedSection rowWords (Row row, std::uint16_t fifth)
+{
+    if (row.type == RowType::rest) return { 0xDFFF, 0xFFFF, 0xDFFF, 0xFFFF, fifth };
+    const int freq = freqCode (row.f), rad = radCode (freq);
+    int g = std::clamp (std::clamp (row.g, kGainMin, kGainMax), rad - 254, 255 - rad);
+    const auto angle = byteWord (freq);
+    auto make = [&] (int gain) {
+        const auto zero = row.type == RowType::notch ? (std::uint16_t) 0x0000 : byteWord (rad + gain);
+        return trench::core::PackedSection { angle, zero, angle, byteWord (rad - gain), fifth };
+    };
+    while (g < kGainMax && rowHz (make (g)) <= 0.0) ++g;
+    return make (g);
+}
+
+Row rowOf (const trench::core::PackedSection& words)
+{
+    Row row;
+    if (rowHz (words) <= 0.0) return row;
+    const int angle = words[2] >> 8;
+    int best = 1 << 20;
+    for (int f = 0; f < kFreqCodes; ++f)
+    {
+        const int d = std::abs (freqCode (f) - angle);
+        if (d < best) { best = d; row.f = f; }
+    }
+    row.g = std::clamp (radCode (freqCode (row.f)) - (int) (words[3] >> 8), kGainMin, kGainMax);
+    row.type = words[1] < 0x0100 ? RowType::notch : RowType::peak;
+    return row;
+}
+
+double rowHz (const trench::core::PackedSection& words)
+{
+    const auto g = trench::core::geometry_from_words (words, trench::core::kP2kDatumHz);
+    const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+    return pole != nullptr && pole->radius >= 0.05 ? pole->hz : 0.0;
+}
+
+double rowDb (const trench::core::PackedSection& words)
+{
+    const double hz = rowHz (words);
+    if (hz <= 0.0) return 0.0;
+    const std::array<trench::core::Biquad, 1> one { trench::core::section_words_to_biquad (words) };
+    return trench::core::cascade_response_db (one, hz, trench::core::kP2kDatumHz);
+}
+
+juce::String noteName (double hz)
+{
+    if (hz <= 0.0) return "rest";
+    static const char* names[12] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    const double midi = 69.0 + 12.0 * std::log2 (hz / 440.0);
+    const int n = (int) std::lround (midi);
+    const int cents = (int) std::lround ((midi - n) * 100.0);
+    juce::String out = juce::String (names[((n % 12) + 12) % 12]) + juce::String (n / 12 - 1);
+    if (cents != 0) out += (cents > 0 ? "+" : "") + juce::String (cents);
+    return out;
 }
 
 Corners cornersOf (const Quad& quad, const std::vector<Star>& stars)

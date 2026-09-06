@@ -70,7 +70,7 @@ int main()
         check (s.factoryCount == 132 && s.libraryCount == 144 && s.stars.size() == 144 && s.bodies.size() == 33, "the palette holds 132 factory corners and 12 Klatt vowels");
         bool admitted = true, files = true;
         for (const auto& e : s.stars) { admitted = admitted && hs::admit (e.words); if (e.kind == "factory") files = files && hs::bodyFile (p2k, e.body).existsAsFile(); }
-        check (admitted && files, "every palette entry has six active sections and every body maps to its file");
+        check (admitted && files, "every palette entry is admitted and every body maps to its file");
         check (s.quad.complete() && s.cornerName (0) == "Talking Hedz M0 Q1" && s.cornerName (2) == "Talking Hedz M0 Q0" && s.sounding, "a fresh session boots on Talking Hedz, A top-left is M0 Q1, C bottom-left is M0 Q0");
         const auto boot = s.words;
         s.hover (5);
@@ -187,6 +187,62 @@ int main()
     }
 
     {
+        auto at = [] (const trench::core::PackedSection& w, double hz) { const std::array<trench::core::Biquad, 1> one { trench::core::section_words_to_biquad (w) }; return trench::core::cascade_response_db (one, hz, trench::core::kP2kDatumHz); };
+        bool rising = true;
+        double last = 0.0;
+        for (int f = 0; f < hs::kFreqCodes; ++f) { const double hz = hs::rowHz (hs::rowWords ({ hs::RowType::peak, f, 0 }, 0xE000)); rising = rising && hz > last; last = hz; }
+        const double low = hs::rowHz (hs::rowWords ({ hs::RowType::peak, 0, 0 }, 0xE000)), high = last;
+        std::printf ("      F 0 = %.1f Hz, F 127 = %.0f Hz\n", low, high);
+        check (rising && low > 70.0 && low < 95.0 && high > 11000.0 && high < 12500.0, "the row grammar's frequency code climbs from about 81 Hz to about 11.6 kHz at the P2K datum");
+        const auto flat = hs::rowWords ({ hs::RowType::peak, 64, 0 }, 0xE000);
+        const auto up = hs::rowWords ({ hs::RowType::peak, 64, 8 }, 0xE000), down = hs::rowWords ({ hs::RowType::peak, 64, -8 }, 0xE000);
+        const double note = hs::rowHz (flat);
+        std::printf ("      F 64 = %.1f Hz, gain +8 = %.2f dB, -8 = %.2f dB, at 100 Hz %.2f dB\n", note, at (up, note), at (down, note), at (up, 100.0));
+        check (std::abs (at (flat, note)) < 0.05 && std::abs (1200.0 * std::log2 (hs::rowHz (up) / note)) < 10.0, "gain zero is flat and gain moves the note by less than 10 cents, as the hardware words do");
+        check (at (up, note) > 5.5 && at (up, note) < 6.5 && at (down, note) < -5.5 && at (down, note) > -6.5 && std::abs (at (up, 100.0)) < 0.2, "gain +8 is a 6 dB peak at the note, -8 a 6 dB dip, and the skirt stays flat");
+        const auto notch = hs::rowWords ({ hs::RowType::notch, 64, 0 }, 0xE000);
+        check (at (notch, note) < -30.0 && std::abs (at (notch, 100.0)) < 1.0, "a notch row puts the zero on the circle at the note");
+        bool inverse = true;
+        for (int f = 0; f < hs::kFreqCodes && inverse; f += 9)
+            for (int g = hs::kGainMin; g <= hs::kGainMax && inverse; g += 7)
+            {
+                const auto w = hs::rowWords ({ hs::RowType::peak, f, g }, 0xE000);
+                inverse = hs::rowWords (hs::rowOf (w), 0xE000) == w;
+            }
+        check (inverse && hs::rowOf (hs::rowWords ({ hs::RowType::rest, 0, 0 }, 0xE000)).type == hs::RowType::rest && hs::rowOf (notch).type == hs::RowType::notch, "every grammar row reads back as itself");
+        hs::Words padded {};
+        for (size_t r = 0; r < hs::kRows; ++r) padded[r] = r < 4 ? hs::rowWords ({ hs::RowType::peak, (int) (20 + 20 * r), 6 }, 0xE000) : trench::core::kIdentitySection;
+        check (hs::admit (padded), "a four-section frame padded with rest rows is admitted");
+        check (hs::noteName (440.0) == "A4" && hs::noteName (0.0) == "rest", "rows are named by note");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        const int factory = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
+        const auto before = s.stars[(size_t) factory].words;
+        s.edit (0);
+        check (s.editing == 0 && s.auditioning == factory && same (s.words, before), "opening corner A's rows plays that corner exactly");
+        s.beginRowEdit();
+        s.setRow (0, 1, { hs::RowType::peak, 70, 10 });
+        const int edited = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
+        bool untouched = true;
+        for (size_t r = 0; r < hs::kRows; ++r) if (r != 1) untouched = untouched && s.stars[(size_t) edited].words[r] == before[r];
+        check (edited != factory && s.stars[(size_t) edited].kind == "capture" && s.stars[(size_t) edited].name == "C1" && s.cornerName (0) == "C1", "editing a factory corner makes a capture and puts it in that corner");
+        check (untouched && s.stars[(size_t) edited].words[1] == hs::rowWords ({ hs::RowType::peak, 70, 10 }, before[1][4]) && same (s.stars[(size_t) factory].words, before), "only the edited row changes, its fifth word is kept, and the factory card is untouched");
+        s.setRow (0, 1, { hs::RowType::peak, 71, 10 });
+        check (s.quad.pins[(size_t) hs::Session::kCornerPin[0]] == edited && s.stars.size() == 145 && same (s.words, s.stars[(size_t) edited].words), "a second edit stays in the same capture and is what plays");
+        const auto path = juce::File::createTempFile ("edited.body240");
+        s.write (path);
+        const auto bytes = bytesOf (path);
+        const auto body = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> (bytes.data(), bytes.size()));
+        check (body.words[2][1] == hs::rowWords ({ hs::RowType::peak, 71, 10 }, before[1][4]), "W writes the edited row into the M0 Q1 corner of the 240 bytes");
+        s.undo();
+        check (s.editing == -1 && s.cornerName (0) == "Talking Hedz M0 Q1" && s.stars.size() == 144, "one undo removes the edit and its capture");
+        s.edit (2); s.setPuck (10.0, 10.0);
+        check (s.editing == -1 && s.auditioning == -1, "touching the stage closes the rows");
+    }
+
+    {
         hs::Session s (root, tempQuad(), false);
         s.loadPreset ("Zoom Peaks");
         const auto heat = hs::hotCells (hs::cornersOf (s.quad, s.stars), 9, hs::curveHz());
@@ -215,6 +271,15 @@ int main()
         check (screen.stage.toFloat().contains (screen.puckPoint()), "the puck sits inside the stage");
         screen.setSize (900, 560);
         check (screen.stage.getWidth() > 400 && screen.cornerBox[3].getRight() <= 900, "the layout follows the window size");
+        screen.setSize (1120, 700);
+        s.edit (0);
+        const auto rows = screen.shot();
+        const auto rowsFile = folder.getChildFile ("headspace_rows.png");
+        rowsFile.deleteFile();
+        juce::FileOutputStream rowsOut (rowsFile);
+        const bool rowsWritten = rowsOut.openedOk() && png.writeImageToStream (rows, rowsOut);
+        rowsOut.flush();
+        check (rowsWritten && screen.stage.contains (screen.table) && screen.cell (5, 4).getBottom() <= screen.table.getBottom(), "the six rows render inside the stage to artifacts/shots/headspace_rows.png");
     }
 
     std::printf ("%d failures\n", failures);

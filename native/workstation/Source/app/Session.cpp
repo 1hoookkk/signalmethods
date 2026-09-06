@@ -46,7 +46,14 @@ int Session::currentStar() const
 
 void Session::audition()
 {
-    if (auditioning == -2 && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
+    if (editing >= 0 && quad.pins[(size_t) kCornerPin[editing]] >= 0)
+    {
+        auditioning = quad.pins[(size_t) kCornerPin[editing]];
+        words = editWords();
+        sounding = true;
+        status = juce::String::charToString ((juce::juce_wchar) kCornerLetters[editing]) + "  " + cornerName (editing);
+    }
+    else if (auditioning == -2 && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
     {
         Corners c { stars[(size_t) pairA].words, stars[(size_t) pairB].words, stars[(size_t) pairA].words, stars[(size_t) pairB].words };
         words = lerp (c, pairT, 0.0);
@@ -89,6 +96,7 @@ void Session::restore (const Snapshot& s)
     stars.insert (stars.end(), s.added.begin(), s.added.end());
     for (auto& p : quad.pins) if (p >= (int) stars.size()) p = -1;
     if (selected >= (int) stars.size()) selected = -1;
+    if (editing >= 0 && quad.pins[(size_t) kCornerPin[editing]] < 0) editing = -1;
 }
 
 void Session::apply()
@@ -171,11 +179,58 @@ int Session::addRead (const juce::File& wav)
     return selected;
 }
 
+void Session::edit (int corner)
+{
+    if (corner < 0 || corner > 3 || corner == editing) { editing = -1; auditioning = -1; audition(); changed(); return; }
+    const int star = quad.pins[(size_t) kCornerPin[corner]];
+    if (star < 0) return;
+    editing = corner;
+    selected = star;
+    auditioning = star;
+    audition();
+    changed();
+}
+
+void Session::beginRowEdit() { history.push_back (snapshot()); future.clear(); }
+
+void Session::setRow (int corner, int row, Row r)
+{
+    if (corner < 0 || corner > 3 || row < 0 || row >= kRows) return;
+    const int pin = kCornerPin[corner];
+    int star = quad.pins[(size_t) pin];
+    if (star < 0 || star >= (int) stars.size()) return;
+    if (stars[(size_t) star].kind != "capture")
+    {
+        Star s = stars[(size_t) star];
+        s.kind = "capture"; s.parentA = s.name; s.parentB = ""; s.corner = ""; s.morph = 0.0; s.q = 0.0;
+        quad.captures += 1;
+        s.name = "C" + juce::String (quad.captures);
+        s.body = s.name;
+        stars.push_back (s);
+        star = (int) stars.size() - 1;
+        quad.pins[(size_t) pin] = star;
+    }
+    auto& words = stars[(size_t) star].words;
+    words[(size_t) row] = rowWords (r, words[(size_t) row][4]);
+    editing = corner;
+    selected = star;
+    auditioning = star;
+    apply();
+}
+
+Words Session::editWords() const
+{
+    if (editing < 0) return {};
+    const int star = quad.pins[(size_t) kCornerPin[editing]];
+    return star >= 0 && star < (int) stars.size() ? stars[(size_t) star].words : Words {};
+}
+
 void Session::setPuck (double morph, double q)
 {
     quad.morph = std::clamp (morph, 0.0, 100.0);
     quad.q = std::clamp (q, 0.0, 100.0);
     auditioning = -1;
+    editing = -1;
     apply();
 }
 
@@ -218,7 +273,7 @@ void Session::undo()
     future.push_back (snapshot());
     restore (history.back());
     history.pop_back();
-    hovered = -1; auditioning = -1;
+    hovered = -1; auditioning = -1; editing = -1;
     apply();
 }
 
@@ -228,7 +283,7 @@ void Session::redo()
     history.push_back (snapshot());
     restore (future.back());
     future.pop_back();
-    hovered = -1; auditioning = -1;
+    hovered = -1; auditioning = -1; editing = -1;
     apply();
 }
 
@@ -279,6 +334,7 @@ bool Session::key (const juce::KeyPress& k)
     if (code == juce::KeyPress::downKey) { nudge (0.0, -step); return true; }
     if (code == juce::KeyPress::spaceKey) { setPlaying (! playing); return true; }
     if (code == juce::KeyPress::deleteKey) { removeAdded(); return true; }
+    if (code == juce::KeyPress::escapeKey && editing >= 0) { edit (editing); return true; }
     if (control && (c == 's' || c == 'S' || code == 'S')) { keep(); return true; }
     if (control && (c == 'z' || c == 'Z' || code == 'Z')) { undo(); return true; }
     if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }

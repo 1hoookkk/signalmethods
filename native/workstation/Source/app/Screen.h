@@ -28,7 +28,10 @@ public:
 
     juce::Rectangle<int> stage, presetBox;
     std::array<juce::Rectangle<int>, 2> rails;
-    std::array<juce::Rectangle<int>, 4> cornerBox;
+    std::array<juce::Rectangle<int>, 4> cornerBox, cornerTag;
+    juce::Rectangle<int> table;
+    static constexpr int kLine = 16, kColumns = 5;
+    juce::Rectangle<int> cell (int row, int column) const;
     std::array<juce::Rectangle<int>, 3> keys;
     struct Menu { bool open = false; int target = -1; juce::Rectangle<int> rect; int scroll = 0; } menu;
     static constexpr int kCard = 64;
@@ -45,12 +48,14 @@ private:
     void paintCorners (juce::Graphics& g) const;
     void paintRails (juce::Graphics& g) const;
     void paintMenu (juce::Graphics& g) const;
+    void paintTable (juce::Graphics& g) const;
     void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill) const;
     Session& session;
     std::vector<double> hz;
     std::array<int, 2> scroll { 0, 0 };
-    enum class Drag { none, puck, rail, card } dragging = Drag::none;
-    int dragStar = -1, dragRail = -1;
+    enum class Drag { none, puck, rail, card, row } dragging = Drag::none;
+    int dragStar = -1, dragRail = -1, dragRow = -1, dragColumn = -1;
+    Row dragBase;
     juce::Point<int> dragOrigin, dragPoint;
 };
 }
