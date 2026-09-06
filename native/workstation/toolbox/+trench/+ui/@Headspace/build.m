@@ -21,6 +21,23 @@ set(panel,'ButtonDownFcn',@(~,~) app.onField('press'));
 app.shade=patch(app.fieldAxes,'Faces',app.tri.ConnectivityList,'Vertices',app.points,'FaceVertexCData',app.brightness, ...
     'FaceColor','interp','EdgeColor','none','HitTest','off');
 colormap(app.fieldAxes,parula(256)); clim(app.fieldAxes,[min(app.brightness) max(app.brightness)]);
+set(app.shade,'FaceAlpha',.3);
+colors=[0 114 189; 217 83 25; 196 143 0; 110 110 110; 176 176 176]/255;
+[x,y]=meshgrid(linspace(min(app.points(:,1)),max(app.points(:,1)),320),linspace(min(app.points(:,2)),max(app.points(:,2)),280));
+app.contours=gobjects(1,5);
+for k=1:5
+    notes=arrayfun(@(f) f.chord(k,2),app.frames);
+    field=scatteredInterpolant(app.points(:,1),app.points(:,2),notes(:),'linear','none'); z=field(x,y);
+    [~,app.contours(k)]=contour(app.fieldAxes,x,y,z,floor(min(notes)):ceil(max(notes)),'LineColor',colors(k,:),'LineWidth',.6,'HitTest','off');
+end
+rim=freeBoundary(app.tri); loop=rim(1,:); rim(1,:)=[];
+while ~isempty(rim)
+    next=find(rim(:,1)==loop(end),1);
+    if isempty(next), next=find(rim(:,2)==loop(end),1); rim(next,:)=fliplr(rim(next,:)); end
+    loop(end+1)=rim(next,2); rim(next,:)=[];
+end
+rim=app.points(loop,:);
+app.edge=line(app.fieldAxes,rim(:,1),rim(:,2),'Color','k','LineWidth',.75,'HitTest','off');
 gold=[196 143 0]/255;
 app.positionMark=line(app.fieldAxes,NaN,NaN,'Marker','s','MarkerSize',12,'MarkerFaceColor',gold,'Color',gold,'LineStyle','none','HitTest','off');
 app.fieldLabel=uicontrol(panel,'Style','text','String','','FontName','Arial','FontSize',11,'BackgroundColor','w', ...

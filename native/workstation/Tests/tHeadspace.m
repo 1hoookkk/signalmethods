@@ -180,7 +180,9 @@ methods(Test)
         t.verifyEqual(sort(tags(:)'),sort({'PLAY','SAW','PINK NOISE','WRITE BODY FILE','1','2','3','4'}));
         t.verifyEqual(numel(findall(a.figure,'Type','figure')),1); t.verifyNumElements(findall(a.figure,'Type','axes'),2);
         t.verifyEqual(char(a.figure.Visible),'off'); t.verifyEqual(a.figure.Name,'HEADSPACE');
-        t.verifyNumElements(a.fieldAxes.Children,2); t.verifyEqual(a.fieldAxes.Children(1),a.positionMark); t.verifyEqual(a.fieldAxes.Children(2),a.shade);
+        t.verifyNumElements(a.fieldAxes.Children,8); t.verifyEqual(a.fieldAxes.Children(1),a.positionMark); t.verifyEqual(a.fieldAxes.Children(end),a.shade);
+        t.verifyNumElements(a.contours,5); t.verifyTrue(all(isgraphics(a.contours,'contour'))); t.verifyTrue(isgraphics(a.edge,'line'));
+        for k=1:5, notes=arrayfun(@(f) f.chord(k,2),a.frames); t.verifyEqual(a.contours(k).LevelList,floor(min(notes)):ceil(max(notes))); end
         t.verifyEqual(a.shade.EdgeColor,'none'); t.verifyEqual(a.shade.FaceVertexCData,a.brightness); t.verifyTrue(all(isfinite(a.brightness)) && numel(a.brightness)==44); t.verifyEqual(char(a.fieldAxes.Visible),'off');
         t.verifyEmpty(findall(a.fieldAxes,'Type','text')); t.verifyEmpty(findall(a.fieldAxes,'Type','scatter'));
         a.setPosition(mean(a.points(a.tri.ConnectivityList(1,:),:),1)); p=a.probe;

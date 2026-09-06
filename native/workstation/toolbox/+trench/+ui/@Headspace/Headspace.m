@@ -19,6 +19,8 @@ properties
     fieldAxes
     shade
     brightness
+    contours
+    edge
     positionMark
     fieldLabel
     liveAxes

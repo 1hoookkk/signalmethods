@@ -1966,3 +1966,8 @@ Open, in order:
   (no bandwidths, no F5), DVTD subject 2 in, Klatt in on Table I and II. 44 anchors on a
   convex lattice hexagon (q 0..6, r 0..7, 3 <= q+r <= 10; 109 edges, 66 triangles), arranged
   by likeness. tHeadspace 15, tShot 1.
+- 2026-09-06 ~14:40, Tyson: "Can it render as like a complex mathematical structure that
+  looks striking". The plane now draws the exact iso-lines of each formant's note field, one
+  per semitone, five families in five colours, straight within triangles, over the brightness
+  fill at 30 percent, with the hexagon outline. True geometry, not decoration. tHeadspace 15,
+  tShot 1.
