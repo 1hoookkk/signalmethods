@@ -7,5 +7,4 @@ for k=1:numel(data.anchors)
     f.provenance=a.provenance;
     if isempty(frames), frames=f; else, frames(end+1)=f; end
 end
-assert(numel(frames)==76,'HEADSPACE requires 76 anchors.');
 end

@@ -1960,3 +1960,9 @@ Open, in order:
   (power-weighted centre of the response on the note scale), interpolated across the triangles
   with no edges; the gold mark is back; one line names the three anchors around the mark with
   shares. Lattice still hidden. tHeadspace 15, tShot 1.
+- 2026-09-06 ~14:15, Tyson: "We should only let a source come into the space if it has what
+  exactly" -> "No estimates. Mathematical conversions". Admission: measured or published F1..F5
+  with bandwidths, converted to notes and widths, every number in evidence. Hillenbrand out
+  (no bandwidths, no F5), DVTD subject 2 in, Klatt in on Table I and II. 44 anchors on a
+  convex lattice hexagon (q 0..6, r 0..7, 3 <= q+r <= 10; 109 edges, 66 triangles), arranged
+  by likeness. tHeadspace 15, tShot 1.

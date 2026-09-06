@@ -13,9 +13,9 @@ end
 methods(Test)
     function h01Anatomy(t)
         f=t.app.frames; groups={f.group};
-        t.verifyEqual(numel(f),76);
-        t.verifyEqual([nnz(strcmp(groups,'Klatt 1980')) nnz(strcmp(groups,'Hillenbrand 1995')) nnz(strcmp(groups,'DVTD'))],[12 48 16]);
-        for k=1:76
+        t.verifyEqual(numel(f),44);
+        t.verifyEqual([nnz(strcmp(groups,'Klatt 1980')) nnz(strcmp(groups,'DVTD'))],[12 32]);
+        for k=1:44
             c=f(k).chord; trench.headspace.validate(c);
             t.verifyEqual(c(:,[1 4]),ones(6,2)); t.verifyGreaterThan(diff(c(1:5,2)),zeros(4,1));
             t.verifyGreaterThan(c(1:5,6),c(1:5,3)); t.verifyEqual(c(6,[3 6]),[12 12]);
@@ -29,32 +29,24 @@ methods(Test)
         end
     end
     function h02Provenance(t)
-        a=t.app; data=readtable(fullfile(a.root,'evidence','mouths','hillenbrand','hillenbrand-vowel-formatted.csv'),TextType='string');
-        for k=1:76
+        a=t.app;
+        for k=1:44
             f=a.frames(k); p=f.provenance;
             t.verifyEqual(trench.bridge.hzOf(f.chord(1:5,2)),p.frequencyHz,'AbsTol',1e-9);
+            t.verifyEqual(f.chord(1:5,3),12*log2(1+p.bandwidthHz./p.frequencyHz),'AbsTol',1e-9);
+            t.verifyFalse(any(contains(string(p.frequencyKind),"estimat")));
             if k<=12
-                t.verifyEqual(p.frequencyHz(4:5),[3300;3750]);
-                t.verifyEqual(p.bandwidthHz(4:5),[250;200]);
-                t.verifyEqual(string(p.frequencyKind(4:5)),["published_default";"published_default"]);
-                t.verifyEqual(f.chord(6,2),f.chord(6,5));
-            elseif k<=60
-                parts=split(string(f.name)); rows=startsWith(data.ID,extractBetween(parts(3),1,1)) & endsWith(data.ID,parts(2));
-                values=data.F4(rows); values=values(values>0);
-                t.verifyEqual(p.frequencyHz(4),mean(values),'AbsTol',1e-9);
-                t.verifyEqual(p.measurementCounts(4),numel(values));
-                t.verifyEqual(string(p.frequencyKind(4:5)),["measured";"estimated"]);
-                t.verifyEqual(p.frequencyHz(5),p.frequencyHz(4)+median(diff(p.frequencyHz(1:4))),'AbsTol',1e-9);
-                t.verifyEqual(p.bandwidthHz(4:5),p.bandwidthHz(3)*p.frequencyHz(4:5)/p.frequencyHz(3),'AbsTol',1e-9);
+                t.verifyEqual(p.frequencyHz(4:5),[3300;3750]); t.verifyEqual(p.bandwidthHz(4:5),[250;200]);
+                t.verifyEqual(string(p.frequencyKind),["published_table_II";"published_table_II";"published_table_II";"published_table_I";"published_table_I"]);
                 t.verifyEqual(f.chord(6,2),f.chord(6,5));
             else
                 t.verifyEqual(string(p.frequencyKind),repmat("measured_response_peak",5,1));
             end
         end
-        for group={'Klatt 1980','Hillenbrand 1995','DVTD'}
+        for group={'Klatt 1980','DVTD'}
             bank=trench.io.openBank(fullfile(a.root,'native','workstation','banks',[group{1} '.bank.json']));
-            if strcmp(group{1},'DVTD'), bank.frames=bank.frames(endsWith({bank.frames.name},' s1')); end
             completed=a.frames(strcmp({a.frames.group},group{1}));
+            t.verifyEqual(numel(completed),numel(bank.frames));
             for k=1:numel(completed)
                 original=trench.model.conformShelf(bank.frames(k));
                 t.verifyEqual(completed(k).chord([1:3 6],:),original.chord([1:3 6],:));
@@ -66,7 +58,7 @@ methods(Test)
         a=t.app; edges=a.tri.edges; lengths=vecnorm(a.points(edges(:,1),:)-a.points(edges(:,2),:),2,2);
         t.verifyEqual(lengths,ones(size(lengths)),'AbsTol',1e-9);
         t.verifyEqual(numel(unique(conncomp(graph(edges(:,1),edges(:,2))))),1);
-        t.verifyEqual(76-size(edges,1)+size(a.tri.ConnectivityList,1),1);
+        t.verifyEqual(44-size(edges,1)+size(a.tri.ConnectivityList,1),1);
         boundary=freeBoundary(a.tri); components=conncomp(graph(boundary(:,1),boundary(:,2),'omitselfloops'));
         t.verifyEqual(numel(unique(components(unique(boundary)))),1);
         xy=a.points; area=sum(abs(detTriangles(xy,a.tri.ConnectivityList)))/2; hull=convhull(xy);
@@ -77,7 +69,7 @@ methods(Test)
     end
     function h04ExactAnchors(t)
         a=t.app;
-        for k=1:76
+        for k=1:44
             a.setPosition(a.points(k,:));
             t.verifyEqual(a.chord,a.frames(k).chord); t.verifyEqual(a.weights,[1 0 0]);
             t.verifyEqual(a.words,trench.bridge.unityDc(a.frames(k).words));
@@ -189,7 +181,7 @@ methods(Test)
         t.verifyEqual(numel(findall(a.figure,'Type','figure')),1); t.verifyNumElements(findall(a.figure,'Type','axes'),2);
         t.verifyEqual(char(a.figure.Visible),'off'); t.verifyEqual(a.figure.Name,'HEADSPACE');
         t.verifyNumElements(a.fieldAxes.Children,2); t.verifyEqual(a.fieldAxes.Children(1),a.positionMark); t.verifyEqual(a.fieldAxes.Children(2),a.shade);
-        t.verifyEqual(a.shade.EdgeColor,'none'); t.verifyEqual(a.shade.FaceVertexCData,a.brightness); t.verifyTrue(all(isfinite(a.brightness)) && numel(a.brightness)==76); t.verifyEqual(char(a.fieldAxes.Visible),'off');
+        t.verifyEqual(a.shade.EdgeColor,'none'); t.verifyEqual(a.shade.FaceVertexCData,a.brightness); t.verifyTrue(all(isfinite(a.brightness)) && numel(a.brightness)==44); t.verifyEqual(char(a.fieldAxes.Visible),'off');
         t.verifyEmpty(findall(a.fieldAxes,'Type','text')); t.verifyEmpty(findall(a.fieldAxes,'Type','scatter'));
         a.setPosition(mean(a.points(a.tri.ConnectivityList(1,:),:),1)); p=a.probe;
         t.verifyEqual([a.positionMark.XData a.positionMark.YData],p.position,'AbsTol',1e-12);

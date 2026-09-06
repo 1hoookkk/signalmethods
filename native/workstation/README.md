@@ -1,7 +1,7 @@
 # HEADSPACE
 
-The authoring tool for TRENCH bodies, one screen. A hidden plane of 76 vowel anchors (Klatt 1980,
-Hillenbrand 1995, DVTD subject 1), every one five bells in rows 1 to 5 and a low shelf in row 6,
+The authoring tool for TRENCH bodies, one screen. A hidden plane of 44 vowel anchors (Klatt 1980 and both
+DVTD subjects, every value measured or published, nothing estimated), every one five bells in rows 1 to 5 and a low shelf in row 6,
 laid out on an equal-hop triangular lattice by likeness. Drag anywhere on the plane and hear the
 blend of the three anchors around you, stage to stage: F1 with F1 through F5, shelf with shelf.
 The plane is painted by brightness, the gold mark shows where you are, and the three anchors around you are named beneath it; the lattice itself is not drawn. A MATLAB R2025b toolbox over two MEX files, `trench_bridge` (the
@@ -23,9 +23,8 @@ Space plays. WRITE BODY FILE, once four corners are filled, writes
 
 ## Data
 
-`data/headspace-anchors.json` holds the 76 anchors with provenance per value (measured, published
-default, estimated); `trench.headspace.bakeAnchors` writes it from the factory banks and the
-Hillenbrand CSV. `data/headspace-layout.json` is the stored lattice arrangement;
+`data/headspace-anchors.json` holds the 44 anchors with provenance per value (measured or
+published); `trench.headspace.bakeAnchors` writes it from the Klatt and DVTD factory banks. `data/headspace-layout.json` is the stored lattice arrangement;
 `tools/arrange_headspace.py` computes it (seed 19801995). Neither is rebuilt at launch.
 
 ## Build

@@ -19,23 +19,24 @@ def main():
         scales.append({'mean': block.mean(axis=0).tolist(), 'std': scale.tolist(), 'active': active.tolist()})
     features = np.concatenate(features, axis=1)
     cost = cdist(features, features, metric='sqeuclidean') / len(blocks)
-    axial = np.array([(q, r) for r in range(10) for q in range(10) if 2 <= q + r <= 12])
+    n = len(anchors)
+    axial = hexagon(n)
     points = axial @ np.array([[1, 0], [.5, np.sqrt(3) / 2]])
     distance = cdist(points, points)
     edges = np.argwhere(np.triu(np.abs(distance - 1) < 1e-9, 1))
-    triangles = [(a, b, c) for a in range(76) for b in range(a + 1, 76) for c in range(b + 1, 76)
+    triangles = [(a, b, c) for a in range(n) for b in range(a + 1, n) for c in range(b + 1, n)
                  if abs(distance[a, b] - 1) < 1e-9 and abs(distance[b, c] - 1) < 1e-9 and abs(distance[a, c] - 1) < 1e-9]
-    incident = [np.where((edges == i).any(axis=1))[0] for i in range(76)]
-    affected = {(i, j): np.unique(np.concatenate([incident[i], incident[j]])) for i in range(76) for j in range(i + 1, 76)}
+    incident = [np.where((edges == i).any(axis=1))[0] for i in range(n)]
+    affected = {(i, j): np.unique(np.concatenate([incident[i], incident[j]])) for i in range(n) for j in range(i + 1, n)}
     rng = np.random.default_rng(19801995)
     objective = lambda order: float(cost[order[edges[:, 0]], order[edges[:, 1]]].sum())
-    baselines = [objective(rng.permutation(76)) for _ in range(256)]
+    baselines = [objective(rng.permutation(n)) for _ in range(256)]
     best_cost = np.inf
     for restart in range(8):
-        order = rng.permutation(76)
+        order = rng.permutation(n)
         total = objective(order)
         for step in range(100000):
-            i, j = sorted(rng.choice(76, 2, replace=False))
+            i, j = sorted(rng.choice(n, 2, replace=False))
             subset = edges[affected[i, j]]
             before = cost[order[subset[:, 0]], order[subset[:, 1]]].sum()
             order[i], order[j] = order[j], order[i]
@@ -72,6 +73,26 @@ def main():
               'edgeCost': best_cost, 'randomMeanEdgeCost': float(np.mean(baselines)),
               'randomMinEdgeCost': min(baselines), 'edges': len(edges), 'restarts': 8, 'stepsPerRestart': 100000}
     (folder / 'headspace-layout.json').write_text(json.dumps(result, indent=2) + '\n')
+
+
+def hexagon(n):
+    best = None
+    for q_hi in range(1, 13):
+        for r_hi in range(1, 13):
+            for s_lo in range(0, q_hi + r_hi + 1):
+                for s_hi in range(s_lo, q_hi + r_hi + 1):
+                    pts = [(q, r) for r in range(r_hi + 1) for q in range(q_hi + 1) if s_lo <= q + r <= s_hi]
+                    if len(pts) != n:
+                        continue
+                    arr = np.array(pts)
+                    xy = arr @ np.array([[1, 0], [.5, np.sqrt(3) / 2]])
+                    d = cdist(xy, xy)
+                    internal = int((np.abs(d - 1) < 1e-9).sum() // 2)
+                    key = (internal, -q_hi, -r_hi, -s_lo, -s_hi)
+                    if best is None or key > best[0]:
+                        best = (key, arr)
+    assert best is not None, 'no lattice hexagon with that many points'
+    return best[1]
 
 
 if __name__ == '__main__':
