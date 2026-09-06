@@ -1,15 +1,14 @@
 function setPosition(app,xy)
 if numel(xy)~=2 || any(~isfinite(xy)), return; end
-xy=max(app.low,min(app.low+app.span,xy(:)'));
-[app.words,app.chord,app.vertices,app.weights]=trench.model.blendAt(app.frames,app.tri,(xy-app.low)./app.span);
-app.position=xy; app.words=trench.bridge.unityDc(app.words);
-trench.audio.words(app.words);
-on=app.weights>0;
-if nnz(on)==1
-    app.status=sprintf('%d  %s',app.vertices(on),app.frames(app.vertices(on)).name);
+xy=app.limitPosition(xy);
+[distance,index]=min(sum((app.points-xy).^2,2));
+if distance<1e-18
+    app.chord=app.frames(index).chord; app.vertices=[index index index]; app.weights=[1 0 0];
+    app.status=app.frames(index).name;
 else
-    parts=arrayfun(@(k) sprintf('%s %d',app.frames(app.vertices(k)).name,round(100*app.weights(k))),find(on),'UniformOutput',false);
-    app.status=strjoin(parts,['   ' char(183) '   ']);
+    [app.chord,app.vertices,app.weights]=app.chordAt(xy);
+    app.status=sprintf('F1 %.2f Hz   F2 %.2f Hz',trench.bridge.hzOf(xy(2)),trench.bridge.hzOf(xy(1)));
 end
-app.refresh;
+app.position=xy; app.words=trench.bridge.unityDc(trench.bridge.compile(app.chord));
+trench.audio.words(app.words); app.refresh;
 end

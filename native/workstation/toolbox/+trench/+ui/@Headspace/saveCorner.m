@@ -1,10 +1,9 @@
 function saveCorner(app)
 if isempty(app.chord), return; end
 labels={'M0 Q0','M1 Q0','M0 Q1','M1 Q1'}; on=find(app.weights>0);
-if numel(on)==1, name=app.frames(app.vertices(on)).name;
+if numel(on)==1 && norm(app.position-app.points(app.vertices(on),:))<1e-9, name=app.frames(app.vertices(on)).name;
 else
-    parts=arrayfun(@(k) sprintf('%s %d',app.frames(app.vertices(k)).name,round(100*app.weights(k))),on,'UniformOutput',false);
-    name=strjoin(parts,[' ' char(183) ' ']);
+    name=sprintf('F1 %.1f  F2 %.1f',trench.bridge.hzOf(app.position(2)),trench.bridge.hzOf(app.position(1)));
 end
 app.corners{app.current}=trench.model.makeFrame(app.chord,name,'HEADSPACE','headspace');
 bank=trench.model.newBank('HEADSPACE');

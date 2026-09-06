@@ -1,6 +1,5 @@
 function drawControl(ax,h)
 p=getpixelposition(h,true); style=h.Style; bg=h.BackgroundColor; fg=h.ForegroundColor;
-if strcmp(style,'togglebutton') && h.Value~=0, bg=[43 43 43]/255; fg=[1 1 1]; end
 if ~strcmp(style,'text'), rectangle(ax,'Position',p,'FaceColor',bg,'EdgeColor',[110 110 110]/255,'LineWidth',.5); end
 if strcmp(style,'slider')
     value=(h.Value-h.Min)/(h.Max-h.Min);

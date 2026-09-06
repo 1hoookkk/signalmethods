@@ -1,20 +1,15 @@
 function onKey(app,event)
-key=char(event.Key); mods=cellstr(event.Modifier);
-control=any(strcmp(mods,'control')); shift=any(strcmp(mods,'shift'));
-nudge=0; if shift, nudge=1; elseif control, nudge=.2; end
-[~,here]=max(app.weights); here=app.vertices(here);
+key=char(event.Key); mods=cellstr(event.Modifier); control=any(strcmp(mods,'control'));
+focus=app.figure.CurrentObject;
+if ~isempty(focus) && isgraphics(focus,'uicontrol') && strcmp(focus.Style,'edit') && ~(control && strcmp(key,'s')), return; end
+nudge=1; if control, nudge=.2; end
 switch key
-    case {'rightarrow','leftarrow'}
-        sign=1; if strcmp(key,'leftarrow'), sign=-1; end
-        if nudge, app.setPosition(app.position+[sign*nudge 0]); else, app.setPosition(app.points(step(app.points(:,1),here,sign),:)); end
-    case {'uparrow','downarrow'}
-        sign=1; if strcmp(key,'downarrow'), sign=-1; end
-        if nudge, app.setPosition(app.position+[0 sign*nudge]); else, app.setPosition(app.points(step(app.points(:,2),here,sign),:)); end
+    case 'rightarrow', app.setPosition(app.position+[-nudge 0]);
+    case 'leftarrow', app.setPosition(app.position+[nudge 0]);
+    case 'uparrow', app.setPosition(app.position+[0 -nudge]);
+    case 'downarrow', app.setPosition(app.position+[0 nudge]);
     case 'space', app.setPlaying(~app.playing);
     case {'1','2','3','4'}, app.setCorner(str2double(key));
     case 's', if control, app.saveCorner; end
 end
-end
-function next=step(values,here,sign)
-[~,order]=sort(values); at=find(order==here,1); next=order(max(1,min(numel(order),at+sign)));
 end
