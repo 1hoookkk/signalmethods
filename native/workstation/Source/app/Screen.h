@@ -24,11 +24,10 @@ public:
 
 private:
     void layout();
-    void paintGrid (juce::Graphics& g, juce::Rectangle<int> r, bool wide) const;
+    void paintGrid (juce::Graphics& g, juce::Rectangle<int> r) const;
     void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour) const;
     void paintKey (juce::Graphics& g, juce::Rectangle<int> r, const juce::String& text, bool on, bool enabled) const;
-    void paintList (juce::Graphics& g, juce::Rectangle<int> r, const juce::StringArray& rows, int selected, int scroll, bool focused) const;
-    juce::Rectangle<int> plotArea (juce::Rectangle<int> r) const;
+    void paintList (juce::Graphics& g, juce::Rectangle<int> r, const juce::StringArray& rows, int selected, int scroll) const;
     Session& session;
     std::vector<double> hz;
     bool dragging = false;

@@ -23,7 +23,7 @@ build preset, then runs the strip tests. The app is
 - Space plays. PLAY, SAW, PINK NOISE at the top.
 - Ctrl+S keeps the column, both rows at this MORPH, inserted where you stood.
 - [ and ] move the selected column. Delete removes it. Ctrl+Z and Ctrl+Y undo and redo.
-- 1 to 9, Home and End jump to columns. Tab moves between the library and the column list.
+- 1 to 9, Home and End jump to columns, and so does a click on the column list.
 - W or WRITE BODY FILE writes the square to `plugin/presets/user/headspace_<stamp>.body240`.
 
 ## Files

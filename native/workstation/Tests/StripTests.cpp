@@ -57,7 +57,7 @@ int main()
         check (files, "every body name maps to its preset file");
         check (s.library[0].name.endsWith ("M0 Q0") && s.library[3].name.endsWith ("M1 Q1"), "corners are named M0 Q0 .. M1 Q1");
         s.hear (5);
-        check (same (s.words, s.library[5].words) && s.librarySelected == 5 && s.focus == hs::Focus::library, "hear plays the library entry exactly");
+        check (same (s.words, s.library[5].words) && s.librarySelected == 5, "hear plays the library entry exactly");
     }
 
     {

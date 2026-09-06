@@ -1,8 +1,9 @@
 # HEADSPACE, the strip
 
 Tyson, 2026-09-06: the space is the authoring method. It plays one big packed-word preset
-whose corners lerp 0 to 100 MORPH, every morph equal. The surface-and-pad screen is replaced.
-The bridge, the lerp, the audio engine and the tests underneath stay.
+whose corners lerp 0 to 100 MORPH, every morph equal. The surface-and-pad screen and the
+MATLAB shell are gone. HEADSPACE is a JUCE app in the plugin's CMake tree, linked to
+`native/core`, everything painted by hand, built alone by the `headspace` preset.
 
 Words used here, and nothing else: a state, a column, a square, a morph.
 
@@ -21,7 +22,7 @@ Words used here, and nothing else: a state, a column, a square, a morph.
    because a zero that hides a pole at one corner has moved off it halfway. That is what a
    morph sounds like, and it is heard and kept or not.
 4. A body is four states and the bilinear word lerp between them, MORPH one way, Q the other.
-   `wheelMorph` in range is exactly this and equals the plugin's `bodyLerp` word for word.
+   The app calls `PackedBody::interpolate_words`, the plugin's own law, and nothing else.
 5. The strip is bodies sharing edges. Two rows of states, Q0 and Q1. A column is a state and
    its Q partner. Two neighbouring columns make a square, and a square is a body. The morph
    is the MORPH 0 to 100 between two neighbouring columns. The position is a square, a MORPH
@@ -54,28 +55,31 @@ Words used here, and nothing else: a state, a column, a square, a morph.
 
 ## Workflow
 
-- Keyboard first. Every action is one key, no dialogs, no modes. Tab moves selection between
-  the column list and the library. 1 to 9 jump to that column, Home and End to the first
-  and last. Enter places, Ctrl+S keeps, W writes. Audio is sent before anything is drawn.
+- Keyboard first. Every action is one key, no dialogs, no modes. Enter always places the
+  library entry after the selected column. 1 to 9 jump to that column, Home and End to the
+  first and last, a click on the column list jumps too. Ctrl+S keeps, W writes. Audio is
+  sent before anything is drawn.
 - State is one struct: columns, position, selection. Every gesture is a function from that
   state to the next; the screen draws from it; the file is it serialised. Ctrl+Z undoes and
   Ctrl+Y redoes any edit of the strip, unbounded within the session, and puts the mark back
   where the edit was made.
-- The keys live in `toolbox/keys.json` and can be rebound. Layout proportions are saved with
-  the strip. One screen, no floating windows.
+- One screen, no floating windows, no JUCE widgets. Rebindable keys and saved layout come
+  after the strip has been walked.
 
 ## Open
 
 - Tyson to rule: a key that reorders the selected column's rows to its left neighbour by
   nearest pole, words untouched, sound at the column unchanged, never automatic.
 
-## File and bridge
+## File and structure
 
 - `banks/HEADSPACE.strip.json`, `trench-strip-v1`: `columns[]`, each `name`, `origin`
   (factory body and corner, or capture parents and MORPH), `q0` and `q1` as 30 integers.
-  Words verbatim both ways; never an empty array, write null. Saved on every change.
-- Bridge: `wheelMorph` as is. New `cellBytes(corners)` and `writeCell(path, corners)` pack the
-  raw words. `bodyCorners`, `lead` and `unityDc` are not on any path from placement to file.
+  Words verbatim both ways. Saved on every change.
+- Screen paints and takes input; Session and Strip are the model with undo, redo and the
+  file; Audio hands words to JUCE's device callback through a lock-free slot, nothing
+  allocates or locks there; the core runs the cascade. The 240-byte file is
+  `PackedBody::legacy_bytes`, so the factory layout holds by construction.
 
 ## Acceptance, headless
 
@@ -86,7 +90,7 @@ Words used here, and nothing else: a state, a column, a square, a morph.
 5. Every state in the strip has six active sections; a real pair passes, an identity section
    is refused.
 6. n columns make n - 1 morphs; MORPH 100 of the last is the last column exactly.
-7. `trench.shot` renders the strip to `artifacts/shots/headspace.png` without a window.
+7. The tests render the screen to `artifacts/shots/headspace.png` without a window.
 8. Undo: a sequence of place, keep, move and delete, then undo to the start, restores the
    strip exactly; redo to the end restores the sequence.
 
@@ -98,7 +102,8 @@ formula, verdicts on a morph, a third axis. The plugin has MORPH and Q; the row 
 
 ## Order
 
-Bridge raw write with tests 3 and 4. Strip model and file with 1, 2, 5, 6. Screen with 7.
-Then Tyson's test by ear: a corner, a far corner, a slight nudge, keep, build on from it.
-Later and separately: cut `bodyCorners`, `lead`, the stitch model and the unused bridge
-commands; the row editor, which is the patent's manual mode; the averaged-spectrum reader.
+Built 2026-09-06: model, file, screen, audio, 39 checks green. Next: Tyson's test by ear, a
+corner, a far corner, a slight nudge, keep, build on from it. Later and separately: delete
+`Source/model` and its old tests; the row editor, six bands of frequency, width and gain per
+column, which is the patent's manual mode and the UltraProteus page; a note in with FOLLOW;
+transpose; the reorder key if ruled; the averaged-spectrum reader.

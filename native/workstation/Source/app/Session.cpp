@@ -50,7 +50,6 @@ void Session::hear (int k)
 {
     if (k < 0 || k >= (int) library.size()) return;
     librarySelected = k;
-    focus = Focus::library;
     words = library[(size_t) k].words;
     sounding = true;
     if (withAudio) audio.publish (flat (words));
@@ -81,14 +80,12 @@ void Session::keep()
 void Session::walk (double dm, double dq)
 {
     if (strip.count() == 0) return;
-    focus = Focus::columns;
     apply (step (strip, dm, dq), false);
 }
 
 void Session::jump (int k)
 {
     if (k < 1 || k > strip.count()) return;
-    focus = Focus::columns;
     apply (jumpTo (strip, k), false);
 }
 
@@ -99,7 +96,6 @@ void Session::setPosition (int square, double morph, double q)
     s.square = std::clamp (square, 1, s.squares());
     s.morph = std::clamp (morph, 0.0, 100.0);
     s.q = std::clamp (q, 0.0, 100.0);
-    focus = Focus::columns;
     apply (s, false);
 }
 
@@ -186,11 +182,10 @@ bool Session::key (const juce::KeyPress& k)
     if (code == juce::KeyPress::upKey) { walk (0.0, nudge); return true; }
     if (code == juce::KeyPress::downKey) { walk (0.0, -nudge); return true; }
     if (code == juce::KeyPress::spaceKey) { setPlaying (! playing); return true; }
-    if (code == juce::KeyPress::returnKey) { if (focus == Focus::library) place(); else jump (strip.selected); return true; }
+    if (code == juce::KeyPress::returnKey) { place(); return true; }
     if (code == juce::KeyPress::deleteKey) { removeColumn(); return true; }
     if (code == juce::KeyPress::homeKey) { jump (1); return true; }
     if (code == juce::KeyPress::endKey) { jump (strip.count()); return true; }
-    if (code == juce::KeyPress::tabKey) { focus = focus == Focus::library ? Focus::columns : Focus::library; changed(); return true; }
     if (control && (c == 's' || c == 'S' || code == 'S')) { keep(); return true; }
     if (control && (c == 'z' || c == 'Z' || code == 'Z')) { undo(); return true; }
     if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }

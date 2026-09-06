@@ -43,9 +43,7 @@ void Screen::layout()
     statusLine = { 18, 816, 1444, 28 };
 }
 
-juce::Rectangle<int> Screen::plotArea (juce::Rectangle<int> r) const { return r; }
-
-void Screen::paintGrid (juce::Graphics& g, juce::Rectangle<int> r, bool) const
+void Screen::paintGrid (juce::Graphics& g, juce::Rectangle<int> r) const
 {
     g.setColour (kPaper); g.fillRect (r);
     g.setColour (kGrid);
@@ -81,10 +79,10 @@ void Screen::paintKey (juce::Graphics& g, juce::Rectangle<int> r, const juce::St
     g.drawText (text, r, juce::Justification::centred);
 }
 
-void Screen::paintList (juce::Graphics& g, juce::Rectangle<int> r, const juce::StringArray& rows, int selected, int scroll, bool focused) const
+void Screen::paintList (juce::Graphics& g, juce::Rectangle<int> r, const juce::StringArray& rows, int selected, int scroll) const
 {
     g.setColour (kPaper); g.fillRect (r);
-    g.setColour (focused ? kOrange : kFrame); g.drawRect (r, focused ? 2 : 1);
+    g.setColour (kFrame); g.drawRect (r);
     g.setFont (juce::Font (juce::FontOptions (11.0f)));
     const int visible = (r.getHeight() - 8) / kRow;
     for (int i = 0; i < visible; ++i)
@@ -136,7 +134,7 @@ void Screen::paint (juce::Graphics& g)
         for (int row = 0; row < 2; ++row)
         {
             const auto r = square[(size_t) row][(size_t) col];
-            paintGrid (g, r, false);
+            paintGrid (g, r);
             if (n > 0)
             {
                 const auto& c = s.columns[(size_t) cols[col] - 1];
@@ -163,12 +161,12 @@ void Screen::paint (juce::Graphics& g)
 
     g.setColour (kPaper); g.fillRect (live); g.setColour (kFrame); g.drawRect (live);
     const auto liveGrid = live.reduced (60, 18);
-    paintGrid (g, liveGrid, true);
+    paintGrid (g, liveGrid);
     if (session.sounding) paintCurve (g, liveGrid, session.words, kBlue);
 
     juce::StringArray libraryRows;
     for (const auto& e : session.library) libraryRows.add (e.name);
-    paintList (g, libraryList, libraryRows, session.librarySelected, libraryScroll, session.focus == Focus::library);
+    paintList (g, libraryList, libraryRows, session.librarySelected, libraryScroll);
     juce::StringArray columnRows;
     for (int j = 0; j < n; ++j)
     {
@@ -177,7 +175,7 @@ void Screen::paint (juce::Graphics& g)
         if (c.origin.kind == "capture") from = c.origin.parentA + " -> " + c.origin.parentB + " at " + juce::String (c.origin.morph, 1);
         columnRows.add (juce::String (j + 1) + "  " + c.name + "   " + from);
     }
-    paintList (g, columnList, columnRows, s.selected - 1, columnScroll, session.focus == Focus::columns);
+    paintList (g, columnList, columnRows, s.selected - 1, columnScroll);
 
     g.setColour (kInk); g.setFont (juce::Font (juce::FontOptions (11.0f)));
     g.drawText (session.status, statusLine, juce::Justification::centredLeft);

@@ -9,8 +9,6 @@
 
 namespace hs
 {
-enum class Focus { library, columns };
-
 class Session
 {
 public:
@@ -22,7 +20,6 @@ public:
     Strip strip;
     std::vector<Strip> history, future;
     int librarySelected = 0;
-    Focus focus = Focus::library;
     Words words {};
     bool sounding = false;
     juce::String status;
