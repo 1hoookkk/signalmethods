@@ -230,4 +230,4 @@ target_link_libraries(TRENCH_WorkstationTests PRIVATE
 add_test(NAME trench_workstation COMMAND TRENCH_WorkstationTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 set_tests_properties(trench_workstation PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/bridge" "${CMAKE_CURRENT_BINARY_DIR}/workstation-bridge")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation" "${CMAKE_CURRENT_BINARY_DIR}/workstation")

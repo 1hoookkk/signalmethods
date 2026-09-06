@@ -42,8 +42,7 @@
         "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets",
         "VCPKG_TARGET_TRIPLET": "x64-windows-release",
-        "VCPKG_HOST_TRIPLET": "x64-windows-release",
-        "Matlab_ROOT_DIR": "C:/Program Files/MATLAB/R2025b"
+        "VCPKG_HOST_TRIPLET": "x64-windows-release"
       },
       "name": "vst3",
       "displayName": "Plugin (VST3 + FaceShot)",
@@ -66,6 +65,14 @@
         "TRENCH_VST3",
         "TRENCH_FaceShot"
       ]
+    },
+    {
+      "name": "headspace",
+      "configurePreset": "vst3",
+      "targets": [
+        "TRENCH_Headspace_App",
+        "TRENCH_StripTests"
+      ]
     }
   ],
   "testPresets": [
@@ -79,6 +86,18 @@
     {
       "name": "windows-msvc-release",
       "configurePreset": "windows-msvc-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "headspace",
+      "configurePreset": "vst3",
+      "filter": {
+        "include": {
+          "name": "^trench_strip$"
+        }
+      },
       "output": {
         "outputOnFailure": true
       }
