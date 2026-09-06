@@ -431,6 +431,7 @@ int main()
         check (screen.keyboard.getRight() <= screen.stage.getRight() && screen.keys[0].getY() > screen.stage.getBottom() && screen.toKeys[3].getRight() <= screen.stage.getRight(), "the audition strip, Track and the to-corner buttons run under the room and beside the body");
         screen.setSize (820, 520);
         check (screen.toKeys[3].getRight() <= screen.stage.getRight() && ! screen.hud.intersects (screen.stage), "the strip still fits at the smallest window");
+        check (screen.playing.getY() >= screen.stage.getBottom() && screen.playing.getBottom() <= screen.keys[0].getY() && ! screen.playing.intersects (screen.hud) && screen.playing.getWidth() * 2 == screen.playing.getHeight() * 3 && screen.playingLabel.getX() > screen.playing.getRight() && screen.playingLabel.getRight() <= screen.stage.getRight(), "what plays is drawn in the strip, a 3:2 plot with its name, under the room and clear of the body");
         screen.setSize (900, 560);
         screen.setSize (1120, 700);
         for (int room = 0; room < 4; ++room)
@@ -543,6 +544,27 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
+        check (s.playingLabel == "pad 0 0", "a fresh session says the pad plays");
+        s.select (s.starNamed ("i"));
+        check (s.playingLabel == "i", "a clicked card says its name");
+        s.setMade (700.0, 1100.0);
+        check (s.playingLabel == "made 700/1100", "a made vowel says it was made");
+        s.setTransposed (s.starNamed ("i"), 465.0);
+        check (s.playingLabel.startsWith ("i moved to 4"), "a transposed vowel says where it moved from and to");
+        s.morphPair (s.starNamed ("i"), s.starNamed ("u"), 0.23);
+        check (s.playingLabel == "i > u  23", "a pair says both names and the position");
+        s.edit (1);
+        check (s.playingLabel == "B  u", "an open corner says its letter and name");
+        const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
+        for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
+        s.setCubePoint (0.5, 0.5, 0.25);
+        check (s.playingLabel == "cube 50 50 at depth 25", "the cube point says where it is");
+        s.setPuck (40.0, 30.0);
+        check (s.playingLabel == "pad 40 30", "the pad says MORPH and Q");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
         s.select (s.starNamed ("i"));
         const auto base = hs::formantsOf (s.heard);
         s.setTracking (true);
@@ -550,6 +572,7 @@ int main()
         const auto up = hs::formantsOf (s.heard);
         std::printf ("      track: %.0f %.0f at A2, %.0f %.0f at A3\n", base[0], base[1], up[0], up[1]);
         check (s.tracking && std::abs (up[0] / base[0] - 2.0) < 0.05 && std::abs (up[1] / base[1] - 2.0) < 0.05 && same (s.words, s.stars[(size_t) s.starNamed ("i")].words), "with Track on an octave up doubles every formant of what plays while the card's words stay");
+        check (s.playingLabel == "i   track A3", "the label says the card is tracked and at which note");
         s.key (key ('K', false, 'k'));
         check (! s.tracking && same (s.heard, s.words), "K turns tracking off and what plays is the words again");
     }

@@ -43,7 +43,7 @@ public:
     std::array<juce::Rectangle<int>, 4> navigation, cornerBox, cornerTag, cornerPlot, keys, toKeys, stageTags, padTags;
     std::array<juce::Rectangle<int>, 8> cubeBox, cubeTags;
     std::array<juce::Rectangle<int>, 3> paletteTabs;
-    juce::Rectangle<int> table, magnitude, morph, keyboard, status, cubeArea, depth, dropZone, keepKey;
+    juce::Rectangle<int> table, magnitude, morph, keyboard, status, cubeArea, depth, dropZone, keepKey, playing, playingLabel;
     bool showHardware = false;
     int palette = 0;
     std::vector<int> cards() const;

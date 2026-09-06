@@ -66,6 +66,7 @@ void Session::audition()
         words = editWords();
         sounding = true;
         status = stars[(size_t) auditioning].name;
+        playingLabel = (editingCube ? "cube " + juce::String (editing + 1) : juce::String::charToString (kCornerLetters[editing])) + "  " + status;
     }
     else if (auditioning == kCube)
     {
@@ -73,11 +74,13 @@ void Session::audition()
         if (! sounding)
         {
             playing = false;
+            playingLabel = "";
             if (withAudio) audio.setPlaying (false);
             return;
         }
         words = cubeWordsAt (cube, stars);
         status = "";
+        playingLabel = "cube " + juce::String (cube.x * 100.0, 0) + " " + juce::String (cube.y * 100.0, 0) + " at depth " + juce::String (cube.z * 100.0, 0);
     }
     else if (auditioning == kPair && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
     {
@@ -85,32 +88,38 @@ void Session::audition()
         words = lerp (c, pairT, 0.0);
         sounding = true;
         status = stars[(size_t) pairA].name + " > " + stars[(size_t) pairB].name + "  " + juce::String (pairT * 100.0, 0);
+        playingLabel = status;
     }
     else if (auditioning == kMade && madeLive)
     {
         words = made.words;
         sounding = true;
         status = made.name;
+        playingLabel = made.parentA.isNotEmpty() ? made.parentA + " moved to " + formantName (made.words) : "made " + made.name;
     }
     else if (auditioning >= 0 && auditioning < (int) stars.size())
     {
         words = stars[(size_t) auditioning].words;
         sounding = true;
         status = stars[(size_t) auditioning].name;
+        playingLabel = status;
     }
     else if (quad.complete())
     {
         words = wordsAt (quad, stars);
         sounding = true;
         status = juce::String (quad.morph, 0) + " " + juce::String (quad.q, 0);
+        playingLabel = "pad " + status;
     }
     else
     {
         sounding = false;
         status = "";
+        playingLabel = "";
         return;
     }
     heard = tracking ? transposed (words, std::pow (2.0, (note - 45) / 12.0)) : words;
+    if (tracking) playingLabel += "   track " + noteName (440.0 * std::pow (2.0, (note - 69) / 12.0));
     if (withAudio) audio.publish (flat (heard));
 }
 

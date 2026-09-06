@@ -41,6 +41,7 @@ public:
     int source = 1;
     int note = 45;
     Words heard {};
+    juce::String playingLabel;
     juce::String loopName;
     Audio audio;
     bool withAudio = false;

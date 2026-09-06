@@ -90,7 +90,9 @@ void Screen::layout()
         cornerTag[(size_t) n] = cornerBox[(size_t) n].withHeight (18);
         cornerPlot[(size_t) n] = cornerBox[(size_t) n].withTrimmedTop (18).reduced (4);
     }
-    stage = { 20, 54, hud.getX() - 16 - 20, h - 162 };
+    stage = { 20, 54, hud.getX() - 16 - 20, h - 194 };
+    playing = { 20, h - 140, 54, 36 };
+    playingLabel = { playing.getRight() + 10, h - 140, std::max (40, stage.getRight() - playing.getRight() - 10), 36 };
     keyboard = { 20, h - 66, stage.getWidth(), 50 };
     for (int i = 0; i < 4; ++i) keys[(size_t) i] = { 20 + i * 76, h - 98, i == 3 ? 96 : 70, 24 };
     trackKey = { keys[3].getRight() + 12, h - 98, 52, 24 };
@@ -705,6 +707,12 @@ void Screen::paintHud (juce::Graphics& g) const
 
 void Screen::paintStrip (juce::Graphics& g) const
 {
+    g.setColour (kPlotBack); g.fillRect (playing.expanded (1));
+    g.setColour (kDim); g.drawHorizontalLine ((int) std::round (yOf (0.0, playing)), (float) playing.getX(), (float) playing.getRight());
+    if (session.sounding) paintCurve (g, playing, session.heard, kPlotInk, 1.4f, false, false);
+    g.setFont (typeface (13.0f));
+    g.setColour (kText);
+    g.drawText (session.playingLabel, playingLabel, juce::Justification::centredLeft);
     g.setFont (typeface (11.0f));
     const juce::String names[] = { "Play", "Saw " + noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0)), "Noise", session.loopName.isNotEmpty() ? session.loopName : "Loop" };
     const bool on[] = { session.playing, session.source == 0, session.source == 1, session.source == 2 };
@@ -722,8 +730,11 @@ void Screen::paintStrip (juce::Graphics& g) const
     }
     g.setColour (session.tracking ? kAccent : kDim);
     g.drawText ("Track", trackKey, juce::Justification::centred);
-    g.setColour (kDim);
-    g.drawText (session.status, status, juce::Justification::centredRight);
+    if (session.status.startsWith ("cannot") || session.status.startsWith ("no audio") || session.status.endsWith (".body240"))
+    {
+        g.setColour (kDim);
+        g.drawText (session.status, status, juce::Justification::centredRight);
+    }
 }
 
 void Screen::paintKeyboard (juce::Graphics& g) const
