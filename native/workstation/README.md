@@ -17,10 +17,10 @@ Double-click `HEADSPACE.cmd`, or in MATLAB:
     trench.setup
     app = trench.launch;
 
-PLAY, SAW, PINK NOISE. Drag the plane; plain arrows move a twentieth of a lattice edge, Ctrl+arrows
-a hundredth. Keys 1 to 4 choose a corner without moving you; Ctrl+S saves the live sound into it;
-Space plays. WRITE BODY FILE, once four corners are filled, writes
-`plugin/presets/user/headspace_<stamp>.body240`. The corners persist in `banks/HEADSPACE.bank.json`.
+PLAY, SAW, PINK NOISE. Click a square to hear it; keys 1 to 4 place it into a corner; drag the pad or
+use the arrows (1 per step, Ctrl 0.2) to hear the body the plugin will play; Space plays. The status
+line scores every placement's hops. WRITE BODY FILE, once four corners are placed, writes
+`plugin/presets/user/headspace_<stamp>.body240`. Placements persist in `banks/HEADSPACE.bank.json`.
 
 ## Data
 
