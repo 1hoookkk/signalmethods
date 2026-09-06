@@ -54,9 +54,10 @@ juce::Colour inkOf (const Star& s)
 }
 
 const juce::String kCaret (juce::CharPointer_UTF8 ("\xe2\x96\xbe"));
-const char* const kRoomNames[4] = { "Picker", "Cube", "Stage", "Perform" };
-const char* const kPaletteNames[4] = { "Vowels", "Bodies", "Reads", "Captures" };
-const char* const kPaletteKinds[4] = { "vowel", "body", "read", "capture" };
+const char* const kRoomNames[4] = { "1  Picker", "Cube", "2  Stage", "3  Perform" };
+const Screen::View kRoomOrder[4] = { Screen::View::picker, Screen::View::stage, Screen::View::perform, Screen::View::cube };
+const char* const kPaletteNames[3] = { "Bodies", "Reads", "Captures" };
+const char* const kPaletteKinds[3] = { "body", "read", "capture" };
 }
 
 Screen::Screen (Session& s) : session (s), hz (curveHz())
@@ -67,7 +68,7 @@ Screen::Screen (Session& s) : session (s), hz (curveHz())
     session.onChange = [this] {
         if (session.editing >= 0) view = View::stage;
         if (session.selected >= 0 && session.selected < (int) session.stars.size())
-            for (int i = 0; i < 4; ++i) if (session.stars[(size_t) session.selected].kind == kPaletteKinds[i]) palette = i;
+            for (int i = 0; i < 3; ++i) if (session.stars[(size_t) session.selected].kind == kPaletteKinds[i]) palette = i;
         layout(); repaint();
     };
 }
@@ -77,8 +78,7 @@ void Screen::resized() { layout(); repaint(); }
 void Screen::layout()
 {
     const int w = std::max (600, getWidth()), h = std::max (400, getHeight());
-    for (int i = 0; i < 4; ++i) navigation[(size_t) i] = { 20 + i * 96, 12, 88, 26 };
-    advance = { w - 180, 12, 160, 26 };
+    for (int i = 0; i < 4; ++i) navigation[(size_t) i] = { 20 + i * 110 + (i == 3 ? 40 : 0), 12, 102, 26 };
     const int hudW = std::clamp (w / 5, 176, 232);
     hud = { w - 20 - hudW, h - 20 - 22 - hudW, hudW, 22 + hudW };
     hudHead = hud.withHeight (22);
@@ -92,13 +92,14 @@ void Screen::layout()
     }
     stage = { 20, 54, hud.getX() - 16 - 20, h - 162 };
     keyboard = { 20, h - 66, stage.getWidth(), 50 };
-    for (int i = 0; i < 4; ++i) keys[(size_t) i] = { 20 + i * 86, h - 98, i == 3 ? 150 : 80, 24 };
-    for (int i = 0; i < 4; ++i) toKeys[(size_t) i] = { keys[3].getRight() + 12 + i * 46, h - 98, 42, 24 };
+    for (int i = 0; i < 4; ++i) keys[(size_t) i] = { 20 + i * 76, h - 98, i == 3 ? 96 : 70, 24 };
+    trackKey = { keys[3].getRight() + 12, h - 98, 52, 24 };
+    for (int i = 0; i < 4; ++i) toKeys[(size_t) i] = { trackKey.getRight() + 12 + i * 40, h - 98, 38, 24 };
     status = { toKeys[3].getRight() + 12, h - 98, std::max (40, stage.getRight() - toKeys[3].getRight() - 12), 24 };
 
     const int pickerW = std::clamp (stage.getWidth() * 2 / 5, 220, 340);
     picker = { stage.getRight() - pickerW, stage.getY(), pickerW, stage.getHeight() };
-    for (int i = 0; i < 4; ++i) paletteTabs[(size_t) i] = { picker.getX() + i * (pickerW / 4), picker.getY(), pickerW / 4, 24 };
+    for (int i = 0; i < 3; ++i) paletteTabs[(size_t) i] = { picker.getX() + i * (pickerW / 3), picker.getY(), pickerW / 3, 24 };
     dropZone = picker.withTrimmedTop (picker.getHeight() - 28);
     chart = juce::Rectangle<int> (stage.getX(), stage.getY(), stage.getWidth() - pickerW - 24, stage.getHeight()).withTrimmedLeft (46).withTrimmedRight (70).withTrimmedTop (22).withTrimmedBottom (50);
     keepKey = { chart.getX(), chart.getBottom() + 22, 150, 22 };
@@ -114,6 +115,7 @@ void Screen::layout()
         cubeTags[(size_t) n] = cubeBox[(size_t) n].withWidth (20);
     }
     depth = { cubeArea.getX(), cubeArea.getBottom() + 26, cubeArea.getWidth(), 20 };
+    sliceKey = { cubeArea.getRight() - 150, depth.getBottom() + 8, 150, 24 };
 
     for (int i = 0; i < 4; ++i) stageTags[(size_t) i] = { stage.getX() + i * 40, stage.getY(), 34, 24 };
     const int th = kLine * (kRows + 1) + 8 + (showHardware ? 14 * kRows : 0);
@@ -144,12 +146,13 @@ void Screen::showView (View next)
     layout(); repaint();
 }
 
-void Screen::advanceRoom()
+bool Screen::onChart (const Star& s) const { return s.kind == "vowel"; }
+
+const std::vector<double>& Screen::curveDb (const Words& words) const
 {
-    if (view == View::picker) showView (View::cube);
-    else if (view == View::cube) { if (session.takeSlice()) showView (View::perform); }
-    else if (view == View::stage) showView (View::perform);
-    else session.write();
+    if (const auto it = curves.find (words); it != curves.end()) return it->second;
+    if (curves.size() > 600) curves.clear();
+    return curves.emplace (words, responseDb (words, hz)).first->second;
 }
 
 std::vector<int> Screen::cards() const
@@ -260,16 +263,16 @@ int Screen::noteAt (juce::Point<int> p) const
 
 juce::Point<float> Screen::chartPoint (double f1, double f2) const
 {
-    const double u = std::log (std::clamp (f1, kF1Low, kF1High) / kF1Low) / std::log (kF1High / kF1Low);
-    const double v = std::log (std::clamp (f2, kF2Low, kF2High) / kF2Low) / std::log (kF2High / kF2Low);
-    return { (float) (chart.getX() + u * chart.getWidth()), (float) (chart.getBottom() - v * chart.getHeight()) };
+    const double u = std::log (std::clamp (f2, kF2Low, kF2High) / kF2Low) / std::log (kF2High / kF2Low);
+    const double v = std::log (std::clamp (f1, kF1Low, kF1High) / kF1Low) / std::log (kF1High / kF1Low);
+    return { (float) (chart.getRight() - u * chart.getWidth()), (float) (chart.getY() + v * chart.getHeight()) };
 }
 
 std::pair<double, double> Screen::formantsAt (juce::Point<int> p) const
 {
-    const double u = std::clamp ((p.x - chart.getX()) / (double) chart.getWidth(), 0.0, 1.0);
-    const double v = std::clamp ((chart.getBottom() - p.y) / (double) chart.getHeight(), 0.0, 1.0);
-    return { kF1Low * std::pow (kF1High / kF1Low, u), kF2Low * std::pow (kF2High / kF2Low, v) };
+    const double u = std::clamp ((chart.getRight() - p.x) / (double) chart.getWidth(), 0.0, 1.0);
+    const double v = std::clamp ((p.y - chart.getY()) / (double) chart.getHeight(), 0.0, 1.0);
+    return { kF1Low * std::pow (kF1High / kF1Low, v), kF2Low * std::pow (kF2High / kF2Low, u) };
 }
 
 int Screen::cornerAt (juce::Point<int> p) const
@@ -284,6 +287,7 @@ int Screen::pointAt (juce::Point<int> p) const
     double bestD = 10.0;
     for (int k = 0; k < (int) session.stars.size(); ++k)
     {
+        if (! onChart (session.stars[(size_t) k])) continue;
         const auto f = formantsOf (session.stars[(size_t) k].words);
         if (f[0] <= 0.0 || f[1] <= 0.0) continue;
         const double d = chartPoint (f[0], f[1]).getDistanceFrom (p.toFloat());
@@ -327,11 +331,12 @@ void Screen::openMenu (int target, bool cube, juce::Rectangle<int> anchor)
     repaint();
 }
 
-void Screen::paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill) const
+void Screen::paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill, bool cached) const
 {
     juce::Graphics::ScopedSaveState saved (g);
     g.reduceClipRegion (r);
-    const auto db = responseDb (words, hz);
+    const std::vector<double> live = cached ? std::vector<double>() : responseDb (words, hz);
+    const auto& db = cached ? curveDb (words) : live;
     juce::Path p;
     for (size_t i = 0; i < hz.size(); ++i)
     {
@@ -371,20 +376,17 @@ void Screen::paintTabs (juce::Graphics& g) const
     for (int i = 0; i < 4; ++i)
     {
         const auto r = navigation[(size_t) i];
-        g.setColour ((int) view == i ? kAccent : kDim);
-        g.drawText ("F" + juce::String (i + 1) + "  " + kRoomNames[i], r, juce::Justification::centredLeft);
-        if ((int) view == i) g.fillRect (r.withY (r.getBottom()).withHeight (2));
+        const auto room = kRoomOrder[i];
+        g.setColour (view == room ? kAccent : kDim);
+        g.drawText (kRoomNames[(int) room], r, juce::Justification::centredLeft);
+        if (view == room) g.fillRect (r.withY (r.getBottom()).withHeight (2));
     }
-    const bool live = view != View::cube || session.cube.complete();
-    g.setColour (live ? kAccent : kGrid);
-    const char* label = view == View::picker ? "Cube >" : view == View::cube ? "Slice into body >" : view == View::stage ? "Perform >" : "Write  W";
-    g.drawText (label, advance, juce::Justification::centredRight);
 }
 
 void Screen::paintPicker (juce::Graphics& g) const
 {
     g.setFont (typeface (12.0f));
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         const auto r = paletteTabs[(size_t) i];
         g.setColour (palette == i ? kAccent : kDim);
@@ -392,7 +394,7 @@ void Screen::paintPicker (juce::Graphics& g) const
         if (palette == i) g.fillRect (r.withY (r.getBottom() - 2).withHeight (2).withWidth (r.getWidth() - 12));
     }
     g.setColour (kDim);
-    g.drawText ("Vowel space   F1 across, F2 up   Shift-drag a point to transpose it", juce::Rectangle<int> (chart.getX(), stage.getY(), chart.getWidth(), 20), juce::Justification::centredLeft);
+    g.drawText ("Vowels   Shift-drag one to transpose it", juce::Rectangle<int> (chart.getX() + 24, stage.getY(), chart.getWidth() - 24, 20), juce::Justification::centredLeft);
     {
         juce::Graphics::ScopedSaveState saved (g);
         g.reduceClipRegion (picker.withTrimmedTop (28).withTrimmedBottom (28));
@@ -418,7 +420,7 @@ void Screen::paintPicker (juce::Graphics& g) const
         {
             g.setFont (typeface (12.0f));
             g.setColour (kDim);
-            g.drawText (palette == 2 ? "no reads yet" : "no captures yet", picker.withTrimmedTop (28).withHeight (36).reduced (8, 0), juce::Justification::centredLeft);
+            g.drawText (palette == 1 ? "no reads yet" : "no captures yet", picker.withTrimmedTop (28).withHeight (36).reduced (8, 0), juce::Justification::centredLeft);
         }
     }
     g.setFont (typeface (11.0f));
@@ -429,43 +431,53 @@ void Screen::paintPicker (juce::Graphics& g) const
     g.setColour (session.placeable() ? kAccent : kGrid);
     g.drawText ("Keep as card   Ctrl+S", keepKey, juce::Justification::centred);
     g.setFont (typeface (10.0f));
-    for (double f : { 200.0, 300.0, 500.0, 700.0, 1000.0 })
+    for (double f : { 3000.0, 2000.0, 1500.0, 1000.0, 700.0 })
     {
-        const int x = (int) std::round (chartPoint (f, kF2Low).x);
+        const int x = (int) std::round (chartPoint (kF1Low, f).x);
         g.setColour (kGrid); g.fillRect (x, chart.getY(), 1, chart.getHeight());
         g.setColour (kDim); g.drawText (juce::String ((int) f), x - 20, chart.getBottom() + 4, 40, 12, juce::Justification::centred);
     }
-    for (double f : { 500.0, 700.0, 1000.0, 1500.0, 2000.0, 3000.0 })
+    for (double f : { 300.0, 400.0, 500.0, 700.0, 1000.0 })
     {
-        const int y = (int) std::round (chartPoint (kF1Low, f).y);
+        const int y = (int) std::round (chartPoint (f, kF2Low).y);
         g.setColour (kGrid); g.fillRect (chart.getX(), y, chart.getWidth(), 1);
         g.setColour (kDim); g.drawText (juce::String ((int) f), chart.getX() - 42, y - 6, 38, 12, juce::Justification::centredRight);
     }
     g.setColour (kDim);
-    g.drawText ("F1", chart.getRight() + 6, chart.getBottom() + 4, 20, 12, juce::Justification::centredLeft);
-    g.drawText ("F2", chart.getX() - 42, chart.getY() - 16, 38, 12, juce::Justification::centredRight);
+    g.drawText ("F2 Hz", chart.getRight() + 6, chart.getBottom() + 4, 40, 12, juce::Justification::centredLeft);
+    g.drawText ("F1", chart.getX() - 42, chart.getY() - 16, 38, 12, juce::Justification::centredRight);
     const auto origin = chartPoint (kSchwaF1, kSchwaF2);
     g.setColour (kDim.withAlpha (0.8f));
     g.drawLine (origin.x, (float) chart.getY(), origin.x, (float) chart.getBottom(), 1.0f);
     g.drawLine ((float) chart.getX(), origin.y, (float) chart.getRight(), origin.y, 1.0f);
     g.setFont (typeface (11.0f));
-    for (int k = 0; k < (int) session.stars.size(); ++k)
-    {
-        const auto& s = session.stars[(size_t) k];
-        const auto f = formantsOf (s.words);
-        if (f[0] <= 0.0 || f[1] <= 0.0) continue;
-        const auto p = chartPoint (f[0], f[1]);
-        const bool lit = k == session.selected || k == session.hovered || k == session.auditioning;
-        bool pinned = false;
-        for (int pin : session.quad.pins) pinned = pinned || pin == k;
-        const auto ink = inkOf (s);
-        g.setColour (lit ? ink : ink.withAlpha (pinned ? 0.9f : 0.55f));
-        if (pinned) g.fillEllipse (p.x - 4.5f, p.y - 4.5f, 9.0f, 9.0f);
-        else g.drawEllipse (p.x - 4.0f, p.y - 4.0f, 8.0f, 8.0f, lit ? 2.0f : 1.0f);
-        g.setColour (lit ? ink : kText.withAlpha (0.8f));
-        const juce::String label = lit ? s.name : s.body == "Klatt 1980" || s.body == "neutral" ? s.name : juce::String();
-        g.drawText (label, (int) p.x + 8, (int) p.y - 7, 110, 14, juce::Justification::centredLeft);
-    }
+    for (int pass = 0; pass < 2; ++pass)
+        for (int k = 0; k < (int) session.stars.size(); ++k)
+        {
+            const auto& s = session.stars[(size_t) k];
+            if (! onChart (s)) continue;
+            const bool landmark = s.body == "Klatt 1980" || s.body == "neutral";
+            if (landmark != (pass == 1)) continue;
+            const auto f = formantsOf (s.words);
+            if (f[0] <= 0.0 || f[1] <= 0.0) continue;
+            const auto p = chartPoint (f[0], f[1]);
+            const bool lit = k == session.selected || k == session.hovered || k == session.auditioning;
+            bool pinned = false;
+            for (int pin : session.quad.pins) pinned = pinned || pin == k;
+            const auto ink = inkOf (s);
+            if (! landmark && ! lit && ! pinned)
+            {
+                g.setColour (ink.withAlpha (0.3f));
+                g.fillEllipse (p.x - 2.0f, p.y - 2.0f, 4.0f, 4.0f);
+                continue;
+            }
+            g.setColour (lit ? ink : ink.withAlpha (pinned ? 0.9f : 0.6f));
+            if (pinned) g.fillEllipse (p.x - 4.5f, p.y - 4.5f, 9.0f, 9.0f);
+            else g.drawEllipse (p.x - 4.0f, p.y - 4.0f, 8.0f, 8.0f, lit ? 2.0f : 1.0f);
+            g.setColour (lit ? ink : kText.withAlpha (0.8f));
+            g.setFont (typeface (landmark ? 13.0f : 11.0f));
+            g.drawText (s.name, (int) p.x + 8, (int) p.y - 7, 110, 14, juce::Justification::centredLeft);
+        }
     if (session.madeLive)
     {
         const auto f = formantsOf (session.made.words);
@@ -488,7 +500,7 @@ void Screen::paintCube (juce::Graphics& g) const
 {
     g.setFont (typeface (12.0f));
     g.setColour (kDim);
-    g.drawText ("Eight corners, a plane at depth Z, the point is what plays", stage.withHeight (24), juce::Justification::centredLeft);
+    g.drawText ("Eight sounds; the plane is a body at this depth; the point is what plays", stage.withHeight (24), juce::Justification::centredLeft);
     for (int n = 0; n < 8; ++n)
         for (int bit : { 1, 2, 4 })
             if ((n & bit) == 0)
@@ -528,7 +540,10 @@ void Screen::paintCube (juce::Graphics& g) const
     g.setColour (kGrid); g.fillRect (depth.withY (depth.getCentreY()).withHeight (1));
     g.setColour (kVowelInk); g.fillEllipse ((float) (depth.getX() + depth.getWidth() * session.cube.z) - 5, (float) depth.getCentreY() - 5, 10, 10);
     g.setColour (kDim);
-    g.drawText ("Z  " + juce::String (session.cube.z * 100.0, 0), depth.withX (depth.getX() - 70).withWidth (60), juce::Justification::centredRight);
+    g.drawText ("depth " + juce::String (session.cube.z * 100.0, 0), depth.withX (depth.getX() - 90).withWidth (80), juce::Justification::centredRight);
+    g.setColour (session.cube.complete() ? kBox : kBack); g.fillRect (sliceKey);
+    g.setColour (session.cube.complete() ? kAccent : kGrid);
+    g.drawText ("Use these four", sliceKey, juce::Justification::centred);
 }
 
 void Screen::paintEditor (juce::Graphics& g) const
@@ -571,7 +586,7 @@ void Screen::paintMagnitude (juce::Graphics& g) const
         g.setColour (kDim);
         g.drawText (f < 1000.0 ? juce::String ((int) f) : juce::String ((int) (f / 1000.0)) + "k", x - 18, r.getBottom() + 4, 36, 14, juce::Justification::centred);
     }
-    if (session.sounding) paintCurve (g, r, session.words, kPlotInk, 2.0f, false);
+    if (session.sounding) paintCurve (g, r, session.heard, kPlotInk, 2.0f, false, false);
     g.setColour (kDim); g.drawRect (r);
     if (session.editing < 0) return;
     const auto words = session.editWords();
@@ -660,9 +675,9 @@ void Screen::paintHud (juce::Graphics& g) const
     g.setColour (kBox); g.fillRect (hud);
     g.setFont (typeface (11.0f));
     g.setColour (kDim);
-    g.drawText ("BODY  240 bytes", hudHead.reduced (6, 0), juce::Justification::centredLeft);
+    g.drawText ("BODY", hudHead.reduced (6, 0), juce::Justification::centredLeft);
     g.setColour (session.quad.complete() ? kAccent : kGrid);
-    g.drawText ("W  write", writeKey.reduced (6, 0), juce::Justification::centredRight);
+    g.drawText ("Write  W", writeKey.reduced (6, 0), juce::Justification::centredRight);
     const auto corners = cornersOf (session.quad, session.stars);
     for (int n = 0; n < 4; ++n)
     {
@@ -705,6 +720,8 @@ void Screen::paintStrip (juce::Graphics& g) const
         g.setColour (placeable ? kAccent : kGrid);
         g.drawText ("> " + juce::String::charToString (Session::kCornerLetters[i]), toKeys[(size_t) i], juce::Justification::centred);
     }
+    g.setColour (session.tracking ? kAccent : kDim);
+    g.drawText ("Track", trackKey, juce::Justification::centred);
     g.setColour (kDim);
     g.drawText (session.status, status, juce::Justification::centredRight);
 }
@@ -733,7 +750,7 @@ void Screen::paintGhost (juce::Graphics& g) const
 {
     if (dragging != Drag::card && dragging != Drag::slice) return;
     if (dragging == Drag::card && dragStar < 0) return;
-    const Words words = dragging == Drag::card ? session.stars[(size_t) dragStar].words : session.words;
+    const Words words = dragging == Drag::card ? session.stars[(size_t) dragStar].words : session.heard;
     const auto ink = dragging == Drag::card ? inkOf (session.stars[(size_t) dragStar]) : kVowelInk;
     juce::Rectangle<int> ghost (dragPoint.x - 40, dragPoint.y - 18, 80, 36);
     g.setColour (kBack.withAlpha (0.9f)); g.fillRect (ghost);
@@ -782,8 +799,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         repaint();
         return;
     }
-    for (int i = 0; i < 4; ++i) if (navigation[(size_t) i].contains (p)) { showView ((View) i); return; }
-    if (advance.contains (p)) { advanceRoom(); return; }
+    for (int i = 0; i < 4; ++i) if (navigation[(size_t) i].contains (p)) { showView (kRoomOrder[i]); return; }
     for (int i = 0; i < 4; ++i)
         if (keys[(size_t) i].contains (p))
         {
@@ -793,17 +809,18 @@ void Screen::mouseDown (const juce::MouseEvent& e)
             return;
         }
     for (int i = 0; i < 4; ++i) if (toKeys[(size_t) i].contains (p)) { session.toCorner (i); return; }
+    if (trackKey.contains (p)) { session.setTracking (! session.tracking); return; }
     if (writeKey.contains (p)) { session.write(); return; }
     for (int n = 0; n < 4; ++n) if (cornerTag[(size_t) n].contains (p)) { openMenu (n, false, cornerTag[(size_t) n]); return; }
     for (int n = 0; n < 4; ++n) if (cornerBox[(size_t) n].contains (p)) { session.edit (n); return; }
     if (keyboard.contains (p))
     {
-        if (const int midi = noteAt (p); midi >= 0) { dragging = Drag::keyboard; session.setNote (midi); }
+        if (const int midi = noteAt (p); midi >= 0) { dragging = Drag::keyboard; session.noteOn (midi); }
         return;
     }
     if (view == View::picker)
     {
-        for (int i = 0; i < 4; ++i) if (paletteTabs[(size_t) i].contains (p)) { palette = i; browserScroll = 0; layout(); repaint(); return; }
+        for (int i = 0; i < 3; ++i) if (paletteTabs[(size_t) i].contains (p)) { palette = i; browserScroll = 0; layout(); repaint(); return; }
         if (keepKey.contains (p)) { session.keep(); return; }
         if (const int k = cardAt (p); k >= 0)
         {
@@ -835,6 +852,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     {
         for (int n = 0; n < 8; ++n) if (cubeTags[(size_t) n].contains (p)) { session.editCube (n); return; }
         for (int n = 0; n < 8; ++n) if (cubeBox[(size_t) n].contains (p)) { openMenu (n, true, cubeBox[(size_t) n]); return; }
+        if (sliceKey.contains (p)) { if (session.takeSlice()) showView (View::perform); return; }
         if (depth.expanded (0, 8).contains (p))
         {
             dragging = Drag::depth;
@@ -972,7 +990,7 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
     }
     if (dragging == Drag::keyboard)
     {
-        if (const int midi = noteAt (p); midi >= 0 && midi != session.note) session.setNote (midi);
+        if (const int midi = noteAt (p); midi >= 0 && midi != session.note) session.noteOn (midi);
         return;
     }
     if (dragging == Drag::card || dragging == Drag::slice) repaint();
@@ -989,6 +1007,7 @@ void Screen::mouseUp (const juce::MouseEvent& e)
     {
         if (const int n = cornerAt (p); n >= 0) session.toCorner (n);
     }
+    if (dragging == Drag::keyboard) session.noteOff();
     dragging = Drag::none; dragStar = -1; dragRow = -1; dragColumn = -1;
     peakEditStarted = false;
     repaint();
@@ -1015,7 +1034,7 @@ bool Screen::keyPressed (const juce::KeyPress& k)
     const auto m = k.getModifiers();
     const bool plain = ! m.isCommandDown() && ! m.isCtrlDown() && ! m.isAltDown();
     for (int i = 0; i < 4; ++i)
-        if (k.getKeyCode() == juce::KeyPress::F1Key + i) { showView ((View) i); return true; }
+        if (k.getKeyCode() == juce::KeyPress::F1Key + i) { showView (kRoomOrder[i]); return true; }
     if (k.getKeyCode() == 'H' && plain) { showHardware = ! showHardware; layout(); repaint(); return true; }
     if (menu.open && k.getKeyCode() == juce::KeyPress::escapeKey) { menu.open = false; repaint(); return true; }
     const bool used = session.key (k);

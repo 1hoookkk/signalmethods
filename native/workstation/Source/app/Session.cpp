@@ -110,7 +110,8 @@ void Session::audition()
         status = "";
         return;
     }
-    if (withAudio) audio.publish (flat (words));
+    heard = tracking ? transposed (words, std::pow (2.0, (note - 45) / 12.0)) : words;
+    if (withAudio) audio.publish (flat (heard));
 }
 
 Session::Snapshot Session::snapshot() const
@@ -452,6 +453,27 @@ void Session::setNote (int midi)
 {
     note = std::clamp (midi, 0, 127);
     if (withAudio) audio.setNote (note);
+    if (tracking) audition();
+    changed();
+}
+
+void Session::noteOn (int midi)
+{
+    note = std::clamp (midi, 0, 127);
+    if (withAudio) audio.noteOn (note);
+    if (tracking) audition();
+    changed();
+}
+
+void Session::noteOff()
+{
+    if (withAudio) audio.noteOff();
+}
+
+void Session::setTracking (bool on)
+{
+    tracking = on;
+    audition();
     changed();
 }
 
@@ -470,7 +492,8 @@ bool Session::setLoop (const juce::File& wav)
 
 void Session::noteIn (const juce::MidiMessage& m)
 {
-    if (m.isNoteOn()) setNote (m.getNoteNumber());
+    if (m.isNoteOn()) noteOn (m.getNoteNumber());
+    else if (m.isNoteOff() && m.getNoteNumber() == note) noteOff();
 }
 
 void Session::setSource (int s)
@@ -500,6 +523,7 @@ bool Session::key (const juce::KeyPress& k)
     if (c == 'n' || c == 'N') { setSource (1); return true; }
     if ((c == 'l' || c == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }
     if (c == 's' || c == 'S') { setSource (0); return true; }
+    if (c == 'k' || c == 'K') { setTracking (! tracking); return true; }
     if (c == '[') { setNote (note - 1); return true; }
     if (c == ']') { setNote (note + 1); return true; }
     if (code == juce::KeyPress::pageDownKey) { setNote (note - 12); return true; }

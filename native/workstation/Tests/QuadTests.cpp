@@ -398,6 +398,14 @@ int main()
         const auto f = screen.formantsAt (screen.chartPoint (700.0, 1100.0).toInt());
         check (std::abs (f.first - 700.0) < 6.0 && std::abs (f.second - 1100.0) < 10.0 && screen.chart.toFloat().contains (screen.chartPoint (hs::kSchwaF1, hs::kSchwaF2)), "the chart maps F1 and F2 both ways and schwa sits inside it");
         check (screen.pointAt (screen.chartPoint (hs::kSchwaF1, hs::kSchwaF2).toInt()) == s.starNamed (ipa ("\xc9\x99")), "schwa is found at the chart's origin");
+        {
+            const auto at = [&] (const juce::String& name) { const auto f = hs::formantsOf (s.stars[(size_t) s.starNamed (name)].words); return screen.chartPoint (f[0], f[1]); };
+            const auto pi = at ("i"), pu = at ("u"), pa = at (ipa ("\xc9\x91"));
+            check (pi.x < pu.x && pi.x < pa.x && pi.y < pa.y && pu.y < pa.y && pu.x > screen.chart.getCentreX(), "the vowel chart is the standard one: i top-left, u top-right, a at the bottom");
+            const int violin = s.starNamed ("Violin Body Resonant");
+            const auto fv = hs::formantsOf (s.stars[(size_t) violin].words);
+            check (screen.pointAt (screen.chartPoint (fv[0], fv[1]).toInt()) != violin, "bodies are never on the vowel chart");
+        }
         const auto u = hs::formantsOf (s.stars[(size_t) s.starNamed ("u")].words), iy = hs::formantsOf (s.stars[(size_t) s.starNamed ("i")].words);
         std::printf ("      u reads %.0f %.0f, i reads %.0f %.0f\n", u[0], u[1], iy[0], iy[1]);
         check (u[0] > 250.0 && u[0] < 400.0 && u[1] > 1150.0 && u[1] < 1350.0 && iy[1] > 1900.0, "the Klatt vowels sit at their own Table II F1 and F2, the wide tilt row is not a formant");
@@ -420,7 +428,10 @@ int main()
         hudPinned = hudPinned && screen.cornerBox[0].getRight() == screen.cornerBox[1].getX() && screen.cornerBox[0].getBottom() == screen.cornerBox[2].getY() && screen.cornerBox[3].getX() > screen.cornerBox[2].getX() && screen.hud.contains (screen.writeKey);
         check (hudPinned, "the 2x2 body sits in the bottom-right corner with A B over C D and the write key, clear of the room and the keyboard");
         check (screen.cornerAt (screen.cornerPlot[2].getCentre()) == 2 && screen.cornerAt (screen.chart.getCentre()) < 0, "a drop on the third cell lands in corner C");
-        check (screen.keyboard.getRight() <= screen.stage.getRight() && screen.keys[0].getY() > screen.stage.getBottom() && screen.toKeys[3].getRight() <= screen.stage.getRight(), "the audition strip and the to-corner buttons run under the room and beside the body");
+        check (screen.keyboard.getRight() <= screen.stage.getRight() && screen.keys[0].getY() > screen.stage.getBottom() && screen.toKeys[3].getRight() <= screen.stage.getRight(), "the audition strip, Track and the to-corner buttons run under the room and beside the body");
+        screen.setSize (820, 520);
+        check (screen.toKeys[3].getRight() <= screen.stage.getRight() && ! screen.hud.intersects (screen.stage), "the strip still fits at the smallest window");
+        screen.setSize (900, 560);
         screen.setSize (1120, 700);
         for (int room = 0; room < 4; ++room)
         {
@@ -501,6 +512,46 @@ int main()
         }
         check (fits, "the isolated 3:2 plot and six-column editor fit down to the minimum window size with H toggled on and off");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "peak gestures and hardware toggles stay headless");
+    }
+
+    {
+        hs::Audio audio;
+        audio.prepare (44100.0);
+        hs::Session s (root, tempQuad(), false);
+        std::array<std::uint16_t, 30> flat {};
+        for (size_t r = 0; r < hs::kRows; ++r) for (size_t k = 0; k < hs::kWords; ++k) flat[r * 5 + k] = s.stars[(size_t) s.starNamed ("i")].words[r][k];
+        audio.publish (flat);
+        audio.setSource (1);
+        std::vector<float> left (512), right (512);
+        float* outs[2] = { left.data(), right.data() };
+        auto rms = [&] { audio.audioDeviceIOCallbackWithContext (nullptr, 0, outs, 2, 512, {}); double e = 0.0; for (float v : left) e += v * v; return std::sqrt (e / 512.0); };
+        double silent = 0.0;
+        for (int i = 0; i < 8; ++i) silent = std::max (silent, rms());
+        audio.noteOn (60);
+        double struck = 0.0;
+        for (int i = 0; i < 20; ++i) struck = std::max (struck, rms());
+        audio.noteOff();
+        double tail = 0.0;
+        for (int i = 0; i < 60; ++i) tail = rms();
+        std::printf ("      keyboard: silent %.5f, held %.4f, after release %.6f\n", silent, struck, tail);
+        check (silent == 0.0 && struck > 0.005 && tail < struck * 0.02, "a key strikes and holds the excitation through the cascade and the sound rings down after release");
+        audio.setPlaying (true);
+        double drone = 0.0;
+        for (int i = 0; i < 20; ++i) drone = rms();
+        check (drone > 0.005, "Space still drones without a key");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        s.select (s.starNamed ("i"));
+        const auto base = hs::formantsOf (s.heard);
+        s.setTracking (true);
+        s.noteOn (57);
+        const auto up = hs::formantsOf (s.heard);
+        std::printf ("      track: %.0f %.0f at A2, %.0f %.0f at A3\n", base[0], base[1], up[0], up[1]);
+        check (s.tracking && std::abs (up[0] / base[0] - 2.0) < 0.05 && std::abs (up[1] / base[1] - 2.0) < 0.05 && same (s.words, s.stars[(size_t) s.starNamed ("i")].words), "with Track on an octave up doubles every formant of what plays while the card's words stay");
+        s.key (key ('K', false, 'k'));
+        check (! s.tracking && same (s.heard, s.words), "K turns tracking off and what plays is the words again");
     }
 
     std::printf ("%d failures\n", failures);

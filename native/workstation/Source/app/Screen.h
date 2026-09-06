@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Session.h"
+#include <map>
 
 namespace hs
 {
@@ -38,16 +39,16 @@ public:
     int noteAt (juce::Point<int> p) const;
     juce::Rectangle<int> card (int index) const;
 
-    juce::Rectangle<int> stage, picker, chart, hud, hudHead, writeKey, advance;
+    juce::Rectangle<int> stage, picker, chart, hud, hudHead, writeKey, sliceKey, trackKey;
     std::array<juce::Rectangle<int>, 4> navigation, cornerBox, cornerTag, cornerPlot, keys, toKeys, stageTags, padTags;
     std::array<juce::Rectangle<int>, 8> cubeBox, cubeTags;
-    std::array<juce::Rectangle<int>, 4> paletteTabs;
+    std::array<juce::Rectangle<int>, 3> paletteTabs;
     juce::Rectangle<int> table, magnitude, morph, keyboard, status, cubeArea, depth, dropZone, keepKey;
     bool showHardware = false;
     int palette = 0;
     std::vector<int> cards() const;
     static constexpr int kLine = 20, kColumns = 6;
-    static constexpr double kF1Low = 150.0, kF1High = 1200.0, kF2Low = 450.0, kF2High = 3400.0;
+    static constexpr double kF1Low = 200.0, kF1High = 1100.0, kF2Low = 600.0, kF2High = 3500.0;
     struct Menu { bool open = false, cube = false; int target = -1; juce::Rectangle<int> rect; int scroll = 0; } menu;
 
 private:
@@ -58,7 +59,9 @@ private:
     int menuItemAt (juce::Point<int> p) const;
     int menuPinned() const;
     void openMenu (int target, bool cube, juce::Rectangle<int> anchor);
-    void advanceRoom();
+    bool onChart (const Star& s) const;
+    const std::vector<double>& curveDb (const Words& words) const;
+    mutable std::map<Words, std::vector<double>> curves;
     int cardAt (juce::Point<int> p) const;
     bool inPlane (juce::Point<int> p) const;
     std::pair<double, double> planeAt (juce::Point<int> p) const;
@@ -74,7 +77,7 @@ private:
     void paintKeyboard (juce::Graphics& g) const;
     void paintMenu (juce::Graphics& g) const;
     void paintGhost (juce::Graphics& g) const;
-    void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill) const;
+    void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill, bool cached = true) const;
     Session& session;
     std::vector<double> hz;
     enum class Drag { none, puck, made, card, row, peak, keyboard, cube, depth, slice, transpose } dragging = Drag::none;

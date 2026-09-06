@@ -23,6 +23,9 @@ public:
     void setPlaying (bool on) { playing.store (on); }
     void setSource (int s) { source.store (s); }
     void setNote (int midi) { note.store (midi); }
+    void noteOn (int midi) { note.store (midi); held.store (true); strikes.fetch_add (1); }
+    void noteOff() { held.store (false); }
+    void prepare (double sampleRate);
     struct Clip { std::vector<float> samples; double rate = 44100.0; };
     void setLoop (std::shared_ptr<const Clip> clip) { loop.store (std::move (clip)); }
     bool isOpen() const { return open; }
@@ -44,8 +47,12 @@ private:
     juce::AudioDeviceManager manager;
     bool open = false;
     std::atomic<bool> playing { false };
+    std::atomic<bool> held { false };
+    std::atomic<int> strikes { 0 };
     std::atomic<int> source { 1 };
     std::atomic<int> note { 45 };
+    int strikesSeen = 0, burst = 0;
+    double envelope = 0.0;
     std::atomic<std::shared_ptr<const Clip>> loop;
     std::shared_ptr<const Clip> playingLoop;
     double loopPos = 0.0;

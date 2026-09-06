@@ -37,8 +37,10 @@ public:
     bool sounding = false;
     juce::String status;
     bool playing = false;
+    bool tracking = false;
     int source = 1;
     int note = 45;
+    Words heard {};
     juce::String loopName;
     Audio audio;
     bool withAudio = false;
@@ -76,6 +78,9 @@ public:
     void setPlaying (bool on);
     void setSource (int s);
     void setNote (int midi);
+    void noteOn (int midi);
+    void noteOff();
+    void setTracking (bool on);
     bool setLoop (const juce::File& wav);
     void noteIn (const juce::MidiMessage& m);
     bool key (const juce::KeyPress& k);

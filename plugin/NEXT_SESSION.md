@@ -2063,3 +2063,15 @@ Open, in order:
   interpolates two coefficient sets, log-spaced frequency for natural formant transitions,
   munchkinization = the note/formant split). Row-reorder (lane alignment) named as the next
   slice; not built.
+- 2026-09-07 small hours: Tyson's review pastes (three, converging) ruled: the vowel space is
+  for vowels only, standard inverted axes (i top-left, u top-right, a bottom); bodies, reads and
+  captures live on the right and never draw on it; rooms 1 Picker, 2 Stage, 3 Perform with the
+  cube last as the explicit Morpheus mode; the header advance button gone; card curves cached
+  (that was the lag: responseDb for every card on every repaint); the keyboard articulates
+  (10 ms Hann noise burst + held source + 120 ms release, Space still drones) and K toggles
+  key tracking (transposed() by 2^((note-45)/12) on what plays, never the card); "reduce
+  abstract emu naming" -> BODY, Write, depth, Use these four. Corrected in a line: the cube is
+  the Morpheus 8-corner PackedBody itself, not an invention, so it stays as a mode. Measured:
+  keyboard silent 0, held rms 0.32, release tail 0.0005; Track A2 310/2020 -> A3 620/4040.
+  102 checks. Paste claims about JOS licensing to E-mu are not in evidence; the citation of
+  Smith 1983 in US5248845 and ICMC 1992 is.

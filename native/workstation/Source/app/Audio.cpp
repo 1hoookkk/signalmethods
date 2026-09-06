@@ -87,9 +87,11 @@ float Audio::next()
     return (float) (0.18 * (pink0 + pink1 + pink2 + white * 0.1848));
 }
 
-void Audio::audioDeviceAboutToStart (juce::AudioIODevice* device)
+void Audio::audioDeviceAboutToStart (juce::AudioIODevice* device) { prepare (device->getCurrentSampleRate()); }
+
+void Audio::prepare (double sampleRate)
 {
-    rate = device->getCurrentSampleRate();
+    rate = sampleRate;
     runner.set_sample_rate (rate);
     runner.reset();
     runner.set_ring_leveller (true);
@@ -98,27 +100,45 @@ void Audio::audioDeviceAboutToStart (juce::AudioIODevice* device)
     for (auto& row : identity) row = trench::core::section_words_to_biquad (trench::core::kIdentitySection);
     runner.set_immediate (identity);
     consumed = 0;
+    envelope = 0.0; burst = 0; strikesSeen = strikes.load();
 }
 
 void Audio::audioDeviceStopped() {}
 
 void Audio::handleIncomingMidiMessage (juce::MidiInput*, const juce::MidiMessage& message)
 {
+    if (message.isNoteOff()) { if (message.getNoteNumber() == note.load()) noteOff(); return; }
     if (! message.isNoteOn()) return;
     const int n = message.getNoteNumber();
-    note.store (n);
+    noteOn (n);
     if (onNote) juce::MessageManager::callAsync ([this, n] { if (onNote) onNote (n); });
 }
 
 void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* const* out, int numOut, int numSamples, const juce::AudioIODeviceCallbackContext&)
 {
     consume();
-    const bool play = playing.load();
+    const bool drone = playing.load(), holding = held.load();
+    const double attack = 1.0 - std::exp (-1.0 / (0.002 * rate)), release = 1.0 - std::exp (-1.0 / (0.12 * rate));
+    const int burstLength = (int) (0.010 * rate);
+    if (const int s = strikes.load(); s != strikesSeen) { strikesSeen = s; burst = burstLength; }
     for (int offset = 0; offset < numSamples; offset += (int) block.size())
     {
         const int n = std::min ((int) block.size(), numSamples - offset);
-        for (int i = 0; i < n; ++i) block[(size_t) i] = play ? next() : 0.0f;
-        if (play) runner.process (std::span<float> (block.data(), (size_t) n));
+        for (int i = 0; i < n; ++i)
+        {
+            const double target = drone || holding ? 1.0 : 0.0;
+            envelope += (target - envelope) * (target > envelope ? attack : release);
+            float x = envelope > 1e-5 ? next() * (float) envelope : 0.0f;
+            if (burst > 0)
+            {
+                random ^= random << 13; random ^= random >> 17; random ^= random << 5;
+                const double window = 0.5 - 0.5 * std::cos (2.0 * 3.141592653589793 * (burstLength - burst) / (double) burstLength);
+                x += (float) ((double (random) / 4294967295.0 * 2.0 - 1.0) * 0.6 * window);
+                --burst;
+            }
+            block[(size_t) i] = x;
+        }
+        runner.process (std::span<float> (block.data(), (size_t) n));
         for (int i = 0; i < n; ++i)
         {
             const float y = std::isfinite (block[(size_t) i]) ? block[(size_t) i] * 0.5f : 0.0f;
