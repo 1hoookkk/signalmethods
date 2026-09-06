@@ -17,9 +17,9 @@ juce::String titleOf (const juce::String& stem)
 }
 }
 
-std::vector<Entry> loadLibrary (const juce::File& p2kDir)
+std::vector<Star> loadLibrary (const juce::File& p2kDir)
 {
-    std::vector<Entry> out;
+    std::vector<Star> out;
     auto files = p2kDir.findChildFiles (juce::File::findFiles, false, "*.body240");
     files.sort();
     for (const auto& file : files)
@@ -27,28 +27,18 @@ std::vector<Entry> loadLibrary (const juce::File& p2kDir)
         juce::MemoryBlock mb;
         if (! file.loadFileAsData (mb) || mb.getSize() != trench::core::kLegacyBodyBytes) continue;
         const auto body = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> ((const std::uint8_t*) mb.getData(), mb.getSize()));
-        for (int side = 0; side < 2; ++side)
+        for (int c = 0; c < 4; ++c)
         {
-            Entry e;
-            e.body = titleOf (file.getFileNameWithoutExtension());
-            e.side = side == 0 ? "M0" : "M1";
-            e.name = e.body + " " + e.side;
-            for (size_t s = 0; s < kRows; ++s) { e.q0[s] = body.words[(size_t) side][s]; e.q1[s] = body.words[(size_t) side + 2][s]; }
-            out.push_back (e);
+            Star s;
+            s.body = titleOf (file.getFileNameWithoutExtension());
+            s.corner = kPinNames[c];
+            s.name = s.body + " " + s.corner;
+            s.kind = "factory";
+            for (size_t row = 0; row < kRows; ++row) s.words[row] = body.words[(size_t) c][row];
+            out.push_back (s);
         }
     }
     return out;
-}
-
-Anchor factoryAnchor (const std::vector<Entry>& library, int k)
-{
-    Anchor a;
-    if (k < 0 || k >= (int) library.size()) return a;
-    const auto& e = library[(size_t) k];
-    a.origin.kind = "factory"; a.origin.body = e.body; a.origin.corner = e.side;
-    a.name = e.name;
-    a.q0 = e.q0; a.q1 = e.q1;
-    return a;
 }
 
 juce::File bodyFile (const juce::File& p2kDir, const juce::String& body)

@@ -7,7 +7,14 @@ namespace hs
 namespace
 {
 const juce::Colour kPaper (0xffffffff), kInk (0xff1b1e22), kGrey (0xff8a9099), kFaint (0xffd9dde3);
-const juce::Colour kWash (0xffeaf3fb), kLine (0xff9fc3e2), kDot (0xffc4d9ec), kVowel (0xff6f9fd0), kPath (0xff1b1e22), kGhost (0xffb7d3ea);
+const juce::Colour kWash (0xffeaf3fb), kLine (0xff9fc3e2), kDot (0xffc4d9ec), kVowel (0xff6f9fd0), kLetter (0xff5b8fc4), kGhost (0xffb7d3ea);
+const juce::Colour kQuad (0x2a1b1e22), kQuadEdge (0xff1b1e22), kHot (0xffd94a3a), kCapture (0xffc48f00);
+
+struct Reference { const char* letter; double f1, f2; };
+const Reference kKlatt[] = {
+    { "i", 310.0, 2020.0 }, { "\xc9\xaa", 400.0, 1800.0 }, { "e", 480.0, 1720.0 }, { "\xc9\x9b", 530.0, 1680.0 },
+    { "\xc3\xa6", 620.0, 1660.0 }, { "\xc9\x91", 700.0, 1220.0 }, { "\xc9\x94", 600.0, 990.0 }, { "\xca\x8c", 620.0, 1220.0 },
+    { "o", 540.0, 1100.0 }, { "\xca\x8a", 450.0, 1100.0 }, { "u", 350.0, 1250.0 }, { "\xc9\x9d", 470.0, 1270.0 } };
 
 juce::Font sans (float height, bool bold = false) { return juce::Font (juce::FontOptions (juce::Font::getDefaultSansSerifFontName(), height, bold ? juce::Font::bold : juce::Font::plain)); }
 juce::Font serif (float height) { return juce::Font (juce::FontOptions (juce::Font::getDefaultSerifFontName(), height, juce::Font::plain)); }
@@ -16,6 +23,13 @@ double xOf (double hzValue, juce::Rectangle<int> r) { return r.getX() + r.getWid
 double yOf (double db, juce::Rectangle<int> r) { return r.getBottom() - r.getHeight() * (db + 30.0) / 60.0; }
 
 constexpr double kF2High = 4000.0, kF2Low = 300.0, kF1Low = 60.0, kF1High = 1500.0;
+
+bool inside (const std::array<juce::Point<float>, 4>& q, juce::Point<float> p)
+{
+    juce::Path path;
+    path.startNewSubPath (q[0]); path.lineTo (q[1]); path.lineTo (q[3]); path.lineTo (q[2]); path.closeSubPath();
+    return path.contains (p);
+}
 }
 
 Screen::Screen (Session& s) : session (s), hz (curveHz())
@@ -23,57 +37,64 @@ Screen::Screen (Session& s) : session (s), hz (curveHz())
     setSize (1480, 860);
     setWantsKeyboardFocus (true);
     layout();
-    for (const auto& e : session.library) libraryFormants.push_back (formantsOf (e.q0));
-    session.onChange = [this] { keepVisible(); repaint(); };
+    session.onChange = [this] { repaint(); };
 }
 
 void Screen::layout()
 {
     playKey = { 760, 22, 60, 22 }; sawKey = { 830, 22, 60, 22 }; noiseKey = { 900, 22, 110, 22 }; writeKey = { 1020, 22, 130, 22 };
-    chart = { 110, 70, 970, 440 };
-    qBar = { 70, 70, 14, 440 };
-    response = { 110, 600, 970, 180 };
-    libraryList = { 1180, 70, 260, 380 };
-    stripList = { 1180, 490, 260, 300 };
+    for (int n = 0; n < 4; ++n) chips[(size_t) n] = { 60 + n * 345, 54, 330, 22 };
+    map = { 120, 104, 1240, 420 };
+    response = { 120, 560, 360, 240 };
     statusLine = { 60, 812, 1380, 24 };
 }
 
 juce::Point<float> Screen::vowelPoint (double f1, double f2) const
 {
-    const double x = chart.getX() + chart.getWidth() * std::log (kF2High / std::clamp (f2, kF2Low, kF2High)) / std::log (kF2High / kF2Low);
-    const double y = chart.getY() + chart.getHeight() * std::log (std::clamp (f1, kF1Low, kF1High) / kF1Low) / std::log (kF1High / kF1Low);
+    const double x = map.getX() + map.getWidth() * std::log (kF2High / std::clamp (f2, kF2Low, kF2High)) / std::log (kF2High / kF2Low);
+    const double y = map.getY() + map.getHeight() * std::log (std::clamp (f1, kF1Low, kF1High) / kF1Low) / std::log (kF1High / kF1Low);
     return { (float) x, (float) y };
 }
 
-juce::Point<float> Screen::chartPoint (const Words& words) const
+juce::Point<float> Screen::starPoint (int k) const
 {
-    const auto f = formantsOf (words);
-    if (f[0] > 0.0 && f[1] > 0.0) return vowelPoint (f[0], f[1]);
-    if (f[0] > 0.0) return vowelPoint (f[0], kF2Low);
-    return vowelPoint (kF1Low, kF2Low);
+    if (k < 0 || k >= (int) session.stars.size()) return {};
+    if (k < (int) points.size()) return points[(size_t) k];
+    const auto f = formantsOf (session.stars[(size_t) k].words);
+    return vowelPoint (f[0] > 0.0 ? f[0] : kF1Low, f[1] > 0.0 ? f[1] : kF2Low);
 }
 
-int Screen::nearestEntry (juce::Point<int> p) const
+juce::Point<float> Screen::pinPoint (int n) const
 {
-    int best = -1; double bestDistance = 10.0;
-    for (int i = 0; i < (int) libraryFormants.size(); ++i)
-    {
-        const auto& f = libraryFormants[(size_t) i];
-        const double d = vowelPoint (f[0] > 0.0 ? f[0] : kF1Low, f[1] > 0.0 ? f[1] : kF2Low).getDistanceFrom (p.toFloat());
-        if (d < bestDistance) { bestDistance = d; best = i; }
-    }
-    return best;
+    if (dragging == Drag::frame || (dragging == Drag::pin && dragPin == n)) return dragPoints[(size_t) n];
+    return starPoint (session.quad.pins[(size_t) n]);
 }
 
-int Screen::nearestAnchor (juce::Point<int> p) const
+juce::Point<float> Screen::puckPoint (double morph, double q) const
 {
-    int best = 0; double bestDistance = 12.0;
-    for (int k = 1; k <= session.strip.count(); ++k)
+    const double m = morph / 100.0, v = q / 100.0;
+    const auto a = pinPoint (0), b = pinPoint (1), c = pinPoint (2), d = pinPoint (3);
+    const auto low = a + (b - a) * (float) m, high = c + (d - c) * (float) m;
+    return low + (high - low) * (float) v;
+}
+
+int Screen::nearestStar (juce::Point<float> p, float within) const
+{
+    int best = -1; float bestDistance = within;
+    for (int k = 0; k < (int) session.stars.size(); ++k)
     {
-        const double d = chartPoint (session.strip.anchors[(size_t) k - 1].q0).getDistanceFrom (p.toFloat());
+        const float d = starPoint (k).getDistanceFrom (p);
         if (d < bestDistance) { bestDistance = d; best = k; }
     }
     return best;
+}
+
+void Screen::refreshHeat()
+{
+    if (! session.quad.complete()) { heat.clear(); heatPins = { -2, -2, -2, -2 }; return; }
+    if (heatPins == session.quad.pins) return;
+    heatPins = session.quad.pins;
+    heat = hotCells (cornersOf (session.quad, session.stars), kHeat, hz);
 }
 
 void Screen::paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width) const
@@ -97,12 +118,18 @@ void Screen::paintWord (juce::Graphics& g, juce::Rectangle<int> r, const juce::S
     if (on) { g.setColour (kInk); g.fillRect (r.getX() + 6, r.getBottom() - 1, r.getWidth() - 12, 1); }
 }
 
-void Screen::paintChart (juce::Graphics& g) const
+void Screen::paintMap (juce::Graphics& g)
 {
     static const char* vowels[] = { "Ooh To Eee", "Eeh To Aah", "Multi Q Vox", "Talking Hedz", "Ubu Orator", "Deep Bouche" };
-    const auto& s = session.strip;
-    const int n = s.count();
-
+    if (points.size() != session.libraryCount)
+    {
+        points.clear();
+        for (size_t k = 0; k < session.libraryCount; ++k)
+        {
+            const auto f = formantsOf (session.stars[k].words);
+            points.push_back (vowelPoint (f[0] > 0.0 ? f[0] : kF1Low, f[1] > 0.0 ? f[1] : kF2Low));
+        }
+    }
     juce::Path shape;
     const auto a = vowelPoint (200.0, 2600.0), b = vowelPoint (200.0, 500.0), c = vowelPoint (850.0, 880.0), d = vowelPoint (850.0, 1800.0);
     shape.startNewSubPath (a); shape.lineTo (b); shape.lineTo (c); shape.lineTo (d); shape.closeSubPath();
@@ -117,76 +144,91 @@ void Screen::paintChart (juce::Graphics& g) const
     g.drawText ("850", (int) d.x - 50, (int) d.y - 6, 40, 12, juce::Justification::centredRight);
     g.drawText ("880", (int) c.x - 20, (int) c.y + 5, 40, 12, juce::Justification::centred);
     g.drawText ("850", (int) c.x + 10, (int) c.y - 6, 40, 12, juce::Justification::centredLeft);
-    g.drawText ("F2", chart.getX() - 4, chart.getY() - 16, 30, 12, juce::Justification::centredLeft);
-    g.drawText ("F1", chart.getX() - 46, chart.getY() + 4, 40, 12, juce::Justification::centredRight);
+    g.drawText ("F2", map.getX() - 4, map.getY() - 16, 30, 12, juce::Justification::centredLeft);
+    g.drawText ("F1", map.getX() - 46, map.getY() + 4, 40, 12, juce::Justification::centredRight);
 
-    for (int i = 0; i < (int) libraryFormants.size(); ++i)
+    g.setFont (serif (15.0f)); g.setColour (kLetter);
+    for (const auto& r : kKlatt)
     {
-        const auto& f = libraryFormants[(size_t) i];
-        const auto& e = session.library[(size_t) i];
-        const auto p = vowelPoint (f[0] > 0.0 ? f[0] : kF1Low, f[1] > 0.0 ? f[1] : kF2Low);
+        const auto p = vowelPoint (r.f1, r.f2);
+        g.drawText (juce::String (juce::CharPointer_UTF8 (r.letter)), (int) p.x - 10, (int) p.y - 10, 20, 20, juce::Justification::centred);
+    }
+
+    for (int k = 0; k < (int) session.stars.size(); ++k)
+    {
+        const auto& s = session.stars[(size_t) k];
+        const auto p = starPoint (k);
         bool vowel = false;
-        for (auto* v : vowels) vowel = vowel || e.body == v;
-        const bool chosen = i == session.librarySelected;
-        g.setColour (chosen ? kInk : vowel ? kVowel : kDot);
-        const float radius = vowel ? 3.5f : 2.5f;
-        g.fillEllipse (p.x - radius, p.y - radius, 2.0f * radius, 2.0f * radius);
-        if (chosen)
+        for (auto* v : vowels) vowel = vowel || s.body == v;
+        const bool capture = s.kind == "capture";
+        const bool lit = k == session.hovered || k == session.selected;
+        g.setColour (capture ? kCapture : lit ? kInk : vowel ? kVowel : kDot);
+        const float radius = capture ? 4.0f : vowel ? 3.5f : 2.5f;
+        if (capture) g.fillRect (p.x - radius, p.y - radius, 2.0f * radius, 2.0f * radius);
+        else g.fillEllipse (p.x - radius, p.y - radius, 2.0f * radius, 2.0f * radius);
+        if (lit)
         {
             g.setColour (kInk); g.drawEllipse (p.x - 8.0f, p.y - 8.0f, 16.0f, 16.0f, 1.0f);
             g.setFont (sans (11.0f));
-            g.drawText (e.name, (int) p.x + 12, (int) p.y - 8, 200, 16, juce::Justification::centredLeft);
+            g.drawText (s.name, (int) p.x + 12, (int) p.y - 8, 220, 16, juce::Justification::centredLeft);
         }
     }
+}
 
-    const int current = std::clamp (s.square, 1, s.squares());
-    for (int k = 1; k < n; ++k)
+void Screen::paintQuad (juce::Graphics& g)
+{
+    const auto& q = session.quad;
+    refreshHeat();
+    std::array<juce::Point<float>, 4> p;
+    for (int n = 0; n < 4; ++n) p[(size_t) n] = pinPoint (n);
+    const bool complete = q.complete() || dragging == Drag::frame;
+    if (complete)
     {
-        const auto p0 = chartPoint (s.anchors[(size_t) k - 1].q0), p1 = chartPoint (s.anchors[(size_t) k].q0);
-        g.setColour (k == current ? kPath : kGrey);
-        g.drawLine (p0.x, p0.y, p1.x, p1.y, k == current ? 2.0f : 1.0f);
+        juce::Path outline;
+        outline.startNewSubPath (p[0]); outline.lineTo (p[1]); outline.lineTo (p[3]); outline.lineTo (p[2]); outline.closeSubPath();
+        g.setColour (kQuad); g.fillPath (outline);
+        if (! heat.empty() && dragging != Drag::frame)
+            for (int j = 0; j < kHeat; ++j)
+                for (int i = 0; i < kHeat; ++i)
+                {
+                    const double above = heat[(size_t) (j * kHeat + i)];
+                    if (above <= 3.0) continue;
+                    const float alpha = (float) std::clamp ((above - 3.0) / 12.0, 0.08, 0.55);
+                    const auto c0 = puckPoint (100.0 * i / kHeat, 100.0 * j / kHeat), c1 = puckPoint (100.0 * (i + 1) / kHeat, 100.0 * j / kHeat);
+                    const auto c2 = puckPoint (100.0 * (i + 1) / kHeat, 100.0 * (j + 1) / kHeat), c3 = puckPoint (100.0 * i / kHeat, 100.0 * (j + 1) / kHeat);
+                    juce::Path cell;
+                    cell.startNewSubPath (c0); cell.lineTo (c1); cell.lineTo (c2); cell.lineTo (c3); cell.closeSubPath();
+                    g.setColour (kHot.withAlpha (alpha)); g.fillPath (cell);
+                }
+        g.setColour (kQuadEdge); g.strokePath (outline, juce::PathStrokeType (1.2f));
     }
-    for (int k = 1; k <= n; ++k)
+    if (complete && session.hovered < 0)
     {
-        const auto& anchor = s.anchors[(size_t) k - 1];
-        const auto p = chartPoint (anchor.q0), pq = chartPoint (anchor.q1);
-        g.setColour (kPaper); g.fillEllipse (p.x - 7.0f, p.y - 7.0f, 14.0f, 14.0f);
-        g.setColour (s.selected == k ? kInk : kGrey);
-        g.drawEllipse (p.x - 6.0f, p.y - 6.0f, 12.0f, 12.0f, s.selected == k ? 2.0f : 1.2f);
-        g.drawEllipse (pq.x - 3.0f, pq.y - 3.0f, 6.0f, 6.0f, 1.0f);
-        g.setFont (serif (11.0f)); g.setColour (s.selected == k ? kInk : kGrey);
-        g.drawText (juce::String (k), (int) p.x - 20, (int) p.y - 24, 40, 12, juce::Justification::centred);
-        if (k == current || k == current + 1 || k == s.selected)
+        const double m = q.morph / 100.0, v = q.q / 100.0;
+        const double weights[4] = { (1.0 - m) * (1.0 - v), m * (1.0 - v), (1.0 - m) * v, m * v };
+        for (int n = 0; n < 4; ++n)
         {
-            g.setFont (sans (11.0f));
-            g.drawText (anchor.name, (int) p.x + 10, (int) p.y + 4, 220, 14, juce::Justification::centredLeft);
+            const float radius = (float) (8.0 + 46.0 * weights[n]);
+            const auto pt = p[(size_t) n];
+            g.setColour (kVowel.withAlpha ((float) (0.08 + 0.30 * weights[n])));
+            g.fillEllipse (pt.x - radius, pt.y - radius, 2.0f * radius, 2.0f * radius);
         }
     }
-    if (n > 0 && session.sounding)
+    for (int n = 0; n < 4; ++n)
     {
-        const auto p = chartPoint (session.words);
-        g.setColour (kInk); g.fillEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f);
-        g.setColour (kPaper); g.drawEllipse (p.x - 5.0f, p.y - 5.0f, 10.0f, 10.0f, 1.5f);
+        if (q.pins[(size_t) n] < 0 && dragging != Drag::frame) continue;
+        const auto pt = p[(size_t) n];
+        g.setColour (kPaper); g.fillEllipse (pt.x - 7.0f, pt.y - 7.0f, 14.0f, 14.0f);
+        g.setColour (kInk); g.drawEllipse (pt.x - 6.0f, pt.y - 6.0f, 12.0f, 12.0f, 1.6f);
+        g.setFont (serif (10.0f)); g.setColour (kInk);
+        const bool left = n == 0 || n == 2;
+        g.drawText (kPinNames[n], left ? (int) pt.x - 58 : (int) pt.x + 10, (int) pt.y - 6, 48, 12, left ? juce::Justification::centredRight : juce::Justification::centredLeft);
     }
-
-    g.setColour (kFaint); g.fillRect (qBar);
-    if (n > 0)
+    if (complete && session.hovered < 0)
     {
-        const float y = (float) (qBar.getBottom() - s.q / 100.0 * qBar.getHeight());
-        g.setColour (kInk); g.fillRect ((float) qBar.getX() - 2.0f, y - 1.5f, (float) qBar.getWidth() + 4.0f, 3.0f);
-    }
-    g.setFont (serif (10.0f)); g.setColour (kGrey);
-    g.drawText ("Q", qBar.getX() - 3, qBar.getY() - 16, 20, 12, juce::Justification::centred);
-
-    if (session.sounding)
-    {
-        const auto f = formantsOf (session.words);
-        juce::String line;
-        const char* names[] = { "F1", "F2", "F3", "F4" };
-        for (int i = 0; i < 4; ++i) if (f[(size_t) i] > 0.0) line += juce::String (names[i]) + " " + juce::String ((int) std::round (f[(size_t) i])) + " Hz      ";
-        if (n > 0) line += "MORPH " + juce::String (s.morph, 1) + "      Q " + juce::String (s.q, 1);
-        g.setFont (serif (12.0f)); g.setColour (kInk);
-        g.drawText (line, chart.getX(), chart.getBottom() + 22, chart.getWidth(), 14, juce::Justification::centredLeft);
+        const auto pk = puckPoint (q.morph, q.q);
+        g.setColour (kInk); g.fillEllipse (pk.x - 6.0f, pk.y - 6.0f, 12.0f, 12.0f);
+        g.setColour (kPaper); g.drawEllipse (pk.x - 6.0f, pk.y - 6.0f, 12.0f, 12.0f, 1.5f);
     }
 }
 
@@ -203,95 +245,80 @@ void Screen::paintResponse (juce::Graphics& g) const
     g.drawText ("+30", r.getX() - 40, r.getY() - 6, 32, 12, juce::Justification::centredRight);
     g.drawText ("0", r.getX() - 40, (int) yOf (0.0, r) - 6, 32, 12, juce::Justification::centredRight);
     g.drawText ("-30", r.getX() - 40, r.getBottom() - 6, 32, 12, juce::Justification::centredRight);
-    const auto& s = session.strip;
-    if (s.count() > 0)
+    if (session.quad.complete())
     {
-        const auto c = cornersOf (s);
-        paintCurve (g, r, lerp (c, 0.0, s.q / 100.0), kGhost, 1.0f);
-        paintCurve (g, r, lerp (c, 1.0, s.q / 100.0), kGhost, 1.0f);
+        const auto c = cornersOf (session.quad, session.stars);
+        paintCurve (g, r, lerp (c, 0.0, session.quad.q / 100.0), kGhost, 1.0f);
+        paintCurve (g, r, lerp (c, 1.0, session.quad.q / 100.0), kGhost, 1.0f);
     }
     if (session.sounding) paintCurve (g, r, session.words, kInk, 1.6f);
-}
-
-void Screen::paintList (juce::Graphics& g, juce::Rectangle<int> r, const juce::String& title, const juce::StringArray& rows, const juce::StringArray& notes, int selected, int scroll) const
-{
-    g.setFont (sans (12.0f)); g.setColour (kGrey);
-    g.drawText (title, r.getX(), r.getY() - 20, r.getWidth(), 14, juce::Justification::centredLeft);
-    g.setColour (kFaint); g.fillRect (r.getX(), r.getY() - 4, r.getWidth(), 1);
-    const int visible = r.getHeight() / kRow;
-    for (int i = 0; i < visible; ++i)
+    if (session.sounding)
     {
-        const int row = scroll + i;
-        if (row >= rows.size()) break;
-        juce::Rectangle<int> line (r.getX(), r.getY() + i * kRow, r.getWidth(), kRow);
-        if (row == selected) { g.setColour (kWash); g.fillRect (line); }
-        g.setFont (sans (11.0f)); g.setColour (row == selected ? kInk : kGrey);
-        g.drawText (rows[row], line.reduced (6, 0), juce::Justification::centredLeft);
-        if (row < notes.size() && notes[row].isNotEmpty())
-        {
-            g.setFont (serif (10.0f)); g.setColour (kGrey);
-            g.drawText (notes[row], line.reduced (6, 0), juce::Justification::centredRight);
-        }
-    }
-    if (rows.size() > visible)
-    {
-        g.setFont (serif (10.0f)); g.setColour (kGrey);
-        g.drawText (juce::String (scroll + 1) + " to " + juce::String (std::min (rows.size(), scroll + visible)) + " of " + juce::String (rows.size()), r.getX(), r.getBottom() + 2, r.getWidth(), 12, juce::Justification::centredRight);
+        const double peak = peakDb (session.words, hz);
+        g.setFont (serif (11.0f)); g.setColour (peak > 33.0 ? kHot : kGrey);
+        g.drawText ("peak " + juce::String (peak > 0 ? "+" : "") + juce::String (peak, 1) + " dB", r.getRight() + 40, r.getY() + 30, 200, 12, juce::Justification::centredLeft);
+        const auto f = formantsOf (session.words);
+        juce::String line;
+        const char* names[] = { "F1", "F2", "F3", "F4" };
+        for (int i = 0; i < 4; ++i) if (f[(size_t) i] > 0.0) line += juce::String (names[i]) + " " + juce::String ((int) std::round (f[(size_t) i])) + " Hz      ";
+        g.setFont (serif (12.0f)); g.setColour (kInk);
+        g.drawText (line, response.getRight() + 40, response.getY() + 8, 700, 14, juce::Justification::centredLeft);
     }
 }
 
 void Screen::paint (juce::Graphics& g)
 {
     g.fillAll (kPaper);
-    const auto& s = session.strip;
-    const int n = s.count();
     g.setFont (sans (13.0f, true)); g.setColour (kInk);
     g.drawText ("HEADSPACE", 60, 22, 200, 22, juce::Justification::centredLeft);
     paintWord (g, playKey, "PLAY", session.playing, true);
     paintWord (g, sawKey, "SAW", session.source == 0, true);
     paintWord (g, noiseKey, "PINK NOISE", session.source == 1, true);
-    paintWord (g, writeKey, "WRITE BODY FILE", false, n >= 1);
-    paintChart (g);
-    paintResponse (g);
-
-    juce::StringArray libraryRows, libraryNotes;
-    for (const auto& e : session.library) { libraryRows.add (e.body); libraryNotes.add (e.side); }
-    paintList (g, libraryList, "Library", libraryRows, libraryNotes, session.librarySelected, libraryScroll);
-    juce::StringArray stripRows, stripNotes;
-    for (int j = 0; j < n; ++j)
+    paintWord (g, writeKey, "WRITE BODY FILE", false, session.quad.complete());
+    for (int n = 0; n < 4; ++n)
     {
-        const auto& a = s.anchors[(size_t) j];
-        stripRows.add (juce::String (j + 1) + "   " + a.name);
-        stripNotes.add (a.origin.kind == "capture" ? a.origin.parentA + " > " + a.origin.parentB + " " + juce::String (a.origin.morph, 0) : juce::String());
+        const auto r = chips[(size_t) n];
+        const bool set = session.quad.pins[(size_t) n] >= 0;
+        g.setColour (kFaint); g.drawRect (r);
+        g.setFont (serif (10.0f)); g.setColour (kGrey);
+        g.drawText (juce::String (n + 1) + "   " + kPinNames[n], r.reduced (8, 0), juce::Justification::centredLeft);
+        g.setFont (sans (11.0f)); g.setColour (set ? kInk : kFaint);
+        g.drawText (set ? session.pinName (n) : juce::String ("click a star, then here"), r.reduced (8, 0).withTrimmedLeft (78), juce::Justification::centredLeft);
     }
-    paintList (g, stripList, "Strip", stripRows, stripNotes, s.selected - 1, stripScroll);
-
+    paintMap (g);
+    paintQuad (g);
+    paintResponse (g);
     g.setFont (serif (12.0f)); g.setColour (kGrey);
     g.drawText (session.status, statusLine, juce::Justification::centredLeft);
 }
 
-void Screen::dragAlong (juce::Point<int> p)
+void Screen::puckFrom (juce::Point<float> p)
 {
-    const auto& s = session.strip;
-    if (s.count() < 2) return;
-    const int k = std::clamp (s.square, 1, s.squares());
-    const auto p0 = chartPoint (s.anchors[(size_t) k - 1].q0), p1 = chartPoint (s.anchors[(size_t) k].q0);
-    const auto d = p1 - p0;
-    const double length2 = d.x * d.x + d.y * d.y;
-    if (length2 < 1.0) return;
-    const double t = std::clamp (((p.x - p0.x) * d.x + (p.y - p0.y) * d.y) / length2, 0.0, 1.0);
-    session.setPosition (k, t * 100.0, s.q);
+    double m = session.quad.morph / 100.0, v = session.quad.q / 100.0;
+    const auto a = pinPoint (0), b = pinPoint (1), c = pinPoint (2), d = pinPoint (3);
+    for (int iteration = 0; iteration < 12; ++iteration)
+    {
+        const auto x = puckPoint (m * 100.0, v * 100.0);
+        const auto dm = (b - a) * (float) (1.0 - v) + (d - c) * (float) v;
+        const auto dv = (c - a) * (float) (1.0 - m) + (d - b) * (float) m;
+        const double det = dm.x * dv.y - dm.y * dv.x;
+        if (std::abs (det) < 1e-6) break;
+        const auto r = p - x;
+        m += (r.x * dv.y - r.y * dv.x) / det;
+        v += (dm.x * r.y - dm.y * r.x) / det;
+        m = std::clamp (m, 0.0, 1.0); v = std::clamp (v, 0.0, 1.0);
+    }
+    session.setPuck (m * 100.0, v * 100.0);
 }
 
-void Screen::keepVisible()
+void Screen::mouseMove (const juce::MouseEvent& e)
 {
-    const int visible = libraryList.getHeight() / kRow;
-    if (session.librarySelected < libraryScroll) libraryScroll = session.librarySelected;
-    if (session.librarySelected >= libraryScroll + visible) libraryScroll = session.librarySelected - visible + 1;
-    const int rows = stripList.getHeight() / kRow, sel = session.strip.selected - 1;
-    if (sel >= 0 && sel < stripScroll) stripScroll = sel;
-    if (sel >= stripScroll + rows) stripScroll = sel - rows + 1;
+    if (dragging != Drag::none) return;
+    const int k = nearestStar (e.position, 10.0f);
+    if (k >= 0) session.hover (k); else session.unhover();
 }
+
+void Screen::mouseExit (const juce::MouseEvent&) { if (dragging == Drag::none) session.unhover(); }
 
 void Screen::mouseDown (const juce::MouseEvent& e)
 {
@@ -301,60 +328,78 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     if (sawKey.contains (p)) { session.setSource (0); return; }
     if (noiseKey.contains (p)) { session.setSource (1); return; }
     if (writeKey.contains (p)) { session.write(); return; }
-    if (qBar.expanded (8, 0).contains (p)) { dragging = Drag::q; mouseDrag (e); return; }
-    if (chart.expanded (20, 20).contains (p))
+    for (int n = 0; n < 4; ++n)
+        if (chips[(size_t) n].contains (p))
+        {
+            const int target = session.selected >= 0 ? session.selected : session.hovered;
+            if (target >= 0) session.pin (n, target);
+            return;
+        }
+    const auto& q = session.quad;
+    for (int n = 0; n < 4; ++n)
+        if (q.pins[(size_t) n] >= 0 && pinPoint (n).getDistanceFrom (e.position) < 9.0f)
+        {
+            dragging = Drag::pin; dragPin = n;
+            for (int i = 0; i < 4; ++i) dragPoints[(size_t) i] = pinPoint (i);
+            session.unhover();
+            return;
+        }
+    std::array<juce::Point<float>, 4> corners;
+    for (int n = 0; n < 4; ++n) corners[(size_t) n] = pinPoint (n);
+    if (q.complete() && (puckPoint (q.morph, q.q).getDistanceFrom (e.position) < 12.0f || (inside (corners, e.position) && ! e.mods.isShiftDown())))
     {
-        if (const int k = nearestAnchor (p); k > 0) { session.jump (k); dragging = Drag::path; return; }
-        if (const int i = nearestEntry (p); i >= 0) { session.hear (i); return; }
-        if (session.strip.count() >= 2) { dragging = Drag::path; dragAlong (p); }
+        dragging = Drag::puck;
+        session.unhover();
+        puckFrom (e.position);
         return;
     }
-    if (libraryList.contains (p))
+    if (q.complete() && inside (corners, e.position) && e.mods.isShiftDown())
     {
-        const int row = libraryScroll + (p.y - libraryList.getY()) / kRow;
-        if (row >= 0 && row < (int) session.library.size()) session.hear (row);
+        dragging = Drag::frame; dragStart = e.position;
+        for (int n = 0; n < 4; ++n) dragPoints[(size_t) n] = pinPoint (n);
+        session.unhover();
         return;
     }
-    if (stripList.contains (p))
-    {
-        const int row = stripScroll + (p.y - stripList.getY()) / kRow;
-        if (row >= 0 && row < session.strip.count()) session.jump (row + 1);
-        return;
-    }
+    const int k = nearestStar (e.position, 10.0f);
+    session.select (k);
 }
 
 void Screen::mouseDrag (const juce::MouseEvent& e)
 {
-    const auto p = e.getPosition();
-    if (dragging == Drag::path) dragAlong (p);
-    else if (dragging == Drag::q && session.strip.count() > 0)
+    if (dragging == Drag::puck) { puckFrom (e.position); return; }
+    if (dragging == Drag::pin) { dragPoints[(size_t) dragPin] = e.position; repaint(); return; }
+    if (dragging == Drag::frame)
     {
-        const double q = std::clamp ((qBar.getBottom() - p.y) / (double) qBar.getHeight(), 0.0, 1.0) * 100.0;
-        session.setPosition (session.strip.square, session.strip.morph, q);
+        const auto delta = e.position - dragStart;
+        for (int n = 0; n < 4; ++n) dragPoints[(size_t) n] = starPoint (session.quad.pins[(size_t) n]) + delta;
+        repaint();
     }
 }
 
-void Screen::mouseUp (const juce::MouseEvent&) { dragging = Drag::none; }
-
-void Screen::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel)
+void Screen::mouseUp (const juce::MouseEvent&)
 {
-    const int lines = wheel.deltaY > 0 ? -3 : 3;
-    if (libraryList.contains (e.getPosition()))
+    if (dragging == Drag::pin)
     {
-        libraryScroll = std::clamp (libraryScroll + lines, 0, std::max (0, (int) session.library.size() - libraryList.getHeight() / kRow));
-        repaint();
+        const int k = nearestStar (dragPoints[(size_t) dragPin], 16.0f);
+        dragging = Drag::none;
+        if (k >= 0 && k != session.quad.pins[(size_t) dragPin]) session.pin (dragPin, k); else repaint();
     }
-    else if (stripList.contains (e.getPosition()))
+    else if (dragging == Drag::frame)
     {
-        stripScroll = std::clamp (stripScroll + lines, 0, std::max (0, session.strip.count() - stripList.getHeight() / kRow));
-        repaint();
+        std::array<int, 4> pins;
+        bool ok = true;
+        for (int n = 0; n < 4; ++n) { pins[(size_t) n] = nearestStar (dragPoints[(size_t) n], 24.0f); ok = ok && pins[(size_t) n] >= 0; }
+        dragging = Drag::none;
+        if (ok && pins != session.quad.pins) session.pinAll (pins); else repaint();
     }
+    dragging = Drag::none;
+    dragPin = -1;
 }
 
 bool Screen::keyPressed (const juce::KeyPress& k)
 {
     const bool used = session.key (k);
-    if (used) { keepVisible(); repaint(); }
+    if (used) repaint();
     return used;
 }
 

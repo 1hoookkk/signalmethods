@@ -13,132 +13,178 @@ std::array<std::uint16_t, 30> flat (const Words& w)
 }
 }
 
-Session::Session (const juce::File& rootDir, const juce::File& file, bool audioOn)
-    : root (rootDir), stripFile (file), withAudio (audioOn)
+Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool audioOn)
+    : root (rootDir), file (quadFile), withAudio (audioOn)
 {
-    library = loadLibrary (root.getChildFile ("plugin/presets/p2k"));
-    strip = open (stripFile);
-    if (strip.count() == 0) hear (0); else audition();
+    stars = loadLibrary (root.getChildFile ("plugin/presets/p2k"));
+    libraryCount = stars.size();
+    const bool had = open (quad, stars, libraryCount, file);
+    if (! had && ! quad.complete())
+        for (int n = 0; n < 4; ++n)
+            for (int k = 0; k < (int) stars.size(); ++k)
+                if (stars[(size_t) k].body == "Talking Hedz" && stars[(size_t) k].corner == kPinNames[n]) quad.pins[(size_t) n] = k;
+    audition();
 }
 
 Session::~Session() { audio.stop(); }
 
 void Session::changed() { if (onChange) onChange(); }
 
-void Session::audition()
+juce::String Session::pinName (int n) const
 {
-    if (strip.count() == 0) { sounding = false; status = "place an anchor"; return; }
-    words = wordsAt (strip);
-    sounding = true;
-    if (withAudio) audio.publish (flat (words));
-    const int n = strip.count(), k = std::clamp (strip.square, 1, strip.squares());
-    const auto& a = strip.anchors[(size_t) k - 1].name;
-    const auto& b = strip.anchors[(size_t) std::min (k + 1, n) - 1].name;
-    status = a + " -> " + b + "   MORPH " + juce::String (strip.morph, 1) + "   Q " + juce::String (strip.q, 1);
+    const int p = quad.pins[(size_t) n];
+    return p >= 0 && p < (int) stars.size() ? stars[(size_t) p].name : juce::String();
 }
 
-void Session::apply (Strip s, bool edit)
+void Session::audition()
 {
-    if (edit) { history.push_back (strip); future.clear(); }
-    strip = s;
-    save (strip, stripFile);
+    if (hovered >= 0 && hovered < (int) stars.size())
+    {
+        words = stars[(size_t) hovered].words;
+        sounding = true;
+        status = stars[(size_t) hovered].name;
+    }
+    else if (quad.complete())
+    {
+        words = wordsAt (quad, stars);
+        sounding = true;
+        status = pinName (0) + " -> " + pinName (1) + "   MORPH " + juce::String (quad.morph, 1) + "   Q " + juce::String (quad.q, 1);
+    }
+    else
+    {
+        sounding = false;
+        int placed = 0;
+        for (int p : quad.pins) placed += p >= 0;
+        status = juce::String (4 - placed) + " pins to place: hover a star and press 1 to 4";
+        return;
+    }
+    if (withAudio) audio.publish (flat (words));
+}
+
+Session::Snapshot Session::snapshot() const
+{
+    Snapshot s;
+    s.quad = quad;
+    s.captures.assign (stars.begin() + (long) libraryCount, stars.end());
+    return s;
+}
+
+void Session::restore (const Snapshot& s)
+{
+    quad = s.quad;
+    stars.resize (libraryCount);
+    stars.insert (stars.end(), s.captures.begin(), s.captures.end());
+    for (auto& p : quad.pins) if (p >= (int) stars.size()) p = -1;
+    if (selected >= (int) stars.size()) selected = -1;
+}
+
+void Session::apply()
+{
+    save (quad, stars, libraryCount, file);
     audition();
     changed();
 }
 
-void Session::hear (int k)
+void Session::hover (int k)
 {
-    if (k < 0 || k >= (int) library.size()) return;
-    librarySelected = k;
-    words = library[(size_t) k].q0;
-    sounding = true;
-    if (withAudio) audio.publish (flat (words));
-    status = library[(size_t) k].name + "   library";
+    if (k < 0 || k >= (int) stars.size() || k == hovered) return;
+    hovered = k;
+    audition();
     changed();
 }
 
-void Session::place()
+void Session::unhover()
 {
-    auto s = strip;
-    const int k = s.selected > 0 ? s.selected + 1 : s.count() + 1;
-    s = insert (s, k, factoryAnchor (library, librarySelected));
-    if (s.count() == strip.count()) return;
-    s = jumpTo (s, k);
-    s.q = 0.0;
-    apply (s, true);
+    if (hovered < 0) return;
+    hovered = -1;
+    audition();
+    changed();
 }
+
+void Session::select (int k)
+{
+    if (k < -1 || k >= (int) stars.size()) return;
+    selected = k;
+    changed();
+}
+
+void Session::pin (int n, int star)
+{
+    if (n < 0 || n > 3 || star < 0 || star >= (int) stars.size()) return;
+    history.push_back (snapshot()); future.clear();
+    quad.pins[(size_t) n] = star;
+    apply();
+}
+
+void Session::pinAll (const std::array<int, 4>& pins)
+{
+    for (int p : pins) if (p < 0 || p >= (int) stars.size()) return;
+    history.push_back (snapshot()); future.clear();
+    quad.pins = pins;
+    apply();
+}
+
+void Session::setPuck (double morph, double q)
+{
+    quad.morph = std::clamp (morph, 0.0, 100.0);
+    quad.q = std::clamp (q, 0.0, 100.0);
+    apply();
+}
+
+void Session::nudge (double dm, double dq) { setPuck (quad.morph + dm, quad.q + dq); }
 
 void Session::keep()
 {
-    if (strip.count() < 2) { status = "two anchors before a capture"; changed(); return; }
-    apply (hs::keep (strip), true);
-    const auto& c = strip.anchors[(size_t) strip.selected - 1];
-    status = c.name + " = " + c.origin.parentA + " -> " + c.origin.parentB + " at MORPH " + juce::String (c.origin.morph, 1);
+    if (! quad.complete()) { status = "four pins before a capture"; changed(); return; }
+    history.push_back (snapshot()); future.clear();
+    Star s;
+    s.kind = "capture";
+    s.words = wordsAt (quad, stars);
+    s.parentA = pinName (0); s.parentB = pinName (1);
+    s.morph = quad.morph; s.q = quad.q;
+    quad.captures += 1;
+    s.name = "C" + juce::String (quad.captures);
+    stars.push_back (s);
+    selected = (int) stars.size() - 1;
+    apply();
+    status = s.name + " = " + s.parentA + " -> " + s.parentB + " at MORPH " + juce::String (s.morph, 1) + "   Q " + juce::String (s.q, 1);
     changed();
 }
 
-void Session::walk (double dm, double dq)
+void Session::removeCapture()
 {
-    if (strip.count() == 0) return;
-    apply (step (strip, dm, dq), false);
-}
-
-void Session::jump (int k)
-{
-    if (k < 1 || k > strip.count()) return;
-    apply (jumpTo (strip, k), false);
-}
-
-void Session::setPosition (int square, double morph, double q)
-{
-    if (strip.count() == 0) return;
-    auto s = strip;
-    s.square = std::clamp (square, 1, s.squares());
-    s.morph = std::clamp (morph, 0.0, 100.0);
-    s.q = std::clamp (q, 0.0, 100.0);
-    apply (s, false);
-}
-
-void Session::moveAnchor (int direction)
-{
-    if (strip.selected < 1) return;
-    auto s = move (strip, strip.selected, direction);
-    if (s.selected == strip.selected) return;
-    s = jumpTo (s, s.selected);
-    apply (s, true);
-}
-
-void Session::removeAnchor()
-{
-    if (strip.selected < 1) return;
-    apply (remove (strip, strip.selected), true);
+    if (selected < (int) libraryCount || selected >= (int) stars.size()) return;
+    history.push_back (snapshot()); future.clear();
+    stars.erase (stars.begin() + selected);
+    for (auto& p : quad.pins) { if (p == selected) p = -1; else if (p > selected) --p; }
+    if (hovered == selected) hovered = -1; else if (hovered > selected) --hovered;
+    selected = -1;
+    apply();
 }
 
 void Session::undo()
 {
     if (history.empty()) return;
-    future.push_back (strip);
-    strip = history.back();
+    future.push_back (snapshot());
+    restore (history.back());
     history.pop_back();
-    save (strip, stripFile);
-    audition();
-    changed();
+    hovered = -1;
+    apply();
 }
 
 void Session::redo()
 {
     if (future.empty()) return;
-    history.push_back (strip);
-    strip = future.back();
+    history.push_back (snapshot());
+    restore (future.back());
     future.pop_back();
-    save (strip, stripFile);
-    audition();
-    changed();
+    hovered = -1;
+    apply();
 }
 
 juce::File Session::write (juce::File path)
 {
-    if (strip.count() == 0) { status = "place an anchor first"; changed(); return {}; }
+    if (! quad.complete()) { status = "four pins before writing"; changed(); return {}; }
     if (path == juce::File())
     {
         const auto folder = root.getChildFile ("plugin/presets/user");
@@ -147,7 +193,7 @@ juce::File Session::write (juce::File path)
         path = folder.getChildFile ("headspace_" + stamp + ".body240");
         for (int n = 1; path.existsAsFile(); ++n) path = folder.getChildFile ("headspace_" + stamp + "_" + juce::String (n).paddedLeft ('0', 2) + ".body240");
     }
-    status = writeBody (strip, path) ? path.getFullPathName() : "cannot write " + path.getFullPathName();
+    status = writeBody (quad, stars, path) ? path.getFullPathName() : "cannot write " + path.getFullPathName();
     changed();
     return path;
 }
@@ -174,25 +220,21 @@ void Session::setSource (int s)
 bool Session::key (const juce::KeyPress& k)
 {
     const bool control = k.getModifiers().isCommandDown() || k.getModifiers().isCtrlDown();
-    const double nudge = control ? 0.2 : 1.0;
+    const double step = control ? 0.2 : 1.0;
     const int code = k.getKeyCode();
     const auto c = k.getTextCharacter();
-    if (code == juce::KeyPress::rightKey) { walk (nudge, 0.0); return true; }
-    if (code == juce::KeyPress::leftKey) { walk (-nudge, 0.0); return true; }
-    if (code == juce::KeyPress::upKey) { walk (0.0, nudge); return true; }
-    if (code == juce::KeyPress::downKey) { walk (0.0, -nudge); return true; }
+    const int target = hovered >= 0 ? hovered : selected;
+    if (code == juce::KeyPress::rightKey) { nudge (step, 0.0); return true; }
+    if (code == juce::KeyPress::leftKey) { nudge (-step, 0.0); return true; }
+    if (code == juce::KeyPress::upKey) { nudge (0.0, step); return true; }
+    if (code == juce::KeyPress::downKey) { nudge (0.0, -step); return true; }
     if (code == juce::KeyPress::spaceKey) { setPlaying (! playing); return true; }
-    if (code == juce::KeyPress::returnKey) { place(); return true; }
-    if (code == juce::KeyPress::deleteKey) { removeAnchor(); return true; }
-    if (code == juce::KeyPress::homeKey) { jump (1); return true; }
-    if (code == juce::KeyPress::endKey) { jump (strip.count()); return true; }
+    if (code == juce::KeyPress::deleteKey) { removeCapture(); return true; }
     if (control && (c == 's' || c == 'S' || code == 'S')) { keep(); return true; }
     if (control && (c == 'z' || c == 'Z' || code == 'Z')) { undo(); return true; }
     if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }
-    if (c == '[') { moveAnchor (-1); return true; }
-    if (c == ']') { moveAnchor (1); return true; }
     if (c == 'w' || c == 'W') { write(); return true; }
-    if (c >= '1' && c <= '9') { jump ((int) (c - '0')); return true; }
+    if (c >= '1' && c <= '4') { pin ((int) (c - '1'), target); return true; }
     return false;
 }
 }

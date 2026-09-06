@@ -2,7 +2,7 @@
 
 #include "Audio.h"
 #include "Library.h"
-#include "Strip.h"
+#include "Quad.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <functional>
 #include <vector>
@@ -12,14 +12,17 @@ namespace hs
 class Session
 {
 public:
-    Session (const juce::File& root, const juce::File& stripFile, bool withAudio);
+    Session (const juce::File& root, const juce::File& file, bool withAudio);
     ~Session();
 
-    juce::File root, stripFile;
-    std::vector<Entry> library;
-    Strip strip;
-    std::vector<Strip> history, future;
-    int librarySelected = 0;
+    struct Snapshot { Quad quad; std::vector<Star> captures; };
+
+    juce::File root, file;
+    std::vector<Star> stars;
+    size_t libraryCount = 0;
+    Quad quad;
+    std::vector<Snapshot> history, future;
+    int hovered = -1, selected = -1;
     Words words {};
     bool sounding = false;
     juce::String status;
@@ -29,23 +32,27 @@ public:
     bool withAudio = false;
     std::function<void()> onChange;
 
-    void hear (int k);
-    void place();
+    void hover (int k);
+    void unhover();
+    void select (int k);
+    void pin (int n, int star);
+    void pinAll (const std::array<int, 4>& pins);
+    void setPuck (double morph, double q);
+    void nudge (double dm, double dq);
     void keep();
-    void walk (double dm, double dq);
-    void jump (int k);
-    void moveAnchor (int direction);
-    void removeAnchor();
+    void removeCapture();
     void undo();
     void redo();
-    void setPosition (int square, double morph, double q);
     juce::File write (juce::File path = {});
     void setPlaying (bool on);
     void setSource (int s);
     bool key (const juce::KeyPress& k);
+    juce::String pinName (int n) const;
 
 private:
-    void apply (Strip s, bool edit);
+    Snapshot snapshot() const;
+    void restore (const Snapshot& s);
+    void apply();
     void audition();
     void changed();
 };

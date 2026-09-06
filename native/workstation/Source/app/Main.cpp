@@ -29,7 +29,7 @@ public:
     void initialise (const juce::String&) override
     {
         const juce::File root (TRENCH_TABLE_STITCH_ROOT);
-        session = std::make_unique<hs::Session> (root, root.getChildFile ("native/workstation/banks/HEADSPACE.strip.json"), true);
+        session = std::make_unique<hs::Session> (root, root.getChildFile ("native/workstation/banks/HEADSPACE.quad.json"), true);
         window = std::make_unique<Window> (*session);
     }
 

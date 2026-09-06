@@ -71,7 +71,7 @@
       "configurePreset": "vst3",
       "targets": [
         "TRENCH_Headspace_App",
-        "TRENCH_StripTests"
+        "TRENCH_QuadTests"
       ]
     }
   ],
@@ -95,7 +95,7 @@
       "configurePreset": "vst3",
       "filter": {
         "include": {
-          "name": "^trench_strip$"
+          "name": "^trench_quad$"
         }
       },
       "output": {
