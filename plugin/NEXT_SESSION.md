@@ -1955,3 +1955,8 @@ Open, in order:
   Codex just before it stopped, P2K pole structures as the anchors and four listening
   examples (low/relaxed, high/relaxed, low/stressed, high/stressed) as the corners to fill
   between; the plane's mechanics take any anchor set.
+- 2026-09-06 ~13:50, Tyson: the blank plane is too ambiguous; indicate where he is; "a colored
+  space to represent magnitude or something". The plane is painted by each anchor's brightness
+  (power-weighted centre of the response on the note scale), interpolated across the triangles
+  with no edges; the gold mark is back; one line names the three anchors around the mark with
+  shares. Lattice still hidden. tHeadspace 15, tShot 1.

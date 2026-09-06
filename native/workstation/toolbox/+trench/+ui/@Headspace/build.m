@@ -13,11 +13,18 @@ for k=1:3
         'FontName','Arial','FontSize',11,'BackgroundColor',key,'Callback',callbacks{k});
 end
 panel=uipanel(app.figure,'Units','pixels','Position',[18 118 920 720],'BackgroundColor','w','BorderType','line');
-app.fieldAxes=axes(panel,'Units','pixels','Position',[20 20 880 680],'Color','w', ...
+app.fieldAxes=axes(panel,'Units','pixels','Position',[20 44 880 656],'Color','w', ...
     'XLim',[min(app.points(:,1)) max(app.points(:,1))],'YLim',[min(app.points(:,2)) max(app.points(:,2))], ...
     'YDir','reverse','DataAspectRatio',[1 1 1],'Visible','off','XTick',[],'YTick',[], ...
     'NextPlot','add','PositionConstraint','innerposition','ButtonDownFcn',@(~,~) app.onField('press'));
 set(panel,'ButtonDownFcn',@(~,~) app.onField('press'));
+app.shade=patch(app.fieldAxes,'Faces',app.tri.ConnectivityList,'Vertices',app.points,'FaceVertexCData',app.brightness, ...
+    'FaceColor','interp','EdgeColor','none','HitTest','off');
+colormap(app.fieldAxes,parula(256)); clim(app.fieldAxes,[min(app.brightness) max(app.brightness)]);
+gold=[196 143 0]/255;
+app.positionMark=line(app.fieldAxes,NaN,NaN,'Marker','s','MarkerSize',12,'MarkerFaceColor',gold,'Color',gold,'LineStyle','none','HitTest','off');
+app.fieldLabel=uicontrol(panel,'Style','text','String','','FontName','Arial','FontSize',11,'BackgroundColor','w', ...
+    'HorizontalAlignment','left','Position',[20 8 880 28]);
 panel=uipanel(app.figure,'Units','pixels','Position',[958 346 504 374],'BackgroundColor','w','BorderType','line');
 app.liveAxes=trench.ui.draw.fixedGrid(panel,[49 40 432 288]);
 app.liveCurve=trench.ui.draw.responseCurve(app.liveAxes,blue);

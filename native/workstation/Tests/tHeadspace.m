@@ -184,11 +184,16 @@ methods(Test)
         a.setPlaying(false); t.verifyFalse(a.probe.playing);
     end
     function h15OneScreen(t)
-        a=t.app; h=findall(a.figure,'Type','uicontrol'); tags=get(h,'Tag');
+        a=t.app; h=findall(a.figure,'Type','uicontrol'); tags=get(h,'Tag'); tags=tags(~cellfun(@isempty,tags));
         t.verifyEqual(sort(tags(:)'),sort({'PLAY','SAW','PINK NOISE','WRITE BODY FILE','1','2','3','4'}));
         t.verifyEqual(numel(findall(a.figure,'Type','figure')),1); t.verifyNumElements(findall(a.figure,'Type','axes'),2);
         t.verifyEqual(char(a.figure.Visible),'off'); t.verifyEqual(a.figure.Name,'HEADSPACE');
-        t.verifyEmpty(a.fieldAxes.Children); t.verifyEqual(char(a.fieldAxes.Visible),'off');
+        t.verifyNumElements(a.fieldAxes.Children,2); t.verifyEqual(a.fieldAxes.Children(1),a.positionMark); t.verifyEqual(a.fieldAxes.Children(2),a.shade);
+        t.verifyEqual(a.shade.EdgeColor,'none'); t.verifyEqual(a.shade.FaceVertexCData,a.brightness); t.verifyTrue(all(isfinite(a.brightness)) && numel(a.brightness)==76); t.verifyEqual(char(a.fieldAxes.Visible),'off');
+        t.verifyEmpty(findall(a.fieldAxes,'Type','text')); t.verifyEmpty(findall(a.fieldAxes,'Type','scatter'));
+        a.setPosition(mean(a.points(a.tri.ConnectivityList(1,:),:),1)); p=a.probe;
+        t.verifyEqual([a.positionMark.XData a.positionMark.YData],p.position,'AbsTol',1e-12);
+        for v=p.vertices(p.weights>0), t.verifyTrue(contains(a.fieldLabel.String,a.frames(v).name)); end
         t.verifyEmpty(a.fieldAxes.XTick); t.verifyEmpty(a.fieldAxes.YTick); t.verifyEmpty(a.fieldAxes.XLabel.String); t.verifyEmpty(a.fieldAxes.YLabel.String);
         t.verifyEqual(a.fieldAxes.DataAspectRatio,[1 1 1]);
         t.verifyEqual(a.liveAxes.XLim,[20 20000]); t.verifyEqual(a.liveAxes.YLim,[-30 30]);

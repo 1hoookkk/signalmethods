@@ -4,7 +4,7 @@ The authoring tool for TRENCH bodies, one screen. A hidden plane of 76 vowel anc
 Hillenbrand 1995, DVTD subject 1), every one five bells in rows 1 to 5 and a low shelf in row 6,
 laid out on an equal-hop triangular lattice by likeness. Drag anywhere on the plane and hear the
 blend of the three anchors around you, stage to stage: F1 with F1 through F5, shelf with shelf.
-Nothing is drawn on the plane. A MATLAB R2025b toolbox over two MEX files, `trench_bridge` (the
+The plane is painted by brightness, the gold mark shows where you are, and the three anchors around you are named beneath it; the lattice itself is not drawn. A MATLAB R2025b toolbox over two MEX files, `trench_bridge` (the
 model) and `trench_audio` (the engine on the sound card). The plugin plays what this writes.
 
 ## Run

@@ -17,6 +17,10 @@ properties
     source = 'noise'
     status = ''
     fieldAxes
+    shade
+    brightness
+    positionMark
+    fieldLabel
     liveAxes
     liveCurve
     cornerLabels
@@ -33,6 +37,7 @@ methods
         assert(isequal(string(layout.names(:)),string({app.frames.group})'+": "+string({app.frames.name})'));
         app.points=layout.points;
         app.tri=triangulation(layout.triangles,app.points);
+        app.brightness=trench.headspace.brightness(app.frames);
         app.bankPath=fullfile(root,'native','workstation','banks','HEADSPACE.bank.json');
         app.build(visible); app.loadCorners; trench.audio.wet(true); app.setPosition(app.points(1,:)); app.setSource('noise');
     end

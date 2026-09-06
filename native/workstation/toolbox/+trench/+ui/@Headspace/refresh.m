@@ -1,6 +1,10 @@
 function refresh(app)
 if app.closing || isempty(app.figure) || ~isgraphics(app.figure), return; end
 set(app.liveCurve,'YData',trench.bridge.responseDb(app.words,trench.bridge.curveHz));
+set(app.positionMark,'XData',app.position(1),'YData',app.position(2));
+on=find(app.weights>0); parts=cell(1,numel(on));
+for k=1:numel(on), parts{k}=sprintf('%s  %d',app.frames(app.vertices(on(k))).name,round(100*app.weights(on(k)))); end
+set(app.fieldLabel,'String',strjoin(parts,['     ' char(183) '     ']));
 for k=1:4
     label=num2str(k);
     set(app.cornerLabels(k),'FontWeight',pick(isempty(app.corners{k}),'normal','bold'));
