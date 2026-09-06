@@ -7,12 +7,15 @@ class Window : public juce::DocumentWindow
 {
 public:
     Window (hs::Session& session)
-        : juce::DocumentWindow ("HEADSPACE", juce::Colour (0xffcccccc), juce::DocumentWindow::closeButton | juce::DocumentWindow::minimiseButton)
+        : juce::DocumentWindow ("HEADSPACE", juce::Colour (0xff0a0e0b), juce::DocumentWindow::allButtons)
     {
         setUsingNativeTitleBar (true);
         setContentOwned (new hs::Screen (session), true);
-        setResizable (false, false);
-        centreWithSize (getWidth(), getHeight());
+        setResizable (true, false);
+        setResizeLimits (820, 520, 4000, 3000);
+        const auto area = juce::Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
+        const int w = std::min (1120, area.getWidth() - 40), h = std::min (700, area.getHeight() - 80);
+        centreWithSize (w, h);
         setVisible (true);
         getContentComponent()->grabKeyboardFocus();
     }

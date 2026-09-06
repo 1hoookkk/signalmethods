@@ -6,13 +6,14 @@ This file is canonical. AGENTS.md is a stub; do not rely on it.
 - `plugin/` is the TRENCH VST3, "a musical filter by Signal Methods". It ships.
 - `native/workstation/` is HEADSPACE, the authoring tool: a JUCE app in the plugin's CMake
   tree, built alone by the `headspace` preset, linked straight to `native/core`, everything
-  painted by hand. A body is four sounds; the tool chooses them and plays what the chip does
-  between them. The screen is the vowel chart with every factory corner as a star at its own
-  F1 and F2; hover a star to hear it; pin four to M0 Q0, M1 Q0, M0 Q1, M1 Q1; the puck is the
-  plugin's MORPH and Q and plays `PackedBody::interpolate_words` of the four; Ctrl+S keeps what
-  you hear as a new star; W writes the four pins as `legacy_bytes`. Nothing transforms on the
-  path, the tool passes no verdicts, the ear decides. Words: star, pin, puck, keep, write.
-  Read `native/workstation/HEADSPACE_SPEC.md` before touching it.
+  painted by hand in one monospace font on black. A body is four sounds; the tool chooses
+  them and plays what the chip does between them. The stage is the body: corners A B C D are
+  M0 Q1, M1 Q1, M0 Q0, M1 Q0, each with a name box; PRESET loads a factory body; the puck is
+  the plugin's MORPH and Q and plays `PackedBody::interpolate_words` of the four; the rails
+  are the palette, click a card to hear it, slide along a rail to morph to its neighbour,
+  drag a card onto a corner; drop a .wav to read it; Ctrl+S keeps what you hear; W writes
+  `legacy_bytes`. Nothing transforms on the path, the tool passes no verdicts, the ear
+  decides. Read `native/workstation/HEADSPACE_SPEC.md` before touching it.
 - `evidence/` is the ONLY evidence root. Bodies, ROM dumps, manuals, patents, papers and
   research results live under `C:\Users\hooki\trench-native\evidence`. Do not go to
   trench-x3-clean or other repos for evidence; if something is needed from there, copy it

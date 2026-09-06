@@ -4,44 +4,53 @@
 
 namespace hs
 {
-class Screen : public juce::Component
+class Screen : public juce::Component, public juce::FileDragAndDropTarget
 {
 public:
     explicit Screen (Session& session);
     void paint (juce::Graphics& g) override;
+    void resized() override;
     void mouseMove (const juce::MouseEvent& e) override;
     void mouseExit (const juce::MouseEvent& e) override;
     void mouseDown (const juce::MouseEvent& e) override;
     void mouseDrag (const juce::MouseEvent& e) override;
     void mouseUp (const juce::MouseEvent& e) override;
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override;
     bool keyPressed (const juce::KeyPress& k) override;
+    bool isInterestedInFileDrag (const juce::StringArray& files) override;
+    void filesDropped (const juce::StringArray& files, int x, int y) override;
     juce::Image shot();
-    int nearestStar (juce::Point<float> p, float within) const;
-    juce::Point<float> starPoint (int k) const;
-    juce::Point<float> puckPoint (double morph, double q) const;
-    int cornerAt (juce::Point<int> p) const;
 
-    juce::Rectangle<int> map, pad, response, statusLine;
-    juce::Rectangle<int> playKey, sawKey, noiseKey, writeKey;
-    std::array<juce::Rectangle<int>, 4> chips;
+    juce::Point<float> puckPoint() const;
+    int cornerAt (juce::Point<int> p) const;
+    int cardAt (juce::Point<int> p, int rail) const;
+    std::vector<int> railStars (int rail) const;
+
+    juce::Rectangle<int> stage, presetBox;
+    std::array<juce::Rectangle<int>, 2> rails;
+    std::array<juce::Rectangle<int>, 4> cornerBox;
+    std::array<juce::Rectangle<int>, 3> keys;
+    struct Menu { bool open = false; int target = -1; juce::Rectangle<int> rect; int scroll = 0; } menu;
+    static constexpr int kCard = 64;
 
 private:
     void layout();
-    juce::Point<float> vowelPoint (double f1, double f2) const;
-    juce::Point<float> padCorner (int n) const;
-    void paintMap (juce::Graphics& g);
-    void paintPad (juce::Graphics& g);
-    void paintResponse (juce::Graphics& g) const;
-    void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width) const;
-    void paintWord (juce::Graphics& g, juce::Rectangle<int> r, const juce::String& text, bool on, bool enabled) const;
-    void refreshHeat();
+    juce::Rectangle<int> cardRect (int rail, int index) const;
+    juce::Point<float> cornerPoint (int corner) const;
+    int menuCount() const;
+    juce::String menuItem (int i) const;
+    int menuItemAt (juce::Point<int> p) const;
+    void openMenu (int target, juce::Rectangle<int> anchor);
+    void paintStage (juce::Graphics& g) const;
+    void paintCorners (juce::Graphics& g) const;
+    void paintRails (juce::Graphics& g) const;
+    void paintMenu (juce::Graphics& g) const;
+    void paintCurve (juce::Graphics& g, juce::Rectangle<int> r, const Words& words, juce::Colour colour, float width, bool fill) const;
     Session& session;
     std::vector<double> hz;
-    std::vector<juce::Point<float>> points;
-    std::vector<double> heat;
-    std::array<int, 4> heatPins { -2, -2, -2, -2 };
-    static constexpr int kHeat = 9;
-    bool dragging = false, pairing = false;
-    int pairFrom = -1;
+    std::array<int, 2> scroll { 0, 0 };
+    enum class Drag { none, puck, rail, card } dragging = Drag::none;
+    int dragStar = -1, dragRail = -1;
+    juce::Point<int> dragOrigin, dragPoint;
 };
 }

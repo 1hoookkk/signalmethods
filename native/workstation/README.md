@@ -1,13 +1,12 @@
 # HEADSPACE
 
 The authoring tool for TRENCH bodies. A native JUCE app in the plugin's CMake tree, linked
-straight to `native/core`. One screen: the vowel chart, F1 down and F2 across, the Klatt 1980
-vowels as letters, and every factory corner as a star at its own F1 and F2. Hover a star and
-you hear it. Four pins, M0 Q0, M1 Q0, M0 Q1 and M1 Q1, each on a star of your choosing, make
-the body; the puck inside the quad plays the plugin's own lerp of the four. Ctrl+S keeps the
-puck's sound as a new star you can pin. W writes the four pins as a 240-byte body. Where the
-lerp stacks peaks above the corners, the quad shows a red tint, computed from the words. The
-spec is `HEADSPACE_SPEC.md`.
+straight to `native/core`. One surface: the stage is the body, its four corners are the four
+sounds with a name box each, PRESET loads a factory body, the puck plays the plugin's own lerp
+of the four and the response fills the stage. The rails on both sides are the palette: click a
+card to hear it, slide along a rail to morph to its neighbour, drag a card onto a corner. Drop
+a .wav to read it. Ctrl+S keeps what you hear as a card. W writes the four corners as a
+240-byte body. The spec is `HEADSPACE_SPEC.md`.
 
 ## Build and run
 
@@ -19,14 +18,14 @@ build preset, then runs the tests. The app is
 
 ## Keys
 
-- Hover a star to hear it. 1 to 4 pin the hovered star to that corner. Drag a pin onto
-  another star. Shift-drag inside the quad moves all four pins; each snaps to its nearest star.
-- Drag the puck, or click inside the quad. Left and Right move MORPH by 1, with Ctrl by 0.2.
-  Up and Down move Q the same.
-- Space plays. PLAY, SAW, PINK NOISE at the top.
-- Ctrl+S keeps the puck's sound as a new star. Delete removes a selected capture.
-- Ctrl+Z and Ctrl+Y undo and redo pins, captures and deletions.
-- W or WRITE BODY FILE writes the four pins to `plugin/presets/user/headspace_<stamp>.body240`.
+- Click a card to hear it. A B C D, or 1 to 4, put it in that corner. Drag a card onto a
+  corner. Slide up or down a rail from a card to morph to its neighbour.
+- Drag the puck on the stage. Left and Right move MORPH by 1, with Ctrl by 0.2. Up and Down
+  move Q the same.
+- Space plays. S saw, N noise, or the words at the bottom.
+- Ctrl+S keeps the sound you hear as a card. Delete removes a selected capture or read.
+- Ctrl+Z and Ctrl+Y undo and redo.
+- W writes the four corners to `plugin/presets/user/headspace_<stamp>.body240`.
 
 ## Files
 

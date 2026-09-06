@@ -92,7 +92,8 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     {
         const auto& s = stars[i];
         auto* e = new juce::DynamicObject();
-        e->setProperty ("name", s.name); e->setProperty ("parentA", s.parentA); e->setProperty ("parentB", s.parentB);
+        e->setProperty ("name", s.name); e->setProperty ("kind", s.kind); e->setProperty ("body", s.body);
+        e->setProperty ("parentA", s.parentA); e->setProperty ("parentB", s.parentB);
         e->setProperty ("morph", s.morph); e->setProperty ("q", s.q); e->setProperty ("words", wordsVar (s.words));
         captures.add (juce::var (e));
     }
@@ -112,7 +113,8 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
         for (const auto& e : *captures)
         {
             Star s;
-            s.name = e.getProperty ("name", "").toString(); s.kind = "capture";
+            s.name = e.getProperty ("name", "").toString();
+            s.kind = e.getProperty ("kind", "capture").toString(); s.body = e.getProperty ("body", s.name).toString();
             s.parentA = e.getProperty ("parentA", "").toString(); s.parentB = e.getProperty ("parentB", "").toString();
             s.morph = (double) e.getProperty ("morph", 0.0); s.q = (double) e.getProperty ("q", 0.0);
             s.words = wordsFrom (e.getProperty ("words", juce::var()));
@@ -123,7 +125,9 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
     quad.morph = std::clamp ((double) v.getProperty ("morph", 0.0), 0.0, 100.0);
     quad.q = std::clamp ((double) v.getProperty ("q", 0.0), 0.0, 100.0);
     quad.captures = (int) v.getProperty ("captures", 0);
-    if (quad.captures < (int) (stars.size() - libraryCount)) quad.captures = (int) (stars.size() - libraryCount);
+    int kept = 0;
+    for (size_t i = libraryCount; i < stars.size(); ++i) kept += stars[i].kind == "capture";
+    if (quad.captures < kept) quad.captures = kept;
     return true;
 }
 
