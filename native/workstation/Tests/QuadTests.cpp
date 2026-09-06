@@ -75,18 +75,42 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
-        check (s.libraryCount == 13 && s.stars.size() == 13, "the picker holds the 12 Klatt vowels and schwa, nothing else");
-        bool named = true, factory = false, zeros = true;
+        int klatt = 0, h95 = 0, bodies = 0, other = 0;
+        bool named = true, zeros = true, notch = true;
         for (const auto& e : s.stars)
         {
-            named = named && e.name.isNotEmpty() && e.name.length() <= 2 && ! e.name.containsAnyOf ("0123456789");
-            factory = factory || e.kind == "factory";
+            if (e.kind == "vowel" && (e.body == "Klatt 1980" || e.body == "neutral")) { ++klatt; named = named && e.name.isNotEmpty() && e.name.length() <= 2 && ! e.name.containsAnyOf ("0123456789"); }
+            else if (e.kind == "vowel" && e.body == "Hillenbrand 1995") { ++h95; named = named && juce::StringArray::fromTokens (e.name, " ", "").size() == 2 && e.name.length() <= 8 && ! e.name.startsWith ("vowel"); }
+            else if (e.kind == "body") { ++bodies; notch = notch && hs::rowOf (e.words[5]).type == hs::RowType::notch; }
+            else ++other;
             bool hasZero = false;
             for (const auto& row : e.words) hasZero = hasZero || row[1] < 0xFF00;
             zeros = zeros && hasZero;
         }
-        check (named && ! factory, "every vowel is named by its symbol alone and no E-mu preset is on the surface");
-        check (zeros, "every vowel carries zeros, not poles alone");
+        std::printf ("      palette: %d Klatt, %d Hillenbrand, %d bodies, %d other\n", klatt, h95, bodies, other);
+        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && bodies == 12 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians and the 12 measured bodies, no E-mu preset");
+        check (named, "Klatt vowels are named by symbol alone, Hillenbrand vowels by symbol and speaker group");
+        check (zeros && notch, "every card carries zeros and every measured body ends in the ceiling notch");
+        const int men = s.starNamed ("i men");
+        const auto fm = men >= 0 ? hs::formantsOf (s.stars[(size_t) men].words) : std::array<double, 4> {};
+        std::printf ("      i men reads %.0f %.0f %.0f\n", fm[0], fm[1], fm[2]);
+        check (men >= 0 && std::abs (fm[0] - 338.0) < 12.0 && std::abs (fm[1] - 2319.0) < 60.0, "the Hillenbrand men's i sits at its published F1 and F2");
+        check (s.starNamed (ipa ("\xc9\x91") + " women") >= 0 && s.starNamed (ipa ("\xca\x8a") + " boys") >= 0 && s.starNamed (ipa ("\xca\x8c") + " girls") >= 0 && s.starNamed ("ah women") < 0, "Hillenbrand's hod, hood and hud read as their own symbols, not the bank's codes");
+        const int violin = s.starNamed ("Violin Body Resonant");
+        bool wood = false;
+        std::printf ("      violin body rows:");
+        if (violin >= 0)
+            for (size_t r = 0; r + 1 < hs::kRows; ++r)
+            {
+                const auto g = trench::core::geometry_from_words (s.stars[(size_t) violin].words[r], trench::core::kP2kDatumHz);
+                const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+                if (pole == nullptr || pole->radius < 0.05) continue;
+                const double bw = -std::log (pole->radius) * trench::core::kP2kDatumHz / 3.141592653589793;
+                std::printf ("  %.0f Hz bw %.0f", pole->hz, bw);
+                wood = wood || (pole->hz > 150.0 && pole->hz < 700.0);
+            }
+        std::printf ("\n");
+        check (violin >= 0 && s.stars[(size_t) violin].body == "violin" && wood, "the violin body is read from its impulse response with a resonance in the wood and air range");
         check (s.quad.complete() && s.cornerName (0) == "i" && s.cornerName (1) == "u" && s.cornerName (2) == ipa ("\xc9\x91") && s.cornerName (3) == ipa ("\xc9\x99") && s.sounding, "a fresh session boots with i, u, a and schwa in the four corners");
         const auto boot = s.words;
         s.hover (5);
@@ -105,10 +129,10 @@ int main()
         check (s.inMade() && s.madeLive && std::abs (f[0] - 700.0) < 5.0 && std::abs (f[1] - 1100.0) < 8.0 && s.status == "700/1100", "clicking empty chart makes a vowel at that F1 and F2 and plays it");
         check (hs::rowOf (s.words[5]).type == hs::RowType::notch && hs::rowHz (s.words[5]) > 11000.0, "a made vowel carries the high safety notch in row 6");
         s.key (key ('S', true, 's'));
-        check (s.stars.size() == 14 && s.stars.back().kind == "capture" && s.stars.back().name == "700/1100" && same (s.stars.back().words, hs::madeVowel (700.0, 1100.0).words), "Ctrl+S keeps the made vowel as a point named by its formants");
+        check (s.stars.size() == s.libraryCount + 1 && s.stars.back().kind == "capture" && s.stars.back().name == "700/1100" && same (s.stars.back().words, hs::madeVowel (700.0, 1100.0).words), "Ctrl+S keeps the made vowel as a point named by its formants");
         s.setMade (700.0, 1100.0);
         s.key (key ('2', false, '2'));
-        check (s.stars.size() == 15 && s.stars.back().name == "700/1100 2" && s.cornerName (1) == "700/1100 2", "the 2 key keeps the made vowel and puts it in the top-right corner, never a counter name");
+        check (s.stars.size() == s.libraryCount + 2 && s.stars.back().name == "700/1100 2" && s.cornerName (1) == "700/1100 2", "the 2 key keeps the made vowel and puts it in the top-right corner, never a counter name");
         const int i = s.starNamed ("i");
         s.select (i);
         s.key (key ('3', false, '3'));
@@ -121,6 +145,10 @@ int main()
         s.select (s.starNamed ("o"));
         s.toCorner (1);
         check (s.cornerName (1) == "o" && s.placeable(), "the to-corner button does what the key does");
+        s.setPuck (35.0, 65.0);
+        const auto pad = s.words;
+        s.toCorner (2);
+        check (s.placeable() && s.stars.back().kind == "capture" && same (s.stars.back().words, pad) && s.cornerName (2) == s.stars.back().name, "the to-corner button with the pad playing keeps the puck's sound and puts it in that corner");
     }
 
     {
@@ -144,7 +172,7 @@ int main()
         check (fifth && widthBefore > 0.0 && std::abs (widthAfter / widthBefore - 1.0) < 0.05, "the ceiling row and every fifth word are untouched and each row keeps its width in semitones");
         const auto heard = s.words;
         s.key (key ('S', true, 's'));
-        check (s.stars.size() == 14 && s.stars.back().kind == "capture" && s.stars.back().name.startsWith ("i ") && s.stars.back().parentA == "i" && same (s.stars.back().words, heard), "Ctrl+S keeps the transposed sound as a card named by its source and formants");
+        check (s.stars.size() == s.libraryCount + 1 && s.stars.back().kind == "capture" && s.stars.back().name.startsWith ("i ") && s.stars.back().parentA == "i" && same (s.stars.back().words, heard), "Ctrl+S keeps the transposed sound as a card named by its source and formants");
     }
 
     {
@@ -165,7 +193,7 @@ int main()
         s.setCubePoint (0.5, 0.5, 0.5);
         const auto heard = s.words;
         s.key (key ('1', false, '1'));
-        check (s.stars.size() == 14 && same (s.stars.back().words, heard) && s.cornerName (0) == s.stars.back().name && s.stars.back().parentA == "cube", "a corner key at a cube point keeps the slice sound and puts it in that corner");
+        check (s.stars.size() == s.libraryCount + 1 && same (s.stars.back().words, heard) && s.cornerName (0) == s.stars.back().name && s.stars.back().parentA == "cube", "a corner key at a cube point keeps the slice sound and puts it in that corner");
         s.setCubePoint (0.5, 0.5, 0.75);
         check (s.takeSlice() && s.quad.morph == 50.0 && s.quad.q == 50.0, "taking the slice puts the plane's four corners into the body at the point's MORPH and Q");
         const auto slice = hs::cubeBodyOf (s.cube, s.stars);
@@ -225,13 +253,13 @@ int main()
         const auto heard = s.words;
         s.key (key ('S', true, 's'));
         const auto name = hs::formantName (heard);
-        check (s.stars.size() == 14 && s.stars.back().name == name && s.stars.back().kind == "capture" && same (s.stars.back().words, heard) && name.containsChar ('/'), "Ctrl+S keeps the puck's sound as a point named by its formants");
-        check (s.stars.back().parentA == ipa ("\xc9\x91") && s.stars.back().morph == 23.0 && s.stars.back().q == 40.0 && s.auditioning == 13, "the capture records its corners and position and is playing");
+        check (s.stars.size() == s.libraryCount + 1 && s.stars.back().name == name && s.stars.back().kind == "capture" && same (s.stars.back().words, heard) && name.containsChar ('/'), "Ctrl+S keeps the puck's sound as a point named by its formants");
+        check (s.stars.back().parentA == ipa ("\xc9\x91") && s.stars.back().morph == 23.0 && s.stars.back().q == 40.0 && s.auditioning == (int) s.libraryCount, "the capture records its corners and position and is playing");
         s.key (key ('1', false, '1'));
         check (s.cornerName (0) == name && same (hs::cornersOf (s.quad, s.stars)[2], heard), "the 1 key puts the capture in the top-left corner");
         const auto voice = voiceWav();
         const int k = s.addRead (voice);
-        check (k == 14 && s.stars.back().kind == "read" && s.stars.back().name == voice.getFileNameWithoutExtension(), "a dropped wav becomes a point named by the file");
+        check (k == (int) s.libraryCount + 1 && s.stars.back().kind == "read" && s.stars.back().name == voice.getFileNameWithoutExtension(), "a dropped wav becomes a point named by the file");
         const auto f = hs::formantsOf (s.stars.back().words);
         std::printf ("      read formants %.0f %.0f %.0f %.0f\n", f[0], f[1], f[2], f[3]);
         check (f[0] > 300.0 && f[0] < 900.0, "the read finds the first formant of a synthetic voice near 500 Hz");
@@ -250,7 +278,7 @@ int main()
         }
         s.setPuck (s.quad.morph, s.quad.q);
         hs::Session again (root, s.file, false);
-        check (again.stars.size() == 15 && again.stars[13].kind == "capture" && again.stars[14].kind == "read" && again.cornerName (0) == name && same (again.words, s.words) && same (again.stars[14].words, s.stars[14].words), "save then reopen restores captures, reads and corners by name");
+        check (again.stars.size() == again.libraryCount + 2 && again.stars[again.libraryCount].kind == "capture" && again.stars[again.libraryCount + 1].kind == "read" && again.cornerName (0) == name && same (again.words, s.words) && same (again.stars[again.libraryCount + 1].words, s.stars[s.libraryCount + 1].words), "save then reopen restores captures, reads and corners by name");
     }
 
     {
@@ -262,7 +290,7 @@ int main()
         check (s.inPair() && same (s.words, hs::lerp (c, 0.23, 0.0)), "a pair plays the chip's lerp between two vowels");
         const auto heard = s.words;
         s.key (key ('4', false, '4'));
-        check (s.stars.size() == 14 && same (s.stars.back().words, heard) && s.cornerName (3) == hs::formantName (heard), "a corner key during a pair keeps the sound and puts it in that corner");
+        check (s.stars.size() == s.libraryCount + 1 && same (s.stars.back().words, heard) && s.cornerName (3) == hs::formantName (heard), "a corner key during a pair keeps the sound and puts it in that corner");
     }
 
     {
@@ -285,15 +313,15 @@ int main()
         hs::Session s (root, tempQuad(), false);
         s.setPuck (50.0, 50.0); s.keep();
         s.pin (2, s.starNamed ("e"));
-        s.select (13); s.key (key (juce::KeyPress::deleteKey));
+        s.select ((int) s.libraryCount); s.key (key (juce::KeyPress::deleteKey));
         const size_t edits = s.history.size();
-        check (s.stars.size() == 13 && edits == 3, "a capture, a pin and a delete record three edits");
+        check (s.stars.size() == s.libraryCount && edits == 3, "a capture, a pin and a delete record three edits");
         for (size_t i = 0; i < edits; ++i) s.key (key ('Z', true, 'z'));
-        check (s.pinName (2) == "i" && s.stars.size() == 13 && s.history.empty() && s.future.size() == edits, "undo returns to the boot corners");
+        check (s.pinName (2) == "i" && s.stars.size() == s.libraryCount && s.history.empty() && s.future.size() == edits, "undo returns to the boot corners");
         for (size_t i = 0; i < edits; ++i) s.key (key ('Y', true, 'y'));
-        check (s.pinName (2) == "e" && s.stars.size() == 13, "redo restores the edits");
+        check (s.pinName (2) == "e" && s.stars.size() == s.libraryCount, "redo restores the edits");
         s.key (key ('Z', true, 'z'));
-        check (s.stars.size() == 14 && s.stars.back().kind == "capture", "one undo brings the deleted capture back");
+        check (s.stars.size() == s.libraryCount + 1 && s.stars.back().kind == "capture", "one undo brings the deleted capture back");
     }
 
     {
@@ -339,14 +367,14 @@ int main()
         check (edited != vowel && s.stars[(size_t) edited].kind == "capture" && s.stars[(size_t) edited].name == hs::formantName (s.stars[(size_t) edited].words) && s.cornerName (0) == s.stars[(size_t) edited].name, "editing a vowel makes a capture named by its formants and puts it in that corner");
         check (untouched && s.stars[(size_t) edited].words[1] == hs::rowWords ({ hs::RowType::peak, 70, 10 }, before[1][4]) && same (s.stars[(size_t) vowel].words, before), "only the edited row changes, its fifth word is kept, and the vowel is untouched");
         s.setRow (0, 1, { hs::RowType::peak, 71, 10 });
-        check (s.quad.pins[(size_t) hs::Session::kCornerPin[0]] == edited && s.stars.size() == 14 && same (s.words, s.stars[(size_t) edited].words), "a second edit stays in the same capture and is what plays");
+        check (s.quad.pins[(size_t) hs::Session::kCornerPin[0]] == edited && s.stars.size() == s.libraryCount + 1 && same (s.words, s.stars[(size_t) edited].words), "a second edit stays in the same capture and is what plays");
         const auto path = juce::File::createTempFile ("edited.body240");
         s.write (path);
         const auto bytes = bytesOf (path);
         const auto body = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> (bytes.data(), bytes.size()));
         check (body.words[2][1] == hs::rowWords ({ hs::RowType::peak, 71, 10 }, before[1][4]), "W writes the edited row into the M0 Q1 corner of the 240 bytes");
         s.undo();
-        check (s.editing == -1 && s.cornerName (0) == "i" && s.stars.size() == 13, "one undo removes the edit and its capture");
+        check (s.editing == -1 && s.cornerName (0) == "i" && s.stars.size() == s.libraryCount, "one undo removes the edit and its capture");
         s.edit (2); s.setPuck (10.0, 10.0);
         check (s.editing == -1 && s.auditioning == -1, "touching the stage closes the rows");
     }
@@ -383,7 +411,7 @@ int main()
             std::printf ("      i shifted to %.0f %.0f\n", moved[0], moved[1]);
             check (s.inMade() && std::abs (moved[0] / iy[0] - 1.3) < 0.06 && std::abs (moved[1] / iy[1] - 1.3) < 0.06 && s.made.name.startsWith ("i "), "Shift-dragging a point in the vowel space transposes it live, every formant by the same ratio");
             screen.mouseUp (mouse (screen, to, from, shift));
-            check (s.inMade() && s.stars.size() == 13, "letting go leaves the transposed sound playing, unkept");
+            check (s.inMade() && s.stars.size() == s.libraryCount, "letting go leaves the transposed sound playing, unkept");
         }
         screen.setSize (900, 560);
         check (screen.stage.getWidth() > 300 && screen.stage.contains (screen.picker) && screen.stage.contains (screen.chart) && ! screen.picker.intersects (screen.chart), "the layout follows the window size and the palette never overlaps the vowel space");

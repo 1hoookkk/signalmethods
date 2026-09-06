@@ -1,6 +1,7 @@
 #include "Library.h"
 #include <trench/core/body_from_audio.hpp>
 #include <cmath>
+#include <map>
 
 namespace hs
 {
@@ -25,6 +26,15 @@ const char* ipaOf (const juce::String& klatt)
         { "ao", "\xc9\x94" }, { "ah", "\xca\x8c" }, { "ow", "o" }, { "uh", "\xca\x8a" }, { "uw", "u" }, { "er", "\xc9\x9d" } };
     for (const auto& t : table) if (klatt == t.first) return t.second;
     return klatt.toRawUTF8();
+}
+
+const char* hillenbrandIpa (const juce::String& code)
+{
+    static const std::pair<const char*, const char*> table[] = {
+        { "iy", "i" }, { "ih", "\xc9\xaa" }, { "ei", "e" }, { "eh", "\xc9\x9b" }, { "ae", "\xc3\xa6" }, { "ah", "\xc9\x91" },
+        { "aw", "\xc9\x94" }, { "oa", "o" }, { "oo", "\xca\x8a" }, { "uw", "u" }, { "uh", "\xca\x8c" }, { "er", "\xc9\x9d" } };
+    for (const auto& t : table) if (code == t.first) return t.second;
+    return code.toRawUTF8();
 }
 }
 
@@ -59,14 +69,19 @@ std::vector<Star> loadVowels (const juce::File& bankFile)
     const auto v = juce::JSON::parse (bankFile);
     auto* frames = v.getProperty ("frames", juce::var()).getArray();
     if (frames == nullptr) return out;
+    const auto bank = v.getProperty ("name", bankFile.getFileNameWithoutExtension()).toString();
     for (const auto& f : *frames)
     {
         Star s;
         s.kind = "vowel";
-        s.body = "Klatt 1980";
-        const auto klatt = f.getProperty ("name", "").toString();
+        s.body = bank;
+        const auto raw = f.getProperty ("name", "").toString();
+        const auto tokens = juce::StringArray::fromTokens (raw, " ", "");
+        const auto klatt = tokens.size() >= 3 && tokens[0] == "vowel" ? tokens[1] : raw;
         s.corner = klatt;
-        s.name = juce::String (juce::CharPointer_UTF8 (ipaOf (klatt)));
+        const bool grouped = tokens.size() >= 3 && tokens[0] == "vowel";
+        s.name = juce::String (juce::CharPointer_UTF8 (grouped ? hillenbrandIpa (klatt) : ipaOf (klatt)));
+        if (grouped) s.name += " " + tokens[2];
         auto* rows = f.getProperty ("rawWords", juce::var()).getArray();
         if (rows == nullptr || rows->size() != kRows) continue;
         bool ok = true;
@@ -78,6 +93,27 @@ std::vector<Star> loadVowels (const juce::File& bankFile)
         }
         if (ok && admit (s.words)) out.push_back (s);
     }
+    return out;
+}
+
+std::vector<Star> loadBodies (const juce::File& dir)
+{
+    static std::map<juce::String, std::vector<Star>> cache;
+    const auto key = dir.getFullPathName();
+    if (const auto it = cache.find (key); it != cache.end()) return it->second;
+    std::vector<Star> out;
+    auto files = dir.findChildFiles (juce::File::findFiles, true, "*.wav");
+    files.sort();
+    for (const auto& file : files)
+    {
+        if (file.getFileNameWithoutExtension().containsIgnoreCase ("sweep")) continue;
+        auto star = readWav (file);
+        if (! star) continue;
+        star->kind = "body";
+        star->body = file.getParentDirectory().getFileName();
+        out.push_back (*star);
+    }
+    cache[key] = out;
     return out;
 }
 

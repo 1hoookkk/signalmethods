@@ -8,7 +8,7 @@ namespace hs
 namespace
 {
 const juce::Colour kBack (0xffc7c5be), kGrid (0xffaaa8a1), kAccent (0xff252627), kDim (0xff666763), kText (0xff343633), kBox (0xffdedcd5), kFill (0x4a343633);
-const juce::Colour kVowelInk (0xff445b6a), kCaptureInk (0xff805d32), kReadInk (0xff80534b);
+const juce::Colour kVowelInk (0xff445b6a), kCaptureInk (0xff805d32), kReadInk (0xff80534b), kBodyInk (0xff5a6a3c);
 const juce::Colour kPlotBack (0xff1b1d20), kPlotGrid (0xff35383b), kPlotInk (0xffe8e5dc);
 
 juce::Font typeface (float height) { return juce::Font (juce::FontOptions (juce::Font::getDefaultSansSerifFontName(), height, juce::Font::plain)); }
@@ -49,13 +49,14 @@ juce::Colour inkOf (const Star& s)
     if (s.kind == "vowel") return kVowelInk;
     if (s.kind == "capture") return kCaptureInk;
     if (s.kind == "read") return kReadInk;
+    if (s.kind == "body") return kBodyInk;
     return kAccent;
 }
 
 const juce::String kCaret (juce::CharPointer_UTF8 ("\xe2\x96\xbe"));
 const char* const kRoomNames[4] = { "Picker", "Cube", "Stage", "Perform" };
-const char* const kPaletteNames[3] = { "Vowels", "Reads", "Captures" };
-const char* const kPaletteKinds[3] = { "vowel", "read", "capture" };
+const char* const kPaletteNames[4] = { "Vowels", "Bodies", "Reads", "Captures" };
+const char* const kPaletteKinds[4] = { "vowel", "body", "read", "capture" };
 }
 
 Screen::Screen (Session& s) : session (s), hz (curveHz())
@@ -66,7 +67,7 @@ Screen::Screen (Session& s) : session (s), hz (curveHz())
     session.onChange = [this] {
         if (session.editing >= 0) view = View::stage;
         if (session.selected >= 0 && session.selected < (int) session.stars.size())
-            for (int i = 0; i < 3; ++i) if (session.stars[(size_t) session.selected].kind == kPaletteKinds[i]) palette = i;
+            for (int i = 0; i < 4; ++i) if (session.stars[(size_t) session.selected].kind == kPaletteKinds[i]) palette = i;
         layout(); repaint();
     };
 }
@@ -97,7 +98,7 @@ void Screen::layout()
 
     const int pickerW = std::clamp (stage.getWidth() * 2 / 5, 220, 340);
     picker = { stage.getRight() - pickerW, stage.getY(), pickerW, stage.getHeight() };
-    for (int i = 0; i < 3; ++i) paletteTabs[(size_t) i] = { picker.getX() + i * (pickerW / 3), picker.getY(), pickerW / 3, 24 };
+    for (int i = 0; i < 4; ++i) paletteTabs[(size_t) i] = { picker.getX() + i * (pickerW / 4), picker.getY(), pickerW / 4, 24 };
     dropZone = picker.withTrimmedTop (picker.getHeight() - 28);
     chart = juce::Rectangle<int> (stage.getX(), stage.getY(), stage.getWidth() - pickerW - 24, stage.getHeight()).withTrimmedLeft (46).withTrimmedRight (70).withTrimmedTop (22).withTrimmedBottom (50);
     keepKey = { chart.getX(), chart.getBottom() + 22, 150, 22 };
@@ -383,7 +384,7 @@ void Screen::paintTabs (juce::Graphics& g) const
 void Screen::paintPicker (juce::Graphics& g) const
 {
     g.setFont (typeface (12.0f));
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 4; ++i)
     {
         const auto r = paletteTabs[(size_t) i];
         g.setColour (palette == i ? kAccent : kDim);
@@ -417,7 +418,7 @@ void Screen::paintPicker (juce::Graphics& g) const
         {
             g.setFont (typeface (12.0f));
             g.setColour (kDim);
-            g.drawText (palette == 1 ? "no reads yet" : "no captures yet", picker.withTrimmedTop (28).withHeight (36).reduced (8, 0), juce::Justification::centredLeft);
+            g.drawText (palette == 2 ? "no reads yet" : "no captures yet", picker.withTrimmedTop (28).withHeight (36).reduced (8, 0), juce::Justification::centredLeft);
         }
     }
     g.setFont (typeface (11.0f));
@@ -462,7 +463,8 @@ void Screen::paintPicker (juce::Graphics& g) const
         if (pinned) g.fillEllipse (p.x - 4.5f, p.y - 4.5f, 9.0f, 9.0f);
         else g.drawEllipse (p.x - 4.0f, p.y - 4.0f, 8.0f, 8.0f, lit ? 2.0f : 1.0f);
         g.setColour (lit ? ink : kText.withAlpha (0.8f));
-        g.drawText (s.name, (int) p.x + 8, (int) p.y - 7, 90, 14, juce::Justification::centredLeft);
+        const juce::String label = lit ? s.name : s.body == "Klatt 1980" || s.body == "neutral" ? s.name : juce::String();
+        g.drawText (label, (int) p.x + 8, (int) p.y - 7, 110, 14, juce::Justification::centredLeft);
     }
     if (session.madeLive)
     {
@@ -801,7 +803,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     }
     if (view == View::picker)
     {
-        for (int i = 0; i < 3; ++i) if (paletteTabs[(size_t) i].contains (p)) { palette = i; browserScroll = 0; layout(); repaint(); return; }
+        for (int i = 0; i < 4; ++i) if (paletteTabs[(size_t) i].contains (p)) { palette = i; browserScroll = 0; layout(); repaint(); return; }
         if (keepKey.contains (p)) { session.keep(); return; }
         if (const int k = cardAt (p); k >= 0)
         {

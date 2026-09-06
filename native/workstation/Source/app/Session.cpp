@@ -19,6 +19,8 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
 {
     stars = loadVowels (root.getChildFile ("native/workstation/banks/Klatt 1980.bank.json"));
     stars.push_back (schwa());
+    for (const auto& s : loadVowels (root.getChildFile ("native/workstation/banks/Hillenbrand 1995.bank.json"))) stars.push_back (s);
+    for (const auto& s : loadBodies (root.getChildFile ("evidence/measured-bodies/ir_library"))) stars.push_back (s);
     libraryCount = stars.size();
     const bool had = open (quad, stars, libraryCount, file, &cube);
     if (! had || ! quad.complete())
@@ -213,12 +215,14 @@ void Session::pinCorner (int corner, int star)
 
 bool Session::placeable() const
 {
-    return inPair() || inMade() || (auditioning == kCube && cube.complete()) || currentStar() >= 0;
+    return inPair() || inMade() || (auditioning == kCube && cube.complete()) || currentStar() >= 0 || (auditioning == -1 && quad.complete());
 }
 
 void Session::toCorner (int corner)
 {
-    if (placeable()) pinCorner (corner, currentStar());
+    if (! placeable()) return;
+    if (auditioning == -1 && quad.complete()) { keep(); pinCorner (corner, selected); return; }
+    pinCorner (corner, currentStar());
 }
 
 void Session::pinAll (const std::array<int, 4>& pins)

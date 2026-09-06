@@ -12,8 +12,13 @@ them. That is all it does. The surface is four rooms, one at a time, with the bo
 audition strip always in view.
 
 1. Picker (F1). The vowel space on the left, F1 across and F2 up, every card drawn at its own
-   first two formants; the palette on the right in three tabs, Vowels, Reads, Captures, each card
-   with its name, its F1/F2 and its curve. Click a card or a point to hear it exactly. Click
+   first two formants; the palette on the right in four tabs, Vowels, Bodies, Reads, Captures,
+   each card with its name, its F1/F2 and its curve. Vowels are the 12 Klatt 1980 vowels and
+   schwa, named by symbol, and the 48 Hillenbrand 1995 medians, named by symbol and speaker
+   group, from `banks/Klatt 1980.bank.json` and `banks/Hillenbrand 1995.bank.json`. Bodies are
+   the 12 measured impulse responses in `evidence/measured-bodies/ir_library` (violin, ukulele,
+   upright piano, kalimba, china cymbal; the sine sweeps are skipped), each read at start the
+   same way a dropped .wav is read, so a body card and a drop are one thing. Click a card or a point to hear it exactly. Click
    empty space in the vowel chart and a vowel is made at that F1 and F2 and plays; drag to move
    it. Drop a .wav on the palette and it is read the E-mu way, order-12 LPC at 11,025 Hz, each
    pole paired with a zero on the same angle, row 6 the ceiling notch, then `unityDc`, and it
@@ -76,8 +81,8 @@ a menu or the rows.
 ## Files
 
 `Source/app/Quad.*` the model: cards, the four corners, the eight-corner cube, the puck, the
-lerp, the row grammar, the file, the pack. `Library.*` the 12 Klatt vowels and schwa from
-`banks/Klatt 1980.bank.json`, the made vowel, the wav reader. `Session.*` selection, corners,
+lerp, the row grammar, the file, the pack. `Library.*` the vowel banks, the measured bodies, the made
+vowel, the wav reader. `Session.*` selection, corners,
 cube, captures, reads, undo, keys, `banks/HEADSPACE.quad.json`. `Audio.*` the device callback
 into the core cascade through a lock-free slot, the saw, the noise, the loop, MIDI in.
 `Screen.*` the four rooms, the body, the strip, the painting. `Tests/QuadTests.cpp` the
@@ -85,7 +90,6 @@ acceptance, headless, rendering `artifacts/shots/headspace*.png` without a windo
 
 ## Later, each only when Tyson asks
 
-More basis cards: Hillenbrand 1995, Peterson and Barney 1952, the measured bodies in
-`evidence/measured-bodies/ir_library`. The flat grid of bodies sharing edges. A note in with
+More basis cards: Peterson and Barney 1952, the published modal tables. The flat grid of bodies sharing edges. A note in with
 FOLLOW, key to MORPH in the plugin. Reordering a corner's rows to a neighbour's. The
 averaged-spectrum reader for fixed formants.

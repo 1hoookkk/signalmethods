@@ -2047,3 +2047,19 @@ Open, in order:
   untouched, plays live, Keep / Ctrl+S / corner keys keep it as a capture named source +
   formants with parentA = source. i 310/2020/2960 -> 465/3030/4440 at 1.5x. 92 checks. Tyson:
   "The abstraction really clicks once you get it!"
+- 2026-09-07 early: Tyson: "lets add the Hillenbrand and instrument bodies to the palette".
+  Both were already in the tree: `banks/Hillenbrand 1995.bank.json` (48 medians with rawWords,
+  bandwidth 50 + F/20 Hz since the table gives none) and 12 measured impulse responses under
+  `evidence/measured-bodies/ir_library` (MIT). Palette now four tabs: Vowels (13 Klatt + 48 H95,
+  named symbol + speaker group), Bodies, Reads, Captures. Bodies go through readWav at start,
+  the same path as a drop (LPC-12 at 11,025 Hz, Type 1 zero pairs, ceiling notch, unityDc),
+  cached per process; sweeps skipped. Checks: H95 "i men" reads 343/2323 against 338/2319
+  published; violin body rows 314 Hz bw 346, 1048, 2562, 2788, 3772: the wood/air mode is there
+  but formantsOf hides it (wider than 6 st), so bodies sit on the F1/F2 chart by their first
+  narrow peak and are labelled only when lit. The old INSTRUMENTS.bank.json (uniform 0.25 st
+  widths, -15 dB) was not used. Tests now count from libraryCount, 94 checks. Patent reading the
+  same night: Rossum US5170369 and ARMAdillo (chip interpolates in the encoded space at sample
+  rate, encoding designed for sweeps), Massie/Rossum US5248845 (analysis frames 10-100 ms, chip
+  interpolates two coefficient sets, log-spaced frequency for natural formant transitions,
+  munchkinization = the note/formant split). Row-reorder (lane alignment) named as the next
+  slice; not built.

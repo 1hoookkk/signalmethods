@@ -41,7 +41,7 @@ public:
     juce::Rectangle<int> stage, picker, chart, hud, hudHead, writeKey, advance;
     std::array<juce::Rectangle<int>, 4> navigation, cornerBox, cornerTag, cornerPlot, keys, toKeys, stageTags, padTags;
     std::array<juce::Rectangle<int>, 8> cubeBox, cubeTags;
-    std::array<juce::Rectangle<int>, 3> paletteTabs;
+    std::array<juce::Rectangle<int>, 4> paletteTabs;
     juce::Rectangle<int> table, magnitude, morph, keyboard, status, cubeArea, depth, dropZone, keepKey;
     bool showHardware = false;
     int palette = 0;
