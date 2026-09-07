@@ -32,6 +32,14 @@ public:
     void bend (double semitones) { bendSt.store (semitones); }
     struct Clip { std::vector<float> samples; double rate = 44100.0; };
     void setLoop (std::shared_ptr<const Clip> clip) { loop.store (std::move (clip)); }
+    struct Sample { juce::String name; int midi = 60; std::vector<float> samples; double rate = 44100.0; };
+    using Bank = std::vector<Sample>;
+    void setBank (std::shared_ptr<const Bank> fresh) { bank.store (std::move (fresh)); }
+    std::shared_ptr<const Bank> bankNow() const { return bank.load(); }
+    void setSamplerRoute (bool on) { samplerRoute.store (on); }
+    void samplerNoteOn (int midi, float velocity = 0.8f);
+    void samplerNoteOff (int midi);
+    int pullSampler (float* dst, int max);
     bool isOpen() const { return open; }
     int pull (float* dst, int max);
     int pullInput (float* dst, int max);
@@ -81,9 +89,20 @@ private:
     unsigned long long clock = 0;
     bool pedal = false;
     double drone = 0.0;
+    struct SamplerVoice
+    {
+        int note = -1, index = -1;
+        double position = 0.0, step = 1.0;
+        float velocity = 0.0f, envelope = 0.0f;
+        bool held = false;
+    };
     std::atomic<std::shared_ptr<const Clip>> loop;
     std::shared_ptr<const Clip> playingLoop;
     double loopPos = 0.0;
+    std::atomic<std::shared_ptr<const Bank>> bank;
+    std::shared_ptr<const Bank> playingBank;
+    std::atomic<bool> samplerRoute { false };
+    std::array<SamplerVoice, kVoices> samplerVoices {};
     std::array<Slot, 2> slots;
     std::atomic<unsigned long long> published { 0 };
     unsigned long long consumed = 0;
@@ -98,5 +117,8 @@ private:
     std::vector<float> inputRing = std::vector<float> (kTap, 0.0f);
     std::atomic<unsigned int> inputWrite { 0 };
     unsigned int inputRead = 0;
+    std::vector<float> samplerRing = std::vector<float> (kTap, 0.0f);
+    std::atomic<unsigned int> samplerWrite { 0 };
+    unsigned int samplerRead = 0;
 };
 }

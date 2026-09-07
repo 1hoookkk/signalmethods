@@ -8,15 +8,19 @@ namespace
 class Glass : public juce::DocumentWindow
 {
 public:
-    explicit Glass (hs::Audio& audio)
-        : juce::DocumentWindow ("spectrogram", hs::Look::ground, juce::DocumentWindow::allButtons)
+    explicit Glass (hs::Session& session)
+        : juce::DocumentWindow ("reading room", hs::Look::ground, juce::DocumentWindow::allButtons), owner (session)
     {
         setUsingNativeTitleBar (true);
-        setContentOwned (new hs::Spectrogram (&audio), true);
+        setContentOwned (new hs::Spectrogram (&session.audio, &session), true);
         setResizable (true, false);
-        centreWithSize (900, 560);
+        centreWithSize (1100, 620);
     }
     void closeButtonPressed() override { setVisible (false); }
+    void visibilityChanged() override { owner.setReadingRoom (isVisible()); }
+
+private:
+    hs::Session& owner;
 };
 
 class Window : public juce::DocumentWindow
@@ -37,9 +41,13 @@ public:
         if (auto* screen = dynamic_cast<hs::Screen*> (getContentComponent()))
             screen->onSpectrogram = [this, &session]
             {
-                if (glass == nullptr) glass = std::make_unique<Glass> (session.audio);
+                if (glass == nullptr) glass = std::make_unique<Glass> (session);
                 glass->setVisible (! glass->isVisible());
-                if (glass->isVisible()) glass->toFront (true);
+                if (glass->isVisible())
+                {
+                    glass->toFront (true);
+                    if (auto* content = glass->getContentComponent()) content->grabKeyboardFocus();
+                }
             };
     }
     void closeButtonPressed() override { juce::JUCEApplication::getInstance()->systemRequestedQuit(); }

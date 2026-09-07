@@ -1224,6 +1224,155 @@ int main()
         check (written && file.getSize() > 4000 && image.getPixelAt (4, 4) == hs::Look::ground && share > 0.05 && juce::Desktop::getInstance().getNumComponents() == 0, "the spectrogram renders to artifacts/shots/spectrogram.png without a window");
     }
 
+    {
+        hs::Session s (root, tempQuad(), false);
+        const auto names = s.families();
+        bool aud = false, three = false;
+        for (const auto& n : names) { aud = aud || n == "Aud Bell 1"; three = three || n == "303 open"; }
+        std::printf ("      %d families across the two banks, first %s, last %s\n", (int) names.size(),
+            names.empty() ? "" : names.front().toRawUTF8(), names.empty() ? "" : names.back().toRawUTF8());
+        check (names.size() >= 10 && aud && three, "the banks list their families");
+
+        const bool loaded = s.loadFamily ("Aud Bell 1");
+        const auto bank = s.audio.bankNow();
+        juce::String carried;
+        if (bank != nullptr) for (const auto& sample : *bank) carried += juce::String (sample.midi) + " ";
+        std::printf ("      Aud Bell 1 loads %d notes at midi %s\n", bank == nullptr ? 0 : (int) bank->size(), carried.toRawUTF8());
+        const int want[8] = { 48, 60, 72, 84, 41, 53, 65, 77 };
+        bool notes = bank != nullptr && bank->size() == 8;
+        if (notes) for (size_t i = 0; i < 8; ++i) notes = notes && (*bank)[i].midi == want[i] && (*bank)[i].samples.size() > 100;
+        check (loaded && notes && s.familyName == "Aud Bell 1", "loading a family fills the sampler with its notes");
+    }
+
+    {
+        hs::Audio audio;
+        audio.prepare (44100.0);
+        hs::Session s (root, tempQuad(), false);
+        std::array<std::uint16_t, 30> corner {};
+        const int i0 = s.starNamed ("i");
+        for (size_t r = 0; r < hs::kRows; ++r) for (size_t k = 0; k < hs::kWords; ++k) corner[r * 5 + k] = s.stars[(size_t) i0].words[r][k];
+        audio.publish (corner);
+        auto bank = std::make_shared<hs::Audio::Bank>();
+        hs::Audio::Sample sine;
+        sine.name = "sine A4";
+        sine.midi = 69;
+        sine.rate = 44100.0;
+        sine.samples.assign (44100, 0.0f);
+        for (int i = 0; i < 44100; ++i) sine.samples[(size_t) i] = (float) (0.5 * std::sin (2.0 * 3.141592653589793 * 440.0 * i / 44100.0));
+        bank->push_back (sine);
+        audio.setBank (bank);
+        audio.samplerNoteOn (69, 1.0f);
+        std::vector<float> left ((size_t) 512, 0.0f), right ((size_t) 512, 0.0f);
+        float* outs[2] = { left.data(), right.data() };
+        double device = 0.0;
+        for (int i = 0; i < 20; ++i)
+        {
+            audio.audioDeviceIOCallbackWithContext (nullptr, 0, outs, 2, 512, {});
+            for (int k = 0; k < 512; ++k) device += (double) left[(size_t) k] * left[(size_t) k];
+        }
+        std::vector<float> sampled ((size_t) 20 * 512, 0.0f), cascade ((size_t) 20 * 512, 0.0f);
+        const int gotSampler = audio.pullSampler (sampled.data(), (int) sampled.size());
+        const int gotCascade = audio.pull (cascade.data(), (int) cascade.size());
+        double sampledEnergy = 0.0, cascadeEnergy = 0.0;
+        for (int i = 0; i < gotSampler; ++i) sampledEnergy += (double) sampled[(size_t) i] * sampled[(size_t) i];
+        for (int i = 0; i < gotCascade; ++i) cascadeEnergy += (double) cascade[(size_t) i] * cascade[(size_t) i];
+        std::printf ("      sampler tap %d samples %.1f energy, cascade tap %d samples %.3e energy, device %.1f energy\n",
+            gotSampler, sampledEnergy, gotCascade, cascadeEnergy, device);
+        check (gotSampler == 20 * 512 && sampledEnergy > 100.0 && cascadeEnergy < 1.0e-12 && device > 20.0,
+            "the sampler plays the nearest note on its own path");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        s.setPuck (0.0, 100.0);
+        hs::Spectrogram spec (nullptr, &s);
+        spec.setSize (1100, 620);
+        const int n = spec.peevers.winsize + 300 * spec.peevers.stride;
+        std::vector<float> saw ((size_t) n, 0.0f);
+        double phase = 0.0;
+        for (int i = 0; i < n; ++i)
+        {
+            phase += 220.0 / 44100.0;
+            phase -= std::floor (phase);
+            saw[(size_t) i] = (float) ((2.0 * phase - 1.0) * 8000.0);
+        }
+        spec.feed (saw.data(), n);
+        spec.pickedFrame = 150;
+        const auto stamp = juce::String (150.0 * (double) spec.peevers.stride / 44100.0, 2);
+        const int before = (int) s.stars.size();
+        const bool took = spec.takeFrame();
+        const int pinned = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
+        const auto& star = s.stars[(size_t) juce::jlimit (0, (int) s.stars.size() - 1, pinned)];
+        const auto formants = hs::formantsOf (star.words);
+        const double bin = 44100.0 / (double) spec.peevers.nfft;
+        double closest = 1.0e9, at = 0.0;
+        for (double f : formants)
+        {
+            if (f <= 0.0) continue;
+            const double harmonic = std::floor (f / 220.0 + 0.5);
+            if (harmonic < 1.0) continue;
+            const double d = std::abs (f - harmonic * 220.0);
+            if (d < closest) { closest = d; at = f; }
+        }
+        std::printf ("      %d frames, corner A holds %s, formants %.0f %.0f %.0f %.0f, nearest %.0f Hz sits %.1f Hz off a harmonic of 220, one bin is %.1f Hz\n",
+            spec.frameCount(), star.name.toRawUTF8(), formants[0], formants[1], formants[2], formants[3], at, closest, bin);
+        check (took && (int) s.stars.size() == before + 1 && pinned == before && star.kind == "capture"
+            && star.name.endsWith ("@ " + stamp) && closest <= bin,
+            "a frame picked off the surface becomes a capture in the target");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        s.setReadingRoom (true);
+        const bool used = s.key (key ('Z', false, 'z'));
+        std::printf ("      Z in the reading room: sampler note %d, engine held note %d\n", s.samplerNote, s.heldNote);
+        check (used && s.readingRoom && s.samplerNote == s.keyOctave && s.heldNote == -1, "the reading room routes the Z row to the sampler");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        s.loadFamily ("Aud Bell 1");
+        hs::Spectrogram spec (nullptr, &s);
+        spec.setSize (1100, 620);
+        const int n = spec.peevers.winsize + 200 * spec.peevers.stride;
+        std::vector<float> saw ((size_t) n, 0.0f);
+        double phase = 0.0;
+        for (int i = 0; i < n; ++i)
+        {
+            phase += 110.0 / 44100.0;
+            phase -= std::floor (phase);
+            saw[(size_t) i] = (float) ((2.0 * phase - 1.0) * 8000.0);
+        }
+        spec.feed (saw.data(), n);
+        const auto image = spec.shot();
+        const auto folder = root.getChildFile ("native/workstation/artifacts/shots");
+        folder.createDirectory();
+        const auto file = folder.getChildFile ("readingroom.png");
+        file.deleteFile();
+        juce::PNGImageFormat png;
+        juce::FileOutputStream out (file);
+        const bool written = out.openedOk() && png.writeImageToStream (image, out);
+        out.flush();
+        int inked = 0, lit = 0, blues = 0;
+        for (int y = spec.panel.getY(); y < spec.panel.getBottom(); ++y)
+            for (int x = spec.panel.getX(); x < spec.panel.getRight(); ++x)
+            {
+                const auto pixel = image.getPixelAt (x, y);
+                if ((int) pixel.getRed() > 200) ++inked;
+                if (pixel != hs::Look::ground) ++lit;
+            }
+        for (int y = spec.surface.getY(); y < spec.surface.getBottom(); ++y)
+            for (int x = spec.surface.getX(); x < spec.surface.getRight(); ++x)
+            {
+                const auto pixel = image.getPixelAt (x, y);
+                if ((int) pixel.getBlue() - (int) pixel.getRed() > 20) ++blues;
+            }
+        std::printf ("      readingroom.png %d frames, %d ink and %d drawn pixels in the panel, %d blue pixels on the surface, ink %d dim %d\n",
+            spec.frameCount(), inked, lit, blues, (int) hs::Look::ink.getRed(), (int) hs::Look::dim.getRed());
+        check (written && file.getSize() > 4000 && inked > 20 && lit > 300 && blues > 200 && juce::Desktop::getInstance().getNumComponents() == 0,
+            "the window renders with the panel to artifacts/shots/readingroom.png");
+    }
+
     std::printf ("%d failures\n", failures);
     return failures == 0 ? 0 : 1;
 }

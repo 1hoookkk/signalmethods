@@ -6,6 +6,21 @@ namespace hs
 {
 namespace
 {
+int midiOfNote (const juce::String& token)
+{
+    static const int steps[7] = { 9, 11, 0, 2, 4, 5, 7 };
+    if (token.isEmpty()) return -1;
+    const auto letter = juce::CharacterFunctions::toUpperCase (token[0]);
+    if (letter < 'A' || letter > 'G') return -1;
+    int semitone = steps[(size_t) (letter - 'A')], at = 1;
+    if (at < token.length() && token[at] == '#') { semitone += 1; ++at; }
+    else if (at < token.length() && token[at] == 'b') { semitone -= 1; ++at; }
+    const auto octave = token.substring (at);
+    if (octave.isEmpty() || ! octave.containsOnly ("-0123456789")) return -1;
+    const int midi = 12 * (octave.getIntValue() + 1) + semitone;
+    return midi >= 0 && midi < 128 ? midi : -1;
+}
+
 std::array<std::uint16_t, 30> flat (const Words& w)
 {
     std::array<std::uint16_t, 30> out {};
@@ -370,6 +385,79 @@ int Session::addRead (const juce::File& wav)
     return selected;
 }
 
+int Session::addFrame (const Star& star)
+{
+    history.push_back (snapshot()); future.clear();
+    Star s = star;
+    s.name = uniqueName (s.name.isNotEmpty() ? s.name : formantName (s.words));
+    s.body = s.name;
+    quad.captures += 1;
+    stars.push_back (s);
+    selected = (int) stars.size() - 1;
+    apply();
+    return selected;
+}
+
+std::vector<juce::String> Session::families() const
+{
+    juce::StringArray names;
+    for (const auto& dir : { root.getChildFile ("evidence/factory-data/xl1-dsf-aud"), root.getChildFile ("evidence/factory-data/abl3-303") })
+        for (const auto& wav : dir.findChildFiles (juce::File::findFiles, false, "*.wav"))
+        {
+            const auto stem = wav.getFileNameWithoutExtension();
+            const int space = stem.lastIndexOfChar (' ');
+            if (space <= 0 || midiOfNote (stem.substring (space + 1)) < 0) continue;
+            names.addIfNotAlreadyThere (stem.substring (0, space));
+        }
+    names.sort (true);
+    std::vector<juce::String> out;
+    for (const auto& name : names) out.push_back (name);
+    return out;
+}
+
+bool Session::loadFamily (const juce::String& family)
+{
+    if (family.isEmpty()) return false;
+    juce::Array<juce::File> files;
+    for (const auto& dir : { root.getChildFile ("evidence/factory-data/xl1-dsf-aud"), root.getChildFile ("evidence/factory-data/abl3-303") })
+        for (const auto& wav : dir.findChildFiles (juce::File::findFiles, false, "*.wav"))
+            if (wav.getFileNameWithoutExtension().startsWith (family + " ")) files.add (wav);
+    files.sort();
+    auto bank = std::make_shared<Audio::Bank>();
+    for (const auto& wav : files)
+    {
+        const auto stem = wav.getFileNameWithoutExtension();
+        const int midi = midiOfNote (stem.substring (stem.lastIndexOfChar (' ') + 1));
+        if (midi < 0) continue;
+        const auto clip = trench::core::audio::read_wav_mono (std::filesystem::path (wav.getFullPathName().toWideCharPointer()));
+        if (! clip || clip->samples.size() < 2) continue;
+        Audio::Sample sample;
+        sample.name = stem;
+        sample.midi = midi;
+        sample.samples = clip->samples;
+        sample.rate = clip->sample_rate_hz;
+        bank->push_back (std::move (sample));
+    }
+    if (bank->empty()) { status = "no notes for " + family; changed(); return false; }
+    familyName = family;
+    status = family + "  " + juce::String ((int) bank->size()) + " notes";
+    audio.setBank (bank);
+    changed();
+    return true;
+}
+
+void Session::setReadingRoom (bool on)
+{
+    if (readingRoom == on) return;
+    readingRoom = on;
+    if (withAudio)
+    {
+        audio.setSamplerRoute (on);
+        if (! on) audio.allNotesOff();
+    }
+    changed();
+}
+
 int Session::addFit (const juce::File& wav)
 {
     auto star = fitWav (wav);
@@ -618,7 +706,15 @@ void Session::noteOff()
 
 void Session::keyNoteOn (int midi)
 {
-    note = std::clamp (midi, 0, 127);
+    const int m = std::clamp (midi, 0, 127);
+    if (readingRoom)
+    {
+        samplerNote = m;
+        if (withAudio) audio.samplerNoteOn (m);
+        changed();
+        return;
+    }
+    note = m;
     heldNote = note;
     if (withAudio) audio.noteOn (note);
     changed();
@@ -626,7 +722,14 @@ void Session::keyNoteOn (int midi)
 
 void Session::keyNoteOff (int midi)
 {
-    if (withAudio) audio.noteOff (std::clamp (midi, 0, 127));
+    const int m = std::clamp (midi, 0, 127);
+    if (readingRoom)
+    {
+        if (withAudio) audio.samplerNoteOff (m);
+        changed();
+        return;
+    }
+    if (withAudio) audio.noteOff (m);
     if (heldNote == midi) heldNote = -1;
     changed();
 }
@@ -646,8 +749,12 @@ bool Session::setLoop (const juce::File& wav)
 
 void Session::noteIn (const juce::MidiMessage& m)
 {
-    if (m.isNoteOn()) noteOn (m.getNoteNumber());
-    else if (m.isNoteOff() && m.getNoteNumber() == heldNote) noteOff();
+    if (m.isNoteOn()) { if (readingRoom) keyNoteOn (m.getNoteNumber()); else noteOn (m.getNoteNumber()); }
+    else if (m.isNoteOff())
+    {
+        if (readingRoom) keyNoteOff (m.getNoteNumber());
+        else if (m.getNoteNumber() == heldNote) noteOff();
+    }
 }
 
 void Session::setSource (int s)

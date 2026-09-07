@@ -2364,3 +2364,17 @@ Open, in order:
   every family, so they load as two families of five; 97 reads. Tests pinned to i/u where they
   assumed the boot anchors, and one pin had to leave made mode first (setPair keeps a made
   sound). 176 checks, ctest x3. Next: the reading room (spec in the scratchpad), then the patch.
+- 2026-09-07, late night, the reading room (Tyson: the biggest upgrade, yes). Audio gains a
+  sampler on its own path: a bank of Samples (name, midi, samples, rate) swapped atomically,
+  eight voices with linear-interpolated resampling by semitone and a 120 ms release, mixed in
+  AFTER the cascade and the taps at 0.5, a third tap pullSampler; Session::loadFamily reads a
+  family from xl1-dsf-aud or abl3-303 (45 families), families(), readingRoom routes the Z row
+  and MIDI (Audio::setSamplerRoute) to the sampler; the window is titled reading room and its
+  timer analyses the sampler alone; his panel down the left (FAMILY caret, the family, FFT
+  SIZE, WIN SIZE, STRIDE, the window, LENGTH, then ENV LOGF 2D AXES PERSP MESH CLEAR PAUSE);
+  the gesture: click a slice to pick it (orange), Enter or double-click fits it through the FIT
+  path (each frame keeps its raw power and its Env power) into a capture named family + note
+  + @ time and places it in the target (Session::addFrame + placeInTarget). Numbers: Aud Bell 1
+  loads 8 notes; the sampler tap carries energy while the cascade tap carries none; frame 150
+  of a 220 Hz saw becomes a capture @ 0.87 with formants 255/679/1801/3097 Hz. 182 checks,
+  ctest x3, app relinked; shot artifacts/shots/readingroom.png.

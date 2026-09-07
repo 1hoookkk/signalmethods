@@ -1,15 +1,26 @@
 #include "Spectrogram.h"
 
+#include "app/Library.h"
+#include "dsp/VectorFit.h"
 #include <cmath>
+#include <complex>
 
 namespace hs
 {
-Spectrogram::Spectrogram (Audio* tap) : audio (tap)
+namespace
+{
+enum Control { cFamily = 0, cName, cFft, cWin, cStride, cWindow, cLength, cEnv, cLogF, cFlat, cAxes, cPersp, cMesh, cClear, cPause };
+const char* const kKeyRow = "zsxdcvgbhnjm,l.";
+}
+
+Spectrogram::Spectrogram (Audio* tap, Session* owner) : audio (tap), session (owner)
 {
     formats.registerBasicFormats();
     pulled.assign (16384, 0.0f);
+    raw.assign ((size_t) Peevers::kMax + 2, 0.0f);
     peevers.setParms (1024, 1024, 256, 7);
-    setSize (900, 560);
+    setWantsKeyboardFocus (true);
+    setSize (1100, 620);
     words();
     if (audio != nullptr) startTimer (30);
 }
@@ -19,10 +30,23 @@ Spectrogram::~Spectrogram() { stopTimer(); }
 void Spectrogram::clear()
 {
     frames.clear();
+    powers.clear();
     history.clear();
     cursor = 0;
     length = 0;
+    pickedFrame = -1;
     peevers.reset();
+}
+
+void Spectrogram::trim()
+{
+    while ((int) frames.size() > kept)
+    {
+        frames.erase (frames.begin());
+        if (! powers.empty()) powers.erase (powers.begin());
+        if (pickedFrame >= 0) --pickedFrame;
+    }
+    if (pickedFrame >= (int) frames.size()) pickedFrame = -1;
 }
 
 void Spectrogram::feed (const float* samples, int n)
@@ -34,7 +58,10 @@ void Spectrogram::feed (const float* samples, int n)
         peevers.frame (history.data() + cursor);
         cursor += hop;
         frames.emplace_back (peevers.fx.begin(), peevers.fx.begin() + peevers.nfft2);
-        if ((int) frames.size() > kFrames) frames.erase (frames.begin());
+        const float* source = peevers.lpcenv == 0 ? peevers.arry.data() + 1 : peevers.synth.data();
+        peevers.spectrum (source, peevers.nfft, raw.data(), peevers.nfft);
+        powers.emplace_back (raw.begin(), raw.begin() + peevers.nfft2 + 1);
+        trim();
     }
     if (cursor > 65536)
     {
@@ -61,8 +88,10 @@ bool Spectrogram::load (const juce::File& file)
     for (auto& v : mono) v *= scale;
     clear();
     fromFile = true;
+    fileName = file.getFileNameWithoutExtension();
     length = n;
     feed (mono.data(), n);
+    words();
     repaint();
     return true;
 }
@@ -70,12 +99,12 @@ bool Spectrogram::load (const juce::File& file)
 void Spectrogram::timerCallback()
 {
     if (audio == nullptr) return;
-    int got = audio->pull (pulled.data(), (int) pulled.size());
-    if (got <= 0) return;
+    int got = audio->pullSampler (pulled.data(), (int) pulled.size());
+    if (got <= 0 || paused) return;
     bool sound = false;
     for (int i = 0; i < got; ++i) sound = sound || std::abs (pulled[(size_t) i]) > 1.0e-6f;
     if (! sound && fromFile) return;
-    if (fromFile) { clear(); fromFile = false; rate = 44100.0; }
+    if (fromFile) { clear(); fromFile = false; fileName.clear(); rate = 44100.0; words(); }
     for (int i = 0; i < got; ++i) pulled[(size_t) i] *= 32767.0f;
     feed (pulled.data(), got);
     repaint();
@@ -86,29 +115,38 @@ void Spectrogram::resized() { layout(); }
 void Spectrogram::layout()
 {
     auto r = getLocalBounds().reduced (10);
-    strip = r.removeFromBottom (18);
+    panel = r.removeFromLeft (200);
     surface = r;
+    auto inner = panel.reduced (6, 4);
+    int y = inner.getY();
+    for (int i = 0; i < kControls; ++i)
+    {
+        if (i == cFft || i == cEnv) y += 10;
+        hits[(size_t) i] = { inner.getX(), y, inner.getWidth(), 16 };
+        y += 18;
+    }
     words();
 }
 
 void Spectrogram::words()
 {
-    const juce::String names[8] = {
-        "FFT " + juce::String (peevers.nfft),
-        "Win " + juce::String (peevers.winsize),
-        "Stride " + juce::String (peevers.stride),
-        juce::String (Peevers::windowNames[peevers.wintype]),
-        "Env", "LogF", "2D", "Axes"
-    };
-    const auto font = Look::font (11.0f);
-    int x = strip.getX();
-    for (int i = 0; i < 8; ++i)
-    {
-        labels[(size_t) i] = names[i];
-        const int w = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, names[i]));
-        hits[(size_t) i] = { x, strip.getY(), w, strip.getHeight() };
-        x += w + 18;
-    }
+    juce::String heading = fromFile ? fileName : (session != nullptr ? session->familyName : juce::String());
+    if (heading.isEmpty()) heading = "no source";
+    labels[cFamily] = "FAMILY";
+    labels[cName] = heading.toUpperCase();
+    labels[cFft] = "FFT SIZE  " + juce::String (peevers.nfft);
+    labels[cWin] = "WIN SIZE  " + juce::String (peevers.winsize);
+    labels[cStride] = "STRIDE  " + juce::String (peevers.stride);
+    labels[cWindow] = juce::String (Peevers::windowNames[peevers.wintype]).toUpperCase();
+    labels[cLength] = "LENGTH  " + juce::String (kept);
+    labels[cEnv] = "ENV";
+    labels[cLogF] = "LOGF";
+    labels[cFlat] = "2D";
+    labels[cAxes] = "AXES";
+    labels[cPersp] = "PERSP";
+    labels[cMesh] = mesh ? "MESH" : "LINE";
+    labels[cClear] = "CLEAR";
+    labels[cPause] = "PAUSE";
 }
 
 juce::Point<float> Spectrogram::project (float bin, float value, float depth) const
@@ -121,8 +159,9 @@ juce::Point<float> Spectrogram::project (float bin, float value, float depth) co
     const float rx = x * ca + z * sa;
     const float rz = -x * sa + z * ca;
     const float sy = y * cd + rz * sd;
-    const float spanX = (float) surface.getWidth() * 0.52f;
-    const float spanY = (float) surface.getHeight() * 0.78f;
+    const float shrink = persp ? 1.0f / (1.0f + 0.6f * depth) : 1.0f;
+    const float spanX = (float) surface.getWidth() * 0.52f * shrink;
+    const float spanY = (float) surface.getHeight() * 0.78f * shrink;
     return { centre.x + rx * spanX, centre.y - sy * spanY };
 }
 
@@ -249,6 +288,60 @@ void Spectrogram::flat (juce::Graphics& g) const
     g.strokePath (path, juce::PathStrokeType (1.0f));
 }
 
+void Spectrogram::slice (juce::Graphics& g, int index, int count, juce::Colour colour) const
+{
+    if (index < 0 || index >= (int) frames.size()) return;
+    const auto& fr = frames[(size_t) index];
+    const int bins = juce::jmin (peevers.nfft2, (int) fr.size());
+    if (bins < 2) return;
+    const float depth = (float) (count - 1 - index) / (float) juce::jmax (1, count - 1);
+    juce::Path line;
+    for (int bin = 0; bin < bins; ++bin)
+    {
+        const float px = logF ? peevers.zlogpos[(size_t) bin] : (float) bin;
+        const auto p = project (px, fr[(size_t) bin], depth);
+        if (bin == 0) line.startNewSubPath (p); else line.lineTo (p);
+    }
+    juce::Path fill (line);
+    fill.lineTo (project (logF ? peevers.zlogpos[(size_t) (bins - 1)] : (float) (bins - 1), -20.0f, depth));
+    fill.lineTo (project (0.0f, -20.0f, depth));
+    fill.closeSubPath();
+    g.setColour (Look::ground);
+    g.fillPath (fill);
+    g.setColour (colour);
+    if (mesh) g.strokePath (line, juce::PathStrokeType (1.0f));
+    else
+        for (int bin = 0; bin < bins; ++bin)
+        {
+            const float px = logF ? peevers.zlogpos[(size_t) bin] : (float) bin;
+            const auto p = project (px, fr[(size_t) bin], depth);
+            g.fillRect (p.x - 0.5f, p.y - 0.5f, 1.2f, 1.2f);
+        }
+}
+
+void Spectrogram::controls (juce::Graphics& g) const
+{
+    g.setColour (Look::grid);
+    g.drawLine ((float) panel.getRight(), (float) panel.getY(), (float) panel.getRight(), (float) panel.getBottom(), 0.8f);
+    g.setFont (Look::font (10.0f));
+    for (int i = 0; i < kControls; ++i)
+    {
+        const bool toggle = i >= cEnv && i <= cMesh;
+        const bool on = i == cEnv ? peevers.lpcenv != 0
+                      : i == cLogF ? logF
+                      : i == cFlat ? twoD
+                      : i == cAxes ? axes
+                      : i == cPersp ? persp
+                      : i == cMesh ? mesh
+                      : i == cPause ? paused
+                      : true;
+        g.setColour (toggle || i == cPause ? (on ? Look::ink : Look::dim) : i == cName ? Look::dim : Look::text);
+        auto box = hits[(size_t) i];
+        g.drawText (labels[(size_t) i], box.toFloat(), juce::Justification::centredLeft);
+        if (i == cFamily && Look::hasGlyph (Look::Glyph::caret)) Look::glyph (g, Look::Glyph::caret, box.removeFromRight (12), Look::text);
+    }
+}
+
 void Spectrogram::paint (juce::Graphics& g)
 {
     if (surface.isEmpty()) layout();
@@ -259,88 +352,214 @@ void Spectrogram::paint (juce::Graphics& g)
     {
         if (axes) grid (g);
         const int count = (int) frames.size();
-        const int n2 = peevers.nfft2;
         const int step = juce::jmax (1, count / 80);
         for (int i = (count - 1) % step; i < count; i += step)
         {
-            const auto& fr = frames[(size_t) i];
             const float depth = (float) (count - 1 - i) / (float) juce::jmax (1, count - 1);
-            const int bins = juce::jmin (n2, (int) fr.size());
-            if (bins < 2) continue;
-            juce::Path line;
-            for (int bin = 0; bin < bins; ++bin)
-            {
-                const float px = logF ? peevers.zlogpos[(size_t) bin] : (float) bin;
-                const auto p = project (px, fr[(size_t) bin], depth);
-                if (bin == 0) line.startNewSubPath (p); else line.lineTo (p);
-            }
-            juce::Path fill (line);
-            fill.lineTo (project (logF ? peevers.zlogpos[(size_t) (bins - 1)] : (float) (bins - 1), -20.0f, depth));
-            fill.lineTo (project (0.0f, -20.0f, depth));
-            fill.closeSubPath();
-            g.setColour (Look::ground);
-            g.fillPath (fill);
-            g.setColour (i == count - 1 ? Look::ink : Look::blue.withAlpha (0.25f + 0.65f * (1.0f - depth)));
-            g.strokePath (line, juce::PathStrokeType (1.0f));
+            slice (g, i, count, i == count - 1 ? Look::ink : Look::blue.withAlpha (0.25f + 0.65f * (1.0f - depth)));
+        }
+        if (pickedFrame >= 0 && pickedFrame < count) slice (g, pickedFrame, count, Look::orange);
+    }
+    controls (g);
+}
+
+int Spectrogram::pickAt (juce::Point<int> p) const
+{
+    const int count = (int) frames.size();
+    if (count == 0) return -1;
+    const float right = logF ? peevers.zlogpos[(size_t) peevers.nfft2] : (float) peevers.nfft2;
+    const juce::Point<float> q ((float) p.x, (float) p.y);
+    int best = -1;
+    float nearest = 1.0e9f;
+    for (int i = 0; i < count; ++i)
+    {
+        const float depth = (float) (count - 1 - i) / (float) juce::jmax (1, count - 1);
+        const juce::Line<float> base (project (0.0f, 0.0f, depth), project (right, 0.0f, depth));
+        juce::Point<float> foot;
+        const float d = base.getDistanceFromPoint (q, foot);
+        if (d < nearest) { nearest = d; best = i; }
+    }
+    return best;
+}
+
+juce::String Spectrogram::frameName (int index) const
+{
+    juce::String head;
+    if (fromFile) head = fileName;
+    else
+    {
+        if (session != nullptr) head = session->familyName;
+        const int midi = session != nullptr ? session->samplerNote : -1;
+        if (midi >= 0)
+        {
+            const auto note = juce::MidiMessage::getMidiNoteName (midi, true, true, 4);
+            head = head.isNotEmpty() ? head + " " + note : note;
         }
     }
-    g.setFont (Look::font (11.0f));
-    for (int i = 0; i < 8; ++i)
-    {
-        const bool toggle = i >= 4;
-        const bool on = i == 4 ? peevers.lpcenv != 0 : i == 5 ? logF : i == 6 ? twoD : axes;
-        g.setColour (toggle ? (on ? Look::ink : Look::dim) : Look::text);
-        g.drawText (labels[(size_t) i], hits[(size_t) i].toFloat(), juce::Justification::centredLeft);
-    }
+    const double seconds = (double) index * (double) peevers.stride / (rate > 0.0 ? rate : 44100.0);
+    return (head.isNotEmpty() ? head + " " : juce::String()) + "@ " + juce::String (seconds, 2);
+}
+
+bool Spectrogram::takeFrame()
+{
+    if (session == nullptr || pickedFrame < 0 || pickedFrame >= (int) powers.size()) return false;
+    const auto& power = powers[(size_t) pickedFrame];
+    if (power.size() < 8) return false;
+    double top = 0.0;
+    for (float v : power) top = std::max (top, (double) v);
+    if (! (top > 0.0)) return false;
+    std::vector<double> magnitudeDb (power.size(), 0.0);
+    for (size_t i = 0; i < power.size(); ++i) magnitudeDb[i] = 10.0 * std::log10 (std::max ((double) power[i] / top, 1.0e-14));
+    std::vector<std::complex<double>> response;
+    minimumPhaseResponse (magnitudeDb, response);
+    if (response.empty()) return false;
+    const auto fitted = vectorFit (response, rate, 5, 8);
+    if (fitted.poles.empty()) return false;
+    Star s;
+    s.kind = "capture";
+    s.corner = "frame";
+    s.words = fittedWords (fitted, rate);
+    if (! admit (s.words)) return false;
+    s.name = frameName (pickedFrame);
+    s.parentA = fromFile ? fileName : session->familyName;
+    const int index = session->addFrame (s);
+    if (index < 0) return false;
+    session->placeInTarget (index);
+    repaint();
+    return true;
+}
+
+void Spectrogram::chooseFamily()
+{
+    if (session == nullptr) return;
+    const auto names = session->families();
+    if (names.empty()) return;
+    juce::PopupMenu menu;
+    for (int i = 0; i < (int) names.size(); ++i) menu.addItem (i + 1, names[(size_t) i], true, names[(size_t) i] == session->familyName);
+    auto* self = this;
+    menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this).withTargetScreenArea (localAreaToGlobal (hits[cFamily])),
+        [self, names] (int chosen) {
+            if (chosen <= 0 || chosen > (int) names.size()) return;
+            self->session->loadFamily (names[(size_t) (chosen - 1)]);
+            self->clear();
+            self->words();
+            self->repaint();
+        });
 }
 
 void Spectrogram::mouseDown (const juce::MouseEvent& e)
 {
-    words();
-    for (int i = 4; i < 8; ++i)
+    layout();
+    const auto p = e.getPosition();
+    from = p;
+    fromAzimuth = azimuth;
+    fromDeclination = declination;
+    for (int i = 0; i < kControls; ++i)
     {
-        if (! hits[(size_t) i].contains (e.getPosition())) continue;
-        if (i == 4) { peevers.lpcenv = peevers.lpcenv == 0 ? 1 : 0; peevers.reset(); }
-        else if (i == 5) logF = ! logF;
-        else if (i == 6) twoD = ! twoD;
-        else axes = ! axes;
+        if (! hits[(size_t) i].contains (p)) continue;
+        if (i == cFamily) chooseFamily();
+        else if (i == cEnv) { peevers.lpcenv = peevers.lpcenv == 0 ? 1 : 0; peevers.reset(); }
+        else if (i == cLogF) logF = ! logF;
+        else if (i == cFlat) twoD = ! twoD;
+        else if (i == cAxes) axes = ! axes;
+        else if (i == cPersp) persp = ! persp;
+        else if (i == cMesh) mesh = ! mesh;
+        else if (i == cClear) clear();
+        else if (i == cPause) paused = ! paused;
         words();
         repaint();
         return;
     }
-    from = e.getPosition();
-    fromAzimuth = azimuth;
-    fromDeclination = declination;
+    if (panel.contains (p)) return;
+    fit();
+    pickedFrame = pickAt (p);
+    repaint();
+}
+
+void Spectrogram::mouseDoubleClick (const juce::MouseEvent& e)
+{
+    if (panel.contains (e.getPosition())) return;
+    fit();
+    pickedFrame = pickAt (e.getPosition());
+    takeFrame();
+    repaint();
 }
 
 void Spectrogram::mouseDrag (const juce::MouseEvent& e)
 {
-    if (strip.contains (from)) return;
+    if (panel.contains (from)) return;
     azimuth = fromAzimuth + (float) (e.getPosition().x - from.x) * 0.006f;
     declination = juce::jlimit (-1.4f, 1.4f, fromDeclination + (float) (e.getPosition().y - from.y) * 0.006f);
     repaint();
 }
 
+bool Spectrogram::keyPressed (const juce::KeyPress& k)
+{
+    if (k.getKeyCode() == juce::KeyPress::returnKey) return takeFrame();
+    const bool control = k.getModifiers().isCommandDown() || k.getModifiers().isCtrlDown();
+    if (control && k.getKeyCode() == 'G')
+    {
+        if (auto* window = getTopLevelComponent()) window->setVisible (false);
+        return true;
+    }
+    if (session == nullptr) return false;
+    const bool used = session->key (k);
+    if (used)
+    {
+        const auto lower = juce::CharacterFunctions::toLowerCase (k.getTextCharacter());
+        for (int i = 0; kKeyRow[i] != 0; ++i)
+            if (lower == (juce::juce_wchar) kKeyRow[i]) held.insert (session->keyOctave + i);
+    }
+    return used;
+}
+
+bool Spectrogram::keyStateChanged (bool)
+{
+    if (session == nullptr) return false;
+    bool any = false;
+    for (int i = 0; kKeyRow[i] != 0; ++i)
+    {
+        const int code = juce::CharacterFunctions::toUpperCase ((juce::juce_wchar) kKeyRow[i]);
+        const int midi = session->keyOctave + i;
+        if (! juce::KeyPress::isKeyCurrentlyDown (code) && held.count (midi) > 0)
+        {
+            held.erase (midi);
+            session->keyNoteOff (midi);
+            any = true;
+        }
+    }
+    return any;
+}
+
 void Spectrogram::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel)
 {
-    words();
+    layout();
     const int step = wheel.deltaY > 0.0f ? 1 : wheel.deltaY < 0.0f ? -1 : 0;
     if (step == 0) return;
+    const auto p = e.getPosition();
+    if (hits[cLength].contains (p))
+    {
+        kept = juce::jlimit (100, kFrames, kept + step * 50);
+        trim();
+        words();
+        repaint();
+        return;
+    }
     int nfft = peevers.nfft, win = peevers.winsize, stride = peevers.stride, type = peevers.wintype;
-    if (hits[0].contains (e.getPosition()))
+    if (hits[cFft].contains (p))
     {
         nfft = juce::jlimit (64, 4096, step > 0 ? nfft * 2 : nfft / 2);
         win = juce::jmin (win, nfft);
     }
-    else if (hits[1].contains (e.getPosition()))
+    else if (hits[cWin].contains (p))
     {
         win = juce::jlimit (64, juce::jmin (4096, nfft), step > 0 ? win * 2 : win / 2);
     }
-    else if (hits[2].contains (e.getPosition()))
+    else if (hits[cStride].contains (p))
     {
         stride = juce::jlimit (16, win, stride + step * juce::jmax (1, win / 8));
     }
-    else if (hits[3].contains (e.getPosition()))
+    else if (hits[cWindow].contains (p))
     {
         type = (type + step + Peevers::kWindows) % Peevers::kWindows;
     }

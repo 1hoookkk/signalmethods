@@ -33,6 +33,9 @@ public:
     int working = 0;
     int anchorTarget = -1;
     int heldNote = -1;
+    int samplerNote = -1;
+    bool readingRoom = false;
+    juce::String familyName;
     int target() const { return editing >= 0 ? editing : working; }
     Star made;
     bool madeLive = false;
@@ -70,6 +73,10 @@ public:
     bool placeable() const;
     void pinAll (const std::array<int, 4>& pins);
     int addRead (const juce::File& wav);
+    int addFrame (const Star& star);
+    std::vector<juce::String> families() const;
+    bool loadFamily (const juce::String& family);
+    void setReadingRoom (bool on);
     int addFit (const juce::File& wav);
     bool refit();
     void edit (int corner);

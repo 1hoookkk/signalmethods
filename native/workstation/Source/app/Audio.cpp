@@ -6,7 +6,7 @@ namespace hs
 {
 namespace
 {
-constexpr int kNoteOn = 1, kNoteOff = 2, kSustain = 3, kAllOff = 4;
+constexpr int kNoteOn = 1, kNoteOff = 2, kSustain = 3, kAllOff = 4, kSamplerOn = 5, kSamplerOff = 6;
 }
 
 Audio::~Audio() { stop(); }
@@ -78,6 +78,10 @@ void Audio::noteOn (int midi, float velocity)
 
 void Audio::noteOff (int midi) { push ({ kNoteOff, midi, 0.0f }); }
 
+void Audio::samplerNoteOn (int midi, float velocity) { push ({ kSamplerOn, midi, std::clamp (velocity, 0.05f, 1.0f) }); }
+
+void Audio::samplerNoteOff (int midi) { push ({ kSamplerOff, midi, 0.0f }); }
+
 void Audio::allNotesOff() { push ({ kAllOff, 0, 0.0f }); }
 
 void Audio::sustain (bool down) { push ({ kSustain, 0, down ? 1.0f : 0.0f }); }
@@ -118,6 +122,32 @@ void Audio::drain()
         {
             pedal = false;
             for (auto& v : voices) { v.held = false; v.sustained = false; }
+            for (auto& v : samplerVoices) v.held = false;
+        }
+        else if (e.type == kSamplerOn)
+        {
+            if (playingBank != nullptr && ! playingBank->empty())
+            {
+                size_t best = 0;
+                for (size_t i = 1; i < playingBank->size(); ++i)
+                    if (std::abs ((*playingBank)[i].midi - e.note) < std::abs ((*playingBank)[best].midi - e.note)) best = i;
+                SamplerVoice* v = nullptr;
+                for (auto& candidate : samplerVoices) if (candidate.note == e.note) { v = &candidate; break; }
+                if (v == nullptr) for (auto& candidate : samplerVoices) if (candidate.note < 0) { v = &candidate; break; }
+                if (v == nullptr) v = &samplerVoices[0];
+                const auto& sample = (*playingBank)[best];
+                v->note = e.note;
+                v->index = (int) best;
+                v->position = 0.0;
+                v->step = std::pow (2.0, (e.note - sample.midi) / 12.0) * (sample.rate > 0.0 ? sample.rate : rate) / rate;
+                v->velocity = e.value;
+                v->envelope = 1.0f;
+                v->held = true;
+            }
+        }
+        else if (e.type == kSamplerOff)
+        {
+            for (auto& v : samplerVoices) if (v.note == e.note) v.held = false;
         }
     }
 }
@@ -149,6 +179,7 @@ void Audio::prepare (double sampleRate)
     runner.set_immediate (identity);
     consumed = 0;
     for (auto& v : voices) v = Voice {};
+    for (auto& v : samplerVoices) v = SamplerVoice {};
     drone = 0.0; pedal = false;
     eventRead = eventWrite.load();
 }
@@ -160,10 +191,15 @@ void Audio::handleIncomingMidiMessage (juce::MidiInput*, const juce::MidiMessage
     if (message.isNoteOn())
     {
         const int n = message.getNoteNumber();
-        noteOn (n, message.getFloatVelocity());
+        if (samplerRoute.load()) samplerNoteOn (n, message.getFloatVelocity());
+        else noteOn (n, message.getFloatVelocity());
         if (onNote) juce::MessageManager::callAsync ([this, n] { if (onNote) onNote (n); });
     }
-    else if (message.isNoteOff()) noteOff (message.getNoteNumber());
+    else if (message.isNoteOff())
+    {
+        if (samplerRoute.load()) samplerNoteOff (message.getNoteNumber());
+        else noteOff (message.getNoteNumber());
+    }
     else if (message.isSustainPedalOn()) sustain (true);
     else if (message.isSustainPedalOff()) sustain (false);
     else if (message.isAllNotesOff() || message.isAllSoundOff()) allNotesOff();
@@ -178,10 +214,16 @@ void Audio::handleIncomingMidiMessage (juce::MidiInput*, const juce::MidiMessage
 void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* const* out, int numOut, int numSamples, const juce::AudioIODeviceCallbackContext&)
 {
     consume();
+    if (auto fresh = bank.load(); fresh != playingBank)
+    {
+        playingBank = fresh;
+        for (auto& v : samplerVoices) v = SamplerVoice {};
+    }
     drain();
     const bool droning = playing.load();
     const int src = source.load (std::memory_order_relaxed);
     const double attack = 1.0 - std::exp (-1.0 / (0.002 * rate)), release = 1.0 - std::exp (-1.0 / (0.12 * rate));
+    const float samplerRelease = (float) (1.0 - std::exp (-1.0 / (0.120 * rate)));
     const int burstLength = std::max (1, (int) (0.010 * rate));
     int sounding = 0;
     for (auto& v : voices) if (v.note >= 0 && (v.held || v.sustained || v.envelope >= 1e-4)) ++sounding;
@@ -249,15 +291,37 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
         inputWrite.store (iw, std::memory_order_release);
         runner.process (std::span<float> (block.data(), (size_t) n));
         unsigned int w = tapWrite.load (std::memory_order_relaxed);
+        unsigned int sw = samplerWrite.load (std::memory_order_relaxed);
         for (int i = 0; i < n; ++i)
         {
             const float tapped = std::isfinite (block[(size_t) i]) ? block[(size_t) i] : 0.0f;
             tapRing[(size_t) (w & (kTap - 1))] = tapped;
             ++w;
-            const float y = tapped * 0.5f;
+            float mix = 0.0f;
+            for (auto& v : samplerVoices)
+            {
+                if (v.note < 0) continue;
+                if (playingBank == nullptr || v.index < 0 || v.index >= (int) playingBank->size()) { v.note = -1; continue; }
+                if (! v.held)
+                {
+                    v.envelope -= v.envelope * samplerRelease;
+                    if (v.envelope < 1.0e-4f) { v.note = -1; continue; }
+                }
+                const auto& sample = (*playingBank)[(size_t) v.index];
+                const size_t k = (size_t) v.position;
+                if (k + 1 >= sample.samples.size()) { v.note = -1; continue; }
+                const double frac = v.position - (double) k;
+                mix += (float) ((1.0 - frac) * sample.samples[k] + frac * sample.samples[k + 1]) * v.velocity * v.envelope;
+                v.position += v.step;
+            }
+            if (! std::isfinite (mix)) mix = 0.0f;
+            samplerRing[(size_t) (sw & (kTap - 1))] = mix;
+            ++sw;
+            const float y = tapped * 0.5f + mix * 0.5f;
             for (int ch = 0; ch < numOut; ++ch) if (out[ch] != nullptr) out[ch][offset + i] = y;
         }
         tapWrite.store (w, std::memory_order_release);
+        samplerWrite.store (sw, std::memory_order_release);
     }
 }
 
@@ -280,6 +344,17 @@ int Audio::pullInput (float* dst, int max)
     const int n = (int) std::min (available, (unsigned int) std::max (0, max));
     for (int i = 0; i < n; ++i) dst[i] = inputRing[(size_t) ((inputRead + (unsigned int) i) & (kTap - 1))];
     inputRead += (unsigned int) n;
+    return n;
+}
+
+int Audio::pullSampler (float* dst, int max)
+{
+    const unsigned int w = samplerWrite.load (std::memory_order_acquire);
+    unsigned int available = w - samplerRead;
+    if (available > kTap) { samplerRead = w - kTap; available = kTap; }
+    const int n = (int) std::min (available, (unsigned int) std::max (0, max));
+    for (int i = 0; i < n; ++i) dst[i] = samplerRing[(size_t) ((samplerRead + (unsigned int) i) & (kTap - 1))];
+    samplerRead += (unsigned int) n;
     return n;
 }
 }
