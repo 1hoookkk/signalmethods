@@ -22,6 +22,33 @@ juce::var Bridge::state() const
     d->setProperty ("status", session.status);
     d->setProperty ("heard", curveOf (session.words));
     {
+        auto* stage = new juce::DynamicObject();
+        const bool editable = session.editable();
+        const Words shown = editable ? session.editWords() : session.words;
+        stage->setProperty ("editable", editable);
+        stage->setProperty ("target", session.target());
+        stage->setProperty ("curve", curveOf (shown));
+        juce::Array<juce::var> sections;
+        for (size_t row = 0; row < kRows; ++row)
+        {
+            const auto s = sectionOf (shown[row]);
+            auto* o = new juce::DynamicObject();
+            o->setProperty ("pole", s.pole);
+            o->setProperty ("zero", s.zero);
+            o->setProperty ("poleHz", s.poleHz);
+            o->setProperty ("poleR", s.poleRadius);
+            o->setProperty ("zeroHz", s.zeroHz);
+            o->setProperty ("zeroR", s.zeroRadius);
+            o->setProperty ("scale", s.scale);
+            juce::Array<juce::var> words;
+            for (int w = 0; w < 5; ++w) words.add ((int) shown[row][(size_t) w]);
+            o->setProperty ("words", words);
+            sections.add (juce::var (o));
+        }
+        stage->setProperty ("sections", sections);
+        d->setProperty ("stage", juce::var (stage));
+    }
+    {
         auto* pad = new juce::DynamicObject();
         pad->setProperty ("morph", session.quad.morph);
         pad->setProperty ("q", session.quad.q);
@@ -98,6 +125,19 @@ bool Bridge::dispatch (const juce::String& name, const juce::Array<juce::var>& a
     auto num = [&] (int i, double fallback = 0.0) { return i < args.size() ? (double) args[i] : fallback; };
     auto whole = [&] (int i, int fallback = -1) { return i < args.size() ? (int) args[i] : fallback; };
     if (name == "setPuck") { session.setPuck (num (0), num (1)); return true; }
+    if (name == "setSection")
+    {
+        const int corner = whole (0, 0), row = whole (1, 0);
+        if (row < 0 || row >= (int) kRows || ! session.editable()) return false;
+        Section s = sectionOf (session.editWords()[(size_t) row]);
+        s.pole = num (2) > 0.0 && num (3) > 0.0;
+        s.poleHz = num (2); s.poleRadius = std::clamp (num (3), 0.0, 0.9999);
+        s.zero = num (4) > 0.0 && num (5) > 0.0;
+        s.zeroHz = num (4); s.zeroRadius = std::clamp (num (5), 0.0, 1.0);
+        session.setSection (corner, row, s);
+        return true;
+    }
+    if (name == "editAnchor") { session.editAnchor (whole (0, 0)); return true; }
     if (name == "nudge") { session.nudge (num (0), num (1)); return true; }
     if (name == "toCorner") { session.toCorner (whole (0, 0)); return true; }
     if (name == "pinCorner") { session.pinCorner (whole (0, 0), whole (1)); return true; }

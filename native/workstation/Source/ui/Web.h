@@ -17,7 +17,10 @@ struct Web : public juce::Component, private juce::Timer
 private:
     void timerCallback() override;
     std::optional<juce::WebBrowserComponent::Resource> resource (const juce::String& path) const;
+    juce::int64 newestStamp() const;
     juce::File webDir, interopJs;
+    juce::int64 stamp = 0;
+    int ticks = 0;
     std::unique_ptr<juce::WebBrowserComponent> view;
 };
 }

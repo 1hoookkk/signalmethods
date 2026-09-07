@@ -35,14 +35,30 @@ Web::Web (Session& s, juce::File dir, juce::File interop)
     view = std::make_unique<juce::WebBrowserComponent> (options);
     addAndMakeVisible (*view);
     view->goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
+    stamp = newestStamp();
     startTimerHz (30);
+}
+
+juce::int64 Web::newestStamp() const
+{
+    juce::int64 newest = 0;
+    for (const auto& f : webDir.findChildFiles (juce::File::findFiles, false)) newest = std::max (newest, f.getLastModificationTime().toMilliseconds());
+    return newest;
 }
 
 Web::~Web() { stopTimer(); }
 
 void Web::resized() { view->setBounds (getLocalBounds()); }
 
-void Web::timerCallback() { view->emitEventIfBrowserIsVisible ("state", bridge.state()); }
+void Web::timerCallback()
+{
+    if (++ticks % 15 == 0)
+    {
+        const auto now = newestStamp();
+        if (now != stamp) { stamp = now; view->goToURL (juce::WebBrowserComponent::getResourceProviderRoot()); return; }
+    }
+    view->emitEventIfBrowserIsVisible ("state", bridge.state());
+}
 
 std::optional<juce::WebBrowserComponent::Resource> Web::resource (const juce::String& path) const
 {
