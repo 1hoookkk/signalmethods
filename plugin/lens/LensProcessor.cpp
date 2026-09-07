@@ -14,31 +14,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout layout()
     juce::AudioProcessorValueTreeState::ParameterLayout out;
     out.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "smooth", 1 }, "Smooth", juce::NormalisableRange<float> (5.0f, 400.0f, 1.0f, 0.5f), 40.0f));
     out.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "bypass", 1 }, "Bypass", false));
-    out.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "hold", 1 }, "Hold", false));
     out.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "gate", 1 }, "Gate", juce::NormalisableRange<float> (-90.0f, -20.0f, 1.0f), -60.0f));
     return out;
-}
-
-trench::core::PackedSection poleSection (double hz, double radius)
-{
-    trench::core::SectionGeometry g;
-    g.pole = trench::core::ConjugatePair { std::clamp (hz, 20.0, 20000.0), std::clamp (radius, 0.05, 0.99999) };
-    g.zero = trench::core::ConjugatePair { 1000.0, 0.0 };
-    g.scale = 1.0;
-    return trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
-}
-
-void unityDc (Words& w)
-{
-    double product = 1.0;
-    for (size_t s = 0; s < trench::core::kLegacySectionCount; ++s)
-    {
-        const double num = 4.0 * trench::core::decode_word (w[s][0]), den = 4.0 * trench::core::decode_word (w[s][2]);
-        if (std::abs (den) > 1e-12 && std::abs (num) > 1e-12) product *= num / den;
-    }
-    const double gain = std::pow (1.0 / std::max (1e-9, std::abs (product)), 1.0 / (double) trench::core::kLegacySectionCount);
-    const auto word = trench::core::encode_word (std::clamp (gain / 4.0, 0.0, 1.0));
-    for (size_t s = 0; s < trench::core::kLegacySectionCount; ++s) w[s][4] = word;
 }
 }
 
@@ -48,30 +25,44 @@ Processor::Processor()
 {
     smooth = state.getRawParameterValue ("smooth");
     bypass = state.getRawParameterValue ("bypass");
-    hold = state.getRawParameterValue ("hold");
     gate = state.getRawParameterValue ("gate");
-    words.fill (trench::core::kIdentitySection);
-    for (int i = 0; i < kWindow; ++i) window[(size_t) i] = 0.54f - 0.46f * std::cos (2.0f * (float) kPi * (float) i / (float) (kWindow - 1));
-    for (int i = 0; i < kOrder; ++i) roots[(size_t) i] = std::polar (0.9, 2.0 * kPi * (i + 0.5) / kOrder);
-    for (auto& s : shown) s.store (0.0);
+    for (auto& r : ranked) r.store (-1);
+    for (auto& d : rankedDistance) d.store (0.0f);
+    for (auto& s : slots) s.store (-1);
+    loaded = locator.load (juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("evidence/research-results/corpus_index/corpus_index.bin"));
 }
 
 void Processor::prepareToPlay (double sampleRate, int)
 {
     rate = sampleRate;
     decimation = std::max (1, (int) std::lround (rate / 11025.0));
-    decimator.fill (0.0f);
-    phase = 0;
+    const int taps = (int) fir.size(), half = taps / 2;
+    const double cutoff = 0.45 / decimation;
+    double sum = 0.0;
+    for (int i = 0; i < taps; ++i)
+    {
+        const double t = i - half;
+        const double sinc = t == 0.0 ? 2.0 * cutoff : std::sin (2.0 * kPi * cutoff * t) / (kPi * t);
+        const double w = 0.42 - 0.5 * std::cos (2.0 * kPi * i / (taps - 1)) + 0.08 * std::cos (4.0 * kPi * i / (taps - 1));
+        fir[(size_t) i] = (float) (sinc * w);
+        sum += fir[(size_t) i];
+    }
+    for (auto& v : fir) v = (float) (v / sum);
+    firHistory.fill (0.0f);
+    firWrite = 0; phase = 0; ringWrite = 0; sinceHop = 0;
     ring.fill (0.0f);
-    ringWrite = 0; sinceHop = 0;
-    const auto cascade = trench::core::native::rewarp_cascade (words, trench::core::kP2kDatumHz, rate);
     for (auto& r : runners)
     {
         r.set_sample_rate (rate);
         r.reset();
         r.set_ring_leveller (true);
         r.set_pole_distortion (0.0);
-        r.set_immediate (cascade);
+        trench::core::CornerWords identity;
+        identity.fill (trench::core::kIdentitySection);
+        if (playing >= 0 && playing < (int) locator.nodes().size())
+            r.set_immediate (trench::core::native::rewarp_cascade (locator.nodes()[(size_t) playing].words, locator.nodes()[(size_t) playing].datum, rate));
+        else
+            r.set_immediate (trench::core::native::rewarp_cascade (identity, trench::core::kP2kDatumHz, rate));
     }
 }
 
@@ -80,98 +71,32 @@ bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
     return layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo() && layouts.getMainInputChannelSet() == juce::AudioChannelSet::stereo();
 }
 
-void Processor::analyse()
+void Processor::locate()
 {
-    for (int lag = 0; lag <= kOrder; ++lag)
-    {
-        double acc = 0.0;
-        for (int i = lag; i < kWindow; ++i)
-        {
-            const float a = ring[(size_t) ((ringWrite + i) % kWindow)] * window[(size_t) i];
-            const float b = ring[(size_t) ((ringWrite + i - lag) % kWindow)] * window[(size_t) (i - lag)];
-            acc += (double) a * (double) b;
-        }
-        autocorrelation[(size_t) lag] = acc;
-    }
-    const double level = 10.0 * std::log10 (std::max (1.0e-12, autocorrelation[0] / (double) kWindow));
-    const bool silent = level < (double) gate->load();
+    for (int i = 0; i < kFrame; ++i) frame[(size_t) i] = ring[(size_t) ((ringWrite + i) % kFrame)];
+    const bool silent = Locator::levelDb (frame.data(), kFrame) < gate->load();
     quiet.store (silent);
-    frameSeq.fetch_add (1);
-    for (int i = 0; i < kWindow; ++i) frameCopy[(size_t) i] = ring[(size_t) ((ringWrite + i) % kWindow)] * window[(size_t) i];
-    frameSeq.fetch_add (1);
-    if (silent || hold->load() > 0.5f) return;
-    autocorrelation[0] *= 1.0001;
-    double error = autocorrelation[0];
-    coefficients.fill (0.0);
-    coefficients[0] = 1.0;
-    for (int m = 1; m <= kOrder; ++m)
+    if (silent || ! loaded) return;
+    const auto d = locator.describeAveraged (frame.data(), analysisRate());
+    descriptorSeq.fetch_add (1);
+    shownDescriptor = d;
+    descriptorSeq.fetch_add (1);
+    const auto best = locator.rank (d, kRanked);
+    for (int i = 0; i < kRanked; ++i)
     {
-        double acc = autocorrelation[(size_t) m];
-        for (int i = 1; i < m; ++i) acc += coefficients[(size_t) i] * autocorrelation[(size_t) (m - i)];
-        const double k = -acc / error;
-        scratch = coefficients;
-        for (int i = 1; i < m; ++i) coefficients[(size_t) i] = scratch[(size_t) i] + k * scratch[(size_t) (m - i)];
-        coefficients[(size_t) m] = k;
-        error *= (1.0 - k * k);
-        if (error <= 0.0) return;
+        ranked[(size_t) i].store (i < (int) best.size() ? best[(size_t) i].node : -1);
+        rankedDistance[(size_t) i].store (i < (int) best.size() ? best[(size_t) i].distance : 0.0f);
     }
-    frameSeq.fetch_add (1);
-    coefficientCopy = coefficients;
-    errorCopy = error;
-    frameSeq.fetch_add (1);
-    auto evaluate = [&] (std::complex<double> z)
+    if (best.empty()) return;
+    matched.store (best[0].node);
+    if (best[0].node != playing)
     {
-        std::complex<double> acc = 1.0;
-        for (int i = 1; i <= kOrder; ++i) acc = acc * z + coefficients[(size_t) i];
-        return acc;
-    };
-    for (int pass = 0; pass < 40; ++pass)
-    {
-        double moved = 0.0;
-        for (int i = 0; i < kOrder; ++i)
-        {
-            std::complex<double> denominator = 1.0;
-            for (int j = 0; j < kOrder; ++j) if (j != i) denominator *= (roots[(size_t) i] - roots[(size_t) j]);
-            if (std::abs (denominator) < 1.0e-30) { roots[(size_t) i] += std::complex<double> (1.0e-3, 1.0e-3); continue; }
-            const auto step = evaluate (roots[(size_t) i]) / denominator;
-            roots[(size_t) i] -= step;
-            moved = std::max (moved, std::abs (step));
-        }
-        if (moved < 1.0e-9) break;
+        playing = best[0].node;
+        const auto& node = locator.nodes()[(size_t) playing];
+        const auto cascade = trench::core::native::rewarp_cascade (node.words, node.datum, rate);
+        const auto glide = (std::size_t) std::max (1.0, rate * (double) smooth->load() / 1000.0);
+        for (auto& r : runners) r.set_glide (cascade, glide);
     }
-    const double fs = lpcRate();
-    std::array<Pole, kOrder> found {};
-    int count = 0;
-    for (const auto& z : roots)
-    {
-        if (z.imag() <= 1.0e-6) continue;
-        const double radius = std::abs (z);
-        if (radius < 0.5 || radius > 1.05) continue;
-        const double hz = std::arg (z) / (2.0 * kPi) * fs;
-        if (hz < 40.0 || hz > fs * 0.49) continue;
-        found[(size_t) count++] = { hz, -std::log (std::min (radius, 0.99999)) * fs / kPi };
-    }
-    std::sort (found.begin(), found.begin() + count, [] (const Pole& p, const Pole& q) { return p.hz < q.hz; });
-    for (int i = 0; i < 6; ++i) poles[(size_t) i] = i < count ? found[(size_t) i] : Pole {};
-    follow();
-}
-
-void Processor::follow()
-{
-    for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row)
-    {
-        const auto& p = poles[row];
-        if (p.hz <= 0.0) { words[row] = trench::core::kIdentitySection; continue; }
-        const double bandwidth = std::clamp (p.bandwidth, 20.0, 2000.0);
-        words[row] = poleSection (p.hz, std::exp (-kPi * bandwidth / trench::core::kP2kDatumHz));
-        shown[row * 2].store (p.hz);
-        shown[row * 2 + 1].store (bandwidth);
-    }
-    for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row) if (poles[row].hz <= 0.0) { shown[row * 2].store (0.0); shown[row * 2 + 1].store (0.0); }
-    unityDc (words);
-    const auto cascade = trench::core::native::rewarp_cascade (words, trench::core::kP2kDatumHz, rate);
-    const auto glide = (std::size_t) std::max (1.0, rate * (double) smooth->load() / 1000.0);
-    for (auto& r : runners) r.set_glide (cascade, glide);
     frames.fetch_add (1);
 }
 
@@ -180,59 +105,61 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     juce::ScopedNoDenormals noDenormals;
     const int n = buffer.getNumSamples();
     const int channels = std::min (2, buffer.getNumChannels());
+    const int taps = (int) fir.size();
     for (int i = 0; i < n; ++i)
     {
         float mix = 0.0f;
         for (int ch = 0; ch < channels; ++ch) mix += buffer.getReadPointer (ch)[i];
         mix = channels > 0 ? mix / (float) channels : 0.0f;
-        const float k = 1.0f / (float) decimation;
-        decimator[0] += k * (mix - decimator[0]);
-        decimator[1] += k * (decimator[0] - decimator[1]);
-        decimator[2] += k * (decimator[1] - decimator[2]);
+        firHistory[(size_t) (firWrite & 63)] = mix;
         if (++phase >= decimation)
         {
             phase = 0;
-            ring[(size_t) ringWrite] = decimator[2];
-            ringWrite = (ringWrite + 1) % kWindow;
-            if (++sinceHop >= kHop) { sinceHop = 0; analyse(); }
+            float acc = 0.0f;
+            for (int j = 0; j < taps; ++j) acc += fir[(size_t) j] * firHistory[(size_t) ((firWrite - j) & 63)];
+            ring[(size_t) ringWrite] = acc;
+            ringWrite = (ringWrite + 1) % kFrame;
+            if (++sinceHop >= kHop) { sinceHop = 0; locate(); }
         }
+        ++firWrite;
     }
     if (bypass->load() > 0.5f) return;
     for (int ch = 0; ch < channels; ++ch)
         runners[(size_t) ch].process (std::span<float> (buffer.getWritePointer (ch), (size_t) n));
 }
 
+void Processor::capture (int slot)
+{
+    if (slot < 0 || slot > 3) return;
+    slots[(size_t) slot].store (matched.load());
+}
+
 void Processor::getStateInformation (juce::MemoryBlock& destData)
 {
-    if (auto xml = state.copyState().createXml()) copyXmlToBinary (*xml, destData);
+    auto tree = state.copyState();
+    for (int i = 0; i < 4; ++i)
+    {
+        const int node = slots[(size_t) i].load();
+        tree.setProperty ("slot" + juce::String (i), node >= 0 && node < (int) locator.nodes().size() ? juce::String (locator.nodes()[(size_t) node].name) : juce::String(), nullptr);
+    }
+    if (auto xml = tree.createXml()) copyXmlToBinary (*xml, destData);
 }
 
 void Processor::setStateInformation (const void* data, int sizeInBytes)
 {
-    if (auto xml = getXmlFromBinary (data, sizeInBytes)) state.replaceState (juce::ValueTree::fromXml (*xml));
-}
-
-juce::File Processor::keep()
-{
-    Words snapshot;
+    auto xml = getXmlFromBinary (data, sizeInBytes);
+    if (xml == nullptr) return;
+    auto tree = juce::ValueTree::fromXml (*xml);
+    if (! tree.isValid()) return;
+    for (int i = 0; i < 4; ++i)
     {
-        for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row)
-        {
-            const double hz = shown[row * 2].load(), bw = shown[row * 2 + 1].load();
-            snapshot[row] = hz > 0.0 ? poleSection (hz, std::exp (-kPi * std::clamp (bw, 20.0, 2000.0) / trench::core::kP2kDatumHz)) : trench::core::kIdentitySection;
-        }
-        unityDc (snapshot);
+        const auto name = tree["slot" + juce::String (i)].toString().toStdString();
+        int found = -1;
+        for (int k = 0; k < (int) locator.nodes().size() && found < 0; ++k) if (locator.nodes()[(size_t) k].name == name) found = k;
+        slots[(size_t) i].store (found);
+        tree.removeProperty ("slot" + juce::String (i), nullptr);
     }
-    trench::core::PackedBody body;
-    for (auto& corner : body.words) corner.fill (trench::core::kIdentitySection);
-    for (size_t c = 0; c < trench::core::kCornerCount; ++c) for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row) body.words[c][row] = snapshot[row];
-    if (! body.is_legacy_representable()) return {};
-    const auto bytes = body.legacy_bytes();
-    const auto dir = juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("native/workstation/banks/lens");
-    dir.createDirectory();
-    const auto file = dir.getChildFile ("lens_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".body240");
-    file.replaceWithData (bytes.data(), bytes.size());
-    return file;
+    state.replaceState (tree);
 }
 
 juce::AudioProcessorEditor* Processor::createEditor() { return new Editor (*this); }

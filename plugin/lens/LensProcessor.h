@@ -1,23 +1,18 @@
 #pragma once
 
+#include "Locator.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <trench/core/audition.hpp>
 #include <trench/core/native_body.hpp>
-#include <trench/core/packed_body.hpp>
 #include <array>
 #include <atomic>
-#include <complex>
 
 namespace lens
 {
-using Words = trench::core::CornerWords;
-
-struct Pole { double hz = 0.0, bandwidth = 0.0; };
-
 class Processor : public juce::AudioProcessor
 {
 public:
-    static constexpr int kOrder = 12, kWindow = 512, kHop = 128;
+    static constexpr int kHop = 128, kRanked = 5;
 
     Processor();
     ~Processor() override = default;
@@ -44,37 +39,31 @@ public:
     juce::AudioProcessorValueTreeState state;
     std::atomic<float>* smooth = nullptr;
     std::atomic<float>* bypass = nullptr;
-    std::atomic<float>* hold = nullptr;
     std::atomic<float>* gate = nullptr;
-    std::atomic<bool> quiet { true };
-    juce::File keep();
 
-    std::array<std::atomic<double>, 12> shown {};
+    Locator locator;
+    bool loaded = false;
+    std::atomic<int> matched { -1 };
+    std::array<std::atomic<int>, kRanked> ranked {};
+    std::array<std::atomic<float>, kRanked> rankedDistance {};
+    std::atomic<bool> quiet { true };
     std::atomic<unsigned int> frames { 0 };
-    std::array<float, kWindow> frameCopy {};
-    std::array<double, kOrder + 1> coefficientCopy {};
-    double errorCopy = 0.0;
-    std::atomic<unsigned int> frameSeq { 0 };
+    Descriptor shownDescriptor {};
+    std::atomic<unsigned int> descriptorSeq { 0 };
+    std::array<std::atomic<int>, 4> slots {};
+    void capture (int slot);
     double sampleRate() const { return rate; }
-    double lpcRate() const { return rate / (double) decimation; }
+    double analysisRate() const { return rate / decimation; }
 
 private:
-    void analyse();
-    void follow();
+    void locate();
     std::array<trench::core::CascadeRunner, 2> runners;
     double rate = 44100.0;
-    int decimation = 4;
-    std::array<float, 4> decimator {};
-    int phase = 0;
-    std::array<float, kWindow> ring {};
-    int ringWrite = 0, sinceHop = 0;
-    std::array<float, kWindow> window {};
-    std::array<double, kOrder + 1> autocorrelation {}, coefficients {}, scratch {};
-    std::array<std::complex<double>, kOrder> roots {};
-    std::array<Pole, 6> poles {};
-    Words words {};
-    std::atomic<int> keepRequest { 0 };
-    int keepDone = 0;
+    int decimation = 4, phase = 0, ringWrite = 0, sinceHop = 0, playing = -1;
+    std::array<float, 33> fir {};
+    std::array<float, 64> firHistory {};
+    int firWrite = 0;
+    std::array<float, kFrame> ring {}, frame {};
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Processor)
 };
 }

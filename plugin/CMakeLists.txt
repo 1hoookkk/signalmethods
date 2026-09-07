@@ -145,15 +145,28 @@ juce_add_plugin(TRENCH_Lens
   FORMATS VST3
   PRODUCT_NAME "LENS"
   COPY_PLUGIN_AFTER_BUILD FALSE)
+set(TRENCH_LENS_CORE
+  "${CMAKE_CURRENT_SOURCE_DIR}/lens/Locator.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/Locator.cpp"
+  "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Peevers.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Peevers.cpp")
 target_sources(TRENCH_Lens PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.cpp"
+  ${TRENCH_LENS_CORE})
+target_include_directories(TRENCH_Lens PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source")
 target_compile_features(TRENCH_Lens PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_Lens PRIVATE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_Lens PRIVATE
   trench_native_core
-  juce::juce_audio_utils juce::juce_audio_processors juce::juce_dsp
+  juce::juce_audio_utils juce::juce_audio_processors
   juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_LensTests PRODUCT_NAME "TRENCH Lens Tests")
+target_sources(TRENCH_LensTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensTests.cpp" ${TRENCH_LENS_CORE})
+target_include_directories(TRENCH_LensTests PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source" "${CMAKE_CURRENT_SOURCE_DIR}/lens")
+target_compile_features(TRENCH_LensTests PRIVATE cxx_std_20)
+target_compile_definitions(TRENCH_LensTests PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+target_link_libraries(TRENCH_LensTests PRIVATE trench_native_core juce::juce_core juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+add_test(NAME trench_lens COMMAND TRENCH_LensTests)
 
 juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")
 target_sources(TRENCH_FaceShot PRIVATE tools/FaceShot.cpp)

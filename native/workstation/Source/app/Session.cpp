@@ -39,12 +39,6 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     for (const auto& s : loadReads (root.getChildFile ("evidence/factory-data/xl1-dsf-aud"), root.getChildFile ("evidence/research-results/xl1_pool_resonance_census.txt"))) stars.push_back (s);
     for (const auto& s : loadReads (root.getChildFile ("evidence/factory-data/abl3-303"), juce::File())) stars.push_back (s);
     for (const auto& s : loadLibrary (root.getChildFile ("plugin/presets/p2k"))) stars.push_back (s);
-    for (auto s : loadLibrary (root.getChildFile ("native/workstation/banks/lens")))
-    {
-        if (s.corner != kPinNames[0]) continue;
-        s.kind = "read"; s.body = "LENS"; s.name = "LENS " + s.name.fromFirstOccurrenceOf ("Lens ", false, true).upToFirstOccurrenceOf (" ", false, false);
-        stars.push_back (s);
-    }
     libraryCount = stars.size();
     Explore boot;
     Patch booted;

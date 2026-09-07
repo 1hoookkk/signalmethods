@@ -802,7 +802,7 @@ int main()
     {
         hs::Session s (root, tempQuad(), false);
         const int i = s.starNamed ("i"), u = s.starNamed ("u"), bell = s.starNamed ("Aud Bell 1 C4");
-        auto between = [&] (int a, int b, double t) { const auto locked = hs::laneLocked (s.stars[(size_t) a].words, s.stars[(size_t) b].words); hs::Corners c { s.stars[(size_t) a].words, locked, s.stars[(size_t) a].words, locked }; return hs::lerp (c, t, 0.0); };
+        auto between = [&] (int a, int b, double t) { hs::Corners c { s.stars[(size_t) a].words, s.stars[(size_t) b].words, s.stars[(size_t) a].words, s.stars[(size_t) b].words }; return hs::lerp (c, t, 0.0); };
         check (s.inPair() && s.pairA >= 0 && s.pairB >= 0 && s.stars[(size_t) s.pairA].kind == "read" && s.stars[(size_t) s.pairB].kind == "read" && s.stars[(size_t) s.pairA].body != s.stars[(size_t) s.pairB].body && same (s.words, between (s.pairA, s.pairB, 0.5)), "a fresh session plays the sweep between two reads of different families");
         s.setPair (0, i); s.setPair (1, u);
         s.setPair (1, bell);
@@ -1494,39 +1494,6 @@ int main()
         const bool edited = (bool) before["editable"] && std::abs (movedHz / hz - 1.5) < 0.02 && (int) after["target"] == 0;
         std::printf ("      bridge: %d cards, curve %d points, label '%s'\n", state["cards"].size(), state["stage"]["curve"].size(), state["label"].toString().toRawUTF8());
         check (shaped && moved && struck && s.heldNote == -1 && bogus && edited && anchored, "the bridge states the session as one document and dispatches by name, section geometry included; the page reads it and never computes words");
-    }
-
-    {
-        const double rate = 44100.0, pi = 3.141592653589793;
-        std::vector<float> saw;
-        const double f1 = 400.0, f2 = 1300.0, f3 = 2600.0, r1 = 0.98, r2 = 0.975, r3 = 0.97;
-        double x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0, w1 = 0.0, w2 = 0.0, phase = 0.0;
-        for (int i = 0; i < 88200; ++i)
-        {
-            phase += 110.0 / rate; if (phase >= 1.0) phase -= 1.0;
-            const double excitation = (2.0 * phase - 1.0) * 0.1;
-            const double a = excitation + 2.0 * r1 * std::cos (2.0 * pi * f1 / rate) * x1 - r1 * r1 * x2; x2 = x1; x1 = a;
-            const double b = a + 2.0 * r2 * std::cos (2.0 * pi * f2 / rate) * y1 - r2 * r2 * y2; y2 = y1; y1 = b;
-            const double c = b + 2.0 * r3 * std::cos (2.0 * pi * f3 / rate) * w1 - r3 * r3 * w2; w2 = w1; w1 = c;
-            saw.push_back ((float) (c * 0.01));
-        }
-        const auto poles = hs::spectralLpcPoles (saw, rate, 6);
-        std::printf ("      spectral LPC-12 on a 110 Hz saw through 400/1300/2600:");
-        for (const auto& p : poles) std::printf (" %.0f", p.first);
-        std::printf ("\n");
-        auto near = [&] (double hz) { for (const auto& p : poles) if (std::abs (p.first - hz) < hz * 0.1) return true; return false; };
-        check (poles.size() >= 3 && near (f1) && near (f2) && near (f3), "the leaky STFT average strips the saw's teeth and LPC-12 reads the three resonances back");
-        hs::Words a {}, b {};
-        a.fill (trench::core::kIdentitySection); b.fill (trench::core::kIdentitySection);
-        const double la[3] = { 300.0, 1200.0, 2500.0 }, lb[3] = { 2600.0, 350.0, 1100.0 };
-        for (int i = 0; i < 3; ++i)
-        {
-            trench::core::SectionGeometry g; g.zero = trench::core::ConjugatePair { 1000.0, 0.0 };
-            g.pole = trench::core::ConjugatePair { la[i], 0.98 }; a[(size_t) i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
-            g.pole = trench::core::ConjugatePair { lb[i], 0.98 }; b[(size_t) i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
-        }
-        const auto locked = hs::laneLocked (a, b);
-        check (locked[0] == b[1] && locked[1] == b[2] && locked[2] == b[0], "lane locking puts anchor B's poles into anchor A's rows by nearest frequency, so no lane crosses mid-sweep");
     }
 
     {

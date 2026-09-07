@@ -27,17 +27,16 @@ class Window : public juce::DocumentWindow
 {
 public:
     Window (hs::Session& session)
-        : juce::DocumentWindow ("HEADSPACE", hs::Look::ground, juce::DocumentWindow::closeButton)
+        : juce::DocumentWindow ("HEADSPACE", hs::Look::ground, juce::DocumentWindow::allButtons)
     {
-        setUsingNativeTitleBar (false);
-        setTitleBarHeight (18);
+        setUsingNativeTitleBar (true);
         const juce::File root (TRENCH_TABLE_STITCH_ROOT);
         setContentOwned (new hs::Web (session, root.getChildFile ("native/workstation/Source/web"), juce::File (TRENCH_JUCE_INTEROP_JS)), true);
         setResizable (true, false);
-        setResizeLimits (180, 194, 600, 614);
+        setResizeLimits (1000, 640, 4000, 3000);
         const auto area = juce::Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
-        setBounds (area.getRight() - 200, area.getY() + 40, 180, 194);
-        setAlwaysOnTop (true);
+        const int w = std::min (1120, area.getWidth() - 40), h = std::min (700, area.getHeight() - 80);
+        centreWithSize (w, h);
         setVisible (true);
         getContentComponent()->grabKeyboardFocus();
         if (auto* screen = dynamic_cast<hs::Web*> (getContentComponent()))

@@ -11,10 +11,8 @@ public:
     ~Editor() override;
     void paint (juce::Graphics& g) override;
     void resized() override {}
-    void mouseDrag (const juce::MouseEvent& e) override;
     void mouseDown (const juce::MouseEvent& e) override;
-    void doHold();
-    void doKeep();
+    void mouseDrag (const juce::MouseEvent& e) override;
 
 private:
     void timerCallback() override;
@@ -22,8 +20,7 @@ private:
     Processor& processor;
     std::unique_ptr<juce::Drawable> drawing;
     unsigned int seen = 0;
+    int selectedSlot = 0;
     bool quietShown = true;
-    juce::String kept;
-    juce::int64 keptAt = 0;
 };
 }

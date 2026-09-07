@@ -24,6 +24,5 @@ Words vowelWords (const std::array<double, 4>& formants);
 Words transposed (const Words& words, double ratio);
 Words relaxed (const Words& words);
 Words lensed (const Words& words, double f1, double f2);
-Words laneLocked (const Words& lanes, const Words& words);
 juce::String formantName (const Words& words);
 }

@@ -202,7 +202,6 @@ trench::core::PackedBody motherBodyOf (const Explore& explore, const std::vector
                 const int pin = anchors[x];
                 if (pin < 0 || pin >= (int) stars.size()) continue;
                 Words w = stars[(size_t) pin].words;
-                if (x == 1 && anchors[0] >= 0 && anchors[0] < (int) stars.size()) w = laneLocked (stars[(size_t) anchors[0]].words, w);
                 if (y == 1) w = transposed (w, ratio);
                 if (z == 0) w = relaxed (w);
                 std::copy (w.begin(), w.end(), body.words[(size_t) (x + 2 * y + 4 * z)].begin());
