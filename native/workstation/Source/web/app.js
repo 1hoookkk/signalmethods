@@ -6,6 +6,7 @@ const dispatch = (name, ...args) => send(name, ...args);
 
 const pad = document.getElementById("pad");
 let S = null, sizeKey = "", area = null;
+const trail = [];
 
 const F1 = { lo: 200, hi: 1100 }, F2 = { lo: 600, hi: 3500 };
 const xOfF2 = (f, r) => r.x + r.w * (1 - Math.log(Math.min(F2.hi, Math.max(F2.lo, f)) / F2.lo) / Math.log(F2.hi / F2.lo));
@@ -33,6 +34,15 @@ function draw() {
   const p1 = S.lens.puckF1, p2 = S.lens.puckF2;
   if (p1 > 0 && p2 > 0) {
     const x = xOfF2(p2, r), y = yOfF1(p1, r);
+    const now = performance.now();
+    if (S.lens.on && (trail.length === 0 || Math.hypot(trail[trail.length - 1].x - x, trail[trail.length - 1].y - y) > 0.5)) trail.push({ x, y, t: now });
+    while (trail.length && now - trail[0].t > 4000) trail.shift();
+    if (!S.lens.on) trail.length = 0;
+    for (let i = 1; i < trail.length; i++) {
+      const age = (now - trail[i].t) / 4000;
+      g.strokeStyle = `rgba(79,163,230,${(1 - age) * 0.6})`; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(trail[i - 1].x, trail[i - 1].y); g.lineTo(trail[i].x, trail[i].y); g.stroke();
+    }
     g.fillStyle = S.lens.on ? "#4fa3e6" : "#a8abb0";
     g.beginPath(); g.arc(x, y, 6, 0, 2 * Math.PI); g.fill();
     g.strokeStyle = "rgba(22,23,24,0.9)"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 3, 0, 2 * Math.PI); g.stroke();
