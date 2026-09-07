@@ -1,0 +1,2614 @@
+{
+ "schema": "trench-morpheus-canonical-v1",
+ "order_law": "native corner index = Morph + 2 * Frequency + 4 * Transform, from raw corner index = Transform + 2 * Frequency + 4 * Morph; sections in the raw record's row order 0..6; five little-endian u16 words per section, corner-major",
+ "datum_hz": 39062.5,
+ "source": "evidence/factory-data/morpheus/raw/records_stream.bin",
+ "corners": 8,
+ "sections": 7,
+ "words_per_section": 5,
+ "body_bytes": 560,
+ "count": 289,
+ "bodies": [
+  {
+   "number": 0,
+   "name": "Null Cube",
+   "file": "000_Null_Cube.body",
+   "family": "FLANGERS",
+   "manual_name": "Null Filter",
+   "stream_offset": 20,
+   "sha256": "cbe919f821d38c695d6a00503a0e4523040cc313d21de7d45496c0bf0485699c"
+  },
+  {
+   "number": 1,
+   "name": "LPFlange.4",
+   "file": "001_LPFlange.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Low Pass Flange .4",
+   "stream_offset": 352,
+   "sha256": "14bdf7c954fd1d8c91a04c1646cdd9f97fcaa8335837bdf26db2f2dbfe97035e"
+  },
+  {
+   "number": 2,
+   "name": "LPFlngBk.4",
+   "file": "002_LPFlngBk.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Low Pass Flange Bk .4",
+   "stream_offset": 684,
+   "sha256": "0e4e376ff393c7907923e6307d1fed5741c9093f9720cb0fb1151c26321b2ecd"
+  },
+  {
+   "number": 3,
+   "name": "Flange2.4",
+   "file": "003_Flange2.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flange 2 .4",
+   "stream_offset": 1016,
+   "sha256": "d751c9377665ea338e6b4724e5fab31992da9f063dd8d4c5fe293229b7bd728b"
+  },
+  {
+   "number": 4,
+   "name": "CubeFlanger",
+   "file": "004_CubeFlanger.body",
+   "family": "FLANGERS",
+   "manual_name": "CubeFlanger",
+   "stream_offset": 1348,
+   "sha256": "30cb4a3d1f7631e450d1ff58c880106cb372ceabca57584394aaf0c6111a7607"
+  },
+  {
+   "number": 5,
+   "name": "Flange3.4",
+   "file": "005_Flange3.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flange3.4",
+   "stream_offset": 1680,
+   "sha256": "d1253412506bd240d1cbe0d6ef44202c7a5de9051c48fcfaa3db74b3fba2a7ee"
+  },
+  {
+   "number": 6,
+   "name": "Flange4.4",
+   "file": "006_Flange4.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flange 4.4",
+   "stream_offset": 2012,
+   "sha256": "8cc067c4a9bc6269ca88b727c55933b4b9fe1d01f90a67f79a5c28eb3bc663f0"
+  },
+  {
+   "number": 7,
+   "name": "Flange5",
+   "file": "007_Flange5.body",
+   "family": "FLANGERS",
+   "manual_name": "Flange 5",
+   "stream_offset": 2344,
+   "sha256": "93487f421cd66a3adbb01f4e793dda683508d359576254374aa596105b180357"
+  },
+  {
+   "number": 8,
+   "name": "Flange6.4",
+   "file": "008_Flange6.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flange 6.4",
+   "stream_offset": 2676,
+   "sha256": "881ea4b41e72f583f191d16916104b64d099e4e6e37d0a3fedd6efae78d23ed9"
+  },
+  {
+   "number": 9,
+   "name": "Flange6R.4",
+   "file": "009_Flange6R.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flange 6R.4",
+   "stream_offset": 3008,
+   "sha256": "45585ec162f63baec271879bb328cc6bb4c655a2c8a85244a092151a4c6deef5"
+  },
+  {
+   "number": 10,
+   "name": "Flange7.4",
+   "file": "010_Flange7.4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flanger 7.4",
+   "stream_offset": 3340,
+   "sha256": "391f1359dd8271a1b8f78fee751cb06556856e1b4a7e707fd2ecdc4aad8a4a89"
+  },
+  {
+   "number": 11,
+   "name": "BriteFlng.4",
+   "file": "011_BriteFlng.4.body",
+   "family": "FLANGERS",
+   "manual_name": "BriteFlnge.4",
+   "stream_offset": 3672,
+   "sha256": "277712a85a7a80de0ac06577290a22cac943023c5b1813f9350d43351311b24d"
+  },
+  {
+   "number": 12,
+   "name": "Flng>Flng1",
+   "file": "012_Flng_Flng1.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>Flng1",
+   "stream_offset": 4004,
+   "sha256": "6d3dc2e83eda87c6629689a75d37470c5f40a4609930d540b7c58f1d7b677fd2"
+  },
+  {
+   "number": 13,
+   "name": "LP>Flng2",
+   "file": "013_LP_Flng2.body",
+   "family": "FLANGERS",
+   "manual_name": "0>Flng2",
+   "stream_offset": 4336,
+   "sha256": "0c9f393aec06a4ff15f117cce55367e30eb7d0126bc2c8cd28051299b9838b53"
+  },
+  {
+   "number": 14,
+   "name": "Flng>Flng3",
+   "file": "014_Flng_Flng3.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>Flng3b",
+   "stream_offset": 4668,
+   "sha256": "a0e979ad5d038aca6c22d9fd1eda1cd5336a627f9e2df5b294ffee06fcc57cfd"
+  },
+  {
+   "number": 15,
+   "name": "Flng>Flng4",
+   "file": "015_Flng_Flng4.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>Flng4",
+   "stream_offset": 5000,
+   "sha256": "8e98fb0ddfb6f5580190c81221a8329afdc47395af37390c44d83f91faadaab5"
+  },
+  {
+   "number": 16,
+   "name": "Flng>Flng5",
+   "file": "016_Flng_Flng5.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>Flng5",
+   "stream_offset": 5332,
+   "sha256": "a015523d919aca2d4103227924ebf0c11c836062a1489fd1ac94e7fa7d563b26"
+  },
+  {
+   "number": 17,
+   "name": "Flng>Flng6",
+   "file": "017_Flng_Flng6.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>Flng6",
+   "stream_offset": 5664,
+   "sha256": "54f61cd45e8107d2912361157c7b6835193ff0a318f039fbcc700e3f2e2f88c5"
+  },
+  {
+   "number": 18,
+   "name": "Flng>FlngT",
+   "file": "018_Flng_FlngT.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>FlngT",
+   "stream_offset": 5996,
+   "sha256": "3ff113c45cf189058f9dde4e9b5c2a5a502f6d30a66d426bf94c411af181a327"
+  },
+  {
+   "number": 19,
+   "name": "Flng>FlngC",
+   "file": "019_Flng_FlngC.body",
+   "family": "FLANGERS",
+   "manual_name": "Flng>FlngC",
+   "stream_offset": 6328,
+   "sha256": "8bd4171fef92646ec3d0a62999fa85fee5b13dc8f683108268ab981ca1d6934d"
+  },
+  {
+   "number": 20,
+   "name": "CO>FlngT",
+   "file": "020_CO_FlngT.body",
+   "family": "FLANGERS",
+   "manual_name": "CO>FlngT",
+   "stream_offset": 6660,
+   "sha256": "501575ff19707cb5d5266f9e7ec9942460c4d4ef9e7cf413b06ffc6fa1dc1dc2"
+  },
+  {
+   "number": 21,
+   "name": "AEParLPVow",
+   "file": "021_AEParLPVow.body",
+   "family": "DIPTHONGS",
+   "manual_name": "AEParLPVow",
+   "stream_offset": 6992,
+   "sha256": "2f21b03fe08b2f469fcba668382e87af318511c1a7b99056ca36a2907cab1466"
+  },
+  {
+   "number": 22,
+   "name": "AEParaVowel",
+   "file": "022_AEParaVowel.body",
+   "family": "DIPTHONGS",
+   "manual_name": "AEParaVowel",
+   "stream_offset": 7324,
+   "sha256": "f3c6ddceab8eeba89f83a87df78615884c65b282aed5dcccc94748b9b712ec43"
+  },
+  {
+   "number": 23,
+   "name": "AOLpParaVow",
+   "file": "023_AOLpParaVow.body",
+   "family": "DIPTHONGS",
+   "manual_name": "AOLpParaVow",
+   "stream_offset": 7656,
+   "sha256": "60af53e92aa91223c142f548260cf79ac66d86b96627c9b04851145064cc573e"
+  },
+  {
+   "number": 24,
+   "name": "AOParaVowel",
+   "file": "024_AOParaVowel.body",
+   "family": "DIPTHONGS",
+   "manual_name": "AOParaVowel",
+   "stream_offset": 7988,
+   "sha256": "15362eac3c479d2f51c68459badd22db02c06667d23d935d95921661128add7c"
+  },
+  {
+   "number": 25,
+   "name": "AUParaVow.4",
+   "file": "025_AUParaVow.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "AUParaVow.4",
+   "stream_offset": 8320,
+   "sha256": "26751d1dd699af4145412ef0224184cb25490f5b0498fa4ea53b88fe01c06eec"
+  },
+  {
+   "number": 26,
+   "name": "UOParaVow.4",
+   "file": "026_UOParaVow.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "UOParaVow.4",
+   "stream_offset": 8652,
+   "sha256": "13b9411828e0edc68d54374be44db80c1c5e7f7b9eaaf60aa2640c5a835b059e"
+  },
+  {
+   "number": 27,
+   "name": "SftEOVowl.4",
+   "file": "027_SftEOVowl.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "SftEOVowel4",
+   "stream_offset": 8984,
+   "sha256": "2fefa5b496f84a958d38583e70597b86223b17dadff3cc45ae76d6e5409906c7"
+  },
+  {
+   "number": 28,
+   "name": "SoftEOAE",
+   "file": "028_SoftEOAE.body",
+   "family": "DIPTHONGS",
+   "manual_name": "SoftEOAE",
+   "stream_offset": 9316,
+   "sha256": "559bc4553c86acbf1b2a9e3f061e37ea4d97c9918dbb93d12b87824afdeb112d"
+  },
+  {
+   "number": 29,
+   "name": "Vocal Cube",
+   "file": "029_Vocal_Cube.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Vocal Cube",
+   "stream_offset": 9648,
+   "sha256": "3e49cc0abeb6f2fa1747c5fb8195ff3d31d2673ac4cc23cca9c23cccb70719ba"
+  },
+  {
+   "number": 30,
+   "name": "C1-6Harms.4",
+   "file": "030_C1-6Harms.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "C1-6 Harms4",
+   "stream_offset": 9980,
+   "sha256": "e90b51cde4ed550f6c909686c783f86c24debdf5d8efd6291de01eb90ae6d0da"
+  },
+  {
+   "number": 31,
+   "name": "Voce.4",
+   "file": "031_Voce.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Voce.4",
+   "stream_offset": 10312,
+   "sha256": "14f84fef3cb9d59ad0d27191a05373362ec02c79d3b005a9ad7e80884ed0c809"
+  },
+  {
+   "number": 32,
+   "name": "ChoralComb.4",
+   "file": "032_ChoralComb.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "ChoralComb4",
+   "stream_offset": 10644,
+   "sha256": "fada8f332fb8be2c15a5539997a202d9ea73e9a729a1d3d5cc2a1c91425a8b1a"
+  },
+  {
+   "number": 33,
+   "name": "Bassutoi.4",
+   "file": "033_Bassutoi.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Bassutoi.4",
+   "stream_offset": 10976,
+   "sha256": "cb4ff4f002ad9e48d972ea07ab5fd4bd86c00b6d96447457464893070a9f71ec"
+  },
+  {
+   "number": 34,
+   "name": "Be-Ye.4",
+   "file": "034_Be-Ye.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Be Ye.4",
+   "stream_offset": 11308,
+   "sha256": "7fc2f10f64446c4a1dfcc8b9a37e2781976b9513f0f79843ad2d802671d8b98b"
+  },
+  {
+   "number": 35,
+   "name": "Ee-Yi.4",
+   "file": "035_Ee-Yi.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Ee-Yi.4",
+   "stream_offset": 11640,
+   "sha256": "92069046ec472e66e600e1a3a561913e46e9805a4da4d8048f7e0ae49ebe3d32"
+  },
+  {
+   "number": 36,
+   "name": "Ii-Yi.4",
+   "file": "036_Ii-Yi.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Ii-Yi.4",
+   "stream_offset": 11972,
+   "sha256": "7357bc9b2d5b80f8e6bba868f8ab902186af484d1f0e59ec1b278c3748186f4c"
+  },
+  {
+   "number": 37,
+   "name": "Uhrrrah.4",
+   "file": "037_Uhrrrah.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Uhrrrah.4",
+   "stream_offset": 12304,
+   "sha256": "d56901a5baf6b2f70f981626921353a0da383d5cf4cbe7e749f70ed558c16eee"
+  },
+  {
+   "number": 38,
+   "name": "YeahYeah.4",
+   "file": "038_YeahYeah.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "YeahYeah.4",
+   "stream_offset": 12636,
+   "sha256": "9f21dc49d372e4e05c2c78665499aacdbca25f335f1ff1092ddf51519ed5d53e"
+  },
+  {
+   "number": 39,
+   "name": "Vow>Vow1",
+   "file": "039_Vow_Vow1.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Vow>Vow1",
+   "stream_offset": 12968,
+   "sha256": "6e4f4d480ca135ae92fbfbfb1efe55629009cba09d1f5f9d91c6b5e42be7d3ac"
+  },
+  {
+   "number": 40,
+   "name": "Vow>Vow2",
+   "file": "040_Vow_Vow2.body",
+   "family": "DIPTHONGS",
+   "manual_name": "Vow>Vow2",
+   "stream_offset": 13300,
+   "sha256": "52e88b81d392107b3369d71d9dfa8da815c4dead0b9513b2bb0b23450c88dab6"
+  },
+  {
+   "number": 41,
+   "name": "YahYahs.4",
+   "file": "041_YahYahs.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "YahYahs.4",
+   "stream_offset": 13632,
+   "sha256": "38710e917ab246fd0eff1e89e227302ddf7207751cddbe85e3d9b39d9e892e6e"
+  },
+  {
+   "number": 42,
+   "name": "YoYo.4",
+   "file": "042_YoYo.4.body",
+   "family": "DIPTHONGS",
+   "manual_name": "YoYo.4",
+   "stream_offset": 13964,
+   "sha256": "1a34363846ef9ccb81938066c12ebed028c51f709799c21dceb1e5652967e1eb"
+  },
+  {
+   "number": 43,
+   "name": "VowelSpace",
+   "file": "043_VowelSpace.body",
+   "family": "DIPTHONGS",
+   "manual_name": "VowelSpace",
+   "stream_offset": 14296,
+   "sha256": "b6c9c7f5bfbfc9d691449e8d2b9917fa00aa32a2fda5f41157543f964801e122"
+  },
+  {
+   "number": 44,
+   "name": "BrickWaLP.4",
+   "file": "044_BrickWaLP.4.body",
+   "family": "STANDARD",
+   "manual_name": "BrickWaLP.4",
+   "stream_offset": 14628,
+   "sha256": "11476628087baa3091f0fb2e1aed6c03120a27aaa838072048f232e013438ade"
+  },
+  {
+   "number": 45,
+   "name": "BrickWaLP2",
+   "file": "045_BrickWaLP2.body",
+   "family": "STANDARD",
+   "manual_name": "BrickWaLP2",
+   "stream_offset": 14960,
+   "sha256": "64c8f0d5724ebdbc20ec54e7106bd8c7b1ae993d9e5efa0555059b28f64c3fd4"
+  },
+  {
+   "number": 46,
+   "name": "MdQ 2PoleLP",
+   "file": "046_MdQ_2PoleLP.body",
+   "family": "STANDARD",
+   "manual_name": "MdQ 2PoleLP",
+   "stream_offset": 15292,
+   "sha256": "b77df9253091fa0362c694691272016d7e2e05053400e1acb199c925afa03fd6"
+  },
+  {
+   "number": 47,
+   "name": "HiQ 2PoleLP",
+   "file": "047_HiQ_2PoleLP.body",
+   "family": "STANDARD",
+   "manual_name": "HiQ 2PoleLP",
+   "stream_offset": 15624,
+   "sha256": "3d6d6d929228c2cbfb8959e277c4ca8782aa32c2ad9ffb392d561f6c79eb9658"
+  },
+  {
+   "number": 48,
+   "name": "MdQ 4PoleLP",
+   "file": "048_MdQ_4PoleLP.body",
+   "family": "STANDARD",
+   "manual_name": "MdQ 4PoleLP",
+   "stream_offset": 15956,
+   "sha256": "30b5febbf18b5348dfbd6b7b30a993813f6427dda1e8d42ab0d3c0e9dbe3f95a"
+  },
+  {
+   "number": 49,
+   "name": "HiQ 4PoleLP",
+   "file": "049_HiQ_4PoleLP.body",
+   "family": "STANDARD",
+   "manual_name": "HiQ 4PoleLP",
+   "stream_offset": 16288,
+   "sha256": "006a73f4d8281bf7eb0ad5f6323653bebf3e22311dff7ca6f38fbe7d4f0bd18a"
+  },
+  {
+   "number": 50,
+   "name": "2 PoleLoQ.4",
+   "file": "050_2_PoleLoQ.4.body",
+   "family": "STANDARD",
+   "manual_name": "2poleLoQLP4",
+   "stream_offset": 16620,
+   "sha256": "280e9ab87a49f699b45ca6e077b40b0c2aa08924b411e10425f7d5d99957dd63"
+  },
+  {
+   "number": 51,
+   "name": "4 PoleLoQ.4",
+   "file": "051_4_PoleLoQ.4.body",
+   "family": "STANDARD",
+   "manual_name": "4 PoleLoQ.4",
+   "stream_offset": 16952,
+   "sha256": "246055933faee630547bbc41b904308ac8b38c3e7bca582803f8e6ab00004cac"
+  },
+  {
+   "number": 52,
+   "name": "4 PoleMidQ.4",
+   "file": "052_4_PoleMidQ.4.body",
+   "family": "STANDARD",
+   "manual_name": "4PoleMidQ.4",
+   "stream_offset": 17284,
+   "sha256": "c990175d7057e56836ef83923fb8163b00a4eed89e46aec1342b654f9a487e28"
+  },
+  {
+   "number": 53,
+   "name": "2pole>4pole",
+   "file": "053_2pole_4pole.body",
+   "family": "STANDARD",
+   "manual_name": "2p>4p 0",
+   "stream_offset": 17616,
+   "sha256": "0d08b56f7546ba0413244d384a65096e5ac5528595e20e6a49fb67dcdcb4f187"
+  },
+  {
+   "number": 54,
+   "name": "LowPassPlus",
+   "file": "054_LowPassPlus.body",
+   "family": "STANDARD",
+   "manual_name": "LowPassPlus",
+   "stream_offset": 17948,
+   "sha256": "d776bc25f72e45a3121dbbd28c7d864248f9a6f8cd32496e1859cdc9a2e43863"
+  },
+  {
+   "number": 55,
+   "name": "Low Past.4",
+   "file": "055_Low_Past.4.body",
+   "family": "STANDARD",
+   "manual_name": "Low Past.4",
+   "stream_offset": 18280,
+   "sha256": "f1dfdf2b99834ac523861d6a3bac02b42c3a15c9224f773288a96dbe3aed9d53"
+  },
+  {
+   "number": 56,
+   "name": "APass.4",
+   "file": "056_APass.4.body",
+   "family": "STANDARD",
+   "manual_name": "APass.4",
+   "stream_offset": 18612,
+   "sha256": "38ec6fcc995af95287300cb4e3e5ad742dd9d37e00c58ef0a6fd57d9a36094a1"
+  },
+  {
+   "number": 57,
+   "name": "HPSweep.4",
+   "file": "057_HPSweep.4.body",
+   "family": "STANDARD",
+   "manual_name": "HPSweep.4",
+   "stream_offset": 18944,
+   "sha256": "ffa4d3c157261decd8277f0396dabb18deab087af5a79923a2d4e20928b66325"
+  },
+  {
+   "number": 58,
+   "name": "HiSwept1.4",
+   "file": "058_HiSwept1.4.body",
+   "family": "STANDARD",
+   "manual_name": "HiSwept1.4",
+   "stream_offset": 19276,
+   "sha256": "5de8bc315a49e8e59ed8ed56cb1d8c916a836620bac93ee5cc367102c081fe7f"
+  },
+  {
+   "number": 59,
+   "name": "HghsSwpt2.4",
+   "file": "059_HghsSwpt2.4.body",
+   "family": "STANDARD",
+   "manual_name": "HghsSwpt2.4",
+   "stream_offset": 19608,
+   "sha256": "8ff634b57c65d80854f76872162c67f9434792ae212bec5217e581fb0b0b5c39"
+  },
+  {
+   "number": 60,
+   "name": "Hi Accent.4",
+   "file": "060_Hi_Accent.4.body",
+   "family": "STANDARD",
+   "manual_name": "HighAccent.4",
+   "stream_offset": 19940,
+   "sha256": "e2fb7fdac7d0729aacb85735ef1c653d41393968f6931b25bddc7cb5d4ad1224"
+  },
+  {
+   "number": 61,
+   "name": "HiPassSwp.4",
+   "file": "061_HiPassSwp.4.body",
+   "family": "STANDARD",
+   "manual_name": "HiPassSweep.4",
+   "stream_offset": 20272,
+   "sha256": "eee43d4442ca1edc66a05546b08a9f8845a251aeb4936a5734957e3f3aae6ca9"
+  },
+  {
+   "number": 62,
+   "name": "DeepCombs.4",
+   "file": "062_DeepCombs.4.body",
+   "family": "STANDARD",
+   "manual_name": "Deep Combs",
+   "stream_offset": 20604,
+   "sha256": "117630badfced84ec21edec8e304942a16194925ffb0aa33b9c159c1c0eb6058"
+  },
+  {
+   "number": 63,
+   "name": "One Peak",
+   "file": "063_One_Peak.body",
+   "family": "STANDARD",
+   "manual_name": "One Peak",
+   "stream_offset": 20936,
+   "sha256": "7006d1299dbdca55ad95e03c5c934c8a0da04ea14dde050aec58fe43d049daf9"
+  },
+  {
+   "number": 64,
+   "name": "More Peaks",
+   "file": "064_More_Peaks.body",
+   "family": "STANDARD",
+   "manual_name": "More Peaks",
+   "stream_offset": 21268,
+   "sha256": "8ca7bfc27942b3834eddcce3cdc349b41bf4dd25eebdcac2501ff4d2635927c1"
+  },
+  {
+   "number": 65,
+   "name": "Rev Peaks",
+   "file": "065_Rev_Peaks.body",
+   "family": "STANDARD",
+   "manual_name": "Rev Peaks",
+   "stream_offset": 21600,
+   "sha256": "2e94768aa38d32cbf36f4bbb0b346f2e49afb0330de652cf84436b0183dfe945"
+  },
+  {
+   "number": 66,
+   "name": "Notcher2.4",
+   "file": "066_Notcher2.4.body",
+   "family": "STANDARD",
+   "manual_name": "Notcher 2.4",
+   "stream_offset": 21932,
+   "sha256": "380af8d1c9eb146d6be24befd86fe37b5fa2f17f6b051cfef082591c978ada6e"
+  },
+  {
+   "number": 67,
+   "name": "Ntches2Oct.4",
+   "file": "067_Ntches2Oct.4.body",
+   "family": "STANDARD",
+   "manual_name": "Ntches2Oct4",
+   "stream_offset": 22264,
+   "sha256": "a31d148d9298892638fbd5bac555d123282ce2cea6f69043604a6b6daca4c0ed"
+  },
+  {
+   "number": 68,
+   "name": "Odd>+",
+   "file": "068_Odd__.body",
+   "family": "STANDARD",
+   "manual_name": "Odd>+",
+   "stream_offset": 22596,
+   "sha256": "11cd0bebb531ae4e7ac1edca748b027b1a4109b5f576f6f1083926f854d8790d"
+  },
+  {
+   "number": 69,
+   "name": "VarSlope.4",
+   "file": "069_VarSlope.4.body",
+   "family": "STANDARD",
+   "manual_name": "VarSlope.4",
+   "stream_offset": 22928,
+   "sha256": "928b6d4a4d70e1855af84b876bb5f72b20ee915086ebd3a0dff297a72124f024"
+  },
+  {
+   "number": 70,
+   "name": "BassEQ 1.4",
+   "file": "070_BassEQ_1.4.body",
+   "family": "EQUALIZATION FILTERS",
+   "manual_name": "BassEQ 1.4",
+   "stream_offset": 23260,
+   "sha256": "9d8d2787d283b04e4705557582ad73589521f08c6042eebfe39dc1b6717c90a5"
+  },
+  {
+   "number": 71,
+   "name": "B BOOST.4",
+   "file": "071_B_BOOST.4.body",
+   "family": "EQUALIZATION FILTERS",
+   "manual_name": "B BOOST.4",
+   "stream_offset": 23592,
+   "sha256": "cb89056ce661cb0a42ddd81658095349fc7f37a5e039d02719224c0438ab6faf"
+  },
+  {
+   "number": 72,
+   "name": "BssBOOST2.4",
+   "file": "072_BssBOOST2.4.body",
+   "family": "EQUALIZATION FILTERS",
+   "manual_name": "BssBOOST2.4",
+   "stream_offset": 23924,
+   "sha256": "63f229c7ade066417a50720bc482096fd32e582b5ac817351a556da50ccb8d4f"
+  },
+  {
+   "number": 73,
+   "name": "BassDrumEQ",
+   "file": "073_BassDrumEQ.body",
+   "family": "EQUALIZATION FILTERS",
+   "manual_name": "BassDrumEQ",
+   "stream_offset": 24256,
+   "sha256": "274d15e88a857d4d61cf10f9104cc802a7d0e202adf1c0266152baca4273ef5b"
+  },
+  {
+   "number": 74,
+   "name": "Snare LPEQ2",
+   "file": "074_Snare_LPEQ2.body",
+   "family": "EQUALIZATION FILTERS",
+   "manual_name": "Snare LPEQ2",
+   "stream_offset": 24588,
+   "sha256": "2410f4b1192c671ca64c44cd629e2d8018b5f40c9864afaf288ec3351fcf36f5"
+  },
+  {
+   "number": 75,
+   "name": "HiHatLPEQ",
+   "file": "075_HiHatLPEQ.body",
+   "family": "EQUALIZATION FILTERS",
+   "manual_name": "HiHatLPEQ",
+   "stream_offset": 24920,
+   "sha256": "a1f7369e638e2037c759c911cfc2f31f9dd84ef3ad59b91ef88c4afe1c130bf3"
+  },
+  {
+   "number": 76,
+   "name": "HP LP PZ",
+   "file": "076_HP_LP_PZ.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "HP LP PZ",
+   "stream_offset": 25252,
+   "sha256": "7741b33eea800498bbc28586a7164bdbbfc16c60af5e680f58c64a79b819ea19"
+  },
+  {
+   "number": 77,
+   "name": "PZ Notch",
+   "file": "077_PZ_Notch.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "PZ Notch",
+   "stream_offset": 25584,
+   "sha256": "c26e8a4ceb8820b2724c11e845f601ae2316e1c5060db150658a14254ae74a14"
+  },
+  {
+   "number": 78,
+   "name": "Band-aid",
+   "file": "078_Band-aid.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Band-aid",
+   "stream_offset": 25916,
+   "sha256": "04dcfb9cfa305fd79a3aea215af1fc9409bd6a8aa3fb0d87017e5a24fca0fef9"
+  },
+  {
+   "number": 79,
+   "name": "4>2 LowQHiQ",
+   "file": "079_4_2_LowQHiQ.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "LowQHiQ",
+   "stream_offset": 26248,
+   "sha256": "e784bfce1480338b695e6f2fa42fa7839fc1c5f1a4e5e2b533b7729920e2fd6b"
+  },
+  {
+   "number": 80,
+   "name": "Wah4Vib.4",
+   "file": "080_Wah4Vib.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Wah4Vib.4",
+   "stream_offset": 26580,
+   "sha256": "08f1aa66725645abd8a02178eb0e2d7a266a470245455305b705d0285ff82638"
+  },
+  {
+   "number": 81,
+   "name": "Wa Wa.4",
+   "file": "081_Wa_Wa.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "WaWa",
+   "stream_offset": 26912,
+   "sha256": "2cf1e5da7f82d49d56960477c27bf092e4ef80ef29ab2ae20304aa5ebdd291f5"
+  },
+  {
+   "number": 82,
+   "name": "BrassRez.4",
+   "file": "082_BrassRez.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "BrassRez.4",
+   "stream_offset": 27244,
+   "sha256": "a2ad54dc884735b2f98d8c9dc1cafa0d577c7c24c695c52dd3920c485bae7a29"
+  },
+  {
+   "number": 83,
+   "name": "Clr>Oboe",
+   "file": "083_Clr_Oboe.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Clr>Oboe",
+   "stream_offset": 27576,
+   "sha256": "38d96e614eda7b60751463965a9723119dc094b46fcaf1e36ca71f259b15a95a"
+  },
+  {
+   "number": 84,
+   "name": "0>Muter",
+   "file": "084_0_Muter.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "0>Muter",
+   "stream_offset": 27908,
+   "sha256": "9dc97001abb241b696d407db533e0ac32c4b0970310b3ff480c41b2bb8bc7301"
+  },
+  {
+   "number": 85,
+   "name": "PZ Syn Horn",
+   "file": "085_PZ_Syn_Horn.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "PZ Syn Horn",
+   "stream_offset": 28240,
+   "sha256": "1aa5685060945eb0b1168432aefaa145fd4e9e6a03ca440d1f0452ba9e156904"
+  },
+  {
+   "number": 86,
+   "name": "HP Brass",
+   "file": "086_HP_Brass.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "HP Brass",
+   "stream_offset": 28572,
+   "sha256": "11ee78775fc4a3da284bac89f43b9f5992320f7582ab9ea290de62704ad7f405"
+  },
+  {
+   "number": 87,
+   "name": "BrassyBlast",
+   "file": "087_BrassyBlast.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "BrassyBlast",
+   "stream_offset": 28904,
+   "sha256": "0691f2375a5c75b52bbe01dcfab1145bc611900c50c26cdad155907bdb959add"
+  },
+  {
+   "number": 88,
+   "name": "Brass Swell",
+   "file": "088_Brass_Swell.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "BrassSwell",
+   "stream_offset": 29236,
+   "sha256": "6b63474ea6e369f9e1a2171bd7ca951ac3cd2a6c20f9fbb2d40d58fc01af9eb0"
+  },
+  {
+   "number": 89,
+   "name": "BrsSwell2.4",
+   "file": "089_BrsSwell2.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "BrsSwell2.4",
+   "stream_offset": 29568,
+   "sha256": "13e7b5fb2cf9c2b34b7b444c36af30b1774ec41a8e69ed6f68b479adaf24a267"
+  },
+  {
+   "number": 90,
+   "name": "LoVelTrum",
+   "file": "090_LoVelTrum.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "LoVelTrum",
+   "stream_offset": 29900,
+   "sha256": "bf87f6577be9ed5579a6fa94217c58a5889ec09aa4120ca29836923363678f64"
+  },
+  {
+   "number": 91,
+   "name": "Chiffin.4",
+   "file": "091_Chiffin.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Chiffin.4",
+   "stream_offset": 30232,
+   "sha256": "972dc51ab993b0eaba79d4e4c6c80552d001652f8ee3f02e268b42f45bcb3506"
+  },
+  {
+   "number": 92,
+   "name": "ShakuFilter",
+   "file": "092_ShakuFilter.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "ShakuFilter",
+   "stream_offset": 30564,
+   "sha256": "29e1c5a6e19c61114e46c7b9e82900f904d55c54f084442f81473185ac510758"
+  },
+  {
+   "number": 93,
+   "name": "Cym",
+   "file": "093_Cym.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Cym",
+   "stream_offset": 30896,
+   "sha256": "b603a167a031bab2e6403a49ad492777921aceab71f6c219483c635128cb9d34"
+  },
+  {
+   "number": 94,
+   "name": "VelMarim",
+   "file": "094_VelMarim.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "VelMarim",
+   "stream_offset": 31228,
+   "sha256": "b78c41d7ac3d4a3eda978aef272af438fd450b699977c80c800467bacba2f79c"
+  },
+  {
+   "number": 95,
+   "name": "EZ Vibez.4",
+   "file": "095_EZ_Vibez.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "EZ Vibez.4",
+   "stream_offset": 31560,
+   "sha256": "aaefc4119e298a82c7474b1bebaad46e53ad23aa0f964e0bddf9312413268080"
+  },
+  {
+   "number": 96,
+   "name": "Piano 1",
+   "file": "096_Piano_1.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Piano 01",
+   "stream_offset": 31892,
+   "sha256": "db3f179e1734f6ad2f46d323ec74d8cdc6ba2d02ce10372b317a8dfd3892a012"
+  },
+  {
+   "number": 97,
+   "name": "Piano 2.4",
+   "file": "097_Piano_2.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "PianoFltr4",
+   "stream_offset": 32224,
+   "sha256": "a909ea32b7e262caa3667cbbb7dc7397914ed3fbc9c00cb5d165b320cf8af9dc"
+  },
+  {
+   "number": 98,
+   "name": "EZ Rhodez.4",
+   "file": "098_EZ_Rhodez.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "EZ Rhodez4",
+   "stream_offset": 32556,
+   "sha256": "31baf868c009d2d7c5d32fb8e2fe8ef52fac20254a7395237ad2fefeba48f6a5"
+  },
+  {
+   "number": 99,
+   "name": "MoogVocodr.4",
+   "file": "099_MoogVocodr.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "MoogVocodr4",
+   "stream_offset": 32888,
+   "sha256": "ac38e6952ecf53b95bf0d7d8b25b0fb19038d1fe978156cf626434fbe1431305"
+  },
+  {
+   "number": 100,
+   "name": "MoogVocSwp",
+   "file": "100_MoogVocSwp.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "MoogVocSwp",
+   "stream_offset": 33220,
+   "sha256": "592a6ad1db73d0d31b35a82414702de69e4965c1c1a69f907b017f477b024e70"
+  },
+  {
+   "number": 101,
+   "name": "StrngThng.4",
+   "file": "101_StrngThng.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "StrngThing4",
+   "stream_offset": 33552,
+   "sha256": "ee5f59aa7f45eca593dbb5a591da8b9d2980d402dce20d6ceb564d225528166f"
+  },
+  {
+   "number": 102,
+   "name": "StrSweep.4",
+   "file": "102_StrSweep.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "StrSweep.4",
+   "stream_offset": 33884,
+   "sha256": "832d080d7226a8d00cfaf8ed19393cda752a20b48e9cd09ac29457b293c095d1"
+  },
+  {
+   "number": 103,
+   "name": "BassXpress",
+   "file": "103_BassXpress.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "BassXpress",
+   "stream_offset": 34216,
+   "sha256": "635782ba667c249562509d1b3b622185fb96f1e72a1fcea8eead4d4483a9a8a7"
+  },
+  {
+   "number": 104,
+   "name": "Qbase.4",
+   "file": "104_Qbase.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Qbase.4",
+   "stream_offset": 34548,
+   "sha256": "aea5442bd238f7b861f8470ef7459f6c31e7aaa37694d93e643a3f3764bcfbf2"
+  },
+  {
+   "number": 105,
+   "name": "AcGtrRs.4",
+   "file": "105_AcGtrRs.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "AcGtrRs.4",
+   "stream_offset": 34880,
+   "sha256": "65d47ee6117b16c7eed40bfcfd1d2dc3eaa5d79740512a77f2e3aecef0ea37a9"
+  },
+  {
+   "number": 106,
+   "name": "TubeSust.4",
+   "file": "106_TubeSust.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Tube Sust.4",
+   "stream_offset": 35212,
+   "sha256": "46a9bd2ea1835fde2f34c6505f1b412eb64db0fb70db3b8a2c2f188168b6b4a9"
+  },
+  {
+   "number": 107,
+   "name": "GtrSkwk",
+   "file": "107_GtrSkwk.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "GtrSkwk",
+   "stream_offset": 35544,
+   "sha256": "060bf722fffc455f270d7e2a87a51393a341b2b062e5cc50a313cbe55e21a15d"
+  },
+  {
+   "number": 108,
+   "name": "GuitXpress",
+   "file": "108_GuitXpress.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "GuitXpress",
+   "stream_offset": 35876,
+   "sha256": "16d840955ac3965abadb66ee048014ac44f9a6ba4d0f3c9944e84298f23c60ef"
+  },
+  {
+   "number": 109,
+   "name": "G MajTrans.4",
+   "file": "109_G_MajTrans.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "FG MajTrans4",
+   "stream_offset": 36208,
+   "sha256": "de748f6ed9dc1c2563ca9b49456072bb0867e14aff041be767dcf99f3f816b98"
+  },
+  {
+   "number": 110,
+   "name": "Tam",
+   "file": "110_Tam.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Tam",
+   "stream_offset": 36540,
+   "sha256": "3219cfedd28f9e278491f5adaca7dc3ba1d7d56781ce3998899c091df5b82f4a"
+  },
+  {
+   "number": 111,
+   "name": "HOTwell.4",
+   "file": "111_HOTwell.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "HOTwell.4",
+   "stream_offset": 36872,
+   "sha256": "f5777c175dfc7ef1a06090e0ede3654f7be6d7ac5fda20a81119c524c2bf1ee7"
+  },
+  {
+   "number": 112,
+   "name": "Bell Wah A",
+   "file": "112_Bell_Wah_A.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Bell.Waha",
+   "stream_offset": 37204,
+   "sha256": "9741f8e36721eb040c7d225603d50b2c8933267c645df60d17dfdd777ffbb72b"
+  },
+  {
+   "number": 113,
+   "name": "Bell Wah B",
+   "file": "113_Bell_Wah_B.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Belwahb",
+   "stream_offset": 37536,
+   "sha256": "30a21f3d28e67c3c765d26b4b32ffa4df739d6856cefae26994113bd4a14f5ff"
+  },
+  {
+   "number": 114,
+   "name": "0>Bell-",
+   "file": "114_0_Bell-.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "0>Bell-",
+   "stream_offset": 37868,
+   "sha256": "ec43433acd6e0a6de1b272d756df8f0a2ed841e322c7e9811fbaeb20a3a08da2"
+  },
+  {
+   "number": 115,
+   "name": "0>Bell+",
+   "file": "115_0_Bell_.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "0>Bell+",
+   "stream_offset": 38200,
+   "sha256": "fcbeba2456abf68956983aed81dc39b954494b9ceb17bd5843e4a869b9382b5a"
+  },
+  {
+   "number": 116,
+   "name": "Bel>Crs>Bel",
+   "file": "116_Bel_Crs_Bel.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Bel>Crs>Bel",
+   "stream_offset": 38532,
+   "sha256": "0132b94b589b14ded7f77fa9b3f7ecee98df43e555869412d8a0a3e2bea60b68"
+  },
+  {
+   "number": 117,
+   "name": "Chrs>Flng1",
+   "file": "117_Chrs_Flng1.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Chrs>Flng1",
+   "stream_offset": 38864,
+   "sha256": "301d334ac3a27bdb0e1abcd40affe5b8c7f6e2b28719183273ba6e3b3ee7890d"
+  },
+  {
+   "number": 118,
+   "name": "Chrs>Flng2",
+   "file": "118_Chrs_Flng2.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Chrs>Flng2",
+   "stream_offset": 39196,
+   "sha256": "2795dfbd873d72433e5b19cad9362c1de9cdab2f80d8ac010ab9cb704fb3db59"
+  },
+  {
+   "number": 119,
+   "name": "Ev/OdNtch.4",
+   "file": "119_Ev_OdNtch.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Ev/OdNtch.4",
+   "stream_offset": 39528,
+   "sha256": "11ea5d4b95818fb0bc87f0a5c0db9ac41a644a5ff6e3b9487cd66154fb4ce36c"
+  },
+  {
+   "number": 120,
+   "name": "Odd/EvnNtch",
+   "file": "120_Odd_EvnNtch.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Odd/EvnNtch",
+   "stream_offset": 39860,
+   "sha256": "e0f11da8965b39ddc96adea80496e14a0dd8fa3a53119fdd00f5515e877c5a50"
+  },
+  {
+   "number": 121,
+   "name": "NotchPeaks.4",
+   "file": "121_NotchPeaks.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "NotchPkSwp4",
+   "stream_offset": 40192,
+   "sha256": "f26f16ca9bec804ebd9271106fd6b02b92157b90e18ed0251789501a2fd23a63"
+  },
+  {
+   "number": 122,
+   "name": "LoudBoost.4",
+   "file": "122_LoudBoost.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "1.5/3KNBPR4",
+   "stream_offset": 40524,
+   "sha256": "9848c9b63828a160006898b27ae343c33f96f1c1650eec1b37f1fcbd30eeb0d5"
+  },
+  {
+   "number": 123,
+   "name": "Swingshift",
+   "file": "123_Swingshift.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Swingshift",
+   "stream_offset": 40856,
+   "sha256": "bbfd9af91df0d0de9e4ad8aef871af03ddde66ecd2c07f41a2547a189feadcb3"
+  },
+  {
+   "number": 124,
+   "name": "500up.4",
+   "file": "124_500up.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "500up.4",
+   "stream_offset": 41188,
+   "sha256": "3e2dc88597a855a52cb8db0665802be09dba4e970b2b4e2e047533e1d791c0e7"
+  },
+  {
+   "number": 125,
+   "name": "C1Harmonic",
+   "file": "125_C1Harmonic.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "C1Harmonic5oct.8R",
+   "stream_offset": 41520,
+   "sha256": "11bfc1473d55109503f805a0f96fe38d75d0f5f8398b8aa4850d28c9b4b21184"
+  },
+  {
+   "number": 126,
+   "name": "Odd>Even",
+   "file": "126_Odd_Even.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Odd>Even",
+   "stream_offset": 41852,
+   "sha256": "abbf66f735145a854c0905400391ee3f6886c945e9cc74d1c4ac7e8bb83d3672"
+  },
+  {
+   "number": 127,
+   "name": "0>Shp1",
+   "file": "127_0_Shp1.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "0>Shp1",
+   "stream_offset": 42184,
+   "sha256": "617def6c8d8ce7f0087b11aa7c3dca1fc1b4ecef716857bc118c70f00663209b"
+  },
+  {
+   "number": 128,
+   "name": "0>Shp2",
+   "file": "128_0_Shp2.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "0>Shp2",
+   "stream_offset": 42516,
+   "sha256": "fcc99286321452dea884e454aad6e373b564948c030e504b8227bf953cfe7478"
+  },
+  {
+   "number": 129,
+   "name": "0>Shp3",
+   "file": "129_0_Shp3.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "0>Shp3",
+   "stream_offset": 42848,
+   "sha256": "5c850382ce60fe88c7d4c1f8d8a0b05cd83b27f77e6607d327f9fd4c74f50807"
+  },
+  {
+   "number": 130,
+   "name": "Shp>Shp1",
+   "file": "130_Shp_Shp1.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Shp>Shp1",
+   "stream_offset": 43180,
+   "sha256": "d63a8cd5719ed5857bfba9fc5dd4ed55d1e52b94443b98e49ab6ee61ac4eea57"
+  },
+  {
+   "number": 131,
+   "name": "Lpeq Vel",
+   "file": "131_Lpeq_Vel.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Lpeq Vel",
+   "stream_offset": 43512,
+   "sha256": "a0c769f7f45c64fbd77a0d43a2a78cb0133cdddb4ee7da62d10f0fc0a9ba1523"
+  },
+  {
+   "number": 132,
+   "name": "PeakSweep.4",
+   "file": "132_PeakSweep.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "CleanSweep4",
+   "stream_offset": 43844,
+   "sha256": "ad6076bc5f940c01037caa51a44b349ac467eb08ffeeae60b43004418e39449c"
+  },
+  {
+   "number": 133,
+   "name": "PowerSweeps",
+   "file": "133_PowerSweeps.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "PowerSweeps",
+   "stream_offset": 44176,
+   "sha256": "00f8ca42c517cf1bc132ef5f3672991d20794aa19747ecc9d2fe45577d4a46df"
+  },
+  {
+   "number": 134,
+   "name": "TSweep.4",
+   "file": "134_TSweep.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "TSweep.4",
+   "stream_offset": 44508,
+   "sha256": "cc31040bf4a6c9aa9e9b2cf205b61576964e08fa1aa482c16965299b9145b19a"
+  },
+  {
+   "number": 135,
+   "name": "SweepHiQ1.4",
+   "file": "135_SweepHiQ1.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "SweepHiQ1.4",
+   "stream_offset": 44840,
+   "sha256": "eed29b8ccc83d4c207d26ba79d1a89e97059a39924c0abca138adc7308b080c8"
+  },
+  {
+   "number": 136,
+   "name": "V>FcQuad.4",
+   "file": "136_V_FcQuad.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "V>FcQuad.4",
+   "stream_offset": 45172,
+   "sha256": "46e709a6e891f74cc95e47218aeffbc63658b44d6950ec0ea73925ce203745ee"
+  },
+  {
+   "number": 137,
+   "name": "Nexus.4",
+   "file": "137_Nexus.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Nexus.4",
+   "stream_offset": 45504,
+   "sha256": "e25792e19f413c1a83991d16655130ced3281bf9878e7ee099020a505e1a3f5e"
+  },
+  {
+   "number": 138,
+   "name": "Krators.4",
+   "file": "138_Krators.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Krators.4",
+   "stream_offset": 45836,
+   "sha256": "85882d10e36cdc9bf7ad3e39b3006683343452a7439e3a241df995993cef45a4"
+  },
+  {
+   "number": 139,
+   "name": "Harmonix.4",
+   "file": "139_Harmonix.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Harmonix.4",
+   "stream_offset": 46168,
+   "sha256": "bc89e9901ac9ef3aa704db7d826f40dbaff13b92b6946fbd4b757d2af5015d23"
+  },
+  {
+   "number": 140,
+   "name": "GreenWorld.4",
+   "file": "140_GreenWorld.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "GreenWorld4",
+   "stream_offset": 46500,
+   "sha256": "c89dee624415fe62965bf53b14390f23a35fef3575719d3ab3681bc62650f5a0"
+  },
+  {
+   "number": 141,
+   "name": "Comb/Swap.4",
+   "file": "141_Comb_Swap.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Comb/Swap.4",
+   "stream_offset": 46832,
+   "sha256": "0ab05aac1013b74361b43aa39b33a4289067773e5822de808554ff467689f8ce"
+  },
+  {
+   "number": 142,
+   "name": "Comb/HP.4",
+   "file": "142_Comb_HP.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Comb/HP.4",
+   "stream_offset": 47164,
+   "sha256": "4e1873416195813f81c49e0bc20cfe19a687145e69a4d3cf18164e2f8366451c"
+  },
+  {
+   "number": 143,
+   "name": "Swirly",
+   "file": "143_Swirly.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Swirly",
+   "stream_offset": 47496,
+   "sha256": "f76fecfe0a1471014d2062931cea6cafa90019b17ee8f70551ecf5a766dbd6ad"
+  },
+  {
+   "number": 144,
+   "name": "Cavatate.4",
+   "file": "144_Cavatate.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Cavatate.4",
+   "stream_offset": 47828,
+   "sha256": "cdf21300fdabac6c93fa0709d50301b81fcb67b2b1e4895d5f5506beed38c618"
+  },
+  {
+   "number": 145,
+   "name": "GentleRez.4",
+   "file": "145_GentleRez.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "GentleRZ4",
+   "stream_offset": 48160,
+   "sha256": "3b87a6f672e8dc9d3e3dc4d458f256472e40bb501e652cd9fa0776d132bb280e"
+  },
+  {
+   "number": 146,
+   "name": "Bendup/Swap",
+   "file": "146_Bendup_Swap.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Bendup/Swap",
+   "stream_offset": 48492,
+   "sha256": "59b429627bba131995537b41c10b0c50a9a657df24cecaff7d3b835db72147fd"
+  },
+  {
+   "number": 147,
+   "name": "Bendup",
+   "file": "147_Bendup.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Bendup",
+   "stream_offset": 48824,
+   "sha256": "99ef9d061076045b3335b5432b388ee69eba98b1a959f8f67bb9679df3f0776f"
+  },
+  {
+   "number": 148,
+   "name": "Skweezit",
+   "file": "148_Skweezit.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "SKWEEZIT",
+   "stream_offset": 49156,
+   "sha256": "c8abe0dd5ae635cafe60c0067c844002d366e35c97c729b51a0b28b49ec66374"
+  },
+  {
+   "number": 149,
+   "name": "Lo/High.4",
+   "file": "149_Lo_High.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Lo/High4",
+   "stream_offset": 49488,
+   "sha256": "92b01b4134dc63d653b36ae60cd2ad175eea96b4747c1fba374d0f9eb4733069"
+  },
+  {
+   "number": 150,
+   "name": "SubtleMove.4",
+   "file": "150_SubtleMove.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "SbtleMvmnt4",
+   "stream_offset": 49820,
+   "sha256": "f4aae4c3cb2367bf8b60bb1027698ddbdbda94482bcebaf41506a33d88c74a48"
+  },
+  {
+   "number": 151,
+   "name": "BuzzyPad.4",
+   "file": "151_BuzzyPad.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Buzzy Pad.4",
+   "stream_offset": 50152,
+   "sha256": "4a851211a7ee049af596b2d500669bec965e244a5a418703b2bc50e0f9fd9d10"
+  },
+  {
+   "number": 152,
+   "name": "Bw5kHz+6.4",
+   "file": "152_Bw5kHz_6.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": "Bw5kHz+6.4",
+   "stream_offset": 50484,
+   "sha256": "28511867a8eea032baa431603461b16cb957ce698f2007c522765f160b379e73"
+  },
+  {
+   "number": 153,
+   "name": "Bw65Hz/2k.4",
+   "file": "153_Bw65Hz_2k.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": null,
+   "stream_offset": 50816,
+   "sha256": "fb879c65d1161910adabc2952dd8b13f5e4540b4ccd50ee4f7df865fabb718a4"
+  },
+  {
+   "number": 154,
+   "name": "Bb80Hzbw1.4",
+   "file": "154_Bb80Hzbw1.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": null,
+   "stream_offset": 51148,
+   "sha256": "74ae1d1e44a16d6a6540dcaabb275d239b2c742aa5b314e192d8b323dd576c0e"
+  },
+  {
+   "number": 155,
+   "name": "HighsTwist.4",
+   "file": "155_HighsTwist.4.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": null,
+   "stream_offset": 51480,
+   "sha256": "769c43aa0a78d7d452fa53998a4d4c1dae394812ff1350b5d75cdcf362d982e5"
+  },
+  {
+   "number": 156,
+   "name": "Cubix",
+   "file": "156_Cubix.body",
+   "family": "COMPLEX FILTERS",
+   "manual_name": null,
+   "stream_offset": 51812,
+   "sha256": "75ffb1a47883617d1f98daa8a3c04176aff319dcc9120c1ad394506b5061ed50"
+  },
+  {
+   "number": 157,
+   "name": "HarmSweep.4",
+   "file": "157_HarmSweep.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 52144,
+   "sha256": "3ee42a861c54fd1272358da4055e131a9911976d3606fe4bb42896d946e919f6"
+  },
+  {
+   "number": 158,
+   "name": "EvenCuts.4",
+   "file": "158_EvenCuts.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 52476,
+   "sha256": "784fc3ea03ab6935b2f6803e5e78d23e03fcbc7ddad89af8e43ff11a4ad983b3"
+  },
+  {
+   "number": 159,
+   "name": "OddCuts.4",
+   "file": "159_OddCuts.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 52808,
+   "sha256": "657c911108589b40d3070b3b6a28cbc8a1ca9e3894281d2fadfc66b49d649690"
+  },
+  {
+   "number": 160,
+   "name": "PWMTrans.4",
+   "file": "160_PWMTrans.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 53140,
+   "sha256": "02b1b28257a8918d3f249e1be2108ac403532fef25ab055d806b22176e4fb839"
+  },
+  {
+   "number": 161,
+   "name": "HiEndQ.4",
+   "file": "161_HiEndQ.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 53472,
+   "sha256": "29c9290d5ff6331a00cc010691087e9d5c7b364a1c9dd1f97ff2d63e9c590d35"
+  },
+  {
+   "number": 162,
+   "name": "BroadRes.4",
+   "file": "162_BroadRes.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 53804,
+   "sha256": "b6444a0598ae7ba2534081cde7374f99bbff2df1278115c4f8dc6733b5ea5290"
+  },
+  {
+   "number": 163,
+   "name": "ResoHose.4",
+   "file": "163_ResoHose.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 54136,
+   "sha256": "8bba41e7541061456179d52469e2bd650fa2970dadb16ee02ed04287ddbb0ce5"
+  },
+  {
+   "number": 164,
+   "name": "HeeghCube",
+   "file": "164_HeeghCube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 54468,
+   "sha256": "f9d8b48e660be14b3c95bbfdb1dc77f935a16ca20bb518831d815638be4c9a05"
+  },
+  {
+   "number": 165,
+   "name": "NoizCube",
+   "file": "165_NoizCube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 54800,
+   "sha256": "5452e26334fd7c08b70a1415cd8fd34f82b0e49049e14cd135a27992a3d8eff3"
+  },
+  {
+   "number": 166,
+   "name": "VeloctyTilt",
+   "file": "166_VeloctyTilt.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 55132,
+   "sha256": "56625314dcfde1197db71737928c98a29c610e33e10cedcdce6b6b0ee883cb2c"
+  },
+  {
+   "number": 167,
+   "name": "Syn Wow.4",
+   "file": "167_Syn_Wow.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 55464,
+   "sha256": "543ffd4854fea93341af72eb2fedba34a7d723871b97c27720aa377cc80e286b"
+  },
+  {
+   "number": 168,
+   "name": "CombSweep.4",
+   "file": "168_CombSweep.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 55796,
+   "sha256": "0e26ed4a4753d7b45f8ea6f8d2346897700037c7d89efc55808c0a3feb210db4"
+  },
+  {
+   "number": 169,
+   "name": "Diffuser.4",
+   "file": "169_Diffuser.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 56128,
+   "sha256": "d00a66914151adb9df50d82001c13f8f8b53808301f6d6ee073a43f3b10edfd8"
+  },
+  {
+   "number": 170,
+   "name": "MdlySweep.4",
+   "file": "170_MdlySweep.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 56460,
+   "sha256": "d93a4938be5dc2b27c08dd94193ad8e2b309e067d22e7540bbc330aac6d7ee70"
+  },
+  {
+   "number": 171,
+   "name": "StrongShimr",
+   "file": "171_StrongShimr.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 56792,
+   "sha256": "fd18c57ea92fe79cd0ed432300105c46d8cf16d485d602b996c5c307691c1167"
+  },
+  {
+   "number": 172,
+   "name": "Acc.Vel-1",
+   "file": "172_Acc.Vel-1.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 57124,
+   "sha256": "afb2296726dd4b2f57b7bece456575fa5681ae6db0b2d0a4d2185f71e5f8b042"
+  },
+  {
+   "number": 173,
+   "name": "Acc.Vel-2",
+   "file": "173_Acc.Vel-2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 57456,
+   "sha256": "c577396b2a3a1da1e10ba4b0fb9fd224e5554e1a5efd7774c9c0f756c1bde214"
+  },
+  {
+   "number": 174,
+   "name": "Vel2-Wind",
+   "file": "174_Vel2-Wind.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 57788,
+   "sha256": "67cd003f35e91f152a518b2e052e97372d797084fce5855ab17f32fc763cc382"
+  },
+  {
+   "number": 175,
+   "name": "Harmo",
+   "file": "175_Harmo.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 58120,
+   "sha256": "e1a664824dca1524ce6a7a9d8009d759affdd578271cc577a3839429c12401ef"
+  },
+  {
+   "number": 176,
+   "name": "Start>EndA",
+   "file": "176_Start_EndA.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 58452,
+   "sha256": "5cc4cd11200726d9efb5fe139fe36e99ddfc370ac23f16aea406613d3a383c17"
+  },
+  {
+   "number": 177,
+   "name": "Start>EndB",
+   "file": "177_Start_EndB.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 58784,
+   "sha256": "42bef8af6d9dea9c9d2992881def58aca7269fa1d055831e6b74fcfbf1873410"
+  },
+  {
+   "number": 178,
+   "name": "MovingPick1",
+   "file": "178_MovingPick1.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 59116,
+   "sha256": "d34a2444b7fd98981dadbb0d780e5c8a31bccf44dd2875a22b58df20768f7810"
+  },
+  {
+   "number": 179,
+   "name": "MovingPick2",
+   "file": "179_MovingPick2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 59448,
+   "sha256": "b38efcc679d0573c84a99fead8a932d894f7e24d885ccdb8d489adbd58632569"
+  },
+  {
+   "number": 180,
+   "name": "Mph+Trns1",
+   "file": "180_Mph_Trns1.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 59780,
+   "sha256": "857400778e4eff04bf8fdcc13282895e73e253bd040b7f94f7ee7af920cc0028"
+  },
+  {
+   "number": 181,
+   "name": "0>Odds",
+   "file": "181_0_Odds.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 60112,
+   "sha256": "3ea3f0ee66accd399e3b0f2077b586f781f5ae4ce68e8c42cbcf385c8ede05eb"
+  },
+  {
+   "number": 182,
+   "name": "Comb Voices",
+   "file": "182_Comb_Voices.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 60444,
+   "sha256": "7c33ae1fa6dbeaaa99c4d1b8d3ba043c2809ab145949ab1ced7419b8d978cc54"
+  },
+  {
+   "number": 183,
+   "name": "Odd-Ev Hrm",
+   "file": "183_Odd-Ev_Hrm.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 60776,
+   "sha256": "c0faf4e7066ccedfd5d6a01816da167aa550e3b01616ec9e56319e535b272f75"
+  },
+  {
+   "number": 184,
+   "name": "OddHrm+Rez",
+   "file": "184_OddHrm_Rez.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 61108,
+   "sha256": "4a81469153cc6173c0d883f0f4e18fdad7f1b4b64fcba8aa754c3b9f49840456"
+  },
+  {
+   "number": 185,
+   "name": "EvnHrm+Rez",
+   "file": "185_EvnHrm_Rez.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 61440,
+   "sha256": "98b4275c84af2a4d726025caaca93136230d73ae88408161b4cb73b81afd3ade"
+  },
+  {
+   "number": 186,
+   "name": "MellowPeaks",
+   "file": "186_MellowPeaks.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 61772,
+   "sha256": "311f35b09166de8cb1b6a04816a4612da2054510a31a5a3b4bc5ec37e9c4c0a5"
+  },
+  {
+   "number": 187,
+   "name": "AHmBnd.4",
+   "file": "187_AHmBnd.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 62104,
+   "sha256": "ba13d94a82f4e1642348da300bdccdaded1d967f7ed9913dc033f1f9b9a1931e"
+  },
+  {
+   "number": 188,
+   "name": "Vintage",
+   "file": "188_Vintage.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 62436,
+   "sha256": "3556704b03413dd781eeaa2a1538d8266a1f3cb48fb128a0b95d56eecf36e726"
+  },
+  {
+   "number": 189,
+   "name": "MildQPole",
+   "file": "189_MildQPole.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 62768,
+   "sha256": "e0db9f817ae4589c9ad999d595f745c468b63825df8c554d1b5e771c24e6a801"
+  },
+  {
+   "number": 190,
+   "name": "Bonk>CO",
+   "file": "190_Bonk_CO.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 63100,
+   "sha256": "248023c35cdab1d0230e36605fed3b254a52ca9e9b4906c00dd206ce55eadf1d"
+  },
+  {
+   "number": 191,
+   "name": "Speaker",
+   "file": "191_Speaker.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 63432,
+   "sha256": "b49898ad67a92b20c43ab72a6107db97694fcf4658e6dc1d8a72a844778ed5f7"
+  },
+  {
+   "number": 192,
+   "name": "Expander",
+   "file": "192_Expander.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 63764,
+   "sha256": "0f140cd887137f958f37d17017eb15f1818dbc94187b93a2f79442580cbd89f9"
+  },
+  {
+   "number": 193,
+   "name": "Separator",
+   "file": "193_Separator.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 64096,
+   "sha256": "c860750fb753172d8e22a50685b300ebdc4a2cfbd714396225a8365512aeed88"
+  },
+  {
+   "number": 194,
+   "name": "MildPolSwap",
+   "file": "194_MildPolSwap.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 64428,
+   "sha256": "9987f950b3b16f8cca810d6fe33482b37c4fab4a09f71648d809269f3a6a1655"
+  },
+  {
+   "number": 195,
+   "name": "PoleCross.4",
+   "file": "195_PoleCross.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 64760,
+   "sha256": "00a9e52f3cb86d1ec920886a6b9abd63b310dca0a24000de4c00849753b4aa2a"
+  },
+  {
+   "number": 196,
+   "name": "ApDistB6.4",
+   "file": "196_ApDistB6.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 65092,
+   "sha256": "2ad73dfff05d2943dc98fb4a6667501cc98212f95d9cf71b3ccd0f1d1d935154"
+  },
+  {
+   "number": 197,
+   "name": "Dave'sRave",
+   "file": "197_Dave_sRave.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 65424,
+   "sha256": "c1c881172a71e3e337f55fd84eda0bc768dc6aab9b2a76642b6c4ddd85cad1d9"
+  },
+  {
+   "number": 198,
+   "name": "Poles 1-7",
+   "file": "198_Poles_1-7.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 65756,
+   "sha256": "e767a08fe1841b48f27b03be1315fb4f588b3617154d5777d520a2ac9ec72077"
+  },
+  {
+   "number": 199,
+   "name": "2 Poles",
+   "file": "199_2_Poles.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 66088,
+   "sha256": "88da2912cbba8b8c7cd2571ec323bd29d5f9d728ffee561932ab0e089f20ffb6"
+  },
+  {
+   "number": 200,
+   "name": "4 Poles A",
+   "file": "200_4_Poles_A.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 66420,
+   "sha256": "4db95e38e00e94cb6a88275b9a6f99cbda0a5d790fc9d2aa08caff3151e0b84a"
+  },
+  {
+   "number": 201,
+   "name": "4 Poles B",
+   "file": "201_4_Poles_B.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 66752,
+   "sha256": "41616da2b0275e68153284791e4616c4b725ed7a7be14762cee623c7513632fb"
+  },
+  {
+   "number": 202,
+   "name": "4 Poles C",
+   "file": "202_4_Poles_C.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 67084,
+   "sha256": "985304f98d6f040e09b6cb80cf4efdfb9b37550ec5e2e7cdc4ed28a1bfbdcce6"
+  },
+  {
+   "number": 203,
+   "name": "6 Poles",
+   "file": "203_6_Poles.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 67416,
+   "sha256": "fdba80d6cf2fcf018ad53ea23de5e7c92f6bccbaad1e6082eec7bc9b90c2908e"
+  },
+  {
+   "number": 204,
+   "name": "MultiPole",
+   "file": "204_MultiPole.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 67748,
+   "sha256": "fae362d8781ee444e2ae0292853fd8ba120f63d94b2e7f023e0d47158c3b4a76"
+  },
+  {
+   "number": 205,
+   "name": "Tracker",
+   "file": "205_Tracker.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 68080,
+   "sha256": "4f81ce708c1314246ddc0be116a4467dedf598cf9f9cb8b5c08da2e594d0a637"
+  },
+  {
+   "number": 206,
+   "name": "Tracker 2",
+   "file": "206_Tracker_2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 68412,
+   "sha256": "ba4520f4af40b47587bc4bac4ae89111c1ca3e96b0a23e05a270f87eb6b4b225"
+  },
+  {
+   "number": 207,
+   "name": "Tracker 3",
+   "file": "207_Tracker_3.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 68744,
+   "sha256": "12cef6933a3c17c3db015dbcf754dacef5b97fc5d91ce0fccdc4e789388c3ebd"
+  },
+  {
+   "number": 208,
+   "name": "Tracker5ths",
+   "file": "208_Tracker5ths.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 69076,
+   "sha256": "a28daf7a2dead8d761e00232e551f760e0b971f2c10d883ecc39b74f6b2568ae"
+  },
+  {
+   "number": 209,
+   "name": "InFifths.4",
+   "file": "209_InFifths.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 69408,
+   "sha256": "2fa78352542d2ae98d71da36f55fd6eb7410d05ae2a0596f6d2b448352ad1246"
+  },
+  {
+   "number": 210,
+   "name": "HarmTracker",
+   "file": "210_HarmTracker.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 69740,
+   "sha256": "d590ed68c5e55e95e93c81390c8d6975352f9957437b482ca363e09797d41bf2"
+  },
+  {
+   "number": 211,
+   "name": "1BndPrmtrcA",
+   "file": "211_1BndPrmtrcA.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 70072,
+   "sha256": "a546df47e4829b039d8ddd8af84343b4613fb4989c7b8508f9084d6a46ca2ba7"
+  },
+  {
+   "number": 212,
+   "name": "1BndPrmtrcB",
+   "file": "212_1BndPrmtrcB.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 70404,
+   "sha256": "56c7d7474a8bc5b4d58cdc7af3b03ea2f75db6376590caf6d2bfd0f7dd0e821d"
+  },
+  {
+   "number": 213,
+   "name": "1BndPrmtrcC",
+   "file": "213_1BndPrmtrcC.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 70736,
+   "sha256": "79fae2a36ea673ab243e4b6822cb8f628d1ec410e018da81741907febb9e6232"
+  },
+  {
+   "number": 214,
+   "name": "1BndPrmtrcD",
+   "file": "214_1BndPrmtrcD.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 71068,
+   "sha256": "6f671a27fe6ac2dabcfca4902f3b9617d09dfe6c0d98e77e6edc88d90b3072f6"
+  },
+  {
+   "number": 215,
+   "name": "MltiMetricA",
+   "file": "215_MltiMetricA.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 71400,
+   "sha256": "f4411f19247a97f991479fe0a4fa209c26f8a9b08f1f79602e4f0943b586c6f1"
+  },
+  {
+   "number": 216,
+   "name": "MltiMetricB",
+   "file": "216_MltiMetricB.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 71732,
+   "sha256": "7824e83095f13b7ce3cf1096c526889970293a36a76da1c2bc6880505748fd5b"
+  },
+  {
+   "number": 217,
+   "name": "MltiMetricC",
+   "file": "217_MltiMetricC.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 72064,
+   "sha256": "aec21c04ebce68f22ef51aa9a9da82e997759672c0fc5fe2e7975a8900c9ddbf"
+  },
+  {
+   "number": 218,
+   "name": "Omni Metric",
+   "file": "218_Omni_Metric.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 72396,
+   "sha256": "984610d6b68561df318635df6a65e294a8555cd7e81fc43f117af75d43f2a026"
+  },
+  {
+   "number": 219,
+   "name": "HarmncPeaks",
+   "file": "219_HarmncPeaks.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 72728,
+   "sha256": "d7ad5df6f3898a8b47cb4e1d9a8d76120a686ce62e08d8e051784fecef45e747"
+  },
+  {
+   "number": 220,
+   "name": "HrmncPeaks2",
+   "file": "220_HrmncPeaks2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 73060,
+   "sha256": "d336b1f66fe673988cfb85f03d0f94860ce96af92d67bedc2b90f35ed130bc71"
+  },
+  {
+   "number": 221,
+   "name": "InHarMetric",
+   "file": "221_InHarMetric.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 73392,
+   "sha256": "ad1e5aa9fbef713ac29d4fb088c1fb9175b352b85e3d40a5fa30dce95888d9df"
+  },
+  {
+   "number": 222,
+   "name": "HarmShifter",
+   "file": "222_HarmShifter.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 73724,
+   "sha256": "d990c93f4f3e705b3475408444ae4ddd89726e469c2135fe07805d97829d671f"
+  },
+  {
+   "number": 223,
+   "name": "HarmShiftr2",
+   "file": "223_HarmShiftr2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 74056,
+   "sha256": "73377d10bcd095bfc0b91ed457173200ec5485ff561eb1e970b98fb69ab2b927"
+  },
+  {
+   "number": 224,
+   "name": "HarmShiftr3",
+   "file": "224_HarmShiftr3.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 74388,
+   "sha256": "2f49b69f5bc2d3b4bc61a30d7474d9d24bfbaa9712861c668c001ce82c96d780"
+  },
+  {
+   "number": 225,
+   "name": "Phaser",
+   "file": "225_Phaser.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 74720,
+   "sha256": "1390d009d93292a8f6e7d8e2cd907980511767178c00a7479f89377465750d7f"
+  },
+  {
+   "number": 226,
+   "name": "HrmncPhaser",
+   "file": "226_HrmncPhaser.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 75052,
+   "sha256": "53629a14a26de1511df947eaeb0336b457034496f6064ee7577147dbd2cf01d8"
+  },
+  {
+   "number": 227,
+   "name": "HrmncPhsr2",
+   "file": "227_HrmncPhsr2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 75384,
+   "sha256": "6fceea5e44f574d600df4ae57a26ba3acc8cae63beab4f09cb10757488bcf5b7"
+  },
+  {
+   "number": 228,
+   "name": "Wide Bands",
+   "file": "228_Wide_Bands.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 75716,
+   "sha256": "877682e9c7c26c2dd80c3abecc143c171195543349aab09c53e956617635772b"
+  },
+  {
+   "number": 229,
+   "name": "New Boost",
+   "file": "229_New_Boost.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 76048,
+   "sha256": "4f8ce6224ea352911f4013e9a1bcf1cea56e575923b5e153b3172e9f0f45154e"
+  },
+  {
+   "number": 230,
+   "name": "VowelSpace2",
+   "file": "230_VowelSpace2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 76380,
+   "sha256": "4aa9344106534584db28dfeac2ee7a09b5f80dc27a788e5a0dc71e84877c2914"
+  },
+  {
+   "number": 231,
+   "name": "VowelSpace3",
+   "file": "231_VowelSpace3.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 76712,
+   "sha256": "030942b0abfb2034cd8b9ad78900743368ca14b3026f84c86e895ca66afc9b28"
+  },
+  {
+   "number": 232,
+   "name": "Oh Shaper",
+   "file": "232_Oh_Shaper.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 77044,
+   "sha256": "b6507a6d0502f65defb0a075325950df7a475cee7c8cc1cf26bae2a00d189c6b"
+  },
+  {
+   "number": 233,
+   "name": "Ah Shaper",
+   "file": "233_Ah_Shaper.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 77376,
+   "sha256": "caacb09434e25b28e3f71ef17d35eb1757264961f8006de2433723b94f7a33ec"
+  },
+  {
+   "number": 234,
+   "name": "Oo Shaper",
+   "file": "234_Oo_Shaper.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 77708,
+   "sha256": "5199337be582be6f6bdfb2d3eb69975418ecc58c8e2f926daed8a048ffe14549"
+  },
+  {
+   "number": 235,
+   "name": "FrmntShaper",
+   "file": "235_FrmntShaper.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 78040,
+   "sha256": "64ede94d0bf0e38ab92bac610217fe0b154742798bfe60cc6d974c853adc9bf5"
+  },
+  {
+   "number": 236,
+   "name": "Piano LP.4",
+   "file": "236_Piano_LP.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 78372,
+   "sha256": "da411d9104a9304e9b7ebe428a244851f8ca10492e38c031481661f2f332d8e8"
+  },
+  {
+   "number": 237,
+   "name": "PianoSndBrd",
+   "file": "237_PianoSndBrd.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 78704,
+   "sha256": "99d1111fbf3c581e8a9b82678502294c33a22f530c5ec26d0468f70d606f61af"
+  },
+  {
+   "number": 238,
+   "name": "Strike Cube",
+   "file": "238_Strike_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 79036,
+   "sha256": "fede3c7795b1ac983342bd174834b5dec4805643970259cdffff343b53db9803"
+  },
+  {
+   "number": 239,
+   "name": "Clav Curves",
+   "file": "239_Clav_Curves.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 79368,
+   "sha256": "2bf6f0406c50a04a4201f4bcd5a36ebd3789f4c92295c3cbeefd0d356bde718d"
+  },
+  {
+   "number": 240,
+   "name": "Symphony",
+   "file": "240_Symphony.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 79700,
+   "sha256": "36d39a59af38839f011ac017149ee293e8e37339dfdce262f73ec5afa87fb4ec"
+  },
+  {
+   "number": 241,
+   "name": "String Cube",
+   "file": "241_String_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 80032,
+   "sha256": "fc570cec968276212c0b01a33131f42c418a5984ddf7b30f1ebd710fe98b8add"
+  },
+  {
+   "number": 242,
+   "name": "Swell Cube",
+   "file": "242_Swell_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 80364,
+   "sha256": "94fe877615f8b4b922d3112bfc9473f24e6bfc599b7927e2b48627a674a5871d"
+  },
+  {
+   "number": 243,
+   "name": "Quartet.4",
+   "file": "243_Quartet.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 80696,
+   "sha256": "b8c726484698431cd2973374affff5993747762cfb3efe5c9818270b9eb9e713"
+  },
+  {
+   "number": 244,
+   "name": "Mellotron.4",
+   "file": "244_Mellotron.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 81028,
+   "sha256": "cfd785970dbb05f4fdd4b02890fae1c2566ff4222101d7cd485f425f8b6ee293"
+  },
+  {
+   "number": 245,
+   "name": "Cello",
+   "file": "245_Cello.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 81360,
+   "sha256": "9bcf74d9f30ccb7d4e2d8dc9e9a47a2435401b3899eaa14b7024a2f0e43eae92"
+  },
+  {
+   "number": 246,
+   "name": "Key Squeak",
+   "file": "246_Key_Squeak.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 81692,
+   "sha256": "ae1fc2249bed1965e47dd66e1365a28f1c0cbc9b3f0200c4cdf15d980e48e07c"
+  },
+  {
+   "number": 247,
+   "name": "Pluck.4",
+   "file": "247_Pluck.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 82024,
+   "sha256": "2c345e6afd6345d20e936d2afbae45b82da5d80dfa2870e6a7212a6013eaf7cd"
+  },
+  {
+   "number": 248,
+   "name": "Pick It",
+   "file": "248_Pick_It.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 82356,
+   "sha256": "72b87e1bc7c88cedf8248b4ca2b5ad2e1d003c61583d741046f9179c6865f587"
+  },
+  {
+   "number": 249,
+   "name": "El Pick It",
+   "file": "249_El_Pick_It.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 82688,
+   "sha256": "62f7461eb2ae570436392b366f2757019b3c62e0d9277f866525316030c5331b"
+  },
+  {
+   "number": 250,
+   "name": "ElGuit Cube",
+   "file": "250_ElGuit_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 83020,
+   "sha256": "63eb4c701fba9b56755996c45b0b69dbd4b8a09bd36037082e0a5f3836addfb9"
+  },
+  {
+   "number": 251,
+   "name": "ElGuit Pick",
+   "file": "251_ElGuit_Pick.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 83352,
+   "sha256": "5717379be2a4025536ebe9635e6adb85c78fab9f2a7094776bb8ff032f8d08f7"
+  },
+  {
+   "number": 252,
+   "name": "Breather 1",
+   "file": "252_Breather_1.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 83684,
+   "sha256": "6b17b99eb67de09a2f643a7fc1463d2cee9b83e5882c7c8bf58e6b1265ef72c7"
+  },
+  {
+   "number": 253,
+   "name": "Breather 2",
+   "file": "253_Breather_2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 84016,
+   "sha256": "d0bfa72391910b7a6891bb2602674c895e15fbbedd46486d3b7e1786bbcd925a"
+  },
+  {
+   "number": 254,
+   "name": "WindNoise 1",
+   "file": "254_WindNoise_1.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 84348,
+   "sha256": "095ec9ee04a45c60515738e4d84a04480721f1c48214d2e058af275804730aec"
+  },
+  {
+   "number": 255,
+   "name": "WindNoise 2",
+   "file": "255_WindNoise_2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 84680,
+   "sha256": "6396ca12cb1366422269d14d8920175c49a5749aeb0fcb5cc034c2ac903f17b6"
+  },
+  {
+   "number": 256,
+   "name": "Blow Cube",
+   "file": "256_Blow_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 85012,
+   "sha256": "a342514d613f19ed672bcd4a7077995422f57ee8d2fe2d9d4980be906723a72b"
+  },
+  {
+   "number": 257,
+   "name": "Overblow",
+   "file": "257_Overblow.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 85344,
+   "sha256": "dcd0598a9ff824fc29e6c08fdbdc1938700576e4e4d480df4f15caefdd22e495"
+  },
+  {
+   "number": 258,
+   "name": "Wind Filter",
+   "file": "258_Wind_Filter.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 85676,
+   "sha256": "f47d0f1f30da46f2fad9a79323f43649f360af48c4a630b55c0ecedb0015a1e2"
+  },
+  {
+   "number": 259,
+   "name": "FlutBreth.4",
+   "file": "259_FlutBreth.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 86008,
+   "sha256": "9e714a83d3fbfdf25f1b8fe5e75b8b68e9ba1b598a768309df580095b19ee95f"
+  },
+  {
+   "number": 260,
+   "name": "VClarinet.4",
+   "file": "260_VClarinet.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 86340,
+   "sha256": "1b565e1135a309091b0fb1661090510c18a2617dffde2a9329a2f1bfc2e7d1d3"
+  },
+  {
+   "number": 261,
+   "name": "New Mute.4",
+   "file": "261_New_Mute.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 86672,
+   "sha256": "2d980e2d6101422e7cbd9eed9c5d536fb4797f53c5e6010143a81c74bad1a33b"
+  },
+  {
+   "number": 262,
+   "name": "Trempeto.4",
+   "file": "262_Trempeto.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 87004,
+   "sha256": "91f21aca07f325d94946765623f504cdeb599dbce0a4a4d136e054e9663618ce"
+  },
+  {
+   "number": 263,
+   "name": "SfBrzando.4",
+   "file": "263_SfBrzando.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 87336,
+   "sha256": "f3ac725bbfebd4c5db5de54a59c67a07921a73c28bf9ae8c70acd422f7967f7a"
+  },
+  {
+   "number": 264,
+   "name": "UduFilter.4",
+   "file": "264_UduFilter.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 87668,
+   "sha256": "d8842d9c0732bea22f959eeea5514dbf43e317890ceba38897288d203edd187d"
+  },
+  {
+   "number": 265,
+   "name": "Hip Kick",
+   "file": "265_Hip_Kick.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 88000,
+   "sha256": "011f0144dcc1ab6cefad77a7e0cb90076c01b6e054e7294d520a5715d29c7dfa"
+  },
+  {
+   "number": 266,
+   "name": "Cymbal Cube",
+   "file": "266_Cymbal_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 88332,
+   "sha256": "40543f572d782aab12cfea464fcdb46ee0f8cb63e7c6413ed30b45cae194ec7d"
+  },
+  {
+   "number": 267,
+   "name": "ChimeFlange",
+   "file": "267_ChimeFlange.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 88664,
+   "sha256": "562b98d57cfd7f87f2b9de5ec389d8b948b1010630bd29156abbb4c3a2c06ad8"
+  },
+  {
+   "number": 268,
+   "name": "CableRing.4",
+   "file": "268_CableRing.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 88996,
+   "sha256": "63c83fe59aa8518ab6609ca517f8b9af3a29c2405f1613cd6de75bd1de24e59d"
+  },
+  {
+   "number": 269,
+   "name": "TensionWire",
+   "file": "269_TensionWire.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 89328,
+   "sha256": "ae01cb737c2ba00bb0844c498d74ba15f8e1e42b752d77d6602fa7281cff8cac"
+  },
+  {
+   "number": 270,
+   "name": "Auto Clang",
+   "file": "270_Auto_Clang.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 89660,
+   "sha256": "02b8dab5cb9d4578026926a194fcae209881db748720980b4935c0ccbbdf5b62"
+  },
+  {
+   "number": 271,
+   "name": "Dragon Claw",
+   "file": "271_Dragon_Claw.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 89992,
+   "sha256": "d5ec0171e0b81775925f767881bcb377dc589dc411c4a5c97e2b6266d1c838bd"
+  },
+  {
+   "number": 272,
+   "name": "Spectra",
+   "file": "272_Spectra.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 90324,
+   "sha256": "abdca989cd3d6046895157dcde48dcfd025de92b1a7dfcffa81dbb8b8892d4ef"
+  },
+  {
+   "number": 273,
+   "name": "RippleSheet",
+   "file": "273_RippleSheet.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 90656,
+   "sha256": "31a03e81aa6316b84910d4711d76bdf4606b34af4e8fb59dfdfe3b0240a35f95"
+  },
+  {
+   "number": 274,
+   "name": "Clear Water",
+   "file": "274_Clear_Water.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 90988,
+   "sha256": "231365aa93371e372b1c7df8d4b516fed61c34f30665948b9d8d23d0c4a7cd99"
+  },
+  {
+   "number": 275,
+   "name": "Invisible",
+   "file": "275_Invisible.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 91320,
+   "sha256": "d5e0ad44196559750e12814f0dde00ffa5c0234d9d3686e717b34322f4f1792b"
+  },
+  {
+   "number": 276,
+   "name": "Wine Glass",
+   "file": "276_Wine_Glass.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 91652,
+   "sha256": "5994383b8ece6e0f6d7694395d51b163ddf016d385292f643a7a1e1e6a5e21d9"
+  },
+  {
+   "number": 277,
+   "name": "SnakeCros.4",
+   "file": "277_SnakeCros.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 91984,
+   "sha256": "bce50f6574cc1c1123b9b733ecaba15b29ed9ca4ec265cf0f57bb5dc18714682"
+  },
+  {
+   "number": 278,
+   "name": "Analog.4",
+   "file": "278_Analog.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 92316,
+   "sha256": "35b1605a51ac379c0e488be51b2edcae0be513762f1c95c3c7ab9ebe8014abed"
+  },
+  {
+   "number": 279,
+   "name": "Skrtch Cube",
+   "file": "279_Skrtch_Cube.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 92648,
+   "sha256": "6607ee05c2e36f971f8a315ad169cb3d02faa4c460fe7ecc811ca1c180f6d668"
+  },
+  {
+   "number": 280,
+   "name": "KitchenSink",
+   "file": "280_KitchenSink.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 92980,
+   "sha256": "f0101fe6ed92152481e0896e381f2a2e82cf9c0aea1b4da532209e38742b1238"
+  },
+  {
+   "number": 281,
+   "name": "Head Pan 1",
+   "file": "281_Head_Pan_1.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 93312,
+   "sha256": "433552c3ab5d60c0611d6015339d92391b0d394dc8816477ecc742061ded26cb"
+  },
+  {
+   "number": 282,
+   "name": "Head Pan 2",
+   "file": "282_Head_Pan_2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 93644,
+   "sha256": "6a63091cd0dcb55a40dab23bab9109c8efadb80448cb6af0595345d6d76dc9db"
+  },
+  {
+   "number": 283,
+   "name": "Arpeggio",
+   "file": "283_Arpeggio.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 93976,
+   "sha256": "d7a73a4a0f87680180708ab3dc0d3ebd846872672e0036c47708745c11321056"
+  },
+  {
+   "number": 284,
+   "name": "HeavyFilt.4",
+   "file": "284_HeavyFilt.4.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 94308,
+   "sha256": "3e99af5694d7abc6a8336089904bd79caa38550e7658c2007b5c44212e9fbed0"
+  },
+  {
+   "number": 285,
+   "name": "Noiz Cube 2",
+   "file": "285_Noiz_Cube_2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 94640,
+   "sha256": "179c2cd61044817db6dd0ee6b275cce2970df1aec5354404334866277f994513"
+  },
+  {
+   "number": 286,
+   "name": "Feedback",
+   "file": "286_Feedback.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 94972,
+   "sha256": "e6f3e580f93ca4d68eaf88c75cde81ed28ee820da0500ea11d6c04b2d5b4de96"
+  },
+  {
+   "number": 287,
+   "name": "AllPoleDist",
+   "file": "287_AllPoleDist.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 95304,
+   "sha256": "5951fcccfb151c3bc16dad0b3dfb1687d3fbd564497e0c3b0f748b3e5bf7d576"
+  },
+  {
+   "number": 288,
+   "name": "AllPoleDst2",
+   "file": "288_AllPoleDst2.body",
+   "family": "UNLISTED",
+   "manual_name": null,
+   "stream_offset": 95636,
+   "sha256": "6b472a04702ccb722fce2df6dfb0a4cc65c750021a05f6ebc9d4952f7063e162"
+  }
+ ]
+}

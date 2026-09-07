@@ -2267,3 +2267,16 @@ Open, in order:
   Blackman, FFT 1024, window 1024. Its main prints "Copyright (c) 1995 E-mu Systems, Inc.",
   verified in the bytes: the first E-mu copyright on an artifact in this line (the Spectrogram
   carries the 1993 UC Regents line).
+- 2026-09-07, Morpheus canonical export (evidence/factory-data/morpheus/export_canonical_bodies.py
+  -> canonical/, 289 bodies, MANIFEST.json, VERIFY.md): the raw record is not words; each
+  44-byte section block is 32 packed 11-bit geometry fields (angle as theta/pi, 1 - r), one gain
+  per corner (8 x 11-bit at payload 308, never above 1.0); the 560-byte body is OUR encoding
+  through the core's words_from_geometry + encode_word. Findings on the old raw/bodies: encoded
+  at a 44,100 Hz datum (every pole and zero ~11.4% low in angle; the same geometry at 44100
+  reproduces their words exactly), pole slots rows 1-6 reversed while zero slots use raw row
+  5 - r, and the fifth word a seventh-root spread that matches the recorded gain only on some
+  corners. Canonical: native corner = Morph + 2 Frequency + 4 Transform, raw row order, datum
+  39,062.5 Hz, the corner gain in section 0 with unity in 1-6 (one gain field, lerped as the
+  chip lerps one field; a G^(1/7) spread would lerp differently). Verified: cube 1 and cube 65
+  corner order exact for all 8 x 7; 289/289 round-trip through trench_core; 289/289 differ from
+  raw/bodies. Everything Morpheus was listened to or counted on before today used raw/bodies.
