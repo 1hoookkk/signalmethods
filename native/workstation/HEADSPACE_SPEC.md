@@ -25,6 +25,15 @@ becomes a corner.
 In a serial cascade section gains multiply and responses add in dB; a corner is six sections of
 five words, sixty bytes; a body is four corners and the chip's lerp; the ear decides.
 
+## The hierarchy
+
+SOURCE, TWO ANCHORS, THREE MUSICAL DIRECTIONS, WHAT PLAYS, 1 2 3 4. Everything else is
+inspection. The stage's one role: inspect or alter the encoded anatomy of the selected endpoint,
+an anchor or a corner. Between corners the stage shows the lerp with no handles; an interpolated
+state is heard and captured, never edited. The ARMAdillo plot is not a zero editor: it is the
+same six sections in the chip's own coordinates, the same selection, the response plot with its
+coordinates changed by a key; zeros are simply easier to place there. No modifier hotkeys.
+
 ## The loop the tool must pass
 
 Load two very different anchors. Hold notes and play a phrase while morphing with the mod wheel.
@@ -168,7 +177,7 @@ Ruling of 2026-09-07, later still: "work directly from the top right and straigh
 grid while moving the morph there." The stage stays top right; there is no E window. The stage
 draws what plays at the pad, live as MORPH and Q move, with the working corner's handles on it;
 a drag edits that corner's words and is heard through the morph at once. The ARMAdillo plot for
-the zeros lives on the stage behind a key.
+the zeros lives on the stage behind a key, as the same plot in the chip's coordinates.
 
 Ruling of 2026-09-07, night, from the running app: "i found the key flow. it is within the
 sliders. and making variations of a and b. i need to click on each of the two top left frames
@@ -215,7 +224,8 @@ once on release. A read's zeros stay parked unless placed by hand.
    (`evidence/research-results/emu-sgi-1993/span/decompiled/`): `demean`, `xavg` with its
    feedback constant, power or energy, `draw_axes` and `draw_graph`; keys C reset the averager,
    S snapshot, X and Y the axis limits; defaults Blackman, 1024, 1024.
-3. The ARMAdillo plot behind a key for the zeros.
+3. The ARMAdillo plot: the RESPONSE key becomes ARMADILLO and the same six sections redraw in
+   the chip's coordinates with the same selection; the POLES and ZEROS mode goes.
 4. Ingest: reads are poles only with parked zeros; the 132 P2K and 2,312 Morpheus corners as
    cards by byte copy from the canonical export; Peterson and Barney landmarks; a folder of
    notes as one source.
