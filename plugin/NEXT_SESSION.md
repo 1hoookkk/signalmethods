@@ -2401,3 +2401,14 @@ Open, in order:
   and opens the find; Enter places the first match into the target (placeInTarget). Tests:
   caret on anchor A + "303 open c2" + Enter puts that card in A; caret on corner B + "bell 1
   c4" + Enter makes B that read. ctest x3 green.
+- 2026-09-07, session close (context full). UNCOMMITTED in the tree, built but not yet verified
+  green: the indexed list (Palette rows() with family headers and counts, first family open,
+  headerAt/toggle, find flattens; card(index) skips headers), the keyboard grown to fill the
+  band under the body and engine (tall style: full-height hairlines, black keys as bars),
+  Screen::layout body 176 / engine beside it / keyboard the rest, and PLAY with PLUCK = an
+  impulse train (Audio trainPos/trainBurst, a 10 ms burst every 0.5 s) with a test
+  "PLAY with PLUCK strikes an impulse train". Tyson's last two asks: "wheres the space to play
+  audio? wheres the better indexed list?" and "the exciting is not doing anything" (PLAY under
+  PLUCK was silent). Next session: run build_tests.cmd, fix what fails, view headspace.png,
+  commit with native pathspecs, relink the app (close it first). Then the queue: ARMAdillo plot,
+  row reorder, Filter path. Committed head before this: 17914418 (caret = find).
