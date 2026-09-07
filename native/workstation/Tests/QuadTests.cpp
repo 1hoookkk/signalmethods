@@ -530,7 +530,9 @@ int main()
             const auto& m = screen.mother.area; const auto& st = screen.stage.area; const auto& pl = screen.palette.area; const auto& bt = screen.bottom;
             bool ok = m.getX() < st.getX() && m.getY() == st.getY() && m.getWidth() > st.getWidth() && m.getHeight() > pl.getHeight()
                 && ! m.intersects (st) && ! m.intersects (pl) && ! st.intersects (bt) && ! pl.intersects (bt) && pl.getY() > m.getBottom() && bt.getX() > pl.getRight();
-            ok = ok && m.contains (screen.mother.face[0]) && m.contains (screen.mother.face[1]) && ! screen.mother.face[0].intersects (screen.mother.face[1]) && m.contains (screen.mother.depth) && m.contains (screen.mother.bakeKey);
+            ok = ok && m.contains (screen.mother.face[0]) && m.contains (screen.mother.face[1]) && screen.mother.face[1].getX() > screen.mother.face[0].getX() && screen.mother.face[1].getY() < screen.mother.face[0].getY()
+                && screen.mother.face[0].getWidth() == screen.mother.face[1].getWidth() && m.contains (screen.mother.depth) && m.contains (screen.mother.bakeKey) && screen.mother.face[0].getWidth() >= 220
+                && screen.mother.depth.getX() > screen.mother.face[1].getRight() && screen.mother.depth.getHeight() > screen.mother.depth.getWidth();
             for (int i = 0; i < 8; ++i) ok = ok && screen.mother.face[(size_t) (i / 4)].contains (screen.mother.cell[(size_t) i]) && screen.mother.cell[(size_t) i].contains (screen.mother.plot[(size_t) i]);
             ok = ok && st.contains (screen.stage.magnitude) && screen.stage.magnitude.getWidth() * 2 == screen.stage.magnitude.getHeight() * 3 && st.contains (screen.stage.carveKey) && screen.stage.magnitude.getWidth() >= 300;
             ok = ok && pl.contains (screen.palette.chart) && pl.contains (screen.palette.picker) && ! screen.palette.chart.intersects (screen.palette.picker) && pl.contains (screen.palette.dropZone);
@@ -542,20 +544,19 @@ int main()
         };
         check (fits(), "one screen: the mother is the largest quarter top-left, the stage top-right, the palette below the mother, the body, engine and keyboard bottom-right, nothing overlapping");
         check (screen.body.cornerAt (screen.body.plot[2].getCentre()) == 2 && screen.body.cornerAt (screen.palette.chart.getCentre()) < 0, "a drop on the third cell lands in corner C");
-        check (screen.mother.pinAt (screen.mother.cell[0].getCentre()) == 2 && screen.mother.pinAt (screen.mother.cell[1].getCentre()) == 3 && screen.mother.pinAt (screen.mother.cell[6].getCentre()) == 4 && screen.mother.pinAt (screen.mother.cell[7].getCentre()) == 5, "the mother's cells are laid out like the body: front A B C D are pins 3 4 1 2, back A B C D are pins 7 8 5 6");
+        check (screen.mother.pinAt (screen.mother.cell[0].getCentre()) == 2 && screen.mother.pinAt (screen.mother.cell[1].getCentre()) == 3 && screen.mother.pinAt (screen.mother.cell[4].getCentre()) == 6 && screen.mother.pinAt (screen.mother.cell[7].getCentre()) == 5, "the mother's cells are laid out like the body: front A B C D are pins 3 4 1 2, back A B C D are pins 7 8 5 6, the front face in front");
         screen.setSize (1000, 640);
         check (fits(), "the one screen still fits at the smallest window");
         screen.setSize (1120, 700);
         {
             const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
             for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
-            const auto press = screen.mother.plot[0].getCentre().toFloat();
-            const auto& front = screen.mother.face[0];
-            const double wantX = (press.x - front.getX()) / front.getWidth(), wantY = (front.getBottom() - press.y) / front.getHeight();
+            const auto press = screen.mother.plot[3].getCentre().toFloat();
+            const auto want = screen.mother.probeAt (press.toInt());
             screen.mouseDown (mouse (screen, press, press));
             screen.mouseUp (mouse (screen, press, press));
-            check (std::abs (s.cube.x - wantX) < 0.01 && std::abs (s.cube.y - wantY) < 0.01 && s.auditioning == hs::Session::kCube && s.playingLabel.startsWith ("cube "), "pressing the front face moves the probe there and the mother plays");
-            const auto rail = juce::Point<float> ((float) (screen.mother.depth.getX() + screen.mother.depth.getWidth() * 3 / 4), (float) screen.mother.depth.getCentreY());
+            check (std::abs (s.cube.x - want.first) < 0.01 && std::abs (s.cube.y - want.second) < 0.01 && want.first > 0.5 && want.second < 0.5 && s.auditioning == hs::Session::kCube && s.playingLabel.startsWith ("cube "), "pressing the volume moves the probe there on the plane at this depth and the mother plays");
+            const auto rail = juce::Point<float> ((float) screen.mother.depth.getCentreX(), (float) (screen.mother.depth.getBottom() - screen.mother.depth.getHeight() * 3 / 4));
             screen.mouseDown (mouse (screen, rail, rail));
             screen.mouseUp (mouse (screen, rail, rail));
             check (std::abs (s.cube.z - 0.75) < 0.02, "the depth rail sets the depth");

@@ -37,12 +37,12 @@ void Keyboard::paint (juce::Graphics& g) const
             const auto r = pianoKey (midi);
             const bool black = r.getHeight() < area.getHeight();
             if (black != (layer == 1)) continue;
-            g.setColour (midi == session.note ? Look::blue : black ? Look::ink : Look::panel);
+            g.setColour (midi == session.note ? Look::blue : black ? Look::ground : Look::text);
             g.fillRect (r);
-            g.setColour (black ? Look::ink : Look::faint); g.drawRect (r);
+            g.setColour (black ? Look::faint : Look::ground); g.drawRect (r);
             if (midi % 12 == 0)
             {
-                g.setColour (midi == session.note ? Look::panel : Look::dim);
+                g.setColour (midi == session.note ? Look::panel : Look::faint);
                 g.drawText ("C" + juce::String (midi / 12 - 1), r.withTrimmedTop (r.getHeight() - 14), juce::Justification::centred);
             }
         }

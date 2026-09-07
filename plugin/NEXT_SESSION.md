@@ -2140,3 +2140,12 @@ Open, in order:
   before it measures, so the handle lands where the finger is after DC unity. Min window
   1000x640. 120 checks, ctest x4 green. Shots: headspace.png, headspace_mother.png,
   headspace_raw.png.
+- 2026-09-07: Tyson on the one screen: "this is not what i had in mind" -> asked which of
+  four things; answer: the mother and the look. The mother is now one cube: front face large,
+  back face set up and behind at 0.55 of a cell, edges between the eight corners, the slice
+  plane drawn at the depth with the probe on it, a vertical depth rail at the cube's right, the
+  bake tick under it; press anywhere on the volume to move the probe on the plane at this
+  depth. The look went dark and dense: ground 161718, panels 1F2124, grid 2E3136, light text,
+  MATLAB colours lifted for a dark ground (blue 4FA3E6, orange F08A45, purple B98AD6, green
+  96CF5A), margins 16/12, keyboard light keys on a dark ground. The column split moved to 52%
+  so the stage plot takes the width the cube cannot use. 120 checks green.

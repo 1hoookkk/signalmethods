@@ -45,7 +45,7 @@ private:
     void paintGhost (juce::Graphics& g) const;
     Session& session;
     enum class Drag { none, puck, made, card, peak, zero, blade, probe, depth, slice, transpose, carve, keyboard } dragging = Drag::none;
-    int dragStar = -1, dragRow = -1, dragSide = 0;
+    int dragStar = -1, dragRow = -1;
     Words dragWords {};
     bool editStarted = false;
     juce::int64 wheelTime = 0;

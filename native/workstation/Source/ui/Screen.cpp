@@ -21,12 +21,12 @@ void Screen::resized() { layout(); repaint(); }
 void Screen::layout()
 {
     const int w = std::max (1000, getWidth()), h = std::max (640, getHeight());
-    const juce::Rectangle<int> grid (20, 36, w - 40, h - 56);
-    const int colX = grid.getX() + grid.getWidth() * 58 / 100, rowY = grid.getY() + grid.getHeight() * 60 / 100;
-    mother.layout ({ grid.getX(), grid.getY(), colX - 16 - grid.getX(), rowY - 16 - grid.getY() });
-    stage.layout ({ colX + 16, grid.getY(), grid.getRight() - colX - 16, rowY - 16 - grid.getY() });
-    palette.layout ({ grid.getX(), rowY + 16, colX - 16 - grid.getX(), grid.getBottom() - rowY - 16 });
-    bottom = { colX + 16, rowY + 16, grid.getRight() - colX - 16, grid.getBottom() - rowY - 16 };
+    const juce::Rectangle<int> grid (16, 32, w - 32, h - 44);
+    const int colX = grid.getX() + grid.getWidth() * 52 / 100, rowY = grid.getY() + grid.getHeight() * 60 / 100;
+    mother.layout ({ grid.getX(), grid.getY(), colX - 12 - grid.getX(), rowY - 12 - grid.getY() });
+    stage.layout ({ colX + 12, grid.getY(), grid.getRight() - colX - 12, rowY - 12 - grid.getY() });
+    palette.layout ({ grid.getX(), rowY + 12, colX - 12 - grid.getX(), grid.getBottom() - rowY - 12 });
+    bottom = { colX + 12, rowY + 12, grid.getRight() - colX - 12, grid.getBottom() - rowY - 12 };
     const int keyboardH = std::clamp (bottom.getHeight() / 3, 60, 90);
     const int bodySide = std::max (80, std::min (bottom.getHeight() - keyboardH - 10, 200));
     body.layout ({ bottom.getX(), bottom.getY(), bodySide, bodySide });
@@ -39,7 +39,7 @@ void Screen::paint (juce::Graphics& g)
     g.fillAll (Look::ground);
     g.setFont (Look::font (13.0f));
     g.setColour (Look::dim);
-    g.drawText ("HEADSPACE", juce::Rectangle<int> (20, 8, 200, 22), juce::Justification::centredLeft);
+    g.drawText ("HEADSPACE", juce::Rectangle<int> (16, 6, 200, 22), juce::Justification::centredLeft);
     const bool dropping = dragging == Drag::card || dragging == Drag::slice;
     mother.paint (g, dragPoint, dropping);
     stage.paint (g, dragging == Drag::peak || dragging == Drag::zero ? dragRow : -1, dragging == Drag::blade, dragging == Drag::carve);
@@ -115,17 +115,17 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         return;
     }
     if (mother.bakeKey.contains (p)) { session.takeSlice(); return; }
-    if (mother.depth.expanded (0, 8).contains (p)) { dragging = Drag::depth; mouseDrag (e); return; }
-    if (const int side = mother.sideAt (p); side >= 0)
+    if (mother.depth.expanded (8, 0).contains (p)) { dragging = Drag::depth; mouseDrag (e); return; }
+    if (mother.onVolume (p))
     {
         if (! session.cube.complete()) return;
-        if (mother.probePoint (side).getDistanceFrom (p.toFloat()) < 10.0f && e.mods.isShiftDown())
+        if (mother.probePoint().getDistanceFrom (p.toFloat()) < 10.0f && e.mods.isShiftDown())
         {
             dragging = Drag::slice; dragOrigin = p; dragPoint = p;
             if (session.auditioning != Session::kCube) session.setCubePoint (session.cube.x, session.cube.y, session.cube.z);
             return;
         }
-        dragging = Drag::probe; dragSide = side;
+        dragging = Drag::probe;
         mouseDrag (e);
         return;
     }
@@ -262,13 +262,13 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
     }
     if (dragging == Drag::probe)
     {
-        const auto f = mother.face[(size_t) dragSide];
-        session.setCubePoint ((p.x - f.getX()) / (double) f.getWidth(), (f.getBottom() - p.y) / (double) f.getHeight(), session.cube.z);
+        const auto at = mother.probeAt (p);
+        session.setCubePoint (at.first, at.second, session.cube.z);
         return;
     }
     if (dragging == Drag::depth)
     {
-        session.setCubePoint (session.cube.x, session.cube.y, (p.x - mother.depth.getX()) / (double) mother.depth.getWidth());
+        session.setCubePoint (session.cube.x, session.cube.y, (mother.depth.getBottom() - p.y) / (double) mother.depth.getHeight());
         return;
     }
     if (dragging == Drag::made)

@@ -10,10 +10,12 @@ int Mother::pinOf (int index) { return (index / 4) * 4 + Session::kCornerPin[ind
 void Mother::layout (juce::Rectangle<int> r)
 {
     area = r;
-    const int size = std::max (60, std::min ((area.getWidth() - 24) / 4, (area.getHeight() - 92) / 2));
+    const double reach = 0.55;
+    const int size = std::max (48, (int) std::min ((area.getWidth() - 64) / (2.0 + reach), (area.getHeight() - 30) / (2.0 + reach)));
+    const int shift = (int) std::round (size * reach);
+    face[0] = { area.getX(), area.getY() + 22 + shift, 2 * size, 2 * size };
+    face[1] = { area.getX() + shift, area.getY() + 22, 2 * size, 2 * size };
     for (int side = 0; side < 2; ++side)
-    {
-        face[(size_t) side] = { area.getX() + side * (2 * size + 24), area.getY() + 22, 2 * size, 2 * size };
         for (int n = 0; n < 4; ++n)
         {
             const size_t i = (size_t) (side * 4 + n);
@@ -21,32 +23,50 @@ void Mother::layout (juce::Rectangle<int> r)
             tag[i] = cell[i].withHeight (16);
             plot[i] = cell[i].withTrimmedTop (16).reduced (3);
         }
-    }
-    depth = { area.getX(), face[0].getBottom() + 18, 4 * size + 24, 20 };
-    bakeKey = { depth.getRight() - 28, depth.getBottom() + 6, 28, 22 };
+    depth = { face[1].getRight() + 22, face[1].getY(), 20, face[0].getBottom() - face[1].getY() - 30 };
+    bakeKey = { depth.getX() - 4, face[0].getBottom() - 24, 28, 22 };
 }
 
-juce::Point<float> Mother::probePoint (int side) const
+juce::Point<float> Mother::corner (int side, int n) const
 {
     const auto f = face[(size_t) std::clamp (side, 0, 1)];
-    return { (float) (f.getX() + session.cube.x * f.getWidth()), (float) (f.getBottom() - session.cube.y * f.getHeight()) };
+    return { (float) ((n & 1) ? f.getRight() : f.getX()), (float) ((n & 2) ? f.getBottom() : f.getY()) };
+}
+
+juce::Point<float> Mother::planePoint (double x, double y) const
+{
+    const auto a = juce::Point<float> ((float) (face[0].getX() + x * face[0].getWidth()), (float) (face[0].getBottom() - y * face[0].getHeight()));
+    const auto b = juce::Point<float> ((float) (face[1].getX() + x * face[1].getWidth()), (float) (face[1].getBottom() - y * face[1].getHeight()));
+    return a + (b - a) * (float) session.cube.z;
+}
+
+juce::Point<float> Mother::probePoint() const { return planePoint (session.cube.x, session.cube.y); }
+
+std::pair<double, double> Mother::probeAt (juce::Point<int> p) const
+{
+    const double z = session.cube.z;
+    const double x0 = face[0].getX() + z * (face[1].getX() - face[0].getX());
+    const double y0 = face[0].getBottom() + z * (face[1].getBottom() - face[0].getBottom());
+    return { std::clamp ((p.x - x0) / face[0].getWidth(), 0.0, 1.0), std::clamp ((y0 - p.y) / face[0].getHeight(), 0.0, 1.0) };
+}
+
+bool Mother::onVolume (juce::Point<int> p) const
+{
+    return face[0].getUnion (face[1]).contains (p);
 }
 
 int Mother::cellAt (juce::Point<int> p) const
 {
-    for (int i = 0; i < 8; ++i) if (cell[(size_t) i].contains (p)) return i;
+    for (int i = 0; i < 4; ++i) if (cell[(size_t) i].contains (p)) return i;
+    for (int i = 4; i < 8; ++i) if (cell[(size_t) i].contains (p)) return i;
     return -1;
 }
 
 int Mother::tagAt (juce::Point<int> p) const
 {
-    for (int i = 0; i < 8; ++i) if (tag[(size_t) i].contains (p)) return i;
-    return -1;
-}
-
-int Mother::sideAt (juce::Point<int> p) const
-{
-    for (int side = 0; side < 2; ++side) if (face[(size_t) side].contains (p)) return side;
+    for (int i = 0; i < 4; ++i) if (tag[(size_t) i].contains (p)) return i;
+    if (face[0].contains (p)) return -1;
+    for (int i = 4; i < 8; ++i) if (tag[(size_t) i].contains (p)) return i;
     return -1;
 }
 
@@ -61,25 +81,41 @@ void Mother::paint (juce::Graphics& g, juce::Point<int> dropPoint, bool dropping
     g.setFont (Look::font (11.0f));
     g.setColour (Look::dim);
     g.drawText ("mother", area.withHeight (18), juce::Justification::centredLeft);
-    for (int i = 0; i < 8; ++i)
+    auto paintFace = [&] (int side, float alpha) {
+        for (int n = 0; n < 4; ++n)
+        {
+            const int i = side * 4 + n;
+            const int pin = pinOf (i);
+            const int star = session.cube.pins[(size_t) pin];
+            const bool lit = session.editingCube && session.editing == pin;
+            juce::Graphics::ScopedSaveState saved (g);
+            g.setOpacity (alpha);
+            curves.cell (g, tag[(size_t) i], plot[(size_t) i], juce::String (pin + 1), star >= 0 ? session.stars[(size_t) star].name : juce::String(),
+                         star >= 0 ? &session.stars[(size_t) star].words : nullptr, lit, dropping && cellAt (dropPoint) == i);
+        }
+    };
+    paintFace (1, 0.55f);
+    g.setColour (Look::rule.withAlpha (0.35f));
+    for (int n = 0; n < 4; ++n) g.drawLine (juce::Line<float> (corner (0, n), corner (1, n)), 1.0f);
+    juce::Path plane;
+    plane.startNewSubPath (planePoint (0.0, 1.0));
+    plane.lineTo (planePoint (1.0, 1.0));
+    plane.lineTo (planePoint (1.0, 0.0));
+    plane.lineTo (planePoint (0.0, 0.0));
+    plane.closeSubPath();
+    g.setColour (Look::blue.withAlpha (0.08f)); g.fillPath (plane);
+    g.setColour (Look::blue.withAlpha (0.55f)); g.strokePath (plane, juce::PathStrokeType (1.0f));
+    paintFace (0, 1.0f);
     {
-        const int pin = pinOf (i);
-        const int star = session.cube.pins[(size_t) pin];
-        const bool lit = session.editingCube && session.editing == pin;
-        curves.cell (g, tag[(size_t) i], plot[(size_t) i], juce::String (pin + 1), star >= 0 ? session.stars[(size_t) star].name : juce::String(),
-                     star >= 0 ? &session.stars[(size_t) star].words : nullptr, lit, dropping && cell[(size_t) i].contains (dropPoint));
-    }
-    for (int side = 0; side < 2; ++side)
-    {
-        const auto p = probePoint (side);
-        const float weight = side == 0 ? (float) (1.0 - session.cube.z) : (float) session.cube.z;
+        const auto p = probePoint();
         juce::Path diamond;
         diamond.addQuadrilateral (p.x, p.y - 8.0f, p.x + 8.0f, p.y, p.x, p.y + 8.0f, p.x - 8.0f, p.y);
-        g.setColour (Look::panel.withAlpha (0.6f + 0.4f * weight)); g.fillPath (diamond);
-        g.setColour (Look::blue.withAlpha (0.35f + 0.65f * weight)); g.strokePath (diamond, juce::PathStrokeType (1.6f));
+        g.setColour (Look::panel); g.fillPath (diamond);
+        g.setColour (Look::blue); g.strokePath (diamond, juce::PathStrokeType (1.8f));
+        g.fillEllipse (p.x - 2.0f, p.y - 2.0f, 4.0f, 4.0f);
     }
-    g.setColour (Look::faint); g.fillRect (depth.withY (depth.getCentreY()).withHeight (1));
-    g.setColour (Look::blue); g.fillEllipse ((float) (depth.getX() + depth.getWidth() * session.cube.z) - 5.0f, (float) depth.getCentreY() - 5.0f, 10.0f, 10.0f);
+    g.setColour (Look::faint); g.fillRect (depth.withX (depth.getCentreX()).withWidth (1));
+    g.setColour (Look::blue); g.fillEllipse ((float) depth.getCentreX() - 5.0f, (float) (depth.getBottom() - depth.getHeight() * session.cube.z) - 5.0f, 10.0f, 10.0f);
     Look::glyph (g, Look::Glyph::use, bakeKey.reduced (3), session.cube.complete() ? Look::ink : Look::faint);
 }
 }
