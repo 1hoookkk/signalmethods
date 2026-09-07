@@ -132,7 +132,9 @@ note with it. 1 to 4, or the arrows in the engine, put what plays in that corner
 the column; Enter puts it in the target. Arrows move the pad by 1, with Ctrl by 0.2. Space
 drones. Ctrl+K keeps. Ctrl+W writes. Ctrl+P pluck, Ctrl+S saw, Ctrl+N noise, Ctrl+L loop.
 [ and ] step the saw's note by a semitone. Ctrl+H shows the raw words. Ctrl+G opens the
-spectrogram. Slash finds a card by name, Enter plays the first match, Escape clears. Ctrl+Z
+spectrogram. Slash finds a card by name, Enter places the first match in the target (or plays it when nothing
+is targeted), Escape clears. A caret on an anchor or a corner targets it and opens the find, so
+type a name and Enter to fill it; there is no picker list. Ctrl+Z
 and Ctrl+Y undo and redo. Delete removes a selected capture or read. Escape closes the menu.
 
 ## Files

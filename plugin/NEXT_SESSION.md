@@ -2391,3 +2391,13 @@ Open, in order:
   stack Session in main will crash inside Screen::shot (0xC00000FD): heap them or raise /STACK.
   Also tonight: MAX_TEST_PROMPT.md, the outside tester's prompt (reviewer table + Max's ten-step
   loop). 188 checks, ctest x3, app relinked.
+- 2026-09-07, night, the outside tester (Codex as Max, MAX_TEST_PROMPT.md) ran nine of the ten
+  steps before its usage limit: the sweep, replacing an anchor mid-phrase, copying to A with A
+  staying put, pole drags, zero placement and persistence all held; it found the anchor caret
+  "opens into a long list of vowel symbols while slash search is separate", noted Ctrl+Z and
+  Ctrl+W produced nothing through its key injection (both pass headlessly with real modifiers;
+  unverified by hand), and caught my prompt's error (the B caret picks, the letter selects).
+  Fix by hand: the pin menu is never shown; a caret on an anchor or corner makes it the target
+  and opens the find; Enter places the first match into the target (placeInTarget). Tests:
+  caret on anchor A + "303 open c2" + Enter puts that card in A; caret on corner B + "bell 1
+  c4" + Enter makes B that read. ctest x3 green.

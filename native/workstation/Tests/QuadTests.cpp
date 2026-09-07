@@ -708,7 +708,21 @@ int main()
             for (const char ch : { 'b', 'e', 'l' }) screen.keyPressed (key (ch, false, ch));
             check (screen.palette.finding && screen.palette.find == "bel" && ! screen.palette.cards().empty() && s.stars[(size_t) screen.palette.cards()[0]].name.containsIgnoreCase ("Bell"), "slash then letters find cards by name without dragging the list");
             screen.keyPressed (key (juce::KeyPress::returnKey, false, 0));
-            check (! screen.palette.finding && s.auditioning >= 0 && s.stars[(size_t) s.auditioning].name.containsIgnoreCase ("Bell"), "Enter plays the first card found and closes the find");
+            check (! screen.palette.finding && s.auditioning >= 0 && s.stars[(size_t) s.auditioning].name.containsIgnoreCase ("Bell"), "Enter places the first card found in the target, here nothing targeted so it plays, and closes the find");
+            {
+                const auto caret = juce::Point<float> ((float) (screen.mother.tag[0].getRight() - 6), (float) screen.mother.tag[0].getCentreY());
+                screen.mouseDown (mouse (screen, caret, caret)); screen.mouseUp (mouse (screen, caret, caret));
+                check (screen.palette.finding && s.anchorTarget == 0, "the anchor's caret makes it the target and opens the find");
+                for (const char ch : { '3', '0', '3', ' ', 'o', 'p', 'e', 'n', ' ', 'c', '2' }) screen.keyPressed (key (ch, false, ch));
+                screen.keyPressed (key (juce::KeyPress::returnKey, false, 0));
+                check (s.pairA == s.starNamed ("303 open C2") && ! screen.palette.finding, "typing a name and Enter puts that card in the targeted anchor");
+                const auto caretB = juce::Point<float> ((float) (screen.body.tag[1].getRight() - 6), (float) screen.body.tag[1].getCentreY());
+                screen.mouseDown (mouse (screen, caretB, caretB)); screen.mouseUp (mouse (screen, caretB, caretB));
+                for (const char ch : { 'b', 'e', 'l', 'l', ' ', '1', ' ', 'c', '4' }) screen.keyPressed (key (ch, false, ch));
+                screen.keyPressed (key (juce::KeyPress::returnKey, false, 0));
+                check (s.cornerName (1) == "Aud Bell 1 C4" && s.onCorner() && s.working == 1, "a corner's caret targets it, and the found card becomes that corner");
+                s.setPair (0, s.starNamed ("i")); s.setPair (1, s.starNamed ("u"));
+            }
             press (along (1));
             check (s.inPair() && std::abs (s.frequency - 0.7) < 0.02 && std::abs (s.pairT - 0.7) < 0.02, "pressing the FREQUENCY rail moves the probe there");
             press (along (2));

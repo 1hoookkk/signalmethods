@@ -136,16 +136,16 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     }
     if (const int n = body.tagAt (p); n >= 0)
     {
-        if (p.x >= body.tag[(size_t) n].getRight() - 14) menu.show (session, n, 0, body.tag[(size_t) n], getLocalBounds());
-        else session.edit (n);
+        session.edit (n);
+        if (p.x >= body.tag[(size_t) n].getRight() - 14) { palette.finding = true; palette.find.clear(); palette.showTab (0); }
         repaint();
         return;
     }
     if (body.area.contains (p) && session.quad.complete()) { dragging = Drag::puck; mouseDrag (e); return; }
     if (const int i = mother.tagAt (p); i >= 0)
     {
-        if (p.x >= mother.tag[(size_t) i].getRight() - 14) menu.show (session, i, 1, mother.tag[(size_t) i], getLocalBounds());
-        else session.editAnchor (i);
+        session.editAnchor (i);
+        if (p.x >= mother.tag[(size_t) i].getRight() - 14) { palette.finding = true; palette.find.clear(); palette.showTab (0); }
         repaint();
         return;
     }
@@ -406,7 +406,7 @@ bool Screen::keyPressed (const juce::KeyPress& k)
         const auto ch = k.getTextCharacter();
         if (k.getKeyCode() == juce::KeyPress::escapeKey) { palette.finding = false; palette.find.clear(); }
         else if (k.getKeyCode() == juce::KeyPress::backspaceKey) palette.find = palette.find.dropLastCharacters (1);
-        else if (k.getKeyCode() == juce::KeyPress::returnKey) { const auto shown = palette.cards(); if (! shown.empty()) session.select (shown[0]); palette.finding = false; }
+        else if (k.getKeyCode() == juce::KeyPress::returnKey) { const auto shown = palette.cards(); if (! shown.empty()) session.placeInTarget (shown[0]); palette.finding = false; palette.find.clear(); palette.layout (palette.area); }
         else if (ch >= 32 && ch < 127) palette.find += juce::String::charToString (ch);
         palette.layout (palette.area);
         repaint();
