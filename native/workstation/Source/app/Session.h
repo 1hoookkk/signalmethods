@@ -29,7 +29,6 @@ public:
     int pairA = -1, pairB = -1;
     double pairT = 0.0;
     double frequency = 0.0, stress = 1.0, octaves = 1.0;
-    Route keyToFrequency, velocityToStress { true, 1.0 }, wheelToMorph { true, 1.0 }, keyToState { true, 1.0 };
     bool fixedPitch = true;
     int soundingPitch = -1;
     int editing = -1;
@@ -88,11 +87,7 @@ public:
     bool onCorner() const;
     bool editable() const;
     bool live() const { return anchorTarget < 0 && ! (auditioning == -1 && onCorner()); }
-    Route route (int which) const { return which == 0 ? keyToFrequency : which == 1 ? velocityToStress : which == 2 ? wheelToMorph : keyToState; }
-    void setRoute (int which, bool on, double depth);
     void setTracking (bool fixed);
-    std::vector<int> states() const;
-    void playedNote (int midi, float velocity);
     void relevel();
     void placeInTarget (int star);
     void beginRowEdit();

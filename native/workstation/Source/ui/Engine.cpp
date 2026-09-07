@@ -17,16 +17,10 @@ Engine::Engine (Session& s, const hs::plot::Curves& c) : session (s), curves (c)
     inAnalysis.setParms (1024, 1024, kHop, 7);
 }
 
-std::array<juce::String, 7> Engine::names() const
+std::array<juce::String, 6> Engine::names() const
 {
     const juce::String note = noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0));
-    return { "PLAY", "PLUCK", "SAW " + note, "NOISE", "LOOP", session.fixedPitch ? "FIXED" : "KEY", "WRITE" };
-}
-
-std::array<juce::String, 4> Engine::routeWords() const
-{
-    const auto arrow = juce::String (juce::CharPointer_UTF8 ("\xe2\x86\x92"));
-    return { "KEY " + arrow + " STATE", "KEY " + arrow + " FREQUENCY", "VELOCITY " + arrow + " STRESS", "WHEEL " + arrow + " MORPH" };
+    return { "PLUCK", "SAW " + note, "NOISE", "LOOP", session.fixedPitch ? "FIXED" : "KEY", "WRITE" };
 }
 
 void Engine::layout (juce::Rectangle<int> r)
@@ -39,40 +33,19 @@ void Engine::layout (juce::Rectangle<int> r)
     const auto font = Look::font (10.0f);
     const auto words = names();
     int x = area.getX();
-    for (int i = 0; i < 6; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         const int w = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, words[(size_t) i]));
         keys[(size_t) i] = { x, row, w, 16 };
-        x += w + (i == 4 ? 18 : 10);
+        x += w + (i == 3 ? 18 : 10);
     }
-    const int w = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, words[6]));
-    keys[6] = { area.getRight() - w, row, w, 16 };
-    const auto lines = routeWords();
-    int y = keys[0].getBottom() + 10;
-    for (int i = 0; i < 4; ++i)
-    {
-        const int width = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, lines[(size_t) i]));
-        routes[(size_t) i] = { area.getX(), y, width, 14 };
-        if (i < 3) depths[(size_t) i] = { routes[(size_t) i].getRight() + 10, y, 30, 14 };
-        y += 16;
-    }
+    const int w = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, words[5]));
+    keys[5] = { area.getRight() - w, row, w, 16 };
 }
 
 int Engine::sourceAt (juce::Point<int> p) const
 {
-    for (int i = 0; i < 7; ++i) if (keys[(size_t) i].contains (p)) return i;
-    return -1;
-}
-
-int Engine::routeAt (juce::Point<int> p) const
-{
-    for (int i = 0; i < 4; ++i) if (routes[(size_t) i].contains (p)) return kRouteOf[i];
-    return -1;
-}
-
-int Engine::depthAt (juce::Point<int> p) const
-{
-    for (int i = 0; i < 3; ++i) if (depths[(size_t) i].contains (p)) return kRouteOf[i];
+    for (int i = 0; i < 6; ++i) if (keys[(size_t) i].contains (p)) return i;
     return -1;
 }
 
@@ -146,28 +119,17 @@ void Engine::paint (juce::Graphics& g)
     g.setColour (live() ? Look::ink : Look::text);
     g.drawText (session.playingLabel, label, juce::Justification::centredLeft);
     const auto words = names();
-    const bool on[7] = { session.playing, session.source == 3, session.source == 0, session.source == 1, session.source == 2, false, false };
+    const bool on[6] = { session.source == 3, session.source == 0, session.source == 1, session.source == 2, false, false };
     const bool wrote = writeTime > 0 && juce::Time::currentTimeMillis() - writeTime < kWriteMs;
     g.setFont (Look::font (10.0f));
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < 6; ++i)
     {
         juce::Colour colour = on[i] ? Look::ink : Look::dim;
-        if (i == 4 && session.loopName.isEmpty()) colour = Look::faint;
-        if (i == 5) colour = Look::text;
-        if (i == 6) colour = wrote ? Look::ink : Look::dim;
+        if (i == 3 && session.loopName.isEmpty()) colour = Look::faint;
+        if (i == 4) colour = Look::text;
+        if (i == 5) colour = wrote ? Look::ink : Look::dim;
         g.setColour (colour);
         g.drawText (words[(size_t) i], keys[(size_t) i], juce::Justification::centredLeft);
-    }
-    const bool awake = session.live();
-    const auto lines = routeWords();
-    for (int i = 0; i < 4; ++i)
-    {
-        const auto r = session.route (kRouteOf[i]);
-        g.setColour (! awake ? Look::faint : r.on ? Look::ink : Look::dim);
-        g.drawText (lines[(size_t) i], routes[(size_t) i], juce::Justification::centredLeft);
-        if (i > 2) continue;
-        g.setColour (! awake ? Look::faint : r.on ? Look::text : Look::dim);
-        g.drawText (juce::String (std::lround (r.depth * 100.0)), depths[(size_t) i], juce::Justification::centredLeft);
     }
     if (session.status.startsWith ("cannot") || session.status.startsWith ("no audio"))
     {

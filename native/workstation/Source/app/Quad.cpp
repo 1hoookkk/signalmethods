@@ -249,14 +249,6 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     if (patch != nullptr)
     {
         auto* p = new juce::DynamicObject();
-        const std::pair<const char*, const Route*> routes[4] { { "key", &patch->key }, { "velocity", &patch->velocity }, { "wheel", &patch->wheel }, { "state", &patch->state } };
-        for (const auto& [name, route] : routes)
-        {
-            auto* r = new juce::DynamicObject();
-            r->setProperty ("on", route->on);
-            r->setProperty ("depth", route->depth);
-            p->setProperty (name, juce::var (r));
-        }
         p->setProperty ("fixed", patch->fixed);
         d->setProperty ("patch", juce::var (p));
     }
@@ -310,14 +302,6 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
     if (patch != nullptr)
     {
         const auto p = v.getProperty ("patch", juce::var());
-        const std::pair<const char*, Route*> routes[4] { { "key", &patch->key }, { "velocity", &patch->velocity }, { "wheel", &patch->wheel }, { "state", &patch->state } };
-        for (const auto& [name, route] : routes)
-        {
-            const auto r = p.getProperty (name, juce::var());
-            if (! r.isObject()) continue;
-            route->on = (bool) r.getProperty ("on", route->on);
-            route->depth = std::clamp ((double) r.getProperty ("depth", route->depth), 0.0, 1.0);
-        }
         if (p.isObject()) patch->fixed = (bool) p.getProperty ("fixed", patch->fixed);
     }
     quad.morph = std::clamp ((double) v.getProperty ("morph", 0.0), 0.0, 100.0);

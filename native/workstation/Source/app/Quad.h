@@ -36,15 +36,8 @@ struct Explore
     double morph = 0.5, frequency = 0.0, stress = 1.0, octaves = 1.0;
 };
 
-struct Route
-{
-    bool on = false;
-    double depth = 1.0;
-};
-
 struct Patch
 {
-    Route key, velocity { true, 1.0 }, wheel { true, 1.0 }, state { true, 1.0 };
     bool fixed = true;
 };
 

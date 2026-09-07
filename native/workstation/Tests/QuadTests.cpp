@@ -855,7 +855,6 @@ int main()
         s.audio.onWheel (0.8);
         check (s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "the mod wheel rides MORPH and leaves FREQUENCY and STRESS where they were");
         check (s.playingLabel == "i > u", "the label says the pair; the rails carry the numbers");
-        s.setRoute (1, false, 1.0);
         s.key (key ('Z', false, 'z'));
         const int played = s.heldNote;
         s.key (key ('M', false, 'm'));
@@ -1067,13 +1066,13 @@ int main()
         check (! screen.engine.live() && ! has (screen.shot(), screen.stage.magnitude, hs::Look::ink), "the live spectrum fades when nothing sounds");
         s.setSource (0);
         const auto sawShot = screen.shot();
-        const int sawLit = brightest (sawShot, screen.engine.keys[2]), noiseDim = brightest (sawShot, screen.engine.keys[3]);
+        const int sawLit = brightest (sawShot, screen.engine.keys[1]), noiseDim = brightest (sawShot, screen.engine.keys[2]);
         s.setSource (1);
         const auto noiseShot = screen.shot();
-        const int sawDim = brightest (noiseShot, screen.engine.keys[2]), noiseLit = brightest (noiseShot, screen.engine.keys[3]);
+        const int sawDim = brightest (noiseShot, screen.engine.keys[1]), noiseLit = brightest (noiseShot, screen.engine.keys[2]);
         std::printf ("      sources: SAW %d lit %d dim, NOISE %d lit %d dim, ink %d, dim %d\n", sawLit, sawDim, noiseLit, noiseDim, (int) hs::Look::ink.getRed(), (int) hs::Look::dim.getRed());
-        check (has (sawShot, screen.engine.keys[2], hs::Look::ink) && ! has (sawShot, screen.engine.keys[3], hs::Look::ink)
-                && has (noiseShot, screen.engine.keys[3], hs::Look::ink) && ! has (noiseShot, screen.engine.keys[2], hs::Look::ink)
+        check (has (sawShot, screen.engine.keys[1], hs::Look::ink) && ! has (sawShot, screen.engine.keys[2], hs::Look::ink)
+                && has (noiseShot, screen.engine.keys[2], hs::Look::ink) && ! has (noiseShot, screen.engine.keys[1], hs::Look::ink)
                 && sawLit == (int) hs::Look::ink.getRed() && noiseDim == (int) hs::Look::dim.getRed(),
             "the sources are words and the active one is ink");
     }
@@ -1118,34 +1117,23 @@ int main()
         const auto file = tempQuad();
         {
             const auto first = std::make_unique<hs::Session> (root, file, false);
-            first->setRoute (0, true, 0.5);
+            first->setTracking (false);
         }
         const auto owned = std::make_unique<hs::Session> (root, file, false);
         auto& s = *owned;
-        check (s.keyToFrequency.on && std::abs (s.keyToFrequency.depth - 0.5) < 1.0e-9 && s.velocityToStress.on && s.wheelToMorph.on && s.keyToState.on && s.fixedPitch,
-            "the patch is saved with the session; velocity, wheel and state are on and the source is FIXED from the start");
-
-        s.setPuck (40.0, 30.0);
+        check (! s.fixedPitch, "KEY or FIXED is saved with the session");
+        s.setTracking (true);
         s.setPair (0, s.starNamed ("i"));
         s.setPair (1, s.starNamed ("u"));
-        s.setRoute (0, true, 1.0);
-        s.playedNote (60, 0.8f);
-        std::printf ("      C4 played: frequency %.4f stress %.4f pair %d\n", s.frequency, s.stress, (int) s.inPair());
-        check (std::abs (s.frequency - 0.5) < 1.0e-9 && s.inPair() && same (s.words, hs::motherWordsAt (s.explore(), s.stars)),
-            "a played key moves FREQUENCY between corners");
-
-        s.setRoute (1, true, 1.0);
-        s.playedNote (60, 0.25f);
-        const bool soft = std::abs (s.stress - 0.25) < 1.0e-9;
-        s.playedNote (60, 1.0f);
-        check (soft && std::abs (s.stress - 1.0) < 1.0e-9, "velocity moves STRESS");
-
-        s.setPuck (0.0, 100.0);
-        const double heldFrequency = s.frequency, heldStress = s.stress;
-        const auto heldCorners = hs::cornersOf (s.quad, s.stars);
-        s.playedNote (72, 1.0f);
-        check (! s.live() && s.frequency == heldFrequency && s.stress == heldStress && hs::cornersOf (s.quad, s.stars) == heldCorners,
-            "the routes sleep when the pad sits on a corner");
+        s.sweep (0.4);
+        const auto heard = s.words;
+        const double t = s.pairT, f = s.frequency, st = s.stress;
+        s.noteOn (62);
+        s.noteOff();
+        s.noteOn (72);
+        check (s.inPair() && same (s.words, heard) && s.pairT == t && s.frequency == f && s.stress == st && s.note == 45,
+            "a key strikes the source through what plays and touches nothing top left");
+        s.noteOff();
 
         s.setPuck (20.0, 20.0);
         const int nearA = s.working;
@@ -1158,57 +1146,18 @@ int main()
         check (hs::Session::kCornerPin[nearA] == 0 && hs::Session::kCornerPin[nearB] == 1 && hs::Session::kCornerPin[nearC] == 2 && hs::Session::kCornerPin[s.working] == 3 && s.editing < 0,
             "the pad's nearest corner is the working corner, so the state follows the puck");
 
-        {
-            s.setPuck (40.0, 30.0);
-            s.setPair (0, s.starNamed ("i"));
-            s.setPair (1, s.starNamed ("u"));
-            s.setRoute (1, true, 1.0);
-            const int sawNote = s.note;
-            s.sweep (0.3); s.keep();
-            s.sweep (0.7); s.keep();
-            const auto picks = s.states();
-            const int wanted = picks[(size_t) ((62 - 36) % (int) picks.size())];
-            s.noteOn (62);
-            const bool chose = s.inMade() && s.made.name == s.stars[(size_t) wanted].name && s.note == sawNote && s.heldNote == 62;
-            const auto full = s.words;
-            s.noteOff();
-            const bool latched = s.inMade() && same (s.words, full);
-            s.playedNote (62, 0.25f);
-            const bool struck = s.inMade() && std::abs (s.stress - 0.25) < 1.0e-9 && ! same (s.words, full) && same (s.words, s.made.words);
-            std::printf ("      C#4 chose %s of %d states, source still at %d\n", s.made.name.toRawUTF8(), (int) picks.size(), s.note);
-            check (chose && latched && struck, "a key picks a kept state and the source holds its pitch; the state latches after note-off; velocity is the strike, relaxing it toward schwa");
-            s.setTracking (false);
-            s.setRoute (3, false, 1.0);
-            s.noteOn (62);
-            check (! s.fixedPitch && s.note == 62, "KEY tracking pitches the source with the note again");
-            s.noteOff();
-            s.setTracking (true);
-            s.setRoute (3, true, 1.0);
-            for (int k = (int) s.stars.size() - 1; k >= (int) s.libraryCount; --k) { s.selected = k; s.removeAdded(); }
-            s.setPair (0, s.starNamed ("i"));
-            s.setPair (1, s.starNamed ("u"));
-        }
-
-        s.setPuck (40.0, 30.0);
-        s.setRoute (2, false, 1.0);
-        const double heldMorph = s.pairT;
-        s.audio.onWheel (0.9);
-        check (! s.wheelToMorph.on && s.pairT == heldMorph, "the wheel route can be turned off");
+        s.setPuck (0.0, 100.0);
+        const auto corner = s.words;
+        s.noteOn (60);
+        check (s.onCorner() && s.editable() && same (s.words, corner), "on a corner a key plays that corner's exact words, and the handles edit it");
+        s.noteOff();
 
         const auto view = std::make_unique<hs::Screen> (s);
         auto& screen = *view;
-        s.setRoute (0, true, 1.0);
         const auto image = screen.shot();
-        int top = 0;
-        for (int y = screen.engine.routes[0].getY(); y < screen.engine.routes[0].getBottom(); ++y)
-            for (int x = screen.engine.routes[0].getX(); x < screen.engine.routes[0].getRight(); ++x)
-                top = std::max (top, (int) image.getPixelAt (x, y).getRed());
-        bool placed = true;
-        for (const auto& r : screen.engine.routes)
-            placed = placed && screen.engine.area.contains (r) && r.getY() >= screen.engine.keys[0].getBottom() && r.getBottom() <= screen.keyboard.area.getY();
-        std::printf ("      routes at %d,%d %dx%d, brightest %d, depth box %d wide\n",
-            screen.engine.routes[0].getX(), screen.engine.routes[0].getY(), screen.engine.routes[0].getWidth(), screen.engine.routes[0].getHeight(), top, screen.engine.depths[0].getWidth());
-        check (placed && top > 200, "the routes render under the words");
+        const auto words = screen.engine.names();
+        check (words[0] == "PLUCK" && words[4] == "FIXED" && words[5] == "WRITE",
+            "the source row reads PLUCK SAW NOISE LOOP FIXED WRITE and nothing else");
     }
 
     {
