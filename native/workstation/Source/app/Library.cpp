@@ -1,4 +1,5 @@
 #include "Library.h"
+#include "dsp/Formants.h"
 #include "dsp/Peevers.h"
 #include <trench/core/body_from_audio.hpp>
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -443,6 +444,35 @@ Words lensed (const Words& words, double f1, double f2)
         out[r][4] = words[r][4];
     }
     unityDc (out);
+    return out;
+}
+
+Words laneLocked (const Words& lanes, const Words& words)
+{
+    std::array<double, kRows> anchor {}, moving {};
+    auto octaveOf = [] (const trench::core::PackedSection& row)
+    {
+        const auto g = trench::core::geometry_from_words (row, trench::core::kP2kDatumHz);
+        const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+        return pole != nullptr && pole->radius >= 0.05 && pole->hz > 0.0 ? std::log2 (pole->hz / 20.0) : -1.0;
+    };
+    for (size_t r = 0; r < kRows; ++r) { anchor[r] = octaveOf (lanes[r]); moving[r] = octaveOf (words[r]); }
+    std::array<size_t, kRows> order {};
+    for (size_t r = 0; r < kRows; ++r) order[r] = r;
+    std::array<size_t, kRows> best = order;
+    double bestCost = 1.0e300;
+    do
+    {
+        double cost = 0.0;
+        for (size_t r = 0; r < kRows; ++r)
+        {
+            const double a = anchor[r], b = moving[order[r]];
+            cost += (a < 0.0) != (b < 0.0) ? 4.0 : a < 0.0 ? 0.0 : std::abs (a - b);
+        }
+        if (cost < bestCost) { bestCost = cost; best = order; }
+    } while (std::next_permutation (order.begin(), order.end()));
+    Words out;
+    for (size_t r = 0; r < kRows; ++r) out[r] = words[best[r]];
     return out;
 }
 

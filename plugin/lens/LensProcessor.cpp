@@ -31,14 +31,14 @@ trench::core::PackedSection poleSection (double hz, double radius)
 void unityDc (Words& w)
 {
     double product = 1.0;
-    for (size_t s = 0; s < trench::core::kSectionCount; ++s)
+    for (size_t s = 0; s < trench::core::kLegacySectionCount; ++s)
     {
         const double num = 4.0 * trench::core::decode_word (w[s][0]), den = 4.0 * trench::core::decode_word (w[s][2]);
         if (std::abs (den) > 1e-12 && std::abs (num) > 1e-12) product *= num / den;
     }
-    const double gain = std::pow (1.0 / std::max (1e-9, std::abs (product)), 1.0 / (double) trench::core::kSectionCount);
+    const double gain = std::pow (1.0 / std::max (1e-9, std::abs (product)), 1.0 / (double) trench::core::kLegacySectionCount);
     const auto word = trench::core::encode_word (std::clamp (gain / 4.0, 0.0, 1.0));
-    for (size_t s = 0; s < trench::core::kSectionCount; ++s) w[s][4] = word;
+    for (size_t s = 0; s < trench::core::kLegacySectionCount; ++s) w[s][4] = word;
 }
 }
 
@@ -158,7 +158,7 @@ void Processor::analyse()
 
 void Processor::follow()
 {
-    for (size_t row = 0; row < trench::core::kSectionCount; ++row)
+    for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row)
     {
         const auto& p = poles[row];
         if (p.hz <= 0.0) { words[row] = trench::core::kIdentitySection; continue; }
@@ -167,7 +167,7 @@ void Processor::follow()
         shown[row * 2].store (p.hz);
         shown[row * 2 + 1].store (bandwidth);
     }
-    for (size_t row = 0; row < trench::core::kSectionCount; ++row) if (poles[row].hz <= 0.0) { shown[row * 2].store (0.0); shown[row * 2 + 1].store (0.0); }
+    for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row) if (poles[row].hz <= 0.0) { shown[row * 2].store (0.0); shown[row * 2 + 1].store (0.0); }
     unityDc (words);
     const auto cascade = trench::core::native::rewarp_cascade (words, trench::core::kP2kDatumHz, rate);
     const auto glide = (std::size_t) std::max (1.0, rate * (double) smooth->load() / 1000.0);
@@ -216,7 +216,7 @@ juce::File Processor::keep()
 {
     Words snapshot;
     {
-        for (size_t row = 0; row < trench::core::kSectionCount; ++row)
+        for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row)
         {
             const double hz = shown[row * 2].load(), bw = shown[row * 2 + 1].load();
             snapshot[row] = hz > 0.0 ? poleSection (hz, std::exp (-kPi * std::clamp (bw, 20.0, 2000.0) / trench::core::kP2kDatumHz)) : trench::core::kIdentitySection;
@@ -225,7 +225,8 @@ juce::File Processor::keep()
     }
     trench::core::PackedBody body;
     for (auto& corner : body.words) corner.fill (trench::core::kIdentitySection);
-    for (size_t c = 0; c < 8; ++c) for (size_t row = 0; row < trench::core::kSectionCount; ++row) body.words[c][row] = snapshot[row];
+    for (size_t c = 0; c < trench::core::kCornerCount; ++c) for (size_t row = 0; row < trench::core::kLegacySectionCount; ++row) body.words[c][row] = snapshot[row];
+    if (! body.is_legacy_representable()) return {};
     const auto bytes = body.legacy_bytes();
     const auto dir = juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("native/workstation/banks/lens");
     dir.createDirectory();

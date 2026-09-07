@@ -32,7 +32,7 @@ double cascadeDb (const std::array<std::atomic<double>, 12>& shown, double hz)
 Editor::Editor (Processor& p) : AudioProcessorEditor (p), processor (p)
 {
     setSize (kW, kH);
-    setWantsKeyboardFocus (true);
+    setWantsKeyboardFocus (false);
     startTimerHz (30);
 }
 
@@ -154,7 +154,9 @@ juce::String Editor::svg() const
     const bool holding = processor.hold->load() > 0.5f;
     s << "<text x='12' y='16' fill='" << (holding ? "#eceef0" : "#8a8e94") << "' font-family='Segoe UI, sans-serif' font-size='10' letter-spacing='1'>" << (holding ? "HOLD" : processor.quiet.load() ? "FOLLOW  quiet, keeping the last fit" : "FOLLOW") << "</text>";
     s << "<text x='" << kW - 12 << "' y='16' fill='#8a8e94' font-family='Segoe UI, sans-serif' font-size='10' text-anchor='end'>SMOOTH " << (int) processor.smooth->load() << " ms   GATE " << (int) processor.gate->load() << " dB</text>";
-    s << "<text x='" << kW / 2 << "' y='" << kH - 6 << "' fill='" << (kept.isNotEmpty() ? "#eceef0" : "#45494f") << "' font-family='Segoe UI, sans-serif' font-size='10' text-anchor='middle'>" << (kept.isNotEmpty() ? "kept " + kept : "grey the input   white its LPC-12 envelope   blue the six sections   H hold   K keep to HEADSPACE   drag the top edge for SMOOTH") << "</text>";
+    s << "<text x='12' y='" << kH - 6 << "' fill='" << (holding ? "#eceef0" : "#d2d5d9") << "' font-family='Segoe UI, sans-serif' font-size='10' letter-spacing='1'>HOLD</text>";
+    s << "<text x='60' y='" << kH - 6 << "' fill='#d2d5d9' font-family='Segoe UI, sans-serif' font-size='10' letter-spacing='1'>KEEP</text>";
+    s << "<text x='" << kW - 12 << "' y='" << kH - 6 << "' fill='" << (kept.isNotEmpty() ? "#eceef0" : "#45494f") << "' font-family='Segoe UI, sans-serif' font-size='10' text-anchor='end'>" << (kept.isNotEmpty() ? "kept " + kept : "grey the input   white its LPC-12 envelope   blue the six sections   drag the top edge for SMOOTH") << "</text>";
     s << "</svg>";
     return s;
 }
@@ -165,27 +167,34 @@ void Editor::paint (juce::Graphics& g)
     if (drawing != nullptr) drawing->drawAt (g, 0.0f, 0.0f, 1.0f);
 }
 
-bool Editor::keyPressed (const juce::KeyPress& key)
+void Editor::doHold()
 {
-    if (key.getTextCharacter() == 'h' || key.getTextCharacter() == 'H')
+    if (auto* p = processor.state.getParameter ("hold")) p->setValueNotifyingHost (processor.hold->load() > 0.5f ? 0.0f : 1.0f);
+}
+
+void Editor::doKeep()
+{
+    const auto file = processor.keep();
+    kept = file == juce::File() ? juce::String ("nothing to keep") : file.getFileName();
+    keptAt = juce::Time::currentTimeMillis();
+    drawing = juce::Drawable::createFromSVGString (svg());
+    repaint();
+}
+
+void Editor::mouseDown (const juce::MouseEvent& e)
+{
+    if (e.y >= kH - 18)
     {
-        if (auto* p = processor.state.getParameter ("hold")) p->setValueNotifyingHost (processor.hold->load() > 0.5f ? 0.0f : 1.0f);
-        return true;
+        if (e.x < 52) doHold();
+        else if (e.x < 100) doKeep();
+        return;
     }
-    if (key.getTextCharacter() == 'k' || key.getTextCharacter() == 'K')
-    {
-        kept = processor.keep().getFileName();
-        keptAt = juce::Time::currentTimeMillis();
-        drawing = juce::Drawable::createFromSVGString (svg());
-        repaint();
-        return true;
-    }
-    return false;
+    mouseDrag (e);
 }
 
 void Editor::mouseDrag (const juce::MouseEvent& e)
 {
-    if (e.y > 24) { grabKeyboardFocus(); return; }
+    if (e.y > 24) return;
     const float t = juce::jlimit (0.0f, 1.0f, (float) e.x / (float) kW);
     if (auto* p = processor.state.getParameter ("smooth")) p->setValueNotifyingHost (t);
 }
