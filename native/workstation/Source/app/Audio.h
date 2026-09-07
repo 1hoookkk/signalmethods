@@ -16,6 +16,7 @@ class Audio : public juce::AudioIODeviceCallback, public juce::MidiInputCallback
 {
 public:
     std::function<void (int)> onNote;
+    std::function<void (int, float)> onNoteOn;
     std::function<void (double)> onWheel;
     ~Audio() override;
     bool start();

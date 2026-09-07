@@ -36,7 +36,7 @@ void Screen::layout()
     const int above = std::max (100, keyboard.area.getY() - 10 - bottom.getY());
     const int bodySide = std::max (80, std::min (above, 200));
     body.layout ({ bottom.getX(), bottom.getY(), bodySide, bodySide });
-    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, std::min (above, 64) });
+    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, above });
 }
 
 void Screen::timerCallback()
@@ -120,6 +120,12 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         else if (i == 3) session.setSource (1);
         else if (i == 4) { if (session.loopName.isNotEmpty()) session.setSource (2); }
         else session.write();
+        return;
+    }
+    if (const int i = engine.routeAt (p); i >= 0)
+    {
+        const auto r = session.route (i);
+        session.setRoute (i, ! r.on, r.depth);
         return;
     }
     if (engine.plot.contains (p)) { dragging = Drag::sound; dragOrigin = p; dragPoint = p; return; }
@@ -350,6 +356,12 @@ void Screen::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDe
     const auto p = e.getPosition();
     const int step = wheel.deltaY > 0 ? -1 : 1;
     if (menu.open && menu.rect.contains (p)) { menu.wheel (session, step); repaint(); return; }
+    if (const int i = engine.depthAt (p); i >= 0)
+    {
+        const auto r = session.route (i);
+        session.setRoute (i, r.on, r.depth + (wheel.deltaY > 0 ? 0.1 : -0.1));
+        return;
+    }
     if (mother.rail[1].expanded (0, 6).contains (p) || mother.onOctaves (p)) { session.setOctaves (session.octaves + (wheel.deltaY > 0 ? 0.25 : -0.25)); return; }
     if (const int row = stage.peakAt (p); row >= 0)
     {

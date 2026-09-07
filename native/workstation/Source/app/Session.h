@@ -15,7 +15,7 @@ public:
     Session (const juce::File& root, const juce::File& file, bool withAudio);
     ~Session();
 
-    struct Snapshot { Quad quad; std::vector<Star> added; double frequency = 0.0, stress = 1.0, octaves = 1.0; };
+    struct Snapshot { Quad quad; std::vector<Star> added; double frequency = 0.0, stress = 1.0, octaves = 1.0; Patch patch; };
     static constexpr int kCornerPin[4] = { 2, 3, 0, 1 };
     static constexpr const char* kCornerLetters = "ABCD";
     static constexpr int kMade = -3, kPair = -2;
@@ -29,6 +29,7 @@ public:
     int pairA = -1, pairB = -1;
     double pairT = 0.0;
     double frequency = 0.0, stress = 1.0, octaves = 1.0;
+    Route keyToFrequency, velocityToStress, wheelToMorph { true, 1.0 };
     int editing = -1;
     int working = 0;
     int anchorTarget = -1;
@@ -84,6 +85,10 @@ public:
     int editStar() const;
     bool onCorner() const;
     bool editable() const;
+    bool live() const { return anchorTarget < 0 && ! (auditioning == -1 && onCorner()); }
+    Route route (int which) const { return which == 0 ? keyToFrequency : which == 1 ? velocityToStress : wheelToMorph; }
+    void setRoute (int which, bool on, double depth);
+    void playedNote (int midi, float velocity);
     void relevel();
     void placeInTarget (int star);
     void beginRowEdit();

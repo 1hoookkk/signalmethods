@@ -40,9 +40,11 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     for (const auto& s : loadReads (root.getChildFile ("evidence/factory-data/abl3-303"), juce::File())) stars.push_back (s);
     libraryCount = stars.size();
     Explore boot;
-    const bool had = open (quad, stars, libraryCount, file, &boot);
+    Patch booted;
+    const bool had = open (quad, stars, libraryCount, file, &boot, &booted);
     pairA = boot.a; pairB = boot.b; pairT = boot.morph;
     frequency = boot.frequency; stress = boot.stress; octaves = boot.octaves;
+    keyToFrequency = booted.key; velocityToStress = booted.velocity; wheelToMorph = booted.wheel;
     if (pairA < 0 || pairB < 0)
     {
         pairA = -1; pairB = -1;
@@ -59,7 +61,12 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
         pinAll ({ starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x91"))), starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x99"))), starNamed ("i"), starNamed ("u") });
     history.clear(); future.clear();
     audio.onNote = [this] (int n) { note = n; changed(); };
-    audio.onWheel = [this] (double v) { if (inPair()) sweep (v); else setPuck (v * 100.0, quad.q); };
+    audio.onNoteOn = [this] (int n, float velocity) { playedNote (n, velocity); };
+    audio.onWheel = [this] (double v) {
+        if (! wheelToMorph.on) return;
+        if (inPair()) sweep (v * wheelToMorph.depth);
+        else setPuck (v * wheelToMorph.depth * 100.0, quad.q);
+    };
     if (pairA >= 0 && pairB >= 0) auditioning = kPair;
     audition();
 }
@@ -144,6 +151,7 @@ Session::Snapshot Session::snapshot() const
     s.quad = quad;
     s.added.assign (stars.begin() + (long) libraryCount, stars.end());
     s.frequency = frequency; s.stress = stress; s.octaves = octaves;
+    s.patch = { keyToFrequency, velocityToStress, wheelToMorph };
     return s;
 }
 
@@ -153,6 +161,7 @@ void Session::restore (const Snapshot& s)
     stars.resize (libraryCount);
     stars.insert (stars.end(), s.added.begin(), s.added.end());
     frequency = s.frequency; stress = s.stress; octaves = s.octaves;
+    keyToFrequency = s.patch.key; velocityToStress = s.patch.velocity; wheelToMorph = s.patch.wheel;
     for (auto& p : quad.pins) if (p >= (int) stars.size()) p = -1;
     if (pairA >= (int) stars.size()) pairA = -1;
     if (pairB >= (int) stars.size()) pairB = -1;
@@ -163,7 +172,8 @@ void Session::restore (const Snapshot& s)
 void Session::apply()
 {
     const Explore state = explore();
-    save (quad, stars, libraryCount, file, &state);
+    const Patch wired { keyToFrequency, velocityToStress, wheelToMorph };
+    save (quad, stars, libraryCount, file, &state, &wired);
     audition();
     changed();
 }
@@ -253,6 +263,25 @@ void Session::setOctaves (double value)
     history.push_back (snapshot()); future.clear();
     octaves = std::clamp (value, -3.0, 3.0);
     apply();
+}
+
+void Session::setRoute (int which, bool on, double depth)
+{
+    if (which < 0 || which > 2) return;
+    history.push_back (snapshot()); future.clear();
+    Route& r = which == 0 ? keyToFrequency : which == 1 ? velocityToStress : wheelToMorph;
+    r.on = on;
+    r.depth = std::clamp (depth, 0.0, 1.0);
+    apply();
+}
+
+void Session::playedNote (int midi, float velocity)
+{
+    if (! live() || (! keyToFrequency.on && ! velocityToStress.on)) return;
+    double toward = frequency, into = stress;
+    if (keyToFrequency.on) toward = std::clamp ((midi - 36) / 48.0, 0.0, 1.0) * keyToFrequency.depth;
+    if (velocityToStress.on) into = std::clamp ((double) velocity, 0.0, 1.0) * velocityToStress.depth + (1.0 - velocityToStress.depth);
+    setProbe (pairT, toward, into);
 }
 
 bool Session::bake()
@@ -695,6 +724,7 @@ void Session::noteOn (int midi)
     if (withAudio && heldNote >= 0 && heldNote != note) audio.noteOff (heldNote);
     heldNote = note;
     if (withAudio) audio.noteOn (note);
+    playedNote (note, 0.8f);
     changed();
 }
 
@@ -707,6 +737,7 @@ void Session::noteOff()
 void Session::keyNoteOn (int midi)
 {
     const int m = std::clamp (midi, 0, 127);
+    playedNote (m, 0.8f);
     if (readingRoom)
     {
         samplerNote = m;

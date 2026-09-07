@@ -2378,3 +2378,16 @@ Open, in order:
   loads 8 notes; the sampler tap carries energy while the cascade tap carries none; frame 150
   of a 220 Hz saw becomes a capture @ 0.87 with formants 255/679/1801/3097 Hz. 182 checks,
   ctest x3, app relinked; shot artifacts/shots/readingroom.png.
+- 2026-09-07, end of night: the patch. Session::Route {on, depth} x3: keyToFrequency (C2 at the
+  anchor, C6 at the transposed anchor), velocityToStress (soft = schwa at depth 1), wheelToMorph
+  (on by default); playedNote (midi, velocity) from the Z row, the on-screen keyboard and MIDI
+  (Audio::onNoteOn on the message thread) calls setProbe when live() = anchorTarget < 0 and not
+  the pad on a corner; saved in the quad json under "patch" {key, velocity, wheel}; routes ride
+  the undo snapshot. Engine draws the three routes under the source words (ink on, dim off,
+  faint asleep), click toggles, wheel steps the depth. Tests: saved with the session, C4 gives
+  frequency 0.5 in the pair, velocity 0.25 -> stress 0.25, asleep on a corner, wheel route off
+  leaves pairT, rendered under the words. Note from the build: QuadTests' main is within tens
+  of KB of the 1 MB stack; the new block heap-allocates its Session and Screen; the next
+  stack Session in main will crash inside Screen::shot (0xC00000FD): heap them or raise /STACK.
+  Also tonight: MAX_TEST_PROMPT.md, the outside tester's prompt (reviewer table + Max's ten-step
+  loop). 188 checks, ctest x3, app relinked.

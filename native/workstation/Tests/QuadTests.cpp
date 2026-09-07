@@ -1084,6 +1084,60 @@ int main()
             "the keyboard is a rule of keys");
     }
 
+    {
+        const auto file = tempQuad();
+        {
+            const auto first = std::make_unique<hs::Session> (root, file, false);
+            first->setRoute (0, true, 0.5);
+        }
+        const auto owned = std::make_unique<hs::Session> (root, file, false);
+        auto& s = *owned;
+        check (s.keyToFrequency.on && std::abs (s.keyToFrequency.depth - 0.5) < 1.0e-9 && ! s.velocityToStress.on && s.wheelToMorph.on,
+            "the patch is saved with the session");
+
+        s.setPuck (40.0, 30.0);
+        s.setPair (0, s.starNamed ("i"));
+        s.setPair (1, s.starNamed ("u"));
+        s.setRoute (0, true, 1.0);
+        s.playedNote (60, 0.8f);
+        std::printf ("      C4 played: frequency %.4f stress %.4f pair %d\n", s.frequency, s.stress, (int) s.inPair());
+        check (std::abs (s.frequency - 0.5) < 1.0e-9 && s.inPair() && same (s.words, hs::motherWordsAt (s.explore(), s.stars)),
+            "a played key moves FREQUENCY between corners");
+
+        s.setRoute (1, true, 1.0);
+        s.playedNote (60, 0.25f);
+        const bool soft = std::abs (s.stress - 0.25) < 1.0e-9;
+        s.playedNote (60, 1.0f);
+        check (soft && std::abs (s.stress - 1.0) < 1.0e-9, "velocity moves STRESS");
+
+        s.setPuck (0.0, 100.0);
+        const double heldFrequency = s.frequency, heldStress = s.stress;
+        const auto heldCorners = hs::cornersOf (s.quad, s.stars);
+        s.playedNote (72, 1.0f);
+        check (! s.live() && s.frequency == heldFrequency && s.stress == heldStress && hs::cornersOf (s.quad, s.stars) == heldCorners,
+            "the routes sleep when the pad sits on a corner");
+
+        s.setPuck (40.0, 30.0);
+        s.setRoute (2, false, 1.0);
+        const double heldMorph = s.pairT;
+        s.audio.onWheel (0.9);
+        check (! s.wheelToMorph.on && s.pairT == heldMorph, "the wheel route can be turned off");
+
+        const auto view = std::make_unique<hs::Screen> (s);
+        auto& screen = *view;
+        s.setRoute (0, true, 1.0);
+        const auto image = screen.shot();
+        int top = 0;
+        for (int y = screen.engine.routes[0].getY(); y < screen.engine.routes[0].getBottom(); ++y)
+            for (int x = screen.engine.routes[0].getX(); x < screen.engine.routes[0].getRight(); ++x)
+                top = std::max (top, (int) image.getPixelAt (x, y).getRed());
+        bool placed = true;
+        for (const auto& r : screen.engine.routes)
+            placed = placed && screen.engine.area.contains (r) && r.getY() >= screen.engine.keys[0].getBottom() && r.getBottom() <= screen.keyboard.area.getY();
+        std::printf ("      routes at %d,%d %dx%d, brightest %d, depth box %d wide\n",
+            screen.engine.routes[0].getX(), screen.engine.routes[0].getY(), screen.engine.routes[0].getWidth(), screen.engine.routes[0].getHeight(), top, screen.engine.depths[0].getWidth());
+        check (placed && top > 200, "the routes render under the words");
+    }
 
     {
         hs::Peevers p;

@@ -227,7 +227,7 @@ bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::Fi
     return file.replaceWithData (b.data(), b.size());
 }
 
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const Explore* explore)
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const Explore* explore, const Patch* patch)
 {
     auto* d = new juce::DynamicObject();
     d->setProperty ("schema", "trench-quad-v1");
@@ -246,6 +246,19 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
         e->setProperty ("octaves", explore->octaves);
         d->setProperty ("explore", juce::var (e));
     }
+    if (patch != nullptr)
+    {
+        auto* p = new juce::DynamicObject();
+        const std::pair<const char*, const Route*> routes[3] { { "key", &patch->key }, { "velocity", &patch->velocity }, { "wheel", &patch->wheel } };
+        for (const auto& [name, route] : routes)
+        {
+            auto* r = new juce::DynamicObject();
+            r->setProperty ("on", route->on);
+            r->setProperty ("depth", route->depth);
+            p->setProperty (name, juce::var (r));
+        }
+        d->setProperty ("patch", juce::var (p));
+    }
     juce::Array<juce::var> captures;
     for (size_t i = libraryCount; i < stars.size(); ++i)
     {
@@ -261,10 +274,11 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     return file.replaceWithText (juce::JSON::toString (juce::var (d)));
 }
 
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, Explore* explore)
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, Explore* explore, Patch* patch)
 {
     quad = Quad();
     if (explore != nullptr) *explore = Explore();
+    if (patch != nullptr) *patch = Patch();
     stars.resize (libraryCount);
     if (! file.existsAsFile()) return false;
     const auto v = juce::JSON::parse (file);
@@ -291,6 +305,18 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
         explore->frequency = std::clamp ((double) e.getProperty ("frequency", 0.0), 0.0, 1.0);
         explore->stress = std::clamp ((double) e.getProperty ("stress", 1.0), 0.0, 1.0);
         explore->octaves = std::clamp ((double) e.getProperty ("octaves", 1.0), -3.0, 3.0);
+    }
+    if (patch != nullptr)
+    {
+        const auto p = v.getProperty ("patch", juce::var());
+        const std::pair<const char*, Route*> routes[3] { { "key", &patch->key }, { "velocity", &patch->velocity }, { "wheel", &patch->wheel } };
+        for (const auto& [name, route] : routes)
+        {
+            const auto r = p.getProperty (name, juce::var());
+            if (! r.isObject()) continue;
+            route->on = (bool) r.getProperty ("on", route->on);
+            route->depth = std::clamp ((double) r.getProperty ("depth", route->depth), 0.0, 1.0);
+        }
     }
     quad.morph = std::clamp ((double) v.getProperty ("morph", 0.0), 0.0, 100.0);
     quad.q = std::clamp ((double) v.getProperty ("q", 0.0), 0.0, 100.0);

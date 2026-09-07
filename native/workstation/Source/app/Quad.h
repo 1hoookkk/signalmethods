@@ -36,6 +36,17 @@ struct Explore
     double morph = 0.5, frequency = 0.0, stress = 1.0, octaves = 1.0;
 };
 
+struct Route
+{
+    bool on = false;
+    double depth = 1.0;
+};
+
+struct Patch
+{
+    Route key, velocity, wheel { true, 1.0 };
+};
+
 trench::core::PackedBody motherBodyOf (const Explore& explore, const std::vector<Star>& stars);
 Words motherWordsAt (const Explore& explore, const std::vector<Star>& stars);
 
@@ -73,8 +84,8 @@ Words lerp (const Corners& c, double morph, double q);
 Words wordsAt (const Quad& quad, const std::vector<Star>& stars);
 Bytes bytesOf (const Corners& c);
 bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::File& file);
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const Explore* explore = nullptr);
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, Explore* explore = nullptr);
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const Explore* explore = nullptr, const Patch* patch = nullptr);
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, Explore* explore = nullptr, Patch* patch = nullptr);
 std::vector<double> curveHz();
 std::vector<double> responseDb (const Words& words, const std::vector<double>& hz);
 double peakDb (const Words& words, const std::vector<double>& hz);

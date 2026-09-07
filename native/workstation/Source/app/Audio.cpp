@@ -191,9 +191,11 @@ void Audio::handleIncomingMidiMessage (juce::MidiInput*, const juce::MidiMessage
     if (message.isNoteOn())
     {
         const int n = message.getNoteNumber();
-        if (samplerRoute.load()) samplerNoteOn (n, message.getFloatVelocity());
-        else noteOn (n, message.getFloatVelocity());
+        const float velocity = message.getFloatVelocity();
+        if (samplerRoute.load()) samplerNoteOn (n, velocity);
+        else noteOn (n, velocity);
         if (onNote) juce::MessageManager::callAsync ([this, n] { if (onNote) onNote (n); });
+        if (onNoteOn) juce::MessageManager::callAsync ([this, n, velocity] { if (onNoteOn) onNoteOn (n, velocity); });
     }
     else if (message.isNoteOff())
     {
