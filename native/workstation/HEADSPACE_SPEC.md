@@ -7,11 +7,10 @@ buttons, no captions. Two more windows: the spectrogram on G, and the stage on E
 
 Rulings of 2026-09-07 not yet built, which the next slices must honour: the look reads
 cartoonish and unserious and is not striking; no icons, words in small caps instead; hairline
-curves and crosshair markers; the keyboard a rule of keys; one hero on the screen. The stage,
-the editing of one corner's poles and zeros, leaves the screen for its own window, opened on E,
-like the spectrogram; the screen shows, it does not edit. The stage window carries two plots: the
-response with its handles as before, and the ARMAdillo plot, poles and zeros on the circle in the
-chip's own encoded coordinates, used last, to place the zeros by hand. Ingest: anything read (a
+curves and crosshair markers; the keyboard a rule of keys; one hero on the screen. The stage
+stays top right, the hero, and shows what plays at the pad with the working corner's handles;
+there is no E window. The ARMAdillo plot, poles and zeros on the circle in the chip's own
+encoded coordinates, sits behind a key, used last, to place the zeros by hand. Ingest: anything read (a
 frame off the surface, a file, an impulse response, a table row) writes poles only and parks its
 zeros, the row-six ceiling excepted; anything already in the chip's words (the 132 P2K corners,
 the 2,312 Morpheus corners) comes in as a card by byte copy with its zeros; Klatt, Hillenbrand and
@@ -75,19 +74,21 @@ mother. The body, the engine and the keyboard are bottom-right. Nothing else.
 3. The palette. The vowel space, F2 high to low across and F1 close to open down, with the 12
    Klatt vowels and schwa as named landmarks and the 48 Hillenbrand medians as quiet dots. Click
    to hear, click empty space to make a vowel at that F1 and F2, Shift-drag a vowel to transpose
-   it by its first formant. Beside it the cards in three tabs, Bodies, Reads, Captures, each with
-   its name and its curve; drop a .wav on the list to read it. Keep, above the chart, keeps what
+   it by its first formant. Beside it one list of cards indexed by family, CAPTURES the top
+   family, each card its name and its curve, the find flattening the list; drop a .wav on the
+   list to read it. Keep, above the chart, keeps what
    plays as a capture.
 4. The body, the engine, the keyboard. The body is the 2x2 of the shipping corners, A top-left
    M0 Q1, B top-right M1 Q1, C bottom-left M0 Q0, D bottom-right M1 Q0, each a name and its
    curve, and it is the pad: the diamond on it is MORPH and Q, drag it anywhere. Click a letter
    to make that corner the working corner, the one the stage shows and Enter fills; click the
-   caret to pick from the palette; drop a card or a .wav on a cell. The engine is a small plot
-   of what plays with its name, the arrows that feed what plays into A B C D, the write glyph
-   for the 240 bytes, and the sources: play, pluck, saw with its note, noise, loop. Pluck is the
-   only source that strikes the 10 ms burst; the others hold their sound while a key is down
-   and ring down on release. The keyboard is three octaves. Space drones without a key. The key
-   never moves the filter.
+   caret to pick from the palette; drop a card or a .wav on a cell. The engine is the name of
+   what plays, the write glyph for the 240 bytes, and the sources as words: play, pluck, saw
+   with its note, noise, loop; it has no plot, the live spectrum is on the stage. Pluck strikes
+   the 10 ms burst; play under pluck is an impulse train, twice a second, so the filter rings on
+   its own; the others hold their sound while a key is down and ring down on release. The
+   keyboard is three octaves and fills the band under the body. Space drones without a key.
+   The key pitches the source; it moves the filter only through the KEY to FREQUENCY route.
 
 ## The spectrogram window
 
@@ -159,10 +160,9 @@ family from the XL bank, `evidence/factory-data/xl1-dsf-aud` (224 notes named "<
 or drop a .wav or a folder; a key plays the nearest sampled note of the loaded family, mixed
 straight to the device, never through the cascade; Peevers's analysis runs on that signal, Env
 and Span's averager; a frame off its surface becomes a corner. The main engine plays the body.
-The bottom right must let you play the filter and see it: the engine plot goes live, the
-output's spectrum over the corner's response with the input's spectrum dimmer, refreshed while
-keys are held; the keyboard stays; the arrows, Keep and the file name go; the sources are four
-words; the plot is the sound, dragged onto a cell to place it.
+The bottom right must let you play the filter and see it: the output's spectrum draws on the
+stage over the hero curve while keys are held; the keyboard stays; the arrows, Keep and the
+file name are gone; the sources are words; the sound's name is dragged onto a cell to place it.
 
 Ruling of 2026-09-07, later still: "work directly from the top right and straight into the 2x2
 grid while moving the morph there." The stage stays top right; there is no E window. The stage
@@ -209,15 +209,13 @@ once on release. A read's zeros stay parked unless placed by hand.
    at the anchor, high at the transposed anchor, the Morpheus's own Freq Tracking axis through
    the chip's lerp), VELOCITY to STRESS (soft relaxes toward schwa, hard to full excursion),
    WHEEL to MORPH. Live between corners and in the mother; off when the pad sits on a corner,
-   because a corner is a fixed place. The stage shows the cube move as you play.
-1b. The engine goes live: output and input spectra over the response while keys are held;
-   arrows, Keep and file name removed; sources as words; the plot as a draggable card.
+   because a corner is a fixed place. The stage shows the cube move as you play. The pad's
+   nearest corner is the working corner, so the state follows the puck; on the corner it edits.
 2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp
    (`evidence/research-results/emu-sgi-1993/span/decompiled/`): `demean`, `xavg` with its
    feedback constant, power or energy, `draw_axes` and `draw_graph`; keys C reset the averager,
    S snapshot, X and Y the axis limits; defaults Blackman, 1024, 1024.
-3. The stage shows what plays at the pad with the working corner's handles; the ARMAdillo plot
-   behind a key for the zeros.
+3. The ARMAdillo plot behind a key for the zeros.
 4. Ingest: reads are poles only with parked zeros; the 132 P2K and 2,312 Morpheus corners as
    cards by byte copy from the canonical export; Peterson and Barney landmarks; a folder of
    notes as one source.
