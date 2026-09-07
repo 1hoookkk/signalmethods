@@ -49,6 +49,23 @@ state is heard and captured, never edited. The ARMAdillo plot is not a zero edit
 same six sections in the chip's own coordinates, the same selection, the response plot with its
 coordinates changed by a key; zeros are simply easier to place there. No modifier hotkeys.
 
+## The document and its projections
+
+Ruling of 2026-09-07, late night: HEADSPACE is a filter document with projections, never a set
+of interactive panes. The document is Session: the body, the pair and its three directions, the
+selection, the source, the cards, the history. Every screen is a projection of it read through
+`Bridge::state()`, one JSON document at 30 Hz, and every gesture is a name dispatched through
+`Bridge::dispatch`. The page computes no words and no curves; curves arrive sampled on a 96-point
+log grid. The screen is a WebView page, `Source/web/index.html` and `app.js`, served off disk so
+an edit reloads without a relink; Session, Audio and native/core are untouched by it. The
+painted Screen stays only as the tests' harness until the page carries every check.
+
+Target layout, to be moved into as slices touch each part:
+domain (FilterWords, Section, Corner, Body, ARMAdillo, Interpolation, Transforms: native/core and
+Quad.h); application (Document, Selection, Command, UndoHistory, Library: Session.cpp and
+Library.cpp); audio (Auditioner, Sources, MidiInput: Audio.cpp); analysis (Peevers, Span, Ingest:
+Peevers.cpp, VectorFit.cpp, the reads in Library.cpp); bridge (Bridge.cpp); ui/web.
+
 ## The loop the tool must pass
 
 Load two very different anchors. Hold notes and play a phrase while morphing with the mod wheel.
