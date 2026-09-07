@@ -1,0 +1,245 @@
+		Three dimensional spectrogram display program
+		---------------------------------------------
+
+Author: Alan W. Peevers, E-mu Systems, Scotts Valley, CA.
+
+Spectrogram is a program which resulted from my MS project at UC
+Berkeley during the winter of 1993-94. As such, it is being offered
+to the world at large so that people can have fun with it. There is
+absolutley NO support for this program, and no responsibility is
+assumed by the author, SGI, or the University of California for any
+losses incurred through its use. There are many bugs and inaccuracies, 
+some of which I know about, and others I may not.  But the program is 
+fun and useful as is, as an educational tool, as long as you agree to
+these terms.
+
+For the impatient:
+------------------
+1) It's nice to have a sounds directory, with some .aiff files in it,
+   in your current directory.
+2) Set the sample rate to something low (for speech, 8-11 kHz works
+   well).
+3) Say spectrogram -l (for 'live' input), or spectrogram with no args
+   to bring up a list of your .aiff files. Don't load a Huge soundfile
+   or it will gobble up ALL of your system's memory and page like mad!
+4) If you want usage, say spectrogram -h (for help). 
+
+This program displays spectrograms of audio data on the SGI screen in
+3D. The dimensions of the spectrogram are x<-->frequency, y<-->amplitude,
+and z<-->time. This type of image is very useful in analyzing and
+understanding signals, for example in speech and acoustics research.
+Conventional spectrograms just use greyscale to depict the amplitude
+dimension. This program attempts to show that by using a true 3D
+display, more information can be conveyed. 
+
+It has a rich set of command line options (issue -h to see them), with
+reasonable defaults for all of them. When invoked with no options, it
+will bring up a menu of files in the current 'sounds' directory (if
+you don't have a sounds directory, you can modify the directory field
+[click on it with the mouse] to point to where your aiff files are).
+
+Once you've opened a sound file,the display can be manipulated using
+mouse movements to tilt the display to the desired orientation.  When
+the middle mouse button is depressed, you will see a rectangular grid
+displayed on the screen.  This represents the 'baseline' onto which
+the 3D scene will be placed. Move the mouse while holding the middle
+button. The interaction should be very intuitive. I 'borrowed' the
+mouse input routines from the amesh demo program. They basically
+extract azimuth and declination from the mouse x and y movements.
+These values get used in a call to the 'polarview' gl function. Once
+the mouse is released, the spectrogram will be redrawn in the new
+orientation.
+
+Every time a new orientation is indicated, subsequent data from the
+file will be displayed using the new transformations. Once a file has
+been completely displayed (or 'Length' slices of data, whichever is
+smaller), the file is closed and, if the user requests that it be re-
+displayed, re-opened and re-read. This way, the actually 3-D surface
+is not actually stored. It turns out that the time required to
+manipulate a set of say 300x512 points is so long as to make
+interactivity pretty unlikely on most machines, so I went with this
+'redraw' approach. The grid is a decent compromise, akin to dragging
+outlined regions instead of all the RGB pixels in an image
+application.
+
+The sliders on the right affect the image as follows: The Translation
+group allows you to translate  the center of the spectrogram display
+in the time, amplitude, and frequency directions. The Cursor slider
+lets you navigate through sub-sections of the surface when in
+'Navigate' mode (see below).  Zoom gets translated into the 'field of
+view' argument to the call to perspective. Gain affects how much the
+incoming audio data is scaled before being rendered. This has two
+effects on the image-- as the gain increases: the image gets taller,
+and more of the lookup table locations are addressed. This is in
+contrast with the 'ascale' slider which affects only the height, not
+the color, of the image. Floor allows you to adjust the offset of the
+fft magnitude, so, for example, you can just look at the peaks of the
+spectral surface, or look down in the valleys as well. Together, gain
+and floor are very useful for tweaking the display for any particular
+image. Twist twirls the surface about the z-axis (only intuitive if
+you haven't changed the Translation sliders).  It's just there for
+completeness. Tscale, ascale, and fscale allow you to scale the
+surface in each of the time, amplitude, and frequency directions,
+respectively.
+
+There are four menus available: File, Colors, Filter, and Window.
+They can be opened up by clicking with any mouse button. To select
+any of the options, you must use the right mouse button. To exit from
+a menu selection without actually choosing an option, use the right
+mouse button outside the menu. The File menu is what you use to open
+new files, select live audio input, or to quit. Please use this
+method to quit, so that the palette will be put back where it was
+when the program was started.  If you forget to do this (or if the
+program crashes!) you can reset the palette by issuing the command
+'makemap' at the UNIX command line (or clicking the makemap icon).
+
+The colored sliders on the left allow you to manipulate the color
+lookup table. There are two modes of interaction, as selected by
+using the 'Colors' menu. When 'Interpolate' is chosen, the sliders on
+the left allow you to select the color that a color index of zero
+(minimum amplitude) will map to, while those on the right are used to
+select the color for color index 255 (maximum amplitude). The
+remaining colors in the LUT are linearly interpolated. In
+'SineColors' mode, the sliders are reinterpreted. The group on the
+left gives Reg, Green, and Blue 'phase' values, while that on the
+right gives the corresponding frequencies. Sinusoidal chrominance
+gratings are thus created for each of R, G, and B, where the
+gratings' frequencies and phases are independently specified. This is
+a useful hack for visualizing surfaces that don't have much dynamic
+range. For most images, it is most useful to keep the frequency
+sliders very low and just tinker with the phases to obtain pleasing
+palettes. Winning combinations can be saved using the SGI savemap
+command from the shell. Subsequently, the Open option of the Colors
+menu can be used to load one of your .map files into the palette.
+Note that spectrogram assumes the existance of a 'map' directory just
+as it assumes the existance of a 'sounds' directory. If you don't
+have one, you can again over-ride it by clicking with the mouse on
+the directory file of the dialog box.
+
+The Filter menu allows you to load and save time-varying filters.
+These are raw binary floating point files representing the series of
+Fourier transform magnitudes used by spectrogram to do time-varying
+filtering.  The size of this file is 4 * number_of_fft_frames *
+(FFT_order/2 + 1).  The easiest way to create a .filt file (the
+existance of a 'filt' directory is assumed- see Colors and File menu
+comments above) is to analyze an interesting time varying sound
+(SynWin should be enabled), go into 'Navigate' mode (see below), and
+select Save from the Filter menu. A .filt file will be created of the
+FFT magnitude data. This file can subsequently loaded via the Open
+option of this menu. To apply the filter, select the Modify button.
+
+The Window Menu allows you to select from eight different window types
+that have proven useful in doing audio analysis. They basically trade
+off resolution vs sidelobe suppression in the resulting FFT. There
+is an option to turn off windowing (i.e. rectangular windowing), which
+gives the best resolution but also has terrible sidelobe artifacts. If
+you are going to do time varying filters, Hanning or Hamming windows 
+are recommended.
+
+The Length window, mentioned briefly above, allows you to type in the
+number of slices you would like to see. This is useful if you don't
+want to see an entire file. It comes up with a number computed from
+the length of the .aiff file, or 500 if live input is selected.  For
+the polar mode display (see below) this number should be at least
+1000.
+
+There are many buttons which control various features. The most
+important one is labelled Pause underneath. The button itself is
+labelled according to whether we are reading from Live Input, reading
+from a File Input, or in Pause (also known as 'Navigate' mode). Pause
+will freeze the display until it is clicked again, causing the button
+to revert back to it's original (LiveIn or FileIn) state. Once you
+are in a navigate mode, the current surface can be examined in detail
+using the Length window and the Cursor slider. The Cursor slider
+indicates the first slice to be shown (the slider range can be set by
+clicking on the number boxes at either end). The length tells how
+many slices, as before.  The mode used to render the surface can be
+changed by clicking on the 'Mesh' button. Each time it is clicked,
+the drawing style will cycle through Mesh, Line, Point, and Polygon
+rendering methods. Line and Point modes render more quickly, so
+consider using them while 'roaming around'. Depending on your machine,
+Mesh or Poly are the next fastest, so experiment. 
+
+
+Clear clears and redraws the screen. It also flushes any audio
+samples that are waiting to be read from the A/D convertor, so you
+can use this to 'catch up' with your live input, if things are
+falling behind.  Impulse and modify are useful only when you are in
+navigate mode and have loaded a filter (the program boots with a slow
+sweep from high to low frequency in place). Impulse will substitute 
+the STFT of a train of impulses for the surface analyzed from
+the input signal. This is useful in conjunction with Modify, since it
+allows you to hear the time-varying filter's impulse response. Modify
+applies the currently active filter to the current input's transform
+(or to the transform of an impulse train).
+
+Perspective allows you to disable the perspective transformation, so
+that distant things will be the same size as close ones. This can be
+useful if you just want a straight waterfall display for example.
+'ZB' and 'DB' enable Z-buffering and Double buffering, respectively.
+On 8-bit machines, double buffering will completely trash your
+colors, since you end up with two 4-bit buffers. The LogF button
+allows the frequency axis to be scaled logarithmically instead of
+linearly. Useful for applications requiring higher resolution in the
+lower frequencies. Polar will create a novel '3D radar screen'
+effect. This is a neat way of getting around the fact that eventually
+we 'run off the end' when we are rendering slices linearly. Instead,
+successive slices are rotated redially about the y axis. You even get
+a different grid in this mode. The 2D button allows you to choose
+between have a 2D or a 3D display.  This mode can display some
+beautiful details which might not be obvious in  all 3D displays.
+Clicking a second time returns to 3D mode. Clicking on the Axes
+button will place you in Axes mode, where all axes will be labelled.
+The time axis is labelled in seconds, the frequency axis is in kHz,
+and the amplitude is labelled in dB.
+
+>From the smaller button group: Monitor will turn on and off the
+output of audio to the speaker. In LiveIn and FileIn mode, this is
+just a copy of the audio as it's being analyzed. In Pause mode, it
+actually is resynthesized by taking Inverse FFT's and doing the
+overlap add computation. Scope will bring up a time domain display of
+what's going on. This is really useful in understanding how the
+overlap add computation works. It only works when you're
+resynthesizing (in Pause mode). The top trace is the IFFT of current
+frame, the middle trace is the IFFT of the previous frame, and the
+bottom trace is the sum of the overlapping samples, which gets sent
+to the DAC. You may not be able to do this and keep up with the DAC
+sample rate.  Meter gives a running status (to the right of the 3D
+plot) of how many audio input samples are in the input buffer waiting
+to be read.  This shows whether or not the rendering is keeping up
+with a given audio data rate. If the bar is increasing over time, you
+should try a slower A/D sampling rate, or smaller overlap amount
+(greater stride). Env tells the program to plot the 'spectral
+envelope' of the input, instead of the normal FFT plot. This spectral
+envelope is computed by performing a 12th order LPC analysis, and
+taking the FFT of the impulse response of the LPC synthesis filter.
+The surface so created can be saved via the filter menu (go into Pause
+mode first), and used subsequently as a time-varying filter.
+
+Lastly, the number boxes at the left allow you to input parameters
+for the type of FFT analysis you want. You can set the FFT size, the
+window size, and the stride. FFT size must be a power of 2. Win Size
+can be anything up to FFT size. This is the length of the window
+applied to the audio data before applying the FFT. Shorter windows
+give faster dynamics, but poorer frequency resolution. Stride refers
+to the number of samples to step ahead in the input data after each
+analysis frame. In general, the stride should be set to some
+submultiple of the window size (one half is good), and the window
+size should be as long as possible for a given FFT length. If you are
+going to do modifications, you may find objectionable artifacts (time
+domain aliasing) if you set the window length too long. Longer FFT's
+will require more of your CPU, since the FFT is O(N log N)
+computations.
+
+There are many command line arguments. To read about them, just type
+spectrogram -h (for help), and a list of options will be printed. A
+useful parameter is -O, which will cause the file 'testout.aiff' to
+be created in the current directory. All samples that are synthesized
+(not those that are being analyzed- in other words, only sounds
+generated in navigate mode) also get written to this file. This is
+very useful if you want to operate at higher sample rates than your
+machine can support in real time.
+
+A little tweaking goes a long way. Have fun, and thanks for trying it out!
+
+Alan Peevers

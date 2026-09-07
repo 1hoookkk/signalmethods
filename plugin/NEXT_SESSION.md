@@ -2260,3 +2260,10 @@ Open, in order:
   writer script is gone, so MORPH on those files plays Frequency or Transform; a canonical
   re-export (native index = Morph + 2 Frequency + 4 Transform, raw row order, manifest) is
   running into evidence/factory-data/morpheus/canonical/.
+- 2026-09-07, Span: Peevers's second SGI program decompiled headless (23 routines, 0 failures,
+  evidence/research-results/emu-sgi-1993/span/): the same analysis core as the Spectrogram
+  (win_calc with the nine windows, winmult, spectrum, fft, log_of) plus demean, an exponential
+  averager xavg with feedback k, power or energy, snapshots to xgraph, keys C Q R S X Y; defaults
+  Blackman, FFT 1024, window 1024. Its main prints "Copyright (c) 1995 E-mu Systems, Inc.",
+  verified in the bytes: the first E-mu copyright on an artifact in this line (the Spectrogram
+  carries the 1993 UC Regents line).
