@@ -1462,6 +1462,11 @@ int main()
         const bool struck = s.heldNote == 60 && (int) bridge.state()["source"]["held"] == 60;
         bridge.dispatch ("noteOff", {});
         const bool bogus = ! bridge.dispatch ("bogus", {});
+        bridge.dispatch ("setPair", { 0, s.starNamed ("i") });
+        bridge.dispatch ("setPair", { 1, s.starNamed ("u") });
+        bridge.dispatch ("sweep", { 0.4 });
+        const size_t hadStars = s.stars.size();
+        const bool anchored = bridge.dispatch ("anchorFromPlays", { 1 }) && s.stars.size() == hadStars + 1 && s.pairB == (int) s.stars.size() - 1 && s.stars.back().kind == "capture";
         bridge.dispatch ("pinCorner", { 0, s.starNamed ("i") });
         bridge.dispatch ("setPuck", { 0.0, 100.0 });
         const auto before = bridge.state()["stage"];
@@ -1472,7 +1477,7 @@ int main()
         std::printf ("      section 1 pole %.0f Hz r %.4f moved to %.0f Hz\n", hz, r, movedHz);
         const bool edited = (bool) before["editable"] && std::abs (movedHz / hz - 1.5) < 0.02 && (int) after["target"] == 0;
         std::printf ("      bridge: %d cards, curve %d points, label '%s'\n", state["cards"].size(), state["stage"]["curve"].size(), state["label"].toString().toRawUTF8());
-        check (shaped && moved && struck && s.heldNote == -1 && bogus && edited, "the bridge states the session as one document and dispatches by name, section geometry included; the page reads it and never computes words");
+        check (shaped && moved && struck && s.heldNote == -1 && bogus && edited && anchored, "the bridge states the session as one document and dispatches by name, section geometry included; the page reads it and never computes words");
     }
 
     std::printf ("%d failures\n", failures);

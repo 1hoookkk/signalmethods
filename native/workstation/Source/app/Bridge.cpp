@@ -78,6 +78,8 @@ juce::var Bridge::state() const
         pair->setProperty ("b", b ? session.stars[(size_t) session.pairB].name : juce::String());
         pair->setProperty ("aStar", session.pairA);
         pair->setProperty ("bStar", session.pairB);
+        if (a) pair->setProperty ("aCurve", curveOf (session.stars[(size_t) session.pairA].words));
+        if (b) pair->setProperty ("bCurve", curveOf (session.stars[(size_t) session.pairB].words));
         pair->setProperty ("morph", session.pairT);
         pair->setProperty ("frequency", session.frequency);
         pair->setProperty ("stress", session.stress);
@@ -134,6 +136,14 @@ bool Bridge::dispatch (const juce::String& name, const juce::Array<juce::var>& a
         return true;
     }
     if (name == "editAnchor") { session.editAnchor (whole (0, 0)); return true; }
+    if (name == "anchorFromPlays")
+    {
+        const size_t had = session.stars.size();
+        session.keep();
+        if (session.stars.size() != had + 1) return false;
+        session.setPair (whole (0, 0), (int) session.stars.size() - 1);
+        return true;
+    }
     if (name == "nudge") { session.nudge (num (0), num (1)); return true; }
     if (name == "toCorner") { session.toCorner (whole (0, 0)); return true; }
     if (name == "pinCorner") { session.pinCorner (whole (0, 0), whole (1)); return true; }

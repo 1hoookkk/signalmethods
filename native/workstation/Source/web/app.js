@@ -12,11 +12,11 @@ let S = null;
 const view = {};
 const plotEl = document.getElementById("plot");
 
-let sized = null;
+const sizes = new Map();
 function fit(c) {
   const r = c.getBoundingClientRect(), s = devicePixelRatio || 1;
   const key = r.width + "x" + r.height + "@" + s;
-  if (sized !== key) { c.width = Math.max(1, r.width * s); c.height = Math.max(1, r.height * s); sized = key; }
+  if (sizes.get(c) !== key) { c.width = Math.max(1, r.width * s); c.height = Math.max(1, r.height * s); sizes.set(c, key); }
   const g = c.getContext("2d"); g.setTransform(s, 0, 0, s, 0, 0);
   g.clearRect(0, 0, r.width, r.height);
   return { g, w: r.width, h: r.height };
@@ -83,6 +83,41 @@ function drawResponse(g, r) {
   g.stroke();
 }
 
+const cubeEl = document.getElementById("cubeC");
+let anchorPick = -1;
+function drawCube() {
+  const { g, w, h } = fit(cubeEl);
+  const cw = Math.max(60, Math.round((w - 36) / 2));
+  const ch = Math.max(50, Math.min(cw, h - 150));
+  const cells = [{ x: 12, y: 26, w: cw, h: ch }, { x: w - 12 - cw, y: 26, w: cw, h: ch }];
+  const names = [S.pair.a, S.pair.b], curves = [S.pair.aCurve, S.pair.bCurve], stars = [S.pair.aStar, S.pair.bStar];
+  cells.forEach((c, i) => {
+    const target = S.pair.anchorTarget === i, picking = anchorPick === i;
+    label(g, (i === 0 ? "A  " : "B  ") + (names[i] || (picking ? "click a card" : "")), c.x, c.y - 10, target || picking ? C.ink : C.text);
+    g.strokeStyle = target ? C.rule : picking ? C.orange : C.faint; g.lineWidth = 1; g.strokeRect(c.x + 0.5, c.y + 0.5, c.w - 1, c.h - 1);
+    g.strokeStyle = C.faint; const y0 = Math.round(yOfDb(0, c)) + 0.5; g.beginPath(); g.moveTo(c.x, y0); g.lineTo(c.x + c.w, y0); g.stroke();
+    if (curves[i]) { g.strokeStyle = target ? C.orange : C.blue; g.lineWidth = 1.2; g.beginPath(); curves[i].forEach((db, k) => { const x = xOfIndex(k, c), y = yOfDb(db, c); if (k === 0) g.moveTo(x, y); else g.lineTo(x, y); }); g.stroke(); }
+  });
+  const top = cells[0].y + ch + 28;
+  const rails = [0, 1, 2].map(i => ({ x: 12, y: top + i * 34, w: w - 96, h: 20 }));
+  const at = [S.pair.morph, S.pair.frequency, S.pair.stress];
+  const words = ["MORPH", "FREQUENCY", "STRESS"];
+  const readings = [Math.round(at[0] * 100), ((S.pair.octaves * at[1]) >= 0 ? "+" : "") + (S.pair.octaves * at[1]).toFixed(2) + " oct", Math.round(at[2] * 100)];
+  rails.forEach((r, i) => {
+    label(g, words[i], r.x, r.y - 8, C.dim);
+    label(g, String(readings[i]), r.x + r.w, r.y - 8, S.pair.live ? C.text : C.dim, "right");
+    g.strokeStyle = C.faint; g.lineWidth = 1; g.beginPath(); g.moveTo(r.x, r.y + r.h / 2 + 0.5); g.lineTo(r.x + r.w, r.y + r.h / 2 + 0.5); g.stroke();
+    const x = r.x + r.w * at[i], y = r.y + r.h / 2;
+    g.fillStyle = C.panel; g.strokeStyle = S.pair.live ? C.blue : C.dim; g.lineWidth = 1.8;
+    g.beginPath(); g.moveTo(x, y - 8); g.lineTo(x + 8, y); g.lineTo(x, y + 8); g.lineTo(x - 8, y); g.closePath(); g.fill(); g.stroke();
+  });
+  label(g, (S.pair.octaves >= 0 ? "+" : "") + S.pair.octaves.toFixed(1) + " oct", rails[1].x + rails[1].w + 8, rails[1].y + 10, C.dim);
+  label(g, "BAKE", w - 12, rails[2].y + 10, S.pair.live ? C.ink : C.faint, "right");
+  label(g, "CUBE", 12, 12, C.dim);
+  label(g, "1 and 2 make what plays an anchor", w - 12, 12, C.faint, "right");
+  view.cube = { cells, rails, bake: { x: w - 52, y: rails[2].y, w: 40, h: 20 }, stars };
+}
+
 function drawPlot() {
   const { g, w, h } = fit(plotEl);
   const responseH = Math.max(90, Math.round(h * 0.3));
@@ -91,7 +126,7 @@ function drawPlot() {
   drawArmadillo(g, a);
   const r = { x: 44, y: a.cy + 34, w: w - 60, h: h - a.cy - 34 - 24 };
   drawResponse(g, r);
-  label(g, S.stage.editable ? "ARMADILLO" : "ARMADILLO  (between corners, listening only)", 12, 14, S.stage.editable ? C.ink : C.dim);
+  label(g, S.stage.editable ? "ARMADILLO" : "ARMADILLO  (the probe, listening only)", 12, 14, S.stage.editable ? C.ink : C.dim);
   label(g, "hold Z to hear", w - 12, 14, S.source.held >= 0 ? C.ink : C.dim, "right");
   view.a = a; view.response = r;
 }
@@ -138,7 +173,10 @@ function drawList() {
       const row = document.createElement("div");
       row.className = "card" + (c.star === pinned ? " on" : "");
       row.textContent = c.name;
-      row.onclick = () => { dispatch("pinCorner", 0, c.star); dispatch("setPuck", 0, 100); };
+      row.onclick = () => {
+        if (anchorPick >= 0) { dispatch("setPair", anchorPick, c.star); anchorPick = -1; drawAll(); return; }
+        dispatch("pinCorner", 0, c.star); dispatch("setPuck", 0, 100);
+      };
       list.appendChild(row);
     }
   });
@@ -147,8 +185,34 @@ function drawList() {
 function drawAll() {
   if (!S) return;
   document.getElementById("name").textContent = S.corners[0].name || "";
-  drawPlot(); drawWords(); drawList();
+  drawCube(); drawPlot(); drawWords(); drawList();
 }
+
+const localTo = (e, el) => { const b = el.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; };
+const inside = (p, r) => r && p.x >= r.x && p.x < r.x + r.w && p.y >= r.y && p.y < r.y + r.h;
+let railDrag = -1;
+cubeEl.addEventListener("pointerdown", (e) => {
+  const p = localTo(e, cubeEl), v = view.cube;
+  if (!v) return;
+  for (let i = 0; i < 2; i++) if (inside(p, v.cells[i]) || inside(p, { x: v.cells[i].x, y: v.cells[i].y - 20, w: v.cells[i].w, h: 20 })) {
+    if (v.stars[i] >= 0 && anchorPick !== i) { anchorPick = -1; dispatch("editAnchor", i); }
+    else anchorPick = anchorPick === i ? -1 : i;
+    drawAll(); return;
+  }
+  if (inside(p, v.bake)) { dispatch("bake"); return; }
+  for (let i = 0; i < 3; i++) if (inside(p, { x: v.rails[i].x, y: v.rails[i].y - 6, w: v.rails[i].w, h: v.rails[i].h + 12 })) { railDrag = i; cubeEl.setPointerCapture(e.pointerId); moveRail(i, p); return; }
+});
+let railPending = null, railInFlight = false;
+function flushRail() {
+  if (!railPending || railInFlight) return;
+  const { i, t } = railPending; railPending = null; railInFlight = true;
+  const call = i === 0 ? dispatch("sweep", t) : i === 1 ? dispatch("setProbe", S.pair.morph, t, S.pair.stress) : dispatch("setProbe", S.pair.morph, S.pair.frequency, t);
+  Promise.resolve(call).finally(() => { railInFlight = false; if (railPending) requestAnimationFrame(flushRail); });
+}
+function moveRail(i, p) { const r = view.cube.rails[i]; railPending = { i, t: Math.min(1, Math.max(0, (p.x - r.x) / r.w)) }; requestAnimationFrame(flushRail); }
+cubeEl.addEventListener("pointermove", (e) => { if (railDrag >= 0) moveRail(railDrag, localTo(e, cubeEl)); });
+cubeEl.addEventListener("pointerup", () => { railDrag = -1; });
+cubeEl.addEventListener("wheel", (e) => { const p = localTo(e, cubeEl), v = view.cube; if (v && inside(p, { x: v.rails[1].x, y: v.rails[1].y - 6, w: v.rails[1].w + 70, h: v.rails[1].h + 12 })) dispatch("setOctaves", S.pair.octaves + (e.deltaY > 0 ? -0.25 : 0.25)); });
 
 const local = (e) => { const b = plotEl.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; };
 function handleAt(p) {
@@ -193,9 +257,11 @@ window.addEventListener("keydown", (e) => {
   if (e.ctrlKey && e.code === "KeyZ") dispatch("undo");
   if (e.ctrlKey && e.code === "KeyY") dispatch("redo");
   if (e.ctrlKey && e.code === "KeyW") dispatch("write");
+  if (e.code === "Digit1" || e.code === "Digit2") { anchorPick = -1; dispatch("anchorFromPlays", Number(e.code.slice(-1)) - 1); }
+  if (e.code === "Escape") { anchorPick = -1; drawAll(); }
 });
 window.addEventListener("keyup", (e) => { if (e.code === "KeyZ" && down) { down = false; dispatch("noteOff"); } });
 
 window.__JUCE__.backend.addEventListener("state", (s) => { S = s; drawAll(); });
 readState().then((s) => { S = s; if (S.source.which !== 3) dispatch("setSource", 3); drawAll(); });
-window.addEventListener("resize", () => { sized = null; drawAll(); });
+window.addEventListener("resize", () => { sizes.clear(); drawAll(); });
