@@ -24,15 +24,65 @@ void Palette::layout (juce::Rectangle<int> r)
     picker = { chart.getRight() + 56, area.getY(), area.getRight() - chart.getRight() - 56, area.getHeight() };
     for (int i = 0; i < 2; ++i) tabs[(size_t) i] = { picker.getX() + i * 90, picker.getY(), 90, 22 };
     dropZone = picker.withTrimmedTop (picker.getHeight() - 24);
-    scroll = std::clamp (scroll, 0, std::max (0, (int) cards().size() * 34 - (picker.getHeight() - 26 - 24)));
+    scroll = std::clamp (scroll, 0, std::max (0, (int) rows().size() * kRow - (picker.getHeight() - 26 - 24)));
+}
+
+std::vector<Palette::Row> Palette::rows() const
+{
+    std::vector<Row> out;
+    if (find.isNotEmpty())
+    {
+        for (int k = 0; k < (int) session.stars.size(); ++k)
+            if (session.stars[(size_t) k].kind == kKinds[tab] && session.stars[(size_t) k].name.containsIgnoreCase (find)) out.push_back ({ false, session.stars[(size_t) k].body, k, 0 });
+        return out;
+    }
+    std::vector<juce::String> families;
+    for (int k = 0; k < (int) session.stars.size(); ++k)
+    {
+        const auto& star = session.stars[(size_t) k];
+        if (star.kind != kKinds[tab]) continue;
+        const auto family = star.kind == "capture" ? juce::String ("captures") : star.body;
+        if (std::find (families.begin(), families.end(), family) == families.end()) families.push_back (family);
+    }
+    for (const auto& family : families)
+    {
+        Row header { true, family, -1, 0 };
+        for (int k = 0; k < (int) session.stars.size(); ++k)
+            if (session.stars[(size_t) k].kind == kKinds[tab] && (session.stars[(size_t) k].kind == "capture" ? juce::String ("captures") : session.stars[(size_t) k].body) == family) ++header.count;
+        out.push_back (header);
+        const bool open = openFamilies.count (family) > 0 || (! openedOnce && &family == &families.front());
+        if (! open) continue;
+        for (int k = 0; k < (int) session.stars.size(); ++k)
+            if (session.stars[(size_t) k].kind == kKinds[tab] && (session.stars[(size_t) k].kind == "capture" ? juce::String ("captures") : session.stars[(size_t) k].body) == family) out.push_back ({ false, family, k, 0 });
+    }
+    return out;
 }
 
 std::vector<int> Palette::cards() const
 {
     std::vector<int> out;
-    for (int k = 0; k < (int) session.stars.size(); ++k)
-        if (session.stars[(size_t) k].kind == kKinds[tab] && (find.isEmpty() || session.stars[(size_t) k].name.containsIgnoreCase (find))) out.push_back (k);
+    for (const auto& r : rows()) if (! r.header) out.push_back (r.star);
     return out;
+}
+
+juce::String Palette::headerAt (juce::Point<int> p) const
+{
+    if (! picker.withTrimmedTop (26).withTrimmedBottom (24).contains (p)) return {};
+    const auto all = rows();
+    const int index = (p.y - picker.getY() - 26 + scroll) / kRow;
+    return index >= 0 && index < (int) all.size() && all[(size_t) index].header ? all[(size_t) index].family : juce::String();
+}
+
+void Palette::toggle (const juce::String& family)
+{
+    if (! openedOnce)
+    {
+        openedOnce = true;
+        const auto all = rows();
+        for (const auto& r : all) if (! r.header && r.family != family) { openFamilies.insert (r.family); break; }
+    }
+    if (openFamilies.count (family) > 0) openFamilies.erase (family); else openFamilies.insert (family);
+    layout (area);
 }
 
 void Palette::scrollBy (int pixels) { scroll += pixels; layout (area); }
@@ -46,15 +96,22 @@ void Palette::followKind (const juce::String& kind)
 
 juce::Rectangle<int> Palette::card (int index) const
 {
-    return { picker.getX(), picker.getY() + 26 + index * 34 - scroll, picker.getWidth(), 32 };
+    const auto all = rows();
+    int seen = 0;
+    for (int i = 0; i < (int) all.size(); ++i)
+    {
+        if (all[(size_t) i].header) continue;
+        if (seen++ == index) return { picker.getX(), picker.getY() + 26 + i * kRow - scroll, picker.getWidth(), kRow - 2 };
+    }
+    return {};
 }
 
 int Palette::cardAt (juce::Point<int> p) const
 {
     if (! picker.withTrimmedTop (26).withTrimmedBottom (24).contains (p)) return -1;
-    const auto shown = cards();
-    const int index = (p.y - picker.getY() - 26 + scroll) / 34;
-    return index >= 0 && index < (int) shown.size() ? shown[(size_t) index] : -1;
+    const auto all = rows();
+    const int index = (p.y - picker.getY() - 26 + scroll) / kRow;
+    return index >= 0 && index < (int) all.size() && ! all[(size_t) index].header ? all[(size_t) index].star : -1;
 }
 
 int Palette::tabAt (juce::Point<int> p) const
@@ -107,20 +164,31 @@ void Palette::paint (juce::Graphics& g, int transposingFrom) const
     {
         juce::Graphics::ScopedSaveState saved (g);
         g.reduceClipRegion (picker.withTrimmedTop (26).withTrimmedBottom (24));
-        const auto shown = cards();
-        for (int index = 0; index < (int) shown.size(); ++index)
+        const auto all = rows();
+        for (int index = 0; index < (int) all.size(); ++index)
         {
-            const auto r = card (index);
+            const juce::Rectangle<int> r (picker.getX(), picker.getY() + 26 + index * kRow - scroll, picker.getWidth(), kRow - 2);
             if (! r.intersects (picker)) continue;
-            const int k = shown[(size_t) index];
+            const auto& row = all[(size_t) index];
+            if (row.header)
+            {
+                const bool open = openFamilies.count (row.family) > 0 || (! openedOnce && index == 0);
+                g.setFont (Look::font (10.0f));
+                g.setColour (open ? Look::text : Look::dim);
+                g.drawText (row.family.toUpperCase(), r.reduced (6, 0), juce::Justification::centredLeft);
+                g.setColour (Look::dim);
+                g.drawText (juce::String (row.count), r.reduced (6, 0), juce::Justification::centredRight);
+                g.setColour (Look::grid); g.drawHorizontalLine (r.getBottom(), (float) r.getX(), (float) r.getRight());
+                continue;
+            }
+            const int k = row.star;
             const auto& star = session.stars[(size_t) k];
             const bool selected = k == session.selected || k == session.auditioning;
             if (selected) { g.setColour (Look::panel); g.fillRect (r); }
             g.setColour (selected ? Look::ink : Look::text);
-            g.setFont (Look::font (13.0f));
-            g.drawText (star.name, r.reduced (6, 0).withTrimmedRight (92), juce::Justification::centredLeft);
-            curves.draw (g, r.withTrimmedLeft (r.getWidth() - 88).reduced (3, 4), star.words, plot::inkOf (star), 1.0f);
-            g.setColour (Look::grid); g.drawHorizontalLine (r.getBottom(), (float) r.getX(), (float) r.getRight());
+            g.setFont (Look::font (12.0f));
+            g.drawText (star.name, r.reduced (16, 0).withTrimmedRight (70), juce::Justification::centredLeft);
+            curves.draw (g, r.withTrimmedLeft (r.getWidth() - 66).reduced (3, 3), star.words, plot::inkOf (star).withAlpha (0.7f), 1.0f);
         }
     }
     g.setFont (Look::font (10.0f));

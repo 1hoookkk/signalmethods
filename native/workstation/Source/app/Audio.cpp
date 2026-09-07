@@ -264,6 +264,18 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
                 phase -= std::floor (phase);
                 x += (float) ((2.0 * phase - 1.0) * 0.4 * drone);
             }
+            if (droning && src == 3)
+            {
+                if (trainBurst <= 0 && ++trainPos >= (int) (0.5 * rate)) { trainPos = 0; trainBurst = burstLength; }
+                if (trainBurst > 0)
+                {
+                    random ^= random << 13; random ^= random >> 17; random ^= random << 5;
+                    const double window = 0.5 - 0.5 * std::cos (2.0 * 3.141592653589793 * (burstLength - trainBurst) / (double) burstLength);
+                    x += (float) ((double (random) / 4294967295.0 * 2.0 - 1.0) * 0.6 * window * drone);
+                    --trainBurst;
+                }
+            }
+            else if (! droning) { trainPos = 0; trainBurst = 0; }
             if (src == 1 && gate > 1e-5)
             {
                 random ^= random << 13; random ^= random >> 17; random ^= random << 5;

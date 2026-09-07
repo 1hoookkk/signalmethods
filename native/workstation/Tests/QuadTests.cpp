@@ -631,7 +631,7 @@ int main()
             ok = ok && pl.contains (screen.palette.chart) && pl.contains (screen.palette.picker) && ! screen.palette.chart.intersects (screen.palette.picker) && pl.contains (screen.palette.dropZone);
             ok = ok && bt.contains (screen.body.area) && bt.contains (screen.engine.area) && bt.contains (screen.keyboard.area) && ! screen.body.area.intersects (screen.engine.area)
                 && screen.keyboard.area.getY() >= screen.body.area.getBottom() && screen.keyboard.area.getY() >= screen.engine.area.getBottom()
-                && screen.keyboard.area.getHeight() == 44 && screen.keyboard.area.getWidth() == bt.getWidth() && screen.keyboard.area.getBottom() == bt.getBottom()
+                && screen.keyboard.area.getHeight() >= 44 && screen.keyboard.area.getWidth() == bt.getWidth() && screen.keyboard.area.getBottom() == bt.getBottom()
                 && screen.engine.area.contains (screen.engine.label) && screen.engine.area.contains (screen.engine.keys[5])
                 && screen.engine.keys[4].getRight() < screen.engine.keys[5].getX() && ! screen.engine.label.intersects (screen.engine.keys[0]);
             ok = ok && screen.body.box[0].getRight() == screen.body.box[1].getX() && screen.body.box[0].getBottom() == screen.body.box[2].getY();
@@ -958,6 +958,16 @@ int main()
         for (float v : sawOne) sawPeak = std::max (sawPeak, (double) std::abs (v));
         std::printf ("      strike twice: pluck differs %.4f, saw differs %.6f, saw peak %.3f\n", pluckDiff, sawDiff, sawPeak);
         check (pluckDiff > 0.005 && sawDiff < 1e-3 && sawPeak > 0.005, "saw notes carry no burst of their own: two strikes of a note are one signal, two plucks are not");
+        {
+            audio.prepare (44100.0); audio.publish (flat); run (4);
+            audio.setSource (3);
+            audio.setPlaying (true);
+            int bursts = 0; bool loud = false;
+            for (int i = 0; i < 100; ++i) { const double r = rms(); if (r > 0.002 && ! loud) { ++bursts; loud = true; } else if (r < 0.0005) loud = false; }
+            audio.setPlaying (false);
+            std::printf ("      impulse train: %d bursts in 100 blocks\n", bursts);
+            check (bursts >= 2, "PLAY with PLUCK strikes an impulse train, twice a second, so the filter rings on its own");
+        }
     }
 
     {
@@ -1094,8 +1104,8 @@ int main()
             for (int x = strip.getX(); x < strip.getRight(); ++x)
                 if (sounding.getPixelAt (x, y) == hs::Look::ink) ++bar;
         std::printf ("      keyboard %d px tall, %d ink pixels while C4 sounds\n", strip.getHeight(), bar);
-        check (! filled && bar > 0 && strip.getHeight() == 44 && screen.keyboard.noteAt (screen.keyboard.pianoKey (61).getCentre()) == 61 && screen.keyboard.noteAt (screen.keyboard.pianoKey (60).getCentre()) == 60,
-            "the keyboard is a rule of keys");
+        check (! filled && bar > 0 && strip.getHeight() > 60 && strip.getBottom() == screen.bottom.getBottom() && screen.keyboard.noteAt (screen.keyboard.pianoKey (61).getCentre()) == 61 && screen.keyboard.noteAt (screen.keyboard.pianoKey (60).getCentre()) == 60,
+            "the keyboard fills the band under the body");
     }
 
     {
@@ -1130,6 +1140,17 @@ int main()
         s.playedNote (72, 1.0f);
         check (! s.live() && s.frequency == heldFrequency && s.stress == heldStress && hs::cornersOf (s.quad, s.stars) == heldCorners,
             "the routes sleep when the pad sits on a corner");
+
+        s.setPuck (20.0, 20.0);
+        const int nearA = s.working;
+        s.setPuck (80.0, 20.0);
+        const int nearB = s.working;
+        s.setPuck (20.0, 80.0);
+        const int nearC = s.working;
+        s.setPuck (80.0, 80.0);
+        std::printf ("      pad near corners: %d %d %d %d\n", nearA, nearB, nearC, s.working);
+        check (hs::Session::kCornerPin[nearA] == 0 && hs::Session::kCornerPin[nearB] == 1 && hs::Session::kCornerPin[nearC] == 2 && hs::Session::kCornerPin[s.working] == 3 && s.editing < 0,
+            "the pad's nearest corner is the working corner, so the state follows the puck");
 
         s.setPuck (40.0, 30.0);
         s.setRoute (2, false, 1.0);

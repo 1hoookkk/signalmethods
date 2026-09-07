@@ -2,6 +2,7 @@
 
 #include "Plot.h"
 #include "app/Session.h"
+#include <set>
 
 namespace hs
 {
@@ -17,6 +18,11 @@ struct Palette
     int tabAt (juce::Point<int> p) const;
     juce::Rectangle<int> card (int index) const;
     std::vector<int> cards() const;
+    struct Row { bool header = false; juce::String family; int star = -1; int count = 0; };
+    std::vector<Row> rows() const;
+    juce::String headerAt (juce::Point<int> p) const;
+    void toggle (const juce::String& family);
+    static constexpr int kRow = 26;
     void scrollBy (int pixels);
     void showTab (int which);
     void followKind (const juce::String& kind);
@@ -28,6 +34,8 @@ struct Palette
     int tab = 0;
     juce::String find;
     bool finding = false;
+    std::set<juce::String> openFamilies;
+    bool openedOnce = false;
 
 private:
     Session& session;

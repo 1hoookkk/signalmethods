@@ -110,6 +110,7 @@ private:
     trench::core::CascadeRunner runner;
     double rate = 44100.0, phase = 0.0, pink0 = 0.0, pink1 = 0.0, pink2 = 0.0;
     std::uint32_t random = 123456789u;
+    int trainPos = 0, trainBurst = 0;
     std::array<float, 4096> block {};
     static constexpr unsigned int kTap = 65536;
     std::vector<float> tapRing = std::vector<float> (kTap, 0.0f);

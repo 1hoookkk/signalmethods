@@ -31,25 +31,28 @@ int Keyboard::noteAt (juce::Point<int> p) const
 void Keyboard::paint (juce::Graphics& g) const
 {
     const int base = area.getBottom() - 1;
+    const bool tall = area.getHeight() > 60;
     g.setColour (Look::faint);
     g.fillRect (area.getX(), base, area.getWidth(), 1);
+    if (tall) g.fillRect (area.getX(), area.getY(), area.getWidth(), 1);
     for (int white = 0; white <= 21; ++white)
     {
         const int x = std::min (area.getX() + area.getWidth() * white / 21, area.getRight() - 1);
-        g.fillRect (x, base - 6, 1, 6);
+        g.fillRect (x, tall ? area.getY() : base - 6, 1, tall ? area.getHeight() : 6);
     }
     for (int midi = 36; midi <= 71; ++midi)
     {
         const auto r = pianoKey (midi);
         if (r.getHeight() >= area.getHeight()) continue;
-        g.fillRect (r.getCentreX(), area.getY() + 6, 1, 3);
+        if (tall) { g.setColour (Look::panel); g.fillRect (r); g.setColour (Look::faint); g.drawRect (r); }
+        else g.fillRect (r.getCentreX(), area.getY() + 6, 1, 3);
     }
     g.setFont (Look::font (9.0f));
     for (int midi = 36; midi <= 71; midi += 12)
     {
         const auto r = pianoKey (midi);
         g.setColour (Look::faint);
-        g.fillRect (r.getX(), base - 12, 1, 12);
+        if (! tall) g.fillRect (r.getX(), base - 12, 1, 12);
         g.setColour (Look::dim);
         g.drawText ("C" + juce::String (midi / 12 - 1), r.getX() + 3, base - 13, 22, 11, juce::Justification::centredLeft);
     }
@@ -57,8 +60,9 @@ void Keyboard::paint (juce::Graphics& g) const
     {
         if (midi != session.heldNote && ! (session.playing && midi == session.note)) continue;
         const auto r = pianoKey (midi);
-        g.setColour (r.getHeight() < area.getHeight() ? Look::blue : Look::ink);
-        g.fillRect (r.getCentreX() - 1, base - 20, 3, 20);
+        const bool black = r.getHeight() < area.getHeight();
+        g.setColour (black ? Look::blue : Look::ink);
+        if (tall) g.fillRect (r.reduced (1)); else g.fillRect (r.getCentreX() - 1, base - 20, 3, 20);
     }
 }
 }

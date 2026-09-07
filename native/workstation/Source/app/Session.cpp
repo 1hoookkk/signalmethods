@@ -621,11 +621,9 @@ void Session::setPuck (double morph, double q)
     auditioning = -1;
     anchorTarget = -1;
     editing = -1;
-    if (onCorner())
-    {
-        const int pin = (quad.morph >= 100.0 ? 1 : 0) + (quad.q >= 100.0 ? 2 : 0);
-        for (int corner = 0; corner < 4; ++corner) if (kCornerPin[corner] == pin) { working = corner; editing = corner; }
-    }
+    const int pin = (quad.morph >= 50.0 ? 1 : 0) + (quad.q >= 50.0 ? 2 : 0);
+    for (int corner = 0; corner < 4; ++corner) if (kCornerPin[corner] == pin) working = corner;
+    if (onCorner()) editing = working;
     apply();
 }
 

@@ -31,12 +31,11 @@ void Screen::layout()
     stage.layout ({ colX + 12, grid.getY(), grid.getRight() - colX - 12, rowY - 12 - grid.getY() });
     palette.layout ({ grid.getX(), rowY + 12, colX - 12 - grid.getX(), grid.getBottom() - rowY - 12 });
     bottom = { colX + 12, rowY + 12, grid.getRight() - colX - 12, grid.getBottom() - rowY - 12 };
-    const int keyboardH = 44;
-    keyboard.layout ({ bottom.getX(), bottom.getBottom() - keyboardH, bottom.getWidth(), keyboardH });
-    const int above = std::max (100, keyboard.area.getY() - 10 - bottom.getY());
-    const int bodySide = std::max (80, std::min (above, 200));
+    const int bodySide = std::max (80, std::min (bottom.getHeight() - 54, 176));
     body.layout ({ bottom.getX(), bottom.getY(), bodySide, bodySide });
-    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, above });
+    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, bodySide });
+    const int keyboardTop = body.area.getBottom() + 10;
+    keyboard.layout ({ bottom.getX(), keyboardTop, bottom.getWidth(), std::max (44, bottom.getBottom() - keyboardTop) });
 }
 
 void Screen::timerCallback()
@@ -203,6 +202,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     }
     if (const int tab = palette.tabAt (p); tab >= 0) { palette.showTab (tab); repaint(); return; }
     if (palette.keepKey.contains (p)) { session.keep(); return; }
+    if (const auto family = palette.headerAt (p); family.isNotEmpty()) { palette.toggle (family); repaint(); return; }
     if (const int k = palette.cardAt (p); k >= 0)
     {
         session.placeInTarget (k);
