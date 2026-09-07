@@ -1,5 +1,7 @@
 #include "Library.h"
+#include "dsp/Peevers.h"
 #include <trench/core/body_from_audio.hpp>
+#include <juce_audio_formats/juce_audio_formats.h>
 #include <cmath>
 #include <map>
 
@@ -26,6 +28,28 @@ const char* ipaOf (const juce::String& klatt)
         { "ao", "\xc9\x94" }, { "ah", "\xca\x8c" }, { "ow", "o" }, { "uh", "\xca\x8a" }, { "uw", "u" }, { "er", "\xc9\x9d" } };
     for (const auto& t : table) if (klatt == t.first) return t.second;
     return klatt.toRawUTF8();
+}
+
+std::optional<trench::core::audio::MonoClip> clipOf (const juce::File& file)
+{
+    if (auto wav = trench::core::audio::read_wav_mono (std::filesystem::path (file.getFullPathName().toWideCharPointer()))) return wav;
+    juce::AudioFormatManager formats;
+    formats.registerBasicFormats();
+    std::unique_ptr<juce::AudioFormatReader> reader (formats.createReaderFor (file));
+    if (reader == nullptr || reader->lengthInSamples <= 0) return std::nullopt;
+    const int n = (int) juce::jmin (reader->lengthInSamples, (juce::int64) (60 * 96000));
+    const int channels = (int) juce::jmax (1u, reader->numChannels);
+    juce::AudioBuffer<float> buffer (channels, n);
+    reader->read (&buffer, 0, n, 0, true, true);
+    trench::core::audio::MonoClip clip;
+    clip.sample_rate_hz = reader->sampleRate > 0.0 ? reader->sampleRate : trench::core::kP2kDatumHz;
+    clip.samples.assign ((size_t) n, 0.0f);
+    for (int c = 0; c < channels; ++c)
+    {
+        const auto* in = buffer.getReadPointer (c);
+        for (int i = 0; i < n; ++i) clip.samples[(size_t) i] += in[i] / (float) channels;
+    }
+    return clip;
 }
 
 const char* hillenbrandIpa (const juce::String& code)
@@ -163,6 +187,7 @@ std::vector<Star> loadReads (const juce::File& dir, const juce::File& census)
         if (! star) continue;
         star->body = family;
         star->corner = space > 0 ? stem.substring (space + 1) : juce::String();
+        star->path = file.getFullPathName();
         out.push_back (*star);
     }
     cache[key] = out;
@@ -194,6 +219,7 @@ std::optional<Star> readWav (const juce::File& wav)
     s.kind = "read";
     s.body = wav.getFileNameWithoutExtension();
     s.name = s.body;
+    s.path = wav.getFullPathName();
     const double support[2] = { 3500.0, 4500.0 };
     size_t supported = 0;
     for (size_t i = 0; i < kRows - 1; ++i)
@@ -216,6 +242,115 @@ std::optional<Star> readWav (const juce::File& wav)
     }
     s.words[kRows - 1] = rowWords ({ RowType::notch, kFreqCodes - 1, 0 }, 0);
     unityDc (s.words);
+    if (! admit (s.words)) return std::nullopt;
+    return s;
+}
+
+Words fittedWords (const Fitted& fit, double sampleRateHz)
+{
+    constexpr double tau = 6.283185307179586;
+    const double rate = sampleRateHz > 0.0 ? sampleRateHz : trench::core::kP2kDatumHz;
+    const double warp = rate / trench::core::kP2kDatumHz;
+    struct Root { double hz = 0.0, radius = 0.0; };
+    std::vector<Root> poles, zeros;
+    auto gather = [&] (const std::vector<std::complex<double>>& in, std::vector<Root>& to) {
+        for (const auto& r : in)
+        {
+            if (! (r.imag() > 0.0)) continue;
+            const double hz = std::arg (r) * rate / tau;
+            if (! (hz > 0.0)) continue;
+            to.push_back ({ hz, std::abs (r) });
+        }
+    };
+    gather (fit.poles, poles);
+    gather (fit.zeros, zeros);
+    std::sort (poles.begin(), poles.end(), [] (const Root& a, const Root& b) { return a.hz < b.hz; });
+    std::vector<int> mate (poles.size(), -1);
+    std::vector<bool> taken (zeros.size(), false);
+    for (size_t i = 0; i < poles.size(); ++i)
+    {
+        int best = -1;
+        double gap = 1.0e300;
+        for (size_t j = 0; j < zeros.size(); ++j)
+        {
+            if (taken[j]) continue;
+            const double d = std::abs (std::log (zeros[j].hz / poles[i].hz));
+            if (d < gap) { gap = d; best = (int) j; }
+        }
+        if (best >= 0) { taken[(size_t) best] = true; mate[i] = best; }
+    }
+    Words w {};
+    const double support[2] = { 3500.0, 4500.0 };
+    size_t supported = 0;
+    for (size_t i = 0; i + 1 < kRows; ++i)
+    {
+        trench::core::SectionGeometry g;
+        if (i < poles.size())
+        {
+            g.pole = trench::core::ConjugatePair { std::clamp (poles[i].hz, 60.0, 12000.0),
+                std::clamp (std::pow (std::clamp (poles[i].radius, 1.0e-9, 0.99999), warp), 0.0, 0.9995) };
+            if (mate[i] >= 0)
+            {
+                const auto& zero = zeros[(size_t) mate[i]];
+                g.zero = trench::core::ConjugatePair { std::clamp (zero.hz, 20.0, 20000.0),
+                    std::clamp (std::pow (std::clamp (zero.radius, 1.0e-9, 1.0), warp), 0.0, 1.0) };
+            }
+            else g.zero = trench::core::DegeneratePair {};
+        }
+        else
+        {
+            const double hz = support[std::min<size_t> (supported++, 1)] * (supported > 2 ? 1.0 + 0.2 * (double) (supported - 2) : 1.0);
+            g.pole = trench::core::ConjugatePair { hz, radiusForWidth (hz, 4.0) };
+            g.zero = trench::core::DegeneratePair {};
+        }
+        w[i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+    }
+    w[kRows - 1] = rowWords ({ RowType::notch, kFreqCodes - 1, 0 }, 0);
+    unityDc (w);
+    return w;
+}
+
+std::optional<Star> fitWav (const juce::File& wav)
+{
+    auto clip = clipOf (wav);
+    if (! clip || clip->samples.size() < 256) return std::nullopt;
+    Peevers peevers;
+    peevers.avgk = 0.9f;
+    peevers.lpcenv = 1;
+    peevers.setParms (2048, 2048, 512, 7);
+    std::vector<float> mono = clip->samples;
+    if (mono.size() < 4096)
+        while (mono.size() < 16384) mono.insert (mono.end(), clip->samples.begin(), clip->samples.end());
+    const size_t win = (size_t) peevers.winsize, hop = (size_t) peevers.stride;
+    std::vector<float> raw ((size_t) peevers.nfft + 2, 0.0f);
+    std::vector<double> mean ((size_t) peevers.nfft2 + 1, 0.0);
+    const double keep = (double) peevers.avgk;
+    int frames = 0;
+    for (size_t at = 0; at + win <= mono.size(); at += hop)
+    {
+        peevers.averagedFrame (mono.data() + at);
+        peevers.spectrum (peevers.synth.data(), peevers.nfft, raw.data(), peevers.nfft);
+        for (size_t i = 0; i < mean.size(); ++i) mean[i] = mean[i] * keep + (double) raw[i] * (1.0 - keep);
+        ++frames;
+    }
+    if (frames == 0) return std::nullopt;
+    double top = 0.0;
+    for (double v : mean) top = std::max (top, v);
+    if (! (top > 0.0)) return std::nullopt;
+    std::vector<double> magnitudeDb (mean.size(), 0.0);
+    for (size_t i = 0; i < mean.size(); ++i) magnitudeDb[i] = 10.0 * std::log10 (std::max (mean[i] / top, 1.0e-14));
+    std::vector<std::complex<double>> response;
+    minimumPhaseResponse (magnitudeDb, response);
+    if (response.empty()) return std::nullopt;
+    const auto fit = vectorFit (response, clip->sample_rate_hz, 5, 8);
+    if (fit.poles.empty()) return std::nullopt;
+    Star s;
+    s.kind = "read";
+    s.body = wav.getFileNameWithoutExtension();
+    s.name = s.body + " fit";
+    s.corner = "fit";
+    s.path = wav.getFullPathName();
+    s.words = fittedWords (fit, clip->sample_rate_hz);
     if (! admit (s.words)) return std::nullopt;
     return s;
 }

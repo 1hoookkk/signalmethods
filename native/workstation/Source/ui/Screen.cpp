@@ -407,9 +407,14 @@ bool Screen::keyPressed (const juce::KeyPress& k)
     return used;
 }
 
+namespace
+{
+bool audible (const juce::String& f) { return f.endsWithIgnoreCase (".wav") || f.endsWithIgnoreCase (".aiff") || f.endsWithIgnoreCase (".aif"); }
+}
+
 bool Screen::isInterestedInFileDrag (const juce::StringArray& files)
 {
-    for (const auto& f : files) if (f.endsWithIgnoreCase (".wav")) return true;
+    for (const auto& f : files) if (audible (f)) return true;
     return false;
 }
 
@@ -418,11 +423,12 @@ void Screen::filesDropped (const juce::StringArray& files, int x, int y)
     const juce::Point<int> p (x, y);
     const int corner = body.cornerAt (p), end = mother.cellAt (p);
     const bool asLoop = corner < 0 && end < 0 && ! palette.area.contains (p);
+    const bool asFit = juce::ModifierKeys::getCurrentModifiers().isAltDown();
     for (const auto& f : files)
     {
-        if (! f.endsWithIgnoreCase (".wav")) continue;
+        if (! audible (f)) continue;
         if (asLoop) { session.setLoop (juce::File (f)); continue; }
-        const int k = session.addRead (juce::File (f));
+        const int k = asFit ? session.addFit (juce::File (f)) : session.addRead (juce::File (f));
         if (k < 0) continue;
         if (corner >= 0) session.pinCorner (corner, k);
         else if (end >= 0) session.setPair (end, k);

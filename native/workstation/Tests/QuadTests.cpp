@@ -2,6 +2,7 @@
 #include "ui/Screen.h"
 #include "ui/Spectrogram.h"
 #include <algorithm>
+#include <complex>
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <cstdio>
 #include <memory>
@@ -71,6 +72,25 @@ juce::File voiceWav()
     writer->writeFromAudioSampleBuffer (buffer, 0, n);
     writer.reset();
     return file;
+}
+
+std::complex<double> whole (const hs::Words& w, double hz, size_t rows)
+{
+    std::complex<double> out (1.0, 0.0);
+    const auto z1 = std::polar (1.0, -6.283185307179586 * hz / trench::core::kP2kDatumHz), z2 = z1 * z1;
+    for (size_t s = 0; s < rows; ++s)
+    {
+        const auto b = trench::core::section_words_to_biquad (w[s]);
+        out *= (b[0] + b[1] * z1 + b[2] * z2) / (1.0 + b[3] * z1 + b[4] * z2);
+    }
+    return out;
+}
+
+double wrapped (double radians)
+{
+    while (radians > 3.141592653589793) radians -= 6.283185307179586;
+    while (radians < -3.141592653589793) radians += 6.283185307179586;
+    return radians;
 }
 
 double at (const trench::core::PackedSection& w, double hz)
@@ -356,6 +376,97 @@ int main()
         hs::Session again (root, s.file, false);
         again.setPuck (again.quad.morph, again.quad.q);
         check (again.stars.size() == again.libraryCount + 2 && again.stars[again.libraryCount].kind == "capture" && again.stars[again.libraryCount + 1].kind == "read" && again.cornerName (0) == name && same (again.words, s.words) && same (again.stars[again.libraryCount + 1].words, s.stars[s.libraryCount + 1].words), "save then reopen restores captures, reads and corners by name");
+    }
+
+    {
+        const auto klatt = hs::vowelWords ({ 310.0, 2020.0, 2960.0, 3300.0 });
+        const int points = 1025;
+        const double nyquist = trench::core::kP2kDatumHz / 2.0;
+        std::vector<std::complex<double>> truth ((size_t) points);
+        std::vector<double> magnitude ((size_t) points);
+        for (int k = 0; k < points; ++k)
+        {
+            truth[(size_t) k] = whole (klatt, (double) k * nyquist / (double) (points - 1), hs::kRows - 1);
+            magnitude[(size_t) k] = 20.0 * std::log10 (std::abs (truth[(size_t) k]));
+        }
+        std::vector<std::complex<double>> rebuilt;
+        const auto phase = hs::minimumPhaseResponse (magnitude, rebuilt);
+        double worst = 0.0;
+        for (double hz : { 310.0, 2020.0, 2960.0 })
+        {
+            const size_t k = (size_t) std::lround (hz / nyquist * (double) (points - 1));
+            worst = std::max (worst, std::abs (wrapped (phase[k] - std::arg (truth[k]))));
+        }
+        std::printf ("      minimum phase off by %.4f rad at the formants\n", worst);
+        check (phase.size() == (size_t) points && rebuilt.size() == (size_t) points && worst < 0.15, "the minimum phase of a known cascade matches its true phase");
+
+        const auto fit = hs::vectorFit (truth, trench::core::kP2kDatumHz, 5, 8);
+        std::printf ("      fitted poles:");
+        for (const auto& p : fit.poles)
+            if (p.imag() > 0.0) std::printf ("  %.1f Hz r %.5f", std::arg (p) * trench::core::kP2kDatumHz / 6.283185307179586, std::abs (p));
+        std::printf ("  error %.3f dB\n", fit.errorDb);
+        bool found = fit.poles.size() == 10;
+        for (size_t r = 0; r + 1 < hs::kRows; ++r)
+        {
+            const auto g = trench::core::geometry_from_words (klatt[r], trench::core::kP2kDatumHz);
+            const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+            if (pole == nullptr) { found = false; continue; }
+            double cents = 1.0e9, radius = 1.0e9;
+            for (const auto& p : fit.poles)
+            {
+                if (! (p.imag() > 0.0)) continue;
+                const double hz = std::arg (p) * trench::core::kP2kDatumHz / 6.283185307179586;
+                if (! (hz > 0.0)) continue;
+                const double d = std::abs (1200.0 * std::log2 (hz / pole->hz));
+                if (d < cents) { cents = d; radius = std::abs (std::abs (p) - pole->radius); }
+            }
+            std::printf ("      row %d pole %.1f Hz r %.5f off by %.1f cents, %.5f\n", (int) r + 1, pole->hz, pole->radius, cents, radius);
+            found = found && cents < 25.0 && radius < 0.01;
+        }
+        check (found && fit.errorDb < 0.5, "vector fitting recovers a known cascade's poles and zeros");
+
+        const auto words = hs::fittedWords (fit, trench::core::kP2kDatumHz);
+        const auto grid = trench::core::logarithmic_frequency_grid (60.0, 8000.0, 240);
+        const auto want = hs::responseDb (klatt, grid), got = hs::responseDb (words, grid);
+        double gap = 0.0;
+        for (size_t i = 0; i < grid.size(); ++i) gap = std::max (gap, std::abs (got[i] - want[i]));
+        std::printf ("      fitted words stray %.2f dB from the cascade between 60 Hz and 8 kHz\n", gap);
+        check (gap < 1.5, "fitted words rebuild the cascade within a dB");
+    }
+
+    {
+        const auto ah = root.getChildFile ("evidence/research-results/emu-sgi-1993/runtime/sounds/vowel_ah.aiff");
+        const auto star = hs::fitWav (ah);
+        const auto formants = star ? hs::formantsOf (star->words) : std::array<double, 4> {};
+        std::printf ("      vowel_ah fit reads %.0f %.0f %.0f %.0f\n", formants[0], formants[1], formants[2], formants[3]);
+        check (star && formants[0] > 550.0 && formants[0] < 950.0 && hs::rowOf (star->words[5]).type == hs::RowType::notch && hs::rowHz (star->words[5]) > 11000.0,
+               "Peevers's vowel_ah fits with its first formant where an ah sits");
+
+        const auto bellFile = root.getChildFile ("evidence/factory-data/xl1-dsf-aud/Aud Bell 1 C4.wav");
+        const auto rung = hs::fitWav (bellFile);
+        bool ring = false;
+        std::printf ("      Aud Bell 1 C4 fit rows:");
+        if (rung)
+            for (size_t r = 0; r + 1 < hs::kRows; ++r)
+            {
+                const auto g = trench::core::geometry_from_words (rung->words[r], trench::core::kP2kDatumHz);
+                const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+                if (pole == nullptr) continue;
+                std::printf ("  %.0f Hz r %.4f", pole->hz, pole->radius);
+                ring = ring || (pole->hz > 740.0 && pole->hz < 830.0 && pole->radius > 0.99);
+            }
+        std::printf ("\n");
+        check (rung && ring, "the bell's ring survives the fit");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        const int bell = s.starNamed ("Aud Bell 1 C4");
+        s.select (bell);
+        const size_t before = s.stars.size();
+        s.key (key ('F', true, 'f'));
+        check (bell >= 0 && s.stars.size() == before + 1 && s.stars.back().name.endsWith (" fit") && s.stars.back().kind == "read" && s.selected == (int) s.stars.size() - 1,
+               "Ctrl+F refits the selected read as a new card");
     }
 
     {

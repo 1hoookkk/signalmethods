@@ -362,6 +362,27 @@ int Session::addRead (const juce::File& wav)
     return selected;
 }
 
+int Session::addFit (const juce::File& wav)
+{
+    auto star = fitWav (wav);
+    if (! star) { status = "cannot fit " + wav.getFileName(); changed(); return -1; }
+    history.push_back (snapshot()); future.clear();
+    star->name = uniqueName (star->name);
+    stars.push_back (*star);
+    selected = (int) stars.size() - 1;
+    auditioning = selected;
+    apply();
+    return selected;
+}
+
+bool Session::refit()
+{
+    if (selected < 0 || selected >= (int) stars.size()) return false;
+    const auto kind = stars[(size_t) selected].kind, path = stars[(size_t) selected].path;
+    if (kind != "read" || path.isEmpty()) return false;
+    return addFit (juce::File (path)) >= 0;
+}
+
 void Session::edit (int corner)
 {
     if (corner < 0 || corner > 3) { editing = -1; anchorTarget = -1; auditioning = -1; audition(); changed(); return; }
@@ -647,6 +668,7 @@ bool Session::key (const juce::KeyPress& k)
     if (control && (lower == 'z' || code == 'Z')) { undo(); return true; }
     if (control && (lower == 'y' || code == 'Y')) { redo(); return true; }
     if (control && (lower == 'w' || code == 'W')) { write(); return true; }
+    if (control && (lower == 'f' || code == 'F')) { refit(); return true; }
     if (control && (lower == 'n' || code == 'N')) { setSource (1); return true; }
     if (control && (lower == 'p' || code == 'P')) { setSource (3); return true; }
     if (control && (lower == 'l' || code == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }

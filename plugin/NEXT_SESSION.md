@@ -2340,3 +2340,17 @@ Open, in order:
   two anchors and the grid" = click into the target, drag onto any anchor or corner. The
   engine's curve duplicates the stage (14 curves on screen, two the same); proposed: the live
   spectrum onto the stage, the engine box gone; awaiting his word. 172 checks, ctest x3.
+- 2026-09-07, late: the FIT read (Tyson: "what about vector fitting" -> yes). Source/dsp/VectorFit:
+  minimum phase by the real cepstrum, z-domain vector fitting with five conjugate pairs, residues
+  by weighted least squares (1/|H|), poles relocated by the sigma numerator's roots (Aberth),
+  zeros = the numerator's roots, reflected inside; Library::fittedWords pairs each pole with its
+  nearest zero pair, five rows + the ceiling, radius' = radius^(rate/datum) (constant Hz width),
+  unityDc; fitWav runs Peevers at 2048/2048/512 Hanning with xavg 0.9 and fits his Env envelope
+  (the raw comb of a 118 Hz voice made a five-pair fit chase the valleys, errorDb 30; the
+  envelope gives 0.39); short ROM loops tiled; Alt-drop fits, Ctrl+F refits the selected read;
+  Star gains a path. Numbers: Klatt i recovered to 0.0 cents on every pole, words within 0.44 dB
+  of the cascade; vowel_ah 688/1053 Hz; Aud Bell 1 C4 ring 805 Hz r 0.9924. 176 checks, ctest
+  x3. Rulings the same hour: fold the live spectrum onto the stage and drop the engine's plot;
+  the reading room (G window as the XL sampler) is the biggest upgrade and goes next; the
+  bottom right becomes the patch: KEY->FREQUENCY, VELOCITY->STRESS, WHEEL->MORPH, live between
+  corners; a root Launch_HEADSPACE.bat; saved anchors that name removed cards fall back to i/u.

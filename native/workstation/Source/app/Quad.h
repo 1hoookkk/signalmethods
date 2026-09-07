@@ -17,7 +17,7 @@ using Bytes = std::array<std::uint8_t, trench::core::kLegacyBodyBytes>;
 
 struct Star
 {
-    juce::String name, body, corner, kind, parentA, parentB;
+    juce::String name, body, corner, kind, parentA, parentB, path;
     Words words {};
     double morph = 0.0, q = 0.0;
 };

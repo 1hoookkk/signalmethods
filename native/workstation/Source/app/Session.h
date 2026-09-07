@@ -70,6 +70,8 @@ public:
     bool placeable() const;
     void pinAll (const std::array<int, 4>& pins);
     int addRead (const juce::File& wav);
+    int addFit (const juce::File& wav);
+    bool refit();
     void edit (int corner);
     void editAnchor (int which);
     int editStar() const;
