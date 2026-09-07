@@ -20,7 +20,6 @@ juce::var Bridge::state() const
     auto* d = new juce::DynamicObject();
     d->setProperty ("label", session.playingLabel);
     d->setProperty ("status", session.status);
-    d->setProperty ("heard", curveOf (session.words));
     {
         auto* stage = new juce::DynamicObject();
         const bool editable = session.editable();
@@ -67,7 +66,6 @@ juce::var Bridge::state() const
             o->setProperty ("letter", juce::String::charToString (Session::kCornerLetters[c]));
             o->setProperty ("name", session.cornerName (c));
             o->setProperty ("star", pin);
-            if (pin >= 0 && pin < (int) session.stars.size()) o->setProperty ("curve", curveOf (session.stars[(size_t) pin].words));
             corners.add (juce::var (o));
         }
         d->setProperty ("corners", corners);
@@ -80,8 +78,6 @@ juce::var Bridge::state() const
         pair->setProperty ("b", b ? session.stars[(size_t) session.pairB].name : juce::String());
         pair->setProperty ("aStar", session.pairA);
         pair->setProperty ("bStar", session.pairB);
-        if (a) pair->setProperty ("aCurve", curveOf (session.stars[(size_t) session.pairA].words));
-        if (b) pair->setProperty ("bCurve", curveOf (session.stars[(size_t) session.pairB].words));
         pair->setProperty ("morph", session.pairT);
         pair->setProperty ("frequency", session.frequency);
         pair->setProperty ("stress", session.stress);

@@ -36,6 +36,7 @@ Web::Web (Session& s, juce::File dir, juce::File interop)
     addAndMakeVisible (*view);
     view->goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
     stamp = newestStamp();
+    s.onChange = [this] { dirty = true; };
     startTimerHz (30);
 }
 
@@ -57,6 +58,8 @@ void Web::timerCallback()
         const auto now = newestStamp();
         if (now != stamp) { stamp = now; view->goToURL (juce::WebBrowserComponent::getResourceProviderRoot()); return; }
     }
+    if (! dirty && ticks % 30 != 0) return;
+    dirty = false;
     view->emitEventIfBrowserIsVisible ("state", bridge.state());
 }
 

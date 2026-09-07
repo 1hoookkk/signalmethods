@@ -1454,7 +1454,7 @@ int main()
         hs::Bridge bridge (s);
         const auto state = bridge.state();
         const auto* d = state.getDynamicObject();
-        const bool shaped = d != nullptr && state["corners"].isArray() && state["corners"].size() == 4 && state["heard"].isArray() && state["heard"].size() == 96
+        const bool shaped = d != nullptr && state["corners"].isArray() && state["corners"].size() == 4 && state["stage"]["curve"].isArray() && state["stage"]["curve"].size() == 96
                          && state["pair"].isObject() && state["pad"].isObject() && state["source"].isObject() && state["cards"].isArray() && state["cards"].size() >= 132;
         bridge.dispatch ("setPuck", { 40.0, 30.0 });
         const bool moved = std::abs (s.quad.morph - 40.0) < 1e-9 && std::abs (s.quad.q - 30.0) < 1e-9 && (double) bridge.state()["pad"]["morph"] == s.quad.morph;
@@ -1471,7 +1471,7 @@ int main()
         const double movedHz = (double) after["sections"][0]["poleHz"];
         std::printf ("      section 1 pole %.0f Hz r %.4f moved to %.0f Hz\n", hz, r, movedHz);
         const bool edited = (bool) before["editable"] && std::abs (movedHz / hz - 1.5) < 0.02 && (int) after["target"] == 0;
-        std::printf ("      bridge: %d cards, heard %d points, label '%s'\n", state["cards"].size(), state["heard"].size(), state["label"].toString().toRawUTF8());
+        std::printf ("      bridge: %d cards, curve %d points, label '%s'\n", state["cards"].size(), state["stage"]["curve"].size(), state["label"].toString().toRawUTF8());
         check (shaped && moved && struck && s.heldNote == -1 && bogus && edited, "the bridge states the session as one document and dispatches by name, section geometry included; the page reads it and never computes words");
     }
 

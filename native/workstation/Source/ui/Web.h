@@ -21,6 +21,7 @@ private:
     juce::File webDir, interopJs;
     juce::int64 stamp = 0;
     int ticks = 0;
+    std::atomic<bool> dirty { true };
     std::unique_ptr<juce::WebBrowserComponent> view;
 };
 }

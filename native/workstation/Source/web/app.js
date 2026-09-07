@@ -12,10 +12,13 @@ let S = null;
 const view = {};
 const plotEl = document.getElementById("plot");
 
+let sized = null;
 function fit(c) {
   const r = c.getBoundingClientRect(), s = devicePixelRatio || 1;
-  c.width = Math.max(1, r.width * s); c.height = Math.max(1, r.height * s);
+  const key = r.width + "x" + r.height + "@" + s;
+  if (sized !== key) { c.width = Math.max(1, r.width * s); c.height = Math.max(1, r.height * s); sized = key; }
   const g = c.getContext("2d"); g.setTransform(s, 0, 0, s, 0, 0);
+  g.clearRect(0, 0, r.width, r.height);
   return { g, w: r.width, h: r.height };
 }
 function label(g, text, x, y, colour, align = "left") { g.fillStyle = colour; g.font = FONT; g.textAlign = align; g.textBaseline = "middle"; g.fillText(text, x, y); }
@@ -93,8 +96,12 @@ function drawPlot() {
   view.a = a; view.response = r;
 }
 
+let wordsKey = "";
 function drawWords() {
   const el = document.getElementById("words");
+  const key = JSON.stringify(S.stage.sections) + (view.hot ? view.hot.row + ":" + view.hot.zero : "");
+  if (key === wordsKey) return;
+  wordsKey = key;
   const rows = [`<div class="h"></div><div class="h">POLE</div><div class="h">RESONANCE</div><div class="h">ZERO</div><div class="h">DEPTH</div><div class="h">WORDS</div>`];
   S.stage.sections.forEach((s, i) => {
     const lit = view.hot && view.hot.row === i ? " lit" : "";
@@ -159,12 +166,19 @@ plotEl.addEventListener("pointerdown", (e) => {
   if (!h) return;
   drag = h; view.hot = h; plotEl.setPointerCapture(e.pointerId);
 });
+let pending = null, inFlight = false;
+function flush() {
+  if (!pending || inFlight) return;
+  const { row, zero, g } = pending; pending = null; inFlight = true;
+  const s = S.stage.sections[row];
+  const call = zero ? dispatch("setSection", S.stage.target, row, s.poleHz, s.poleR, g.hz, g.r) : dispatch("setSection", S.stage.target, row, g.hz, g.r, s.zeroHz, s.zeroR);
+  Promise.resolve(call).finally(() => { inFlight = false; if (pending) requestAnimationFrame(flush); });
+}
 plotEl.addEventListener("pointermove", (e) => {
   const p = local(e);
   if (drag) {
-    const s = S.stage.sections[drag.row], g = armadilloInverse(p, view.a);
-    if (drag.zero) dispatch("setSection", S.stage.target, drag.row, s.poleHz, s.poleR, g.hz, g.r);
-    else dispatch("setSection", S.stage.target, drag.row, g.hz, g.r, s.zeroHz, s.zeroR);
+    pending = { row: drag.row, zero: drag.zero, g: armadilloInverse(p, view.a) };
+    requestAnimationFrame(flush);
     return;
   }
   const h = view.a ? handleAt(p) : null;
@@ -184,4 +198,4 @@ window.addEventListener("keyup", (e) => { if (e.code === "KeyZ" && down) { down 
 
 window.__JUCE__.backend.addEventListener("state", (s) => { S = s; drawAll(); });
 readState().then((s) => { S = s; if (S.source.which !== 3) dispatch("setSource", 3); drawAll(); });
-window.addEventListener("resize", drawAll);
+window.addEventListener("resize", () => { sized = null; drawAll(); });
