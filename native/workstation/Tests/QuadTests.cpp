@@ -1,4 +1,5 @@
 #include "app/Bridge.h"
+#include "dsp/Formants.h"
 #include "ui/Look.h"
 #include "ui/Screen.h"
 #include "ui/Spectrogram.h"
@@ -1462,11 +1463,26 @@ int main()
         const bool struck = s.heldNote == 60 && (int) bridge.state()["source"]["held"] == 60;
         bridge.dispatch ("noteOff", {});
         const bool bogus = ! bridge.dispatch ("bogus", {});
+        {
+            bridge.dispatch ("select", { s.starNamed ("i") });
+            const auto source = s.words;
+            const int from = s.auditioning;
+            bridge.dispatch ("lens", { 600.0, 1500.0 });
+            const auto f = hs::formantsOf (s.words);
+            const bool lensed = s.lensOn && s.inMade() && std::abs (f[0] - 600.0) < 12.0 && std::abs (f[1] - 1500.0) < 30.0 && (double) bridge.state()["lens"]["puckF1"] == f[0];
+            bridge.dispatch ("lens", { 300.0, 2200.0 });
+            const auto g = hs::formantsOf (s.words);
+            bridge.dispatch ("lensReset", {});
+            std::printf ("      lens: i moved to %.0f/%.0f then %.0f/%.0f, reset to %s\n", f[0], f[1], g[0], g[1], s.auditioning == from ? "the source" : "elsewhere");
+            check (lensed && std::abs (g[0] - 300.0) < 8.0 && std::abs (g[1] - 2200.0) < 44.0 && ! s.lensOn && s.auditioning == from && same (s.words, source),
+                "the lens moves F1 and F2 of what plays from the source it started on, and reset returns to the source");
+        }
         bridge.dispatch ("setPair", { 0, s.starNamed ("i") });
         bridge.dispatch ("setPair", { 1, s.starNamed ("u") });
         bridge.dispatch ("sweep", { 0.4 });
         const size_t hadStars = s.stars.size();
-        const bool anchored = bridge.dispatch ("anchorFromPlays", { 1 }) && s.stars.size() == hadStars + 1 && s.pairB == (int) s.stars.size() - 1 && s.stars.back().kind == "capture";
+        const bool named = bridge.dispatch ("setPairNamed", { 0, "bell 1 c4" }) && s.pairA == s.starNamed ("Aud Bell 1 C4") && ! bridge.dispatch ("setPairNamed", { 0, "no such card" });
+        const bool anchored = named && bridge.dispatch ("anchorFromPlays", { 1 }) && s.stars.size() == hadStars + 1 && s.pairB == (int) s.stars.size() - 1 && s.stars.back().kind == "capture";
         bridge.dispatch ("pinCorner", { 0, s.starNamed ("i") });
         bridge.dispatch ("setPuck", { 0.0, 100.0 });
         const auto before = bridge.state()["stage"];
@@ -1478,6 +1494,27 @@ int main()
         const bool edited = (bool) before["editable"] && std::abs (movedHz / hz - 1.5) < 0.02 && (int) after["target"] == 0;
         std::printf ("      bridge: %d cards, curve %d points, label '%s'\n", state["cards"].size(), state["stage"]["curve"].size(), state["label"].toString().toRawUTF8());
         check (shaped && moved && struck && s.heldNote == -1 && bogus && edited && anchored, "the bridge states the session as one document and dispatches by name, section geometry included; the page reads it and never computes words");
+    }
+
+    {
+        hs::Peevers p;
+        const double rate = 44100.0, pi = 3.141592653589793;
+        const double f1 = 700.0, f2 = 1500.0, r1 = 0.985, r2 = 0.98;
+        double x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
+        unsigned int seed = 12345;
+        for (int i = 0; i < 88200; ++i)
+        {
+            seed = seed * 1664525u + 1013904223u;
+            const double noise = ((double) (seed >> 8) / 16777216.0 - 0.5) * 0.2;
+            const double a = noise + 2.0 * r1 * std::cos (2.0 * pi * f1 / rate) * x1 - r1 * r1 * x2;
+            x2 = x1; x1 = a;
+            const double b = a + 2.0 * r2 * std::cos (2.0 * pi * f2 / rate) * y1 - r2 * r2 * y2;
+            y2 = y1; y1 = b;
+            p.gal ((float) (b * 0.02));
+        }
+        const auto f = hs::lpcFormants (p.lpc.k, rate);
+        std::printf ("      LPC-12 on two resonators at 700 and 1500: %.0f and %.0f\n", f[0], f[1]);
+        check (std::abs (f[0] - f1) < 70.0 && std::abs (f[1] - f2) < 150.0, "Peevers's lattice and the root finder read two formants back from noise through two resonators");
     }
 
     std::printf ("%d failures\n", failures);

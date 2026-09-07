@@ -262,6 +262,35 @@ void Session::setOctaves (double value)
     apply();
 }
 
+void Session::lens (double f1, double f2)
+{
+    if (! lensOn)
+    {
+        lensSource = words;
+        lensFrom = auditioning;
+        lensOn = true;
+    }
+    made.kind = "made";
+    made.name = "lens";
+    made.parentA.clear();
+    made.words = lensed (lensSource, f1, f2);
+    madeLive = true;
+    auditioning = kMade;
+    editing = -1;
+    audition();
+    changed();
+}
+
+void Session::lensReset()
+{
+    if (! lensOn) return;
+    lensOn = false;
+    auditioning = lensFrom == kMade ? -1 : lensFrom;
+    madeLive = false;
+    audition();
+    changed();
+}
+
 void Session::setTracking (bool fixed)
 {
     fixedPitch = fixed;

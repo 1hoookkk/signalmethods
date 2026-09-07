@@ -42,6 +42,7 @@ public:
     void samplerNoteOff (int midi);
     int pullSampler (float* dst, int max);
     bool isOpen() const { return open; }
+    double sampleRate() const { return rate; }
     int pull (float* dst, int max);
     int pullInput (float* dst, int max);
     int activeVoices() const { return active.load(); }

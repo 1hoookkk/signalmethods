@@ -88,6 +88,11 @@ public:
     bool editable() const;
     bool live() const { return anchorTarget < 0 && ! (auditioning == -1 && onCorner()); }
     void setTracking (bool fixed);
+    void lens (double f1, double f2);
+    void lensReset();
+    bool lensOn = false;
+    int lensFrom = -1;
+    Words lensSource {};
     void relevel();
     void placeInTarget (int star);
     void beginRowEdit();

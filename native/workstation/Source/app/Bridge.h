@@ -12,6 +12,7 @@ struct Bridge
     juce::Array<juce::var> curveOf (const Words& words) const;
 
     std::vector<double> hz;
+    double markF1 = 0.0, markF2 = 0.0;
     Session& session;
 };
 }

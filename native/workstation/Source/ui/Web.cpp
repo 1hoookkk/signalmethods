@@ -1,4 +1,5 @@
 #include "Web.h"
+#include "dsp/Formants.h"
 
 namespace hs
 {
@@ -20,7 +21,7 @@ Web::Web (Session& s, juce::File dir, juce::File interop)
     const auto userData = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("headspace-webview2");
     auto options = Options{}
         .withBackend (Options::Backend::webview2)
-        .withWinWebView2Options (Options::WinWebView2{}.withUserDataFolder (userData))
+        .withWinWebView2Options (Options::WinWebView2{}.withUserDataFolder (userData).withBackgroundColour (juce::Colours::transparentBlack))
         .withNativeIntegrationEnabled()
         .withNativeFunction ("state", [this] (const juce::Array<juce::var>&, juce::WebBrowserComponent::NativeFunctionCompletion done) { done (bridge.state()); })
         .withNativeFunction ("dispatch", [this] (const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion done)
@@ -53,6 +54,17 @@ void Web::resized() { view->setBounds (getLocalBounds()); }
 
 void Web::timerCallback()
 {
+    auto& session = bridge.session;
+    if (session.withAudio && session.audio.isOpen())
+    {
+        const int n = session.audio.pull (tap.data(), (int) tap.size());
+        for (int i = 0; i < n; ++i) lpc.gal (tap[(size_t) i]);
+        if (n > 0 && ticks % 3 == 0)
+        {
+            const auto f = lpcFormants (lpc.lpc.k, session.audio.sampleRate());
+            if (f[0] != bridge.markF1 || f[1] != bridge.markF2) { bridge.markF1 = f[0]; bridge.markF2 = f[1]; dirty = true; }
+        }
+    }
     if (++ticks % 15 == 0)
     {
         const auto now = newestStamp();

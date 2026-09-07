@@ -19,6 +19,16 @@ juce::var Bridge::state() const
 {
     auto* d = new juce::DynamicObject();
     d->setProperty ("label", session.playingLabel);
+    {
+        auto* lens = new juce::DynamicObject();
+        const auto f = formantsOf (session.words);
+        lens->setProperty ("on", session.lensOn);
+        lens->setProperty ("puckF1", f[0]);
+        lens->setProperty ("puckF2", f[1]);
+        lens->setProperty ("f1", markF1);
+        lens->setProperty ("f2", markF2);
+        d->setProperty ("lens", juce::var (lens));
+    }
     d->setProperty ("status", session.status);
     {
         auto* stage = new juce::DynamicObject();
@@ -136,6 +146,20 @@ bool Bridge::dispatch (const juce::String& name, const juce::Array<juce::var>& a
         return true;
     }
     if (name == "editAnchor") { session.editAnchor (whole (0, 0)); return true; }
+    if (name == "lens") { session.lens (num (0), num (1)); return true; }
+    if (name == "lensReset") { session.lensReset(); return true; }
+    if (name == "setPairNamed")
+    {
+        const auto wanted = args.size() > 1 ? args[1].toString() : juce::String();
+        if (wanted.isEmpty()) return false;
+        int exact = session.starNamed (wanted), first = -1;
+        for (int k = 0; first < 0 && k < (int) session.stars.size(); ++k)
+            if (session.stars[(size_t) k].name.containsIgnoreCase (wanted)) first = k;
+        const int star = exact >= 0 ? exact : first;
+        if (star < 0) return false;
+        session.setPair (whole (0, 0), star);
+        return true;
+    }
     if (name == "anchorFromPlays")
     {
         const size_t had = session.stars.size();

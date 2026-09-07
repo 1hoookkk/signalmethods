@@ -19,6 +19,7 @@ set(TRENCH_HEADSPACE_SOURCES
   "${TRENCH_HEADSPACE_UI}/Screen.h" "${TRENCH_HEADSPACE_UI}/Screen.cpp"
   "${TRENCH_HEADSPACE_UI}/Spectrogram.h" "${TRENCH_HEADSPACE_UI}/Spectrogram.cpp"
   "${TRENCH_HEADSPACE_DSP}/Peevers.h" "${TRENCH_HEADSPACE_DSP}/Peevers.cpp"
+  "${TRENCH_HEADSPACE_DSP}/Formants.h" "${TRENCH_HEADSPACE_DSP}/Formants.cpp"
   "${TRENCH_HEADSPACE_DSP}/VectorFit.h" "${TRENCH_HEADSPACE_DSP}/VectorFit.cpp")
 
 option(TRENCH_HEADSPACE_LTO "Enable link-time optimization for HEADSPACE and its acceptance tests" OFF)

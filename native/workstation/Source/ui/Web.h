@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app/Bridge.h"
+#include "dsp/Peevers.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
 namespace hs
@@ -22,6 +23,8 @@ private:
     juce::int64 stamp = 0;
     int ticks = 0;
     std::atomic<bool> dirty { true };
+    Peevers lpc;
+    std::vector<float> tap = std::vector<float> (16384, 0.0f);
     std::unique_ptr<juce::WebBrowserComponent> view;
 };
 }

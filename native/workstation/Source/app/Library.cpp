@@ -416,6 +416,36 @@ Words relaxed (const Words& words)
     return out;
 }
 
+Words lensed (const Words& words, double f1, double f2)
+{
+    Words out = words;
+    std::vector<std::pair<double, size_t>> lanes;
+    for (size_t r = 0; r + 1 < kRows; ++r)
+    {
+        const auto g = trench::core::geometry_from_words (words[r], trench::core::kP2kDatumHz);
+        const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+        if (pole == nullptr || pole->radius < 0.05 || pole->hz < 60.0 || pole->hz > 6000.0) continue;
+        const double width = 12.0 * std::log2 (1.0 + (-std::log (std::max (pole->radius, 1e-9)) * trench::core::kP2kDatumHz / 3.141592653589793) / pole->hz);
+        if (width < 6.0) lanes.push_back ({ pole->hz, r });
+    }
+    std::sort (lanes.begin(), lanes.end());
+    const double targets[2] = { f1, f2 };
+    for (size_t lane = 0; lane < std::min<size_t> (2, lanes.size()); ++lane)
+    {
+        const size_t r = lanes[lane].second;
+        auto g = trench::core::geometry_from_words (words[r], trench::core::kP2kDatumHz);
+        auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+        const double target = std::clamp (targets[lane], 60.0, 8000.0), ratio = target / pole->hz;
+        pole->hz = target;
+        if (auto* zero = std::get_if<trench::core::ConjugatePair> (&g.zero); zero != nullptr && zero->radius > 0.05)
+            zero->hz = std::clamp (zero->hz * ratio, 20.0, 20000.0);
+        out[r] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+        out[r][4] = words[r][4];
+    }
+    unityDc (out);
+    return out;
+}
+
 juce::String formantName (const Words& words)
 {
     const auto f = formantsOf (words);
