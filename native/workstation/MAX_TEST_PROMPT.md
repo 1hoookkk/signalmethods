@@ -45,6 +45,16 @@ Read the spec, then the code, then the tests. Answer these in writing, with file
 
 ## Part two, Max, with computer use
 
+First, blind. Launch the app and, with no instructions beyond this one sentence, do the loop:
+load two very different sounds, play a phrase while morphing with the wheel, replace one sound
+while it keeps sounding, find a sound in between, put it in corner A, keep exploring without
+changing A, write the body, reload it and hear the same thing. Time yourself. Write down every
+place you stopped and looked for something, every control you tried that did nothing, every
+word you did not understand, and where you gave up if you did. That list is the main finding;
+a screen that needs the steps below has failed.
+
+Only then, the steps, to check what you found against what was meant.
+
 Plug in a MIDI keyboard if one is present; if not, the Z row of the computer keyboard is a
 keyboard (Z is C3, up to M as B, Page Up and Page Down move the octave). Launch the app.
 
