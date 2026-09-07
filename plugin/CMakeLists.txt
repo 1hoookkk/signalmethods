@@ -147,7 +147,10 @@ juce_add_plugin(TRENCH_Lens
   COPY_PLUGIN_AFTER_BUILD FALSE)
 target_sources(TRENCH_Lens PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.cpp"
+  "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Peevers.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Peevers.cpp"
+  "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.cpp")
+target_include_directories(TRENCH_Lens PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source")
 target_compile_features(TRENCH_Lens PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_Lens PRIVATE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_Lens PRIVATE

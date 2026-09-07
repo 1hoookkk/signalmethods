@@ -6,7 +6,17 @@
 
 namespace hs
 {
+std::vector<std::pair<double, double>> lpcResonances (const std::array<float, 13>& reflection, double sampleRateHz, int most);
+
 std::array<double, 2> lpcFormants (const std::array<float, 13>& reflection, double sampleRateHz)
+{
+    const auto found = lpcResonances (reflection, sampleRateHz, 2);
+    std::array<double, 2> out { 0.0, 0.0 };
+    for (size_t i = 0; i < std::min<size_t> (2, found.size()); ++i) out[i] = found[i].first;
+    return out;
+}
+
+std::vector<std::pair<double, double>> lpcResonances (const std::array<float, 13>& reflection, double sampleRateHz, int most)
 {
     constexpr int order = 12;
     std::vector<double> a (order + 1, 0.0), next (order + 1, 0.0);
@@ -48,12 +58,12 @@ std::array<double, 2> lpcFormants (const std::array<float, 13>& reflection, doub
         if (z.imag() <= 1e-6) continue;
         const double radius = std::abs (z), hz = std::arg (z) / (2.0 * 3.141592653589793) * sampleRateHz;
         const double bandwidth = -std::log (std::max (radius, 1e-9)) * sampleRateHz / 3.141592653589793;
-        if (hz < 90.0 || hz > 5000.0 || bandwidth > 500.0) continue;
+        if (hz < 60.0 || hz > 12000.0 || bandwidth > 800.0) continue;
         found.push_back ({ hz, bandwidth });
     }
+    std::sort (found.begin(), found.end(), [] (const auto& p, const auto& q) { return p.second < q.second; });
+    if ((int) found.size() > most) found.resize ((size_t) most);
     std::sort (found.begin(), found.end());
-    std::array<double, 2> out { 0.0, 0.0 };
-    for (size_t i = 0; i < std::min<size_t> (2, found.size()); ++i) out[i] = found[i].first;
-    return out;
+    return found;
 }
 }
