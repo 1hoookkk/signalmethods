@@ -23,11 +23,11 @@ void Mother::layout (juce::Rectangle<int> r)
         tag[(size_t) i] = cell[(size_t) i].withHeight (16);
         plot[(size_t) i] = cell[(size_t) i].withTrimmedTop (16).reduced (3);
     }
-    const int left = area.getX() + 40, right = area.getRight() - 96;
+    const int left = cell[0].getX(), right = cell[1].getRight() - 64;
     for (int i = 0; i < 3; ++i)
         rail[(size_t) i] = { left, cell[0].getBottom() + kRailTop + i * (kRailHeight + kRailGap), right - left, kRailHeight };
-    octavesKey = { rail[1].getRight() + 8, rail[1].getY(), 52, 20 };
-    bakeKey = { rail[2].getRight() + 8, rail[2].getY(), 28, 22 };
+    octavesKey = { rail[1].getRight() + 8, rail[1].getY(), 56, 20 };
+    bakeKey = { rail[2].getRight() + 8, rail[2].getY(), 56, 22 };
 }
 
 int Mother::cellAt (juce::Point<int> p) const
@@ -63,15 +63,20 @@ void Mother::paint (juce::Graphics& g, juce::Point<int> dropPoint, bool dropping
     {
         const int star = ends[i];
         const bool valid = star >= 0 && star < (int) session.stars.size();
-        const bool lit = valid && session.auditioning == star;
+        const bool lit = valid && session.anchorTarget == i;
         curves.cell (g, tag[(size_t) i], plot[(size_t) i], juce::String(), valid ? session.stars[(size_t) star].name : juce::String(),
                      valid ? &session.stars[(size_t) star].words : nullptr, lit, dropping && cell[(size_t) i].contains (dropPoint));
     }
-    const bool live = session.inPair();
+    const bool live = session.inPair() || (session.anchorTarget < 0 && session.auditioning == -1 && session.onCorner());
     const double at[3] = { session.pairT, session.frequency, session.stress };
+    const char* const names[3] = { "MORPH", "FREQUENCY", "STRESS" };
     for (int i = 0; i < 3; ++i)
     {
         const auto r = rail[(size_t) i];
+        g.setFont (Look::font (9.0f));
+        g.setColour (Look::dim);
+        g.drawText (names[i], r.getX(), r.getY() - 11, 90, 11, juce::Justification::centredLeft);
+        if (i != 1) g.drawText (juce::String (std::lround (at[i] * 100.0)), r.getRight() + 8, r.getY(), 56, r.getHeight(), juce::Justification::centredLeft);
         g.setColour (Look::faint); g.fillRect (r.withY (r.getCentreY()).withHeight (1));
         const float x = (float) (r.getX() + r.getWidth() * at[i]);
         const float y = (float) r.getCentreY();
@@ -84,7 +89,6 @@ void Mother::paint (juce::Graphics& g, juce::Point<int> dropPoint, bool dropping
     g.setFont (Look::font (11.0f));
     g.setColour (live ? Look::ink : Look::dim);
     g.drawText ((session.octaves < 0.0 ? juce::String() : juce::String ("+")) + juce::String (session.octaves, 1), octavesKey, juce::Justification::centred);
-    const bool both = session.pairA >= 0 && session.pairB >= 0;
-    Look::glyph (g, Look::Glyph::use, bakeKey.reduced (3), both ? Look::ink : Look::faint);
+
 }
 }

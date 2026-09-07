@@ -18,9 +18,10 @@ void Stage::layout (juce::Rectangle<int> r)
     const int unit = std::max (1, std::min (plotWidth / 3, plotHeight / 2));
     magnitude = { area.getX() + 40, area.getY() + 30, 3 * unit, 2 * unit };
     carveKey = { area.getRight() - 96, area.getY(), 96, 22 };
+    modeKey = { carveKey.getX() - 70, carveKey.getY(), 60, carveKey.getHeight() };
 }
 
-Words Stage::words() const { return session.editWords(); }
+Words Stage::words() const { return session.editable() ? session.editWords() : session.words; }
 
 Words Stage::solved (const Words& words, int row, bool zero, double hz, double targetDb)
 {
@@ -70,6 +71,8 @@ juce::Point<float> Stage::zeroPoint (int row) const
 
 int Stage::peakAt (juce::Point<int> p) const
 {
+    if (! session.editable()) return -1;
+    if (zerosMode) return -1;
     if (! magnitude.expanded (8).contains (p)) return -1;
     const auto w = words();
     int best = -1;
@@ -85,6 +88,8 @@ int Stage::peakAt (juce::Point<int> p) const
 
 int Stage::zeroAt (juce::Point<int> p) const
 {
+    if (! session.editable()) return -1;
+    if (! zerosMode) return -1;
     if (! magnitude.expanded (8).contains (p)) return -1;
     const auto w = words();
     int best = -1;
@@ -118,10 +123,16 @@ void Stage::paint (juce::Graphics& g, int litRow, bool bladeLit, bool carving) c
     const int corner = session.target();
     g.setFont (Look::font (11.0f));
     g.setColour (Look::dim);
-    const juce::String title = juce::String::charToString (Session::kCornerLetters[corner]) + "  " + session.cornerName (corner);
+    const int star = session.editStar();
+    const juce::String title = ! session.editable() ? session.playingLabel
+                             : session.anchorTarget >= 0 && star >= 0 && star < (int) session.stars.size() ? session.stars[(size_t) star].name
+                             : juce::String::charToString (Session::kCornerLetters[corner]) + "  " + session.cornerName (corner);
     g.drawText (title, area.withHeight (18), juce::Justification::centredLeft);
     g.setColour (carving ? Look::orange : Look::dim);
     g.drawText ("Carve  " + juce::String (carve * 100.0, 0), carveKey, juce::Justification::centredRight);
+    g.setFont (Look::font (10.0f));
+    g.setColour (zerosMode ? Look::orange : Look::dim);
+    g.drawText (zerosMode ? "ZEROS" : "POLES", modeKey, juce::Justification::centredRight);
     const auto r = magnitude;
     Look::axes (g, r);
     g.setFont (Look::font (10.0f));
@@ -144,8 +155,8 @@ void Stage::paint (juce::Graphics& g, int litRow, bool bladeLit, bool carving) c
         g.drawText (f < 1000.0 ? juce::String ((int) f) : juce::String ((int) (f / 1000.0)) + "k", x - 18, r.getBottom() + 4, 36, 14, juce::Justification::centred);
     }
     const auto w = words();
-    curves.draw (g, r, w, Look::blue, 1.8f, false);
-    if (const float blade = bladeX(); blade >= 0.0f)
+    curves.draw (g, r, w, Look::blue, 2.4f, false);
+    if (const float blade = bladeX(); blade >= 0.0f && session.editable())
     {
         g.setColour (bladeLit ? Look::orange : Look::orange.withAlpha (0.6f));
         g.drawLine (blade, (float) r.getY() + 1, blade, (float) r.getBottom() - 1, bladeLit ? 2.0f : 1.2f);
@@ -153,20 +164,20 @@ void Stage::paint (juce::Graphics& g, int litRow, bool bladeLit, bool carving) c
         grip.addTriangle (blade - 6.0f, (float) r.getY() + 1, blade + 6.0f, (float) r.getY() + 1, blade, (float) r.getY() + 10);
         g.fillPath (grip);
     }
-    for (int row = 0; row < kRows; ++row)
+    for (int row = 0; row < kRows && session.editable(); ++row)
     {
         const auto s = sectionOf (w[(size_t) row]);
         const bool lit = litRow == row;
         if (s.zero && s.zeroRadius <= 0.999)
         {
             const auto z = zeroPoint (row);
-            Look::handle (g, z, Look::orange, true, lit);
+            Look::handle (g, z, zerosMode ? Look::orange : Look::orange.withAlpha (0.35f), true, lit);
             if (! s.pole) { g.setColour (Look::text); g.drawText (juce::String (row + 1), (int) z.x + 8, (int) z.y - 16, 16, 14, juce::Justification::centredLeft); }
         }
         if (s.pole)
         {
             const auto p = peakPoint (row);
-            Look::handle (g, p, Look::blue, false, lit);
+            Look::handle (g, p, zerosMode ? Look::blue.withAlpha (0.35f) : Look::blue, false, lit);
             g.setColour (Look::text); g.drawText (juce::String (row + 1), (int) p.x + 8, (int) p.y - 17, 16, 14, juce::Justification::centredLeft);
         }
     }

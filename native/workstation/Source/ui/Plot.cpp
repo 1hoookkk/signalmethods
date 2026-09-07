@@ -53,7 +53,7 @@ void Curves::cell (juce::Graphics& g, juce::Rectangle<int> tag, juce::Rectangle<
     Look::glyph (g, Look::Glyph::caret, tag.withTrimmedLeft (tag.getWidth() - 12).withSizeKeepingCentre (12, 12), Look::dim);
     Look::axes (g, plot);
     g.setColour (Look::faint); g.drawHorizontalLine ((int) std::round (yOf (0.0, plot)), (float) plot.getX() + 1, (float) plot.getRight() - 1);
-    if (words != nullptr) draw (g, plot, *words, lit ? Look::orange : Look::blue, lit ? 1.7f : 1.2f);
+    if (words != nullptr) draw (g, plot, *words, lit ? Look::orange : Look::blue.withAlpha (0.6f), lit ? 1.6f : 1.0f);
     if (target) { g.setColour (Look::orange); g.drawRect (plot.expanded (2), 2); }
 }
 }

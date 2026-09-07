@@ -53,6 +53,8 @@ void Screen::timerCallback()
 void Screen::paint (juce::Graphics& g)
 {
     g.fillAll (Look::ground);
+    g.setColour (Look::grid);
+    for (const auto& r : { mother.area, stage.area, palette.area, bottom }) g.drawRect (r.expanded (6, 6));
     g.setFont (Look::font (13.0f));
     g.setColour (Look::dim);
     g.drawText ("HEADSPACE", juce::Rectangle<int> (16, 6, 200, 22), juce::Justification::centredLeft);
@@ -135,16 +137,15 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     if (const int i = mother.tagAt (p); i >= 0)
     {
         if (p.x >= mother.tag[(size_t) i].getRight() - 14) menu.show (session, i, 1, mother.tag[(size_t) i], getLocalBounds());
-        else if (const int star = i == 0 ? session.pairA : session.pairB; star >= 0) session.select (star);
+        else session.editAnchor (i);
         repaint();
         return;
     }
     if (const int i = mother.cellAt (p); i >= 0)
     {
-        if (const int star = i == 0 ? session.pairA : session.pairB; star >= 0) session.select (star);
+        session.editAnchor (i);
         return;
     }
-    if (mother.bakeKey.contains (p)) { session.bake(); return; }
     if (const int i = mother.railAt (p); i >= 0) { dragging = Drag::rail; dragRow = i; mouseDrag (e); return; }
     if (stage.carveKey.contains (p))
     {
@@ -171,7 +172,8 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         editStarted = false; dragWords = stage.words();
         return;
     }
-    if (stage.magnitude.contains (p) && e.mods.isAltDown())
+    if (stage.modeKey.contains (p)) { stage.zerosMode = ! stage.zerosMode; repaint(); return; }
+    if (stage.magnitude.contains (p) && (e.mods.isAltDown() || stage.zerosMode))
     {
         const auto words = stage.words();
         const double hzValue = plot::hzAt (p.x, stage.magnitude);
@@ -195,7 +197,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
     if (palette.keepKey.contains (p)) { session.keep(); return; }
     if (const int k = palette.cardAt (p); k >= 0)
     {
-        session.select (k);
+        session.placeInTarget (k);
         dragging = Drag::card; dragStar = k; dragOrigin = p; dragPoint = p;
         return;
     }
@@ -209,7 +211,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
                 session.setTransposed (k, formantsOf (session.stars[(size_t) k].words)[0]);
                 return;
             }
-            session.select (k);
+            session.placeInTarget (k);
             dragging = Drag::card; dragStar = k; dragOrigin = p; dragPoint = p;
             return;
         }
@@ -252,11 +254,28 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
     if (dragging == Drag::peak || dragging == Drag::zero)
     {
         if (p == dragOrigin && ! editStarted) return;
-        const auto words = Stage::solved (dragWords, dragRow, dragging == Drag::zero, plot::hzAt (p.x, stage.magnitude), plot::dbAt (p.y, stage.magnitude));
-        if (words[(size_t) dragRow] != stage.words()[(size_t) dragRow])
+        auto g = trench::core::geometry_from_words (dragWords[(size_t) dragRow], trench::core::kP2kDatumHz);
+        const double hz = std::clamp (plot::hzAt (p.x, stage.magnitude), 20.0, 20000.0);
+        const double dyDb = plot::dbAt (p.y, stage.magnitude) - plot::dbAt (dragOrigin.y, stage.magnitude);
+        if (dragging == Drag::peak)
+        {
+            const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+            const double r0 = pole != nullptr ? pole->radius : 0.9;
+            g.pole = trench::core::ConjugatePair { hz, std::clamp (1.0 - (1.0 - r0) * std::pow (10.0, -dyDb / 20.0), 0.05, 0.99995) };
+        }
+        else
+        {
+            const auto* zero = std::get_if<trench::core::ConjugatePair> (&g.zero);
+            const double r0 = zero != nullptr ? zero->radius : 0.0;
+            const bool floor = p.y >= stage.magnitude.getBottom() - 2;
+            g.zero = trench::core::ConjugatePair { hz, floor ? 1.0 : std::clamp (1.0 - (1.0 - r0) * std::pow (10.0, dyDb / 20.0), 0.0, 0.9999) };
+        }
+        auto w = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+        w[4] = dragWords[(size_t) dragRow][4];
+        if (w != stage.words()[(size_t) dragRow])
         {
             if (! editStarted) { session.beginRowEdit(); editStarted = true; }
-            session.setSectionWords (session.target(), dragRow, words[(size_t) dragRow]);
+            session.setSectionWords (session.target(), dragRow, w, false);
         }
         return;
     }
@@ -318,6 +337,7 @@ void Screen::mouseUp (const juce::MouseEvent& e)
         else if (const int i = mother.cellAt (p); i >= 0) { session.keep(); session.setPair (i, session.selected); }
     }
     if (dragging == Drag::keyboard) session.noteOff();
+    if (editStarted && (dragging == Drag::peak || dragging == Drag::zero || dragging == Drag::blade || dragging == Drag::carve)) session.relevel();
     dragging = Drag::none; dragStar = -1; dragRow = -1;
     editStarted = false;
     repaint();

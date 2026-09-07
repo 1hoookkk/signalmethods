@@ -119,7 +119,6 @@ void Engine::paint (juce::Graphics& g)
     if (session.sounding) curves.draw (g, plot, session.heard, Look::blue, 1.0f, false);
     if (live())
     {
-        spectrumCurve (g, inAnalysis, inSpectrum, Look::dim);
         spectrumCurve (g, outAnalysis, outSpectrum, Look::ink);
     }
     const auto words = names();

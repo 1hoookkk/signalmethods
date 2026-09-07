@@ -20,8 +20,9 @@ struct Stage
     static Words solved (const Words& words, int row, bool zero, double hz, double targetDb);
     static Section seed (double hz);
 
-    juce::Rectangle<int> area, magnitude, carveKey;
+    juce::Rectangle<int> area, magnitude, carveKey, modeKey;
     bool showHardware = false;
+    bool zerosMode = false;
     double carve = 0.0;
 
 private:

@@ -269,6 +269,7 @@ int main()
         const auto moved = s.editWords();
         check (moved[2][2] == after[2][2] && moved[2][3] == after[2][3] && levelled (moved) && std::abs (hs::sectionOf (moved[2]).zeroHz / z.zeroHz - 1.0) < 0.01, "moving a zero leaves the pole words exactly and the corner at 0 dB DC");
         check (std::abs (screen.stage.cascadeDb (1) - hs::responseDb (moved, { hs::sectionOf (moved[1]).poleHz })[0]) < 0.01, "the Cascade column is the whole cascade at the pole, the number under the handle");
+        screen.stage.zerosMode = true;
         const auto zp = screen.stage.zeroPoint (2).roundToInt().toFloat();
         check (screen.stage.zeroAt (zp.toInt()) == 2 && screen.stage.peakAt (zp.toInt()) != 2, "a zero handle is hit on the plot apart from the pole handle");
         screen.mouseDown (mouse (screen, zp, zp));
@@ -277,6 +278,7 @@ int main()
         const auto notched = s.editWords();
         const auto zn = hs::sectionOf (notched[2]);
         check (zn.zero && zn.zeroRadius > 0.999 && hs::responseDb (notched, { zn.zeroHz })[0] < -30.0 && notched[2][2] == moved[2][2] && notched[2][3] == moved[2][3] && levelled (notched), "a zero dragged to the floor sits on the circle, a notch, the pole untouched, the corner at 0 dB DC");
+        screen.stage.zerosMode = false;
         const auto rest = hs::sectionOf (notched[3]);
         hs::Section only;
         only.zero = true; only.zeroHz = 3000.0; only.zeroRadius = 0.9;
@@ -433,7 +435,7 @@ int main()
         const int vowel = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
         const auto before = s.stars[(size_t) vowel].words;
         s.edit (0);
-        check (s.editing == 0 && s.auditioning == vowel && same (s.words, before), "opening a corner's rows plays that corner exactly");
+        check (s.editing == 0 && s.auditioning == -1 && s.onCorner() && s.editable() && same (s.words, before), "opening a corner puts the pad on it, makes it the target and plays it exactly");
         s.beginRowEdit();
         s.setRow (0, 1, { hs::RowType::peak, 70, 10 });
         const int edited = s.quad.pins[(size_t) hs::Session::kCornerPin[0]];
@@ -472,6 +474,7 @@ int main()
         for (int y = screen.engine.plot.getY(); y < screen.engine.plot.getBottom() && ! curve; ++y)
             for (int x = screen.engine.plot.getX(); x < screen.engine.plot.getRight() && ! curve; ++x)
                 curve = image.getPixelAt (x, y).getARGB() == hs::Look::blue.getARGB();
+        check (image.getPixelAt (screen.stage.area.getX() - 6, screen.stage.area.getCentreY()) == hs::Look::grid, "the four areas are ruled off from each other");
         check (written && file.getSize() > 4000 && image.getWidth() == 1120 && image.getPixelAt (4, 4) == hs::Look::ground && image.getPixelAt (screen.palette.chart.getX() + 2, screen.palette.chart.getBottom() - 3) == hs::Look::panel && curve, "the screen renders to artifacts/shots/headspace.png without a window: ground, white axes and the blue curve of what plays");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "no window was opened");
         check (screen.body.area.toFloat().contains (screen.body.puckPoint()), "the puck sits on the body");
@@ -541,6 +544,53 @@ int main()
             screen.mouseDrag (mouse (screen, screen.mother.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
             screen.mouseUp (mouse (screen, screen.mother.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
             check (s.pairB == screen.palette.cards()[0] && s.pairA == s.starNamed ("i") && s.inPair(), "dropping a card on the right endpoint replaces it, keeps the left one, and the sweep goes on");
+            screen.mouseDown (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
+            screen.mouseUp (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
+            check (s.anchorTarget == 0 && s.editable() && same (screen.stage.words(), s.stars[(size_t) s.pairA].words), "a click on an anchor makes it the target and the stage shows its words with handles");
+            {
+                const int libraryI = s.starNamed ("i");
+                const auto libraryWords = s.stars[(size_t) libraryI].words;
+                const auto start = screen.stage.peakPoint (0).roundToInt().toFloat();
+                screen.mouseDown (mouse (screen, start, start));
+                screen.mouseDrag (mouse (screen, start.translated (16.0f, -12.0f), start));
+                screen.mouseUp (mouse (screen, start.translated (16.0f, -12.0f), start));
+                check (s.pairA >= (int) s.libraryCount && s.stars[(size_t) s.pairA].kind == "capture" && same (s.stars[(size_t) libraryI].words, libraryWords) && s.anchorTarget == 0, "a drag on the stage while an anchor is the target edits a capture in the anchor's place and leaves the library card untouched");
+            }
+            s.setPuck (0.0, 100.0);
+            check (s.editable() && s.working == 0 && s.anchorTarget < 0 && screen.stage.peakAt (screen.stage.peakPoint (0).roundToInt()) >= 0, "the pad on corner A makes A the target with handles");
+            {
+                const auto cornerBefore = hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]];
+                s.setProbe (0.7, 0.0, 1.0);
+                const auto cornerAfter = hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]];
+                check (s.auditioning == -1 && ! same (cornerAfter, cornerBefore) && same (cornerAfter, hs::motherWordsAt (s.explore(), s.stars)) && same (s.words, cornerAfter), "with the pad on a corner the rails write into that corner and it is what plays");
+            }
+            {
+                const int uStar = s.starNamed ("u");
+                s.setPuck (100.0, 100.0);
+                s.placeInTarget (uStar);
+                check (s.cornerName (1) == "u" && s.auditioning == -1, "a card placed while the pad is on B becomes B");
+            }
+            s.setPuck (40.0, 30.0);
+            check (! s.editable() && screen.stage.peakAt (screen.stage.peakPoint (0).roundToInt()) == -1 && same (screen.stage.words(), s.words), "between corners the stage shows the lerp and the handles are off");
+            check (screen.mother.rail[0].getX() == screen.mother.cell[0].getX(), "the rails sit flush under the anchors");
+            {
+                s.setPuck (0.0, 100.0);
+                screen.mouseDown (mouse (screen, screen.stage.modeKey.getCentre().toFloat(), screen.stage.modeKey.getCentre().toFloat()));
+                screen.mouseUp (mouse (screen, screen.stage.modeKey.getCentre().toFloat(), screen.stage.modeKey.getCentre().toFloat()));
+                const auto pp = screen.stage.peakPoint (0).roundToInt();
+                check (screen.stage.zerosMode && screen.stage.peakAt (pp) == -1, "ZEROS mode: the pole handles no longer take the click");
+                const auto wordsBefore = screen.stage.words();
+                const juce::Point<float> at ((float) pp.x, (float) (screen.stage.magnitude.getBottom() - 30));
+                screen.mouseDown (mouse (screen, at, at));
+                screen.mouseUp (mouse (screen, at, at));
+                bool woke = false;
+                for (size_t r = 0; r + 1 < hs::kRows; ++r) woke = woke || (! hs::sectionOf (wordsBefore[r]).zero && hs::sectionOf (screen.stage.words()[r]).zero);
+                check (woke, "ZEROS mode: a click on the plot wakes a zero on a row that had none");
+                screen.mouseDown (mouse (screen, screen.stage.modeKey.getCentre().toFloat(), screen.stage.modeKey.getCentre().toFloat()));
+                screen.mouseUp (mouse (screen, screen.stage.modeKey.getCentre().toFloat(), screen.stage.modeKey.getCentre().toFloat()));
+                check (! screen.stage.zerosMode && screen.stage.peakAt (screen.stage.peakPoint (0).roundToInt()) >= 0, "POLES mode again: the pole handles take the click");
+                s.setPuck (40.0, 30.0);
+            }
             screen.keyPressed (key ('/', false, '/'));
             for (const char ch : { 'b', 'e', 'l' }) screen.keyPressed (key (ch, false, ch));
             check (screen.palette.finding && screen.palette.find == "bel" && ! screen.palette.cards().empty() && s.stars[(size_t) screen.palette.cards()[0]].name.containsIgnoreCase ("Bell"), "slash then letters find cards by name without dragging the list");
@@ -590,11 +640,12 @@ int main()
         screen.mouseDrag (mouse (screen, end, start));
         const auto edited = s.editWords();
         const double oldHz = hs::rowHz (before[0]), newHz = hs::rowHz (edited[0]);
-        const double oldDb = hs::responseDb (before, { oldHz })[0], newDb = hs::responseDb (edited, { newHz })[0];
+        const double oldR = hs::sectionOf (before[0]).poleRadius, newR = hs::sectionOf (edited[0]).poleRadius;
         const double expectedHz = oldHz * std::pow (1000.0, 20.0 / screen.stage.magnitude.getWidth());
-        const double expectedDb = oldDb + 20.0 * 60.0 / screen.stage.magnitude.getHeight();
-        check (newHz > oldHz && newDb > oldDb && std::abs (12.0 * std::log2 (newHz / expectedHz)) < 1.0 && std::abs (newDb - expectedDb) < 1.5,
-            "dragging a formant right and up follows the plot's frequency and cascade dB axes within word resolution");
+        const double expectedR = 1.0 - (1.0 - oldR) * std::pow (10.0, -(hs::plot::dbAt ((int) end.y, screen.stage.magnitude) - hs::plot::dbAt ((int) start.y, screen.stage.magnitude)) / 20.0);
+        std::printf ("      formant drag: hz %.0f -> %.0f (expected %.0f), r %.4f -> %.4f (expected %.4f), zero r %.4f -> %.4f\n", oldHz, newHz, expectedHz, oldR, newR, expectedR, hs::sectionOf (before[0]).zeroRadius, hs::sectionOf (edited[0]).zeroRadius);
+        check (newHz > oldHz && newR > oldR && std::abs (12.0 * std::log2 (newHz / expectedHz)) < 1.0 && std::abs (newR - expectedR) < 0.01 && std::abs (hs::sectionOf (edited[0]).zeroRadius - hs::sectionOf (before[0]).zeroRadius) < 1e-3,
+            "dragging a formant right and up sets its angle from the x axis and its radius from the y axis, nothing solved, the zero untouched");
         screen.mouseDrag (mouse (screen, end.translated (4.0f, -4.0f), start));
         screen.mouseUp (mouse (screen, end, start));
         bool untouched = s.editWords()[0][0] == before[0][0] && s.editWords()[0][1] == before[0][1];
@@ -846,7 +897,7 @@ int main()
         screen.engine.feed (saw.data(), quieter.data(), 8192);
         const auto playing = screen.shot();
         check (! has (quiet, screen.engine.plot, hs::Look::ink) && ! has (quiet, screen.engine.plot, hs::Look::dim)
-                && has (playing, screen.engine.plot, hs::Look::ink) && has (playing, screen.engine.plot, hs::Look::dim),
+                && has (playing, screen.engine.plot, hs::Look::ink),
             "the engine draws the output's spectrum over the response while a key is held");
         const auto playingFile = folder.getChildFile ("headspace_playing.png");
         playingFile.deleteFile();

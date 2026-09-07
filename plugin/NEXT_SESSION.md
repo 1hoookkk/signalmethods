@@ -2316,3 +2316,19 @@ Open, in order:
   785 being the census's 2.98 x f0 ring. Ein (Lansky/Steiglitz) found on the SGI shelf as the
   one filter-design program; the paper is at evidence/papers/lansky/ein.pdf, the source is
   not online. 156 checks, ctest x3, tests-only build (app open).
+- 2026-09-07, late night, the polish pass by hand (Tyson: "fix the whole thing. the whole ui",
+  "make the areas segmented", "make the faders more integrated", "allow editing of poles only or
+  zeros only. i cant get the zeros"; answers: chart and list stay smaller, computer keys as a
+  keyboard, output-only overlay, drop BAKE). Built: ONE TARGET (Session::anchorTarget,
+  editStar, onCorner, editable, placeInTarget, relevel): edit(corner) puts the pad on it; the pad
+  on a corner makes it the target; a click on an anchor makes the anchor the target; a card click
+  places into the target; the rails write into the corner under the pad (setProbe corner path,
+  a capture copy on first write); audition()'s old edit-the-corner branch removed, the pad label
+  says the corner letter when on one. Stage: words() = editWords when editable else what plays;
+  handles and blade only when editable; peakAt/zeroAt gated; handles edit angle and radius
+  directly, relative radius (each dB of drag scales 1 - r by 10^(dB/20)), trim on release
+  (mouseUp -> relevel); POLES / ZEROS switch next to Carve, zeros mode routes clicks to the
+  zeros and wakes one on an empty row; stroke 2.4 px, cells muted 0.6 alpha. Mother: rails
+  flush under the cells, MORPH / FREQUENCY / STRESS labels, readouts, no BAKE. Screen: the four
+  areas ruled off. Engine: input line dropped. Tests rewritten to the rules; the copy-to-corner
+  resume had to force kPair before setProbe. 167 checks, ctest x3 green, app relinked.

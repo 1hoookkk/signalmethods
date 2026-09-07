@@ -31,6 +31,7 @@ public:
     double frequency = 0.0, stress = 1.0, octaves = 1.0;
     int editing = -1;
     int working = 0;
+    int anchorTarget = -1;
     int heldNote = -1;
     int target() const { return editing >= 0 ? editing : working; }
     Star made;
@@ -70,6 +71,12 @@ public:
     void pinAll (const std::array<int, 4>& pins);
     int addRead (const juce::File& wav);
     void edit (int corner);
+    void editAnchor (int which);
+    int editStar() const;
+    bool onCorner() const;
+    bool editable() const;
+    void relevel();
+    void placeInTarget (int star);
     void beginRowEdit();
     void setRow (int corner, int row, Row r);
     void setSection (int corner, int row, const Section& section, bool keepFifth = true);

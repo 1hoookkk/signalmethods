@@ -73,15 +73,7 @@ Explore Session::explore() const { return { pairA, pairB, pairT, frequency, stre
 
 void Session::audition()
 {
-    if (editing >= 0 && quad.pins[(size_t) kCornerPin[editing]] >= 0)
-    {
-        auditioning = quad.pins[(size_t) kCornerPin[editing]];
-        words = editWords();
-        sounding = true;
-        status = stars[(size_t) auditioning].name;
-        playingLabel = juce::String::charToString (kCornerLetters[editing]) + "  " + status;
-    }
-    else if (auditioning == kPair && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
+    if (auditioning == kPair && pairA >= 0 && pairB >= 0 && pairA < (int) stars.size() && pairB < (int) stars.size())
     {
         words = motherWordsAt (explore(), stars);
         sounding = true;
@@ -109,7 +101,8 @@ void Session::audition()
         words = wordsAt (quad, stars);
         sounding = true;
         status = juce::String (std::lround (quad.morph)) + " " + juce::String (std::lround (quad.q));
-        playingLabel = "pad " + juce::String (std::lround (quad.morph)) + " " + juce::String (std::lround (quad.q));
+        playingLabel = onCorner() ? juce::String::charToString (kCornerLetters[working]) + "  " + cornerName (working)
+                                  : "pad " + juce::String (std::lround (quad.morph)) + " " + juce::String (std::lround (quad.q));
     }
     else
     {
@@ -166,6 +159,7 @@ void Session::select (int k)
     if (k < 0 || k >= (int) stars.size()) return;
     selected = k;
     editing = -1;
+    anchorTarget = -1;
     auditioning = k;
     audition();
     changed();
@@ -194,8 +188,7 @@ void Session::setPair (int which, int star)
 
 void Session::sweep (double t)
 {
-    if (pairA < 0 || pairB < 0) return;
-    morphPair (pairA, pairB, t);
+    setProbe (t, frequency, stress);
 }
 
 void Session::setProbe (double morph, double frequency, double stress)
@@ -204,8 +197,30 @@ void Session::setProbe (double morph, double frequency, double stress)
     this->frequency = std::clamp (frequency, 0.0, 1.0);
     this->stress = std::clamp (stress, 0.0, 1.0);
     if (pairA < 0 || pairB < 0) return;
+    if (anchorTarget < 0 && auditioning == -1 && onCorner() && quad.complete())
+    {
+        int& pin = quad.pins[(size_t) kCornerPin[working]];
+        if (pin < 0 || pin >= (int) stars.size()) return;
+        if (stars[(size_t) pin].kind != "capture")
+        {
+            Star copy = stars[(size_t) pin];
+            copy.kind = "capture"; copy.parentA = copy.name; copy.parentB = ""; copy.corner = ""; copy.morph = 0.0; copy.q = 0.0;
+            stars.push_back (copy);
+            pin = (int) stars.size() - 1;
+        }
+        auto& s = stars[(size_t) pin];
+        s.words = motherWordsAt (explore(), stars);
+        s.parentA = stars[(size_t) pairA].name; s.parentB = stars[(size_t) pairB].name;
+        s.morph = pairT * 100.0; s.q = this->frequency * 100.0;
+        const auto name = formantName (s.words);
+        if (s.name != name) { s.name = uniqueName (name); s.body = s.name; }
+        selected = pin;
+        apply();
+        return;
+    }
     auditioning = kPair;
     editing = -1;
+    anchorTarget = -1;
     audition();
     changed();
 }
@@ -307,7 +322,7 @@ void Session::toCorner (int corner)
     int star = currentStar();
     if (auditioning == -1 || wasPair || inMade()) { keep(); star = selected; }
     pinCorner (corner, star);
-    if (wasPair) setProbe (t, frequency, stress);
+    if (wasPair) { auditioning = kPair; setProbe (t, frequency, stress); }
 }
 
 void Session::toColumn (int column)
@@ -349,15 +364,59 @@ int Session::addRead (const juce::File& wav)
 
 void Session::edit (int corner)
 {
-    if (corner < 0 || corner > 3) { editing = -1; auditioning = -1; audition(); changed(); return; }
+    if (corner < 0 || corner > 3) { editing = -1; anchorTarget = -1; auditioning = -1; audition(); changed(); return; }
     const int star = quad.pins[(size_t) kCornerPin[corner]];
     if (star < 0) return;
-    editing = corner;
-    working = corner;
+    const int pin = kCornerPin[corner];
+    anchorTarget = -1;
+    selected = star;
+    setPuck ((pin & 1) * 100.0, ((pin >> 1) & 1) * 100.0);
+}
+
+void Session::editAnchor (int which)
+{
+    const int star = which == 0 ? pairA : which == 1 ? pairB : -1;
+    if (star < 0 || star >= (int) stars.size()) return;
+    anchorTarget = which;
+    editing = -1;
     selected = star;
     auditioning = star;
     audition();
     changed();
+}
+
+int Session::editStar() const
+{
+    if (anchorTarget == 0) return pairA;
+    if (anchorTarget == 1) return pairB;
+    return quad.pins[(size_t) kCornerPin[target()]];
+}
+
+bool Session::onCorner() const
+{
+    return (quad.morph <= 0.0 || quad.morph >= 100.0) && (quad.q <= 0.0 || quad.q >= 100.0);
+}
+
+bool Session::editable() const
+{
+    if (anchorTarget >= 0) return editStar() >= 0 && editStar() < (int) stars.size();
+    return auditioning == -1 && onCorner() && quad.complete();
+}
+
+void Session::relevel()
+{
+    const int star = editStar();
+    if (star < 0 || star >= (int) stars.size() || stars[(size_t) star].kind != "capture") return;
+    unityDc (stars[(size_t) star].words);
+    apply();
+}
+
+void Session::placeInTarget (int star)
+{
+    if (star < 0 || star >= (int) stars.size()) return;
+    if (anchorTarget >= 0) { setPair (anchorTarget, star); return; }
+    if (auditioning == -1 && onCorner() && quad.complete()) { pinCorner (working, star); auditioning = -1; audition(); changed(); return; }
+    select (star);
 }
 
 void Session::beginRowEdit() { history.push_back (snapshot()); future.clear(); }
@@ -381,7 +440,7 @@ void Session::setSection (int corner, int row, const Section& section, bool keep
 void Session::setSectionWords (int corner, int row, const trench::core::PackedSection& words, bool balance)
 {
     if (corner < 0 || corner >= 4 || row < 0 || row >= kRows) return;
-    int& anchor = quad.pins[(size_t) kCornerPin[corner]];
+    int& anchor = anchorTarget == 0 ? pairA : anchorTarget == 1 ? pairB : quad.pins[(size_t) kCornerPin[corner]];
     int star = anchor;
     if (star < 0 || star >= (int) stars.size()) return;
     if (stars[(size_t) star].kind != "capture")
@@ -397,15 +456,15 @@ void Session::setSectionWords (int corner, int row, const trench::core::PackedSe
     if (balance) unityDc (s.words);
     const auto name = formantName (s.words);
     if (s.name != name) { s.name = uniqueName (name); s.body = s.name; }
-    editing = corner;
     selected = star;
-    auditioning = star;
+    if (anchorTarget >= 0) auditioning = star;
+    else { editing = corner; auditioning = -1; }
     apply();
 }
 
 Words Session::editWords() const
 {
-    const int star = quad.pins[(size_t) kCornerPin[editing < 0 ? working : editing]];
+    const int star = editStar();
     return star >= 0 && star < (int) stars.size() ? stars[(size_t) star].words : Words {};
 }
 
@@ -414,7 +473,13 @@ void Session::setPuck (double morph, double q)
     quad.morph = std::clamp (morph, 0.0, 100.0);
     quad.q = std::clamp (q, 0.0, 100.0);
     auditioning = -1;
+    anchorTarget = -1;
     editing = -1;
+    if (onCorner())
+    {
+        const int pin = (quad.morph >= 100.0 ? 1 : 0) + (quad.q >= 100.0 ? 2 : 0);
+        for (int corner = 0; corner < 4; ++corner) if (kCornerPin[corner] == pin) { working = corner; editing = corner; }
+    }
     apply();
 }
 
