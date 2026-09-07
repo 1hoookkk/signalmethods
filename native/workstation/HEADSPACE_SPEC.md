@@ -148,15 +148,36 @@ and the drops; `Spectrogram.*` the window. `Source/dsp/Peevers.*` the port.
 `Tests/QuadTests.cpp` the acceptance, headless, rendering `artifacts/shots/headspace*.png` and
 `spectrogram.png` without a window.
 
+Rulings of 2026-09-07, late, from the running app: the three rails are right and stay. The G
+window is not an analyser of the engine: it has its own source and its own audio path. Load a
+family from the XL bank, `evidence/factory-data/xl1-dsf-aud` (224 notes named "<Family> <Note>"),
+or drop a .wav or a folder; a key plays the nearest sampled note of the loaded family, mixed
+straight to the device, never through the cascade; Peevers's analysis runs on that signal, Env
+and Span's averager; a frame off its surface becomes a corner. The main engine plays the body.
+The bottom right must let you play the filter and see it: the engine plot goes live, the
+output's spectrum over the corner's response with the input's spectrum dimmer, refreshed while
+keys are held; the keyboard stays; the arrows, Keep and the file name go; the sources are four
+words; the plot is the sound, dragged onto a cell to place it.
+
+Ruling of 2026-09-07, later still: "work directly from the top right and straight into the 2x2
+grid while moving the morph there." The stage stays top right; there is no E window. The stage
+draws what plays at the pad, live as MORPH and Q move, with the working corner's handles on it;
+a drag edits that corner's words and is heard through the morph at once. The ARMAdillo plot for
+the zeros lives on the stage behind a key.
+
 ## The queue, in order, one slice each
 
-1. His panel and surface as the main window, from FORM_Menu_Form.md, with the one added
-   gesture: a frame picked off the surface becomes a corner.
+1. The G window as its own instrument: the XL bank sampler on its own audio path, his panel
+   and surface from FORM_Menu_Form.md, and the one added gesture: a frame picked off the
+   surface becomes a corner.
+1b. The engine goes live: output and input spectra over the response while keys are held;
+   arrows, Keep and file name removed; sources as words; the plot as a draggable card.
 2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp
    (`evidence/research-results/emu-sgi-1993/span/decompiled/`): `demean`, `xavg` with its
    feedback constant, power or energy, `draw_axes` and `draw_graph`; keys C reset the averager,
    S snapshot, X and Y the axis limits; defaults Blackman, 1024, 1024.
-3. The stage window on E: the response with handles and the ARMAdillo plot, zeros last.
+3. The stage shows what plays at the pad with the working corner's handles; the ARMAdillo plot
+   behind a key for the zeros.
 4. Ingest: reads are poles only with parked zeros; the 132 P2K and 2,312 Morpheus corners as
    cards by byte copy from the canonical export; Peterson and Barney landmarks; a folder of
    notes as one source.
