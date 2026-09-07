@@ -44,9 +44,17 @@ public:
     juce::AudioProcessorValueTreeState state;
     std::atomic<float>* smooth = nullptr;
     std::atomic<float>* bypass = nullptr;
+    std::atomic<float>* hold = nullptr;
+    std::atomic<float>* gate = nullptr;
+    std::atomic<bool> quiet { true };
+    juce::File keep();
 
     std::array<std::atomic<double>, 12> shown {};
     std::atomic<unsigned int> frames { 0 };
+    std::array<float, kWindow> frameCopy {};
+    std::array<double, kOrder + 1> coefficientCopy {};
+    double errorCopy = 0.0;
+    std::atomic<unsigned int> frameSeq { 0 };
     double sampleRate() const { return rate; }
     double lpcRate() const { return rate / (double) decimation; }
 
@@ -65,6 +73,8 @@ private:
     std::array<std::complex<double>, kOrder> roots {};
     std::array<Pole, 6> poles {};
     Words words {};
+    std::atomic<int> keepRequest { 0 };
+    int keepDone = 0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Processor)
 };
 }

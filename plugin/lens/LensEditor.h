@@ -13,6 +13,7 @@ public:
     void resized() override {}
     void mouseDrag (const juce::MouseEvent& e) override;
     void mouseDown (const juce::MouseEvent& e) override { mouseDrag (e); }
+    bool keyPressed (const juce::KeyPress& key) override;
 
 private:
     void timerCallback() override;
@@ -20,5 +21,8 @@ private:
     Processor& processor;
     std::unique_ptr<juce::Drawable> drawing;
     unsigned int seen = 0;
+    bool quietShown = true;
+    juce::String kept;
+    juce::int64 keptAt = 0;
 };
 }

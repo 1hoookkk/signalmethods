@@ -152,7 +152,7 @@ target_compile_features(TRENCH_Lens PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_Lens PRIVATE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_Lens PRIVATE
   trench_native_core
-  juce::juce_audio_utils juce::juce_audio_processors
+  juce::juce_audio_utils juce::juce_audio_processors juce::juce_dsp
   juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
 
 juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")

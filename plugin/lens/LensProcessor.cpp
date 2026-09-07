@@ -14,6 +14,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout layout()
     juce::AudioProcessorValueTreeState::ParameterLayout out;
     out.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "smooth", 1 }, "Smooth", juce::NormalisableRange<float> (5.0f, 400.0f, 1.0f, 0.5f), 40.0f));
     out.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "bypass", 1 }, "Bypass", false));
+    out.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "hold", 1 }, "Hold", false));
+    out.add (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID { "gate", 1 }, "Gate", juce::NormalisableRange<float> (-90.0f, -20.0f, 1.0f), -60.0f));
     return out;
 }
 
@@ -46,6 +48,8 @@ Processor::Processor()
 {
     smooth = state.getRawParameterValue ("smooth");
     bypass = state.getRawParameterValue ("bypass");
+    hold = state.getRawParameterValue ("hold");
+    gate = state.getRawParameterValue ("gate");
     words.fill (trench::core::kIdentitySection);
     for (int i = 0; i < kWindow; ++i) window[(size_t) i] = 0.54f - 0.46f * std::cos (2.0f * (float) kPi * (float) i / (float) (kWindow - 1));
     for (int i = 0; i < kOrder; ++i) roots[(size_t) i] = std::polar (0.9, 2.0 * kPi * (i + 0.5) / kOrder);
@@ -89,7 +93,13 @@ void Processor::analyse()
         }
         autocorrelation[(size_t) lag] = acc;
     }
-    if (autocorrelation[0] < 1.0e-9) return;
+    const double level = 10.0 * std::log10 (std::max (1.0e-12, autocorrelation[0] / (double) kWindow));
+    const bool silent = level < (double) gate->load();
+    quiet.store (silent);
+    frameSeq.fetch_add (1);
+    for (int i = 0; i < kWindow; ++i) frameCopy[(size_t) i] = ring[(size_t) ((ringWrite + i) % kWindow)] * window[(size_t) i];
+    frameSeq.fetch_add (1);
+    if (silent || hold->load() > 0.5f) return;
     autocorrelation[0] *= 1.0001;
     double error = autocorrelation[0];
     coefficients.fill (0.0);
@@ -105,6 +115,10 @@ void Processor::analyse()
         error *= (1.0 - k * k);
         if (error <= 0.0) return;
     }
+    frameSeq.fetch_add (1);
+    coefficientCopy = coefficients;
+    errorCopy = error;
+    frameSeq.fetch_add (1);
     auto evaluate = [&] (std::complex<double> z)
     {
         std::complex<double> acc = 1.0;
@@ -196,6 +210,28 @@ void Processor::getStateInformation (juce::MemoryBlock& destData)
 void Processor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes)) state.replaceState (juce::ValueTree::fromXml (*xml));
+}
+
+juce::File Processor::keep()
+{
+    Words snapshot;
+    {
+        for (size_t row = 0; row < trench::core::kSectionCount; ++row)
+        {
+            const double hz = shown[row * 2].load(), bw = shown[row * 2 + 1].load();
+            snapshot[row] = hz > 0.0 ? poleSection (hz, std::exp (-kPi * std::clamp (bw, 20.0, 2000.0) / trench::core::kP2kDatumHz)) : trench::core::kIdentitySection;
+        }
+        unityDc (snapshot);
+    }
+    trench::core::PackedBody body;
+    for (auto& corner : body.words) corner.fill (trench::core::kIdentitySection);
+    for (size_t c = 0; c < 8; ++c) for (size_t row = 0; row < trench::core::kSectionCount; ++row) body.words[c][row] = snapshot[row];
+    const auto bytes = body.legacy_bytes();
+    const auto dir = juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("native/workstation/banks/lens");
+    dir.createDirectory();
+    const auto file = dir.getChildFile ("lens_" + juce::Time::getCurrentTime().formatted ("%Y%m%d_%H%M%S") + ".body240");
+    file.replaceWithData (bytes.data(), bytes.size());
+    return file;
 }
 
 juce::AudioProcessorEditor* Processor::createEditor() { return new Editor (*this); }
