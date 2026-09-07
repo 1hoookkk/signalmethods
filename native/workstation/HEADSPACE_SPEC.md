@@ -210,7 +210,13 @@ once on release. A read's zeros stay parked unless placed by hand.
 4. Ingest: reads are poles only with parked zeros; the 132 P2K and 2,312 Morpheus corners as
    cards by byte copy from the canonical export; Peterson and Barney landmarks; a folder of
    notes as one source.
-5. His Filter path: drawn trajectories as formant wave functions, Impulse and Modify, olap.
+5. The FIT read: vector fitting (Gustavsen and Semlyen) of a sound's averaged spectrum, in the
+   z domain, minimum phase reconstructed from the magnitude by the real cepstrum, five pole
+   pairs relocated by the sigma polynomial's roots, residues by least squares, the numerator's
+   roots as the zeros, each pole pair paired with its nearest zero pair into a section, the
+   ceiling row kept, DC unity. Alt-drop a file to fit it; Ctrl+F refits the selected read.
+   A fitted frame carries measured zeros; an LPC read still parks them.
+6. His Filter path: drawn trajectories as formant wave functions, Impulse and Modify, olap.
 
 ## Later, each only when Tyson asks
 
