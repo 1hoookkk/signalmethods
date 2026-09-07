@@ -27,8 +27,23 @@ five words, sixty bytes; a body is four corners and the chip's lerp; the ear dec
 
 ## The hierarchy
 
-SOURCE, TWO ANCHORS, THREE MUSICAL DIRECTIONS, WHAT PLAYS, 1 2 3 4. Everything else is
-inspection. The stage's one role: inspect or alter the encoded anatomy of the selected endpoint,
+SOURCE, TWO ANCHORS, THREE MUSICAL DIRECTIONS, WHAT PLAYS, BAKE. Everything else is
+inspection.
+
+Ruling of 2026-09-07, night: the body is one plane through the cube, never four destinations.
+At one stress, A is cube (0, 0, stress), B is cube (1, 0, stress), C is cube (0, 1, stress), D is
+cube (1, 1, stress): A to B and C to D are the same MORPH change, A to C and B to D the same
+FREQUENCY change, and STRESS moves the whole plane. The four cells under the rails show that
+plane live as the rails move, and BAKE, one word, copies it into the shipping corners. 1 and 2
+make what plays anchor A or B; 3 and 4 do nothing in the mother. Putting a single sound into one
+corner of a built body stays possible as an explicit act on the body's own cell, never the main
+road, because four good corners with no shared change make a pad whose diagonals mean nothing.
+
+Ruling of the same night: the source carries KEY or FIXED tracking. FIXED holds the source's
+pitch while the key plays the filter through KEY to FREQUENCY, VELOCITY to STRESS and WHEEL to
+MORPH; KEY pitches the source with the note as before. HEADSPACE auditions by default on a
+FIXED pluck with the three routes on, so the keyboard plays the filter's geometry rather than
+transposing the source and the filter together. The stage's one role: inspect or alter the encoded anatomy of the selected endpoint,
 an anchor or a corner. Between corners the stage shows the lerp with no handles; an interpolated
 state is heard and captured, never edited. The ARMAdillo plot is not a zero editor: it is the
 same six sections in the chip's own coordinates, the same selection, the response plot with its
@@ -97,7 +112,8 @@ mother. The body, the engine and the keyboard are bottom-right. Nothing else.
    the 10 ms burst; play under pluck is an impulse train, twice a second, so the filter rings on
    its own; the others hold their sound while a key is down and ring down on release. The
    keyboard is three octaves and fills the band under the body. Space drones without a key.
-   The key pitches the source; it moves the filter only through the KEY to FREQUENCY route.
+   The source carries KEY or FIXED: KEY pitches the source with the note, FIXED holds it, and
+   the default is a FIXED pluck with the three routes on, so the key plays the filter.
 
 ## The spectrogram window
 
@@ -138,8 +154,8 @@ write, body, spectrogram. Not room, tab, table, column, lattice, field, vertex, 
 
 The Z row is a keyboard: Z is C, S is C sharp, X is D, and so on to M as B, then comma, L and
 full stop for the next C, D and E; Page Up and Page Down lift or drop it an octave and the saw's
-note with it. 1 to 4, or the arrows in the engine, put what plays in that corner; with Shift,
-the column; Enter puts it in the target. Arrows move the pad by 1, with Ctrl by 0.2. Space
+note with it. 1 and 2 make what plays anchor A or B; with a corner targeted on the body, 1 to
+4 put what plays in that corner as an explicit act; Enter puts it in the target. Arrows move the pad by 1, with Ctrl by 0.2. Space
 drones. Ctrl+K keeps. Ctrl+W writes. Ctrl+P pluck, Ctrl+S saw, Ctrl+N noise, Ctrl+L loop.
 [ and ] step the saw's note by a semitone. Ctrl+H shows the raw words. Ctrl+G opens the
 spectrogram. Slash finds a card by name, Enter places the first match in the target (or plays it when nothing
@@ -185,14 +201,14 @@ and not have it jump back to the 2x2 grid. i tweak them and press the 1234 numbe
 an anchor makes that anchor the stage's edit target: its name in the stage title, its handles,
 a drag writes its words, the rails sweep the tweaked frame at once. A library card is never
 edited in place: the first edit copies it into a capture and points the anchor at the copy.
-1 to 4 copy what plays into the grid.
+1 and 2 make what plays an anchor; BAKE copies the plane into the grid.
 
 Ruling of 2026-09-07, night, "what im editing needs to be true here and everywhere": one
 target. The target is what the pad points at. Pad on a corner: that corner is the target; the
 rails write into it as they move, the stage's handles are its handles, W writes the body with it,
 the engine box shows it. Pad between corners: the box and the stage show the lerp, the handles
-are off, the rails play so you can search, 1 to 4 put what plays into a corner, and moving the
-pad onto a corner makes it the target. An anchor clicked top-left is the target until the pad is
+are off, the rails play so you can search, and moving the pad onto a corner makes it the
+target. An anchor clicked top-left is the target until the pad is
 touched. The orange follows the target. There is no separate working corner.
 
 Ruling of 2026-09-07, night, on the stage "the plot is lying to me": handles edit "radius and
