@@ -168,6 +168,14 @@ target_compile_definitions(TRENCH_LensTests PRIVATE ${TRENCH_COMMON_DEFINITIONS}
 target_link_libraries(TRENCH_LensTests PRIVATE trench_native_core juce::juce_core juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
 add_test(NAME trench_lens COMMAND TRENCH_LensTests)
 
+juce_add_console_app(TRENCH_LensBench PRODUCT_NAME "TRENCH Lens Bench")
+target_sources(TRENCH_LensBench PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensBench.cpp" ${TRENCH_LENS_CORE}
+  "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.cpp")
+target_include_directories(TRENCH_LensBench PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source" "${CMAKE_CURRENT_SOURCE_DIR}/lens")
+target_compile_features(TRENCH_LensBench PRIVATE cxx_std_20)
+target_compile_definitions(TRENCH_LensBench PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+target_link_libraries(TRENCH_LensBench PRIVATE trench_native_core juce::juce_core juce::juce_audio_basics juce::juce_audio_formats juce::juce_dsp juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+
 juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")
 target_sources(TRENCH_FaceShot PRIVATE tools/FaceShot.cpp)
 target_include_directories(TRENCH_FaceShot PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")

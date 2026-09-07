@@ -39,6 +39,8 @@ public:
     static float levelDb (const float* frame, int n);
     std::vector<Match> rank (const Descriptor& d, int most) const;
     static float distance (const Descriptor& a, const Descriptor& b);
+    const std::array<float, 13>& reflection() const { return envelope.lpc.k; }
+    static Descriptor shape (const std::vector<double>& magnitudeDb, const std::vector<double>& hz);
     static double responseDb (const trench::core::CornerWords& words, double datum, double hz);
 
 private:

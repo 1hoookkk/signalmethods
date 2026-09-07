@@ -118,6 +118,27 @@ std::vector<float> Locator::decimate (const std::vector<float>& mono, int factor
     return out;
 }
 
+Descriptor Locator::shape (const std::vector<double>& magnitudeDb, const std::vector<double>& hz)
+{
+    Descriptor out {};
+    for (int b = 0; b < kBins; ++b)
+    {
+        const double target = gridHz (b);
+        size_t k = 0;
+        while (k + 1 < hz.size() && hz[k + 1] < target) ++k;
+        const size_t next = std::min (k + 1, hz.size() - 1);
+        const double span = std::max (1.0e-9, hz[next] - hz[k]), f = std::clamp ((target - hz[k]) / span, 0.0, 1.0);
+        out[(size_t) b] = (float) ((1.0 - f) * magnitudeDb[k] + f * magnitudeDb[next]);
+    }
+    float top = -1.0e9f;
+    for (auto v : out) top = std::max (top, v);
+    double mean = 0.0;
+    for (auto& v : out) { v = std::max (v, top - kFloorDb); mean += v; }
+    mean /= kBins;
+    for (auto& v : out) v = (float) (v - mean);
+    return out;
+}
+
 float Locator::distance (const Descriptor& a, const Descriptor& b)
 {
     double dot = 0.0, na = 0.0, nb = 0.0;
