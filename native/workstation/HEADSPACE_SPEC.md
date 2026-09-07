@@ -148,6 +148,20 @@ and the drops; `Spectrogram.*` the window. `Source/dsp/Peevers.*` the port.
 `Tests/QuadTests.cpp` the acceptance, headless, rendering `artifacts/shots/headspace*.png` and
 `spectrogram.png` without a window.
 
+## The queue, in order, one slice each
+
+1. His panel and surface as the main window, from FORM_Menu_Form.md, with the one added
+   gesture: a frame picked off the surface becomes a corner.
+2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp
+   (`evidence/research-results/emu-sgi-1993/span/decompiled/`): `demean`, `xavg` with its
+   feedback constant, power or energy, `draw_axes` and `draw_graph`; keys C reset the averager,
+   S snapshot, X and Y the axis limits; defaults Blackman, 1024, 1024.
+3. The stage window on E: the response with handles and the ARMAdillo plot, zeros last.
+4. Ingest: reads are poles only with parked zeros; the 132 P2K and 2,312 Morpheus corners as
+   cards by byte copy from the canonical export; Peterson and Barney landmarks; a folder of
+   notes as one source.
+5. His Filter path: drawn trajectories as formant wave functions, Impulse and Modify, olap.
+
 ## Later, each only when Tyson asks
 
 Formant overlays on the stage and the spectrogram: the Klatt and Hillenbrand F1 and F2 as
