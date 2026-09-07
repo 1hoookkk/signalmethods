@@ -4,7 +4,6 @@
 #include "Engine.h"
 #include "Keyboard.h"
 #include "Mother.h"
-#include "Pair.h"
 #include "Palette.h"
 #include "PinMenu.h"
 #include "Plot.h"
@@ -34,21 +33,18 @@ public:
     plot::Curves curves;
     Palette palette;
     Mother mother;
-    Pair pair;
     Stage stage;
     Body body;
     Engine engine;
     Keyboard keyboard;
     PinMenu menu;
     juce::Rectangle<int> bottom;
-    bool showMother = false;
-    void showCube (bool on);
 
 private:
     void layout();
     void paintGhost (juce::Graphics& g) const;
     Session& session;
-    enum class Drag { none, puck, made, card, peak, zero, blade, probe, depth, slice, transpose, carve, keyboard, sweep } dragging = Drag::none;
+    enum class Drag { none, puck, made, card, peak, zero, blade, transpose, carve, keyboard, rail } dragging = Drag::none;
     int dragStar = -1, dragRow = -1;
     Words dragWords {};
     bool editStarted = false;

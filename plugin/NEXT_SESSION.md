@@ -2180,3 +2180,29 @@ Open, in order:
   ctest x3 green. Left in the tree, not committed: native/core/src/packed_body.cpp decode_word
   rewritten with a table of powers of two in place of ldexp, numerically identical, not this
   slice's.
+- 2026-09-07, after the pair commit: Tyson: "we dont have a proper spec", "build the spec after";
+  then on the mother shot: "this cube to the left is wrong", and "make a spectrogram window that
+  uses the literal sgi decomp verbatim that i can also excite". Asked one question with three
+  readings of his pastes; he chose "three gestures on the pair": Morph = the pair, Frequency =
+  transposed() at constant width in semitones, Stress = relax toward the neutral tube
+  500 (2r+1) Hz, corners derived, never eight pinned plots. HEADSPACE_SPEC.md rewritten: the
+  loop, the mother as gestures, the spectrogram window, Words, Keys, Files. Evidence checked
+  against the Gemini paste: morpheus_axis_census.txt says Transform moves pitch on 45% of
+  poles (median 706 cents, widths x0.93), so "radii only" is wrong; cube F043 decodes with
+  corners 0-3 as identity and 4-7 live, and the Morph/Transform corner-bit map is still the
+  open conflict noted at 388-389. Peevers's Spectrogram (MIPS o32, no C) decompiled headless
+  with Ghidra 12 (analyzeHeadless + a post-script; the MCP bridge needs the GUI on 8080):
+  evidence/research-results/emu-sgi-1993/spectrogram/decompiled/, 82 of his routines, the
+  linked FORMS and libc under library/. Read: defaults nfft 256, win 256, stride 128, Hanning
+  (type 7 of 9; coefficient rows read from .data), order 12; Env = gal (gradient adaptive
+  lattice per sample, 0.998 forgetting, 0.002 step) then an impulse of 32000 through the
+  synthesis lattice, then spectrum (|X|^2 / nfft^2) and log_of (log10 * m + b, m and b from
+  gain and floor sliders). Tyson's later lines: "check we arent introducing convolution" (the
+  UI): the engine's arrows, Keep and write duplicate keys; proposed dropping the arrows and
+  Keep, held. Then: "rethink what the mother is, youve taken that word to the ground" and
+  "give me 3 radically different approaches using the two rossum armadillo patents plus" the
+  Massie and Martens papers, "choose the best one". Patent readings in hand: US5170369 =
+  linear interpolation of approximately logarithmically encoded coefficients, DC unity fixed,
+  the encoded increment computed automatically; US5248845 = 10-100 ms frames, a static
+  formant filter per frame, semi-automatic peak estimation, the note/formant split. The
+  three-rail mother build ran as a bounded job; its commit is held pending the rethink.

@@ -30,21 +30,14 @@ struct Quad
     bool complete() const { return pins[0] >= 0 && pins[1] >= 0 && pins[2] >= 0 && pins[3] >= 0; }
 };
 
-struct AuthoringCube
-{
-    std::array<int, 8> pins { -1, -1, -1, -1, -1, -1, -1, -1 };
-    double x = 0.5, y = 0.5, z = 0.5;
-    bool complete() const { return std::all_of (pins.begin(), pins.end(), [] (int pin) { return pin >= 0; }); }
-};
-
 struct Explore
 {
     int a = -1, b = -1;
-    double t = 0.5;
+    double morph = 0.5, frequency = 0.0, stress = 1.0, octaves = 1.0;
 };
 
-trench::core::PackedBody cubeBodyOf (const AuthoringCube& cube, const std::vector<Star>& stars);
-Words cubeWordsAt (const AuthoringCube& cube, const std::vector<Star>& stars);
+trench::core::PackedBody motherBodyOf (const Explore& explore, const std::vector<Star>& stars);
+Words motherWordsAt (const Explore& explore, const std::vector<Star>& stars);
 
 extern const char* const kPinNames[4];
 
@@ -80,8 +73,8 @@ Words lerp (const Corners& c, double morph, double q);
 Words wordsAt (const Quad& quad, const std::vector<Star>& stars);
 Bytes bytesOf (const Corners& c);
 bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::File& file);
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube = nullptr, const Explore* explore = nullptr);
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube = nullptr, Explore* explore = nullptr);
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const Explore* explore = nullptr);
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, Explore* explore = nullptr);
 std::vector<double> curveHz();
 std::vector<double> responseDb (const Words& words, const std::vector<double>& hz);
 double peakDb (const Words& words, const std::vector<double>& hz);

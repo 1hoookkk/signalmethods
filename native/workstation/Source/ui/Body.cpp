@@ -40,7 +40,7 @@ void Body::paint (juce::Graphics& g, int dropCorner) const
     for (int n = 0; n < 4; ++n)
     {
         const int pin = session.quad.pins[(size_t) Session::kCornerPin[n]];
-        const bool lit = ! session.editingCube && session.target() == n;
+        const bool lit = session.target() == n;
         curves.cell (g, tag[(size_t) n], plot[(size_t) n], juce::String::charToString (Session::kCornerLetters[n]), session.cornerName (n),
                      pin >= 0 ? &corners[(size_t) Session::kCornerPin[n]] : nullptr, lit, dropCorner == n);
     }

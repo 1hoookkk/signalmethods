@@ -209,6 +209,26 @@ Words transposed (const Words& words, double ratio)
     return out;
 }
 
+Words relaxed (const Words& words)
+{
+    Words out = words;
+    for (size_t r = 0; r + 1 < kRows; ++r)
+    {
+        auto g = trench::core::geometry_from_words (words[r], trench::core::kP2kDatumHz);
+        auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
+        if (pole == nullptr || pole->radius < 0.05 || pole->hz <= 0.0) continue;
+        const double target = 500.0 * (2.0 * (double) r + 1.0);
+        const double ratio = target / pole->hz;
+        pole->hz = target;
+        if (auto* zero = std::get_if<trench::core::ConjugatePair> (&g.zero); zero != nullptr && zero->radius > 0.05)
+            zero->hz = std::clamp (zero->hz * ratio, 20.0, 20000.0);
+        out[r] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
+        out[r][4] = words[r][4];
+    }
+    unityDc (out);
+    return out;
+}
+
 juce::String formantName (const Words& words)
 {
     const auto f = formantsOf (words);

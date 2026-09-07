@@ -15,21 +15,20 @@ public:
     Session (const juce::File& root, const juce::File& file, bool withAudio);
     ~Session();
 
-    struct Snapshot { Quad quad; AuthoringCube cube; std::vector<Star> added; };
+    struct Snapshot { Quad quad; std::vector<Star> added; double frequency = 0.0, stress = 1.0, octaves = 1.0; };
     static constexpr int kCornerPin[4] = { 2, 3, 0, 1 };
     static constexpr const char* kCornerLetters = "ABCD";
-    static constexpr int kCube = -4, kMade = -3, kPair = -2;
+    static constexpr int kMade = -3, kPair = -2;
 
     juce::File root, file;
     std::vector<Star> stars;
     size_t libraryCount = 0;
     Quad quad;
-    AuthoringCube cube;
-    bool editingCube = false;
     std::vector<Snapshot> history, future;
     int hovered = -1, selected = -1, auditioning = -1;
     int pairA = -1, pairB = -1;
     double pairT = 0.0;
+    double frequency = 0.0, stress = 1.0, octaves = 1.0;
     int editing = -1;
     int working = 0;
     int heldNote = -1;
@@ -55,6 +54,10 @@ public:
     void morphPair (int a, int b, double t);
     void setPair (int which, int star);
     void sweep (double t);
+    void setProbe (double morph, double frequency, double stress);
+    void setOctaves (double value);
+    bool bake();
+    Explore explore() const;
     bool inPair() const { return auditioning == kPair; }
     bool inMade() const { return auditioning == kMade; }
     void setMade (double f1, double f2);
@@ -67,10 +70,6 @@ public:
     void pinAll (const std::array<int, 4>& pins);
     int addRead (const juce::File& wav);
     void edit (int corner);
-    void editCube (int corner);
-    void pinCube (int corner, int star);
-    void setCubePoint (double x, double y, double z);
-    bool takeSlice();
     void beginRowEdit();
     void setRow (int corner, int row, Row r);
     void setSection (int corner, int row, const Section& section, bool keepFifth = true);

@@ -17,5 +17,6 @@ juce::File bodyFile (const juce::File& p2kDir, const juce::String& body);
 void unityDc (Words& words);
 Words vowelWords (const std::array<double, 4>& formants);
 Words transposed (const Words& words, double ratio);
+Words relaxed (const Words& words);
 juce::String formantName (const Words& words);
 }

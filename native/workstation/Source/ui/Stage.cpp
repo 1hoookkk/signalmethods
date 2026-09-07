@@ -118,8 +118,7 @@ void Stage::paint (juce::Graphics& g, int litRow, bool bladeLit, bool carving) c
     const int corner = session.target();
     g.setFont (Look::font (11.0f));
     g.setColour (Look::dim);
-    const juce::String title = session.editingCube ? juce::String (corner + 1) + "  " + session.stars[(size_t) session.cube.pins[(size_t) corner]].name
-                                                   : juce::String::charToString (Session::kCornerLetters[corner]) + "  " + session.cornerName (corner);
+    const juce::String title = juce::String::charToString (Session::kCornerLetters[corner]) + "  " + session.cornerName (corner);
     g.drawText (title, area.withHeight (18), juce::Justification::centredLeft);
     g.setColour (carving ? Look::orange : Look::dim);
     g.drawText ("Carve  " + juce::String (carve * 100.0, 0), carveKey, juce::Justification::centredRight);

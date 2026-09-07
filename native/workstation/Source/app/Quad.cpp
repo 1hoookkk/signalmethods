@@ -1,4 +1,5 @@
 #include "Quad.h"
+#include "Library.h"
 #include <cmath>
 
 namespace hs
@@ -188,22 +189,29 @@ Words wordsAt (const Quad& quad, const std::vector<Star>& stars)
     return lerp (cornersOf (quad, stars), quad.morph / 100.0, quad.q / 100.0);
 }
 
-trench::core::PackedBody cubeBodyOf (const AuthoringCube& cube, const std::vector<Star>& stars)
+trench::core::PackedBody motherBodyOf (const Explore& explore, const std::vector<Star>& stars)
 {
     trench::core::PackedBody body;
-    for (size_t corner = 0; corner < cube.pins.size(); ++corner)
-    {
-        body.words[corner].fill (trench::core::kIdentitySection);
-        const int pin = cube.pins[corner];
-        if (pin >= 0 && pin < (int) stars.size())
-            std::copy (stars[(size_t) pin].words.begin(), stars[(size_t) pin].words.end(), body.words[corner].begin());
-    }
+    for (auto& corner : body.words) corner.fill (trench::core::kIdentitySection);
+    const int anchors[2] = { explore.a, explore.b };
+    const double ratio = std::pow (2.0, explore.octaves);
+    for (int z = 0; z < 2; ++z)
+        for (int y = 0; y < 2; ++y)
+            for (int x = 0; x < 2; ++x)
+            {
+                const int pin = anchors[x];
+                if (pin < 0 || pin >= (int) stars.size()) continue;
+                Words w = stars[(size_t) pin].words;
+                if (y == 1) w = transposed (w, ratio);
+                if (z == 0) w = relaxed (w);
+                std::copy (w.begin(), w.end(), body.words[(size_t) (x + 2 * y + 4 * z)].begin());
+            }
     return body;
 }
 
-Words cubeWordsAt (const AuthoringCube& cube, const std::vector<Star>& stars)
+Words motherWordsAt (const Explore& explore, const std::vector<Star>& stars)
 {
-    const auto corner = cubeBodyOf (cube, stars).interpolate_words ((float) cube.x, (float) cube.y, (float) cube.z);
+    const auto corner = motherBodyOf (explore, stars).interpolate_words ((float) explore.morph, (float) explore.frequency, (float) explore.stress);
     Words words;
     std::copy_n (corner.begin(), kRows, words.begin());
     return words;
@@ -219,7 +227,7 @@ bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::Fi
     return file.replaceWithData (b.data(), b.size());
 }
 
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube, const Explore* explore)
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const Explore* explore)
 {
     auto* d = new juce::DynamicObject();
     d->setProperty ("schema", "trench-quad-v1");
@@ -227,21 +235,15 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     juce::Array<juce::var> pins;
     for (int p : quad.pins) pins.add (p >= 0 && p < (int) stars.size() ? stars[(size_t) p].name : juce::String());
     d->setProperty ("pins", pins);
-    if (cube != nullptr)
-    {
-        auto* c = new juce::DynamicObject();
-        juce::Array<juce::var> anchors;
-        for (int pin : cube->pins) anchors.add (pin >= 0 && pin < (int) stars.size() ? stars[(size_t) pin].name : juce::String());
-        c->setProperty ("anchors", anchors);
-        c->setProperty ("x", cube->x); c->setProperty ("y", cube->y); c->setProperty ("z", cube->z);
-        d->setProperty ("cube", juce::var (c));
-    }
     if (explore != nullptr)
     {
         auto* e = new juce::DynamicObject();
         e->setProperty ("a", explore->a >= 0 && explore->a < (int) stars.size() ? stars[(size_t) explore->a].name : juce::String());
         e->setProperty ("b", explore->b >= 0 && explore->b < (int) stars.size() ? stars[(size_t) explore->b].name : juce::String());
-        e->setProperty ("t", explore->t);
+        e->setProperty ("morph", explore->morph);
+        e->setProperty ("frequency", explore->frequency);
+        e->setProperty ("stress", explore->stress);
+        e->setProperty ("octaves", explore->octaves);
         d->setProperty ("explore", juce::var (e));
     }
     juce::Array<juce::var> captures;
@@ -259,10 +261,9 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     return file.replaceWithText (juce::JSON::toString (juce::var (d)));
 }
 
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube, Explore* explore)
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, Explore* explore)
 {
     quad = Quad();
-    if (cube != nullptr) *cube = AuthoringCube();
     if (explore != nullptr) *explore = Explore();
     stars.resize (libraryCount);
     if (! file.existsAsFile()) return false;
@@ -281,21 +282,15 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
         }
     if (auto* pins = v.getProperty ("pins", juce::var()).getArray())
         for (int i = 0; i < std::min (4, pins->size()); ++i) quad.pins[(size_t) i] = indexOf (stars, (*pins)[i].toString());
-    if (cube != nullptr)
-    {
-        const auto c = v.getProperty ("cube", juce::var());
-        if (auto* anchors = c.getProperty ("anchors", juce::var()).getArray())
-            for (int i = 0; i < std::min (8, anchors->size()); ++i) cube->pins[(size_t) i] = indexOf (stars, (*anchors)[i].toString());
-        cube->x = std::clamp ((double) c.getProperty ("x", 0.5), 0.0, 1.0);
-        cube->y = std::clamp ((double) c.getProperty ("y", 0.5), 0.0, 1.0);
-        cube->z = std::clamp ((double) c.getProperty ("z", 0.5), 0.0, 1.0);
-    }
     if (explore != nullptr)
     {
         const auto e = v.getProperty ("explore", juce::var());
         explore->a = indexOf (stars, e.getProperty ("a", "").toString());
         explore->b = indexOf (stars, e.getProperty ("b", "").toString());
-        explore->t = std::clamp ((double) e.getProperty ("t", 0.5), 0.0, 1.0);
+        explore->morph = std::clamp ((double) e.getProperty ("morph", 0.5), 0.0, 1.0);
+        explore->frequency = std::clamp ((double) e.getProperty ("frequency", 0.0), 0.0, 1.0);
+        explore->stress = std::clamp ((double) e.getProperty ("stress", 1.0), 0.0, 1.0);
+        explore->octaves = std::clamp ((double) e.getProperty ("octaves", 1.0), -3.0, 3.0);
     }
     quad.morph = std::clamp ((double) v.getProperty ("morph", 0.0), 0.0, 100.0);
     quad.q = std::clamp ((double) v.getProperty ("q", 0.0), 0.0, 100.0);

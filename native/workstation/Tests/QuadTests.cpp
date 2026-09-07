@@ -205,40 +205,6 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
-        const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
-        for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
-        check (s.cube.complete() && s.auditioning == s.starNamed (ipa (names[7])), "eight picks fill the cube and the last pick plays");
-        s.setCubePoint (0.3, 0.6, 0.25);
-        const auto body = hs::cubeBodyOf (s.cube, s.stars);
-        const auto cw = body.interpolate_words (0.3f, 0.6f, 0.25f);
-        bool ok = s.auditioning == hs::Session::kCube && s.sounding;
-        for (size_t row = 0; row < hs::kRows; ++row) ok = ok && cw[row] == s.words[row];
-        check (ok, "the cube point plays the chip's three-axis lerp of the eight corners");
-        s.setCubePoint (0.0, 0.0, 0.0);
-        check (same (s.words, s.stars[(size_t) s.starNamed ("i")].words), "at the cube's origin the words are corner 1 exactly");
-        s.setCubePoint (1.0, 1.0, 1.0);
-        check (same (s.words, s.stars[(size_t) s.starNamed (ipa ("\xca\x8c"))].words), "at the cube's far corner the words are corner 8 exactly");
-        s.setCubePoint (0.5, 0.5, 0.5);
-        const auto heard = s.words;
-        s.key (key ('1', false, '1'));
-        check (s.stars.size() == s.libraryCount + 1 && same (s.stars.back().words, heard) && s.cornerName (0) == s.stars.back().name && s.stars.back().parentA == "cube", "a corner key at a cube point keeps the slice sound and puts it in that corner");
-        s.setCubePoint (0.5, 0.5, 0.75);
-        check (s.takeSlice() && s.quad.morph == 50.0 && s.quad.q == 50.0, "taking the slice puts the plane's four corners into the body at the point's MORPH and Q");
-        const auto slice = hs::cubeBodyOf (s.cube, s.stars);
-        bool corners = true;
-        for (int corner = 0; corner < 4 && corners; ++corner)
-        {
-            const auto expect = slice.interpolate_words ((float) (corner & 1), (float) ((corner >> 1) & 1), 0.75f);
-            const auto got = hs::cornersOf (s.quad, s.stars)[(size_t) corner];
-            for (size_t row = 0; row < hs::kRows; ++row) corners = corners && expect[row] == got[row];
-        }
-        check (corners, "each body corner is the chip's lerp along Z between the cube's front and back corners");
-        hs::Session again (root, s.file, false);
-        check (again.cube.complete() && again.cube.z == 0.75 && again.cube.pins == s.cube.pins, "save then reopen restores the cube's eight corners and depth");
-    }
-
-    {
-        hs::Session s (root, tempQuad(), false);
         const auto path = juce::File::createTempFile ("quad.body240");
         s.write (path);
         const auto bytes = bytesOf (path);
@@ -542,12 +508,14 @@ int main()
             const auto& m = screen.mother.area; const auto& st = screen.stage.area; const auto& pl = screen.palette.area; const auto& bt = screen.bottom;
             bool ok = m.getX() < st.getX() && m.getY() == st.getY() && m.getWidth() > st.getWidth() && m.getHeight() > pl.getHeight()
                 && ! m.intersects (st) && ! m.intersects (pl) && ! st.intersects (bt) && ! pl.intersects (bt) && pl.getY() > m.getBottom() && bt.getX() > pl.getRight();
-            ok = ok && m.contains (screen.mother.face[0]) && m.contains (screen.mother.face[1]) && screen.mother.face[1].getX() > screen.mother.face[0].getX() && screen.mother.face[1].getY() < screen.mother.face[0].getY()
-                && screen.mother.face[0].getWidth() == screen.mother.face[1].getWidth() && m.contains (screen.mother.depth) && m.contains (screen.mother.bakeKey) && screen.mother.face[0].getWidth() >= 220
-                && screen.mother.depth.getX() > screen.mother.face[1].getRight() && screen.mother.depth.getHeight() > screen.mother.depth.getWidth();
-            for (int i = 0; i < 8; ++i) ok = ok && screen.mother.face[(size_t) (i / 4)].contains (screen.mother.cell[(size_t) i]) && screen.mother.cell[(size_t) i].contains (screen.mother.plot[(size_t) i]);
-            ok = ok && m.contains (screen.pair.cell[0]) && m.contains (screen.pair.cell[1]) && ! screen.pair.cell[0].intersects (screen.pair.cell[1]) && m.contains (screen.pair.rail)
-                && screen.pair.rail.getY() > screen.pair.cell[0].getBottom() && screen.pair.cell[0].getWidth() >= 200;
+            ok = ok && m.contains (screen.mother.cell[0]) && m.contains (screen.mother.cell[1]) && ! screen.mother.cell[0].intersects (screen.mother.cell[1])
+                && screen.mother.cell[0].getWidth() >= 200 && m.contains (screen.mother.octavesKey) && m.contains (screen.mother.bakeKey)
+                && ! screen.mother.octavesKey.intersects (screen.mother.bakeKey);
+            for (int i = 0; i < 2; ++i) ok = ok && screen.mother.cell[(size_t) i].contains (screen.mother.plot[(size_t) i]);
+            for (int i = 0; i < 3; ++i)
+                ok = ok && m.contains (screen.mother.rail[(size_t) i]) && screen.mother.rail[(size_t) i].getY() > screen.mother.cell[0].getBottom()
+                    && ! screen.mother.rail[(size_t) i].intersects (screen.mother.octavesKey) && ! screen.mother.rail[(size_t) i].intersects (screen.mother.bakeKey)
+                    && (i == 0 || ! screen.mother.rail[(size_t) i].intersects (screen.mother.rail[(size_t) (i - 1)]));
             ok = ok && st.contains (screen.stage.magnitude) && screen.stage.magnitude.getWidth() * 2 == screen.stage.magnitude.getHeight() * 3 && st.contains (screen.stage.carveKey) && screen.stage.magnitude.getWidth() >= 300;
             ok = ok && pl.contains (screen.palette.chart) && pl.contains (screen.palette.picker) && ! screen.palette.chart.intersects (screen.palette.picker) && pl.contains (screen.palette.dropZone);
             ok = ok && bt.contains (screen.body.area) && bt.contains (screen.engine.area) && bt.contains (screen.keyboard.area) && ! screen.body.area.intersects (screen.engine.area)
@@ -558,43 +526,38 @@ int main()
         };
         check (fits(), "one screen: the mother is the largest quarter top-left, the stage top-right, the palette below the mother, the body, engine and keyboard bottom-right, nothing overlapping");
         check (screen.body.cornerAt (screen.body.plot[2].getCentre()) == 2 && screen.body.cornerAt (screen.palette.chart.getCentre()) < 0, "a drop on the third cell lands in corner C");
-        check (screen.mother.pinAt (screen.mother.cell[0].getCentre()) == 2 && screen.mother.pinAt (screen.mother.cell[1].getCentre()) == 3 && screen.mother.pinAt (screen.mother.cell[4].getCentre()) == 6 && screen.mother.pinAt (screen.mother.cell[7].getCentre()) == 5, "the mother's cells are laid out like the body: front A B C D are pins 3 4 1 2, back A B C D are pins 7 8 5 6, the front face in front");
         screen.setSize (1000, 640);
         check (fits(), "the one screen still fits at the smallest window");
         screen.setSize (1120, 700);
         {
             const auto violin = s.starNamed ("Violin Body Resonant");
-            screen.mouseDown (mouse (screen, screen.pair.plot[0].getCentre().toFloat(), screen.pair.plot[0].getCentre().toFloat()));
-            screen.mouseUp (mouse (screen, screen.pair.plot[0].getCentre().toFloat(), screen.pair.plot[0].getCentre().toFloat()));
+            screen.mouseDown (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
+            screen.mouseUp (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
             check (s.auditioning == s.pairA && s.pairA == s.starNamed ("i"), "pressing an endpoint plays it exactly");
-            const auto railPoint = juce::Point<float> ((float) (screen.pair.rail.getX() + screen.pair.rail.getWidth() * 0.7), (float) screen.pair.rail.getCentreY());
-            screen.mouseDown (mouse (screen, railPoint, railPoint));
-            screen.mouseUp (mouse (screen, railPoint, railPoint));
+            auto along = [&] (int which) { const auto r = screen.mother.rail[(size_t) which]; return juce::Point<float> ((float) (r.getX() + r.getWidth() * 0.7), (float) r.getCentreY()); };
+            auto press = [&] (juce::Point<float> at) { screen.mouseDown (mouse (screen, at, at)); screen.mouseUp (mouse (screen, at, at)); };
+            press (along (0));
             check (s.inPair() && std::abs (s.pairT - 0.7) < 0.02, "pressing the rail sweeps the pair there");
             screen.mouseDown (mouse (screen, screen.palette.card (0).getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
-            screen.mouseDrag (mouse (screen, screen.pair.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
-            screen.mouseUp (mouse (screen, screen.pair.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
+            screen.mouseDrag (mouse (screen, screen.mother.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
+            screen.mouseUp (mouse (screen, screen.mother.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
             check (s.pairB == screen.palette.cards()[0] && s.pairA == s.starNamed ("i") && s.inPair(), "dropping a card on the right endpoint replaces it, keeps the left one, and the sweep goes on");
             juce::ignoreUnused (violin);
-            screen.showCube (true);
-            const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
-            for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
-            const auto press = screen.mother.plot[3].getCentre().toFloat();
-            const auto want = screen.mother.probeAt (press.toInt());
-            screen.mouseDown (mouse (screen, press, press));
-            screen.mouseUp (mouse (screen, press, press));
-            check (std::abs (s.cube.x - want.first) < 0.01 && std::abs (s.cube.y - want.second) < 0.01 && want.first > 0.5 && want.second < 0.5 && s.auditioning == hs::Session::kCube && s.playingLabel.startsWith ("cube "), "pressing the volume moves the probe there on the plane at this depth and the mother plays");
-            const auto rail = juce::Point<float> ((float) screen.mother.depth.getCentreX(), (float) (screen.mother.depth.getBottom() - screen.mother.depth.getHeight() * 3 / 4));
-            screen.mouseDown (mouse (screen, rail, rail));
-            screen.mouseUp (mouse (screen, rail, rail));
-            check (std::abs (s.cube.z - 0.75) < 0.02, "the depth rail sets the depth");
+            press (along (1));
+            check (s.inPair() && std::abs (s.frequency - 0.7) < 0.02 && std::abs (s.pairT - 0.7) < 0.02, "pressing the FREQUENCY rail moves the probe there");
+            press (along (2));
+            check (s.inPair() && std::abs (s.stress - 0.7) < 0.02 && std::abs (s.frequency - 0.7) < 0.02, "pressing the STRESS rail moves the probe there");
+            juce::MouseWheelDetails step;
+            step.deltaX = 0.0f; step.deltaY = 1.0f; step.isReversed = false; step.isSmooth = false; step.isInertial = false;
+            screen.mouseWheelMove (mouse (screen, along (1), along (1)), step);
+            check (std::abs (s.octaves - 1.25) < 1e-9, "the wheel over the FREQUENCY rail steps the octaves by a quarter");
+            s.setProbe (0.5, 0.5, 0.5);
             const auto mothered = screen.shot();
             const auto motherFile = folder.getChildFile ("headspace_mother.png");
             motherFile.deleteFile();
             juce::FileOutputStream motherOut (motherFile);
-            check (motherOut.openedOk() && png.writeImageToStream (mothered, motherOut), "the filled mother renders to artifacts/shots/headspace_mother.png");
+            check (motherOut.openedOk() && png.writeImageToStream (mothered, motherOut) && motherFile.getSize() > 4000, "the mother at a live probe renders to artifacts/shots/headspace_mother.png");
             motherOut.flush();
-            screen.showCube (false);
         }
         s.edit (0);
         screen.stage.showHardware = true;
@@ -680,6 +643,47 @@ int main()
                 for (size_t row = 0; row < hs::kRows; ++row) reproduced = reproduced && cw[row] == s.words[row];
             }
         check (reproduced, "the canonical grid writes 240 bytes that reload through the plugin's lerp to the pad's own sound");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        const int i = s.starNamed ("i"), u = s.starNamed ("u");
+        auto anchor = [&] (int k) { return s.stars[(size_t) k].words; };
+        auto probe = [&] (double m, double f, double t) { s.setProbe (m, f, t); return s.words; };
+        check (same (probe (0.0, 0.0, 1.0), anchor (i)), "at MORPH 0 the words are anchor A verbatim");
+        check (same (probe (1.0, 0.0, 1.0), anchor (u)), "at MORPH 1 the words are anchor B verbatim");
+        check (same (probe (0.0, 1.0, 1.0), hs::transposed (anchor (i), 2.0)), "FREQUENCY 1 plays the anchor transposed by the octaves");
+        const auto rest = probe (0.0, 0.0, 0.0);
+        const auto tube = hs::formantsOf (rest);
+        std::printf ("      the relaxed i reads %.0f %.0f %.0f %.0f\n", tube[0], tube[1], tube[2], tube[3]);
+        check (same (rest, hs::relaxed (anchor (i))) && std::abs (tube[0] / 500.0 - 1.0) < 0.01 && std::abs (tube[1] / 1500.0 - 1.0) < 0.01, "STRESS 0 plays the relaxed anchor with its poles on the neutral tube");
+        s.setProbe (0.3, 0.6, 0.25);
+        const auto chip = hs::motherBodyOf (s.explore(), s.stars).interpolate_words (0.3f, 0.6f, 0.25f);
+        bool three = s.inPair() && s.sounding;
+        for (size_t row = 0; row < hs::kRows; ++row) three = three && chip[row] == s.words[row];
+        check (three, "the probe plays the chip's three-axis lerp of the eight made corners");
+        s.setProbe (0.2, 0.4, 0.6);
+        s.audio.onWheel (0.8);
+        check (s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "the mod wheel rides MORPH and leaves FREQUENCY and STRESS where they were");
+        check (s.playingLabel == "i > u  80  freq 40  stress 60", "the label says frequency and stress when they are off their rest");
+        const auto heard = s.words;
+        s.key (key ('1', false, '1'));
+        check (s.stars.size() == s.libraryCount + 1 && s.stars.back().parentA == "i" && same (hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]], heard)
+               && s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "a corner key at the probe keeps the heard words and puts them in that corner");
+        s.setProbe (0.5, 0.5, 0.75);
+        const auto plane = hs::motherBodyOf (s.explore(), s.stars);
+        bool baked = s.bake() && s.quad.morph == 50.0 && s.quad.q == 50.0;
+        for (int pin = 0; pin < 4 && baked; ++pin)
+        {
+            const auto want = plane.interpolate_words ((float) (pin & 1), (float) ((pin >> 1) & 1), 0.75f);
+            const auto got = hs::cornersOf (s.quad, s.stars)[(size_t) pin];
+            for (size_t row = 0; row < hs::kRows; ++row) baked = baked && want[row] == got[row];
+        }
+        check (baked, "bake puts the plane at this stress into the body at the probe's MORPH and FREQUENCY");
+        s.setOctaves (-0.5);
+        hs::Session again (root, s.file, false);
+        check (again.pairA == again.starNamed ("i") && again.pairB == again.starNamed ("u") && std::abs (again.pairT - 0.5) < 1e-9 && std::abs (again.frequency - 0.5) < 1e-9
+               && std::abs (again.stress - 0.75) < 1e-9 && std::abs (again.octaves + 0.5) < 1e-9 && again.inPair(), "the mother is saved with the session and plays again on reopening");
     }
 
     {
@@ -774,10 +778,6 @@ int main()
         check (s.playingLabel == "i > u  23", "a pair says both names and the position");
         s.edit (1);
         check (s.playingLabel == "B  u", "an open corner says its letter and name");
-        const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
-        for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
-        s.setCubePoint (0.5, 0.5, 0.25);
-        check (s.playingLabel == "cube 50 50 at depth 25", "the cube point says where it is");
         s.setPuck (40.0, 30.0);
         check (s.playingLabel == "pad 40 30", "the pad says MORPH and Q");
     }

@@ -29,8 +29,8 @@ int PinMenu::itemAt (const Session& session, juce::Point<int> p) const
 int PinMenu::pinned (const Session& session) const
 {
     if (target < 0) return -1;
-    if (kind == 2) return target == 0 ? session.pairA : session.pairB;
-    return kind == 1 ? session.cube.pins[(size_t) target] : session.quad.pins[(size_t) Session::kCornerPin[target]];
+    if (kind == 1) return target == 0 ? session.pairA : session.pairB;
+    return session.quad.pins[(size_t) Session::kCornerPin[target]];
 }
 
 void PinMenu::wheel (const Session& session, int step)

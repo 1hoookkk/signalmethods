@@ -5,7 +5,7 @@
 namespace hs
 {
 Screen::Screen (Session& s)
-    : palette (s, curves), mother (s, curves), pair (s, curves), stage (s, curves), body (s, curves), engine (s, curves), keyboard (s), session (s)
+    : palette (s, curves), mother (s, curves), stage (s, curves), body (s, curves), engine (s, curves), keyboard (s), session (s)
 {
     setSize (1120, 700);
     setWantsKeyboardFocus (true);
@@ -18,15 +18,12 @@ Screen::Screen (Session& s)
 
 void Screen::resized() { layout(); repaint(); }
 
-void Screen::showCube (bool on) { showMother = on; menu.open = false; layout(); repaint(); }
-
 void Screen::layout()
 {
     const int w = std::max (1000, getWidth()), h = std::max (640, getHeight());
     const juce::Rectangle<int> grid (16, 32, w - 32, h - 44);
     const int colX = grid.getX() + grid.getWidth() * 52 / 100, rowY = grid.getY() + grid.getHeight() * 60 / 100;
     mother.layout ({ grid.getX(), grid.getY(), colX - 12 - grid.getX(), rowY - 12 - grid.getY() });
-    pair.layout ({ grid.getX(), grid.getY(), colX - 12 - grid.getX(), rowY - 12 - grid.getY() });
     stage.layout ({ colX + 12, grid.getY(), grid.getRight() - colX - 12, rowY - 12 - grid.getY() });
     palette.layout ({ grid.getX(), rowY + 12, colX - 12 - grid.getX(), grid.getBottom() - rowY - 12 });
     bottom = { colX + 12, rowY + 12, grid.getRight() - colX - 12, grid.getBottom() - rowY - 12 };
@@ -43,9 +40,8 @@ void Screen::paint (juce::Graphics& g)
     g.setFont (Look::font (13.0f));
     g.setColour (Look::dim);
     g.drawText ("HEADSPACE", juce::Rectangle<int> (16, 6, 200, 22), juce::Justification::centredLeft);
-    const bool dropping = dragging == Drag::card || dragging == Drag::slice;
-    if (showMother) mother.paint (g, dragPoint, dropping);
-    else pair.paint (g, dragPoint, dropping);
+    const bool dropping = dragging == Drag::card;
+    mother.paint (g, dragPoint, dropping);
     stage.paint (g, dragging == Drag::peak || dragging == Drag::zero ? dragRow : -1, dragging == Drag::blade, dragging == Drag::carve);
     palette.paint (g, dragging == Drag::transpose ? dragStar : -1);
     body.paint (g, dropping ? body.cornerAt (dragPoint) : -1);
@@ -57,10 +53,9 @@ void Screen::paint (juce::Graphics& g)
 
 void Screen::paintGhost (juce::Graphics& g) const
 {
-    if (dragging != Drag::card && dragging != Drag::slice) return;
-    if (dragging == Drag::card && dragStar < 0) return;
-    const Words words = dragging == Drag::card ? session.stars[(size_t) dragStar].words : session.heard;
-    const auto ink = dragging == Drag::card ? plot::inkOf (session.stars[(size_t) dragStar]) : Look::blue;
+    if (dragging != Drag::card || dragStar < 0) return;
+    const Words words = session.stars[(size_t) dragStar].words;
+    const auto ink = plot::inkOf (session.stars[(size_t) dragStar]);
     juce::Rectangle<int> ghost (dragPoint.x - 36, dragPoint.y - 16, 72, 32);
     g.setColour (Look::panel.withAlpha (0.92f)); g.fillRect (ghost);
     g.setColour (ink); g.drawRect (ghost);
@@ -84,7 +79,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         const int i = menu.itemAt (session, p);
         const int target = menu.target, kind = menu.kind;
         menu.open = false;
-        if (i >= 0) { if (kind == 2) session.setPair (target, i); else if (kind == 1) session.pinCube (target, i); else session.pinCorner (target, i); }
+        if (i >= 0) { if (kind == 1) session.setPair (target, i); else session.pinCorner (target, i); }
         repaint();
         return;
     }
@@ -112,44 +107,20 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         return;
     }
     if (body.area.contains (p) && session.quad.complete()) { dragging = Drag::puck; mouseDrag (e); return; }
-    if (! showMother)
+    if (const int i = mother.tagAt (p); i >= 0)
     {
-        if (const int i = pair.tagAt (p); i >= 0)
-        {
-            if (p.x >= pair.tag[(size_t) i].getRight() - 14) menu.show (session, i, 2, pair.tag[(size_t) i], getLocalBounds());
-            else if (const int star = i == 0 ? session.pairA : session.pairB; star >= 0) session.select (star);
-            repaint();
-            return;
-        }
-        if (const int i = pair.cellAt (p); i >= 0)
-        {
-            if (const int star = i == 0 ? session.pairA : session.pairB; star >= 0) session.select (star);
-            return;
-        }
-        if (pair.onRail (p)) { dragging = Drag::sweep; mouseDrag (e); return; }
-    }
-    if (const int i = showMother ? mother.tagAt (p) : -1; i >= 0)
-    {
-        if (p.x >= mother.tag[(size_t) i].getRight() - 14) menu.show (session, Mother::pinOf (i), 1, mother.tag[(size_t) i], getLocalBounds());
-        else session.editCube (Mother::pinOf (i));
+        if (p.x >= mother.tag[(size_t) i].getRight() - 14) menu.show (session, i, 1, mother.tag[(size_t) i], getLocalBounds());
+        else if (const int star = i == 0 ? session.pairA : session.pairB; star >= 0) session.select (star);
         repaint();
         return;
     }
-    if (showMother && mother.bakeKey.contains (p)) { session.takeSlice(); return; }
-    if (showMother && mother.depth.expanded (8, 0).contains (p)) { dragging = Drag::depth; mouseDrag (e); return; }
-    if (showMother && mother.onVolume (p))
+    if (const int i = mother.cellAt (p); i >= 0)
     {
-        if (! session.cube.complete()) return;
-        if (mother.probePoint().getDistanceFrom (p.toFloat()) < 10.0f && e.mods.isShiftDown())
-        {
-            dragging = Drag::slice; dragOrigin = p; dragPoint = p;
-            if (session.auditioning != Session::kCube) session.setCubePoint (session.cube.x, session.cube.y, session.cube.z);
-            return;
-        }
-        dragging = Drag::probe;
-        mouseDrag (e);
+        if (const int star = i == 0 ? session.pairA : session.pairB; star >= 0) session.select (star);
         return;
     }
+    if (mother.bakeKey.contains (p)) { session.bake(); return; }
+    if (const int i = mother.railAt (p); i >= 0) { dragging = Drag::rail; dragRow = i; mouseDrag (e); return; }
     if (stage.carveKey.contains (p))
     {
         dragging = Drag::carve; dragOrigin = p; dragPoint = p;
@@ -281,20 +252,12 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
         session.setPuck ((p.x - body.area.getX()) * 100.0 / body.area.getWidth(), (body.area.getBottom() - p.y) * 100.0 / body.area.getHeight());
         return;
     }
-    if (dragging == Drag::sweep)
+    if (dragging == Drag::rail)
     {
-        session.sweep (pair.sweepAt (p));
-        return;
-    }
-    if (dragging == Drag::probe)
-    {
-        const auto at = mother.probeAt (p);
-        session.setCubePoint (at.first, at.second, session.cube.z);
-        return;
-    }
-    if (dragging == Drag::depth)
-    {
-        session.setCubePoint (session.cube.x, session.cube.y, (mother.depth.getBottom() - p.y) / (double) mother.depth.getHeight());
+        const double v = mother.valueAt (dragRow, p);
+        if (dragRow == 0) session.sweep (v);
+        else if (dragRow == 1) session.setProbe (session.pairT, v, session.stress);
+        else session.setProbe (session.pairT, session.frequency, v);
         return;
     }
     if (dragging == Drag::made)
@@ -313,7 +276,7 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
         if (const int midi = keyboard.noteAt (p); midi >= 0 && midi != session.note) session.noteOn (midi);
         return;
     }
-    if (dragging == Drag::card || dragging == Drag::slice) repaint();
+    if (dragging == Drag::card) repaint();
 }
 
 void Screen::mouseUp (const juce::MouseEvent& e)
@@ -322,12 +285,7 @@ void Screen::mouseUp (const juce::MouseEvent& e)
     if (dragging == Drag::card && dragStar >= 0)
     {
         if (const int n = body.cornerAt (p); n >= 0) { session.pinCorner (n, dragStar); if (e.mods.isShiftDown()) session.pinCorner (n ^ 2, dragStar); }
-        else if (! showMother && pair.cellAt (p) >= 0) session.setPair (pair.cellAt (p), dragStar);
-        else if (showMother && mother.pinAt (p) >= 0) session.pinCube (mother.pinAt (p), dragStar);
-    }
-    if (dragging == Drag::slice)
-    {
-        if (const int n = body.cornerAt (p); n >= 0) session.toCorner (n);
+        else if (const int i = mother.cellAt (p); i >= 0) session.setPair (i, dragStar);
     }
     if (dragging == Drag::keyboard) session.noteOff();
     dragging = Drag::none; dragStar = -1; dragRow = -1;
@@ -340,6 +298,7 @@ void Screen::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDe
     const auto p = e.getPosition();
     const int step = wheel.deltaY > 0 ? -1 : 1;
     if (menu.open && menu.rect.contains (p)) { menu.wheel (session, step); repaint(); return; }
+    if (mother.rail[1].expanded (0, 6).contains (p) || mother.onOctaves (p)) { session.setOctaves (session.octaves + (wheel.deltaY > 0 ? 0.25 : -0.25)); return; }
     if (const int row = stage.peakAt (p); row >= 0)
     {
         Section s = sectionOf (stage.words()[(size_t) row]);
@@ -361,7 +320,6 @@ bool Screen::keyPressed (const juce::KeyPress& k)
     if (k.getKeyCode() == 'H' && plain) { stage.showHardware = ! stage.showHardware; repaint(); return true; }
     if (menu.open && k.getKeyCode() == juce::KeyPress::escapeKey) { menu.open = false; repaint(); return true; }
     if (k.getKeyCode() == juce::KeyPress::returnKey) { session.toCorner (session.working); return true; }
-    if (k.getKeyCode() == juce::KeyPress::tabKey) { showCube (! showMother); return true; }
     const bool used = session.key (k);
     if (used) repaint();
     return used;
@@ -376,8 +334,8 @@ bool Screen::isInterestedInFileDrag (const juce::StringArray& files)
 void Screen::filesDropped (const juce::StringArray& files, int x, int y)
 {
     const juce::Point<int> p (x, y);
-    const int corner = body.cornerAt (p), pin = showMother ? mother.pinAt (p) : -1, end = showMother ? -1 : pair.cellAt (p);
-    const bool asLoop = corner < 0 && pin < 0 && end < 0 && ! palette.area.contains (p);
+    const int corner = body.cornerAt (p), end = mother.cellAt (p);
+    const bool asLoop = corner < 0 && end < 0 && ! palette.area.contains (p);
     for (const auto& f : files)
     {
         if (! f.endsWithIgnoreCase (".wav")) continue;
@@ -385,7 +343,6 @@ void Screen::filesDropped (const juce::StringArray& files, int x, int y)
         const int k = session.addRead (juce::File (f));
         if (k < 0) continue;
         if (corner >= 0) session.pinCorner (corner, k);
-        else if (pin >= 0) session.pinCube (pin, k);
         else if (end >= 0) session.setPair (end, k);
     }
 }
