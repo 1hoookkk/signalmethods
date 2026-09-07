@@ -1,0 +1,40 @@
+body  truth  guess  p(guess)  p(truth)
+ace_of_bass    EQ+  WAH  0.60 0.03   x
+acid_ravage    REZ  LPF  0.53 0.29   x
+angelz_hairz   FLG  REZ  0.52 0.00   x
+bass_o_matic   REZ  LPF  0.46 0.12   x
+bass_tracer    EQ+  REZ  0.54 0.23   x
+bassbox_303    LPF  EQ-  0.82 0.00   x
+boland_bass    EQ+  REZ  0.67 0.02   x
+cruz_pusher    PHA  DST  0.98 0.00   x
+dead_ringer    REZ  EQ+  0.36 0.28   x
+deep_bouche    VOW  REZ  0.84 0.07   x
+dj_alkaline    EQ+  EQ+  0.44 0.44
+dream_weava    FLG  LPF  0.44 0.00   x
+ear_bender     WAH  LPF  0.57 0.00   x
+early_rizer    LPF  FLG  0.67 0.04   x
+eeh_to_aah     VOW  VOW  0.72 0.72
+freak_shifta   PHA  EQ+  0.49 0.00   x
+fuzzi_face     DST  PHA  0.91 0.00   x
+klang_kling    SFX  FLG  0.59 0.00   x
+klub_klassik   LPF  REZ  0.75 0.05   x
+lucifer_s_q    REZ  EQ+  0.70 0.10   x
+meaty_gizmo    REZ  REZ  0.34 0.34
+megasweepz     LPF  REZ  0.59 0.12   x
+millennium     LPF  SFX  0.28 0.05   x
+multi_q_vox    VOW  WAH  0.53 0.08   x
+ooh_to_eee     VOW  WAH  0.65 0.34   x
+radio_craze    EQ-  LPF  0.62 0.00   x
+razor_blades   EQ-  PHA  0.24 0.00   x
+rogue_hertz    EQ+  EQ-  0.40 0.37   x
+talking_hedz   VOW  VOW  0.63 0.63
+tb_or_not_tb   EQ+  LPF  0.56 0.14   x
+tooth_comb     REZ  REZ  0.54 0.54
+ubu_orator     VOW  VOW  0.82 0.82
+zoom_peaks     REZ  VOW  0.71 0.25   x
+leave-one-body-out: 6/33 bodies named right by their held-out square
+resubstitution: 90.5% of 2673 chip-lerp corners (9x9 per body)
+
+second pass, 48-bin dB response on a log grid as the input instead of pole geometry: 8/33 held-out bodies right.
+verdict 2026-09-07: E-mu's Type column is not readable from one corner's words or one corner's response.
+VOW holds (4 of 6 both ways); everything else is guessed. 33 bodies is too few for ten classes.

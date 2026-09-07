@@ -2412,3 +2412,8 @@ Open, in order:
   PLUCK was silent). Next session: run build_tests.cmd, fix what fails, view headspace.png,
   commit with native pathspecs, relink the app (close it first). Then the queue: ARMAdillo plot,
   row reorder, Filter path. Committed head before this: 17914418 (caret = find).
+
+## 2026-09-07 late: type net, pass one refuted
+- Labels: Mo'Phatt manual p.133 Type column (LPF, EQ+, EQ-, VOW, PHA, FLG, REZ, WAH, DST, SFX) for the 33 bodies; Morpheus carries only five sequence families, 132 cubes unlabeled.
+- Net 1, type from a corner's words: 30 geometry features, 9x9 chip-lerp squares, MLP 30-32-16-10, leave-one-body-out 6/33, resubstitution 90%. Response-dB inputs 8/33. VOW is the only type the words carry. Script and RTNeural JSON in evidence/research-results/type_net; not wired into the tool.
+- The pad's nearest corner is the working corner (631f41e6).
