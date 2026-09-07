@@ -137,6 +137,24 @@ juce_add_plugin(TRENCH_Dev
   COPY_PLUGIN_AFTER_BUILD FALSE)
 target_link_libraries(TRENCH_Dev PRIVATE TRENCHPluginCommonDev)
 
+juce_add_plugin(TRENCH_Lens
+  COMPANY_NAME "Signal Methods"
+  BUNDLE_ID "com.signalmethods.lens"
+  PLUGIN_MANUFACTURER_CODE Sgmd
+  PLUGIN_CODE Tr0l
+  FORMATS VST3
+  PRODUCT_NAME "LENS"
+  COPY_PLUGIN_AFTER_BUILD FALSE)
+target_sources(TRENCH_Lens PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.cpp")
+target_compile_features(TRENCH_Lens PRIVATE cxx_std_20)
+target_compile_definitions(TRENCH_Lens PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+target_link_libraries(TRENCH_Lens PRIVATE
+  trench_native_core
+  juce::juce_audio_utils juce::juce_audio_processors
+  juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+
 juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")
 target_sources(TRENCH_FaceShot PRIVATE tools/FaceShot.cpp)
 target_include_directories(TRENCH_FaceShot PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
