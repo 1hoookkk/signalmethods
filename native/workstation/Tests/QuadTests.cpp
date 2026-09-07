@@ -1,3 +1,4 @@
+#include "app/Bridge.h"
 #include "ui/Look.h"
 #include "ui/Screen.h"
 #include "ui/Spectrogram.h"
@@ -1446,6 +1447,23 @@ int main()
             spec.frameCount(), inked, lit, blues, (int) hs::Look::ink.getRed(), (int) hs::Look::dim.getRed());
         check (written && file.getSize() > 4000 && inked > 20 && lit > 300 && blues > 200 && juce::Desktop::getInstance().getNumComponents() == 0,
             "the window renders with the panel to artifacts/shots/readingroom.png");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        hs::Bridge bridge (s);
+        const auto state = bridge.state();
+        const auto* d = state.getDynamicObject();
+        const bool shaped = d != nullptr && state["corners"].isArray() && state["corners"].size() == 4 && state["heard"].isArray() && state["heard"].size() == 96
+                         && state["pair"].isObject() && state["pad"].isObject() && state["source"].isObject() && state["cards"].isArray() && state["cards"].size() >= 132;
+        bridge.dispatch ("setPuck", { 40.0, 30.0 });
+        const bool moved = std::abs (s.quad.morph - 40.0) < 1e-9 && std::abs (s.quad.q - 30.0) < 1e-9 && (double) bridge.state()["pad"]["morph"] == s.quad.morph;
+        bridge.dispatch ("noteOn", { 60 });
+        const bool struck = s.heldNote == 60 && (int) bridge.state()["source"]["held"] == 60;
+        bridge.dispatch ("noteOff", {});
+        const bool bogus = ! bridge.dispatch ("bogus", {});
+        std::printf ("      bridge: %d cards, heard %d points, label '%s'\n", state["cards"].size(), state["heard"].size(), state["label"].toString().toRawUTF8());
+        check (shaped && moved && struck && s.heldNote == -1 && bogus, "the bridge states the session as one document and dispatches by name; the page reads it and never computes words");
     }
 
     std::printf ("%d failures\n", failures);

@@ -1,6 +1,6 @@
 #include "ui/Look.h"
-#include "ui/Screen.h"
 #include "ui/Spectrogram.h"
+#include "ui/Web.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
 namespace
@@ -30,7 +30,8 @@ public:
         : juce::DocumentWindow ("HEADSPACE", hs::Look::ground, juce::DocumentWindow::allButtons)
     {
         setUsingNativeTitleBar (true);
-        setContentOwned (new hs::Screen (session), true);
+        const juce::File root (TRENCH_TABLE_STITCH_ROOT);
+        setContentOwned (new hs::Web (session, root.getChildFile ("native/workstation/Source/web"), juce::File (TRENCH_JUCE_INTEROP_JS)), true);
         setResizable (true, false);
         setResizeLimits (1000, 640, 4000, 3000);
         const auto area = juce::Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
@@ -38,7 +39,7 @@ public:
         centreWithSize (w, h);
         setVisible (true);
         getContentComponent()->grabKeyboardFocus();
-        if (auto* screen = dynamic_cast<hs::Screen*> (getContentComponent()))
+        if (auto* screen = dynamic_cast<hs::Web*> (getContentComponent()))
             screen->onSpectrogram = [this, &session]
             {
                 if (glass == nullptr) glass = std::make_unique<Glass> (session);
