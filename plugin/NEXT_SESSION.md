@@ -2240,3 +2240,23 @@ Open, in order:
   windows match his rows, impulse FFT flat, sine at bin 16, Env of a 2 kHz two-pole within one
   bin, a held saw shows harmonics 1, 2 and 9 within one bin, vowel_ah.aiff first formant
   926 Hz at the middle frame, spectrogram.png rendered without a window. 148 checks, ctest x3.
+- 2026-09-07, evening: rulings and findings after the spectrogram commit. Tyson: "we keep it for
+  ourselves" (HEADSPACE is private, the plugin ships); the cube is the idea (position between
+  placed sounds instead of parameters), never the 240 or 560-byte format; the spectrogram render
+  "looks like opus tried to be clever" -> redrawn as a waterfall (hidden-line slices, one colour,
+  1024-point defaults, at most 80 slices), 2272ce8a. Emulator: MAME 0.289 indy_4610 boots IRIX
+  5.3 and runs Peevers's panel from the disc, but the IRIS GL display window stays black on the
+  8-bit XL board and crashed on the 24-bit one; "out of swap space" once; launcher now xl8,
+  128 MB, sound off; the sounds disc rebuilt by make_sounds_iso.py with a `setup` script that
+  makes /usr/tmp/spec with sounds, filt and map and starts the program (no typing); MAME natural
+  keyboard + Shift+Scroll Lock pastes the Windows clipboard. Comparison screenshots are not
+  obtainable this way; the decomp and the tests are the ground truth. The SGI shelf
+  (sgi-archive/mirror/dscott/audio.apps/public.html) lists the Spectrogram under "E-mu Systems,
+  Inc." with "resynthesis features allow one to apply time-varying filters and to create filters
+  from existing sounds", firmer than the evidence report's "personnel context"; Peevers's second
+  program Span (real-time spectrum analyser, binary in the archive) sent for the same headless
+  decompile. Morpheus: the 290 raw/bodies/*.body files were written with a per-cube corner
+  permutation and reversed rows 1-6 (cube 1: native = 4T + 1F + 2M; cube 65: 4M + 1T + 2F), the
+  writer script is gone, so MORPH on those files plays Frequency or Transform; a canonical
+  re-export (native index = Morph + 2 Frequency + 4 Transform, raw row order, manifest) is
+  running into evidence/factory-data/morpheus/canonical/.
