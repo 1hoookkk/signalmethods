@@ -2300,3 +2300,19 @@ Open, in order:
   (every row climbs A to B) and B's row 6 is a 1.2 kHz notch pair instead of the ceiling, the
   likely break on the sweep; 15:00:49 is clean. 154 checks, ctest x3; app not relinked while
   open.
+- 2026-09-07, night, the ingest cleaned by hand. Tyson: "clean the ingest. give me only the best
+  sources. fit them to 6 active stages", "do not load the emu presets. we start from literature
+  and datasets", "max the power user hates the way you have to drag arbitrary lists". Sources
+  now: Klatt 1980 + schwa, Hillenbrand 1995, Peterson and Barney 1952 (new,
+  evidence/factory-data/peterson-barney-1952/pb52_means.csv, 30 means transcribed from the
+  commonly reproduced table, flagged for verification against the paper), and the XL bank's
+  resonant families (KEY-TRACKED or FIXED in xl1_pool_resonance_census.txt) read from
+  evidence/factory-data/xl1-dsf-aud: 87 notes as reads named by family and note. Gone: the
+  12 impulse responses; the factory corners and Morpheus cubes are never loaded. Reads are
+  poles only: readWav parks every zero (DegeneratePair) on measured and support poles alike,
+  six live stages under the ceiling notch, unityDc. Palette: two tabs, Reads and Captures
+  (the chart holds the vowels); slash starts type-to-find, letters filter the list, Enter
+  plays the first match, Escape clears. Aud Bell 1 C4 reads 741/785/2331/3397/3837 Hz, the
+  785 being the census's 2.98 x f0 ring. Ein (Lansky/Steiglitz) found on the SGI shelf as the
+  one filter-design program; the paper is at evidence/papers/lansky/ein.pdf, the source is
+  not online. 156 checks, ctest x3, tests-only build (app open).

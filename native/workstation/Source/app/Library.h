@@ -10,6 +10,8 @@ constexpr double kSchwaF1 = 500.0, kSchwaF2 = 1500.0, kNeutralF3 = 2500.0, kNeut
 std::vector<Star> loadLibrary (const juce::File& p2kDir);
 std::vector<Star> loadVowels (const juce::File& bankFile);
 std::vector<Star> loadBodies (const juce::File& dir);
+std::vector<Star> loadTable (const juce::File& csv, const juce::String& bank);
+std::vector<Star> loadReads (const juce::File& dir, const juce::File& census);
 Star schwa();
 Star madeVowel (double f1, double f2);
 std::optional<Star> readWav (const juce::File& wav);

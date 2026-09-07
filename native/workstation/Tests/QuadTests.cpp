@@ -89,47 +89,46 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
-        int klatt = 0, h95 = 0, bodies = 0, other = 0;
-        bool named = true, zeros = true, notch = true;
+        int klatt = 0, h95 = 0, pb52 = 0, reads = 0, other = 0;
+        bool named = true, polesOnly = true, sixLive = true, resonant = true;
         for (const auto& e : s.stars)
         {
             if (e.kind == "vowel" && (e.body == "Klatt 1980" || e.body == "neutral")) { ++klatt; named = named && e.name.isNotEmpty() && e.name.length() <= 2 && ! e.name.containsAnyOf ("0123456789"); }
             else if (e.kind == "vowel" && e.body == "Hillenbrand 1995") { ++h95; named = named && juce::StringArray::fromTokens (e.name, " ", "").size() == 2 && e.name.length() <= 8 && ! e.name.startsWith ("vowel"); }
-            else if (e.kind == "body")
+            else if (e.kind == "vowel" && e.body == "Peterson Barney 1952") ++pb52;
+            else if (e.kind == "read")
             {
-                ++bodies;
-                notch = notch && hs::rowOf (e.words[5]).type == hs::RowType::notch;
-                for (size_t r = 0; r + 1 < hs::kRows; ++r) notch = notch && hs::sectionOf (e.words[r]).pole && hs::sectionOf (e.words[r]).zero;
+                ++reads;
+                resonant = resonant && e.body.startsWith ("Aud ") && e.corner.isNotEmpty();
+                sixLive = sixLive && hs::rowOf (e.words[5]).type == hs::RowType::notch;
+                for (size_t r = 0; r + 1 < hs::kRows; ++r) { sixLive = sixLive && hs::sectionOf (e.words[r]).pole; polesOnly = polesOnly && ! hs::sectionOf (e.words[r]).zero; }
             }
             else ++other;
-            bool hasZero = false;
-            for (const auto& row : e.words) hasZero = hasZero || row[1] < 0xFF00;
-            zeros = zeros && hasZero;
         }
-        std::printf ("      palette: %d Klatt, %d Hillenbrand, %d bodies, %d other\n", klatt, h95, bodies, other);
-        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && bodies == 12 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians and the 12 measured bodies, no E-mu preset");
+        std::printf ("      palette: %d Klatt, %d Hillenbrand, %d Peterson Barney, %d XL reads, %d other\n", klatt, h95, pb52, reads, other);
+        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && pb52 == 30 && reads >= 40 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians, the 30 Peterson and Barney means and the XL bank's resonant notes, no E-mu preset and no impulse response");
         check (named, "Klatt vowels are named by symbol alone, Hillenbrand vowels by symbol and speaker group");
-        check (zeros && notch, "every card carries zeros and every measured body has five live pole-zero rows under the ceiling notch");
+        check (resonant && sixLive && polesOnly, "every XL read is a note of a resonant family with six live stages, poles only, and the ceiling notch");
         const int men = s.starNamed ("i men");
         const auto fm = men >= 0 ? hs::formantsOf (s.stars[(size_t) men].words) : std::array<double, 4> {};
         std::printf ("      i men reads %.0f %.0f %.0f\n", fm[0], fm[1], fm[2]);
         check (men >= 0 && std::abs (fm[0] - 338.0) < 12.0 && std::abs (fm[1] - 2319.0) < 60.0, "the Hillenbrand men's i sits at its published F1 and F2");
         check (s.starNamed (ipa ("\xc9\x91") + " women") >= 0 && s.starNamed (ipa ("\xca\x8a") + " boys") >= 0 && s.starNamed (ipa ("\xca\x8c") + " girls") >= 0 && s.starNamed ("ah women") < 0, "Hillenbrand's hod, hood and hud read as their own symbols, not the bank's codes");
-        const int violin = s.starNamed ("Violin Body Resonant");
-        bool wood = false;
-        std::printf ("      violin body rows:");
-        if (violin >= 0)
+        const int bell = s.starNamed ("Aud Bell 1 C4");
+        bool ring = false;
+        std::printf ("      Aud Bell 1 C4 rows:");
+        if (bell >= 0)
             for (size_t r = 0; r + 1 < hs::kRows; ++r)
             {
-                const auto g = trench::core::geometry_from_words (s.stars[(size_t) violin].words[r], trench::core::kP2kDatumHz);
+                const auto g = trench::core::geometry_from_words (s.stars[(size_t) bell].words[r], trench::core::kP2kDatumHz);
                 const auto* pole = std::get_if<trench::core::ConjugatePair> (&g.pole);
                 if (pole == nullptr || pole->radius < 0.05) continue;
                 const double bw = -std::log (pole->radius) * trench::core::kP2kDatumHz / 3.141592653589793;
                 std::printf ("  %.0f Hz bw %.0f", pole->hz, bw);
-                wood = wood || (pole->hz > 150.0 && pole->hz < 700.0);
+                ring = ring || (pole->hz > 200.0 && pole->hz < 6000.0);
             }
         std::printf ("\n");
-        check (violin >= 0 && s.stars[(size_t) violin].body == "violin" && wood, "the violin body is read from its impulse response with a resonance in the wood and air range");
+        check (bell >= 0 && s.stars[(size_t) bell].body == "Aud Bell 1" && s.stars[(size_t) bell].corner == "C4" && ring, "an XL bell note reads as a read named by family and note with a resonance in the audible band");
         check (s.quad.complete() && s.cornerName (0) == "i" && s.cornerName (1) == "u" && s.cornerName (2) == ipa ("\xc9\x91") && s.cornerName (3) == ipa ("\xc9\x99") && s.sounding, "a fresh session boots with i, u, a and schwa in the four corners");
         const auto boot = s.words;
         s.hover (5);
@@ -341,16 +340,15 @@ int main()
         check (f[0] > 300.0 && f[0] < 900.0, "the read finds the first formant of a synthetic voice near 500 Hz");
         {
             const auto& read = s.stars.back().words;
-            bool paired = true;
-            for (size_t r = 0; r + 1 < hs::kRows && paired; ++r)
+            bool parked = true;
+            for (size_t r = 0; r + 1 < hs::kRows && parked; ++r)
             {
                 const auto geometry = trench::core::geometry_from_words (read[r], trench::core::kP2kDatumHz);
                 const auto* pole = std::get_if<trench::core::ConjugatePair> (&geometry.pole);
                 const auto* zero = std::get_if<trench::core::ConjugatePair> (&geometry.zero);
-                if (pole == nullptr || pole->radius < 0.05) continue;
-                paired = zero != nullptr && std::abs (zero->hz - pole->hz) < pole->hz * 0.02 && zero->radius < pole->radius;
+                parked = pole != nullptr && pole->radius >= 0.05 && (zero == nullptr || zero->radius < 0.05);
             }
-            check (paired && hs::rowOf (read[5]).type == hs::RowType::notch && hs::rowHz (read[5]) > 11000.0, "a read pairs each pole with a zero on the same angle and pins row 6 to the ceiling notch");
+            check (parked && hs::rowOf (read[5]).type == hs::RowType::notch && hs::rowHz (read[5]) > 11000.0, "a read writes six live poles with every zero parked and pins row 6 to the ceiling notch");
         }
         s.setPuck (s.quad.morph, s.quad.q);
         hs::Session again (root, s.file, false);
@@ -484,9 +482,9 @@ int main()
             const auto at = [&] (const juce::String& name) { const auto ff = hs::formantsOf (s.stars[(size_t) s.starNamed (name)].words); return screen.palette.chartPoint (ff[0], ff[1]); };
             const auto pi = at ("i"), pu = at ("u"), pa = at (ipa ("\xc9\x91"));
             check (pi.x < pu.x && pi.x < pa.x && pi.y < pa.y && pu.y < pa.y && pu.x > screen.palette.chart.getCentreX(), "the vowel chart is the standard one: i top-left, u top-right, a at the bottom");
-            const int violin = s.starNamed ("Violin Body Resonant");
-            const auto fv = hs::formantsOf (s.stars[(size_t) violin].words);
-            check (screen.palette.pointAt (screen.palette.chartPoint (fv[0], fv[1]).toInt()) != violin, "bodies are never on the vowel chart");
+            const int bell = s.starNamed ("Aud Bell 1 C4");
+            const auto fv = hs::formantsOf (s.stars[(size_t) bell].words);
+            check (screen.palette.pointAt (screen.palette.chartPoint (fv[0], fv[1]).toInt()) != bell, "reads are never on the vowel chart");
         }
         const auto u = hs::formantsOf (s.stars[(size_t) s.starNamed ("u")].words), iy = hs::formantsOf (s.stars[(size_t) s.starNamed ("i")].words);
         std::printf ("      u reads %.0f %.0f, i reads %.0f %.0f\n", u[0], u[1], iy[0], iy[1]);
@@ -532,7 +530,6 @@ int main()
         check (fits(), "the one screen still fits at the smallest window");
         screen.setSize (1120, 700);
         {
-            const auto violin = s.starNamed ("Violin Body Resonant");
             screen.mouseDown (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
             screen.mouseUp (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
             check (s.auditioning == s.pairA && s.pairA == s.starNamed ("i"), "pressing an endpoint plays it exactly");
@@ -544,7 +541,11 @@ int main()
             screen.mouseDrag (mouse (screen, screen.mother.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
             screen.mouseUp (mouse (screen, screen.mother.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
             check (s.pairB == screen.palette.cards()[0] && s.pairA == s.starNamed ("i") && s.inPair(), "dropping a card on the right endpoint replaces it, keeps the left one, and the sweep goes on");
-            juce::ignoreUnused (violin);
+            screen.keyPressed (key ('/', false, '/'));
+            for (const char ch : { 'b', 'e', 'l' }) screen.keyPressed (key (ch, false, ch));
+            check (screen.palette.finding && screen.palette.find == "bel" && ! screen.palette.cards().empty() && s.stars[(size_t) screen.palette.cards()[0]].name.containsIgnoreCase ("Bell"), "slash then letters find cards by name without dragging the list");
+            screen.keyPressed (key (juce::KeyPress::returnKey, false, 0));
+            check (! screen.palette.finding && s.auditioning >= 0 && s.stars[(size_t) s.auditioning].name.containsIgnoreCase ("Bell"), "Enter plays the first card found and closes the find");
             press (along (1));
             check (s.inPair() && std::abs (s.frequency - 0.7) < 0.02 && std::abs (s.pairT - 0.7) < 0.02, "pressing the FREQUENCY rail moves the probe there");
             press (along (2));
@@ -615,22 +616,22 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
-        const int i = s.starNamed ("i"), u = s.starNamed ("u"), violin = s.starNamed ("Violin Body Resonant");
+        const int i = s.starNamed ("i"), u = s.starNamed ("u"), bell = s.starNamed ("Aud Bell 1 C4");
         auto between = [&] (int a, int b, double t) { hs::Corners c { s.stars[(size_t) a].words, s.stars[(size_t) b].words, s.stars[(size_t) a].words, s.stars[(size_t) b].words }; return hs::lerp (c, t, 0.0); };
         check (s.inPair() && s.pairA == i && s.pairB == u && same (s.words, between (i, u, 0.5)), "a fresh session plays the sweep between its two endpoints");
-        s.setPair (1, violin);
-        check (s.inPair() && s.pairA == i && s.pairB == violin && std::abs (s.pairT - 0.5) < 1e-9 && same (s.words, between (i, violin, 0.5)), "replacing the right endpoint keeps the left one and keeps sounding at the same place");
+        s.setPair (1, bell);
+        check (s.inPair() && s.pairA == i && s.pairB == bell && std::abs (s.pairT - 0.5) < 1e-9 && same (s.words, between (i, bell, 0.5)), "replacing the right endpoint keeps the left one and keeps sounding at the same place");
         s.audio.onWheel (0.3);
-        check (s.inPair() && std::abs (s.pairT - 0.3) < 1e-9 && same (s.words, between (i, violin, 0.3)), "the mod wheel sweeps the pair");
+        check (s.inPair() && std::abs (s.pairT - 0.3) < 1e-9 && same (s.words, between (i, bell, 0.3)), "the mod wheel sweeps the pair");
         const auto found = s.words;
         s.toCorner (0);
         const auto cornerA = hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]];
         check (same (cornerA, found) && s.inPair() && std::abs (s.pairT - 0.3) < 1e-9 && same (s.words, found), "copying the sound to A stores those exact words and the sweep goes on");
         s.audio.onWheel (0.8);
         s.setPair (0, u);
-        check (same (hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]], found) && s.pairA == u && s.pairB == violin && s.inPair(), "sweeping on and replacing the left endpoint leave A untouched");
+        check (same (hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]], found) && s.pairA == u && s.pairB == bell && s.inPair(), "sweeping on and replacing the left endpoint leave A untouched");
         hs::Session again (root, s.file, false);
-        check (again.pairA == again.starNamed ("u") && again.pairB == again.starNamed ("Violin Body Resonant") && std::abs (again.pairT - 0.8) < 1e-9 && again.inPair(), "the exploration is saved with the session and plays again on reopening");
+        check (again.pairA == again.starNamed ("u") && again.pairB == again.starNamed ("Aud Bell 1 C4") && std::abs (again.pairT - 0.8) < 1e-9 && again.inPair(), "the exploration is saved with the session and plays again on reopening");
         s.setPuck (50.0, 50.0);
         const auto path = juce::File::createTempFile ("loop.body240");
         s.write (path);

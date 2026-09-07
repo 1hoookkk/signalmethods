@@ -20,7 +20,8 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     stars = loadVowels (root.getChildFile ("native/workstation/banks/Klatt 1980.bank.json"));
     stars.push_back (schwa());
     for (const auto& s : loadVowels (root.getChildFile ("native/workstation/banks/Hillenbrand 1995.bank.json"))) stars.push_back (s);
-    for (const auto& s : loadBodies (root.getChildFile ("evidence/measured-bodies/ir_library"))) stars.push_back (s);
+    for (const auto& s : loadTable (root.getChildFile ("evidence/factory-data/peterson-barney-1952/pb52_means.csv"), "Peterson Barney 1952")) stars.push_back (s);
+    for (const auto& s : loadReads (root.getChildFile ("evidence/factory-data/xl1-dsf-aud"), root.getChildFile ("evidence/research-results/xl1_pool_resonance_census.txt"))) stars.push_back (s);
     libraryCount = stars.size();
     Explore boot;
     const bool had = open (quad, stars, libraryCount, file, &boot);

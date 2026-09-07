@@ -350,6 +350,18 @@ bool Screen::keyPressed (const juce::KeyPress& k)
     if (k.getKeyCode() == 'H' && plain) { stage.showHardware = ! stage.showHardware; repaint(); return true; }
     if (k.getKeyCode() == 'G' && plain && onSpectrogram) { onSpectrogram(); return true; }
     if (menu.open && k.getKeyCode() == juce::KeyPress::escapeKey) { menu.open = false; repaint(); return true; }
+    if (palette.finding)
+    {
+        const auto ch = k.getTextCharacter();
+        if (k.getKeyCode() == juce::KeyPress::escapeKey) { palette.finding = false; palette.find.clear(); }
+        else if (k.getKeyCode() == juce::KeyPress::backspaceKey) palette.find = palette.find.dropLastCharacters (1);
+        else if (k.getKeyCode() == juce::KeyPress::returnKey) { const auto shown = palette.cards(); if (! shown.empty()) session.select (shown[0]); palette.finding = false; }
+        else if (ch >= 32 && ch < 127) palette.find += juce::String::charToString (ch);
+        palette.layout (palette.area);
+        repaint();
+        return true;
+    }
+    if (k.getTextCharacter() == '/' && plain) { palette.finding = true; palette.find.clear(); palette.showTab (0); repaint(); return true; }
     if (k.getKeyCode() == juce::KeyPress::returnKey) { session.toCorner (session.working); return true; }
     const bool used = session.key (k);
     if (used) repaint();

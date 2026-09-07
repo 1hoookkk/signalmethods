@@ -117,6 +117,58 @@ std::vector<Star> loadBodies (const juce::File& dir)
     return out;
 }
 
+std::vector<Star> loadTable (const juce::File& csv, const juce::String& bank)
+{
+    std::vector<Star> out;
+    juce::StringArray lines;
+    csv.readLines (lines);
+    for (const auto& line : lines)
+    {
+        auto cols = juce::StringArray::fromTokens (line, ",", "");
+        if (cols.size() < 5 || ! cols[2].trim().containsOnly ("0123456789.")) continue;
+        Star s;
+        s.kind = "vowel";
+        s.body = bank;
+        s.corner = cols[0].trim();
+        s.name = s.corner + " " + cols[1].trim();
+        s.words = vowelWords ({ cols[2].getDoubleValue(), cols[3].getDoubleValue(), cols[4].getDoubleValue(), kNeutralF4 });
+        out.push_back (s);
+    }
+    return out;
+}
+
+std::vector<Star> loadReads (const juce::File& dir, const juce::File& census)
+{
+    static std::map<juce::String, std::vector<Star>> cache;
+    const auto key = dir.getFullPathName() + "|" + census.getFullPathName();
+    if (const auto it = cache.find (key); it != cache.end()) return it->second;
+    std::vector<Star> out;
+    juce::StringArray families, lines;
+    census.readLines (lines);
+    for (const auto& line : lines)
+    {
+        if (! (line.contains ("KEY-TRACKED") || line.contains ("FIXED"))) continue;
+        const int cut = line.indexOf ("  ");
+        if (cut > 0) families.add (line.substring (0, cut).trim());
+    }
+    auto files = dir.findChildFiles (juce::File::findFiles, false, "*.wav");
+    files.sort();
+    for (const auto& file : files)
+    {
+        const auto stem = file.getFileNameWithoutExtension();
+        const int space = stem.lastIndexOfChar (' ');
+        const auto family = space > 0 ? stem.substring (0, space) : stem;
+        if (! families.contains (family)) continue;
+        auto star = readWav (file);
+        if (! star) continue;
+        star->body = family;
+        star->corner = space > 0 ? stem.substring (space + 1) : juce::String();
+        out.push_back (*star);
+    }
+    cache[key] = out;
+    return out;
+}
+
 void unityDc (Words& words)
 {
     double product = 1.0;
@@ -151,15 +203,14 @@ std::optional<Star> readWav (const juce::File& wav)
         {
             const double hz = std::clamp (found[i].hz, 60.0, 12000.0);
             const double poleRadius = std::clamp (std::exp (-3.141592653589793 * std::max (10.0, found[i].bw_hz) / trench::core::kP2kDatumHz), 0.0, 0.9995);
-            const double prominence = std::clamp (found[i].gain_db, 3.0, 30.0);
             g.pole = trench::core::ConjugatePair { hz, poleRadius };
-            g.zero = trench::core::ConjugatePair { hz, std::clamp (1.0 - (1.0 - poleRadius) * std::pow (10.0, prominence / 20.0), 0.05, poleRadius - 1e-4) };
+            g.zero = trench::core::DegeneratePair {};
         }
         else
         {
             const double hz = support[std::min<size_t> (supported++, 1)] * (supported > 2 ? 1.0 + 0.2 * (double) (supported - 2) : 1.0);
             g.pole = trench::core::ConjugatePair { hz, radiusForWidth (hz, 4.0) };
-            g.zero = trench::core::ConjugatePair { hz, radiusForWidth (hz, 6.0) };
+            g.zero = trench::core::DegeneratePair {};
         }
         s.words[i] = trench::core::words_from_geometry (g, trench::core::kP2kDatumHz);
     }

@@ -24,8 +24,10 @@ struct Palette
     static constexpr double kF1Low = 200.0, kF1High = 1100.0, kF2Low = 600.0, kF2High = 3500.0;
 
     juce::Rectangle<int> area, chart, picker, dropZone, keepKey;
-    std::array<juce::Rectangle<int>, 3> tabs;
+    std::array<juce::Rectangle<int>, 2> tabs;
     int tab = 0;
+    juce::String find;
+    bool finding = false;
 
 private:
     Session& session;
