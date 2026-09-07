@@ -30,21 +30,35 @@ int Keyboard::noteAt (juce::Point<int> p) const
 
 void Keyboard::paint (juce::Graphics& g) const
 {
+    const int base = area.getBottom() - 1;
+    g.setColour (Look::faint);
+    g.fillRect (area.getX(), base, area.getWidth(), 1);
+    for (int white = 0; white <= 21; ++white)
+    {
+        const int x = std::min (area.getX() + area.getWidth() * white / 21, area.getRight() - 1);
+        g.fillRect (x, base - 6, 1, 6);
+    }
+    for (int midi = 36; midi <= 71; ++midi)
+    {
+        const auto r = pianoKey (midi);
+        if (r.getHeight() >= area.getHeight()) continue;
+        g.fillRect (r.getCentreX(), area.getY() + 6, 1, 3);
+    }
     g.setFont (Look::font (9.0f));
-    for (int layer = 0; layer < 2; ++layer)
-        for (int midi = 36; midi <= 71; ++midi)
-        {
-            const auto r = pianoKey (midi);
-            const bool black = r.getHeight() < area.getHeight();
-            if (black != (layer == 1)) continue;
-            g.setColour (midi == session.note ? Look::blue : black ? Look::ground : Look::text);
-            g.fillRect (r);
-            g.setColour (black ? Look::faint : Look::ground); g.drawRect (r);
-            if (midi % 12 == 0)
-            {
-                g.setColour (midi == session.note ? Look::panel : Look::faint);
-                g.drawText ("C" + juce::String (midi / 12 - 1), r.withTrimmedTop (r.getHeight() - 14), juce::Justification::centred);
-            }
-        }
+    for (int midi = 36; midi <= 71; midi += 12)
+    {
+        const auto r = pianoKey (midi);
+        g.setColour (Look::faint);
+        g.fillRect (r.getX(), base - 12, 1, 12);
+        g.setColour (Look::dim);
+        g.drawText ("C" + juce::String (midi / 12 - 1), r.getX() + 3, base - 13, 22, 11, juce::Justification::centredLeft);
+    }
+    for (int midi = 36; midi <= 71; ++midi)
+    {
+        if (midi != session.heldNote && ! (session.playing && midi == session.note)) continue;
+        const auto r = pianoKey (midi);
+        g.setColour (r.getHeight() < area.getHeight() ? Look::blue : Look::ink);
+        g.fillRect (r.getCentreX() - 1, base - 20, 3, 20);
+    }
 }
 }

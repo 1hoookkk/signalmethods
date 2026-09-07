@@ -17,7 +17,7 @@ struct Peevers
     int nfft = 256, nfft2 = 128, winsize = 256, stride = 128, wintype = 7;
     int synthwin = 0, lpcenv = 0;
     int fftinitialized = -1;
-    float gain = 20.0f, floorlevel = -20.0f;
+    float gain = 20.0f, floorlevel = -20.0f, avgk = 0.8f;
     double smallest = 1e-06, largest = 268225000.0;
     double m = 0.0, b = 0.0;
 
@@ -26,7 +26,7 @@ struct Peevers
         std::array<float, 13> k {}, f {}, b {}, power {}, g {};
     } lpc;
 
-    std::vector<float> wintbl, tmpc, twiddle, arry, fx, zlogpos, synth;
+    std::vector<float> wintbl, tmpc, twiddle, arry, fx, zlogpos, synth, avgstate, avg;
 
     void levels (float gainValue, float floorValue);
     void setParms (int fftSize, int windowSize, int hop, int type);
@@ -51,6 +51,9 @@ struct Peevers
     void init_logftbl();
     static void floatit (const short* in, float* out, int n);
     static float lutlimit (float v);
+    static void demean (short* data, unsigned n);
+    void xavg (float* data, int n, int clear);
     void frame (const float* samples);
+    void averagedFrame (const float* samples);
 };
 }

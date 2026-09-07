@@ -34,6 +34,7 @@ public:
     void setLoop (std::shared_ptr<const Clip> clip) { loop.store (std::move (clip)); }
     bool isOpen() const { return open; }
     int pull (float* dst, int max);
+    int pullInput (float* dst, int max);
     int activeVoices() const { return active.load(); }
     double voiceHz (int index) const;
     juce::String error, deviceInfo;
@@ -94,5 +95,8 @@ private:
     std::vector<float> tapRing = std::vector<float> (kTap, 0.0f);
     std::atomic<unsigned int> tapWrite { 0 };
     unsigned int tapRead = 0;
+    std::vector<float> inputRing = std::vector<float> (kTap, 0.0f);
+    std::atomic<unsigned int> inputWrite { 0 };
+    unsigned int inputRead = 0;
 };
 }

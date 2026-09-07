@@ -1,5 +1,6 @@
 #include "Screen.h"
 #include "Look.h"
+#include <algorithm>
 #include <cmath>
 
 namespace hs
@@ -9,7 +10,10 @@ Screen::Screen (Session& s)
 {
     setSize (1120, 700);
     setWantsKeyboardFocus (true);
+    tapOut.assign (16384, 0.0f);
+    tapIn.assign (16384, 0.0f);
     layout();
+    startTimer (30);
     session.onChange = [this] {
         if (session.selected >= 0 && session.selected < (int) session.stars.size()) palette.followKind (session.stars[(size_t) session.selected].kind);
         layout(); repaint();
@@ -27,11 +31,23 @@ void Screen::layout()
     stage.layout ({ colX + 12, grid.getY(), grid.getRight() - colX - 12, rowY - 12 - grid.getY() });
     palette.layout ({ grid.getX(), rowY + 12, colX - 12 - grid.getX(), grid.getBottom() - rowY - 12 });
     bottom = { colX + 12, rowY + 12, grid.getRight() - colX - 12, grid.getBottom() - rowY - 12 };
-    const int keyboardH = std::clamp (bottom.getHeight() / 3, 60, 90);
-    const int bodySide = std::max (80, std::min (bottom.getHeight() - keyboardH - 10, 200));
-    body.layout ({ bottom.getX(), bottom.getY(), bodySide, bodySide });
-    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, bodySide });
+    const int keyboardH = 44;
     keyboard.layout ({ bottom.getX(), bottom.getBottom() - keyboardH, bottom.getWidth(), keyboardH });
+    const int above = std::max (100, keyboard.area.getY() - 10 - bottom.getY());
+    const int bodySide = std::max (80, std::min (above, 200));
+    body.layout ({ bottom.getX(), bottom.getY(), bodySide, bodySide });
+    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, above });
+}
+
+void Screen::timerCallback()
+{
+    if (! session.withAudio || ! session.audio.isOpen()) return;
+    const int out = session.audio.pull (tapOut.data(), (int) tapOut.size());
+    const int in = session.audio.pullInput (tapIn.data(), (int) tapIn.size());
+    const int n = std::min (out, in);
+    if (n <= 0) return;
+    engine.feed (tapOut.data(), tapIn.data(), n);
+    repaint (engine.area);
 }
 
 void Screen::paint (juce::Graphics& g)
@@ -40,7 +56,7 @@ void Screen::paint (juce::Graphics& g)
     g.setFont (Look::font (13.0f));
     g.setColour (Look::dim);
     g.drawText ("HEADSPACE", juce::Rectangle<int> (16, 6, 200, 22), juce::Justification::centredLeft);
-    const bool dropping = dragging == Drag::card;
+    const bool dropping = dragging == Drag::card || dragging == Drag::sound;
     mother.paint (g, dragPoint, dropping);
     stage.paint (g, dragging == Drag::peak || dragging == Drag::zero ? dragRow : -1, dragging == Drag::blade, dragging == Drag::carve);
     palette.paint (g, dragging == Drag::transpose ? dragStar : -1);
@@ -53,6 +69,15 @@ void Screen::paint (juce::Graphics& g)
 
 void Screen::paintGhost (juce::Graphics& g) const
 {
+    if (dragging == Drag::sound)
+    {
+        if (! session.sounding) return;
+        juce::Rectangle<int> ghost (dragPoint.x - 36, dragPoint.y - 16, 72, 32);
+        g.setColour (Look::panel.withAlpha (0.92f)); g.fillRect (ghost);
+        g.setColour (Look::blue); g.drawRect (ghost);
+        curves.draw (g, ghost.reduced (3, 3), session.heard, Look::blue, 1.0f, false);
+        return;
+    }
     if (dragging != Drag::card || dragStar < 0) return;
     const Words words = session.stars[(size_t) dragStar].words;
     const auto ink = plot::inkOf (session.stars[(size_t) dragStar]);
@@ -89,11 +114,11 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         else if (i == 1) session.setSource (3);
         else if (i == 2) session.setSource (0);
         else if (i == 3) session.setSource (1);
-        else if (session.loopName.isNotEmpty()) session.setSource (2);
+        else if (i == 4) { if (session.loopName.isNotEmpty()) session.setSource (2); }
+        else session.write();
         return;
     }
-    if (const int i = engine.cornerKeyAt (p); i >= 0) { if (e.mods.isShiftDown()) session.toColumn (i & 1); else session.toCorner (i); return; }
-    if (engine.writeKey.contains (p)) { session.write(); return; }
+    if (engine.plot.contains (p)) { dragging = Drag::sound; dragOrigin = p; dragPoint = p; return; }
     if (keyboard.area.contains (p))
     {
         if (const int midi = keyboard.noteAt (p); midi >= 0) { dragging = Drag::keyboard; session.noteOn (midi); }
@@ -276,7 +301,7 @@ void Screen::mouseDrag (const juce::MouseEvent& e)
         if (const int midi = keyboard.noteAt (p); midi >= 0 && midi != session.note) session.noteOn (midi);
         return;
     }
-    if (dragging == Drag::card) repaint();
+    if (dragging == Drag::card || dragging == Drag::sound) repaint();
 }
 
 void Screen::mouseUp (const juce::MouseEvent& e)
@@ -286,6 +311,11 @@ void Screen::mouseUp (const juce::MouseEvent& e)
     {
         if (const int n = body.cornerAt (p); n >= 0) { session.pinCorner (n, dragStar); if (e.mods.isShiftDown()) session.pinCorner (n ^ 2, dragStar); }
         else if (const int i = mother.cellAt (p); i >= 0) session.setPair (i, dragStar);
+    }
+    if (dragging == Drag::sound)
+    {
+        if (const int n = body.cornerAt (p); n >= 0) { if (e.mods.isShiftDown()) session.toColumn (n & 1); else session.toCorner (n); }
+        else if (const int i = mother.cellAt (p); i >= 0) { session.keep(); session.setPair (i, session.selected); }
     }
     if (dragging == Drag::keyboard) session.noteOff();
     dragging = Drag::none; dragStar = -1; dragRow = -1;

@@ -471,14 +471,11 @@ int main()
         const bool written = out.openedOk() && png.writeImageToStream (image, out);
         out.flush();
         bool curve = false;
-        for (int y = screen.engine.playing.getY(); y < screen.engine.playing.getBottom() && ! curve; ++y)
-            for (int x = screen.engine.playing.getX(); x < screen.engine.playing.getRight() && ! curve; ++x)
+        for (int y = screen.engine.plot.getY(); y < screen.engine.plot.getBottom() && ! curve; ++y)
+            for (int x = screen.engine.plot.getX(); x < screen.engine.plot.getRight() && ! curve; ++x)
                 curve = image.getPixelAt (x, y).getARGB() == hs::Look::blue.getARGB();
         check (written && file.getSize() > 4000 && image.getWidth() == 1120 && image.getPixelAt (4, 4) == hs::Look::ground && image.getPixelAt (screen.palette.chart.getX() + 2, screen.palette.chart.getBottom() - 3) == hs::Look::panel && curve, "the screen renders to artifacts/shots/headspace.png without a window: ground, white axes and the blue curve of what plays");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "no window was opened");
-        bool glyphs = true;
-        for (int k = 0; k < (int) hs::Look::Glyph::count; ++k) glyphs = glyphs && hs::Look::hasGlyph ((hs::Look::Glyph) k);
-        check (glyphs && image.getPixelAt (screen.engine.keys[0].getCentreX(), screen.engine.keys[0].getCentreY()) == hs::Look::dim, "every control glyph parses from its SVG and the play glyph is drawn in the engine");
         check (screen.body.area.toFloat().contains (screen.body.puckPoint()), "the puck sits on the body");
         const auto f = screen.palette.formantsAt (screen.palette.chartPoint (700.0, 1100.0).toInt());
         check (std::abs (f.first - 700.0) < 6.0 && std::abs (f.second - 1100.0) < 10.0 && screen.palette.chart.toFloat().contains (screen.palette.chartPoint (hs::kSchwaF1, hs::kSchwaF2)), "the vowel space maps F1 and F2 both ways and schwa sits inside it");
@@ -522,7 +519,10 @@ int main()
             ok = ok && pl.contains (screen.palette.chart) && pl.contains (screen.palette.picker) && ! screen.palette.chart.intersects (screen.palette.picker) && pl.contains (screen.palette.dropZone);
             ok = ok && bt.contains (screen.body.area) && bt.contains (screen.engine.area) && bt.contains (screen.keyboard.area) && ! screen.body.area.intersects (screen.engine.area)
                 && screen.keyboard.area.getY() >= screen.body.area.getBottom() && screen.keyboard.area.getY() >= screen.engine.area.getBottom()
-                && screen.engine.area.contains (screen.engine.playing) && screen.engine.area.contains (screen.engine.writeKey) && screen.engine.area.contains (screen.engine.keys[3]);
+                && screen.keyboard.area.getHeight() == 44 && screen.keyboard.area.getWidth() == bt.getWidth() && screen.keyboard.area.getBottom() == bt.getBottom()
+                && screen.engine.area.contains (screen.engine.plot) && screen.engine.area.contains (screen.engine.label) && screen.engine.area.contains (screen.engine.keys[5])
+                && screen.engine.keys[4].getRight() < screen.engine.keys[5].getX() && ! screen.engine.plot.intersects (screen.engine.keys[0])
+                && screen.engine.plot.getWidth() > screen.body.area.getWidth() / 2;
             ok = ok && screen.body.box[0].getRight() == screen.body.box[1].getX() && screen.body.box[0].getBottom() == screen.body.box[2].getY();
             return ok;
         };
@@ -782,6 +782,127 @@ int main()
         check (s.playingLabel == "B  u", "an open corner says its letter and name");
         s.setPuck (40.0, 30.0);
         check (s.playingLabel == "pad 40 30", "the pad says MORPH and Q");
+    }
+
+    {
+        hs::Audio audio;
+        audio.prepare (44100.0);
+        hs::Session s (root, tempQuad(), false);
+        std::array<std::uint16_t, 30> flat {};
+        for (size_t r = 0; r < hs::kRows; ++r) for (size_t k = 0; k < hs::kWords; ++k) flat[r * 5 + k] = s.stars[(size_t) s.starNamed ("i")].words[r][k];
+        audio.publish (flat);
+        audio.setSource (0);
+        audio.noteOn (60, 1.0f);
+        std::vector<float> left (512), right (512);
+        float* outs[2] = { left.data(), right.data() };
+        for (int i = 0; i < 20; ++i) audio.audioDeviceIOCallbackWithContext (nullptr, 0, outs, 2, 512, {});
+        std::vector<float> after (16384, 0.0f), before (16384, 0.0f);
+        const int tapped = audio.pull (after.data(), (int) after.size());
+        const int source = audio.pullInput (before.data(), (int) before.size());
+        double sourceEnergy = 0.0, filteredEnergy = 0.0, apart = 0.0;
+        for (int i = 0; i < std::min (tapped, source); ++i)
+        {
+            sourceEnergy += (double) before[(size_t) i] * (double) before[(size_t) i];
+            filteredEnergy += (double) after[(size_t) i] * (double) after[(size_t) i];
+            apart = std::max (apart, (double) std::abs (before[(size_t) i] - after[(size_t) i]));
+        }
+        std::printf ("      taps: %d input, %d output, source energy %.2f, filtered energy %.2f, largest difference %.4f\n", source, tapped, sourceEnergy, filteredEnergy, apart);
+        check (tapped == source && source >= 10240 && sourceEnergy > 1.0 && filteredEnergy > 0.0 && apart > 0.01, "the input tap carries the source before the filter and the output tap after it");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        s.setPuck (40.0, 30.0);
+        hs::Screen screen (s);
+        screen.setSize (1120, 700);
+        const auto folder = root.getChildFile ("native/workstation/artifacts/shots");
+        folder.createDirectory();
+        juce::PNGImageFormat png;
+        auto has = [] (const juce::Image& image, juce::Rectangle<int> r, juce::Colour colour) {
+            for (int y = r.getY(); y < r.getBottom(); ++y)
+                for (int x = r.getX(); x < r.getRight(); ++x)
+                    if (image.getPixelAt (x, y) == colour) return true;
+            return false;
+        };
+        auto brightest = [] (const juce::Image& image, juce::Rectangle<int> r) {
+            int top = 0;
+            for (int y = r.getY(); y < r.getBottom(); ++y)
+                for (int x = r.getX(); x < r.getRight(); ++x)
+                    top = std::max (top, (int) image.getPixelAt (x, y).getRed());
+            return top;
+        };
+        const auto quiet = screen.shot();
+        std::vector<float> saw (8192, 0.0f), quieter (8192, 0.0f);
+        double phase = 0.0;
+        for (int i = 0; i < 8192; ++i)
+        {
+            phase += 220.0 / 44100.0;
+            phase -= std::floor (phase);
+            saw[(size_t) i] = (float) ((2.0 * phase - 1.0) * 0.4);
+            quieter[(size_t) i] = saw[(size_t) i] * 0.25f;
+        }
+        s.noteOn (60);
+        screen.engine.feed (saw.data(), quieter.data(), 8192);
+        const auto playing = screen.shot();
+        check (! has (quiet, screen.engine.plot, hs::Look::ink) && ! has (quiet, screen.engine.plot, hs::Look::dim)
+                && has (playing, screen.engine.plot, hs::Look::ink) && has (playing, screen.engine.plot, hs::Look::dim),
+            "the engine draws the output's spectrum over the response while a key is held");
+        const auto playingFile = folder.getChildFile ("headspace_playing.png");
+        playingFile.deleteFile();
+        juce::FileOutputStream playingOut (playingFile);
+        const bool wrote = playingOut.openedOk() && png.writeImageToStream (playing, playingOut);
+        playingOut.flush();
+        check (wrote && playingFile.existsAsFile() && playingFile.getSize() > 4000 && has (playing, screen.engine.plot, hs::Look::ink),
+            "the played engine renders to artifacts/shots/headspace_playing.png with the live spectrum in its plot");
+        screen.engine.silenceFor (400);
+        check (! screen.engine.live() && ! has (screen.shot(), screen.engine.plot, hs::Look::ink), "the engine's live curves fade when nothing sounds");
+        s.setSource (0);
+        const auto sawShot = screen.shot();
+        const int sawLit = brightest (sawShot, screen.engine.keys[2]), noiseDim = brightest (sawShot, screen.engine.keys[3]);
+        s.setSource (1);
+        const auto noiseShot = screen.shot();
+        const int sawDim = brightest (noiseShot, screen.engine.keys[2]), noiseLit = brightest (noiseShot, screen.engine.keys[3]);
+        std::printf ("      sources: SAW %d lit %d dim, NOISE %d lit %d dim, ink %d, dim %d\n", sawLit, sawDim, noiseLit, noiseDim, (int) hs::Look::ink.getRed(), (int) hs::Look::dim.getRed());
+        check (has (sawShot, screen.engine.keys[2], hs::Look::ink) && ! has (sawShot, screen.engine.keys[3], hs::Look::ink)
+                && has (noiseShot, screen.engine.keys[3], hs::Look::ink) && ! has (noiseShot, screen.engine.keys[2], hs::Look::ink)
+                && sawLit == (int) hs::Look::ink.getRed() && noiseDim == (int) hs::Look::dim.getRed(),
+            "the sources are words and the active one is ink");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        hs::Screen screen (s);
+        s.setProbe (0.5, 0.0, 1.0);
+        const auto heard = s.heard;
+        const auto held = s.stars.size();
+        const auto from = screen.engine.plot.getCentre().toFloat();
+        const auto to = screen.body.plot[1].getCentre().toFloat();
+        screen.mouseDown (mouse (screen, from, from));
+        screen.mouseDrag (mouse (screen, to, from));
+        screen.mouseUp (mouse (screen, to, from));
+        const auto corners = hs::cornersOf (s.quad, s.stars);
+        check (same (corners[(size_t) hs::Session::kCornerPin[1]], heard) && s.stars.size() == held + 1 && s.stars.back().kind == "capture" && s.cornerName (1) == s.stars.back().name,
+            "dragging the engine plot onto corner B copies the heard words there");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        hs::Screen screen (s);
+        const auto rule = screen.shot();
+        const auto strip = screen.keyboard.area;
+        bool filled = false;
+        for (int y = strip.getY(); y < strip.getBottom(); ++y)
+            for (int x = strip.getX(); x < strip.getRight(); ++x)
+                filled = filled || rule.getPixelAt (x, y) == hs::Look::text;
+        s.noteOn (60);
+        const auto sounding = screen.shot();
+        int bar = 0;
+        for (int y = strip.getY(); y < strip.getBottom(); ++y)
+            for (int x = strip.getX(); x < strip.getRight(); ++x)
+                if (sounding.getPixelAt (x, y) == hs::Look::ink) ++bar;
+        std::printf ("      keyboard %d px tall, %d ink pixels while C4 sounds\n", strip.getHeight(), bar);
+        check (! filled && bar > 0 && strip.getHeight() == 44 && screen.keyboard.noteAt (screen.keyboard.pianoKey (61).getCentre()) == 61 && screen.keyboard.noteAt (screen.keyboard.pianoKey (60).getCentre()) == 60,
+            "the keyboard is a rule of keys");
     }
 
 

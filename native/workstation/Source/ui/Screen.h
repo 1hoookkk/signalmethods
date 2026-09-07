@@ -12,7 +12,7 @@
 
 namespace hs
 {
-class Screen : public juce::Component, public juce::FileDragAndDropTarget
+class Screen : public juce::Component, public juce::FileDragAndDropTarget, private juce::Timer
 {
 public:
     explicit Screen (Session& session);
@@ -44,8 +44,10 @@ public:
 private:
     void layout();
     void paintGhost (juce::Graphics& g) const;
+    void timerCallback() override;
     Session& session;
-    enum class Drag { none, puck, made, card, peak, zero, blade, transpose, carve, keyboard, rail } dragging = Drag::none;
+    std::vector<float> tapOut, tapIn;
+    enum class Drag { none, puck, made, card, peak, zero, blade, transpose, carve, keyboard, rail, sound } dragging = Drag::none;
     int dragStar = -1, dragRow = -1;
     Words dragWords {};
     bool editStarted = false;

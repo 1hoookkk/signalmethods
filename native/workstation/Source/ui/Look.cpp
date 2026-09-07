@@ -6,14 +6,7 @@ namespace hs
 namespace
 {
 const char* const kSvg[(int) Look::Glyph::count] = {
-    "<svg viewBox='0 0 16 16'><path d='M4 3 L13 8 L4 13 Z' fill='#000'/></svg>",
-    "<svg viewBox='0 0 16 16'><path d='M1 12 L6 4 L6 12 L11 4 L11 12 L15 6' fill='none' stroke='#000' stroke-width='1.6' stroke-linejoin='round'/></svg>",
-    "<svg viewBox='0 0 16 16'><path d='M1 8 L3 4 L5 11 L7 6 L9 12 L11 3 L13 9 L15 7' fill='none' stroke='#000' stroke-width='1.6' stroke-linejoin='round'/></svg>",
-    "<svg viewBox='0 0 16 16'><path d='M12.5 5.5 A5 5 0 1 0 13 9.5' fill='none' stroke='#000' stroke-width='1.6'/><path d='M12.5 2 L12.5 6 L8.5 6' fill='none' stroke='#000' stroke-width='1.6' stroke-linejoin='round'/></svg>",
-    "<svg viewBox='0 0 16 16'><path d='M2 13 L6.5 13 L8 3 L9.5 13 L14 13' fill='none' stroke='#000' stroke-width='1.6' stroke-linejoin='round'/></svg>",
-    "<svg viewBox='0 0 16 16'><path d='M8 2 L8 10 M5 7 L8 10 L11 7 M3 13 L13 13' fill='none' stroke='#000' stroke-width='1.6' stroke-linejoin='round' stroke-linecap='round'/></svg>",
     "<svg viewBox='0 0 16 16'><path d='M4 6 L8 10 L12 6' fill='none' stroke='#000' stroke-width='1.4' stroke-linejoin='round'/></svg>",
-    "<svg viewBox='0 0 16 16'><path d='M2 8 L12 8 M9 5 L12 8 L9 11' fill='none' stroke='#000' stroke-width='1.6' stroke-linejoin='round' stroke-linecap='round'/></svg>",
     "<svg viewBox='0 0 16 16'><path d='M8 3 L8 13 M3 8 L13 8' fill='none' stroke='#000' stroke-width='1.6' stroke-linecap='round'/></svg>",
     "<svg viewBox='0 0 16 16'><path d='M3 8.5 L6.5 12 L13 4' fill='none' stroke='#000' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'/></svg>" };
 

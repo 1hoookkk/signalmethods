@@ -37,6 +37,8 @@ Peevers::Peevers()
     fx.assign ((size_t) kMax + 2, 0.0f);
     zlogpos.assign ((size_t) kMax / 2 + 2, 0.0f);
     synth.assign ((size_t) kMax, 0.0f);
+    avgstate.assign ((size_t) kMax + 2, 0.0f);
+    avg.assign ((size_t) kMax + 2, 0.0f);
     levels (gain, floorlevel);
     reset();
     setParms (nfft, winsize, stride, wintype);
@@ -378,6 +380,27 @@ float Peevers::lutlimit (float v)
     return v;
 }
 
+void Peevers::demean (short* data, unsigned n)
+{
+    if ((int) n <= 0) return;
+    int sum = 0;
+    for (unsigned i = 0; i < n; ++i) sum = sum + (int) data[i];
+    const float mean = (float) (sum / (int) n);
+    for (unsigned i = 0; i < n; ++i) data[i] = (short) (int) std::floor ((float) (int) data[i] - mean);
+}
+
+void Peevers::xavg (float* data, int n, int clear)
+{
+    if (clear != 0)
+        for (int i = 0; i <= n; ++i) avgstate[(size_t) i] = 0.0f;
+    const double expk = (double) avgk, expg = 1.0 - (double) avgk;
+    for (int i = 0; i <= n; ++i)
+    {
+        data[i] = (float) ((double) avgstate[(size_t) i] * expk + (double) (float) ((double) data[i] * expg));
+        avgstate[(size_t) i] = data[i];
+    }
+}
+
 void Peevers::frame (const float* samples)
 {
     float* a = arry.data() + 1;
@@ -399,5 +422,12 @@ void Peevers::frame (const float* samples)
         spectrum (synth.data(), nfft, fx.data(), nfft);
         log_of (fx.data(), nfft2);
     }
+}
+
+void Peevers::averagedFrame (const float* samples)
+{
+    frame (samples);
+    xavg (fx.data(), nfft2, 0);
+    for (int i = 0; i <= nfft2; ++i) avg[(size_t) i] = fx[(size_t) i];
 }
 }

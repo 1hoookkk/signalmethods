@@ -165,11 +165,37 @@ draws what plays at the pad, live as MORPH and Q move, with the working corner's
 a drag edits that corner's words and is heard through the morph at once. The ARMAdillo plot for
 the zeros lives on the stage behind a key.
 
+Ruling of 2026-09-07, night, from the running app: "i found the key flow. it is within the
+sliders. and making variations of a and b. i need to click on each of the two top left frames
+and not have it jump back to the 2x2 grid. i tweak them and press the 1234 numbers." A click on
+an anchor makes that anchor the stage's edit target: its name in the stage title, its handles,
+a drag writes its words, the rails sweep the tweaked frame at once. A library card is never
+edited in place: the first edit copies it into a capture and points the anchor at the copy.
+1 to 4 copy what plays into the grid.
+
+Ruling of 2026-09-07, night, "what im editing needs to be true here and everywhere": one
+target. The target is what the pad points at. Pad on a corner: that corner is the target; the
+rails write into it as they move, the stage's handles are its handles, W writes the body with it,
+the engine box shows it. Pad between corners: the box and the stage show the lerp, the handles
+are off, the rails play so you can search, 1 to 4 put what plays into a corner, and moving the
+pad onto a corner makes it the target. An anchor clicked top-left is the target until the pad is
+touched. The orange follows the target. There is no separate working corner.
+
+Ruling of 2026-09-07, night, on the stage "the plot is lying to me": handles edit "radius and
+angle". A pole handle's sideways drag sets the angle (frequency on the log axis) and its vertical
+drag sets the radius directly (log-scaled 1 - r, the chip's own word), nothing solved against the
+cascade; the curve is drawn from the words, so a handle sits wherever its radius put it. A zero
+handle the same, angle and radius. Nothing else moves during a drag; the 0 dB trim at DC happens
+once on release. A read's zeros stay parked unless placed by hand.
+
 ## The queue, in order, one slice each
 
 1. The G window as its own instrument: the XL bank sampler on its own audio path, his panel
    and surface from FORM_Menu_Form.md, and the one added gesture: a frame picked off the
    surface becomes a corner.
+1a. One target: the pad's corner, or a clicked anchor; rails, stage and W act on it; library
+   cards copied on first edit; handles off between corners; handles edit angle and radius
+   directly, trim on release.
 1b. The engine goes live: output and input spectra over the response while keys are held;
    arrows, Keep and file name removed; sources as words; the plot as a draggable card.
 2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp

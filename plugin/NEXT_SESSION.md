@@ -2280,3 +2280,23 @@ Open, in order:
   chip lerps one field; a G^(1/7) spread would lerp differently). Verified: cube 1 and cube 65
   corner order exact for all 8 x 7; 289/289 round-trip through trench_core; 289/289 differ from
   raw/bodies. Everything Morpheus was listened to or counted on before today used raw/bodies.
+- 2026-09-07, night: the critique (impeccable, dual Opus assessments, 17/40, snapshot in
+  .impeccable/critique/): P0 the keyboard as the accidental hero (22% of the light on 5.5% of
+  the area), P1 three systems stacked on the left, P1 unlabelled rails and a tick for bake, P1
+  the ambiguous bottom right (Tyson's own finding), P2 the spectrogram slab and the icons.
+  Tyson: bottom right first, then everything. Rulings the same hour: the three rails are right;
+  the G window is its own sampler of the XL bank (evidence/factory-data/xl1-dsf-aud, 224
+  notes) on its own audio path, never a meter on the engine; the stage stays top right (no E
+  window) and shows what plays at the pad; the key flow is click an anchor, tweak, press 1-4;
+  ONE TARGET = what the pad points at (or a clicked anchor), rails, stage and W act on it;
+  handles edit radius and angle directly, trim on release; subagents Opus only. Built (bounded
+  job): the live engine: a second tap for the input before the cascade, Span's demean and
+  xavg ported (avgk 0.8), the engine plot grown with the output's spectrum in ink and the
+  input's in dim over the response (nfft 1024, a frame per 512 samples, 0..255 -> -30..+30 dB,
+  300 ms fade), arrows, write glyph and file name removed, sources as words PLAY PLUCK SAW
+  <note> NOISE LOOP WRITE (ink 600 ms after a write), the plot a draggable card onto a corner
+  or an anchor with a ghost curve, the keyboard a 44 px rule of keys, seven glyphs removed
+  from Look. Checked Tyson's two written bodies through the core: 14:49:44 has no crossing
+  (every row climbs A to B) and B's row 6 is a 1.2 kHz notch pair instead of the ceiling, the
+  likely break on the sweep; 15:00:49 is clean. 154 checks, ctest x3; app not relinked while
+  open.

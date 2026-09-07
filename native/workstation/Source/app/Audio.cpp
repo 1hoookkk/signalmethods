@@ -192,6 +192,7 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
     for (int offset = 0; offset < numSamples; offset += (int) block.size())
     {
         const int n = std::min ((int) block.size(), numSamples - offset);
+        unsigned int iw = inputWrite.load (std::memory_order_relaxed);
         for (int i = 0; i < n; ++i)
         {
             drone += ((droning ? 1.0 : 0.0) - drone) * (droning ? attack : release);
@@ -242,7 +243,10 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
                 }
             }
             block[(size_t) i] = x;
+            inputRing[(size_t) (iw & (kTap - 1))] = std::isfinite (x) ? x : 0.0f;
+            ++iw;
         }
+        inputWrite.store (iw, std::memory_order_release);
         runner.process (std::span<float> (block.data(), (size_t) n));
         unsigned int w = tapWrite.load (std::memory_order_relaxed);
         for (int i = 0; i < n; ++i)
@@ -265,6 +269,17 @@ int Audio::pull (float* dst, int max)
     const int n = (int) std::min (available, (unsigned int) std::max (0, max));
     for (int i = 0; i < n; ++i) dst[i] = tapRing[(size_t) ((tapRead + (unsigned int) i) & (kTap - 1))];
     tapRead += (unsigned int) n;
+    return n;
+}
+
+int Audio::pullInput (float* dst, int max)
+{
+    const unsigned int w = inputWrite.load (std::memory_order_acquire);
+    unsigned int available = w - inputRead;
+    if (available > kTap) { inputRead = w - kTap; available = kTap; }
+    const int n = (int) std::min (available, (unsigned int) std::max (0, max));
+    for (int i = 0; i < n; ++i) dst[i] = inputRing[(size_t) ((inputRead + (unsigned int) i) & (kTap - 1))];
+    inputRead += (unsigned int) n;
     return n;
 }
 }

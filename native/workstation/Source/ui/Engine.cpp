@@ -1,70 +1,142 @@
 #include "Engine.h"
 #include "Look.h"
+#include <algorithm>
 #include <cmath>
 
 namespace hs
 {
-Engine::Engine (Session& s, const plot::Curves& c) : session (s), curves (c) {}
+namespace
+{
+constexpr int kHop = 512, kSilenceMs = 300, kWriteMs = 600;
+constexpr float kShort = 32767.0f;
+}
+
+Engine::Engine (Session& s, const hs::plot::Curves& c) : session (s), curves (c)
+{
+    outAnalysis.setParms (1024, 1024, kHop, 7);
+    inAnalysis.setParms (1024, 1024, kHop, 7);
+}
+
+std::array<juce::String, 6> Engine::names() const
+{
+    const juce::String note = noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0));
+    return { "PLAY", "PLUCK", "SAW " + note, "NOISE", "LOOP", "WRITE" };
+}
 
 void Engine::layout (juce::Rectangle<int> r)
 {
     area = r;
-    playing = { area.getX(), area.getY() + 2, 84, 56 };
-    label = { playing.getRight() + 10, area.getY() + 2, std::max (40, area.getWidth() - 94), 56 };
-    for (int i = 0; i < 4; ++i) toKeys[(size_t) i] = { area.getX() + i * 38, area.getY() + 70, 34, 22 };
-    writeKey = { toKeys[3].getRight() + 12, area.getY() + 70, 24, 22 };
-    keys[0] = { area.getX(), area.getY() + 102, 24, 22 };
-    keys[1] = { area.getX() + 30, area.getY() + 102, 24, 22 };
-    keys[2] = { area.getX() + 60, area.getY() + 102, 62, 22 };
-    keys[3] = { area.getX() + 128, area.getY() + 102, 24, 22 };
-    keys[4] = { area.getX() + 158, area.getY() + 102, std::max (24, area.getWidth() - 158), 22 };
-    status = { area.getX(), area.getBottom() - 18, area.getWidth(), 18 };
+    label = { area.getX(), area.getY(), area.getWidth(), 16 };
+    status = { area.getX(), area.getBottom() - 14, area.getWidth(), 14 };
+    const int row = status.getY() - 18;
+    plot = { area.getX(), label.getBottom() + 2, area.getWidth(), std::max (40, row - 4 - label.getBottom() - 2) };
+    const auto font = Look::font (10.0f);
+    const auto words = names();
+    int x = area.getX();
+    for (int i = 0; i < 5; ++i)
+    {
+        const int w = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, words[(size_t) i]));
+        keys[(size_t) i] = { x, row, w, 16 };
+        x += w + 10;
+    }
+    const int w = (int) std::ceil (juce::GlyphArrangement::getStringWidth (font, words[5]));
+    keys[5] = { area.getRight() - w, row, w, 16 };
 }
 
 int Engine::sourceAt (juce::Point<int> p) const
 {
-    for (int i = 0; i < 5; ++i) if (keys[(size_t) i].contains (p)) return i;
+    for (int i = 0; i < 6; ++i) if (keys[(size_t) i].contains (p)) return i;
     return -1;
 }
 
-int Engine::cornerKeyAt (juce::Point<int> p) const
+bool Engine::live() const { return lastSound > 0 && juce::Time::currentTimeMillis() - lastSound < kSilenceMs; }
+
+void Engine::silenceFor (int ms) { lastSound = juce::Time::currentTimeMillis() - ms; }
+
+void Engine::analyse (Peevers& p, std::vector<float>& history, size_t& cursor, std::vector<float>& spectrum, const float* samples, int n)
 {
-    for (int i = 0; i < 4; ++i) if (toKeys[(size_t) i].contains (p)) return i;
-    return -1;
+    for (int i = 0; i < n; ++i) history.push_back (samples[i] * kShort);
+    const size_t win = (size_t) p.winsize, hop = (size_t) std::max (1, p.stride);
+    while (cursor + win <= history.size())
+    {
+        p.averagedFrame (history.data() + cursor);
+        cursor += hop;
+        spectrum.assign (p.fx.begin(), p.fx.begin() + p.nfft2);
+    }
+    if (cursor > 65536)
+    {
+        history.erase (history.begin(), history.begin() + (std::ptrdiff_t) cursor);
+        cursor = 0;
+    }
 }
 
-void Engine::paint (juce::Graphics& g) const
+void Engine::feed (const float* out, const float* in, int n)
 {
-    Look::axes (g, playing);
-    g.setColour (Look::faint); g.drawHorizontalLine ((int) std::round (plot::yOf (0.0, playing)), (float) playing.getX() + 1, (float) playing.getRight() - 1);
-    if (session.sounding) curves.draw (g, playing, session.heard, Look::blue, 1.4f, false);
-    g.setFont (Look::font (12.0f));
+    if (n <= 0) return;
+    bool sound = false;
+    for (int i = 0; i < n && ! sound; ++i) sound = std::abs (out[i]) > 1.0e-6f || std::abs (in[i]) > 1.0e-6f;
+    if (sound) lastSound = juce::Time::currentTimeMillis();
+    analyse (outAnalysis, outHistory, outCursor, outSpectrum, out, n);
+    analyse (inAnalysis, inHistory, inCursor, inSpectrum, in, n);
+}
+
+void Engine::spectrumCurve (juce::Graphics& g, const Peevers& p, const std::vector<float>& spectrum, juce::Colour colour) const
+{
+    if (spectrum.size() < 2) return;
+    juce::Graphics::ScopedSaveState saved (g);
+    g.reduceClipRegion (plot);
+    juce::Path path;
+    bool started = false;
+    for (size_t i = 1; i < spectrum.size(); ++i)
+    {
+        const double hz = (double) i * rate / (double) p.nfft;
+        if (hz < 20.0 || hz > 20000.0) continue;
+        const double index = std::clamp ((double) spectrum[i], 0.0, 255.0);
+        const double db = index * 60.0 / 255.0 - 30.0;
+        const float x = (float) hs::plot::xOf (hz, plot);
+        const float y = (float) std::clamp (hs::plot::yOf (db, plot), (double) plot.getY(), (double) plot.getBottom());
+        if (! started) { path.startNewSubPath (x, y); started = true; }
+        else path.lineTo (x, y);
+    }
+    if (! started) return;
+    g.setColour (colour);
+    g.strokePath (path, juce::PathStrokeType (1.0f));
+}
+
+void Engine::paint (juce::Graphics& g)
+{
+    if (session.status.endsWith (".body240") && session.status != writeStamp)
+    {
+        writeStamp = session.status;
+        writeTime = juce::Time::currentTimeMillis();
+    }
+    g.setFont (Look::font (11.0f));
     g.setColour (Look::text);
     g.drawText (session.playingLabel, label, juce::Justification::centredLeft);
-    const bool placeable = session.placeable();
-    g.setFont (Look::font (11.0f));
-    for (int i = 0; i < 4; ++i)
+    Look::axes (g, plot);
+    g.setColour (Look::faint);
+    g.drawHorizontalLine ((int) std::round (hs::plot::yOf (0.0, plot)), (float) plot.getX() + 1, (float) plot.getRight() - 1);
+    if (session.sounding) curves.draw (g, plot, session.heard, Look::blue, 1.0f, false);
+    if (live())
     {
-        const auto colour = placeable ? Look::ink : Look::faint;
-        Look::glyph (g, Look::Glyph::arrow, toKeys[(size_t) i].withWidth (16).reduced (1), colour);
-        g.setColour (colour);
-        g.drawText (juce::String::charToString (Session::kCornerLetters[i]), toKeys[(size_t) i].withTrimmedLeft (17), juce::Justification::centredLeft);
+        spectrumCurve (g, inAnalysis, inSpectrum, Look::dim);
+        spectrumCurve (g, outAnalysis, outSpectrum, Look::ink);
     }
-    Look::glyph (g, Look::Glyph::write, writeKey.reduced (2), session.quad.complete() ? Look::ink : Look::faint);
-    const bool on[] = { session.playing, session.source == 3, session.source == 0, session.source == 1, session.source == 2 };
-    const Look::Glyph glyphs[] = { Look::Glyph::play, Look::Glyph::pluck, Look::Glyph::saw, Look::Glyph::noise, Look::Glyph::loop };
-    for (int i = 0; i < 5; ++i)
+    const auto words = names();
+    const bool on[6] = { session.playing, session.source == 3, session.source == 0, session.source == 1, session.source == 2, false };
+    const bool wrote = writeTime > 0 && juce::Time::currentTimeMillis() - writeTime < kWriteMs;
+    g.setFont (Look::font (10.0f));
+    for (int i = 0; i < 6; ++i)
     {
-        const auto colour = on[i] ? Look::blue : Look::dim;
-        Look::glyph (g, glyphs[i], keys[(size_t) i].withWidth (22).reduced (2), colour);
+        juce::Colour colour = on[i] ? Look::ink : Look::dim;
+        if (i == 4 && session.loopName.isEmpty()) colour = Look::faint;
+        if (i == 5) colour = wrote ? Look::ink : Look::dim;
         g.setColour (colour);
-        if (i == 2) g.drawText (noteName (440.0 * std::pow (2.0, (session.note - 69) / 12.0)), keys[2].withTrimmedLeft (26), juce::Justification::centredLeft);
-        if (i == 4 && session.loopName.isNotEmpty()) g.drawText (session.loopName, keys[4].withTrimmedLeft (26), juce::Justification::centredLeft);
+        g.drawText (words[(size_t) i], keys[(size_t) i], juce::Justification::centredLeft);
     }
-    if (session.status.startsWith ("cannot") || session.status.startsWith ("no audio") || session.status.endsWith (".body240"))
+    if (session.status.startsWith ("cannot") || session.status.startsWith ("no audio"))
     {
-        g.setFont (Look::font (10.0f));
-        g.setColour (Look::dim);
+        g.setColour (Look::orange);
         g.drawText (session.status, status, juce::Justification::centredLeft);
     }
 }
