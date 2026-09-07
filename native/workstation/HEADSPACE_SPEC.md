@@ -3,7 +3,23 @@
 The authoring tool for TRENCH bodies. A JUCE app in the plugin's CMake tree, built alone by the
 `headspace` preset, linked straight to `native/core`. One screen, painted by hand through one look:
 charcoal ground, light axes, a fine grid, MATLAB line colours lifted for the dark, no filled
-buttons, no captions. One more window, the spectrogram, opens on G.
+buttons, no captions. Two more windows: the spectrogram on G, and the stage on E.
+
+Rulings of 2026-09-07 not yet built, which the next slices must honour: the look reads
+cartoonish and unserious and is not striking; no icons, words in small caps instead; hairline
+curves and crosshair markers; the keyboard a rule of keys; one hero on the screen. The stage,
+the editing of one corner's poles and zeros, leaves the screen for its own window, opened on E,
+like the spectrogram; the screen shows, it does not edit. The stage window carries two plots: the
+response with its handles as before, and the ARMAdillo plot, poles and zeros on the circle in the
+chip's own encoded coordinates, used last, to place the zeros by hand. Ingest: anything read (a
+frame off the surface, a file, an impulse response, a table row) writes poles only and parks its
+zeros, the row-six ceiling excepted; anything already in the chip's words (the 132 P2K corners,
+the 2,312 Morpheus corners) comes in as a card by byte copy with its zeros; Klatt, Hillenbrand and
+Peterson and Barney are pole-only landmarks. A folder of notes of one instrument is one source,
+averaged frame by frame as the Massie patent's analysis stage does. The tool is Peevers's
+Spectrogram plus the cube: his surface and panel literally (the panel is FORM_Menu_Form.md beside
+the decomp, 50 controls on a 344 x 368 form), and one added gesture, a frame off the surface
+becomes a corner.
 
 ## The law
 
@@ -85,8 +101,11 @@ drone, the pluck and the loop excite it, the way his `-l` live input did.
   its name and its arithmetic: `win_calc` and `winmult` with his nine windows (exact Blackman,
   Blackman, Blackman-Harris 1 to 4, Hamming, Hanning, none), `buildtable`, `bitreverse`, `fft`,
   `ifft`, `mag2`, `magl`, `log_of`, `findmax`, `normalize`, and for Env the 12th-order LPC by
-  `gal` and `lattice` with `fof_transf` and `fof_value`, the envelope being the FFT of the
-  synthesis filter's impulse response, as his README says. His defaults: FFT 256, window 256,
+  `gal` and `lattice`, the envelope being the FFT of the synthesis filter's impulse response,
+  as his README says. His Filter path is a later slice: `fof_value` and `fof_transf` build one
+  formant wave function (Rodet) per drawn trajectory into a surface, Modify multiplies that
+  surface into each frame, Impulse replaces the frame with an impulse train's spectrum, and
+  `olap` resynthesises through the square-root window; that is how he heard a drawn filter. His defaults: FFT 256, window 256,
   stride 128, window 7 Hanning, order 12, 500 frames.
 - The display is his: x frequency, y amplitude in dB, z time, the surface drawn slice by slice
   as `draw_surf_slice` lays it out, tilted by azimuth and declination from a drag as

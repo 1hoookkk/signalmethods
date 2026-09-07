@@ -1,5 +1,6 @@
 set(TRENCH_HEADSPACE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Source/app")
 set(TRENCH_HEADSPACE_UI "${CMAKE_CURRENT_SOURCE_DIR}/Source/ui")
+set(TRENCH_HEADSPACE_DSP "${CMAKE_CURRENT_SOURCE_DIR}/Source/dsp")
 set(TRENCH_HEADSPACE_SOURCES
   "${TRENCH_HEADSPACE_DIR}/Quad.h" "${TRENCH_HEADSPACE_DIR}/Quad.cpp"
   "${TRENCH_HEADSPACE_DIR}/Library.h" "${TRENCH_HEADSPACE_DIR}/Library.cpp"
@@ -14,7 +15,9 @@ set(TRENCH_HEADSPACE_SOURCES
   "${TRENCH_HEADSPACE_UI}/Engine.h" "${TRENCH_HEADSPACE_UI}/Engine.cpp"
   "${TRENCH_HEADSPACE_UI}/Keyboard.h" "${TRENCH_HEADSPACE_UI}/Keyboard.cpp"
   "${TRENCH_HEADSPACE_UI}/PinMenu.h" "${TRENCH_HEADSPACE_UI}/PinMenu.cpp"
-  "${TRENCH_HEADSPACE_UI}/Screen.h" "${TRENCH_HEADSPACE_UI}/Screen.cpp")
+  "${TRENCH_HEADSPACE_UI}/Screen.h" "${TRENCH_HEADSPACE_UI}/Screen.cpp"
+  "${TRENCH_HEADSPACE_UI}/Spectrogram.h" "${TRENCH_HEADSPACE_UI}/Spectrogram.cpp"
+  "${TRENCH_HEADSPACE_DSP}/Peevers.h" "${TRENCH_HEADSPACE_DSP}/Peevers.cpp")
 
 option(TRENCH_HEADSPACE_LTO "Enable link-time optimization for HEADSPACE and its acceptance tests" OFF)
 

@@ -33,6 +33,7 @@ public:
     struct Clip { std::vector<float> samples; double rate = 44100.0; };
     void setLoop (std::shared_ptr<const Clip> clip) { loop.store (std::move (clip)); }
     bool isOpen() const { return open; }
+    int pull (float* dst, int max);
     int activeVoices() const { return active.load(); }
     double voiceHz (int index) const;
     juce::String error, deviceInfo;
@@ -89,5 +90,9 @@ private:
     double rate = 44100.0, phase = 0.0, pink0 = 0.0, pink1 = 0.0, pink2 = 0.0;
     std::uint32_t random = 123456789u;
     std::array<float, 4096> block {};
+    static constexpr unsigned int kTap = 65536;
+    std::vector<float> tapRing = std::vector<float> (kTap, 0.0f);
+    std::atomic<unsigned int> tapWrite { 0 };
+    unsigned int tapRead = 0;
 };
 }

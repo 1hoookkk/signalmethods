@@ -2206,3 +2206,37 @@ Open, in order:
   the encoded increment computed automatically; US5248845 = 10-100 ms frames, a static
   formant filter per frame, semi-automatic peak estimation, the note/formant split. The
   three-rail mother build ran as a bounded job; its commit is held pending the rethink.
+- 2026-09-07, the mother as three gestures (d71afd60): built as a bounded job, 141 checks, ctest
+  x3; then Tyson's rulings in sequence: the look is "cartoonish and unserious, not striking";
+  the stage editing goes to its own window like the spectrogram; three approaches each for the
+  mother and the ingest from the two Rossum patents and the Massie and Martens papers (readers
+  in evidence: The Reel / The Sweep Deck / The Prototype Map; The Pair Bank / The Analyst's
+  Strip / The Atlas); Tyson: Peevers's Spectrogram "is the thing we are trying to build", take
+  its UX literally and make it better around it; "they're just missing the cube abstraction";
+  the cube is the idea (position between placed sounds instead of parameters), never the 240
+  or 560-byte format. Chosen: the Reel for the mother (anchors are recordings; a frame picked off
+  the surface is a corner, verbatim; Q is a second real frame), and for ingest poles only for
+  anything read with parked zeros, pairs verbatim for the 132 P2K and 2,312 Morpheus corners as
+  cards, Klatt/Hillenbrand/PB52 as pole-only landmarks; Tyson supplies multi-note sources; the
+  stage window gets the ARMAdillo plot for editing the zeros last. The panel recovered from the
+  decomp: evidence/.../spectrogram/FORM_Menu_Form.md, 50 controls on a 344 x 368 form. The
+  Filter path read: fof_value/fof_transf build Rodet formant wave functions per drawn
+  trajectory into flttbl, Modify multiplies it into each frame, Impulse substitutes an impulse
+  train's spectrum, olap resynthesises through the sqrt window; the binary has no ARMAdillo
+  encoding (floats throughout). Morpheus axis bits RESOLVED: Transform bit0, Frequency bit1,
+  Morph bit2 (census.py right, level_law.md swapped; grammar corpus is the 1993 manual; decoded
+  JSON corner field is a permutation of the raw index); open: whether the 560-byte bodies were
+  written in raw order, in which case the plugin's MORPH plays Transform on them.
+- 2026-09-07, the spectrogram window: Peevers's analysis ported verbatim to Source/dsp/Peevers
+  (win_calc with his nine coefficient rows, winmult with the centring pad, buildtable,
+  bitreverse, fft, ifft, spectrum |X|^2/nfft^2, log_of, gal, lattice), Source/ui/Spectrogram
+  (the mesh surface, azimuth/declination drag, 2D, LogF, Axes, the one control line, a tap
+  after the cascade, drop or load a .wav/.aiff), key G, a DocumentWindow in Main. Level
+  constants from the ELF: largest 268225000, smallest 1e-6, gain slider 0.5 -> 20, floor -20
+  (the slider default; init_the_screen sets -120, his panel and maths disagree at boot), so
+  m 19.06, b 94.35. Deviations, each one line: gal's power[] starts at 1.0 not 0 (0/0 NaN on
+  digital silence); the middle frame is the one starting at the file's midpoint; MIDI 57 is
+  220 Hz in this engine; guard slots for his data[-1] reads; the 3D box is auto-centred. Checks:
+  windows match his rows, impulse FFT flat, sine at bin 16, Env of a 2 kHz two-pole within one
+  bin, a held saw shows harmonics 1, 2 and 9 within one bin, vowel_ah.aiff first formant
+  926 Hz at the middle frame, spectrogram.png rendered without a window. 148 checks, ctest x3.

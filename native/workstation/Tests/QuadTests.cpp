@@ -1,5 +1,7 @@
 #include "ui/Look.h"
 #include "ui/Screen.h"
+#include "ui/Spectrogram.h"
+#include <algorithm>
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <cstdio>
 #include <memory>
@@ -780,6 +782,146 @@ int main()
         check (s.playingLabel == "B  u", "an open corner says its letter and name");
         s.setPuck (40.0, 30.0);
         check (s.playingLabel == "pad 40 30", "the pad says MORPH and Q");
+    }
+
+
+    {
+        hs::Peevers p;
+        std::vector<float> w ((size_t) 256, 0.0f);
+        p.win_calc (w.data(), 7, 256);
+        const bool hanning = std::abs (w[64] - 0.5f) < 1.0e-6f && std::abs (w[0]) < 1.0e-6f;
+        p.win_calc (w.data(), 6, 256);
+        const bool hamming = std::abs (w[0] - 0.08f) < 1.0e-6f;
+        p.win_calc (w.data(), 1, 256);
+        const bool blackman = std::abs (w[128] - 1.0f) < 1.0e-6f;
+        check (hanning && hamming && blackman, "Peevers's windows match his coefficients");
+
+        std::vector<float> x ((size_t) 256, 0.0f), fx ((size_t) 512, 0.0f);
+        x[0] = 1.0f;
+        p.spectrum (x.data(), 256, fx.data(), 256);
+        bool level = true;
+        for (int i = 0; i < 256; ++i) level = level && std::abs ((double) fx[(size_t) i] - 1.0 / 65536.0) < 1.0e-9;
+        check (level, "the FFT of an impulse is flat");
+
+        for (int i = 0; i < 256; ++i) x[(size_t) i] = (float) (1000.0 * std::sin (2.0 * 3.141592653589793 * 16.0 * i / 256.0));
+        p.spectrum (x.data(), 256, fx.data(), 256);
+        int top = 1;
+        for (int i = 1; i < 128; ++i) if (fx[(size_t) i] > fx[(size_t) top]) top = i;
+        check (top == 16, "a sine at bin 16 peaks at bin 16");
+    }
+
+    {
+        hs::Peevers p;
+        const double pi = 3.141592653589793, rate = 44100.0, w = 2.0 * pi * 2000.0 / rate, r = 0.98;
+        double y1 = 0.0, y2 = 0.0;
+        std::uint32_t seed = 2463534242u;
+        for (int i = 0; i < 8192; ++i)
+        {
+            seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5;
+            const double e = ((double) seed / 4294967295.0 * 2.0 - 1.0) * 3000.0;
+            const double y = e + 2.0 * r * std::cos (w) * y1 - r * r * y2;
+            y2 = y1;
+            y1 = y;
+            p.gal ((float) y);
+        }
+        std::vector<float> impulse ((size_t) 256, 0.0f), fx ((size_t) 512, 0.0f);
+        for (int i = 0; i < 256; ++i) impulse[(size_t) i] = p.lattice (i == 0 ? 32000.0f : 0.0f);
+        p.spectrum (impulse.data(), 256, fx.data(), 256);
+        p.log_of (fx.data(), 128);
+        int top = 1;
+        for (int i = 1; i < 128; ++i) if (fx[(size_t) i] > fx[(size_t) top]) top = i;
+        const double want = 2000.0 * 256.0 / 44100.0;
+        std::printf ("      the LPC-12 envelope peaks at bin %d, the pole sits at %.2f\n", top, want);
+        check (std::abs ((double) top - want) <= 1.0, "the Env envelope of a two-pole resonance peaks at the pole within one bin");
+    }
+
+    {
+        hs::Audio audio;
+        audio.prepare (44100.0);
+        hs::Session s (root, tempQuad(), false);
+        std::array<std::uint16_t, 30> flat {};
+        const int i0 = s.starNamed ("i");
+        for (size_t r = 0; r < hs::kRows; ++r) for (size_t k = 0; k < hs::kWords; ++k) flat[r * 5 + k] = s.stars[(size_t) i0].words[r][k];
+        audio.publish (flat);
+        audio.setSource (0);
+        audio.noteOn (57, 1.0f);
+        std::vector<float> left ((size_t) 512), right ((size_t) 512);
+        float* outs[2] = { left.data(), right.data() };
+        for (int i = 0; i < 40; ++i) audio.audioDeviceIOCallbackWithContext (nullptr, 0, outs, 2, 512, {});
+        audio.noteOff (57);
+        hs::Spectrogram spec;
+        spec.peevers.setParms (1024, 1024, 512, 7);
+        std::vector<float> tap ((size_t) 40 * 512, 0.0f);
+        const int got = audio.pull (tap.data(), (int) tap.size());
+        for (int i = 0; i < got; ++i) tap[(size_t) i] *= 32767.0f;
+        spec.feed (tap.data(), got);
+        const double f0 = 440.0 * std::pow (2.0, (57 - 69) / 12.0), spacing = f0 * 1024.0 / 44100.0;
+        bool harmonic = spec.frameCount() > 0;
+        if (harmonic)
+        {
+            const auto& newest = spec.latest();
+            std::vector<std::pair<float, int>> peaks;
+            for (int b = 1; b < 128; ++b) if (newest[(size_t) b] > newest[(size_t) b - 1] && newest[(size_t) b] >= newest[(size_t) b + 1]) peaks.push_back ({ newest[(size_t) b], b });
+            std::sort (peaks.begin(), peaks.end(), [] (const std::pair<float, int>& a, const std::pair<float, int>& b) { return a.first > b.first; });
+            harmonic = peaks.size() >= 3;
+            for (int k = 0; k < 3 && k < (int) peaks.size(); ++k)
+            {
+                const double n = std::floor ((double) peaks[(size_t) k].second / spacing + 0.5);
+                std::printf ("      peak %d at bin %d, %.0f Hz, harmonic %.0f of %.1f Hz\n", k + 1, peaks[(size_t) k].second, peaks[(size_t) k].second * 44100.0 / 1024.0, n, f0);
+                harmonic = harmonic && n >= 1.0 && std::abs ((double) peaks[(size_t) k].second - n * spacing) <= 1.0;
+            }
+        }
+        check (harmonic, "a held saw through the i corner shows its harmonics in the latest frame");
+    }
+
+    {
+        hs::Spectrogram spec;
+        spec.peevers.lpcenv = 1;
+        spec.peevers.setParms (1024, 1024, 512, 7);
+        const auto ah = root.getChildFile ("evidence/research-results/emu-sgi-1993/runtime/sounds/vowel_ah.aiff");
+        const bool read = spec.load (ah);
+        double hz = 0.0;
+        int first = -1;
+        const int half = spec.length / 2 / spec.peevers.stride;
+        if (read && spec.frameCount() > 2)
+        {
+            const auto& middle = spec.frameAt (juce::jlimit (0, spec.frameCount() - 1, half));
+            for (int b = 3; b < 400 && first < 0; ++b) if (middle[(size_t) b] > middle[(size_t) b - 1] && middle[(size_t) b] >= middle[(size_t) b + 1]) first = b;
+            hz = (double) first * spec.rate / (double) spec.peevers.nfft;
+        }
+        std::printf ("      vowel_ah.aiff at %.0f Hz, %d frames, first formant at bin %d, %.0f Hz\n", spec.rate, spec.frameCount(), first, hz);
+        check (read && first > 0 && hz > 550.0 && hz < 950.0, "Peevers's own vowel_ah.aiff reads with its first formant where an ah sits");
+    }
+
+    {
+        hs::Spectrogram spec;
+        spec.setSize (900, 560);
+        const int n = spec.peevers.winsize + 300 * spec.peevers.stride;
+        std::vector<float> saw ((size_t) n, 0.0f);
+        double phase = 0.0;
+        for (int i = 0; i < n; ++i)
+        {
+            phase += 110.0 / 44100.0;
+            phase -= std::floor (phase);
+            saw[(size_t) i] = (float) ((2.0 * phase - 1.0) * 8000.0);
+        }
+        spec.feed (saw.data(), n);
+        const auto image = spec.shot();
+        const auto folder = root.getChildFile ("native/workstation/artifacts/shots");
+        folder.createDirectory();
+        const auto file = folder.getChildFile ("spectrogram.png");
+        file.deleteFile();
+        juce::PNGImageFormat png;
+        juce::FileOutputStream out (file);
+        const bool written = out.openedOk() && png.writeImageToStream (image, out);
+        out.flush();
+        int lit = 0;
+        for (int y = 0; y < image.getHeight(); ++y)
+            for (int x = 0; x < image.getWidth(); ++x)
+                if (image.getPixelAt (x, y) != hs::Look::ground) ++lit;
+        const double share = (double) lit / (double) (image.getWidth() * image.getHeight());
+        std::printf ("      spectrogram.png %d frames, %.1f%% of pixels drawn\n", spec.frameCount(), share * 100.0);
+        check (written && file.getSize() > 4000 && image.getPixelAt (4, 4) == hs::Look::ground && share > 0.05 && juce::Desktop::getInstance().getNumComponents() == 0, "the spectrogram renders to artifacts/shots/spectrogram.png without a window");
     }
 
     std::printf ("%d failures\n", failures);

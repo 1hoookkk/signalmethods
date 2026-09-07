@@ -244,11 +244,27 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
             block[(size_t) i] = x;
         }
         runner.process (std::span<float> (block.data(), (size_t) n));
+        unsigned int w = tapWrite.load (std::memory_order_relaxed);
         for (int i = 0; i < n; ++i)
         {
-            const float y = std::isfinite (block[(size_t) i]) ? block[(size_t) i] * 0.5f : 0.0f;
+            const float tapped = std::isfinite (block[(size_t) i]) ? block[(size_t) i] : 0.0f;
+            tapRing[(size_t) (w & (kTap - 1))] = tapped;
+            ++w;
+            const float y = tapped * 0.5f;
             for (int ch = 0; ch < numOut; ++ch) if (out[ch] != nullptr) out[ch][offset + i] = y;
         }
+        tapWrite.store (w, std::memory_order_release);
     }
+}
+
+int Audio::pull (float* dst, int max)
+{
+    const unsigned int w = tapWrite.load (std::memory_order_acquire);
+    unsigned int available = w - tapRead;
+    if (available > kTap) { tapRead = w - kTap; available = kTap; }
+    const int n = (int) std::min (available, (unsigned int) std::max (0, max));
+    for (int i = 0; i < n; ++i) dst[i] = tapRing[(size_t) ((tapRead + (unsigned int) i) & (kTap - 1))];
+    tapRead += (unsigned int) n;
+    return n;
 }
 }

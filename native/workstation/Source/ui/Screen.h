@@ -30,6 +30,7 @@ public:
     void filesDropped (const juce::StringArray& files, int x, int y) override;
     juce::Image shot();
 
+    std::function<void()> onSpectrogram;
     plot::Curves curves;
     Palette palette;
     Mother mother;

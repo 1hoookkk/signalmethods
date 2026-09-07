@@ -1,9 +1,24 @@
 #include "ui/Look.h"
 #include "ui/Screen.h"
+#include "ui/Spectrogram.h"
 #include <juce_gui_extra/juce_gui_extra.h>
 
 namespace
 {
+class Glass : public juce::DocumentWindow
+{
+public:
+    explicit Glass (hs::Audio& audio)
+        : juce::DocumentWindow ("spectrogram", hs::Look::ground, juce::DocumentWindow::allButtons)
+    {
+        setUsingNativeTitleBar (true);
+        setContentOwned (new hs::Spectrogram (&audio), true);
+        setResizable (true, false);
+        centreWithSize (900, 560);
+    }
+    void closeButtonPressed() override { setVisible (false); }
+};
+
 class Window : public juce::DocumentWindow
 {
 public:
@@ -19,8 +34,18 @@ public:
         centreWithSize (w, h);
         setVisible (true);
         getContentComponent()->grabKeyboardFocus();
+        if (auto* screen = dynamic_cast<hs::Screen*> (getContentComponent()))
+            screen->onSpectrogram = [this, &session]
+            {
+                if (glass == nullptr) glass = std::make_unique<Glass> (session.audio);
+                glass->setVisible (! glass->isVisible());
+                if (glass->isVisible()) glass->toFront (true);
+            };
     }
     void closeButtonPressed() override { juce::JUCEApplication::getInstance()->systemRequestedQuit(); }
+
+private:
+    std::unique_ptr<Glass> glass;
 };
 
 class App : public juce::JUCEApplication

@@ -318,6 +318,7 @@ bool Screen::keyPressed (const juce::KeyPress& k)
     const auto m = k.getModifiers();
     const bool plain = ! m.isCommandDown() && ! m.isCtrlDown() && ! m.isAltDown();
     if (k.getKeyCode() == 'H' && plain) { stage.showHardware = ! stage.showHardware; repaint(); return true; }
+    if (k.getKeyCode() == 'G' && plain && onSpectrogram) { onSpectrogram(); return true; }
     if (menu.open && k.getKeyCode() == juce::KeyPress::escapeKey) { menu.open = false; repaint(); return true; }
     if (k.getKeyCode() == juce::KeyPress::returnKey) { session.toCorner (session.working); return true; }
     const bool used = session.key (k);
