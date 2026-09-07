@@ -32,6 +32,7 @@ public:
     double pairT = 0.0;
     int editing = -1;
     int working = 0;
+    int heldNote = -1;
     int target() const { return editing >= 0 ? editing : working; }
     Star made;
     bool madeLive = false;
@@ -59,6 +60,7 @@ public:
     void pin (int n, int star);
     void pinCorner (int corner, int star);
     void toCorner (int corner);
+    void toColumn (int column);
     bool placeable() const;
     void pinAll (const std::array<int, 4>& pins);
     int addRead (const juce::File& wav);

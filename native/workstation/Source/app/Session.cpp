@@ -27,6 +27,7 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
         pinAll ({ starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x91"))), starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x99"))), starNamed ("i"), starNamed ("u") });
     history.clear(); future.clear();
     audio.onNote = [this] (int n) { note = n; changed(); };
+    audio.onWheel = [this] (double v) { setPuck (v * 100.0, quad.q); };
     audition();
 }
 
@@ -233,6 +234,21 @@ void Session::toCorner (int corner)
     working = std::clamp (corner, 0, 3);
     if (auditioning == -1 && quad.complete()) { keep(); pinCorner (corner, selected); return; }
     pinCorner (corner, currentStar());
+}
+
+void Session::toColumn (int column)
+{
+    if (! placeable()) return;
+    if (auditioning == -1 || inPair() || inMade() || auditioning == kCube) keep();
+    const int star = currentStar();
+    if (star < 0 || star >= (int) stars.size()) return;
+    history.push_back (snapshot()); future.clear();
+    const int side = column == 0 ? 0 : 1;
+    quad.pins[(size_t) side] = star;
+    quad.pins[(size_t) (side + 2)] = star;
+    working = side;
+    auditioning = -1;
+    apply();
 }
 
 void Session::pinAll (const std::array<int, 4>& pins)
@@ -485,13 +501,16 @@ void Session::setNote (int midi)
 void Session::noteOn (int midi)
 {
     note = std::clamp (midi, 0, 127);
+    if (withAudio && heldNote >= 0 && heldNote != note) audio.noteOff (heldNote);
+    heldNote = note;
     if (withAudio) audio.noteOn (note);
     changed();
 }
 
 void Session::noteOff()
 {
-    if (withAudio) audio.noteOff();
+    if (withAudio && heldNote >= 0) audio.noteOff (heldNote);
+    heldNote = -1;
 }
 
 bool Session::setLoop (const juce::File& wav)
@@ -510,7 +529,7 @@ bool Session::setLoop (const juce::File& wav)
 void Session::noteIn (const juce::MidiMessage& m)
 {
     if (m.isNoteOn()) noteOn (m.getNoteNumber());
-    else if (m.isNoteOff() && m.getNoteNumber() == note) noteOff();
+    else if (m.isNoteOff() && m.getNoteNumber() == heldNote) noteOff();
 }
 
 void Session::setSource (int s)
@@ -545,7 +564,10 @@ bool Session::key (const juce::KeyPress& k)
     if (code == juce::KeyPress::pageDownKey) { setNote (note - 12); return true; }
     if (code == juce::KeyPress::pageUpKey) { setNote (note + 12); return true; }
     for (int corner = 0; corner < 4; ++corner)
+    {
+        if (k.getModifiers().isShiftDown() && (code == '1' + corner || code == 'A' + corner)) { toColumn (corner & 1); return true; }
         if (c == (juce::juce_wchar) ('1' + corner) || c == (juce::juce_wchar) ('a' + corner) || c == (juce::juce_wchar) ('A' + corner)) { toCorner (corner); return true; }
+    }
     return false;
 }
 }

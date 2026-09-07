@@ -92,7 +92,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         else session.setSource (i == 1 ? 0 : 1);
         return;
     }
-    if (const int i = engine.cornerKeyAt (p); i >= 0) { session.toCorner (i); return; }
+    if (const int i = engine.cornerKeyAt (p); i >= 0) { if (e.mods.isShiftDown()) session.toColumn (i & 1); else session.toCorner (i); return; }
     if (engine.writeKey.contains (p)) { session.write(); return; }
     if (keyboard.area.contains (p))
     {
@@ -295,7 +295,7 @@ void Screen::mouseUp (const juce::MouseEvent& e)
     const auto p = e.getPosition();
     if (dragging == Drag::card && dragStar >= 0)
     {
-        if (const int n = body.cornerAt (p); n >= 0) session.pinCorner (n, dragStar);
+        if (const int n = body.cornerAt (p); n >= 0) { session.pinCorner (n, dragStar); if (e.mods.isShiftDown()) session.pinCorner (n ^ 2, dragStar); }
         else if (const int pin = mother.pinAt (p); pin >= 0) session.pinCube (pin, dragStar);
     }
     if (dragging == Drag::slice)

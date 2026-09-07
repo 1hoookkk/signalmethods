@@ -2149,3 +2149,15 @@ Open, in order:
   MATLAB colours lifted for a dark ground (blue 4FA3E6, orange F08A45, purple B98AD6, green
   96CF5A), margins 16/12, keyboard light keys on a dark ground. The column split moved to 52%
   so the stage plot takes the width the cube cannot use. 120 checks green.
+- 2026-09-07: the engine plays. Tyson's brief (three research pastes, then his own lines): a
+  keyboard-played instrument for exploring interpolation; the four-corner preset is the thing
+  you make; hold a chord, sweep with the mod wheel, replace an anchor while it sounds, keep the
+  current filter into the selected corner, MIDI active throughout. Audio.cpp rebuilt: eight
+  voices through the one cascade (allocation: same note, free, oldest released, oldest), a
+  lock-free event ring from the MIDI thread, velocity on strike and level, sustain pedal
+  (CC64), pitch bend +-2 st, all-notes-off, per-voice 2 ms attack and 120 ms release with the
+  cascade ringing on, voices freed at -80 dB, mod wheel (CC1) -> MORPH on the pad through
+  Session::onWheel. Session::toColumn puts one endpoint in A and C or B and D (Shift on the
+  corner arrows, keys or a drop) so the pad is a pure MORPH sweep with Q doing nothing. Tests:
+  two held keys are two voices at their pitches, release leaves the other sounding, ring-down,
+  velocity soft 0.056 vs loud 0.325, pedal holds and lifts, bend A4->B4, drone. 128 checks.
