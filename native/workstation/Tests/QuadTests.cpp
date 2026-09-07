@@ -849,7 +849,7 @@ int main()
         s.setProbe (0.2, 0.4, 0.6);
         s.audio.onWheel (0.8);
         check (s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "the mod wheel rides MORPH and leaves FREQUENCY and STRESS where they were");
-        check (s.playingLabel == "i > u  80  freq 40  stress 60", "the label says frequency and stress when they are off their rest");
+        check (s.playingLabel == "i > u", "the label says the pair; the rails carry the numbers");
         s.key (key ('Z', false, 'z'));
         const int played = s.heldNote;
         s.key (key ('M', false, 'm'));
@@ -973,7 +973,7 @@ int main()
     {
         hs::Session s (root, tempQuad(), false);
         s.setPair (0, s.starNamed ("i")); s.setPair (1, s.starNamed ("u")); s.setProbe (0.5, 0.0, 1.0);
-        check (s.playingLabel == "i > u  50", "a fresh session says the sweep between its two endpoints plays");
+        check (s.playingLabel == "i > u", "a fresh session says the sweep between its two endpoints plays");
         s.select (s.starNamed ("i"));
         check (s.playingLabel == "i", "a clicked card says its name");
         s.setMade (700.0, 1100.0);
@@ -981,7 +981,7 @@ int main()
         s.setTransposed (s.starNamed ("i"), 465.0);
         check (s.playingLabel.startsWith ("i moved to 4"), "a transposed vowel says where it moved from and to");
         s.morphPair (s.starNamed ("i"), s.starNamed ("u"), 0.23);
-        check (s.playingLabel == "i > u  23", "a pair says both names and the position");
+        check (s.playingLabel == "i > u", "a pair says both names");
         s.edit (1);
         check (s.playingLabel == "B  u", "an open corner says its letter and name");
         s.setPuck (40.0, 30.0);

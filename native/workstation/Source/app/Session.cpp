@@ -107,9 +107,7 @@ void Session::audition()
     {
         words = motherWordsAt (explore(), stars);
         sounding = true;
-        status = stars[(size_t) pairA].name + " > " + stars[(size_t) pairB].name + "  " + juce::String (std::lround (pairT * 100.0));
-        if (frequency > 0.0) status += "  freq " + juce::String (std::lround (frequency * 100.0));
-        if (stress < 1.0) status += "  stress " + juce::String (std::lround (stress * 100.0));
+        status = stars[(size_t) pairA].name + " > " + stars[(size_t) pairB].name;
         playingLabel = status;
     }
     else if (auditioning == kMade && madeLive)

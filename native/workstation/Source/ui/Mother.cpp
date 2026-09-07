@@ -5,7 +5,7 @@ namespace hs
 {
 namespace
 {
-constexpr int kRailHeight = 20, kRailGap = 18, kRailTop = 26;
+constexpr int kRailHeight = 20, kRailGap = 10, kRailTop = 22;
 constexpr int kRailBlock = kRailTop + 3 * kRailHeight + 2 * kRailGap + 4;
 }
 
@@ -76,7 +76,11 @@ void Mother::paint (juce::Graphics& g, juce::Point<int> dropPoint, bool dropping
         g.setFont (Look::font (9.0f));
         g.setColour (Look::dim);
         g.drawText (names[i], r.getX(), r.getY() - 11, 90, 11, juce::Justification::centredLeft);
-        if (i != 1) g.drawText (juce::String (std::lround (at[i] * 100.0)), r.getRight() + 8, r.getY(), 56, r.getHeight(), juce::Justification::centredLeft);
+        const juce::String reading = i == 1 ? (session.octaves * at[1] < 0.0 ? juce::String() : juce::String ("+")) + juce::String (session.octaves * at[1], 2) + " oct"
+                                            : juce::String (std::lround (at[i] * 100.0));
+        g.setColour (live ? Look::text : Look::dim);
+        g.drawText (reading, r.getRight() - 70, r.getY() - 11, 70, 11, juce::Justification::centredRight);
+        g.setColour (Look::dim);
         g.setColour (Look::faint); g.fillRect (r.withY (r.getCentreY()).withHeight (1));
         const float x = (float) (r.getX() + r.getWidth() * at[i]);
         const float y = (float) r.getCentreY();
@@ -88,7 +92,7 @@ void Mother::paint (juce::Graphics& g, juce::Point<int> dropPoint, bool dropping
     }
     g.setFont (Look::font (11.0f));
     g.setColour (live ? Look::ink : Look::dim);
-    g.drawText ((session.octaves < 0.0 ? juce::String() : juce::String ("+")) + juce::String (session.octaves, 1), octavesKey, juce::Justification::centred);
+    g.drawText ((session.octaves < 0.0 ? juce::String() : juce::String ("+")) + juce::String (session.octaves, 1) + " oct", octavesKey, juce::Justification::centred);
 
 }
 }

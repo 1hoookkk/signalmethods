@@ -128,11 +128,19 @@ void Stage::paint (juce::Graphics& g, int litRow, bool bladeLit, bool carving) c
                              : session.anchorTarget >= 0 && star >= 0 && star < (int) session.stars.size() ? session.stars[(size_t) star].name
                              : juce::String::charToString (Session::kCornerLetters[corner]) + "  " + session.cornerName (corner);
     g.drawText (title, area.withHeight (18), juce::Justification::centredLeft);
-    g.setColour (carving ? Look::orange : Look::dim);
-    g.drawText ("Carve  " + juce::String (carve * 100.0, 0), carveKey, juce::Justification::centredRight);
     g.setFont (Look::font (10.0f));
-    g.setColour (zerosMode ? Look::orange : Look::dim);
-    g.drawText (zerosMode ? "ZEROS" : "POLES", modeKey, juce::Justification::centredRight);
+    {
+        const juce::String carveWord = "CARVE  " + juce::String (carve * 100.0, 0);
+        const int width = juce::GlyphArrangement::getStringWidthInt (Look::font (10.0f), carveWord);
+        g.setColour (carving ? Look::ink : Look::dim);
+        g.drawText (carveWord, carveKey, juce::Justification::centredRight);
+        if (carving) Look::underline (g, carveKey.withTrimmedLeft (carveKey.getWidth() - width), Look::orange);
+        const juce::String modeWord = zerosMode ? "ZEROS" : "POLES";
+        const int modeWidth = juce::GlyphArrangement::getStringWidthInt (Look::font (10.0f), modeWord);
+        g.setColour (Look::ink);
+        g.drawText (modeWord, modeKey, juce::Justification::centredRight);
+        Look::underline (g, modeKey.withTrimmedLeft (modeKey.getWidth() - modeWidth), zerosMode ? Look::orange : Look::blue);
+    }
     const auto r = magnitude;
     Look::axes (g, r);
     g.setFont (Look::font (10.0f));
