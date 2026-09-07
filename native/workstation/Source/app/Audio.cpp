@@ -205,7 +205,7 @@ void Audio::audioDeviceIOCallbackWithContext (const float* const*, int, float* c
                 if (v.envelope < 1e-4 && target == 0.0) { v.note = -1; continue; }
                 gate = std::max (gate, (float) v.envelope * v.velocity);
                 if (src == 0) x += next (v) * (float) v.envelope * v.velocity * spread;
-                if (v.burst > 0)
+                if (src == 3 && v.burst > 0)
                 {
                     random ^= random << 13; random ^= random >> 17; random ^= random << 5;
                     const double window = 0.5 - 0.5 * std::cos (2.0 * 3.141592653589793 * (burstLength - v.burst) / (double) burstLength);

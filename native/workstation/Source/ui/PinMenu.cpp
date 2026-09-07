@@ -4,9 +4,9 @@
 
 namespace hs
 {
-void PinMenu::show (const Session& session, int which, bool inCube, juce::Rectangle<int> anchor, juce::Rectangle<int> bounds)
+void PinMenu::show (const Session& session, int which, int what, juce::Rectangle<int> anchor, juce::Rectangle<int> bounds)
 {
-    open = true; target = which; cube = inCube; scroll = 0;
+    open = true; target = which; kind = what; scroll = 0;
     const int count = (int) session.stars.size();
     const int h = std::min (18 * count, std::max (90, bounds.getBottom() - anchor.getBottom() - 30));
     int y = anchor.getBottom() + 2;
@@ -29,7 +29,8 @@ int PinMenu::itemAt (const Session& session, juce::Point<int> p) const
 int PinMenu::pinned (const Session& session) const
 {
     if (target < 0) return -1;
-    return cube ? session.cube.pins[(size_t) target] : session.quad.pins[(size_t) Session::kCornerPin[target]];
+    if (kind == 2) return target == 0 ? session.pairA : session.pairB;
+    return kind == 1 ? session.cube.pins[(size_t) target] : session.quad.pins[(size_t) Session::kCornerPin[target]];
 }
 
 void PinMenu::wheel (const Session& session, int step)

@@ -22,12 +22,16 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     for (const auto& s : loadVowels (root.getChildFile ("native/workstation/banks/Hillenbrand 1995.bank.json"))) stars.push_back (s);
     for (const auto& s : loadBodies (root.getChildFile ("evidence/measured-bodies/ir_library"))) stars.push_back (s);
     libraryCount = stars.size();
-    const bool had = open (quad, stars, libraryCount, file, &cube);
+    Explore explore;
+    const bool had = open (quad, stars, libraryCount, file, &cube, &explore);
+    pairA = explore.a; pairB = explore.b; pairT = explore.t;
+    if (pairA < 0 || pairB < 0) { pairA = starNamed ("i"); pairB = starNamed ("u"); pairT = 0.5; }
     if (! had || ! quad.complete())
         pinAll ({ starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x91"))), starNamed (juce::String (juce::CharPointer_UTF8 ("\xc9\x99"))), starNamed ("i"), starNamed ("u") });
     history.clear(); future.clear();
     audio.onNote = [this] (int n) { note = n; changed(); };
-    audio.onWheel = [this] (double v) { setPuck (v * 100.0, quad.q); };
+    audio.onWheel = [this] (double v) { if (inPair()) sweep (v); else setPuck (v * 100.0, quad.q); };
+    if (pairA >= 0 && pairB >= 0) auditioning = kPair;
     audition();
 }
 
@@ -140,13 +144,16 @@ void Session::restore (const Snapshot& s)
     stars.insert (stars.end(), s.added.begin(), s.added.end());
     for (auto& p : quad.pins) if (p >= (int) stars.size()) p = -1;
     for (auto& p : cube.pins) if (p >= (int) stars.size()) p = -1;
+    if (pairA >= (int) stars.size()) pairA = -1;
+    if (pairB >= (int) stars.size()) pairB = -1;
     if (selected >= (int) stars.size()) selected = -1;
     if (editing >= 0 && (editingCube ? cube.pins[(size_t) editing] : quad.pins[(size_t) kCornerPin[editing]]) < 0) editing = -1;
 }
 
 void Session::apply()
 {
-    save (quad, stars, libraryCount, file, &cube);
+    const Explore explore { pairA, pairB, pairT };
+    save (quad, stars, libraryCount, file, &cube, &explore);
     audition();
     changed();
 }
@@ -177,6 +184,24 @@ void Session::morphPair (int a, int b, double t)
     auditioning = kPair;
     audition();
     changed();
+}
+
+void Session::setPair (int which, int star)
+{
+    if (which < 0 || which > 1) return;
+    if (star == kMade || star == kCube || inMade() || (star < 0 && (inPair() || auditioning == kCube))) { keep(); star = selected; }
+    if (star < 0 || star >= (int) stars.size()) return;
+    history.push_back (snapshot()); future.clear();
+    (which == 0 ? pairA : pairB) = star;
+    if (pairA >= 0 && pairB >= 0) auditioning = kPair;
+    editing = -1; editingCube = false;
+    apply();
+}
+
+void Session::sweep (double t)
+{
+    if (pairA < 0 || pairB < 0) return;
+    morphPair (pairA, pairB, t);
 }
 
 void Session::setMade (double f1, double f2)
@@ -219,7 +244,7 @@ void Session::pin (int n, int star)
 void Session::pinCorner (int corner, int star)
 {
     if (corner < 0 || corner > 3) return;
-    if (inPair() || inMade() || auditioning == kCube || star == kMade || star == kCube) { keep(); star = selected; }
+    if (star == kMade || star == kCube || (star < 0 && (inPair() || inMade() || auditioning == kCube))) { keep(); star = selected; }
     pin (kCornerPin[corner], star);
 }
 
@@ -232,8 +257,13 @@ void Session::toCorner (int corner)
 {
     if (! placeable()) return;
     working = std::clamp (corner, 0, 3);
-    if (auditioning == -1 && quad.complete()) { keep(); pinCorner (corner, selected); return; }
-    pinCorner (corner, currentStar());
+    const bool wasPair = inPair(), wasCube = auditioning == kCube;
+    const double t = pairT;
+    int star = currentStar();
+    if (auditioning == -1 || wasPair || inMade() || wasCube) { keep(); star = selected; }
+    pinCorner (corner, star);
+    if (wasPair) morphPair (pairA, pairB, t);
+    else if (wasCube) setCubePoint (cube.x, cube.y, cube.z);
 }
 
 void Session::toColumn (int column)
@@ -304,7 +334,7 @@ void Session::editCube (int corner)
 void Session::pinCube (int corner, int star)
 {
     if (corner < 0 || corner >= 8) return;
-    if (inMade() || inPair()) { keep(); star = selected; }
+    if (star == kMade || star == kCube || (star < 0 && (inMade() || inPair()))) { keep(); star = selected; }
     if (star < 0 || star >= (int) stars.size()) return;
     history.push_back (snapshot()); future.clear();
     cube.pins[(size_t) corner] = star;
@@ -557,6 +587,7 @@ bool Session::key (const juce::KeyPress& k)
     if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }
     if (c == 'w' || c == 'W') { write(); return true; }
     if (c == 'n' || c == 'N') { setSource (1); return true; }
+    if (c == 'p' || c == 'P') { setSource (3); return true; }
     if ((c == 'l' || c == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }
     if (c == 's' || c == 'S') { setSource (0); return true; }
     if (c == '[') { setNote (note - 1); return true; }

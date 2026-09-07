@@ -53,6 +53,8 @@ public:
     void unhover();
     void select (int k);
     void morphPair (int a, int b, double t);
+    void setPair (int which, int star);
+    void sweep (double t);
     bool inPair() const { return auditioning == kPair; }
     bool inMade() const { return auditioning == kMade; }
     void setMade (double f1, double f2);

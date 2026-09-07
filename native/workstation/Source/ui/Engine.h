@@ -14,7 +14,8 @@ struct Engine
     int cornerKeyAt (juce::Point<int> p) const;
 
     juce::Rectangle<int> area, playing, label, writeKey, status;
-    std::array<juce::Rectangle<int>, 4> keys, toKeys;
+    std::array<juce::Rectangle<int>, 5> keys;
+    std::array<juce::Rectangle<int>, 4> toKeys;
 
 private:
     Session& session;

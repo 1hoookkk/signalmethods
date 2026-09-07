@@ -2161,3 +2161,22 @@ Open, in order:
   corner arrows, keys or a drop) so the pad is a pure MORPH sweep with Q doing nothing. Tests:
   two held keys are two voices at their pitches, release leaves the other sounding, ring-down,
   velocity soft 0.056 vs loud 0.325, pedal holds and lifts, bend A4->B4, drone. 128 checks.
+- 2026-09-07, later: the exploration pair. Tyson's loop: load two very different anchors, hold
+  notes and play a phrase while morphing with the mod wheel, replace one anchor while it keeps
+  sounding, find an intermediate sound, copy it to corner A, keep exploring without changing A,
+  audition and export the canonical grid, reload it and confirm it reproduces its sound, MIDI
+  active throughout. Built (the previous chat's unbuilt slice, compiled and made green here):
+  Source/ui/Pair, two cells and a rail in the mother's quarter, the mother behind Tab; the
+  session boots playing i > u at 50; the mod wheel sweeps the pair when in pair, MORPH
+  otherwise; a drop or a pick replaces one end and the sweep goes on; a corner key keeps the
+  heard words as a capture, pins it, and resumes the sweep; struct Explore ("explore": a, b by
+  name, t) in the quad json; pluck is a fifth source (P), the only one that strikes the 10 ms
+  burst, so saw, noise and loop carry none. Fixes to get green: Screen.cpp had an
+  init-statement inside an && expression; pinCorner and pinCube kept a capture whenever the
+  pair or the cube sounded, even for an explicit pick, so the cube test pinned a capture in
+  place of i; they keep only for a sentinel or no star, and toCorner does its own keep. Tests:
+  the boot check compares with wordsAt; the saw check is determinism, strike twice from a reset
+  engine (the ring leveller carries state): saw differs 0, pluck differs 0.16. 140 checks,
+  ctest x3 green. Left in the tree, not committed: native/core/src/packed_body.cpp decode_word
+  rewritten with a table of powers of two in place of ldexp, numerically identical, not this
+  slice's.

@@ -135,7 +135,7 @@ int main()
         s.select (5);
         check (s.sounding && same (s.words, s.stars[5].words) && s.auditioning == 5, "clicking a vowel plays it exactly");
         s.setPuck (s.quad.morph, s.quad.q);
-        check (same (s.words, boot) && s.auditioning == -1, "touching the stage returns to the four corners");
+        check (same (s.words, hs::wordsAt (s.quad, s.stars)) && s.auditioning == -1, "touching the stage returns to the four corners");
     }
 
     {
@@ -386,6 +386,7 @@ int main()
         }
         s.setPuck (s.quad.morph, s.quad.q);
         hs::Session again (root, s.file, false);
+        again.setPuck (again.quad.morph, again.quad.q);
         check (again.stars.size() == again.libraryCount + 2 && again.stars[again.libraryCount].kind == "capture" && again.stars[again.libraryCount + 1].kind == "read" && again.cornerName (0) == name && same (again.words, s.words) && same (again.stars[again.libraryCount + 1].words, s.stars[s.libraryCount + 1].words), "save then reopen restores captures, reads and corners by name");
     }
 
@@ -545,6 +546,8 @@ int main()
                 && screen.mother.face[0].getWidth() == screen.mother.face[1].getWidth() && m.contains (screen.mother.depth) && m.contains (screen.mother.bakeKey) && screen.mother.face[0].getWidth() >= 220
                 && screen.mother.depth.getX() > screen.mother.face[1].getRight() && screen.mother.depth.getHeight() > screen.mother.depth.getWidth();
             for (int i = 0; i < 8; ++i) ok = ok && screen.mother.face[(size_t) (i / 4)].contains (screen.mother.cell[(size_t) i]) && screen.mother.cell[(size_t) i].contains (screen.mother.plot[(size_t) i]);
+            ok = ok && m.contains (screen.pair.cell[0]) && m.contains (screen.pair.cell[1]) && ! screen.pair.cell[0].intersects (screen.pair.cell[1]) && m.contains (screen.pair.rail)
+                && screen.pair.rail.getY() > screen.pair.cell[0].getBottom() && screen.pair.cell[0].getWidth() >= 200;
             ok = ok && st.contains (screen.stage.magnitude) && screen.stage.magnitude.getWidth() * 2 == screen.stage.magnitude.getHeight() * 3 && st.contains (screen.stage.carveKey) && screen.stage.magnitude.getWidth() >= 300;
             ok = ok && pl.contains (screen.palette.chart) && pl.contains (screen.palette.picker) && ! screen.palette.chart.intersects (screen.palette.picker) && pl.contains (screen.palette.dropZone);
             ok = ok && bt.contains (screen.body.area) && bt.contains (screen.engine.area) && bt.contains (screen.keyboard.area) && ! screen.body.area.intersects (screen.engine.area)
@@ -560,6 +563,20 @@ int main()
         check (fits(), "the one screen still fits at the smallest window");
         screen.setSize (1120, 700);
         {
+            const auto violin = s.starNamed ("Violin Body Resonant");
+            screen.mouseDown (mouse (screen, screen.pair.plot[0].getCentre().toFloat(), screen.pair.plot[0].getCentre().toFloat()));
+            screen.mouseUp (mouse (screen, screen.pair.plot[0].getCentre().toFloat(), screen.pair.plot[0].getCentre().toFloat()));
+            check (s.auditioning == s.pairA && s.pairA == s.starNamed ("i"), "pressing an endpoint plays it exactly");
+            const auto railPoint = juce::Point<float> ((float) (screen.pair.rail.getX() + screen.pair.rail.getWidth() * 0.7), (float) screen.pair.rail.getCentreY());
+            screen.mouseDown (mouse (screen, railPoint, railPoint));
+            screen.mouseUp (mouse (screen, railPoint, railPoint));
+            check (s.inPair() && std::abs (s.pairT - 0.7) < 0.02, "pressing the rail sweeps the pair there");
+            screen.mouseDown (mouse (screen, screen.palette.card (0).getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
+            screen.mouseDrag (mouse (screen, screen.pair.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
+            screen.mouseUp (mouse (screen, screen.pair.plot[1].getCentre().toFloat(), screen.palette.card (0).getCentre().toFloat()));
+            check (s.pairB == screen.palette.cards()[0] && s.pairA == s.starNamed ("i") && s.inPair(), "dropping a card on the right endpoint replaces it, keeps the left one, and the sweep goes on");
+            juce::ignoreUnused (violin);
+            screen.showCube (true);
             const char* names[8] = { "i", "e", "u", "o", "\xc9\x91", "\xc3\xa6", "\xc9\x99", "\xca\x8c" };
             for (int n = 0; n < 8; ++n) s.pinCube (n, s.starNamed (ipa (names[n])));
             const auto press = screen.mother.plot[3].getCentre().toFloat();
@@ -577,6 +594,7 @@ int main()
             juce::FileOutputStream motherOut (motherFile);
             check (motherOut.openedOk() && png.writeImageToStream (mothered, motherOut), "the filled mother renders to artifacts/shots/headspace_mother.png");
             motherOut.flush();
+            screen.showCube (false);
         }
         s.edit (0);
         screen.stage.showHardware = true;
@@ -628,6 +646,40 @@ int main()
         const auto s1 = hs::sectionOf (s.editWords()[0]);
         check (hs::widthSt (s1.poleHz, s1.poleRadius) < hs::widthSt (s0.poleHz, s0.poleRadius) && std::abs (s1.poleHz / s0.poleHz - 1.0) < 0.01, "the wheel over a pole narrows it and leaves its pitch");
         check (juce::Desktop::getInstance().getNumComponents() == 0, "peak gestures stay headless");
+    }
+
+    {
+        hs::Session s (root, tempQuad(), false);
+        const int i = s.starNamed ("i"), u = s.starNamed ("u"), violin = s.starNamed ("Violin Body Resonant");
+        auto between = [&] (int a, int b, double t) { hs::Corners c { s.stars[(size_t) a].words, s.stars[(size_t) b].words, s.stars[(size_t) a].words, s.stars[(size_t) b].words }; return hs::lerp (c, t, 0.0); };
+        check (s.inPair() && s.pairA == i && s.pairB == u && same (s.words, between (i, u, 0.5)), "a fresh session plays the sweep between its two endpoints");
+        s.setPair (1, violin);
+        check (s.inPair() && s.pairA == i && s.pairB == violin && std::abs (s.pairT - 0.5) < 1e-9 && same (s.words, between (i, violin, 0.5)), "replacing the right endpoint keeps the left one and keeps sounding at the same place");
+        s.audio.onWheel (0.3);
+        check (s.inPair() && std::abs (s.pairT - 0.3) < 1e-9 && same (s.words, between (i, violin, 0.3)), "the mod wheel sweeps the pair");
+        const auto found = s.words;
+        s.toCorner (0);
+        const auto cornerA = hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]];
+        check (same (cornerA, found) && s.inPair() && std::abs (s.pairT - 0.3) < 1e-9 && same (s.words, found), "copying the sound to A stores those exact words and the sweep goes on");
+        s.audio.onWheel (0.8);
+        s.setPair (0, u);
+        check (same (hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]], found) && s.pairA == u && s.pairB == violin && s.inPair(), "sweeping on and replacing the left endpoint leave A untouched");
+        hs::Session again (root, s.file, false);
+        check (again.pairA == again.starNamed ("u") && again.pairB == again.starNamed ("Violin Body Resonant") && std::abs (again.pairT - 0.8) < 1e-9 && again.inPair(), "the exploration is saved with the session and plays again on reopening");
+        s.setPuck (50.0, 50.0);
+        const auto path = juce::File::createTempFile ("loop.body240");
+        s.write (path);
+        const auto bytes = bytesOf (path);
+        const auto body = trench::core::PackedBody::from_legacy_bytes (std::span<const std::uint8_t> (bytes.data(), bytes.size()));
+        bool reproduced = bytes.size() == 240;
+        for (int m = 0; m <= 100 && reproduced; m += 50)
+            for (int q = 0; q <= 100 && reproduced; q += 50)
+            {
+                s.setPuck ((double) m, (double) q);
+                const auto cw = body.interpolate_words (m / 100.0f, q / 100.0f, 0.0f);
+                for (size_t row = 0; row < hs::kRows; ++row) reproduced = reproduced && cw[row] == s.words[row];
+            }
+        check (reproduced, "the canonical grid writes 240 bytes that reload through the plugin's lerp to the pad's own sound");
     }
 
     {
@@ -686,11 +738,32 @@ int main()
         run (60);
         audio.setPlaying (true);
         check (run (20) > 0.005, "Space still drones without a key");
+        audio.setPlaying (false);
+        run (120);
+        audio.setSource (3);
+        audio.noteOn (60, 1.0f);
+        const double plucked = peak (2);
+        const double rung = run (20);
+        audio.noteOff (60);
+        std::printf ("      pluck: strike %.4f, 230 ms later %.5f\n", plucked, rung);
+        check (plucked > 0.01 && rung < plucked * 0.05, "pluck strikes a burst into the cascade and lets it ring without a tone");
+        run (60);
+        auto take = [&] (int blocks) { std::vector<float> out; for (int i = 0; i < blocks; ++i) { rms(); out.insert (out.end(), left.begin(), left.end()); } return out; };
+        auto differ = [] (const std::vector<float>& a, const std::vector<float>& b) { double d = 0.0; for (size_t i = 0; i < a.size(); ++i) d = std::max (d, (double) std::abs (a[i] - b[i])); return d; };
+        auto strike = [&] (int midi) { audio.prepare (44100.0); audio.publish (flat); run (4); audio.noteOn (midi, 1.0f); const auto out = take (2); audio.noteOff (midi); return out; };
+        const double pluckDiff = differ (strike (60), strike (60));
+        audio.setSource (0);
+        const auto sawOne = strike (62);
+        const double sawDiff = differ (sawOne, strike (62));
+        double sawPeak = 0.0;
+        for (float v : sawOne) sawPeak = std::max (sawPeak, (double) std::abs (v));
+        std::printf ("      strike twice: pluck differs %.4f, saw differs %.6f, saw peak %.3f\n", pluckDiff, sawDiff, sawPeak);
+        check (pluckDiff > 0.005 && sawDiff < 1e-3 && sawPeak > 0.005, "saw notes carry no burst of their own: two strikes of a note are one signal, two plucks are not");
     }
 
     {
         hs::Session s (root, tempQuad(), false);
-        check (s.playingLabel == "pad 0 0", "a fresh session says the pad plays");
+        check (s.playingLabel == "i > u  50", "a fresh session says the sweep between its two endpoints plays");
         s.select (s.starNamed ("i"));
         check (s.playingLabel == "i", "a clicked card says its name");
         s.setMade (700.0, 1100.0);

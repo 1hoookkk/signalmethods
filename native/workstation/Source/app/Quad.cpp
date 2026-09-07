@@ -219,7 +219,7 @@ bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::Fi
     return file.replaceWithData (b.data(), b.size());
 }
 
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube)
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube, const Explore* explore)
 {
     auto* d = new juce::DynamicObject();
     d->setProperty ("schema", "trench-quad-v1");
@@ -236,6 +236,14 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
         c->setProperty ("x", cube->x); c->setProperty ("y", cube->y); c->setProperty ("z", cube->z);
         d->setProperty ("cube", juce::var (c));
     }
+    if (explore != nullptr)
+    {
+        auto* e = new juce::DynamicObject();
+        e->setProperty ("a", explore->a >= 0 && explore->a < (int) stars.size() ? stars[(size_t) explore->a].name : juce::String());
+        e->setProperty ("b", explore->b >= 0 && explore->b < (int) stars.size() ? stars[(size_t) explore->b].name : juce::String());
+        e->setProperty ("t", explore->t);
+        d->setProperty ("explore", juce::var (e));
+    }
     juce::Array<juce::var> captures;
     for (size_t i = libraryCount; i < stars.size(); ++i)
     {
@@ -251,10 +259,11 @@ bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount
     return file.replaceWithText (juce::JSON::toString (juce::var (d)));
 }
 
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube)
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube, Explore* explore)
 {
     quad = Quad();
     if (cube != nullptr) *cube = AuthoringCube();
+    if (explore != nullptr) *explore = Explore();
     stars.resize (libraryCount);
     if (! file.existsAsFile()) return false;
     const auto v = juce::JSON::parse (file);
@@ -280,6 +289,13 @@ bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce
         cube->x = std::clamp ((double) c.getProperty ("x", 0.5), 0.0, 1.0);
         cube->y = std::clamp ((double) c.getProperty ("y", 0.5), 0.0, 1.0);
         cube->z = std::clamp ((double) c.getProperty ("z", 0.5), 0.0, 1.0);
+    }
+    if (explore != nullptr)
+    {
+        const auto e = v.getProperty ("explore", juce::var());
+        explore->a = indexOf (stars, e.getProperty ("a", "").toString());
+        explore->b = indexOf (stars, e.getProperty ("b", "").toString());
+        explore->t = std::clamp ((double) e.getProperty ("t", 0.5), 0.0, 1.0);
     }
     quad.morph = std::clamp ((double) v.getProperty ("morph", 0.0), 0.0, 100.0);
     quad.q = std::clamp ((double) v.getProperty ("q", 0.0), 0.0, 100.0);

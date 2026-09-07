@@ -37,6 +37,12 @@ struct AuthoringCube
     bool complete() const { return std::all_of (pins.begin(), pins.end(), [] (int pin) { return pin >= 0; }); }
 };
 
+struct Explore
+{
+    int a = -1, b = -1;
+    double t = 0.5;
+};
+
 trench::core::PackedBody cubeBodyOf (const AuthoringCube& cube, const std::vector<Star>& stars);
 Words cubeWordsAt (const AuthoringCube& cube, const std::vector<Star>& stars);
 
@@ -74,8 +80,8 @@ Words lerp (const Corners& c, double morph, double q);
 Words wordsAt (const Quad& quad, const std::vector<Star>& stars);
 Bytes bytesOf (const Corners& c);
 bool writeBody (const Quad& quad, const std::vector<Star>& stars, const juce::File& file);
-bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube = nullptr);
-bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube = nullptr);
+bool save (const Quad& quad, const std::vector<Star>& stars, size_t libraryCount, const juce::File& file, const AuthoringCube* cube = nullptr, const Explore* explore = nullptr);
+bool open (Quad& quad, std::vector<Star>& stars, size_t libraryCount, const juce::File& file, AuthoringCube* cube = nullptr, Explore* explore = nullptr);
 std::vector<double> curveHz();
 std::vector<double> responseDb (const Words& words, const std::vector<double>& hz);
 double peakDb (const Words& words, const std::vector<double>& hz);
