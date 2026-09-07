@@ -199,6 +199,9 @@ once on release. A read's zeros stay parked unless placed by hand.
 1a. One target: the pad's corner, or a clicked anchor; rails, stage and W act on it; library
    cards copied on first edit; handles off between corners; handles edit angle and radius
    directly, trim on release.
+1c. The stage carries the live spectrum: the output's spectrum in ink over the hero curve while
+   a key is held, fading 300 ms after silence; the engine's plot goes; the bottom right keeps the
+   body, the source words and the rule of keys; thirteen curves, none repeated.
 1b. The engine goes live: output and input spectra over the response while keys are held;
    arrows, Keep and file name removed; sources as words; the plot as a draggable card.
 2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp
