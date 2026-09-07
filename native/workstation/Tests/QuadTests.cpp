@@ -146,7 +146,7 @@ int main()
         std::printf ("      made 700/1100 reads %.0f %.0f %.0f %.0f\n", f[0], f[1], f[2], f[3]);
         check (s.inMade() && s.madeLive && std::abs (f[0] - 700.0) < 5.0 && std::abs (f[1] - 1100.0) < 8.0 && s.status == "700/1100", "clicking empty chart makes a vowel at that F1 and F2 and plays it");
         check (hs::rowOf (s.words[5]).type == hs::RowType::notch && hs::rowHz (s.words[5]) > 11000.0, "a made vowel carries the high safety notch in row 6");
-        s.key (key ('S', true, 's'));
+        s.key (key ('K', true, 'k'));
         check (s.stars.size() == s.libraryCount + 1 && s.stars.back().kind == "capture" && s.stars.back().name == "700/1100" && same (s.stars.back().words, hs::madeVowel (700.0, 1100.0).words), "Ctrl+S keeps the made vowel as a point named by its formants");
         s.setMade (700.0, 1100.0);
         s.key (key ('2', false, '2'));
@@ -158,7 +158,7 @@ int main()
         s.pinCorner (0, s.starNamed ("u"));
         check (s.cornerName (0) == "u" && s.pinName (2) == "u", "placing by drag lands in M0 Q1 for the top-left corner");
         s.select (s.starNamed ("e"));
-        s.key (key ('D', false, 'd'));
+        s.key (key ('4', false, '4'));
         check (s.cornerName (3) == "e", "the D key puts the playing vowel in the bottom-right corner");
         s.select (s.starNamed ("o"));
         s.toCorner (1);
@@ -200,7 +200,7 @@ int main()
         }
         check (fifth && widthBefore > 0.0 && std::abs (widthAfter / widthBefore - 1.0) < 0.05, "the ceiling row and every fifth word are untouched and each row keeps its width in semitones");
         const auto heard = s.words;
-        s.key (key ('S', true, 's'));
+        s.key (key ('K', true, 'k'));
         check (s.stars.size() == s.libraryCount + 1 && s.stars.back().kind == "capture" && s.stars.back().name.startsWith ("i ") && s.stars.back().parentA == "i" && same (s.stars.back().words, heard), "Ctrl+S keeps the transposed sound as a card named by its source and formants");
     }
 
@@ -328,7 +328,7 @@ int main()
         hs::Session s (root, tempQuad(), false);
         s.setPuck (23.0, 40.0);
         const auto heard = s.words;
-        s.key (key ('S', true, 's'));
+        s.key (key ('K', true, 'k'));
         const auto name = hs::formantName (heard);
         check (s.stars.size() == s.libraryCount + 1 && s.stars.back().name == name && s.stars.back().kind == "capture" && same (s.stars.back().words, heard) && name.containsChar ('/'), "Ctrl+S keeps the puck's sound as a point named by its formants");
         check (s.stars.back().parentA == ipa ("\xc9\x91") && s.stars.back().morph == 23.0 && s.stars.back().q == 40.0 && s.auditioning == (int) s.libraryCount, "the capture records its corners and position and is playing");
@@ -381,7 +381,7 @@ int main()
         check (s.note == 49, "] steps a semitone up and Page Down an octave down");
         const auto loop = voiceWav();
         check (s.setLoop (loop) && s.source == 2 && s.loopName == loop.getFileNameWithoutExtension(), "a wav dropped on the stage becomes the loop and plays through the cascade");
-        s.key (key ('S', false, 's')); s.key (key ('L', false, 'l'));
+        s.key (key ('S', true, 's')); s.key (key ('L', true, 'l'));
         check (s.source == 2, "L returns to the loop");
         check (! s.setLoop (juce::File ("C:/nowhere/none.wav")) && s.status.startsWith ("cannot read"), "a missing wav says so");
     }
@@ -720,6 +720,17 @@ int main()
         s.audio.onWheel (0.8);
         check (s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "the mod wheel rides MORPH and leaves FREQUENCY and STRESS where they were");
         check (s.playingLabel == "i > u  80  freq 40  stress 60", "the label says frequency and stress when they are off their rest");
+        s.key (key ('Z', false, 'z'));
+        const int played = s.heldNote;
+        s.key (key ('M', false, 'm'));
+        check (played == 48 && s.heldNote == 59 && s.note == 59, "the Z row plays notes from C3, Z is C and M is B");
+        s.keyNoteOff (59);
+        s.key (key (juce::KeyPress::pageUpKey, false, 0));
+        s.key (key ('C', false, 'c'));
+        check (s.keyOctave == 60 && s.heldNote == 64, "Page Up lifts the key row an octave and C is now E4");
+        s.keyNoteOff (64);
+        s.key (key ('S', true, 's'));
+        check (s.source == 0 && s.heldNote == -1, "Ctrl+S is the saw, plain S is a note");
         const auto heard = s.words;
         s.key (key ('1', false, '1'));
         check (s.stars.size() == s.libraryCount + 1 && s.stars.back().parentA == "i" && same (hs::cornersOf (s.quad, s.stars)[(size_t) hs::Session::kCornerPin[0]], heard)

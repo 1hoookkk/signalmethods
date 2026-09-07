@@ -126,11 +126,14 @@ write, body, spectrogram. Not room, tab, table, column, lattice, field, vertex, 
 
 ## Keys
 
-Arrows move the pad's diamond by 1, with Ctrl by 0.2. 1 to 4, or A B C D, or the arrows in the
-engine, put what plays in that corner; Enter puts it in the working corner. Ctrl+S keeps. Delete
-removes a selected capture or read. Ctrl+Z and Ctrl+Y undo and redo. W writes. Space drones.
-P pluck, S saw, N noise, L loop. [ and ] step the saw's note by a semitone, Page Up and Page
-Down by an octave. H shows the raw words. G opens the spectrogram. Escape closes the menu.
+The Z row is a keyboard: Z is C, S is C sharp, X is D, and so on to M as B, then comma, L and
+full stop for the next C, D and E; Page Up and Page Down lift or drop it an octave and the saw's
+note with it. 1 to 4, or the arrows in the engine, put what plays in that corner; with Shift,
+the column; Enter puts it in the target. Arrows move the pad by 1, with Ctrl by 0.2. Space
+drones. Ctrl+K keeps. Ctrl+W writes. Ctrl+P pluck, Ctrl+S saw, Ctrl+N noise, Ctrl+L loop.
+[ and ] step the saw's note by a semitone. Ctrl+H shows the raw words. Ctrl+G opens the
+spectrogram. Slash finds a card by name, Enter plays the first match, Escape clears. Ctrl+Z
+and Ctrl+Y undo and redo. Delete removes a selected capture or read. Escape closes the menu.
 
 ## Files
 

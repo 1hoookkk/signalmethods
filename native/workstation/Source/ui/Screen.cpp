@@ -363,12 +363,29 @@ void Screen::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDe
     if (palette.picker.contains (p)) { palette.scrollBy (step * 68); repaint(); }
 }
 
+bool Screen::keyStateChanged (bool)
+{
+    static const char* const row = "zsxdcvgbhnjm,l.";
+    bool any = false;
+    for (int i = 0; row[i] != 0; ++i)
+    {
+        const int code = juce::CharacterFunctions::toUpperCase ((juce::juce_wchar) row[i]);
+        const bool down = juce::KeyPress::isKeyCurrentlyDown (code);
+        const int midi = session.keyOctave + i;
+        if (down && ! heldKeys.count (midi)) continue;
+        if (! down && heldKeys.count (midi)) { heldKeys.erase (midi); session.keyNoteOff (midi); any = true; }
+    }
+    if (any) repaint();
+    return any;
+}
+
 bool Screen::keyPressed (const juce::KeyPress& k)
 {
     const auto m = k.getModifiers();
     const bool plain = ! m.isCommandDown() && ! m.isCtrlDown() && ! m.isAltDown();
-    if (k.getKeyCode() == 'H' && plain) { stage.showHardware = ! stage.showHardware; repaint(); return true; }
-    if (k.getKeyCode() == 'G' && plain && onSpectrogram) { onSpectrogram(); return true; }
+    const bool ctrl = m.isCommandDown() || m.isCtrlDown();
+    if (k.getKeyCode() == 'H' && ctrl) { stage.showHardware = ! stage.showHardware; repaint(); return true; }
+    if (k.getKeyCode() == 'G' && ctrl && onSpectrogram) { onSpectrogram(); return true; }
     if (menu.open && k.getKeyCode() == juce::KeyPress::escapeKey) { menu.open = false; repaint(); return true; }
     if (palette.finding)
     {
@@ -383,7 +400,9 @@ bool Screen::keyPressed (const juce::KeyPress& k)
     }
     if (k.getTextCharacter() == '/' && plain) { palette.finding = true; palette.find.clear(); palette.showTab (0); repaint(); return true; }
     if (k.getKeyCode() == juce::KeyPress::returnKey) { session.toCorner (session.working); return true; }
+    const int heldBefore = session.heldNote;
     const bool used = session.key (k);
+    if (used && session.heldNote != heldBefore && session.heldNote >= 0 && plain) heldKeys.insert (session.heldNote);
     if (used) repaint();
     return used;
 }

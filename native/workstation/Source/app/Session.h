@@ -94,6 +94,9 @@ public:
     void setNote (int midi);
     void noteOn (int midi);
     void noteOff();
+    void keyNoteOn (int midi);
+    void keyNoteOff (int midi);
+    int keyOctave = 48;
     bool setLoop (const juce::File& wav);
     void noteIn (const juce::MidiMessage& m);
     bool key (const juce::KeyPress& k);

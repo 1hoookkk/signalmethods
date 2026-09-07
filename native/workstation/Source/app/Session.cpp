@@ -587,6 +587,21 @@ void Session::noteOff()
     heldNote = -1;
 }
 
+void Session::keyNoteOn (int midi)
+{
+    note = std::clamp (midi, 0, 127);
+    heldNote = note;
+    if (withAudio) audio.noteOn (note);
+    changed();
+}
+
+void Session::keyNoteOff (int midi)
+{
+    if (withAudio) audio.noteOff (std::clamp (midi, 0, 127));
+    if (heldNote == midi) heldNote = -1;
+    changed();
+}
+
 bool Session::setLoop (const juce::File& wav)
 {
     const auto clip = trench::core::audio::read_wav_mono (std::filesystem::path (wav.getFullPathName().toWideCharPointer()));
@@ -626,22 +641,30 @@ bool Session::key (const juce::KeyPress& k)
     if (code == juce::KeyPress::spaceKey) { setPlaying (! playing); return true; }
     if (code == juce::KeyPress::deleteKey) { removeAdded(); return true; }
     if (code == juce::KeyPress::escapeKey && editing >= 0) { edit (editing); return true; }
-    if (control && (c == 's' || c == 'S' || code == 'S')) { keep(); return true; }
-    if (control && (c == 'z' || c == 'Z' || code == 'Z')) { undo(); return true; }
-    if (control && (c == 'y' || c == 'Y' || code == 'Y')) { redo(); return true; }
-    if (c == 'w' || c == 'W') { write(); return true; }
-    if (c == 'n' || c == 'N') { setSource (1); return true; }
-    if (c == 'p' || c == 'P') { setSource (3); return true; }
-    if ((c == 'l' || c == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }
-    if (c == 's' || c == 'S') { setSource (0); return true; }
+    const auto lower = juce::CharacterFunctions::toLowerCase (c);
+    const bool alt = k.getModifiers().isAltDown();
+    if (control && (lower == 'k' || code == 'K')) { keep(); return true; }
+    if (control && (lower == 'z' || code == 'Z')) { undo(); return true; }
+    if (control && (lower == 'y' || code == 'Y')) { redo(); return true; }
+    if (control && (lower == 'w' || code == 'W')) { write(); return true; }
+    if (control && (lower == 'n' || code == 'N')) { setSource (1); return true; }
+    if (control && (lower == 'p' || code == 'P')) { setSource (3); return true; }
+    if (control && (lower == 'l' || code == 'L') && loopName.isNotEmpty()) { setSource (2); return true; }
+    if (control && (lower == 's' || code == 'S')) { setSource (0); return true; }
     if (c == '[') { setNote (note - 1); return true; }
     if (c == ']') { setNote (note + 1); return true; }
-    if (code == juce::KeyPress::pageDownKey) { setNote (note - 12); return true; }
-    if (code == juce::KeyPress::pageUpKey) { setNote (note + 12); return true; }
+    if (code == juce::KeyPress::pageDownKey) { keyOctave = std::max (0, keyOctave - 12); setNote (note - 12); return true; }
+    if (code == juce::KeyPress::pageUpKey) { keyOctave = std::min (108, keyOctave + 12); setNote (note + 12); return true; }
     for (int corner = 0; corner < 4; ++corner)
     {
-        if (k.getModifiers().isShiftDown() && (code == '1' + corner || code == 'A' + corner)) { toColumn (corner & 1); return true; }
-        if (c == (juce::juce_wchar) ('1' + corner) || c == (juce::juce_wchar) ('a' + corner) || c == (juce::juce_wchar) ('A' + corner)) { toCorner (corner); return true; }
+        if (k.getModifiers().isShiftDown() && code == '1' + corner) { toColumn (corner & 1); return true; }
+        if (c == (juce::juce_wchar) ('1' + corner)) { toCorner (corner); return true; }
+    }
+    if (! control && ! alt)
+    {
+        static const char* const row = "zsxdcvgbhnjm,l.";
+        for (int i = 0; row[i] != 0; ++i)
+            if (lower == (juce::juce_wchar) row[i]) { keyNoteOn (keyOctave + i); return true; }
     }
     return false;
 }

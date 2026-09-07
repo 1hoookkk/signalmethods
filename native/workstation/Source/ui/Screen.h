@@ -9,6 +9,7 @@
 #include "Plot.h"
 #include "Stage.h"
 #include "app/Session.h"
+#include <set>
 
 namespace hs
 {
@@ -26,6 +27,7 @@ public:
     void mouseUp (const juce::MouseEvent& e) override;
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override;
     bool keyPressed (const juce::KeyPress& k) override;
+    bool keyStateChanged (bool isKeyDown) override;
     bool isInterestedInFileDrag (const juce::StringArray& files) override;
     void filesDropped (const juce::StringArray& files, int x, int y) override;
     juce::Image shot();
@@ -53,5 +55,6 @@ private:
     bool editStarted = false;
     juce::int64 wheelTime = 0;
     juce::Point<int> dragOrigin, dragPoint;
+    std::set<int> heldKeys;
 };
 }

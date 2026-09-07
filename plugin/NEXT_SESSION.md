@@ -2332,3 +2332,11 @@ Open, in order:
   flush under the cells, MORPH / FREQUENCY / STRESS labels, readouts, no BAKE. Screen: the four
   areas ruled off. Engine: input line dropped. Tests rewritten to the rules; the copy-to-corner
   resume had to force kPair before setProbe. 167 checks, ctest x3 green, app relinked.
+- 2026-09-07, late night: the computer keyboard plays. The Z row (zsxdcvgbhnjm,l.) is an
+  octave from C3 through Session::keyNoteOn/keyNoteOff and Screen::keyStateChanged (release
+  by polling isKeyCurrentlyDown), Page Up/Down shift keyOctave; the letter commands moved under
+  Ctrl (K keep, W write, P S N L sources, H raw words, G spectrogram); A-D corner letters
+  dropped, 1-4 stay. Tyson's line: "what you find in the vowel space can be applied to one or
+  two anchors and the grid" = click into the target, drag onto any anchor or corner. The
+  engine's curve duplicates the stage (14 curves on screen, two the same); proposed: the live
+  spectrum onto the stage, the engine box gone; awaiting his word. 172 checks, ctest x3.
