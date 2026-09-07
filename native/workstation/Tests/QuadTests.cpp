@@ -119,14 +119,14 @@ int main()
             else if (e.kind == "read")
             {
                 ++reads;
-                resonant = resonant && e.body.startsWith ("Aud ") && e.corner.isNotEmpty();
+                resonant = resonant && (e.body.startsWith ("Aud ") || e.body.startsWith ("303 ")) && e.corner.isNotEmpty();
                 sixLive = sixLive && hs::rowOf (e.words[5]).type == hs::RowType::notch;
                 for (size_t r = 0; r + 1 < hs::kRows; ++r) { sixLive = sixLive && hs::sectionOf (e.words[r]).pole; polesOnly = polesOnly && ! hs::sectionOf (e.words[r]).zero; }
             }
             else ++other;
         }
         std::printf ("      palette: %d Klatt, %d Hillenbrand, %d Peterson Barney, %d XL reads, %d other\n", klatt, h95, pb52, reads, other);
-        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && pb52 == 30 && reads >= 40 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians, the 30 Peterson and Barney means and the XL bank's resonant notes, no E-mu preset and no impulse response");
+        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && pb52 == 30 && reads >= 40 && s.starNamed ("303 open C2") >= 0 && s.starNamed ("303 closed C2") >= 0 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians, the 30 Peterson and Barney means, the XL bank's resonant notes and the 303 at five octaves open and closed, no E-mu preset and no impulse response");
         check (named, "Klatt vowels are named by symbol alone, Hillenbrand vowels by symbol and speaker group");
         check (resonant && sixLive && polesOnly, "every XL read is a note of a resonant family with six live stages, poles only, and the ceiling notch");
         const int men = s.starNamed ("i men");
@@ -582,8 +582,8 @@ int main()
         const bool written = out.openedOk() && png.writeImageToStream (image, out);
         out.flush();
         bool curve = false;
-        for (int y = screen.engine.plot.getY(); y < screen.engine.plot.getBottom() && ! curve; ++y)
-            for (int x = screen.engine.plot.getX(); x < screen.engine.plot.getRight() && ! curve; ++x)
+        for (int y = screen.stage.magnitude.getY(); y < screen.stage.magnitude.getBottom() && ! curve; ++y)
+            for (int x = screen.stage.magnitude.getX(); x < screen.stage.magnitude.getRight() && ! curve; ++x)
                 curve = image.getPixelAt (x, y).getARGB() == hs::Look::blue.getARGB();
         check (image.getPixelAt (screen.stage.area.getX() - 6, screen.stage.area.getCentreY()) == hs::Look::grid, "the four areas are ruled off from each other");
         check (written && file.getSize() > 4000 && image.getWidth() == 1120 && image.getPixelAt (4, 4) == hs::Look::ground && image.getPixelAt (screen.palette.chart.getX() + 2, screen.palette.chart.getBottom() - 3) == hs::Look::panel && curve, "the screen renders to artifacts/shots/headspace.png without a window: ground, white axes and the blue curve of what plays");
@@ -632,9 +632,8 @@ int main()
             ok = ok && bt.contains (screen.body.area) && bt.contains (screen.engine.area) && bt.contains (screen.keyboard.area) && ! screen.body.area.intersects (screen.engine.area)
                 && screen.keyboard.area.getY() >= screen.body.area.getBottom() && screen.keyboard.area.getY() >= screen.engine.area.getBottom()
                 && screen.keyboard.area.getHeight() == 44 && screen.keyboard.area.getWidth() == bt.getWidth() && screen.keyboard.area.getBottom() == bt.getBottom()
-                && screen.engine.area.contains (screen.engine.plot) && screen.engine.area.contains (screen.engine.label) && screen.engine.area.contains (screen.engine.keys[5])
-                && screen.engine.keys[4].getRight() < screen.engine.keys[5].getX() && ! screen.engine.plot.intersects (screen.engine.keys[0])
-                && screen.engine.plot.getWidth() > screen.body.area.getWidth() / 2;
+                && screen.engine.area.contains (screen.engine.label) && screen.engine.area.contains (screen.engine.keys[5])
+                && screen.engine.keys[4].getRight() < screen.engine.keys[5].getX() && ! screen.engine.label.intersects (screen.engine.keys[0]);
             ok = ok && screen.body.box[0].getRight() == screen.body.box[1].getX() && screen.body.box[0].getBottom() == screen.body.box[2].getY();
             return ok;
         };
@@ -644,8 +643,11 @@ int main()
         check (fits(), "the one screen still fits at the smallest window");
         screen.setSize (1120, 700);
         {
+            s.setPuck (40.0, 30.0);
+            s.setPair (0, s.starNamed ("i")); s.setPair (1, s.starNamed ("u"));
             screen.mouseDown (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
             screen.mouseUp (mouse (screen, screen.mother.plot[0].getCentre().toFloat(), screen.mother.plot[0].getCentre().toFloat()));
+            std::printf ("      endpoint: auditioning %d pairA %d (%s) pairB %d anchorTarget %d i=%d\n", s.auditioning, s.pairA, s.pairA >= 0 ? s.stars[(size_t) s.pairA].name.toRawUTF8() : "-", s.pairB, s.anchorTarget, s.starNamed ("i"));
             check (s.auditioning == s.pairA && s.pairA == s.starNamed ("i"), "pressing an endpoint plays it exactly");
             auto along = [&] (int which) { const auto r = screen.mother.rail[(size_t) which]; return juce::Point<float> ((float) (r.getX() + r.getWidth() * 0.7), (float) r.getCentreY()); };
             auto press = [&] (juce::Point<float> at) { screen.mouseDown (mouse (screen, at, at)); screen.mouseUp (mouse (screen, at, at)); };
@@ -780,7 +782,8 @@ int main()
         hs::Session s (root, tempQuad(), false);
         const int i = s.starNamed ("i"), u = s.starNamed ("u"), bell = s.starNamed ("Aud Bell 1 C4");
         auto between = [&] (int a, int b, double t) { hs::Corners c { s.stars[(size_t) a].words, s.stars[(size_t) b].words, s.stars[(size_t) a].words, s.stars[(size_t) b].words }; return hs::lerp (c, t, 0.0); };
-        check (s.inPair() && s.pairA == i && s.pairB == u && same (s.words, between (i, u, 0.5)), "a fresh session plays the sweep between its two endpoints");
+        check (s.inPair() && s.pairA >= 0 && s.pairB >= 0 && s.stars[(size_t) s.pairA].kind == "read" && s.stars[(size_t) s.pairB].kind == "read" && s.stars[(size_t) s.pairA].body != s.stars[(size_t) s.pairB].body && same (s.words, between (s.pairA, s.pairB, 0.5)), "a fresh session plays the sweep between two reads of different families");
+        s.setPair (0, i); s.setPair (1, u);
         s.setPair (1, bell);
         check (s.inPair() && s.pairA == i && s.pairB == bell && std::abs (s.pairT - 0.5) < 1e-9 && same (s.words, between (i, bell, 0.5)), "replacing the right endpoint keeps the left one and keeps sounding at the same place");
         s.audio.onWheel (0.3);
@@ -814,6 +817,7 @@ int main()
         hs::Session s (root, tempQuad(), false);
         const int i = s.starNamed ("i"), u = s.starNamed ("u");
         auto anchor = [&] (int k) { return s.stars[(size_t) k].words; };
+        s.setPair (0, s.starNamed ("i")); s.setPair (1, s.starNamed ("u"));
         auto probe = [&] (double m, double f, double t) { s.setProbe (m, f, t); return s.words; };
         check (same (probe (0.0, 0.0, 1.0), anchor (i)), "at MORPH 0 the words are anchor A verbatim");
         check (same (probe (1.0, 0.0, 1.0), anchor (u)), "at MORPH 1 the words are anchor B verbatim");
@@ -827,6 +831,7 @@ int main()
         bool three = s.inPair() && s.sounding;
         for (size_t row = 0; row < hs::kRows; ++row) three = three && chip[row] == s.words[row];
         check (three, "the probe plays the chip's three-axis lerp of the eight made corners");
+        s.setPair (0, s.starNamed ("i")); s.setPair (1, s.starNamed ("u"));
         s.setProbe (0.2, 0.4, 0.6);
         s.audio.onWheel (0.8);
         check (s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "the mod wheel rides MORPH and leaves FREQUENCY and STRESS where they were");
@@ -943,6 +948,7 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
+        s.setPair (0, s.starNamed ("i")); s.setPair (1, s.starNamed ("u")); s.setProbe (0.5, 0.0, 1.0);
         check (s.playingLabel == "i > u  50", "a fresh session says the sweep between its two endpoints plays");
         s.select (s.starNamed ("i"));
         check (s.playingLabel == "i", "a clicked card says its name");
@@ -1018,18 +1024,17 @@ int main()
         s.noteOn (60);
         screen.engine.feed (saw.data(), quieter.data(), 8192);
         const auto playing = screen.shot();
-        check (! has (quiet, screen.engine.plot, hs::Look::ink) && ! has (quiet, screen.engine.plot, hs::Look::dim)
-                && has (playing, screen.engine.plot, hs::Look::ink),
-            "the engine draws the output's spectrum over the response while a key is held");
+        check (! has (quiet, screen.stage.magnitude, hs::Look::ink) && has (playing, screen.stage.magnitude, hs::Look::ink),
+            "the stage draws the output's spectrum over the hero curve while a key is held");
         const auto playingFile = folder.getChildFile ("headspace_playing.png");
         playingFile.deleteFile();
         juce::FileOutputStream playingOut (playingFile);
         const bool wrote = playingOut.openedOk() && png.writeImageToStream (playing, playingOut);
         playingOut.flush();
-        check (wrote && playingFile.existsAsFile() && playingFile.getSize() > 4000 && has (playing, screen.engine.plot, hs::Look::ink),
-            "the played engine renders to artifacts/shots/headspace_playing.png with the live spectrum in its plot");
+        check (wrote && playingFile.existsAsFile() && playingFile.getSize() > 4000 && has (playing, screen.stage.magnitude, hs::Look::ink),
+            "the played screen renders to artifacts/shots/headspace_playing.png with the live spectrum on the stage");
         screen.engine.silenceFor (400);
-        check (! screen.engine.live() && ! has (screen.shot(), screen.engine.plot, hs::Look::ink), "the engine's live curves fade when nothing sounds");
+        check (! screen.engine.live() && ! has (screen.shot(), screen.stage.magnitude, hs::Look::ink), "the live spectrum fades when nothing sounds");
         s.setSource (0);
         const auto sawShot = screen.shot();
         const int sawLit = brightest (sawShot, screen.engine.keys[2]), noiseDim = brightest (sawShot, screen.engine.keys[3]);
@@ -1056,7 +1061,7 @@ int main()
         screen.mouseUp (mouse (screen, to, from));
         const auto corners = hs::cornersOf (s.quad, s.stars);
         check (same (corners[(size_t) hs::Session::kCornerPin[1]], heard) && s.stars.size() == held + 1 && s.stars.back().kind == "capture" && s.cornerName (1) == s.stars.back().name,
-            "dragging the engine plot onto corner B copies the heard words there");
+            "dragging the sound's name onto corner B copies the heard words there");
     }
 
     {

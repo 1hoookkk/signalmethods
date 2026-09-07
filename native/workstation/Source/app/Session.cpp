@@ -22,6 +22,7 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     for (const auto& s : loadVowels (root.getChildFile ("native/workstation/banks/Hillenbrand 1995.bank.json"))) stars.push_back (s);
     for (const auto& s : loadTable (root.getChildFile ("evidence/factory-data/peterson-barney-1952/pb52_means.csv"), "Peterson Barney 1952")) stars.push_back (s);
     for (const auto& s : loadReads (root.getChildFile ("evidence/factory-data/xl1-dsf-aud"), root.getChildFile ("evidence/research-results/xl1_pool_resonance_census.txt"))) stars.push_back (s);
+    for (const auto& s : loadReads (root.getChildFile ("evidence/factory-data/abl3-303"), juce::File())) stars.push_back (s);
     libraryCount = stars.size();
     Explore boot;
     const bool had = open (quad, stars, libraryCount, file, &boot);
@@ -29,7 +30,14 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     frequency = boot.frequency; stress = boot.stress; octaves = boot.octaves;
     if (pairA < 0 || pairB < 0)
     {
-        pairA = starNamed ("i"); pairB = starNamed ("u");
+        pairA = -1; pairB = -1;
+        for (int k = 0; k < (int) stars.size() && pairB < 0; ++k)
+        {
+            if (stars[(size_t) k].kind != "read") continue;
+            if (pairA < 0) pairA = k;
+            else if (stars[(size_t) k].body != stars[(size_t) pairA].body) pairB = k;
+        }
+        if (pairA < 0 || pairB < 0) { pairA = starNamed ("i"); pairB = starNamed ("u"); }
         pairT = 0.5; frequency = 0.0; stress = 1.0; octaves = 1.0;
     }
     if (! had || ! quad.complete())

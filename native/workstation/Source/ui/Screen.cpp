@@ -36,7 +36,7 @@ void Screen::layout()
     const int above = std::max (100, keyboard.area.getY() - 10 - bottom.getY());
     const int bodySide = std::max (80, std::min (above, 200));
     body.layout ({ bottom.getX(), bottom.getY(), bodySide, bodySide });
-    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, above });
+    engine.layout ({ body.area.getRight() + 20, bottom.getY(), bottom.getRight() - body.area.getRight() - 20, std::min (above, 64) });
 }
 
 void Screen::timerCallback()
@@ -48,6 +48,7 @@ void Screen::timerCallback()
     if (n <= 0) return;
     engine.feed (tapOut.data(), tapIn.data(), n);
     repaint (engine.area);
+    repaint (stage.area);
 }
 
 void Screen::paint (juce::Graphics& g)
@@ -61,6 +62,7 @@ void Screen::paint (juce::Graphics& g)
     const bool dropping = dragging == Drag::card || dragging == Drag::sound;
     mother.paint (g, dragPoint, dropping);
     stage.paint (g, dragging == Drag::peak || dragging == Drag::zero ? dragRow : -1, dragging == Drag::blade, dragging == Drag::carve);
+    engine.paintLive (g, stage.magnitude);
     palette.paint (g, dragging == Drag::transpose ? dragStar : -1);
     body.paint (g, dropping ? body.cornerAt (dragPoint) : -1);
     engine.paint (g);

@@ -2354,3 +2354,13 @@ Open, in order:
   the reading room (G window as the XL sampler) is the biggest upgrade and goes next; the
   bottom right becomes the patch: KEY->FREQUENCY, VELOCITY->STRESS, WHEEL->MORPH, live between
   corners; a root Launch_HEADSPACE.bat; saved anchors that name removed cards fall back to i/u.
+- 2026-09-07, late night, the fold and the 303. The live spectrum now draws on the stage
+  (Engine::paintLive into stage.magnitude, ink, 300 ms fade); the engine's plot is gone, its
+  label is the draggable sound card, the words row beneath it, the bottom right left for the
+  patch. Boot anchors fall back to two reads of different families when the saved names are
+  missing (Tyson: "these still load the old data"). Tyson recorded the ABL3 303 at C1-C5 with
+  the filter open and closed (32-bit float stereo, converted to 16-bit mono in place):
+  evidence/factory-data/abl3-303/"303 open C3.wav" etc.; loadReads with no census file takes
+  every family, so they load as two families of five; 97 reads. Tests pinned to i/u where they
+  assumed the boot anchors, and one pin had to leave made mode first (setPair keeps a made
+  sound). 176 checks, ctest x3. Next: the reading room (spec in the scratchpad), then the patch.

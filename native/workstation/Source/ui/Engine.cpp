@@ -26,10 +26,10 @@ std::array<juce::String, 6> Engine::names() const
 void Engine::layout (juce::Rectangle<int> r)
 {
     area = r;
-    label = { area.getX(), area.getY(), area.getWidth(), 16 };
+    label = { area.getX(), area.getY(), area.getWidth(), 18 };
+    plot = label;
     status = { area.getX(), area.getBottom() - 14, area.getWidth(), 14 };
-    const int row = status.getY() - 18;
-    plot = { area.getX(), label.getBottom() + 2, area.getWidth(), std::max (40, row - 4 - label.getBottom() - 2) };
+    const int row = label.getBottom() + 8;
     const auto font = Look::font (10.0f);
     const auto words = names();
     int x = area.getX();
@@ -80,11 +80,11 @@ void Engine::feed (const float* out, const float* in, int n)
     analyse (inAnalysis, inHistory, inCursor, inSpectrum, in, n);
 }
 
-void Engine::spectrumCurve (juce::Graphics& g, const Peevers& p, const std::vector<float>& spectrum, juce::Colour colour) const
+void Engine::spectrumCurve (juce::Graphics& g, const Peevers& p, const std::vector<float>& spectrum, juce::Colour colour, juce::Rectangle<int> into) const
 {
     if (spectrum.size() < 2) return;
     juce::Graphics::ScopedSaveState saved (g);
-    g.reduceClipRegion (plot);
+    g.reduceClipRegion (into);
     juce::Path path;
     bool started = false;
     for (size_t i = 1; i < spectrum.size(); ++i)
@@ -93,14 +93,19 @@ void Engine::spectrumCurve (juce::Graphics& g, const Peevers& p, const std::vect
         if (hz < 20.0 || hz > 20000.0) continue;
         const double index = std::clamp ((double) spectrum[i], 0.0, 255.0);
         const double db = index * 60.0 / 255.0 - 30.0;
-        const float x = (float) hs::plot::xOf (hz, plot);
-        const float y = (float) std::clamp (hs::plot::yOf (db, plot), (double) plot.getY(), (double) plot.getBottom());
+        const float x = (float) hs::plot::xOf (hz, into);
+        const float y = (float) std::clamp (hs::plot::yOf (db, into), (double) into.getY(), (double) into.getBottom());
         if (! started) { path.startNewSubPath (x, y); started = true; }
         else path.lineTo (x, y);
     }
     if (! started) return;
     g.setColour (colour);
     g.strokePath (path, juce::PathStrokeType (1.0f));
+}
+
+void Engine::paintLive (juce::Graphics& g, juce::Rectangle<int> into) const
+{
+    if (live()) spectrumCurve (g, outAnalysis, outSpectrum, Look::ink, into);
 }
 
 void Engine::paint (juce::Graphics& g)
@@ -111,16 +116,8 @@ void Engine::paint (juce::Graphics& g)
         writeTime = juce::Time::currentTimeMillis();
     }
     g.setFont (Look::font (11.0f));
-    g.setColour (Look::text);
+    g.setColour (live() ? Look::ink : Look::text);
     g.drawText (session.playingLabel, label, juce::Justification::centredLeft);
-    Look::axes (g, plot);
-    g.setColour (Look::faint);
-    g.drawHorizontalLine ((int) std::round (hs::plot::yOf (0.0, plot)), (float) plot.getX() + 1, (float) plot.getRight() - 1);
-    if (session.sounding) curves.draw (g, plot, session.heard, Look::blue, 1.0f, false);
-    if (live())
-    {
-        spectrumCurve (g, outAnalysis, outSpectrum, Look::ink);
-    }
     const auto words = names();
     const bool on[6] = { session.playing, session.source == 3, session.source == 0, session.source == 1, session.source == 2, false };
     const bool wrote = writeTime > 0 && juce::Time::currentTimeMillis() - writeTime < kWriteMs;

@@ -11,6 +11,7 @@ struct Engine
     Engine (Session& session, const hs::plot::Curves& curves);
     void layout (juce::Rectangle<int> area);
     void paint (juce::Graphics& g);
+    void paintLive (juce::Graphics& g, juce::Rectangle<int> into) const;
     void feed (const float* out, const float* in, int n);
     void silenceFor (int ms);
     bool live() const;
@@ -23,7 +24,7 @@ struct Engine
 
 private:
     void analyse (Peevers& p, std::vector<float>& history, size_t& cursor, std::vector<float>& spectrum, const float* samples, int n);
-    void spectrumCurve (juce::Graphics& g, const Peevers& p, const std::vector<float>& spectrum, juce::Colour colour) const;
+    void spectrumCurve (juce::Graphics& g, const Peevers& p, const std::vector<float>& spectrum, juce::Colour colour, juce::Rectangle<int> into) const;
     Session& session;
     const hs::plot::Curves& curves;
     Peevers outAnalysis, inAnalysis;

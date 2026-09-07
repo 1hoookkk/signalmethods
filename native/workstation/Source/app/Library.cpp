@@ -168,6 +168,7 @@ std::vector<Star> loadReads (const juce::File& dir, const juce::File& census)
     if (const auto it = cache.find (key); it != cache.end()) return it->second;
     std::vector<Star> out;
     juce::StringArray families, lines;
+    const bool everyFamily = ! census.existsAsFile();
     census.readLines (lines);
     for (const auto& line : lines)
     {
@@ -182,7 +183,7 @@ std::vector<Star> loadReads (const juce::File& dir, const juce::File& census)
         const auto stem = file.getFileNameWithoutExtension();
         const int space = stem.lastIndexOfChar (' ');
         const auto family = space > 0 ? stem.substring (0, space) : stem;
-        if (! families.contains (family)) continue;
+        if (! everyFamily && ! families.contains (family)) continue;
         auto star = readWav (file);
         if (! star) continue;
         star->body = family;
