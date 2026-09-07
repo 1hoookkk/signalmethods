@@ -8,6 +8,7 @@ Spectrogram::Spectrogram (Audio* tap) : audio (tap)
 {
     formats.registerBasicFormats();
     pulled.assign (16384, 0.0f);
+    peevers.setParms (1024, 1024, 256, 7);
     setSize (900, 560);
     words();
     if (audio != nullptr) startTimer (30);
@@ -113,7 +114,7 @@ void Spectrogram::words()
 juce::Point<float> Spectrogram::project (float bin, float value, float depth) const
 {
     const float x = bin / (float) juce::jmax (1, peevers.nfft2) - 0.5f;
-    const float y = value / 255.0f / 3.0f;
+    const float y = value / 255.0f / 2.0f;
     const float z = depth - 0.5f;
     const float ca = std::cos (azimuth), sa = std::sin (azimuth);
     const float cd = std::cos (declination), sd = std::sin (declination);
@@ -160,7 +161,8 @@ void Spectrogram::grid (juce::Graphics& g) const
         const auto a = project (px, 0.0f, 0.0f), b = project (px, 0.0f, 1.0f);
         g.drawLine (a.x, a.y, b.x, b.y, 0.6f);
     }
-    for (int f = 0; f <= count; f += 20)
+    const int every = juce::jmax (20, (count / 5 / 20) * 20);
+    for (int f = 0; f <= count; f += every)
     {
         const float depth = (float) (count - f) / (float) juce::jmax (1, count);
         const auto a = project (0.0f, 0.0f, depth);
@@ -179,7 +181,7 @@ void Spectrogram::grid (juce::Graphics& g) const
         g.drawText (juce::String (khz, 2), juce::Rectangle<float> (a.x - 22.0f, a.y + 3.0f, 44.0f, 12.0f), juce::Justification::centred);
     }
     taken = 1.0e9f;
-    for (int f = count; f >= 0; f -= 20)
+    for (int f = count; f >= 0; f -= every)
     {
         const float depth = (float) (count - f) / (float) juce::jmax (1, count);
         const auto a = project (0.0f, 0.0f, depth);
@@ -258,39 +260,28 @@ void Spectrogram::paint (juce::Graphics& g)
         if (axes) grid (g);
         const int count = (int) frames.size();
         const int n2 = peevers.nfft2;
-        for (int i = 0; i < count; ++i)
+        const int step = juce::jmax (1, count / 80);
+        for (int i = (count - 1) % step; i < count; i += step)
         {
             const auto& fr = frames[(size_t) i];
             const float depth = (float) (count - 1 - i) / (float) juce::jmax (1, count - 1);
-            juce::Path path;
-            int last = -1;
-            juce::Point<float> prev;
             const int bins = juce::jmin (n2, (int) fr.size());
+            if (bins < 2) continue;
+            juce::Path line;
             for (int bin = 0; bin < bins; ++bin)
             {
                 const float px = logF ? peevers.zlogpos[(size_t) bin] : (float) bin;
                 const auto p = project (px, fr[(size_t) bin], depth);
-                const int index = (int) std::floor (Peevers::lutlimit (fr[(size_t) bin]));
-                if (bin == 0) { path.startNewSubPath (p); last = index; }
-                else
-                {
-                    if (index != last)
-                    {
-                        g.setColour (tint (last));
-                        g.strokePath (path, juce::PathStrokeType (1.0f));
-                        path.clear();
-                        path.startNewSubPath (prev);
-                        last = index;
-                    }
-                    path.lineTo (p);
-                }
-                prev = p;
+                if (bin == 0) line.startNewSubPath (p); else line.lineTo (p);
             }
-            if (last >= 0)
-            {
-                g.setColour (tint (last));
-                g.strokePath (path, juce::PathStrokeType (1.0f));
-            }
+            juce::Path fill (line);
+            fill.lineTo (project (logF ? peevers.zlogpos[(size_t) (bins - 1)] : (float) (bins - 1), -20.0f, depth));
+            fill.lineTo (project (0.0f, -20.0f, depth));
+            fill.closeSubPath();
+            g.setColour (Look::ground);
+            g.fillPath (fill);
+            g.setColour (i == count - 1 ? Look::ink : Look::blue.withAlpha (0.25f + 0.65f * (1.0f - depth)));
+            g.strokePath (line, juce::PathStrokeType (1.0f));
         }
     }
     g.setFont (Look::font (11.0f));

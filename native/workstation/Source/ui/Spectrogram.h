@@ -55,7 +55,7 @@ private:
     std::vector<float> history, pulled;
     size_t cursor = 0;
     bool fromFile = false;
-    float azimuth = 0.50f, declination = 0.46f;
+    float azimuth = 0.22f, declination = 0.62f;
     juce::Point<float> centre;
     juce::Point<int> from;
     float fromAzimuth = 0.0f, fromDeclination = 0.0f;
