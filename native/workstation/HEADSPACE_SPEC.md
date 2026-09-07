@@ -202,6 +202,12 @@ once on release. A read's zeros stay parked unless placed by hand.
 1c. The stage carries the live spectrum: the output's spectrum in ink over the hero curve while
    a key is held, fading 300 ms after silence; the engine's plot goes; the bottom right keeps the
    body, the source words and the rule of keys; thirteen curves, none repeated.
+1d. The patch, bottom right: three routes from what you play into the cube, each a word with
+   a depth under the rule of keys: KEY to FREQUENCY (the note moves the second rail, low notes
+   at the anchor, high at the transposed anchor, the Morpheus's own Freq Tracking axis through
+   the chip's lerp), VELOCITY to STRESS (soft relaxes toward schwa, hard to full excursion),
+   WHEEL to MORPH. Live between corners and in the mother; off when the pad sits on a corner,
+   because a corner is a fixed place. The stage shows the cube move as you play.
 1b. The engine goes live: output and input spectra over the response while keys are held;
    arrows, Keep and file name removed; sources as words; the plot as a draggable card.
 2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp
