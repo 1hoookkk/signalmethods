@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <complex>
 #include <filesystem>
 
 namespace
@@ -106,9 +107,117 @@ Run measure (lens::Locator& locator, const std::vector<float>& audio, const lens
 }
 }
 
+struct Offline
+{
+    lens::Descriptor reference {}, lpcEnvelope {}, peeversAverage {};
+    std::vector<std::pair<double, double>> poles;
+    double rmseLpc = 0.0, rmsePeevers = 0.0;
+};
+
+Offline offlineNote (lens::Locator& locator, const std::vector<float>& audio)
+{
+    constexpr int order = 12, n = 4096, hop = 1024;
+    const int factor = kFactor;
+    const double fs = kRate / factor;
+    const auto low = lens::Locator::decimate (audio, factor);
+    juce::dsp::FFT fft (12);
+    std::vector<double> power ((size_t) n / 2 + 1, 0.0);
+    std::vector<float> bins ((size_t) n * 2);
+    int frames = 0;
+    for (size_t start = 0; start + n <= low.size(); start += hop, ++frames)
+    {
+        std::fill (bins.begin(), bins.end(), 0.0f);
+        for (int i = 0; i < n; ++i) bins[(size_t) i] = low[start + (size_t) i] * (float) (0.5 - 0.5 * std::cos (2.0 * 3.141592653589793 * i / (n - 1)));
+        fft.performFrequencyOnlyForwardTransform (bins.data());
+        for (int k = 0; k <= n / 2; ++k) power[(size_t) k] += (double) bins[(size_t) k] * bins[(size_t) k];
+    }
+    for (auto& v : power) v /= std::max (1, frames);
+    const int width = std::max (1, (int) std::lround (150.0 / (fs / n)));
+    std::vector<double> smooth (power.size(), 0.0);
+    for (int m = 0; m <= n / 2; ++m)
+    {
+        double acc = 0.0; int count = 0;
+        for (int j = std::max (0, m - width); j <= std::min (n / 2, m + width); ++j) { acc += power[(size_t) j]; ++count; }
+        smooth[(size_t) m] = acc / count;
+    }
+    std::vector<double> db, hz;
+    for (int k = 1; k <= n / 2; ++k) { hz.push_back ((double) k * fs / n); db.push_back (10.0 * std::log10 (std::max (1.0e-18, smooth[(size_t) k]))); }
+    Offline out;
+    out.reference = lens::Locator::shape (db, hz);
+    std::vector<double> r (order + 1, 0.0);
+    for (int lag = 0; lag <= order; ++lag)
+    {
+        double acc = smooth[0] + smooth[(size_t) (n / 2)] * std::cos (3.141592653589793 * lag);
+        for (int m = 1; m < n / 2; ++m) acc += 2.0 * smooth[(size_t) m] * std::cos (2.0 * 3.141592653589793 * m * lag / n);
+        r[(size_t) lag] = acc / n;
+    }
+    std::vector<double> a (order + 1, 0.0), scratch (order + 1, 0.0);
+    a[0] = 1.0;
+    double error = r[0] * 1.0001;
+    for (int m = 1; m <= order && error > 0.0; ++m)
+    {
+        double acc = r[(size_t) m];
+        for (int i = 1; i < m; ++i) acc += a[(size_t) i] * r[(size_t) (m - i)];
+        const double k = -acc / error;
+        scratch = a;
+        for (int i = 1; i < m; ++i) a[(size_t) i] = scratch[(size_t) i] + k * scratch[(size_t) (m - i)];
+        a[(size_t) m] = k;
+        error *= (1.0 - k * k);
+    }
+    out.poles = hs::polynomialResonances (a, fs, 6);
+    std::vector<double> envDb, envHz;
+    for (int k = 1; k <= n / 2; ++k)
+    {
+        const double f = (double) k * fs / n;
+        const std::complex<double> z = std::polar (1.0, -2.0 * 3.141592653589793 * f / fs);
+        std::complex<double> poly = 1.0, zk = 1.0;
+        for (int i = 1; i <= order; ++i) { zk *= z; poly += a[(size_t) i] * zk; }
+        envHz.push_back (f);
+        envDb.push_back (-20.0 * std::log10 (std::max (1.0e-9, std::abs (poly))));
+    }
+    out.lpcEnvelope = lens::Locator::shape (envDb, envHz);
+    out.rmseLpc = rmse (out.lpcEnvelope, out.reference);
+    locator.resetAverage();
+    lens::Descriptor acc {};
+    int count = 0;
+    for (size_t start = 0; start + lens::kFrame <= low.size(); start += 128, ++count)
+    {
+        const auto d = locator.describe (low.data() + start, fs);
+        for (int b = 0; b < lens::kBins; ++b) acc[(size_t) b] += d[(size_t) b];
+    }
+    for (auto& v : acc) v /= (float) std::max (1, count);
+    out.peeversAverage = acc;
+    out.rmsePeevers = rmse (acc, out.reference);
+    return out;
+}
+
+int notesMain (const juce::File& root, const juce::File& dir)
+{
+    auto files = dir.findChildFiles (juce::File::findFiles, false, "*.wav");
+    files.sort();
+    const juce::File outDir = root.getChildFile ("evidence/research-results/lens_bench");
+    outDir.createDirectory();
+    lens::Locator locator;
+    juce::String report = "# LENS offline fit on the 303 at five octaves, open and closed\n\nReference: the whole note's time-averaged power spectrum at a quarter of the rate, 4096-point Hann frames, smoothed across frequency by 150 Hz to remove the harmonic comb, on the 128 corpus bins, floored 30 dB under the peak, level removed. This reference is a new experiment, not recovered behaviour. Fit A: LPC-12 from that smoothed average by autocorrelation and Levinson, offline, a new experiment. Fit B: the recovered Peevers per-frame LPC-12 envelope averaged over every frame of the note. Errors are RMS dB over the bins.\n\n| note | RMSE fit A dB | RMSE fit B dB | fit A poles Hz / bandwidth Hz |\n|---|---|---|---|\n";
+    for (const auto& file : files)
+    {
+        const auto clip = trench::core::audio::read_wav_mono (std::filesystem::path (file.getFullPathName().toWideCharPointer()));
+        if (! clip || clip->samples.size() < 8192) continue;
+        const auto audio = resampled (*clip);
+        const auto r = offlineNote (locator, audio);
+        juce::String poles;
+        for (const auto& p : r.poles) poles << (int) std::lround (p.first) << "/" << (int) std::lround (p.second) << " ";
+        report << "| " << file.getFileNameWithoutExtension() << " | " << juce::String (r.rmseLpc, 2) << " | " << juce::String (r.rmsePeevers, 2) << " | " << poles << " |\n";
+    }
+    outDir.getChildFile ("303_offline_fit.md").replaceWithText (report);
+    std::printf ("%s\n", report.toRawUTF8());
+    return 0;
+}
+
 int main (int argc, char** argv)
 {
     const juce::File root (TRENCH_TABLE_STITCH_ROOT);
+    if (argc > 2 && juce::String (argv[1]) == "--notes") return notesMain (root, juce::File (argv[2]));
     const juce::File dir = argc > 1 ? juce::File (argv[1]) : root.getChildFile ("evidence/measured-bodies/cab_ir");
     const juce::File outDir = root.getChildFile ("evidence/research-results/lens_bench");
     outDir.createDirectory();
