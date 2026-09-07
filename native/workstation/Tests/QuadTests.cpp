@@ -109,7 +109,7 @@ int main()
 
     {
         hs::Session s (root, tempQuad(), false);
-        int klatt = 0, h95 = 0, pb52 = 0, reads = 0, other = 0;
+        int klatt = 0, h95 = 0, pb52 = 0, reads = 0, factory = 0, other = 0;
         bool named = true, polesOnly = true, sixLive = true, resonant = true;
         for (const auto& e : s.stars)
         {
@@ -123,10 +123,11 @@ int main()
                 sixLive = sixLive && hs::rowOf (e.words[5]).type == hs::RowType::notch;
                 for (size_t r = 0; r + 1 < hs::kRows; ++r) { sixLive = sixLive && hs::sectionOf (e.words[r]).pole; polesOnly = polesOnly && ! hs::sectionOf (e.words[r]).zero; }
             }
+            else if (e.kind == "factory") ++factory;
             else ++other;
         }
-        std::printf ("      palette: %d Klatt, %d Hillenbrand, %d Peterson Barney, %d XL reads, %d other\n", klatt, h95, pb52, reads, other);
-        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && pb52 == 30 && reads >= 40 && s.starNamed ("303 open C2") >= 0 && s.starNamed ("303 closed C2") >= 0 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians, the 30 Peterson and Barney means, the XL bank's resonant notes and the 303 at five octaves open and closed, no E-mu preset and no impulse response");
+        std::printf ("      palette: %d Klatt, %d Hillenbrand, %d Peterson Barney, %d XL reads, %d factory corners, %d other\n", klatt, h95, pb52, reads, factory, other);
+        check (s.libraryCount == s.stars.size() && klatt == 13 && h95 == 48 && pb52 == 30 && reads >= 40 && s.starNamed ("303 open C2") >= 0 && s.starNamed ("303 closed C2") >= 0 && factory == 132 && other == 0, "the palette holds the 12 Klatt vowels and schwa, the 48 Hillenbrand medians, the 30 Peterson and Barney means, the XL bank's resonant notes, the 303 at five octaves open and closed, and the 132 P2K corners by byte copy, no impulse response");
         check (named, "Klatt vowels are named by symbol alone, Hillenbrand vowels by symbol and speaker group");
         check (resonant && sixLive && polesOnly, "every XL read is a note of a resonant family with six live stages, poles only, and the ceiling notch");
         const int men = s.starNamed ("i men");

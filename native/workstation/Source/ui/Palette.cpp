@@ -7,8 +7,10 @@ namespace hs
 {
 namespace
 {
-const char* const kNames[2] = { "Reads", "Captures" };
-const char* const kKinds[2] = { "read", "capture" };
+const char* const kKinds[3] = { "capture", "read", "factory" };
+
+bool listed (const Star& s) { return s.kind == kKinds[0] || s.kind == kKinds[1] || s.kind == kKinds[2]; }
+juce::String familyOf (const Star& s) { return s.kind == "capture" ? juce::String ("captures") : s.body; }
 }
 
 Palette::Palette (Session& s, const plot::Curves& c) : session (s), curves (c) {}
@@ -22,7 +24,6 @@ void Palette::layout (juce::Rectangle<int> r)
     chart = { area.getX() + 40, area.getY() + 22, side, side };
     keepKey = { chart.getRight() - 70, area.getY(), 70, 20 };
     picker = { chart.getRight() + 56, area.getY(), area.getRight() - chart.getRight() - 56, area.getHeight() };
-    for (int i = 0; i < 2; ++i) tabs[(size_t) i] = { picker.getX() + i * 90, picker.getY(), 90, 22 };
     dropZone = picker.withTrimmedTop (picker.getHeight() - 24);
     scroll = std::clamp (scroll, 0, std::max (0, (int) rows().size() * kRow - (picker.getHeight() - 26 - 24)));
 }
@@ -33,27 +34,27 @@ std::vector<Palette::Row> Palette::rows() const
     if (find.isNotEmpty())
     {
         for (int k = 0; k < (int) session.stars.size(); ++k)
-            if (session.stars[(size_t) k].kind == kKinds[tab] && session.stars[(size_t) k].name.containsIgnoreCase (find)) out.push_back ({ false, session.stars[(size_t) k].body, k, 0 });
+            if (listed (session.stars[(size_t) k]) && session.stars[(size_t) k].name.containsIgnoreCase (find)) out.push_back ({ false, session.stars[(size_t) k].body, k, 0 });
         return out;
     }
     std::vector<juce::String> families;
-    for (int k = 0; k < (int) session.stars.size(); ++k)
-    {
-        const auto& star = session.stars[(size_t) k];
-        if (star.kind != kKinds[tab]) continue;
-        const auto family = star.kind == "capture" ? juce::String ("captures") : star.body;
-        if (std::find (families.begin(), families.end(), family) == families.end()) families.push_back (family);
-    }
+    for (const char* kind : kKinds)
+        for (int k = 0; k < (int) session.stars.size(); ++k)
+        {
+            const auto& star = session.stars[(size_t) k];
+            if (star.kind != kind) continue;
+            if (std::find (families.begin(), families.end(), familyOf (star)) == families.end()) families.push_back (familyOf (star));
+        }
     for (const auto& family : families)
     {
         Row header { true, family, -1, 0 };
         for (int k = 0; k < (int) session.stars.size(); ++k)
-            if (session.stars[(size_t) k].kind == kKinds[tab] && (session.stars[(size_t) k].kind == "capture" ? juce::String ("captures") : session.stars[(size_t) k].body) == family) ++header.count;
+            if (listed (session.stars[(size_t) k]) && familyOf (session.stars[(size_t) k]) == family) ++header.count;
         out.push_back (header);
         const bool open = openFamilies.count (family) > 0 || (! openedOnce && &family == &families.front());
         if (! open) continue;
         for (int k = 0; k < (int) session.stars.size(); ++k)
-            if (session.stars[(size_t) k].kind == kKinds[tab] && (session.stars[(size_t) k].kind == "capture" ? juce::String ("captures") : session.stars[(size_t) k].body) == family) out.push_back ({ false, family, k, 0 });
+            if (listed (session.stars[(size_t) k]) && familyOf (session.stars[(size_t) k]) == family) out.push_back ({ false, family, k, 0 });
     }
     return out;
 }
@@ -87,12 +88,9 @@ void Palette::toggle (const juce::String& family)
 
 void Palette::scrollBy (int pixels) { scroll += pixels; layout (area); }
 
-void Palette::showTab (int which) { tab = std::clamp (which, 0, 1); scroll = 0; layout (area); }
+void Palette::showTab (int) { scroll = 0; layout (area); }
 
-void Palette::followKind (const juce::String& kind)
-{
-    for (int i = 0; i < 2; ++i) if (kind == kKinds[i] && tab != i) showTab (i);
-}
+void Palette::followKind (const juce::String&) {}
 
 juce::Rectangle<int> Palette::card (int index) const
 {
@@ -114,11 +112,7 @@ int Palette::cardAt (juce::Point<int> p) const
     return index >= 0 && index < (int) all.size() && ! all[(size_t) index].header ? all[(size_t) index].star : -1;
 }
 
-int Palette::tabAt (juce::Point<int> p) const
-{
-    for (int i = 0; i < 2; ++i) if (tabs[(size_t) i].contains (p)) return i;
-    return -1;
-}
+int Palette::tabAt (juce::Point<int>) const { return -1; }
 
 juce::Point<float> Palette::chartPoint (double f1, double f2) const
 {
@@ -152,13 +146,6 @@ int Palette::pointAt (juce::Point<int> p) const
 void Palette::paint (juce::Graphics& g, int transposingFrom) const
 {
     g.setFont (Look::font (11.0f));
-    for (int i = 0; i < 2; ++i)
-    {
-        const auto r = tabs[(size_t) i];
-        g.setColour (tab == i ? Look::ink : Look::dim);
-        g.drawText (kNames[i], r, juce::Justification::centredLeft);
-        if (tab == i) Look::underline (g, r.withWidth (juce::GlyphArrangement::getStringWidthInt (Look::font (11.0f), kNames[i])), Look::blue);
-    }
     g.setColour (finding ? Look::ink : Look::faint);
     g.drawText (finding ? "/" + find : juce::String ("/"), picker.withHeight (22).withTrimmedRight (6), juce::Justification::centredRight);
     {

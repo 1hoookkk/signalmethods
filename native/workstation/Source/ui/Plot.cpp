@@ -15,6 +15,7 @@ juce::Colour inkOf (const Star& s)
     if (s.kind == "capture") return juce::Colour (Look::kOrange);
     if (s.kind == "read") return juce::Colour (Look::kPurple);
     if (s.kind == "body") return juce::Colour (Look::kGreen);
+    if (s.kind == "factory") return juce::Colour (Look::kYellow);
     return juce::Colour (Look::kInk);
 }
 
