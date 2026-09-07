@@ -486,7 +486,11 @@ int main()
         hs::Session s (root, tempQuad(), false);
         check (s.note == 45 && hs::noteName (440.0 * std::pow (2.0, (s.note - 69) / 12.0)) == "A2", "the saw starts on A2, 110 Hz");
         s.noteIn (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100));
-        check (s.note == 60, "a MIDI note sets the saw's pitch");
+        check (s.note == 45 && s.heldNote == 60 && s.soundingPitch == 45, "FIXED by default: a MIDI note strikes the source at its own pitch");
+        s.noteIn (juce::MidiMessage::noteOff (1, 60));
+        s.setTracking (false);
+        s.noteIn (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100));
+        check (s.note == 60, "with KEY tracking a MIDI note sets the saw's pitch");
         s.noteIn (juce::MidiMessage::noteOff (1, 60));
         check (s.note == 60, "note off leaves the drone where it is");
         s.key (key (']', false, ']')); s.key (key (juce::KeyPress::pageDownKey));
@@ -851,10 +855,11 @@ int main()
         s.audio.onWheel (0.8);
         check (s.inPair() && std::abs (s.pairT - 0.8) < 1e-9 && std::abs (s.frequency - 0.4) < 1e-9 && std::abs (s.stress - 0.6) < 1e-9, "the mod wheel rides MORPH and leaves FREQUENCY and STRESS where they were");
         check (s.playingLabel == "i > u", "the label says the pair; the rails carry the numbers");
+        s.setRoute (1, false, 1.0);
         s.key (key ('Z', false, 'z'));
         const int played = s.heldNote;
         s.key (key ('M', false, 'm'));
-        check (played == 48 && s.heldNote == 59 && s.note == 59, "the Z row plays notes from C3, Z is C and M is B");
+        check (played == 48 && s.heldNote == 59 && s.note == 45, "the Z row plays notes from C3, Z is C and M is B, and the source keeps its pitch");
         s.keyNoteOff (59);
         s.key (key (juce::KeyPress::pageUpKey, false, 0));
         s.key (key ('C', false, 'c'));
@@ -1117,8 +1122,8 @@ int main()
         }
         const auto owned = std::make_unique<hs::Session> (root, file, false);
         auto& s = *owned;
-        check (s.keyToFrequency.on && std::abs (s.keyToFrequency.depth - 0.5) < 1.0e-9 && ! s.velocityToStress.on && s.wheelToMorph.on,
-            "the patch is saved with the session");
+        check (s.keyToFrequency.on && std::abs (s.keyToFrequency.depth - 0.5) < 1.0e-9 && s.velocityToStress.on && s.wheelToMorph.on && s.keyToState.on && s.fixedPitch,
+            "the patch is saved with the session; velocity, wheel and state are on and the source is FIXED from the start");
 
         s.setPuck (40.0, 30.0);
         s.setPair (0, s.starNamed ("i"));
@@ -1152,6 +1157,37 @@ int main()
         std::printf ("      pad near corners: %d %d %d %d\n", nearA, nearB, nearC, s.working);
         check (hs::Session::kCornerPin[nearA] == 0 && hs::Session::kCornerPin[nearB] == 1 && hs::Session::kCornerPin[nearC] == 2 && hs::Session::kCornerPin[s.working] == 3 && s.editing < 0,
             "the pad's nearest corner is the working corner, so the state follows the puck");
+
+        {
+            s.setPuck (40.0, 30.0);
+            s.setPair (0, s.starNamed ("i"));
+            s.setPair (1, s.starNamed ("u"));
+            s.setRoute (1, true, 1.0);
+            const int sawNote = s.note;
+            s.sweep (0.3); s.keep();
+            s.sweep (0.7); s.keep();
+            const auto picks = s.states();
+            const int wanted = picks[(size_t) ((62 - 36) % (int) picks.size())];
+            s.noteOn (62);
+            const bool chose = s.inMade() && s.made.name == s.stars[(size_t) wanted].name && s.note == sawNote && s.heldNote == 62;
+            const auto full = s.words;
+            s.noteOff();
+            const bool latched = s.inMade() && same (s.words, full);
+            s.playedNote (62, 0.25f);
+            const bool struck = s.inMade() && std::abs (s.stress - 0.25) < 1.0e-9 && ! same (s.words, full) && same (s.words, s.made.words);
+            std::printf ("      C#4 chose %s of %d states, source still at %d\n", s.made.name.toRawUTF8(), (int) picks.size(), s.note);
+            check (chose && latched && struck, "a key picks a kept state and the source holds its pitch; the state latches after note-off; velocity is the strike, relaxing it toward schwa");
+            s.setTracking (false);
+            s.setRoute (3, false, 1.0);
+            s.noteOn (62);
+            check (! s.fixedPitch && s.note == 62, "KEY tracking pitches the source with the note again");
+            s.noteOff();
+            s.setTracking (true);
+            s.setRoute (3, true, 1.0);
+            for (int k = (int) s.stars.size() - 1; k >= (int) s.libraryCount; --k) { s.selected = k; s.removeAdded(); }
+            s.setPair (0, s.starNamed ("i"));
+            s.setPair (1, s.starNamed ("u"));
+        }
 
         s.setPuck (40.0, 30.0);
         s.setRoute (2, false, 1.0);

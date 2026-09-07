@@ -45,7 +45,7 @@ Session::Session (const juce::File& rootDir, const juce::File& quadFile, bool au
     const bool had = open (quad, stars, libraryCount, file, &boot, &booted);
     pairA = boot.a; pairB = boot.b; pairT = boot.morph;
     frequency = boot.frequency; stress = boot.stress; octaves = boot.octaves;
-    keyToFrequency = booted.key; velocityToStress = booted.velocity; wheelToMorph = booted.wheel;
+    keyToFrequency = booted.key; velocityToStress = booted.velocity; wheelToMorph = booted.wheel; keyToState = booted.state; fixedPitch = booted.fixed;
     if (pairA < 0 || pairB < 0)
     {
         pairA = -1; pairB = -1;
@@ -150,7 +150,7 @@ Session::Snapshot Session::snapshot() const
     s.quad = quad;
     s.added.assign (stars.begin() + (long) libraryCount, stars.end());
     s.frequency = frequency; s.stress = stress; s.octaves = octaves;
-    s.patch = { keyToFrequency, velocityToStress, wheelToMorph };
+    s.patch = { keyToFrequency, velocityToStress, wheelToMorph, keyToState, fixedPitch };
     return s;
 }
 
@@ -160,7 +160,7 @@ void Session::restore (const Snapshot& s)
     stars.resize (libraryCount);
     stars.insert (stars.end(), s.added.begin(), s.added.end());
     frequency = s.frequency; stress = s.stress; octaves = s.octaves;
-    keyToFrequency = s.patch.key; velocityToStress = s.patch.velocity; wheelToMorph = s.patch.wheel;
+    keyToFrequency = s.patch.key; velocityToStress = s.patch.velocity; wheelToMorph = s.patch.wheel; keyToState = s.patch.state; fixedPitch = s.patch.fixed;
     for (auto& p : quad.pins) if (p >= (int) stars.size()) p = -1;
     if (pairA >= (int) stars.size()) pairA = -1;
     if (pairB >= (int) stars.size()) pairB = -1;
@@ -171,7 +171,7 @@ void Session::restore (const Snapshot& s)
 void Session::apply()
 {
     const Explore state = explore();
-    const Patch wired { keyToFrequency, velocityToStress, wheelToMorph };
+    const Patch wired { keyToFrequency, velocityToStress, wheelToMorph, keyToState, fixedPitch };
     save (quad, stars, libraryCount, file, &state, &wired);
     audition();
     changed();
@@ -266,17 +266,52 @@ void Session::setOctaves (double value)
 
 void Session::setRoute (int which, bool on, double depth)
 {
-    if (which < 0 || which > 2) return;
+    if (which < 0 || which > 3) return;
     history.push_back (snapshot()); future.clear();
-    Route& r = which == 0 ? keyToFrequency : which == 1 ? velocityToStress : wheelToMorph;
+    Route& r = which == 0 ? keyToFrequency : which == 1 ? velocityToStress : which == 2 ? wheelToMorph : keyToState;
     r.on = on;
     r.depth = std::clamp (depth, 0.0, 1.0);
     apply();
 }
 
+void Session::setTracking (bool fixed)
+{
+    fixedPitch = fixed;
+    changed();
+}
+
+std::vector<int> Session::states() const
+{
+    std::vector<int> out;
+    for (int k = 0; k < (int) stars.size(); ++k) if (stars[(size_t) k].kind == "capture") out.push_back (k);
+    return out;
+}
+
 void Session::playedNote (int midi, float velocity)
 {
-    if (! live() || (! keyToFrequency.on && ! velocityToStress.on)) return;
+    if (! live()) return;
+    if (keyToState.on)
+    {
+        const auto picks = states();
+        if (! picks.empty())
+        {
+            const int n = (int) picks.size();
+            const int pick = picks[(size_t) (((midi - 36) % n + n) % n)];
+            const double into = velocityToStress.on ? std::clamp ((double) velocity, 0.0, 1.0) * velocityToStress.depth + (1.0 - velocityToStress.depth) : 1.0;
+            const auto& state = stars[(size_t) pick];
+            const Corners between { relaxed (state.words), state.words, relaxed (state.words), state.words };
+            made = state;
+            made.kind = "made";
+            made.parentA.clear();
+            made.words = lerp (between, into, 0.0);
+            stress = into;
+            madeLive = true;
+            auditioning = kMade;
+            apply();
+            return;
+        }
+    }
+    if (! keyToFrequency.on && ! velocityToStress.on) return;
     double toward = frequency, into = stress;
     if (keyToFrequency.on) toward = std::clamp ((midi - 36) / 48.0, 0.0, 1.0) * keyToFrequency.depth;
     if (velocityToStress.on) into = std::clamp ((double) velocity, 0.0, 1.0) * velocityToStress.depth + (1.0 - velocityToStress.depth);
@@ -717,18 +752,22 @@ void Session::setNote (int midi)
 
 void Session::noteOn (int midi)
 {
-    note = std::clamp (midi, 0, 127);
-    if (withAudio && heldNote >= 0 && heldNote != note) audio.noteOff (heldNote);
-    heldNote = note;
-    if (withAudio) audio.noteOn (note);
-    playedNote (note, 0.8f);
+    const int played = std::clamp (midi, 0, 127);
+    if (! fixedPitch) note = played;
+    const int pitch = fixedPitch ? note : played;
+    if (withAudio && soundingPitch >= 0 && soundingPitch != pitch) audio.noteOff (soundingPitch);
+    heldNote = played;
+    soundingPitch = pitch;
+    if (withAudio) audio.noteOn (pitch);
+    playedNote (played, 0.8f);
     changed();
 }
 
 void Session::noteOff()
 {
-    if (withAudio && heldNote >= 0) audio.noteOff (heldNote);
+    if (withAudio && soundingPitch >= 0) audio.noteOff (soundingPitch);
     heldNote = -1;
+    soundingPitch = -1;
 }
 
 void Session::keyNoteOn (int midi)
@@ -742,9 +781,10 @@ void Session::keyNoteOn (int midi)
         changed();
         return;
     }
-    note = m;
-    heldNote = note;
-    if (withAudio) audio.noteOn (note);
+    if (! fixedPitch) note = m;
+    heldNote = m;
+    soundingPitch = fixedPitch ? note : m;
+    if (withAudio) audio.noteOn (soundingPitch);
     changed();
 }
 
@@ -757,8 +797,8 @@ void Session::keyNoteOff (int midi)
         changed();
         return;
     }
-    if (withAudio) audio.noteOff (m);
-    if (heldNote == midi) heldNote = -1;
+    if (withAudio && soundingPitch >= 0) audio.noteOff (soundingPitch);
+    if (heldNote == m) { heldNote = -1; soundingPitch = -1; }
     changed();
 }
 

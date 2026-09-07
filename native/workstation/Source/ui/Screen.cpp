@@ -118,6 +118,7 @@ void Screen::mouseDown (const juce::MouseEvent& e)
         else if (i == 2) session.setSource (0);
         else if (i == 3) session.setSource (1);
         else if (i == 4) { if (session.loopName.isNotEmpty()) session.setSource (2); }
+        else if (i == 5) session.setTracking (! session.fixedPitch);
         else session.write();
         return;
     }

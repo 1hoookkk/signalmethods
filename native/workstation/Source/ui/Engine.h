@@ -18,13 +18,14 @@ struct Engine
     int sourceAt (juce::Point<int> p) const;
     int routeAt (juce::Point<int> p) const;
     int depthAt (juce::Point<int> p) const;
-    std::array<juce::String, 6> names() const;
-    std::array<juce::String, 3> routeWords() const;
+    std::array<juce::String, 7> names() const;
+    std::array<juce::String, 4> routeWords() const;
+    static constexpr int kRouteOf[4] = { 3, 0, 1, 2 };
 
     juce::Rectangle<int> area, plot, label, status;
-    std::array<juce::Rectangle<int>, 6> keys;
-    std::array<juce::Rectangle<int>, 3> routes;
-    std::array<juce::Rectangle<int>, 2> depths;
+    std::array<juce::Rectangle<int>, 7> keys;
+    std::array<juce::Rectangle<int>, 4> routes;
+    std::array<juce::Rectangle<int>, 3> depths;
     double rate = 44100.0;
 
 private:

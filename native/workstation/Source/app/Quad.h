@@ -44,7 +44,8 @@ struct Route
 
 struct Patch
 {
-    Route key, velocity, wheel { true, 1.0 };
+    Route key, velocity { true, 1.0 }, wheel { true, 1.0 }, state { true, 1.0 };
+    bool fixed = true;
 };
 
 trench::core::PackedBody motherBodyOf (const Explore& explore, const std::vector<Star>& stars);
