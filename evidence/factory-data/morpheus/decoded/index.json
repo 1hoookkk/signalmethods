@@ -1,6 +1,6 @@
 {
  "schema": "trench-native-decoded-index-v1",
- "datum_hz": 39062.5,
+ "datum_hz": 48000.0,
  "sections": 7,
  "corners": 8,
  "count": 289,

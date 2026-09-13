@@ -25,7 +25,7 @@ RAW_BODIES = os.path.join(MORPHEUS, "raw", "bodies")
 INDEX = os.path.join(MORPHEUS, "decoded", "index.json")
 OUT = os.path.join(MORPHEUS, "canonical")
 
-RATE = 39062.5
+RATE = 48000.0
 RECORD_BASE = 20
 RECORD_STRIDE = 332
 PAYLOAD_BYTES = 320
@@ -284,8 +284,8 @@ def main():
     lines.append("| identical | %d |" % same)
     lines.append("| no raw/bodies counterpart | %d |" % missing)
     lines.append("")
-    lines.append("The raw/bodies files were encoded at a 44100 Hz datum while the Morpheus "
-                 "datum is 39062.5 Hz, they carry a per-cube corner scramble, their pole and "
+    lines.append("The raw/bodies files were encoded at a 44100 Hz datum while the hardware "
+                 "datum is 48000 Hz (angles are normalised radians, f = theta / pi * 24000), they carry a per-cube corner scramble, their pole and "
                  "zero slots disagree on row order, and their fifth word holds a seventh-root "
                  "spread of a gain that does not match the record's per-corner gain field. "
                  "The canonical bodies take the pole pair from raw field groups 0 and 1, the "

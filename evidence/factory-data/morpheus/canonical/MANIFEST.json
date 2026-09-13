@@ -1,7 +1,7 @@
 {
  "schema": "trench-morpheus-canonical-v1",
  "order_law": "native corner index = Morph + 2 * Frequency + 4 * Transform, from raw corner index = Transform + 2 * Frequency + 4 * Morph; sections in the raw record's row order 0..6; five little-endian u16 words per section, corner-major",
- "datum_hz": 39062.5,
+ "datum_hz": 48000.0,
  "source": "evidence/factory-data/morpheus/raw/records_stream.bin",
  "corners": 8,
  "sections": 7,
