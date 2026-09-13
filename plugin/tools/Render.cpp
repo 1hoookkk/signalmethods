@@ -21,7 +21,9 @@ struct Options
     juce::String input;
     juce::String output;
     juce::String body;
+    juce::String bodyFile;
     juce::String morphSpec { "0:0,end:1" };
+    juce::String qSpec;
     double q = 0.0;
     double bite = 0.0;
     double preamp = 0.0;
@@ -71,8 +73,8 @@ struct MorphPoint
 void usage()
 {
     std::fprintf (stderr,
-                  "usage: TRENCH_Render --in <wav> --out <wav> --body <display name substring>\n"
-                  "                     [--morph \"t:v,t:v,...\"] [--q v] [--bite v] [--input v]\n"
+                  "usage: TRENCH_Render --in <wav> --out <wav> --body <display name substring> | --bodyfile <body240>\n"
+                  "                     [--morph \"t:v,t:v,...\"] [--q v] [--qcurve \"t:v,...\"] [--bite v] [--input v]\n"
                   "                     [--output v] [--seconds s] [--rate 44100] [--block 256]\n");
 }
 
@@ -117,6 +119,8 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
             options.output = value;
         else if (option == "--body")
             options.body = value;
+        else if (option == "--bodyfile")
+            options.bodyFile = value;
         else if (option == "--morph")
             options.morphSpec = value;
         else if (option == "--q")
@@ -124,6 +128,8 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
             if (! parseUnit (option, value, options.q, error))
                 return false;
         }
+        else if (option == "--qcurve")
+            options.qSpec = value;
         else if (option == "--bite")
         {
             if (! parseUnit (option, value, options.bite, error))
@@ -218,9 +224,9 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
         }
     }
 
-    if (options.input.isEmpty() || options.output.isEmpty() || options.body.isEmpty())
+    if (options.input.isEmpty() || options.output.isEmpty() || (options.body.isEmpty() && options.bodyFile.isEmpty()))
     {
-        error = "--in, --out and --body are required";
+        error = "--in, --out and --body or --bodyfile are required";
         return false;
     }
     return true;
@@ -443,7 +449,7 @@ int main (int argc, char** argv)
         const juce::File outputFile = juce::File::getCurrentWorkingDirectory().getChildFile (options.output);
 
         trench::rescanBodyRoster();
-        const int bodyIndex = resolveBody (options.body);
+        const int bodyIndex = options.body.isEmpty() ? 1 : resolveBody (options.body);
         if (bodyIndex < 0)
         {
             std::fprintf (stderr, "TRENCH_Render: no roster body contains \"%s\"\n", options.body.toRawUTF8());
@@ -451,6 +457,16 @@ int main (int argc, char** argv)
             return 2;
         }
         const auto bodyName = trench::bodyDisplayName (bodyIndex);
+        juce::MemoryBlock bodyBytes;
+        if (options.bodyFile.isNotEmpty())
+        {
+            const juce::File bodyFile = juce::File::getCurrentWorkingDirectory().getChildFile (options.bodyFile);
+            if (! bodyFile.loadFileAsData (bodyBytes) || bodyBytes.getSize() != 240)
+            {
+                std::fprintf (stderr, "TRENCH_Render: not a 240-byte body: %s\n", bodyFile.getFullPathName().toRawUTF8());
+                return 2;
+            }
+        }
 
         double sourceRate = 0.0;
         int sourceChannels = 0;
@@ -475,6 +491,12 @@ int main (int argc, char** argv)
             std::fprintf (stderr, "TRENCH_Render: %s\n", error.toRawUTF8());
             return 2;
         }
+        std::vector<MorphPoint> qCurve;
+        if (options.qSpec.isNotEmpty() && ! parseMorphSpec (options.qSpec, clipSeconds, qCurve, error))
+        {
+            std::fprintf (stderr, "TRENCH_Render: %s\n", error.toRawUTF8());
+            return 2;
+        }
 
         PluginProcessor processor;
         RenderPlayHead playHead;
@@ -488,11 +510,13 @@ int main (int argc, char** argv)
         setParameter (processor, ParamID::body, (float) bodyIndex);
         if (! waitForBody (processor, bodyIndex))
             throw std::runtime_error (("body did not load: " + bodyName).toStdString());
+        if (bodyBytes.getSize() == 240 && ! processor.installBodyBytes (bodyBytes.getData(), bodyBytes.getSize()))
+            throw std::runtime_error (("installBodyBytes refused: " + options.bodyFile).toStdString());
 
         setParameter (processor, ParamID::movePreset, (float) options.move);
         setParameter (processor, ParamID::envAmount, 0.0f);
         setParameter (processor, ParamID::keySnap, 0.0f);
-        setParameter (processor, ParamID::q, (float) options.q);
+        setParameter (processor, ParamID::q, (float) (qCurve.empty() ? options.q : morphAt (qCurve, 0.0)));
 
         const float biteValue = options.haveBite ? (float) options.bite
                                                  : parameterDefault (processor, ParamID::chew);
@@ -516,10 +540,14 @@ int main (int argc, char** argv)
                      options.knee ? "on" : "off");
 
         std::printf ("body       %s [%d]\n", bodyName.toRawUTF8(), bodyIndex);
+        if (bodyBytes.getSize() == 240)
+            std::printf ("bodyfile   %s\n", options.bodyFile.toRawUTF8());
         std::printf ("source     %s  %.0f Hz  %d ch -> %.0f Hz mono, block %d\n",
                      inputFile.getFileName().toRawUTF8(), sourceRate, sourceChannels,
                      options.rate, options.block);
         std::printf ("morph      %s\n", options.morphSpec.toRawUTF8());
+        if (! qCurve.empty())
+            std::printf ("qcurve     %s\n", options.qSpec.toRawUTF8());
         std::printf ("q %.3f  bite %.3f  input %.3f  output %.3f\n",
                      options.q, (double) biteValue, (double) preampValue, (double) slamValue);
         std::printf ("movement   movePreset=%d%s  bpm %s  FOLLOW envAmount=0  KEY keySnap=0 (OFF)\n", options.move, options.move == 0 ? " (OFF)" : "", options.bpm > 0.0 ? juce::String (options.bpm, 1).toRawUTF8() : "none");
@@ -549,6 +577,9 @@ int main (int argc, char** argv)
             playHead.sample = (juce::int64) start;
             setParameter (processor, ParamID::morph,
                           (float) morphAt (morphCurve, (double) start / options.rate));
+            if (! qCurve.empty())
+                setParameter (processor, ParamID::q,
+                              (float) morphAt (qCurve, (double) start / options.rate));
             float* channelData[2] = { render.getWritePointer (0) + start,
                                       render.getWritePointer (1) + start };
             juce::AudioBuffer<float> block (channelData, 2, count);

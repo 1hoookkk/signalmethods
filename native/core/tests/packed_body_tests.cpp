@@ -23,8 +23,8 @@ void check(bool ok, const char* what, long a = 0, long b = 0) {
 }
 
 std::uint16_t reference(std::uint16_t a, std::uint16_t b, float fraction) {
-  const float difference = static_cast<float>(static_cast<std::int32_t>(b) - static_cast<std::int32_t>(a));
-  return static_cast<std::uint16_t>(static_cast<std::int32_t>(a) + static_cast<std::int32_t>(difference * fraction));
+  const double difference = static_cast<double>(static_cast<std::int32_t>(b) - static_cast<std::int32_t>(a));
+  return static_cast<std::uint16_t>(static_cast<std::int32_t>(a) + static_cast<std::int32_t>(std::floor(difference * static_cast<double>(fraction))));
 }
 
 }  // namespace
@@ -35,10 +35,10 @@ int main() {
 
   check(interpolate_word(0x1234, 0xABCD, 0.0f) == 0x1234, "fraction 0 returns a");
   check(interpolate_word(0x1234, 0xABCD, 1.0f) == 0xABCD, "fraction 1 returns b");
-  check(interpolate_word(0x0000, 0xFFFF, 0.5f) == 32767, "truncates toward zero on the way up", interpolate_word(0x0000, 0xFFFF, 0.5f), 32767);
-  check(interpolate_word(0xFFFF, 0x0000, 0.5f) == 32768, "truncates toward zero on the way down", interpolate_word(0xFFFF, 0x0000, 0.5f), 32768);
-  check(interpolate_word(0x01F0, 0xF000, 0.9f) == reference(0x01F0, 0xF000, 0.9f), "large positive difference matches int32 arithmetic", interpolate_word(0x01F0, 0xF000, 0.9f), reference(0x01F0, 0xF000, 0.9f));
-  check(interpolate_word(0xF000, 0x01F0, 0.9f) == reference(0xF000, 0x01F0, 0.9f), "large negative difference matches int32 arithmetic", interpolate_word(0xF000, 0x01F0, 0.9f), reference(0xF000, 0x01F0, 0.9f));
+  check(interpolate_word(0x0000, 0xFFFF, 0.5f) == 32767, "floors on the way up", interpolate_word(0x0000, 0xFFFF, 0.5f), 32767);
+  check(interpolate_word(0xFFFF, 0x0000, 0.5f) == 32767, "floors on the way down", interpolate_word(0xFFFF, 0x0000, 0.5f), 32767);
+  check(interpolate_word(0x01F0, 0xF000, 0.9f) == reference(0x01F0, 0xF000, 0.9f), "large positive difference matches the floor reference", interpolate_word(0x01F0, 0xF000, 0.9f), reference(0x01F0, 0xF000, 0.9f));
+  check(interpolate_word(0xF000, 0x01F0, 0.9f) == reference(0xF000, 0x01F0, 0.9f), "large negative difference matches the floor reference", interpolate_word(0xF000, 0x01F0, 0.9f), reference(0xF000, 0x01F0, 0.9f));
 
   std::mt19937 rng(7);
   std::uniform_int_distribution<int> word(0, 0xFFFF);
@@ -55,7 +55,7 @@ int main() {
     const auto hi = a < b ? b : a;
     if (got < lo || got > hi) ++non_monotonic;
   }
-  check(mismatches == 0, "200000 random triples match the int32 reference", mismatches, 0);
+  check(mismatches == 0, "200000 random triples match the floor reference", mismatches, 0);
   check(non_monotonic == 0, "result always lies between a and b", non_monotonic, 0);
 
   std::array<std::uint8_t, trench::core::kLegacyBodyBytes> bytes{};

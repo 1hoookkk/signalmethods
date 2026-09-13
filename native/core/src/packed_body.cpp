@@ -95,9 +95,10 @@ std::uint16_t encode_word(double value) {
 }
 
 std::uint16_t interpolate_word(std::uint16_t a, std::uint16_t b, float fraction) {
-  const float difference = static_cast<float>(static_cast<std::int32_t>(b) -
-                                               static_cast<std::int32_t>(a));
-  const auto delta = static_cast<std::int32_t>(difference * fraction);
+  const double difference = static_cast<double>(static_cast<std::int32_t>(b) -
+                                                 static_cast<std::int32_t>(a));
+  const auto delta = static_cast<std::int32_t>(
+      std::floor(difference * static_cast<double>(fraction)));
   return static_cast<std::uint16_t>(static_cast<std::int32_t>(a) + delta);
 }
 
