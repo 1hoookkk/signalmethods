@@ -31,8 +31,6 @@ public:
                 return;
             g.setFont (displayFont (fs, strong));
             const auto just = centred ? juce::Justification::centred : juce::Justification::centredLeft;
-            g.setColour (juce::Colours::white.withAlpha (0.4f * alpha));
-            g.drawFittedText (text.toUpperCase(), r.toNearestInt().translated (0, 1), just, 1);
             g.setColour (t.textColour (id, t.labelInk()).withMultipliedAlpha (alpha));
             g.drawFittedText (text.toUpperCase(), r.toNearestInt(), just, 1);
         };
@@ -46,14 +44,8 @@ public:
             const float bfs = t.fontSize ("brandLabel", 16.5f);
             if (br.getWidth() >= 1.0f && bfs >= 0.5f)
             {
-                // ENGRAVED, from d9bdfe97 (Tyson 2026-08-12: "I don't see the
-                // TRENCH logo outline"). The flat-Tahoma pass that replaced it
-                // dropped the catch entirely, so the word sat on the plate
-                // instead of being cut into it. Arial Bold, tracked -0.012 (X3
-                // logos sit almost touching), catch alpha 0.72 - the goal
-                // build's exact call.
                 g.setFont (juce::Font (juce::FontOptions ("Arial", bfs, juce::Font::bold))
-                               .withExtraKerningFactor (-0.012f));
+                               .withExtraKerningFactor (0.045f));
                 const auto text = t.text ("brandLabel", "");
                 const auto box  = br.toNearestInt();
                 if (brandLit)

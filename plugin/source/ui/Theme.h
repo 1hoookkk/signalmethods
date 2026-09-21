@@ -4,8 +4,8 @@
 #include <cstdlib>
 namespace trench::ui
 {
-inline constexpr int   kEditorWidth        = 270;
-inline constexpr int   kEditorHeight       = 440;
+inline constexpr int   kEditorWidth        = 310;
+inline constexpr int   kEditorHeight       = 506;
 inline constexpr int   kFaceLockedWidth    = kEditorWidth;
 inline constexpr int   kFaceLockedHeight   = kEditorHeight;
 inline constexpr int   kEditorHeightClosed = 361;
@@ -21,8 +21,8 @@ inline constexpr float kBayValuePt         = kValuePt;
 inline constexpr int   kBayValueHeight     = 17;
 
 inline constexpr float kBayKnobDiameter    = 36.0f;
-inline constexpr float kPanelSourceWidth   = 1010.0f;
-inline constexpr float kPanelSourceHeight  = 1557.0f;
+inline constexpr float kPanelSourceWidth   = 1024.0f;
+inline constexpr float kPanelSourceHeight  = 1536.0f;
 inline juce::Rectangle<float> sourceRectToEditor (juce::Rectangle<float> s)
 {
     return { s.getX() * kEditorWidth  / kPanelSourceWidth,
@@ -65,18 +65,18 @@ struct Theme
 {
     const trench::UiLayout& layout;
     juce::Colour accent()      const { return layout.colour ("accent",      juce::Colour (0xff3cc8be)); }
-    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xffbef0d7)); }
-    juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffe6fff4)); }
+    juce::Colour curveColour() const { return layout.colour ("curveColour", juce::Colour (0xff5ae0a9)); }
+    juce::Colour curveHighlight() const { return layout.colour ("curveHighlight", juce::Colour (0xffb2fadb)); }
     juce::Colour telemetry() const { return layout.colour ("telemetry", juce::Colour (0xff608074)); }
-    juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff3cc8be)); }
-    juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xff3cc8be)); }
-    juce::Colour glassTop()    const { return layout.colour ("glassTop",    juce::Colour (0xff000000)); }
-    juce::Colour glassBottom() const { return layout.colour ("glassBottom", juce::Colour (0xff000000)); }
-    juce::Colour gridTint()    const { return layout.colour ("gridTint",    juce::Colours::white); }
+    juce::Colour rollerIllumination() const { return layout.colour ("rollerIllumination", juce::Colour (0xff5ae0a9)); }
+    juce::Colour modulationLamp() const { return layout.colour ("modulationLamp", juce::Colour (0xff5ae0a9)); }
+    juce::Colour glassTop()    const { return layout.colour ("glassTop",    juce::Colour (0xff080a06)); }
+    juce::Colour glassBottom() const { return layout.colour ("glassBottom", juce::Colour (0xff030402)); }
+    juce::Colour gridTint()    const { return layout.colour ("gridTint",    juce::Colour (0xff2a5c48)); }
     juce::Colour amber()       const { return layout.colour ("amber",       juce::Colour (0xffa9554e)); }
-    juce::Colour wellTop()     const { return layout.colour ("wellTop",     juce::Colour (0xffe7dec9)); }
-    juce::Colour wellBottom()  const { return layout.colour ("wellBottom",  juce::Colour (0xffc9c0a8)); }
-    juce::Colour wellKeyline() const { return layout.colour ("wellKeyline", juce::Colour (0xff5c4f3a)); }
+    juce::Colour wellTop()     const { return layout.colour ("wellTop",     juce::Colour (0xffcbd8e6)); }
+    juce::Colour wellBottom()  const { return layout.colour ("wellBottom",  juce::Colour (0xff9db0c4)); }
+    juce::Colour wellKeyline() const { return layout.colour ("wellKeyline", juce::Colour (0xffe6eef6)); }
     juce::Colour bevelHi()     const { return layout.colour ("bevelHi",     juce::Colour (0x88e7dec9)); }
     juce::Colour bevelLo()     const { return layout.colour ("bevelLo",     juce::Colour (0x3d000000)); }
     juce::Colour arrow()       const { return layout.colour ("arrow",       juce::Colour (0xff241e15)); }
@@ -104,7 +104,7 @@ struct Theme
     }
     float    fontSize (const juce::String& id, float fb) const
     {
-        constexpr float fontReferenceWidth = 440.0f;
+        constexpr float fontReferenceWidth = 360.0f;
         return layout.fontSizeFor (id).value_or (fb) * (float) kEditorWidth / fontReferenceWidth;
     }
     juce::Font smallLabel (bool micro = false) const
@@ -120,14 +120,14 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                      float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
-    const auto top    = juce::Colour (0xffcbd8e6);
-    const auto middle = juce::Colour (0xffb2c3d5);
-    const auto bottom = juce::Colour (0xff9db0c4);
+    const auto top    = t.wellTop();
+    const auto bottom = t.wellBottom();
+    const auto middle = top.interpolatedWith (bottom, 0.45f);
     const float faceRad = juce::jmax (2.0f, radius - 1.3f);
     {
-        juce::ColourGradient edge (juce::Colour (0xffe6eef6), 0.0f, face.getY(),
-                                   juce::Colour (0xff4f545a), 0.0f, face.getBottom(), false);
-        edge.addColour (0.5, juce::Colour (0xff9aabbd));
+        juce::ColourGradient edge (t.wellKeyline(), 0.0f, face.getY(),
+                                   bottom.darker (0.55f), 0.0f, face.getBottom(), false);
+        edge.addColour (0.5, middle);
         g.setGradientFill (edge);
         g.fillRoundedRectangle (face, faceRad);
     }
@@ -142,21 +142,14 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
         juce::Path clip;
         clip.addRoundedRectangle (body, juce::jmax (1.5f, faceRad - 1.2f));
         g.reduceClipRegion (clip);
-        g.setColour (juce::Colours::white.withAlpha (0.78f));
+        g.setColour (juce::Colours::white.withAlpha (0.26f));
         g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
-        juce::ColourGradient frost (juce::Colours::white.withAlpha (0.18f),
-                                    0.0f, body.getY() + 1.6f,
-                                    juce::Colours::transparentWhite,
-                                    0.0f, body.getY() + body.getHeight() * 0.34f, false);
-        g.setGradientFill (frost);
-        g.fillRoundedRectangle (body.reduced (0.6f),
-                                juce::jmax (1.2f, faceRad - 1.8f));
         juce::ColourGradient skirt (juce::Colours::transparentBlack,
-                                    0.0f, body.getBottom() - 4.0f,
-                                    juce::Colours::black.withAlpha (0.16f),
+                                    0.0f, body.getBottom() - 5.0f,
+                                    juce::Colours::black.withAlpha (0.26f),
                                     0.0f, body.getBottom(), false);
         g.setGradientFill (skirt);
-        g.fillRect (body.getX(), body.getBottom() - 4.0f, body.getWidth(), 4.0f);
+        g.fillRect (body.getX(), body.getBottom() - 5.0f, body.getWidth(), 5.0f);
     }
     g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.80f));
     g.drawRoundedRectangle (face.reduced (0.35f),

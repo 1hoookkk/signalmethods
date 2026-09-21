@@ -67,9 +67,8 @@ public:
             const int i0 = (int) t;
             const int i1 = (i0 + 1) % (len * kTicksPerBeat);
             const float frac = (float) (t - (double) i0);
-            const float target = values[(size_t) i0] + (values[(size_t) i1] - values[(size_t) i0]) * frac - 0.5f;
-            smoothed += (target - smoothed) * kSmooth;
-            morph[i] = juce::jlimit (0.0f, 1.0f, morph[i] + smoothed);
+            const float offset = values[(size_t) i0] + (values[(size_t) i1] - values[(size_t) i0]) * frac - 0.5f;
+            morph[i] = juce::jlimit (0.0f, 1.0f, morph[i] + offset);
             if (i == numSamples - 1)
                 uiPhase.store (phase, std::memory_order_relaxed);
         }
@@ -186,10 +185,8 @@ private:
             uiPhase.store (beat, std::memory_order_relaxed);
         }
     }
-    static constexpr float kSmooth = 1.0f - 0.9692332344763441f;
     std::vector<float> values;
     std::vector<float> raw;
-    float smoothed = 0.0f;
     float anchor = 0.5f;
 public:
     bool takeRawDirty() noexcept { return rawDirty.exchange (false, std::memory_order_acq_rel); }

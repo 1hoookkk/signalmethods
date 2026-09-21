@@ -1,4 +1,8 @@
 #include "PluginProcessor.h"
+#include "DriveSlamTests.h"
+#include "FrontendTests.h"
+#include "ModulationTimingTests.h"
+#include "UserMotionTests.h"
 #include "PluginEditor.h"
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
@@ -100,6 +104,10 @@ bool anyVisibleOfTitle (juce::Component& root, const juce::String& title)
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
+    failures += driveSlamTests();
+    failures += frontendTests();
+    failures += modulationTimingTests();
+    failures += userMotionTests();
 
     std::printf ("== shipping curves ==\n");
     trench::curves::clearBypassAxis();
@@ -145,8 +153,8 @@ int main()
 
     std::printf ("== PREAMP law ==\n");
     check (trench::preampGain (0.0f) == 1.0f, "preampGain(0) is exactly unity", trench::preampGain (0.0f), 1.0);
-    check (std::abs (db (trench::preampGain (0.5f)) - 20.0) < 0.01, "preampGain(0.5) is +20 dB", db (trench::preampGain (0.5f)), 20.0);
-    check (std::abs (db (trench::preampGain (1.0f)) - 40.0) < 0.01, "preampGain(1.0) is +40 dB", db (trench::preampGain (1.0f)), 40.0);
+    check (std::abs (db (trench::preampGain (0.5f)) - 5.0) < 0.01, "SLAM gain mapping at halfway is +5 dB", db (trench::preampGain (0.5f)), 5.0);
+    check (std::abs (db (trench::preampGain (1.0f)) - 20.0) < 0.01, "SLAM gain mapping at full is +20 dB", db (trench::preampGain (1.0f)), 20.0);
 
     std::printf ("== movement interpolation ==\n");
     {
@@ -162,18 +170,55 @@ int main()
                              trench::Movement::StepTransition);
         glideMovement.render (glided, 4, 0.5f, transport, 1,
                               trench::Movement::GlideTransition);
-        check (std::abs (stepped[2]) < 1.0e-7f,
-               "STEP holds the current Morph cell", stepped[2], 0.0);
-        check (std::abs (glided[2] + 0.25f) < 1.0e-6f,
-               "GLIDE interpolates directly between Morph cells", glided[2], -0.25);
+        check (std::abs (stepped[2] - 0.25f) < 1.0e-6f,
+               "STEP holds the current Morph cell above the wheel floor", stepped[2], 0.25);
+        check (std::abs (glided[2] - 0.125f) < 1.0e-6f,
+               "GLIDE interpolates directly between Morph cells", glided[2], 0.125);
         float anchored[1] = {};
         trench::Movement anchorMovement;
         anchorMovement.prepare (16.0);
         anchorMovement.render (anchored, 1, 0.8f, transport, 2,
                                trench::Movement::StepTransition);
-        check (std::abs ((0.8f + anchored[0]) - 0.16f) < 1.0e-6f,
-               "pattern travel uses the Morph wheel's room to the wall",
-               0.8f + anchored[0], 0.16);
+        check (std::abs ((0.8f + anchored[0]) - 0.82f) < 1.0e-6f,
+               "pattern travel is squeezed into the room above the Morph wheel",
+               0.8f + anchored[0], 0.82);
+        float full[64] = {};
+        trench::Movement fullMovement;
+        fullMovement.prepare (16.0);
+        fullMovement.render (full, 64, 0.0f, transport, 1, trench::Movement::StepTransition);
+        float low = 1.0f, high = 0.0f;
+        for (float v : full) { low = std::min (low, v); high = std::max (high, v); }
+        check (low == 0.0f && high == 1.0f, "at Morph 0 the pattern plays its full authored travel", high - low, 1.0);
+        float before[8] = {}, after[8] = {};
+        trench::Movement heldMovement;
+        heldMovement.prepare (16.0);
+        heldMovement.render (before, 8, 0.0f, transport, 1, trench::Movement::StepTransition);
+        auto later = transport; later.ppq = 0.5;
+        heldMovement.render (after, 8, 0.4f, later, 1, trench::Movement::StepTransition);
+        check (std::abs (after[0] - 0.5f * 0.6f) < 1.0e-6f && std::abs (after[4] - 0.875f * 0.6f) < 1.0e-6f,
+               "moving the Morph wheel continues the pattern from where it is", after[4], 0.525);
+        float anchorSample[1] = {}, wrapped[1] = {};
+        trench::Movement loopMovement;
+        loopMovement.prepare (16.0);
+        auto loopEnd = transport; loopEnd.ppq = 9.0;
+        loopMovement.render (anchorSample, 1, 0.0f, loopEnd, 1, trench::Movement::StepTransition);
+        auto loopStart = transport; loopStart.ppq = 0.5;
+        loopMovement.render (wrapped, 1, 0.0f, loopStart, 1, trench::Movement::StepTransition);
+        check (std::abs (wrapped[0] - 1.0f) < 1.0e-6f,
+               "a host loop wrap behind the anchor keeps the pattern running on its grid", wrapped[0], 1.0);
+        PluginProcessor chipProcessor;
+        const trench::UiLayout chipLayout { trench::UiLayout::defaults() };
+        const trench::ui::Theme chipTheme { chipLayout };
+        trench::ui::ModulationChip chip (chipProcessor.apvts, chipTheme);
+        setParam (chipProcessor, ParamID::morph, 0.7f);
+        chip.selectPattern (2);
+        check (chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load() == 0.0f
+                   && chipProcessor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 2.0f,
+               "selecting a modulation preset snaps Morph to 0", chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load(), 0.0);
+        setParam (chipProcessor, ParamID::morph, 0.3f);
+        chip.selectPattern (0);
+        check (chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load() == 0.3f,
+               "selecting OFF leaves Morph where it is", chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load(), 0.3);
     }
 
     std::printf ("== bridge boundary ==\n");
@@ -182,7 +227,7 @@ int main()
         bridge.prepare (48000.0, 512);
         const bool loaded = bridge.loadCartridgeBytes (BinaryData::identity_body240, (size_t) BinaryData::identity_body240Size);
         check (loaded, "identity body loads into the bridge");
-        bridge.setInputPreamp (trench::driveTaper (0.0f));
+        bridge.setInputDrive (trench::preampGain (0.0f));
         juce::AudioBuffer<float> buf (2, 64);
         buf.clear();
         buf.setSample (0, 0, 0.0625f);
@@ -192,7 +237,7 @@ int main()
         float sum = 0.0f;
         for (int i = 0; i < 64; ++i) sum += buf.getSample (0, i);
         check (std::abs (buf.getSample (0, 0) - 0.0625f) < 1.0e-5f && std::abs (sum - 0.0625f) < 1.0e-4f,
-               "PREAMP 0 through identity body returns a -24 dBFS impulse unchanged, below the leveller wake", buf.getSample (0, 0), 0.0625);
+               "PREAMP 0 through identity body returns a -24 dBFS impulse unchanged", buf.getSample (0, 0), 0.0625);
     }
 
     std::printf ("== bridge cost ==\n");
@@ -211,6 +256,7 @@ int main()
             TrenchDspBridge bridge;
             bridge.prepare (rate, 512);
             bridge.loadCartridgeBytes (crisp);
+            bridge.setRingLeveller (false);
             TrenchParams params;
             params.morph = 0.37f;
             params.q = 0.42f;
@@ -331,7 +377,7 @@ int main()
 
     setParam (processor, ParamID::preamp, 1.0f);
     const auto driven = runSine (processor, in);
-    check (db (driven.peak / base.peak) > 20.0, "INPUT at full drives the filter hard (dB over unity)", db (driven.peak / base.peak), 20.0);
+    check (std::abs (db (driven.peak / base.peak) - 20.0) < 0.1, "DRIVE at full adds 20 dB before the filter", db (driven.peak / base.peak), 20.0);
     setParam (processor, ParamID::preamp, 0.0f);
     {
         setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
@@ -371,42 +417,26 @@ int main()
             setParam (processor, ParamID::slamDrive, 0.0f);
             return out;
         };
-        const auto driven = capture (0.35f, 0.0f);
+        const auto driven = capture (1.0f, 0.0f, 0.25f);
         const double f = goertzel (driven, 37);
         const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
-        check (f > 0.01 && h / f > 0.02, "INPUT desk adds harmonics before the cascade (harmonic ratio)", h / f, 0.02);
-        const auto clean = capture (0.0f, 0.0f);
+        check (f > 0.01 && h / f > 0.02, "DRIVE pushes the final soft clip into harmonics", h / f, 0.02);
+        const auto clean = capture (0.0f, 0.0f, 0.25f);
         const double f0 = goertzel (clean, 37);
         const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
         check (h0 / f0 < 0.005, "INPUT at 0 is the clean path (harmonic ratio)", h0 / f0, 0.005);
 
-        const auto outputDriven = capture (0.0f, 0.35f, 0.25f);
-        const double outputF = goertzel (outputDriven, 37);
-        const double outputH = goertzel (outputDriven, 74) + goertzel (outputDriven, 111)
-                             + goertzel (outputDriven, 148) + goertzel (outputDriven, 185);
-        check (outputF > 0.001 && outputH / outputF < 0.005,
-               "OUTPUT is clean gain, no harmonics of its own (harmonic ratio)",
-               outputH / outputF, 0.005);
-        const auto outputClean = capture (0.0f, 0.0f);
-        const double outputF0 = goertzel (outputClean, 37);
-        const double outputH0 = goertzel (outputClean, 74) + goertzel (outputClean, 111)
-                              + goertzel (outputClean, 148) + goertzel (outputClean, 185);
-        check (outputH0 / outputF0 < 0.005,
-               "OUTPUT at 0 is the clean path after the No-filter body (harmonic ratio)",
-               outputH0 / outputF0, 0.005);
+        check (processor.apvts.getParameter (ParamID::slamDrive) == nullptr, "separate SLAM stage has no host control");
     }
-    const auto hot = runSine (processor, 0.1f);
-    setParam (processor, ParamID::slamDrive, 1.0f);
-    const auto slammed = runSine (processor, 0.1f);
-    check (slammed.finite && std::abs (db (slammed.peak / hot.peak) - 12.0) < 0.5, "OUTPUT at full is +12 dB over unity (dB)", db (slammed.peak / hot.peak), 12.0);
-    setParam (processor, ParamID::slamDrive, 0.0f);
     const auto loud = runSine (processor, 0.9f);
     check (loud.finite && loud.peak > 0.1f, "full-scale input at defaults stays finite and audible", loud.peak, 0.9);
     check (loud.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "safety ceiling bounds a full-scale input at -0.1 dBFS", loud.peak, trench::kFinalSafetyCeiling);
+    const auto over = runSine (processor, 1.25f);
+    check (over.finite && over.peak <= trench::kFinalSafetyCeiling, "No filter also contains over-range input", over.peak, trench::kFinalSafetyCeiling);
     setParam (processor, ParamID::preamp, 1.0f);
     const auto ceilinged = runSine (processor, 0.9f);
     check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at full", ceilinged.peak, trench::kFinalSafetyCeiling);
-    check (ceilinged.peak > 0.9f / TrenchDspBridge::kLevellerScale, "ceiling limits and the leveller rides full scale to its floor, it does not mute", ceilinged.peak, 0.9 / TrenchDspBridge::kLevellerScale);
+    check (ceilinged.peak > 0.5f, "full DRIVE into the ceiling does not mute", ceilinged.peak, 0.5);
     setParam (processor, ParamID::preamp, 0.0f);
 
     std::printf ("== guard shape ==\n");
@@ -493,16 +523,21 @@ int main()
         if (crossBand >= 0)
         {
             const auto crossed = measure (crossBand, 0.5f, 0.3f);
-            std::printf ("THD 220 Hz at -1 dBFS, BITE 0, Cross Band MORPH 0.5 Q 0.3: %.3f %%  (fundamental %.4f, peak %.4f)\n",
+            std::printf ("THD 220 Hz at -12 dBFS, Cross Band MORPH 0.5 Q 0.3: %.3f %%  (fundamental %.4f, peak %.4f)\n",
                          crossed.thd, crossed.fundamental, crossed.peak);
-            check (crossed.thd < 1.0, "Cross Band leaves a -1 dBFS sine under 1 % THD", crossed.thd, 1.0);
+            check (crossed.thd < 1.0, "Cross Band leaves a -12 dBFS sine under 1 % THD below the clip knee", crossed.thd, 1.0);
         }
         double worst = 0.0;
         int worstBody = -1;
         float worstPeak = 0.0f;
+        bool bounded = true, cleanBelowKnee = true;
         for (int i = 1; i < rosterCount; ++i)
         {
             const auto run = measure (i, 0.5f, 0.3f);
+            bounded = bounded && std::isfinite (run.thd) && std::isfinite (run.fundamental)
+                && run.peak <= trench::kFinalSafetyCeiling;
+            if (run.fundamental >= 0.05 && run.peak <= trench::kFinalSafetyKnee)
+                cleanBelowKnee = cleanBelowKnee && run.thd < 1.0;
             if (run.fundamental < 0.05 || run.thd <= worst)
                 continue;
             worst = run.thd;
@@ -511,7 +546,8 @@ int main()
         }
         std::printf ("worst THD across the roster at MORPH 0.5 Q 0.3: %.3f %%  (%s, peak %.4f)\n",
                      worst, worstBody >= 0 ? trench::bodyDisplayName (worstBody).toRawUTF8() : "none", worstPeak);
-        check (worst < 1.0, "no body leaves a -12 dBFS sine over 1 % THD", worst, 1.0);
+        check (bounded, "all bodies remain finite and bounded when filter gain reaches the soft clip");
+        check (cleanBelowKnee, "bodies below the soft clip knee retain under 1 % THD");
         setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
         setParam (processor, ParamID::morph, 0.0f);
         setParam (processor, ParamID::q, 0.0f);
@@ -520,8 +556,8 @@ int main()
 
     std::printf ("== ring leveller ==\n");
     {
-        trench::rescanBodyRoster();
-        int rosterCount = 0; trench::bodyRoster (rosterCount);
+        int rosterCount = 0;
+        trench::bakedRoster (rosterCount);
         int ringBody = -1;
         double ringDb = 0.0;
         for (int i = 0; i < rosterCount; ++i)
@@ -634,11 +670,12 @@ int main()
                 const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
                 crisp = juce::MemoryBlock (data, (size_t) size);
             }
-        auto runBite = [&crisp] (float bite, float* activityOut = nullptr)
+        auto runBite = [&crisp] (float bite, float* activityOut = nullptr, float amplitude = 0.1f)
         {
             TrenchDspBridge bridge;
             bridge.prepare (48000.0, 512);
             bridge.loadCartridgeBytes (crisp);
+            bridge.setRingLeveller (false);
             TrenchParams params;
             params.morph = 0.68f;
             params.q = 0.5f;
@@ -651,7 +688,7 @@ int main()
             {
                 for (int c = 0; c < 2; ++c)
                     for (int i = 0; i < 512; ++i)
-                        buf.setSample (c, i, rng.nextFloat() * 0.8f - 0.4f);
+                        buf.setSample (c, i, (rng.nextFloat() * 2.0f - 1.0f) * amplitude);
                 bridge.process (buf, params);
                 for (int i = 0; i < 512; ++i)
                     finite = finite && std::isfinite (buf.getSample (0, i));
@@ -666,9 +703,13 @@ int main()
         const auto clean = runBite (0.0f, &quietActivity);
         const auto bitten = runBite (0.75f, &bittenActivity);
         check (clean.second && bitten.second, "Z output finite at rest and engaged");
-        check (! (clean.first == bitten.first), "Z at 0.75 changes the sound");
+        check (clean.first == bitten.first, "BITE is transparent below overload");
         check (quietActivity == 0.0f, "grit telemetry silent at Z 0", quietActivity, 0.0);
-        check (bittenActivity > 0.0f, "grit telemetry lights when Z bites", bittenActivity, 0.0);
+        check (bittenActivity == 0.0f, "BITE telemetry stays dark below overload", bittenActivity, 0.0);
+        const auto hotClean = runBite (0.0f, nullptr, 8.0f);
+        const auto hotBite = runBite (1.0f, &bittenActivity, 8.0f);
+        check (hotBite.second && hotClean.first != hotBite.first, "BITE changes overloaded feedback and remains finite");
+        check (bittenActivity > 0.0f, "BITE telemetry lights on overload");
         const auto cleanAgain = runBite (0.0f);
         check (clean.first == cleanAgain.first, "Z at 0 is deterministic and untouched");
     }
@@ -822,17 +863,6 @@ int main()
             check (snapped.finite && std::abs (db (snapped.peak / off.peak)) > 1.0, "KEY F# audibly shifts the Crisp body at 220 Hz (dB)", db (snapped.peak / off.peak), 1.0);
             setParam (processor, ParamID::keySnap, 0.0f);
             {
-                processor.setEditorOpen (true);
-                setParam (processor, ParamID::envAmount, 1.0f);
-                runSine (processor, 0.0005f, 60);
-                runSine (processor, 0.5f, 4);
-                const float pushed = processor.getEffectiveMorphForUi();
-                setParam (processor, ParamID::envAmount, 0.0f);
-                runSine (processor, 0.5f, 4);
-                const float still = processor.getEffectiveMorphForUi();
-                processor.setEditorOpen (false);
-            }
-            {
             }
             if (std::getenv ("TRENCH_MEASURE") != nullptr)
             {
@@ -850,12 +880,12 @@ int main()
         std::printf ("== face containment ==\n");
         auto* editor = processor.createEditorIfNeeded();
         pump (50);
-        const juce::Rectangle<int> frame { 0, 0, trench::ui::kEditorWidth, trench::ui::kEditorHeight };
+        const auto frame = editor->getLocalBounds();
         int outside = 0;
         for (auto* c : editor->getChildren())
         {
             if (! c->isVisible()) continue;
-            const auto b = c->getBounds();
+            const auto b = editor->getLocalArea (c, c->getLocalBounds());
             if (frame.contains (b)) continue;
             ++outside;
             const auto who = c->getTitle().isNotEmpty() ? c->getTitle() : c->getName();
@@ -863,13 +893,52 @@ int main()
                          b.getX(), b.getY(), b.getWidth(), b.getHeight());
         }
         check (outside == 0, "every visible child sits inside the face", outside, 0);
+        check (findChild<trench::ui::DeskKnob> (*editor) == nullptr,
+               "gain knobs are absent from the four-control face");
+        check (findChild<trench::ui::KeySnapBox> (*editor) == nullptr,
+               "KEY is absent from the permanent face");
+        if (auto* graph = findChild<trench::ui::GraphDisplay> (*editor))
+        {
+            bool self = true, children = true;
+            graph->getInterceptsMouseClicks (self, children);
+            check (! self && ! children, "response graph has no hidden drag control");
+        }
         const trench::UiLayout faceLayout { trench::UiLayout::defaults() };
         const trench::ui::Theme faceTheme { faceLayout };
         const auto glass = faceTheme.rect ("spectrumGrid").getSmallestIntegerContainer();
-        auto* chip = findChild<trench::ui::ModulationChip> (*editor);
-        check (chip != nullptr, "Modulation chip exists");
-        if (chip != nullptr)
-            check (glass.contains (chip->getBounds()), "Modulation chip sits inside the glass");
+        auto* movement = findChild<trench::ui::ModulationBay> (*editor);
+        check (movement != nullptr, "MOVE exists below the performance wheels");
+        if (movement != nullptr)
+        {
+            check (movement->getY() > glass.getBottom(), "MOVE is outside the response display");
+            movement->selectPattern (1);
+            check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1.0f,
+                   "MOVE pattern selector changes the processor pattern");
+            processor.setEditorOpen (true);
+            const float oldMorph = processor.apvts.getRawParameterValue (ParamID::morph)->load();
+            setParam (processor, ParamID::morph, 0.5f);
+            juce::AudioBuffer<float> audio (2, 512);
+            juce::MidiBuffer midi;
+            float lo = 1.0f, hi = 0.0f;
+            bool running = true;
+            for (int block = 0; block < 180; ++block)
+            {
+                audio.clear();
+                processor.processBlock (audio, midi);
+                const float position = processor.getEffectiveMorphForUi();
+                lo = std::min (lo, position); hi = std::max (hi, position);
+                running = running && processor.isMorphModulatedForUi();
+            }
+            check (hi - lo > 0.25f, "selected modulation moves the effective Morph position");
+            check (running, "modulation remains active across resting-position crossings");
+            movement->selectPattern (0);
+            audio.clear();
+            processor.processBlock (audio, midi);
+            check (! processor.isMorphModulatedForUi(), "Modulation OFF stops the pattern");
+            check (std::abs (processor.getEffectiveMorphForUi() - 0.5f) < 0.0001f,
+                   "Modulation OFF returns to the resting wheel");
+            setParam (processor, ParamID::morph, oldMorph);
+        }
         processor.editorBeingDeleted (editor);
         delete editor;
     }
@@ -887,17 +956,16 @@ int main()
     holder.addToDesktop (juce::ComponentPeer::windowIsTemporary);
     holder.setVisible (true);
     pump (600);
-    check (editor->getWidth() == trench::ui::kFaceLockedWidth && editor->getHeight() == trench::ui::kFaceLockedHeight,
-           "editor is locked at the ruled DAW size", editor->getWidth(), editor->getHeight());
-    auto* faceChip = findChild<trench::ui::ModulationChip> (*editor);
-    check (faceChip != nullptr, "Modulation chip exists");
-    if (faceChip == nullptr)
+    check (! editor->isResizable() && editor->getWidth() == trench::ui::kFaceLockedWidth,
+           "editor uses the reference hardware face size", editor->getWidth(), editor->getHeight());
+    auto* faceMove = findChild<trench::ui::ModulationBay> (*editor);
+    check (faceMove != nullptr, "MOVE selector exists");
+    if (faceMove == nullptr)
         return 1;
-    check (faceChip->isShowing(), "Modulation is always on the glass");
-    check (! anyVisibleOfTitle (*editor, "Bite"), "BITE is not a third gain knob");
-    for (const char* gone : { "Input", "Output", "Follow", "Movement", "Key Snap", "Low", "Track", "Division", "Mix", "Section", "Bite", "Color 1", "Color 2", "Color 3", "Generator" })
+    check (faceMove->isShowing(), "MOVE is visible as an inline performance control");
+    for (const char* gone : { "Follow", "Low", "Track", "Division", "Color 1", "Color 2", "Color 3", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
-    check (faceChip->getHeight() >= 18, "rows are legible", faceChip->getHeight(), 18);
+    check (faceMove->getHeight() == 99, "modulation and distortion occupy one compact block", faceMove->getHeight(), 99);
     pump (150);
     {
         const float shotScale = std::getenv ("TRENCH_SHOT_SCALE") != nullptr ? (float) std::atof (std::getenv ("TRENCH_SHOT_SCALE")) : 1.0f;

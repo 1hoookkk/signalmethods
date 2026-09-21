@@ -11,16 +11,25 @@ public:
         sr = std::max (8000.0, sampleRate);
         const double scale = sr / 44100.0;
         iirAmountA = kIirA / scale;
-        iirAmountB = kIirB / scale;
+        updateCoupling();
         biquadA.setLowpass (sr, kUltrasonicHz, kBiquadAQ);
         biquadB.setLowpass (sr, kUltrasonicHz, kBiquadBQ);
         reset();
+    }
+    void setOutputCoupling (double hz)
+    {
+        if (couplingHz == hz)
+            return;
+        couplingHz = hz;
+        updateCoupling();
     }
     void setEnabled (bool on)
     {
         if (enabled != on) { enabled = on; reset(); }
     }
     bool isActive() const noexcept { return enabled; }
+    void setBypassSaturation (bool bypass) noexcept { bypassSaturate = bypass; }
+    bool isBypassSaturation() const noexcept { return bypassSaturate; }
     void reset()
     {
         iirA = 0.0; iirB = 0.0;
@@ -31,22 +40,24 @@ public:
         if (! enabled)
             return input;
         const double d = std::clamp ((double) drive, 0.0, 1.0);
-        double s = (double) input * (1.0 + d * kSlamToInputGain);
+        double s = (double) input;
         iirA = guard (iirA * (1.0 - iirAmountA) + s * iirAmountA);
         s -= iirA;
+        s *= 1.0 + d * kSlamToInputGain;
         s = biquadA.process (s);
-        s = saturate (s, d);
+        if (! bypassSaturate)
+        {
+            s = saturate (s, d);
+        }
         s = biquadB.process (s);
         iirB = guard (iirB * (1.0 - iirAmountB) + s * iirAmountB);
         s -= iirB;
         return std::isfinite (s) ? (float) std::clamp (s, -8.0, 8.0) : 0.0f;
     }
-    static double saturate (double sample, double drive) noexcept
+    static double saturate (double sample, double) noexcept
     {
-        const double d = std::clamp (drive, 0.0, 1.0);
-        const double curve = 0.25 * (1.0 - d) * (1.0 - d);
-        const double c = std::clamp (sample, -1.0, 1.0);
-        return c - c * c * c * c * c * curve;
+        const double x = std::clamp (sample, -1.0, 1.0);
+        return x - std::pow (x, 5.0) * 0.1768;
     }
 private:
     static constexpr double kUltrasonicHz = 19160.0;
@@ -54,7 +65,7 @@ private:
     static constexpr double kBiquadBQ = 1.1582298;
     static constexpr double kIirA = 0.001860867;
     static constexpr double kIirB = 0.000287496;
-    static constexpr double kSlamToInputGain = 99.0;
+    static constexpr double kSlamToInputGain = 9.0;
     static double guard (double x) noexcept { return std::abs (x) < 1.18e-37 ? 0.0 : x; }
     struct Biquad
     {
@@ -76,8 +87,14 @@ private:
         }
         void reset() { x1 = x2 = y1 = y2 = 0.0; }
     };
+    void updateCoupling()
+    {
+        iirAmountB = couplingHz > 0.0 ? 2.0 * 3.14159265358979323846 * couplingHz / sr : kIirB / (sr / 44100.0);
+    }
     bool enabled = false;
+    bool bypassSaturate = false;
     double sr = 44100.0;
+    double couplingHz = 0.0;
     double iirAmountA = kIirA, iirAmountB = kIirB, iirA = 0.0, iirB = 0.0;
     Biquad biquadA, biquadB;
 };

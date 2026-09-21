@@ -367,6 +367,10 @@ int main()
     std::printf ("== processor: body recall by id, and an out-of-range slot lands on NO FILTER ==\n");
     {
         juce::MemoryBlock saved, savedOutOfRange;
+        juce::AudioBuffer<float> recallInput (2, 512), expectedRecall (2, 512);
+        double recallPhase = 0.0;
+        fillSine (recallInput, recallPhase, 220.0, kHostRate, 0.05f);
+        juce::MidiBuffer recallMidi;
         {
             PluginProcessor a;
             a.setPlayConfigDetails (2, 2, kHostRate, 512);
@@ -375,6 +379,8 @@ int main()
             setParam (a, ParamID::morph, 0.7f);
             pump (300);
             a.getStateInformation (saved);
+            expectedRecall.makeCopyOf (recallInput);
+            a.processBlock (expectedRecall, recallMidi);
             setParam (a, ParamID::body, (float) (trench::bodyCount() + 40));
             pump (300);
             a.getStateInformation (savedOutOfRange);
@@ -383,6 +389,19 @@ int main()
         b.setPlayConfigDetails (2, 2, kHostRate, 512);
         b.prepareToPlay (kHostRate, 512);
         b.setStateInformation (saved.getData(), (int) saved.getSize());
+        // Start the bounce immediately: no message-loop pump and no silent
+        // settling blocks are allowed between restoring the project and audio.
+        juce::AudioBuffer<float> immediateRecall;
+        immediateRecall.makeCopyOf (recallInput);
+        b.processBlock (immediateRecall, recallMidi);
+        double recallDifference = 0.0;
+        for (int channel = 0; channel < 2; ++channel)
+            for (int sample = 0; sample < 512; ++sample)
+                recallDifference = std::max (recallDifference, (double) std::abs (
+                    immediateRecall.getSample (channel, sample) - expectedRecall.getSample (channel, sample)));
+        check (recallDifference < 1.0e-6,
+               "first audio block after recall matches the saved patch without a message-loop wait",
+               recallDifference, 1.0e-6);
         pump (400);
         check (b.getLoadedBodyIndex() == crispIndex, "BODY recalls by id into a fresh instance", b.getLoadedBodyIndex(), crispIndex);
         check (b.getLastLoadOk(), "recalled body loaded");

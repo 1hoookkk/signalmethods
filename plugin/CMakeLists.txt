@@ -69,8 +69,12 @@ endforeach()
 
 juce_add_binary_data(TRENCHAssets SOURCES
   assets/df2_panel_beige.png
+  assets/trench_glass.png
+  assets/thin_wheel_strip.png
   assets/trench_roller_strip.png
+  assets/trench_ss3_strip.png
   assets/trench_knob_strip.png
+  assets/trench_knob_front_strip.png
   assets/trench_display_grid.png
   assets/display_bitmap4613.png
   assets/key_model_rtneural.json
@@ -88,14 +92,14 @@ set(TRENCH_PLUGIN_SOURCES
   source/parameters/TrenchParameters.h source/parameters/TrenchParameters.cpp
   source/parameters/Curves.h source/parameters/CurveMap.h
   source/dsp/KeyDetector.h source/dsp/KeyDetector.cpp
-  source/dsp/Movement.h source/dsp/SlamStage.h source/dsp/DeskDrive.h source/dsp/EnvFollower.h
+  source/dsp/Movement.h source/dsp/SlamStage.h source/dsp/DeskDrive.h source/dsp/TransientDetector.h
   source/dsp/TrenchCleanBody.h source/dsp/TrenchDspBridge.h
   source/dsp/TrenchRuntimePreset.h source/dsp/FuncGenPatterns.h source/dsp/PreampLaw.h
   source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/ModulationChip.h
   source/ui/ParamInteraction.h
   source/ui/SelectorLookAndFeel.h source/ui/Theme.h
   source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h
-  source/ui/Onboarding.h source/ui/DevPanel.h source/dsp/WheelLoop.h)
+  source/ui/DevPanel.h source/dsp/WheelLoop.h)
 
 add_library(TRENCHPluginCommon STATIC ${TRENCH_PLUGIN_SOURCES})
 target_compile_features(TRENCHPluginCommon PUBLIC cxx_std_20)
@@ -114,6 +118,7 @@ juce_add_plugin(TRENCH
   PLUGIN_CODE Tr01
   FORMATS VST3 Standalone
   PRODUCT_NAME "TRENCH"
+  NEEDS_MIDI_INPUT TRUE
   COPY_PLUGIN_AFTER_BUILD FALSE)
 target_link_libraries(TRENCH PRIVATE TRENCHPluginCommon)
 
@@ -134,6 +139,7 @@ juce_add_plugin(TRENCH_Dev
   PLUGIN_CODE Tr0d
   FORMATS VST3
   PRODUCT_NAME "TRENCH Dev"
+  NEEDS_MIDI_INPUT TRUE
   COPY_PLUGIN_AFTER_BUILD FALSE)
 target_link_libraries(TRENCH_Dev PRIVATE TRENCHPluginCommonDev)
 
@@ -147,12 +153,12 @@ juce_add_plugin(TRENCH_Lens
   COPY_PLUGIN_AFTER_BUILD FALSE)
 set(TRENCH_LENS_CORE
   "${CMAKE_CURRENT_SOURCE_DIR}/lens/Locator.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/Locator.cpp"
-  "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Peevers.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Peevers.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/Peevers.h" "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp/Peevers.cpp")
 target_sources(TRENCH_Lens PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensProcessor.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.h" "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensEditor.cpp"
   ${TRENCH_LENS_CORE})
-target_include_directories(TRENCH_Lens PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source")
+target_include_directories(TRENCH_Lens PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp")
 target_compile_features(TRENCH_Lens PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_Lens PRIVATE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_Lens PRIVATE
@@ -162,21 +168,28 @@ target_link_libraries(TRENCH_Lens PRIVATE
 
 juce_add_console_app(TRENCH_LensTests PRODUCT_NAME "TRENCH Lens Tests")
 target_sources(TRENCH_LensTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensTests.cpp" ${TRENCH_LENS_CORE})
-target_include_directories(TRENCH_LensTests PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source" "${CMAKE_CURRENT_SOURCE_DIR}/lens")
+target_include_directories(TRENCH_LensTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source/dsp" "${CMAKE_CURRENT_SOURCE_DIR}/lens")
 target_compile_features(TRENCH_LensTests PRIVATE cxx_std_20)
 target_compile_definitions(TRENCH_LensTests PRIVATE ${TRENCH_COMMON_DEFINITIONS})
 target_link_libraries(TRENCH_LensTests PRIVATE trench_native_core juce::juce_core juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
 add_test(NAME trench_lens COMMAND TRENCH_LensTests)
 
-juce_add_console_app(TRENCH_LensBench PRODUCT_NAME "TRENCH Lens Bench")
-target_sources(TRENCH_LensBench PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensBench.cpp" ${TRENCH_LENS_CORE}
-  "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.cpp")
-target_include_directories(TRENCH_LensBench PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source" "${CMAKE_CURRENT_SOURCE_DIR}/lens")
-target_compile_features(TRENCH_LensBench PRIVATE cxx_std_20)
-target_compile_definitions(TRENCH_LensBench PRIVATE ${TRENCH_COMMON_DEFINITIONS})
-target_link_libraries(TRENCH_LensBench PRIVATE trench_native_core juce::juce_core juce::juce_audio_basics juce::juce_audio_formats juce::juce_dsp juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+if(EXISTS "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.cpp")
+  juce_add_console_app(TRENCH_LensBench PRODUCT_NAME "TRENCH Lens Bench")
+  target_sources(TRENCH_LensBench PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lens/LensBench.cpp" ${TRENCH_LENS_CORE}
+    "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.h" "${TRENCH_WORKSPACE_DIR}/native/workstation/Source/dsp/Formants.cpp")
+  target_include_directories(TRENCH_LensBench PRIVATE "${TRENCH_WORKSPACE_DIR}/native/workstation/Source" "${CMAKE_CURRENT_SOURCE_DIR}/lens")
+  target_compile_features(TRENCH_LensBench PRIVATE cxx_std_20)
+  target_compile_definitions(TRENCH_LensBench PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+  target_link_libraries(TRENCH_LensBench PRIVATE trench_native_core juce::juce_core juce::juce_audio_basics juce::juce_audio_formats juce::juce_dsp juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+endif()
 
 juce_add_console_app(TRENCH_FaceShot PRODUCT_NAME "TRENCH FaceShot")
+
+juce_add_gui_app(TRENCH_MotionAuthor PRODUCT_NAME "TRENCH Motion Author")
+target_sources(TRENCH_MotionAuthor PRIVATE tools/MotionAuthor.cpp tools/MotionEditor.h)
+target_compile_definitions(TRENCH_MotionAuthor PRIVATE ${TRENCH_COMMON_DEFINITIONS})
+target_link_libraries(TRENCH_MotionAuthor PRIVATE TRENCHPluginCommon)
 target_sources(TRENCH_FaceShot PRIVATE tools/FaceShot.cpp)
 target_include_directories(TRENCH_FaceShot PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
 target_compile_definitions(TRENCH_FaceShot PRIVATE ${TRENCH_COMMON_DEFINITIONS}
@@ -194,6 +207,17 @@ target_compile_definitions(TRENCH_Stimuli PRIVATE ${TRENCH_COMMON_DEFINITIONS}
     JUCE_MODAL_LOOPS_PERMITTED=1)
 target_link_libraries(TRENCH_Stimuli PRIVATE
     TRENCHPluginCommon
+    juce::juce_audio_formats
+    juce::juce_recommended_config_flags
+    juce::juce_recommended_warning_flags)
+
+juce_add_console_app(TRENCH_StimuliDev PRODUCT_NAME "TRENCH Stimuli Dev")
+target_sources(TRENCH_StimuliDev PRIVATE tools/Stimuli.cpp)
+target_include_directories(TRENCH_StimuliDev PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_StimuliDev PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1 TRENCH_DEV_PANEL=1)
+target_link_libraries(TRENCH_StimuliDev PRIVATE
+    TRENCHPluginCommonDev
     juce::juce_audio_formats
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
@@ -231,6 +255,13 @@ target_link_libraries(TRENCH_Tests PRIVATE
     juce::juce_recommended_warning_flags)
 
 enable_testing()
+juce_add_console_app(TRENCH_CalibrationTests PRODUCT_NAME "TRENCH Calibration Tests")
+target_sources(TRENCH_CalibrationTests PRIVATE tests/CalibrationTests.cpp)
+target_include_directories(TRENCH_CalibrationTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_CalibrationTests PRIVATE ${TRENCH_COMMON_DEFINITIONS} JUCE_MODAL_LOOPS_PERMITTED=1 TRENCH_DEV_PANEL=1)
+target_link_libraries(TRENCH_CalibrationTests PRIVATE TRENCHPluginCommonDev juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+add_test(NAME trench_calibration COMMAND TRENCH_CalibrationTests)
+set_tests_properties(trench_calibration PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1")
 add_test(NAME trench_plugin COMMAND TRENCH_Tests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 set_tests_properties(trench_plugin PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1")
 juce_add_console_app(TRENCH_ReviewTests PRODUCT_NAME "TRENCH Review Tests")
@@ -243,30 +274,29 @@ target_link_libraries(TRENCH_ReviewTests PRIVATE
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
 add_test(NAME trench_plugin_review COMMAND TRENCH_ReviewTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+juce_add_console_app(TRENCH_UserBodyTests PRODUCT_NAME "TRENCH User Body Tests")
+target_sources(TRENCH_UserBodyTests PRIVATE tests/UserBodyTests.cpp)
+target_compile_definitions(TRENCH_UserBodyTests PRIVATE ${TRENCH_COMMON_DEFINITIONS} JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_UserBodyTests PRIVATE TRENCHPluginCommon)
+add_test(NAME trench_user_bodies COMMAND TRENCH_UserBodyTests)
+set_tests_properties(trench_user_bodies PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1")
 set_tests_properties(trench_plugin_review PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 600)
 add_test(NAME trench_gen_curves
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gen_curves.py"
     WORKING_DIRECTORY "${TRENCH_WORKSPACE_DIR}")
 set_tests_properties(trench_gen_curves PROPERTIES ENVIRONMENT "MPLBACKEND=Agg")
 
-set(TRENCH_WORKSTATION_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source")
-juce_add_console_app(TRENCH_WorkstationTests PRODUCT_NAME "TRENCH Workstation Tests")
-target_sources(TRENCH_WorkstationTests PRIVATE
-  "${TRENCH_WORKSTATION_DIR}/../Tests/MorphTests.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Frame.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Delaunay.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Library.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Body.cpp"
-  "${TRENCH_WORKSTATION_DIR}/model/Morph.cpp")
-target_include_directories(TRENCH_WorkstationTests PRIVATE "${TRENCH_WORKSTATION_DIR}")
-target_compile_features(TRENCH_WorkstationTests PRIVATE cxx_std_20)
-target_compile_definitions(TRENCH_WorkstationTests PRIVATE ${TRENCH_COMMON_DEFINITIONS})
-target_link_libraries(TRENCH_WorkstationTests PRIVATE
-    trench_native_core
-    juce::juce_graphics
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation/Source/app/Main.cpp")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation" "${CMAKE_CURRENT_BINARY_DIR}/workstation")
+endif()
+
+juce_add_console_app(TRENCH_MorphClip PRODUCT_NAME "TRENCH MorphClip")
+target_sources(TRENCH_MorphClip PRIVATE tools/MorphClip.cpp)
+target_include_directories(TRENCH_MorphClip PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_MorphClip PRIVATE ${TRENCH_COMMON_DEFINITIONS}
+    JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_MorphClip PRIVATE
+    TRENCHPluginCommon
+    juce::juce_audio_formats
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags)
-add_test(NAME trench_workstation COMMAND TRENCH_WorkstationTests WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-set_tests_properties(trench_workstation PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 300)
-
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/workstation" "${CMAKE_CURRENT_BINARY_DIR}/workstation")

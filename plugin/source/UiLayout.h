@@ -21,56 +21,59 @@ public:
     {
         UiLayout layout;
 
-        layout.elements["morphWheel"]   = { { 106.2f, 675.1f, 442.8f, 99.7f }, {}, {} };
-        layout.elements["qWheel"]       = { { 106.2f, 842.4f, 442.8f, 99.7f }, {}, {} };
-        layout.elements["typeSelector"] = { { 230.0f, 139.0f, 666.6f, 68.0f },  {}, {} };
+        layout.elements["morphWheel"]   = { { 118.7f, 675.6f, 429.1f, 75.6f }, {}, {} };
+        layout.elements["qWheel"]       = { { 118.7f, 840.0f, 429.1f, 75.6f }, {}, {} };
+        layout.elements["typeSelector"] = { { 233.2f, 137.1f, 675.8f, 67.1f },  {}, {} };
 
-        layout.elements["keyBox"]       = { { 551.6f, 65.0f, 345.0f, 62.0f }, {}, {} };
+        layout.elements["keyBox"]       = { { 559.2f, 64.1f, 349.8f, 61.2f }, {}, {} };
 
-        layout.elements["morphReadout"] = { { 588.0f, 694.0f, 172.0f, 62.0f },  16.0f, juce::Colour (0xff3f3a33) };
-        layout.elements["qReadout"]     = { { 588.0f, 861.2f, 172.0f, 62.0f },  16.0f, juce::Colour (0xff3f3a33) };
+        layout.elements["morphReadout"] = { { 563.2f, 684.6f, 174.4f, 61.2f },  18.0f, juce::Colour (0xff191714) };
+        layout.elements["qReadout"]     = { { 563.2f, 849.6f, 174.4f, 61.2f },  18.0f, juce::Colour (0xff191714) };
 
-        layout.elements["spectrumGrid"] = { { 120.7f, 238.8f, 769.9f, 361.7f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 126.0f, 238.0f, 769.0f, 350.0f }, {}, {} };
 
-        layout.elements["typeLabel"]    = { { 126.9f, 139.0f, 97.0f, 68.0f },  14.5f, juce::Colour (0xff2a2722) };
+        layout.elements["typeLabel"]    = { { 128.7f, 137.1f, 98.3f, 67.1f },  14.5f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
 
-        layout.elements["typeName"]     = { { 244.0f, 143.0f, 522.0f, 64.0f },  20.0f, juce::Colour (0xff2a2722) };
-        layout.elements["typeArrow"]    = { { 841.6f, 143.0f, 52.0f,  64.0f },  {}, {} };
-        layout.elements["morphLabel"]   = { { 109.8f, 635.1f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
+        layout.elements["typeName"]     = { { 247.4f, 141.1f, 529.2f, 63.1f },  20.0f, juce::Colour (0xff1a1713) };
+        layout.elements["typeArrow"]    = { { 853.3f, 141.1f, 52.7f,  63.1f },  {}, {} };
+        layout.elements["morphLabel"]   = { { 111.3f, 621.25f, 448.9f, 48.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["morphLabel"].text = "MORPH";
-        layout.elements["qLabel"]       = { { 109.8f, 802.35f, 442.8f, 38.0f },  17.0f, juce::Colour (0xff2a2722) };
+        layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
 
-        layout.elements["brandLabel"]   = { { 126.9f, 66.0f, 300.0f, 56.0f }, 29.0f, juce::Colour (0xff0f0c09) };
+        layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 14.5f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        layout.colours["accent"]             = juce::Colour (0xff3cc8be);
-        layout.colours["curveColour"]        = juce::Colour (0xffbef0d7);
-        layout.colours["curveHighlight"]     = juce::Colour (0xffe6fff4);
-        layout.colours["telemetry"]          = juce::Colour (0xff608074);
-        layout.colours["dashed"]             = juce::Colour (0xff608074);
-        layout.colours["rollerIllumination"] = juce::Colour (0xff3cc8be);
-        layout.colours["modulationLamp"]     = juce::Colour (0xff3cc8be);
-        layout.colours["phosphor"]           = juce::Colour (0xff1a1624);
+        const juce::Colour lamp (0xff82c8bc);
+        layout.colours["accent"]             = lamp.darker (0.35f);
+        layout.colours["curveColour"]        = lamp;
+        layout.colours["curveHighlight"]     = lamp.interpolatedWith (juce::Colours::white, 0.55f);
+        layout.colours["telemetry"]          = juce::Colour (0xff5d8079);
+        layout.colours["dashed"]             = juce::Colour (0xff5d8079);
+        layout.colours["rollerIllumination"] = lamp;
+        layout.colours["modulationLamp"]     = lamp;
+        layout.colours["phosphor"]           = juce::Colour (0xffa8cbbc);
 
         layout.colours["amber"]              = juce::Colour (0xffb8862e);
         layout.colours["screenEdge"]         = juce::Colour (0xff171325);
 
-        layout.colours["spectrumGhost"]      = juce::Colour (0xff1a1624);
-        layout.colours["labelInk"]    = juce::Colour (0xff24231f);
+        layout.colours["spectrumGhost"]      = juce::Colour (0xff8fd8bd);
+        layout.colours["glassTop"]           = juce::Colour (0xff070b0e);
+        layout.colours["glassBottom"]        = juce::Colour (0xff020405);
+        layout.colours["labelInk"]    = juce::Colour (0xff1e262c);
 
-        layout.colours["wellTop"]            = juce::Colour (0xff2A2A2A);
-        layout.colours["wellBottom"]         = juce::Colour (0xff1A1A1A);
-        layout.colours["wellKeyline"]        = juce::Colour (0xff4A4A4A);
+        layout.colours["wellTop"]            = juce::Colour (0xffcbd8e6);
+        layout.colours["wellBottom"]         = juce::Colour (0xff9db0c4);
+        layout.colours["wellKeyline"]        = juce::Colour (0xffe6eef6);
         layout.params["wellRadius"]        = 9.0;
         layout.params["readoutAliasScale"] = 0.95;
         layout.params["typeArrowExtra"]    = 6.0;
         layout.params["curveDbTop"]        = 40.0;
         layout.params["curveDbBottom"]     = -40.0;
         layout.params["fontBold"]          = 1.0;
-        layout.params["gridBoost"]         = 3.0;
-        layout.colours["gridTint"]           = juce::Colour (0xff4a4f4c);
+        layout.params["gridBoost"]         = 2.0;
+        layout.colours["gridTint"]           = juce::Colour (0xff243038);
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {

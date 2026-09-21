@@ -11,6 +11,8 @@ public:
     FaceplateView (juce::Image panel, const Theme& theme)
         : panelImage (std::move (panel)), t (theme)
     {
+        if (const char* override = std::getenv ("TRENCH_PLATE_FILE"))
+            panelImage = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
         const bool silver = t.themeParam ("plateSilver", 0.0) > 0.0;
         const bool dark = t.themeParam ("plateDark", 0.0) > 0.0;
         if (panelImage.isValid() && (silver || dark))
@@ -85,8 +87,34 @@ public:
             g.drawImage (panelImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         }
 
+        drawWheelPlateShadow (g, t.rect ("morphWheel"));
+        drawWheelPlateShadow (g, t.rect ("qWheel"));
         drawWheelContactShadow (g, t.rect ("morphWheel"));
         drawWheelContactShadow (g, t.rect ("qWheel"));
+    }
+
+    static void drawWheelPlateShadow (juce::Graphics& g, juce::Rectangle<float> well)
+    {
+        if (well.isEmpty())
+            return;
+
+        const float scale = well.getWidth() / 105.0f;
+        const float castH = 6.0f * scale;
+        const float cx = well.getCentreX();
+        const float overlap = 0.5f * scale;
+        const float cy = well.getSmallestIntegerContainer().getBottom() + 1.0f * scale;
+        const float rx = well.getWidth() * 0.48f;
+
+        juce::Graphics::ScopedSaveState save (g);
+        g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
+                                                  (int) well.getWidth(), (int) std::ceil (castH + overlap + 1.0f)));
+        g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
+        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.72f), cx, cy,
+                                 juce::Colours::transparentBlack, cx + rx, cy, true);
+        sh.addColour (0.50, juce::Colours::black.withAlpha (0.46f));
+        sh.addColour (0.82, juce::Colours::black.withAlpha (0.10f));
+        g.setGradientFill (sh);
+        g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
     }
 
     static void drawWheelContactShadow (juce::Graphics& g, juce::Rectangle<float> well)
@@ -94,42 +122,15 @@ public:
         if (well.isEmpty())
             return;
 
-        {
-
-            const auto opening_r = well.reduced (0.8f, 2.7f);
-            juce::Graphics::ScopedSaveState save (g);
-            juce::Path opening;
-            opening.addRoundedRectangle (opening_r, opening_r.getHeight() * 0.34f);
-            g.reduceClipRegion (opening);
-            const float sideD = 7.0f;
-            juce::ColourGradient left (juce::Colours::black.withAlpha (0.50f),
-                                       opening_r.getX(), opening_r.getCentreY(),
-                                       juce::Colours::transparentBlack,
-                                       opening_r.getX() + sideD, opening_r.getCentreY(), false);
-            g.setGradientFill (left);
-            g.fillRect (opening_r.withWidth (sideD));
-            juce::ColourGradient right (juce::Colours::black.withAlpha (0.50f),
-                                        opening_r.getRight(), opening_r.getCentreY(),
-                                        juce::Colours::transparentBlack,
-                                        opening_r.getRight() - sideD, opening_r.getCentreY(), false);
-            g.setGradientFill (right);
-            g.fillRect (opening_r.withLeft (opening_r.getRight() - sideD));
-        }
-        const float castH = 7.0f;
-        const float cx = well.getCentreX();
-        const float overlap = 1.5f;
-        const float cy = well.getBottom() - overlap;
-        const float rx = well.getWidth() * 0.48f;
         juce::Graphics::ScopedSaveState save (g);
-        g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
-                                                  (int) well.getWidth(), (int) (castH + overlap)));
-        g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
-        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.74f), cx, cy,
-                                 juce::Colours::transparentBlack, cx + rx, cy, true);
-        sh.addColour (0.50, juce::Colours::black.withAlpha (0.50f));
-        sh.addColour (0.82, juce::Colours::black.withAlpha (0.18f));
-        g.setGradientFill (sh);
-        g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
+        juce::Path recess;
+        recess.addRoundedRectangle (well, 3.0f);
+        g.reduceClipRegion (recess);
+        juce::ColourGradient bed (juce::Colour (0xff030507), well.getCentreX(), well.getY(),
+                                  juce::Colour (0xff111419), well.getCentreX(), well.getBottom(), false);
+        g.setGradientFill (bed);
+        g.fillRect (well);
+
     }
 private:
 

@@ -1,0 +1,184 @@
+#pragma once
+#include "Theme.h"
+#include "ParamInteraction.h"
+#include "../parameters/TrenchParameters.h"
+#include "BinaryData.h"
+#include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_gui_basics/juce_gui_basics.h>
+#include <memory>
+
+namespace trench::ui
+{
+class DeskKnob final : public juce::Component,
+                       public juce::SettableTooltipClient
+{
+public:
+    DeskKnob (juce::AudioProcessorValueTreeState& apvts, const Theme& theme,
+              const juce::String& paramID, juce::String caption)
+        : t (theme),
+          driveParam (apvts.getParameter (paramID)), label (std::move (caption))
+    {
+        setTitle (label);
+        setWantsKeyboardFocus (true);
+        setRepaintsOnMouseActivity (true);
+        strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_front_strip_png, BinaryData::trench_knob_front_strip_pngSize);
+        if (driveParam != nullptr)
+            driveAttachment = std::make_unique<juce::ParameterAttachment> (*driveParam, [this] (float) { updateTooltip(); repaint(); });
+        updateTooltip();
+    }
+
+    float getDrive() const noexcept
+    {
+        return driveParam != nullptr ? driveParam->getValue() : 0.0f;
+    }
+
+    void setLegendVisible (bool visible) { legendVisible = visible; repaint(); }
+
+    bool keyPressed (const juce::KeyPress& key) override { return adjustParamFromKey (driveParam, key); }
+
+    void updateTooltip()
+    {
+        const auto role = label == "INPUT" ? "level into the filter" : "saturation after the filter";
+        setTooltip (label + " (" + role + "): " + juce::String (juce::roundToInt (getDrive() * 100.0f)) + "% - drag/wheel; Shift for fine adjustment; double-click reset");
+    }
+
+    juce::Rectangle<float> getLegendArea() const
+    {
+        const auto b = getLocalBounds().toFloat();
+        const float legendH = juce::jmax (12.0f, b.getHeight() * 0.28f);
+        return { b.getX(), b.getBottom() - legendH, b.getWidth(), legendH };
+    }
+
+    juce::Rectangle<float> getKnobArea() const
+    {
+        const auto b = getLocalBounds().toFloat();
+        const float legendH = juce::jmax (12.0f, b.getHeight() * 0.28f);
+        return b.withTrimmedBottom (legendH);
+    }
+
+    void paint (juce::Graphics& g) override
+    {
+        const auto b = getLocalBounds().toFloat();
+        const auto legend = getLegendArea();
+        const float d = juce::jmin (b.getWidth() * 0.66f, b.getHeight() - legend.getHeight() - 7.0f);
+        const juce::Point<float> c { b.getCentreX(), b.getY() + 5.0f + d * 0.5f };
+        const float drive = getDrive();
+
+        const auto mount = juce::Rectangle<float> (d + 3.0f, d + 3.0f).withCentre (c);
+        juce::ColourGradient seat (juce::Colour (0xff514e45), c.x, mount.getY(),
+                                   juce::Colour (0xffeee8d8), c.x, mount.getBottom(), false);
+        seat.addColour (0.45, juce::Colour (0xff8b877c));
+        g.setGradientFill (seat);
+        g.fillEllipse (mount);
+        g.setColour (juce::Colour (0xff292c29));
+        g.fillEllipse (mount.reduced (0.7f));
+        juce::Path contact;
+        contact.addEllipse (mount.reduced (3.0f).translated (0.0f, 1.0f));
+        juce::DropShadow (juce::Colours::black.withAlpha (0.32f), 2, { 0, 1 }).drawForPath (g, contact);
+
+        if (strip.isValid())
+        {
+            constexpr int frameSize = 96, frameCount = 61;
+            const int frame = juce::jlimit (0, frameCount - 1,
+                                            juce::roundToInt ((1.0f - drive) * (float) (frameCount - 1)));
+            const float frameD = d * (96.0f / 76.0f);
+            g.setOpacity (1.0f);
+            g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+            g.drawImage (strip, (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f), (int) frameD, (int) frameD,
+                         frame * frameSize, 0, frameSize, frameSize, false);
+        }
+
+        const float fontSize = juce::jlimit (8.0f, 11.0f, legend.getHeight() * 0.75f);
+        g.setFont (displayFont (fontSize, true));
+
+        const auto driveBox = legend.toNearestInt();
+        g.setColour (t.labelInk());
+        if (legendVisible)
+            g.drawText (draggingKnob ? juce::String (juce::roundToInt (drive * 100.0f)) + "%" : label,
+                    driveBox, juce::Justification::centred, false);
+    }
+
+    void mouseMove (const juce::MouseEvent&) override
+    {
+        setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
+    }
+
+    void mouseDown (const juce::MouseEvent& e) override
+    {
+        if (e.mods.isPopupMenu())
+        {
+            showParamContextMenu (*this, driveParam);
+            return;
+        }
+
+        if (driveAttachment != nullptr && driveParam != nullptr)
+        {
+            driveAttachment->beginGesture();
+            gestureOpen = true;
+            dragStartY = e.position.y;
+            valueAtStart = getDrive();
+            draggingKnob = true;
+            e.source.enableUnboundedMouseMovement (true, false);
+        }
+    }
+
+    void mouseDrag (const juce::MouseEvent& e) override
+    {
+        if (! draggingKnob || driveAttachment == nullptr || driveParam == nullptr || e.mods.isPopupMenu())
+            return;
+
+        const float travel = 100.0f;
+        const float fine = fineDragScale (e);
+        const float dy = dragStartY - e.position.y;
+        const float next = juce::jlimit (0.0f, 1.0f, valueAtStart + (dy / travel) * fine);
+        driveAttachment->setValueAsPartOfGesture (driveParam->convertFrom0to1 (next));
+        updateTooltip();
+        repaint();
+    }
+
+    void mouseUp (const juce::MouseEvent&) override
+    {
+        if (driveAttachment != nullptr && gestureOpen)
+        {
+            driveAttachment->endGesture();
+            gestureOpen = false;
+        }
+        draggingKnob = false;
+        repaint();
+    }
+
+    void mouseDoubleClick (const juce::MouseEvent&) override
+    {
+        if (driveAttachment != nullptr && driveParam != nullptr)
+        {
+            driveAttachment->setValueAsCompleteGesture (driveParam->convertFrom0to1 (driveParam->getDefaultValue()));
+            updateTooltip();
+            repaint();
+        }
+    }
+
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
+    {
+        if (driveAttachment != nullptr && driveParam != nullptr)
+        {
+            const float next = juce::jlimit (0.0f, 1.0f, getDrive() + wheel.deltaY * 0.05f);
+            driveAttachment->setValueAsCompleteGesture (driveParam->convertFrom0to1 (next));
+            updateTooltip();
+            repaint();
+        }
+    }
+
+private:
+    bool legendVisible = true;
+    juce::Image strip;
+    Theme t;
+    juce::RangedAudioParameter* driveParam = nullptr;
+    juce::String label;
+    std::unique_ptr<juce::ParameterAttachment> driveAttachment;
+    float dragStartY = 0.0f;
+    float valueAtStart = 0.0f;
+    bool draggingKnob = false;
+    bool gestureOpen = false;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeskKnob)
+};
+}

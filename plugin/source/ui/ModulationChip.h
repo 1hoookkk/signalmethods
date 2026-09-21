@@ -1,15 +1,105 @@
 #pragma once
 #include "Theme.h"
+#include "../parameters/TrenchParameters.h"
+#include <juce_audio_processors/juce_audio_processors.h>
+#include <functional>
 namespace trench::ui
 {
-class ModulationChip final : public juce::Component
+class ModulationChip final : public juce::Component, public juce::SettableTooltipClient
 {
 public:
-    explicit ModulationChip (const Theme& theme)
-        : t (theme)
+    ModulationChip (juce::AudioProcessorValueTreeState& apvts, const Theme& theme)
+        : t (theme), param (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::movePreset))),
+          morph (apvts.getParameter (ParamID::morph)), custom (apvts.getParameter (ParamID::moveCustom)),
+          length (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::moveLength))),
+          playback (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::movePlayback)))
     {
-        setInterceptsMouseClicks (false, false);
+        setInterceptsMouseClicks (true, false);
+        setWantsKeyboardFocus (true);
+        setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Modulation");
+        setTooltip ("Choose a motion pattern, length and playback. MORPH sets the lower end of its travel.");
+        if (param != nullptr)
+            attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
+        if (length != nullptr)
+            lengthAttachment = std::make_unique<juce::ParameterAttachment> (*length, [this] (float) { repaint(); });
+        if (playback != nullptr)
+            playbackAttachment = std::make_unique<juce::ParameterAttachment> (*playback, [this] (float) { repaint(); });
+    }
+    int selectedPattern() const noexcept { return param != nullptr ? param->getIndex() : 0; }
+    void selectPattern (int index)
+    {
+        if (attachment == nullptr || param == nullptr) return;
+        const int wanted = juce::jlimit (0, param->choices.size() - 1, index);
+        const bool wasCustom = custom != nullptr && custom->getValue() > 0.5f;
+        if (wasCustom) { custom->beginChangeGesture(); custom->setValueNotifyingHost (0); custom->endChangeGesture(); }
+        if (wanted > 0 && (wanted != selectedPattern() || wasCustom) && morph != nullptr)
+        {
+            morph->beginChangeGesture(); morph->setValueNotifyingHost (0.0f); morph->endChangeGesture();
+        }
+        attachment->setValueAsCompleteGesture ((float) wanted);
+    }
+    std::function<void()> onRestart;
+    std::function<void()> onEdit;
+    void selectLength (int index)
+    {
+        if (lengthAttachment != nullptr && length != nullptr)
+            lengthAttachment->setValueAsCompleteGesture ((float) juce::jlimit (0, length->choices.size() - 1, index));
+    }
+    void selectPlayback (int index)
+    {
+        if (playbackAttachment != nullptr && playback != nullptr)
+            playbackAttachment->setValueAsCompleteGesture ((float) juce::jlimit (0, playback->choices.size() - 1, index));
+    }
+    juce::String displayText() const
+    {
+        if (selectedPattern() == 0 || param == nullptr) return "Modulation: off";
+        auto label = param->choices[selectedPattern()];
+        const auto separator = " " + juce::String::charToString (0x00b7) + " ";
+        if (length != nullptr && length->getIndex() > 0)
+            label += separator + juce::String (1 << (length->getIndex() - 1)) + " bar" + (length->getIndex() > 1 ? "s" : "");
+        if (playback != nullptr && playback->getIndex() > 0)
+            label += separator + (playback->getIndex() == 1 ? "Loop" : "Once");
+        return label;
+    }
+    void showPatterns()
+    {
+        if (onEdit) { onEdit(); return; }
+        if (param == nullptr) return;
+        juce::PopupMenu menu;
+        for (int i = 0; i < param->choices.size(); ++i)
+            menu.addItem (i + 1, param->choices[i], true, selectedPattern() == i);
+        menu.addSeparator();
+        juce::PopupMenu lengths, modes;
+        if (length != nullptr)
+            for (int i = 0; i < length->choices.size(); ++i)
+                lengths.addItem (100 + i, length->choices[i], true, length->getIndex() == i);
+        if (playback != nullptr)
+            for (int i = 0; i < playback->choices.size(); ++i)
+                modes.addItem (200 + i, playback->choices[i], true, playback->getIndex() == i);
+        menu.addSubMenu ("Length", lengths);
+        menu.addSubMenu ("Playback", modes);
+        menu.addItem (300, "Restart", selectedPattern() > 0 && onRestart != nullptr);
+        menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this),
+            [safe = juce::Component::SafePointer<ModulationChip> (this)] (int result)
+            {
+                if (safe == nullptr || result <= 0) return;
+                if (result == 300) { if (safe->onRestart != nullptr) safe->onRestart(); }
+                else if (result >= 200) safe->selectPlayback (result - 200);
+                else if (result >= 100) safe->selectLength (result - 100);
+                else safe->selectPattern (result - 1);
+            });
+    }
+    void mouseUp (const juce::MouseEvent& e) override
+    {
+        if (! e.mouseWasDraggedSinceMouseDown() && e.getNumberOfClicks() == 1) showPatterns();
+    }
+    bool keyPressed (const juce::KeyPress& key) override
+    {
+        if (key == juce::KeyPress::returnKey || key == juce::KeyPress::spaceKey) { showPatterns(); return true; }
+        if (key == juce::KeyPress::leftKey) { selectPattern (selectedPattern() - 1); return true; }
+        if (key == juce::KeyPress::rightKey) { selectPattern (selectedPattern() + 1); return true; }
+        return false;
     }
     void setActive (bool isActive)
     {
@@ -24,12 +114,23 @@ public:
         const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
         g.setColour (active ? t.modulationLamp() : ink.withAlpha (0.30f));
         g.fillEllipse (lamp);
-        g.setFont (displayFont (kLabelPt, active));
+        g.setFont (displayFont (10.5f * (float) kEditorWidth / 250.0f, active));
         g.setColour (active ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (0.58f));
-        g.drawText ("Modulation", b.withTrimmedLeft (11), juce::Justification::centredLeft, false);
+        const auto label = displayText();
+        g.drawText (label, b.withTrimmedLeft (11).withTrimmedRight (12), juce::Justification::centredLeft, false);
+        juce::Path arrow;
+        const float x = (float) b.getRight() - 5.0f, y = (float) b.getCentreY();
+        arrow.addTriangle (x - 3.0f, y - 1.5f, x + 3.0f, y - 1.5f, x, y + 2.0f);
+        g.fillPath (arrow);
     }
 private:
     Theme t;
+    juce::AudioParameterChoice* param = nullptr;
+    juce::RangedAudioParameter* morph = nullptr;
+    juce::RangedAudioParameter* custom = nullptr;
+    juce::AudioParameterChoice* length = nullptr;
+    juce::AudioParameterChoice* playback = nullptr;
+    std::unique_ptr<juce::ParameterAttachment> attachment, lengthAttachment, playbackAttachment;
     bool active = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModulationChip)
 };

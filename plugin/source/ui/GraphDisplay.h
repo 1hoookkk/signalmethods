@@ -31,56 +31,9 @@ public:
         : t (theme)
     {
         juce::ignoreUnused (canvasParamId);
-        biteParam = apvts.getParameter (ParamID::chew);
-        if (biteParam != nullptr)
-            biteAttachment = std::make_unique<juce::ParameterAttachment> (*biteParam, [this] (float) { repaint(); });
-        setInterceptsMouseClicks (true, false);
-        setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
-        setTitle ("Bite");
-        setHelpText ("BITE: drag the glass up or down");
-    }
-    void mouseDown (const juce::MouseEvent& e) override
-    {
-        if (biteAttachment == nullptr || e.mods.isPopupMenu())
-            return;
-        biteAttachment->beginGesture();
-        biteGestureOpen = true;
-        biteDragging = true;
-        dragStartY = e.position.y;
-        biteAtStart = biteValue();
-        e.source.enableUnboundedMouseMovement (true, false);
-        showBiteCue();
-    }
-    void mouseDrag (const juce::MouseEvent& e) override
-    {
-        if (biteAttachment == nullptr || biteParam == nullptr || ! biteDragging)
-            return;
-        const float fine = e.mods.isShiftDown() ? 0.25f : 1.0f;
-        const float next = juce::jlimit (0.0f, 1.0f, biteAtStart + (dragStartY - e.position.y) / 90.0f * fine);
-        biteAttachment->setValueAsPartOfGesture (biteParam->convertFrom0to1 (next));
-        showBiteCue();
-    }
-    void mouseUp (const juce::MouseEvent&) override
-    {
-        biteDragging = false;
-        if (biteAttachment != nullptr && biteGestureOpen)
-            biteAttachment->endGesture();
-        biteGestureOpen = false;
-        startTimer (30);
-    }
-    void mouseDoubleClick (const juce::MouseEvent&) override
-    {
-        if (biteAttachment != nullptr && biteParam != nullptr)
-            biteAttachment->setValueAsCompleteGesture (biteParam->convertFrom0to1 (biteParam->getDefaultValue()));
-        showBiteCue();
-    }
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wd) override
-    {
-        if (biteAttachment == nullptr || biteParam == nullptr)
-            return;
-        biteAttachment->setValueAsCompleteGesture (biteParam->convertFrom0to1 (
-            juce::jlimit (0.0f, 1.0f, biteValue() + wd.deltaY * 0.08f)));
-        showBiteCue();
+        juce::ignoreUnused (apvts);
+        setInterceptsMouseClicks (false, false);
+        setTitle ("Filter response");
     }
 
     void announce (const juce::String& text)
@@ -214,8 +167,15 @@ public:
         const auto aperture = getLocalBounds().toFloat();
         const auto glass = aperture;
         {
-            g.setColour (juce::Colour (0xff14171a));
-            g.fillPath (recessPath (aperture, 1.0f));
+            g.setColour (juce::Colour (0xff0a0c0d));
+            g.fillPath (recessPath (aperture, 1.8f));
+            juce::ColourGradient rim (juce::Colours::white.withAlpha (0.38f),
+                                      aperture.getX(), aperture.getY(),
+                                      juce::Colours::white.withAlpha (0.06f),
+                                      aperture.getRight(), aperture.getBottom(), false);
+            rim.addColour (0.55, juce::Colours::white.withAlpha (0.16f));
+            g.setGradientFill (rim);
+            g.strokePath (recessPath (aperture, 0.0f), juce::PathStrokeType (1.2f));
         }
         {
             juce::Path face = recessPath (glass, 0.0f);
@@ -257,7 +217,8 @@ public:
                 {
                     const double top = t.themeParam ("curveDbTop", 40.0);
                     const double bottom = t.themeParam ("curveDbBottom", -40.0);
-                    const float y = (float) (glass.getY() + top / (top - bottom) * glass.getHeight());
+                    const auto plot = plotBounds();
+                    const float y = (float) (plot.getY() + top / (top - bottom) * plot.getHeight());
                     g.setColour (t.accent().withAlpha (0.55f));
                     for (float x = glass.getX() + 3.0f; x < glass.getRight() - 3.0f; x += 4.0f)
                         g.fillRect (x, y, 2.0f, 1.0f);
@@ -266,7 +227,8 @@ public:
                 {
                     const double top = t.themeParam ("curveDbTop", 40.0);
                     const double bottom = t.themeParam ("curveDbBottom", -40.0);
-                    const auto yFor = [&] (double db) { return (float) (glass.getY() + (top - db) / (top - bottom) * glass.getHeight()); };
+                    const auto plot = plotBounds();
+                    const auto yFor = [&] (double db) { return (float) (plot.getY() + (top - db) / (top - bottom) * plot.getHeight()); };
                     const juce::Colour lines[] = { juce::Colour (0xffe0463c), juce::Colour (0xff62d64a), juce::Colour (0xff4a7fe6) };
                     const double levels[] = { 18.0, 0.0, -18.0 };
                     for (int i = 0; i < 3; ++i)
@@ -283,10 +245,10 @@ public:
                                           juce::Colours::black.withAlpha (0.38f), glass.getX(), glass.getY(), true);
                 g.setGradientFill (vig);
                 g.fillRect (glass.expanded (1.0f));
-                juce::ColourGradient lip (juce::Colours::black.withAlpha (0.62f), 0.0f, glass.getY(),
-                                          juce::Colours::transparentBlack, 0.0f, glass.getY() + 9.0f, false);
+                juce::ColourGradient lip (juce::Colours::black.withAlpha (0.34f), 0.0f, glass.getY(),
+                                          juce::Colours::transparentBlack, 0.0f, glass.getY() + 6.0f, false);
                 g.setGradientFill (lip);
-                g.fillRect (glass.withHeight (9.0f));
+                g.fillRect (glass.withHeight (6.0f));
                 juce::ColourGradient lipL (juce::Colours::black.withAlpha (0.34f), glass.getX(), 0.0f,
                                            juce::Colours::transparentBlack, glass.getX() + 6.0f, 0.0f, false);
                 g.setGradientFill (lipL);
@@ -319,8 +281,6 @@ public:
                     g.drawLine (frontX - 1.0f, plot.getY(), frontX - 1.0f, plot.getBottom(), 1.2f);
                 }
             }
-            if (biteCueAlpha > 0.01f)
-                drawBiteCue (g, glass);
             if (amountCueAlpha > 0.01f)
             {
                 g.setFont (telemetryFont (9.8f, false));
@@ -387,7 +347,7 @@ private:
     void strokeTrace (juce::Graphics& g, const juce::Path& path, juce::Colour colour) const
     {
 
-        const int kSS = juce::jmax (3, (int) std::ceil (
+        const int kSS = juce::jmax (1, (int) std::ceil (
             g.getInternalContext().getPhysicalPixelScaleFactor()));
         const auto area = getLocalBounds();
         if (area.isEmpty() || path.isEmpty())
@@ -404,14 +364,38 @@ private:
                 traceCache.clear (traceCache.getBounds(), juce::Colours::transparentBlack);
             traceDirty = false;
             cachedColour = colour;
-            juce::Graphics ig (traceCache);
-            ig.addTransform (juce::AffineTransform::scale ((float) kSS));
-
-            ig.setColour (colour);
-            ig.strokePath (path, { kTraceWidth, juce::PathStrokeType::curved,
-                                   juce::PathStrokeType::butt });
+            {
+                juce::Graphics ig (traceCache);
+                ig.addTransform (juce::AffineTransform::scale ((float) kSS));
+                ig.setColour (colour);
+                ig.strokePath (path, { kTraceWidth, juce::PathStrokeType::curved,
+                                       juce::PathStrokeType::butt });
+            }
+            {
+                juce::Image::BitmapData data (traceCache, juce::Image::BitmapData::readWrite);
+                const juce::uint32 solid = colour.getARGB();
+                const auto pb = path.getBounds();
+                const int y0 = juce::jlimit (0, data.height, (int) std::floor (pb.getY() * (float) kSS) - 2);
+                const int y1 = juce::jlimit (0, data.height, (int) std::ceil (pb.getBottom() * (float) kSS) + 3);
+                for (int y = y0; y < y1; ++y)
+                {
+                    auto* line = reinterpret_cast<juce::uint32*> (data.getLinePointer (y));
+                    for (int x = 0; x < data.width; ++x)
+                        line[x] = (line[x] >> 24) < 128u ? 0u : solid;
+                }
+            }
+            {
+                juce::Graphics ig (traceCache);
+                ig.addTransform (juce::AffineTransform::scale ((float) kSS));
+                ig.setColour (colour.withMultipliedAlpha (0.05f));
+                ig.strokePath (path, { kTraceWidth * 1.9f, juce::PathStrokeType::curved,
+                                       juce::PathStrokeType::butt });
+                ig.setColour (colour.withMultipliedAlpha (0.10f));
+                ig.strokePath (path, { kTraceWidth * 1.1f, juce::PathStrokeType::curved,
+                                       juce::PathStrokeType::butt });
+            }
         }
-        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+        g.setImageResamplingQuality (juce::Graphics::lowResamplingQuality);
         g.drawImageTransformed (traceCache,
                                 juce::AffineTransform::scale (1.0f / (float) kSS), false);
     }
@@ -441,8 +425,6 @@ private:
             return;
         }
         strokeTrace (g, responsePath, phos);
-        drawPeakMarks (g);
-
     }
     void drawPixelTrace (juce::Graphics& g, juce::Colour colour) const
     {
@@ -481,28 +463,6 @@ private:
                     g.fillRect (cx, plot.getY() + (float) r * cell, cell, cell);
             }
             prevRow = row;
-        }
-    }
-    void drawPeakMarks (juce::Graphics& g) const
-    {
-        const auto plot = plotBounds();
-        const double dbTop = t.curveDbTop(), dbBot = t.curveDbBottom();
-        const int n = (int) traceDbs.size();
-        constexpr int span = 10;
-        g.setColour (t.curveColour().withAlpha (0.85f));
-        for (int i = span; i < n - span; ++i)
-        {
-            const float v = traceDbs[(size_t) i];
-            bool peak = v > -12.0f;
-            for (int k = -span; peak && k <= span; ++k)
-                if (k != 0 && traceDbs[(size_t) (i + k)] >= v)
-                    peak = false;
-            if (! peak || v - juce::jmin (traceDbs[(size_t) (i - span)], traceDbs[(size_t) (i + span)]) < 3.0f)
-                continue;
-            const float x = traceXs[(size_t) i];
-            const float y = std::floor (plot.getY() + (float) ((dbTop - v) / (dbTop - dbBot)) * plot.getHeight()) + 0.5f;
-            g.drawLine (x - 3.0f, y, x + 4.0f, y, 1.0f);
-            g.drawLine (x, y - 3.0f, x, y + 4.0f, 1.0f);
         }
     }
     void drawSeedPulseTrace (juce::Graphics& g) const
@@ -551,8 +511,14 @@ private:
         const auto hot = juce::Colour (0xffe9dfc7).interpolatedWith (juce::Colour (0xffc9853f), 0.38f);
         const auto col = t.curveColour().interpolatedWith (hot, heat);
 
+        g.setColour (col.withMultipliedAlpha (0.05f));
+        g.strokePath (path, { kTraceWidth * 1.9f, juce::PathStrokeType::curved,
+                              juce::PathStrokeType::butt });
+        g.setColour (col.withMultipliedAlpha (0.10f));
+        g.strokePath (path, { kTraceWidth * 1.1f, juce::PathStrokeType::curved,
+                              juce::PathStrokeType::butt });
         g.setColour (col);
-        g.strokePath (path, { 1.0f, juce::PathStrokeType::curved,
+        g.strokePath (path, { kTraceWidth, juce::PathStrokeType::curved,
                               juce::PathStrokeType::butt });
     }
     Theme t;
@@ -581,44 +547,6 @@ private:
     static constexpr double kPulseRedrawMs   = 100.0;
     juce::String amountCueText;
     float amountCueAlpha = 0.0f;
-    juce::RangedAudioParameter* biteParam = nullptr;
-    std::unique_ptr<juce::ParameterAttachment> biteAttachment;
-    bool biteGestureOpen = false;
-    bool biteDragging = false;
-    float dragStartY = 0.0f;
-    float biteAtStart = 0.0f;
-    float biteCueAlpha = 0.0f;
-    float biteValue() const noexcept { return biteParam != nullptr ? biteParam->getValue() : 0.0f; }
-    void showBiteCue()
-    {
-        biteCueAlpha = 1.0f;
-        startTimer (30);
-        repaint();
-    }
-    void drawBiteCue (juce::Graphics& g, juce::Rectangle<float> glass) const
-    {
-        const auto plot = plotBounds();
-        float x = glass.getRight() - 14.0f, y = glass.getY() + 14.0f;
-        if (! traceXs.empty() && traceDbs.size() == traceXs.size())
-        {
-            const auto it = std::max_element (traceDbs.begin(), traceDbs.end());
-            const size_t i = (size_t) std::distance (traceDbs.begin(), it);
-            const double dbTop = t.curveDbTop(), dbBot = t.curveDbBottom();
-            x = traceXs[i];
-            y = plot.getY() + (float) ((dbTop - (double) *it) / (dbTop - dbBot)) * plot.getHeight();
-        }
-        const juce::String text = "BITE " + juce::String (juce::roundToInt (biteValue() * 100.0f));
-        g.setFont (displayFont (10.5f, true));
-        const float w = 58.0f, h = 14.0f;
-        juce::Rectangle<float> box (x + 10.0f, y - 22.0f, w, h);
-        if (box.getRight() > glass.getRight() - 6.0f) box.setX (x - 10.0f - w);
-        if (box.getY() < glass.getY() + 4.0f) box.setY (y + 8.0f);
-        g.setColour (juce::Colours::black.withAlpha (0.55f * biteCueAlpha));
-        g.fillRoundedRectangle (box.expanded (3.0f, 1.5f), 3.0f);
-        g.setColour (t.curveColour().withAlpha (0.95f * biteCueAlpha));
-        g.drawText (text, box, juce::Justification::centred, false);
-    }
-
     bool bootStarted = false;
     float bootReveal = 0.0f;
     void timerCallback() override
@@ -626,8 +554,6 @@ private:
         if (bootStarted && bootReveal < 1.0f)
             bootReveal = juce::jmin (1.0f, bootReveal + 30.0f / 550.0f);
         amountCueAlpha = juce::jmax (0.0f, amountCueAlpha - 0.04f);
-        if (! biteDragging)
-            biteCueAlpha = juce::jmax (0.0f, biteCueAlpha - 0.05f);
         if (pulsePhase != PulseIdle)
         {
             pulseElapsedMs += 30.0;
@@ -648,7 +574,7 @@ private:
             }
         }
         const bool bootSweeping = bootStarted && bootReveal < 1.0f;
-        if (! bootSweeping && amountCueAlpha <= 0.01f && biteCueAlpha <= 0.01f && pulsePhase == PulseIdle)
+        if (! bootSweeping && amountCueAlpha <= 0.01f && pulsePhase == PulseIdle)
             stopTimer();
         repaint();
     }

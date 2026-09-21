@@ -1,6 +1,9 @@
 #include "parameters/TrenchParameters.h"
 #include "TrenchBodyRoster.h"
 #include "dsp/Movement.h"
+#if TRENCH_DEV_PANEL
+#include "DevCalibration.h"
+#endif
 namespace TrenchParameters
 {
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
@@ -22,11 +25,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         "Q",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
-    layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::chew, 1 },
-        "Bite",
-        juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.18f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterInt> (
         juce::ParameterID { ParamID::body, 1 },
         "Body",
@@ -34,13 +32,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         trench::kBodyParamMaxIndex,
         trench::kDefaultBodyIndex));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::slamDrive, 1 },
-        "Output",
+        juce::ParameterID { ParamID::preamp, 1 },
+        "Input",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::preamp, 1 },
-        "Input",
+        juce::ParameterID { ParamID::distortion, 1 },
+        "Distortion",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
     // The shipping bank is independently authored in
@@ -64,16 +62,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             juce::StringArray { "PATTERN", "STEP", "GLIDE" },
             0));
     }
-    // DEPTH retired 2026-08-10 ("it's confusing"): the bank reaches both walls
-    // from wherever the wheel rests (Movement::render), never a second dial.
-    // Envelope macro depth. Its own parameter rather than
-    // a mode flag: 0 IS off, so "is the follower armed" needs no second piece
-    // of state and saves/restores by itself.
-    layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::envAmount, 1 },
-        "Follow",
-        juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { ParamID::keySnap, 1 },
         "Key Snap",
@@ -85,6 +73,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             "F# M", "G M", "G# M", "A M", "A# M", "B M"
         },
         0));
+    layout.add (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { ParamID::moveLength, 1 }, "Movement Length",
+        juce::StringArray { "Preset timing", "1 bar", "2 bars", "4 bars", "8 bars" }, 0));
+    layout.add (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { ParamID::movePlayback, 1 }, "Movement Playback",
+        juce::StringArray { "Preset playback", "Loop", "Once" }, 0));
+    layout.add (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { ParamID::moveCustom, 1 }, "User Movement", false));
+#if TRENCH_DEV_PANEL
+    trench::calibration::addParameters (layout);
+#endif
     return layout;
 }
 }

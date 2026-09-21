@@ -3,55 +3,6 @@
 #include <cmath>
 #include <cstdint>
 
-// MOVEMENT — the audio-rate Morph renderer.
-//
-// THE BANK IS ORIGINAL: the shipping patterns are independently authored in
-// plugin/filters/original_patterns.json and baked by
-// tools/bake_original_funcgens.py. Direction (forward, reverse, pendulum,
-// random, brownian, one-shot), smoothing and step count remain properties of
-// the pattern grammar; no factory template data or vendor pattern name enters
-// the binary.
-//
-// The renderer writes ONE Morph position per SAMPLE, raw:
-//
-//     span     = pattern[n] >= 0 ? 1 - baseMorph : baseMorph
-//     morph[n] = clamp (baseMorph + pattern[n] * span, 0, 1)
-//
-// THE PATTERN REACHES BOTH WALLS FROM WHEREVER THE WHEEL RESTS (Tyson
-// 2026-08-25 "if I put it at 90% morph it should go back to the lowest
-// point"): each side of the pattern is scaled into the room the wheel
-// actually has on that side, so a full step lands exactly on 0 or on 1 at
-// any base. At base 0.5 that is the old fixed +-0.5 throw exactly; the old
-// law was the same +-0.5 everywhere, which at base 0.9 could only fall to
-// 0.4 and flattened every rise against the ceiling.
-//
-// FOLLOW's contribution is added inside the engine by the one authoritative
-// detector — it is not this renderer's business. No smoothing anywhere in
-// this renderer: the recovered X3 law smooths the COMPLETE summed Morph
-// destination (trajectory + FOLLOW + GROWL) with one one-pole, once per
-// 32-sample control tick, inside the engine's X3 movement path
-// (X3_MOVEMENT_SPEC.md, FUN_1802c0430). A second smoother here would put
-// the pattern through two different laws depending on where it was summed.
-// PATTERN uses the authored cell law; STEP holds cells and GLIDE linearly
-// interpolates their Morph targets. A one-shot reaches its final authored
-// value and stays there. The engine's one authoritative one-pole and kernel ramp
-// are what keep that edge from landing as a click.
-//
-// Timing law: a bank pattern plays at the rate ITS TEMPLATE was authored at —
-// steps per beat when the template was tempo-synced, free Hz when it was not.
-// The preset defines its own rhythm; no division control feeds it. While the host
-// plays, every sample's step and phase derive from the block-start PPQ, the
-// BPM and the sample index — the pattern belongs to the grid from where it
-// was last anchored, bit-exactly, at any block size. While the host is stopped
-// the pattern free-runs at the last known tempo for live-input audition, and
-// the next play edge returns it to the host grid. Deterministic directions
-// (forward/reverse/pendulum) are stateless functions of that step counter;
-// random and brownian are the one necessary walk state, re-seeded on preset
-// selection.
-//
-// A pattern's Morph levels are wheel positions, never pitches. KEY is what
-// turns the decoded resonances into scale-constrained movement.
-
 namespace trench
 {
 
@@ -60,6 +11,7 @@ struct MovementTransport
     double bpm = 120.0;
     double ppq = -1.0;     // block-start PPQ; < 0 = unknown
     bool playing = false;
+    double beatsPerBar = 4.0;
 };
 
 class Movement
@@ -74,20 +26,21 @@ public:
     {
         sr = sampleRate > 0.0 ? sampleRate : 48000.0;
         freeBeats = 0.0;
+        freeSeconds = 0.0;
         anchorBeats = 0.0;
-        retriggerRequest = false;
+        anchorSeconds = 0.0;
         prevPlaying = false;
         prevPreset = -1;
+        prevLength = prevPlayback = -1;
+        prevRestart = 0;
         walkCycle = -1;
     }
 
-    /// Restart the pattern from step 0 at the next block — the MORPH wheel is
-    /// the key. Audio thread only; the processor relays the gesture through an
-    /// atomic.
-    void retrigger() noexcept { retriggerRequest = true; }
     void render (float* morphBuffer, int numSamples, float baseMorph,
                  const MovementTransport& t, int presetIndex,
-                 int transition = PatternTransition) noexcept
+                 int transition = PatternTransition, int length = 0, int playback = 0,
+                 std::uint64_t restart = 0, const FuncGenPattern* custom = nullptr,
+                 int customLoopSteps = 0) noexcept
     {
         const float base = clamp01 (baseMorph);
         // OWNERSHIP (X3_MOVEMENT_SPEC.md): this renderer owns WHAT the
@@ -96,7 +49,8 @@ public:
         // per 32-sample tick, the kernel ramp, the one-block lag) is the
         // engine's X3 movement path, applied to the complete summed Morph
         // destination. No base ramp, no hand smoother, no output slew here.
-        const bool bank = presetIndex >= 1 && presetIndex <= kNumFuncGenPatterns;
+        if (custom != nullptr) presetIndex = 1000;
+        const bool bank = custom != nullptr || (presetIndex >= 1 && presetIndex <= kNumFuncGenPatterns);
         if (! bank || numSamples <= 0)
         {
             // OFF (and GROWL, which the engine renders): the pattern
@@ -109,12 +63,32 @@ public:
             return;
         }
 
-        const FuncGenPattern& p = kFuncGenPatterns[presetIndex - 1];
+        FuncGenPattern p = custom != nullptr ? *custom : kFuncGenPatterns[presetIndex - 1];
+        const bool once = playback == 2 || (playback == 0 && p.direction == 5);
+        if (p.direction == 5 && ! once) p.direction = 0;
+        const int intervals = p.direction == 2 ? 2 * p.steps - 2
+                            : once ? p.steps - 1 : p.steps;
+        const int durationChoice = length < 0 ? 0 : length > 4 ? 4 : length;
 
         const double bpm = t.bpm > 1.0e-6 ? t.bpm : 120.0;
-        const double patternBeats = bankStepBeats (p, bpm, kStepBeats);
+        const double barBeats = t.beatsPerBar > 0.0 ? t.beatsPerBar : 4.0;
+        // A gesture's length is its own cycle: the steps it walks times the
+        // time each step takes. A one-shot walks the same cycle once, so its
+        // route spans the cycle rather than one interval less than it.
+        const int loopSteps = customLoopSteps > 0 ? customLoopSteps
+                             : (p.direction == 2 ? 2 * p.steps - 2 : p.steps);
+        const int stepCount = intervals > 0 ? intervals : 1;
+        const double stepBeats = p.stepBeats > 0.0 ? p.stepBeats : kStepBeats;
+        const double cycleBeats = (double) (loopSteps > 0 ? loopSteps : 1) * stepBeats;
+        const double patternBeats = durationChoice > 0
+            ? (double) (1 << (durationChoice - 1)) * barBeats / (double) stepCount
+            : cycleBeats / (double) stepCount;
         const double beatsPerSample = bpm / 60.0 / sr;
         const bool hostLocked = t.playing && t.ppq >= 0.0;
+        // Step Rate (the X3's own control): a movement that carries one runs
+        // its steps on a seconds clock, free of the host tempo. A chosen bar
+        // length is a BPM lock and wins; no rate leaves the beat grid.
+        const bool freeRate = p.rateHz > 0.0 && durationChoice == 0;
 
         // Anchor law: the wheel is the key, so every pattern starts at step 0
         // where you put it. It re-anchors
@@ -124,29 +98,48 @@ public:
         const bool playEdge = t.playing && ! prevPlaying;
         const bool selected = presetIndex != prevPreset;
         const double startBeats = hostLocked ? t.ppq : freeBeats;
-        if (playEdge || selected || retriggerRequest)
+        if (playEdge || selected || length != prevLength || playback != prevPlayback || restart != prevRestart)
+        {
             anchorBeats = startBeats;
-        retriggerRequest = false;
+            anchorSeconds = freeSeconds;
+        }
         if (selected)
             walkCycle = -1;
         prevPreset = presetIndex;
         prevPlaying = t.playing;
+        prevLength = length;
+        prevPlayback = playback;
+        prevRestart = restart;
+
+        const double clockStart = freeRate ? freeSeconds : startBeats;
+        const double clockAnchor = freeRate ? anchorSeconds : anchorBeats;
+        const double clockPeriod = freeRate
+            ? (double) (loopSteps > 0 ? loopSteps : 1) / p.rateHz / (double) stepCount
+            : patternBeats;
+        const double clockPerSample = freeRate ? 1.0 / sr : beatsPerSample;
 
         for (int i = 0; i < numSamples; ++i)
         {
-            const double beats = startBeats + (double) i * beatsPerSample;
-            const double stepPos = (beats - anchorBeats) / patternBeats;
+            const double clock = clockStart + (double) i * clockPerSample;
+            double stepPos = (clock - clockAnchor) / clockPeriod;
+            if (once) stepPos = std::fmax (0.0, std::fmin ((double) intervals, stepPos));
             const std::int64_t g = (std::int64_t) std::floor (stepPos);
             const float frac = (float) (stepPos - (double) g);
             int pos, next;
-            stepPositions (p, g, pos, next);
+            if (once && (p.direction == 0 || p.direction == 1 || p.direction == 5))
+            {
+                const int last = p.steps - 1;
+                pos = (int) g < last ? (int) g : last;
+                next = pos < last ? pos + 1 : last;
+                if (p.direction == 1) { pos = last - pos; next = last - next; }
+            }
+            else stepPositions (p, g, pos, next);
             float v = p.values[pos];
             const bool glide = transition == GlideTransition
                             || (transition == PatternTransition && p.smooth);
             if (glide)
                 v += (p.values[next] - v) * frac;
-            const float span = v >= 0.0f ? 1.0f - base : base;
-            morphBuffer[i] = v * span;
+            morphBuffer[i] = (v + 1.0f) * 0.5f * (1.0f - base);
         }
 
         updateClock (t, numSamples);
@@ -154,16 +147,6 @@ public:
 
 private:
     static float clamp01 (float x) noexcept { return x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x); }
-
-    static double bankStepBeats (const FuncGenPattern& p, double bpm, double fallback) noexcept
-    {
-        if (p.rateHz > 0.0)
-        {
-            const double b = bpm / (60.0 * p.rateHz);
-            return b < 1.0 / 64.0 ? 1.0 / 64.0 : (b > 4.0 ? 4.0 : b);
-        }
-        return p.stepBeats > 0.0 ? p.stepBeats : fallback;
-    }
 
     /// The original bank's direction grammar.
     /// Deterministic modes map the absolute step counter straight to a table
@@ -174,27 +157,32 @@ private:
     {
         const int n = p.steps > 1 ? p.steps : 1;
         const std::int64_t m = g < 0 ? 0 : g;
+        const auto wrap = [] (std::int64_t k, int period)
+        {
+            const std::int64_t r = k % period;
+            return (int) (r < 0 ? r + period : r);
+        };
         switch (p.direction)
         {
             default:
             case 0: // forward
-                pos = (int) (m % n);
-                next = (int) ((m + 1) % n);
+                pos = wrap (g, n);
+                next = wrap (g + 1, n);
                 return;
             case 1: // reverse
-                pos = n - 1 - (int) (m % n);
-                next = n - 1 - (int) ((m + 1) % n);
+                pos = n - 1 - wrap (g, n);
+                next = n - 1 - wrap (g + 1, n);
                 return;
             case 2: // pendulum
             {
-                const auto pend = [n] (std::int64_t k)
+                const auto pend = [n, &wrap] (std::int64_t k)
                 {
                     const int period = 2 * n - 2 > 0 ? 2 * n - 2 : 1;
-                    const int q = (int) (k % period);
+                    const int q = wrap (k, period);
                     return q < n ? q : period - q;
                 };
-                pos = pend (m);
-                next = pend (m + 1);
+                pos = pend (g);
+                next = pend (g + 1);
                 return;
             }
             case 5: // one-shot: walk once, hold the end cell
@@ -247,13 +235,17 @@ private:
             freeBeats = t.ppq + advance;
         else
             freeBeats += advance;
+        freeSeconds += (double) numSamples / sr;
     }
     double sr = 48000.0;
     double freeBeats = 0.0;    // stopped-transport audition clock, in beats
+    double freeSeconds = 0.0;  // the free step-rate clock, in seconds
     double anchorBeats = 0.0;  // where the current pattern started
-    bool retriggerRequest = false;
+    double anchorSeconds = 0.0;
     bool prevPlaying = false;
     int prevPreset = -1;
+    int prevLength = -1, prevPlayback = -1;
+    std::uint64_t prevRestart = 0;
     // The random/brownian walk — the bank's one necessary state.
     static constexpr std::int64_t kWalkCatchUpLimit = 64;
     std::int64_t walkCycle = -1;

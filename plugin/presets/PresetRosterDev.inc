@@ -33,4 +33,6 @@ TRENCH_PRESET("Lucifer's Q", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/lucif
 TRENCH_PRESET("Tooth Comb", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/tooth_comb.body240", "REZ")
 TRENCH_PRESET("Ear Bender", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/ear_bender.body240", "WAH")
 TRENCH_PRESET("Klang Kling", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/klang_kling.body240", "SFX")
+TRENCH_PRESET("Plate Bolt 1", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/user/plate_bolt1.body240", "PLATE")
+TRENCH_PRESET("Plate Pairs", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/user/plate_pairs.body240", "PLATE")
 TRENCH_PRESET("Audition Slot", TRENCH_TABLE_STITCH_ROOT "/plugin/patterns/audition_slot.body240", "AUTHORING")

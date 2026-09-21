@@ -26,6 +26,7 @@ struct Options
     juce::String qSpec;
     double q = 0.0;
     double bite = 0.0;
+    double distortion = -1.0;
     double preamp = 0.0;
     double slam = 0.0;
     double seconds = 0.0;
@@ -34,12 +35,7 @@ struct Options
     bool haveBite = false;
     bool havePreamp = false;
     bool haveSlam = false;
-    bool ring = true;
-    bool glide = true;
-    bool perSample = true;
-    bool biteAuto = true;
-    bool knee = false;
-    float agcScale = 1.0f;
+    bool ring = false;
     bool haveSeconds = false;
     int move = 0;
     double bpm = 0.0;
@@ -136,29 +132,14 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
                 return false;
             options.haveBite = true;
         }
+        else if (option == "--distortion")
+        {
+            if (! parseUnit (option, value, options.distortion, error))
+                return false;
+        }
         else if (option == "--ring")
         {
             options.ring = value.getIntValue() != 0;
-        }
-        else if (option == "--glide")
-        {
-            options.glide = value.getIntValue() != 0;
-        }
-        else if (option == "--persample")
-        {
-            options.perSample = value.getIntValue() != 0;
-        }
-        else if (option == "--biteauto")
-        {
-            options.biteAuto = value.getIntValue() != 0;
-        }
-        else if (option == "--knee")
-        {
-            options.knee = value.getIntValue() != 0;
-        }
-        else if (option == "--agcscale")
-        {
-            options.agcScale = (float) value.getDoubleValue();
         }
         else if (option == "--move")
         {
@@ -514,30 +495,27 @@ int main (int argc, char** argv)
             throw std::runtime_error (("installBodyBytes refused: " + options.bodyFile).toStdString());
 
         setParameter (processor, ParamID::movePreset, (float) options.move);
-        setParameter (processor, ParamID::envAmount, 0.0f);
         setParameter (processor, ParamID::keySnap, 0.0f);
         setParameter (processor, ParamID::q, (float) (qCurve.empty() ? options.q : morphAt (qCurve, 0.0)));
 
-        const float biteValue = options.haveBite ? (float) options.bite
+        const bool hasBite = processor.apvts.getParameter (ParamID::chew) != nullptr;
+        const bool hasSlam = processor.apvts.getParameter (ParamID::slamDrive) != nullptr;
+        const float biteValue = ! hasBite ? 0.0f : options.haveBite ? (float) options.bite
                                                  : parameterDefault (processor, ParamID::chew);
         const float preampValue = options.havePreamp ? (float) options.preamp
                                                      : parameterDefault (processor, ParamID::preamp);
-        const float slamValue = options.haveSlam ? (float) options.slam
-                                                 : parameterDefault (processor, ParamID::slamDrive);
-        setParameter (processor, ParamID::chew, biteValue);
+        const float slamValue = ! hasSlam ? 0.0f : options.haveSlam ? (float) options.slam
+                                                                    : parameterDefault (processor, ParamID::slamDrive);
+        if (hasBite)
+            setParameter (processor, ParamID::chew, biteValue);
         setParameter (processor, ParamID::preamp, preampValue);
-        setParameter (processor, ParamID::slamDrive, slamValue);
+        if (options.distortion >= 0.0)
+            setParameter (processor, ParamID::distortion, (float) options.distortion);
+        if (hasSlam)
+            setParameter (processor, ParamID::slamDrive, slamValue);
         setParameter (processor, ParamID::morph, (float) morphAt (morphCurve, 0.0));
         processor.dspBridge.setRingLeveller (options.ring);
-        processor.dspBridge.setGlide (options.glide);
-        processor.dspBridge.setPerSample (options.perSample);
-        processor.dspBridge.setBiteAuto (options.biteAuto);
-        processor.dspBridge.setLevellerKnee (options.knee);
-        processor.dspBridge.setLevellerScale (options.agcScale);
-        std::printf ("agcscale   %.2f (wakes at %.1f dBFS)\n", (double) options.agcScale, 20.0 * std::log10 (2.0 / (double) options.agcScale));
-        std::printf ("ring       %s  glide %s  persample %s  biteauto %s  knee %s\n", options.ring ? "on" : "off",
-                     options.glide ? "on" : "off", options.perSample ? "on" : "off", options.biteAuto ? "on" : "off",
-                     options.knee ? "on" : "off");
+        std::printf ("ring       %s\n", options.ring ? "on" : "off");
 
         std::printf ("body       %s [%d]\n", bodyName.toRawUTF8(), bodyIndex);
         if (bodyBytes.getSize() == 240)
@@ -550,7 +528,7 @@ int main (int argc, char** argv)
             std::printf ("qcurve     %s\n", options.qSpec.toRawUTF8());
         std::printf ("q %.3f  bite %.3f  input %.3f  output %.3f\n",
                      options.q, (double) biteValue, (double) preampValue, (double) slamValue);
-        std::printf ("movement   movePreset=%d%s  bpm %s  FOLLOW envAmount=0  KEY keySnap=0 (OFF)\n", options.move, options.move == 0 ? " (OFF)" : "", options.bpm > 0.0 ? juce::String (options.bpm, 1).toRawUTF8() : "none");
+        std::printf ("movement   movePreset=%d%s  bpm %s  KEY keySnap=0 (OFF)\n", options.move, options.move == 0 ? " (OFF)" : "", options.bpm > 0.0 ? juce::String (options.bpm, 1).toRawUTF8() : "none");
 
         juce::MidiBuffer midi;
         {

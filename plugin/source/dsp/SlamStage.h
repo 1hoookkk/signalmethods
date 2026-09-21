@@ -61,9 +61,9 @@ inline float slamOutputMakeupLinear() noexcept
     return 1.0f / slamInputGainLinear();
 }
 constexpr float kSlamPressureKnee = 0.72f;
-constexpr float kFinalSafetyKnee = 0.9440609f;
 constexpr float kFinalSafetyCeiling = 0.9885531f;
-constexpr float kGuardLinearZone = 0.8f;
+constexpr float kGuardLinearZone = 0.5f;
+constexpr float kFinalSafetyKnee = kGuardLinearZone * kFinalSafetyCeiling;
 inline float softGuard (float x) noexcept
 {
     if (! std::isfinite (x))

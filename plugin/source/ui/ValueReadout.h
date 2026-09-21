@@ -1,6 +1,8 @@
 #pragma once
 #include "Theme.h"
 #include "ParamInteraction.h"
+#include <cstdlib>
+#include <cmath>
 namespace trench::ui
 {
 class ValueReadout : public juce::Component,
@@ -11,6 +13,7 @@ public:
         : id (std::move (elementId)), t (theme)
     {
         setInterceptsMouseClicks (true, true);
+        setWantsKeyboardFocus (true);
     }
     void bindParameter (juce::RangedAudioParameter* p)
     {
@@ -34,6 +37,12 @@ public:
             repaint();
         }
     }
+    bool keyPressed (const juce::KeyPress& key) override
+    {
+        return editor == nullptr && adjustParamFromKey (param, key);
+    }
+    void focusGained (FocusChangeType) override { repaint(); }
+    void focusLost (FocusChangeType) override { repaint(); }
     void setActive (bool active)
     {
         if (isActive != active) { isActive = active; repaint(); }
@@ -105,7 +114,7 @@ public:
         editor->setBounds (getLocalBounds().reduced (5, 2));
         editor->setJustification (juce::Justification::centred);
         editor->setFont (displayFont (t.fontSize (id, 20.0f), false));
-        editor->setColour (juce::TextEditor::backgroundColourId, juce::Colour (0xffc3d1df));
+        editor->setColour (juce::TextEditor::backgroundColourId, t.wellTop());
         editor->setColour (juce::TextEditor::textColourId, t.labelInk());
         editor->setColour (juce::TextEditor::highlightColourId, t.labelInk().withAlpha (0.25f));
         editor->setWantsKeyboardFocus (true);
@@ -127,7 +136,7 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto b = getLocalBounds().toFloat();
-        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isActive, t);
+        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isActive || hasKeyboardFocus (true), t);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
         const auto numeric = textOverride.isNotEmpty()
                                ? textOverride
@@ -139,12 +148,12 @@ public:
             textArea = textArea.withTrimmedRight (7.0f);
 
         drawCrispText (g, textArea, numeric, fs,
-                       t.textColour (id, juce::Colour (0xff2a2722)), true);
+                       t.textColour (id, juce::Colour (0xff191714)), true);
         if (adjustCue && param != nullptr)
         {
             const float cxr = b.getRight() - 7.5f;
             const float cy = b.getCentreY();
-            g.setColour (t.textColour (id, juce::Colour (0xff2a2722)).withAlpha (0.55f));
+            g.setColour (t.textColour (id, juce::Colour (0xff191714)).withAlpha (0.55f));
             juce::Path up, dn;
             up.addTriangle (cxr - 2.6f, cy - 2.2f, cxr + 2.6f, cy - 2.2f, cxr, cy - 5.6f);
             dn.addTriangle (cxr - 2.6f, cy + 2.2f, cxr + 2.6f, cy + 2.2f, cxr, cy + 5.6f);
@@ -156,11 +165,21 @@ private:
     void commitEditor()
     {
         if (editor == nullptr) return;
-        const float pct  = editor->getText().getFloatValue();
+        const auto text = editor->getText().trim().trimCharactersAtEnd ("%").trim();
+        char* end = nullptr;
+        const char* start = text.toRawUTF8();
+        const double pct = std::strtod (start, &end);
+        if (end == start || *end != '\0' || ! std::isfinite (pct) || pct < 0.0 || pct > 100.0)
+        {
+            editor->setColour (juce::TextEditor::outlineColourId, juce::Colour (0xffa33f2f));
+            editor->setColour (juce::TextEditor::focusedOutlineColourId, juce::Colour (0xffa33f2f));
+            editor->setTooltip ("Enter a number from 0 to 100, or press Escape to cancel.");
+            return;
+        }
         if (param != nullptr)
         {
             param->beginChangeGesture();
-            param->setValueNotifyingHost (juce::jlimit (0.0f, 1.0f, pct / 100.0f));
+            param->setValueNotifyingHost ((float) (pct / 100.0));
             param->endChangeGesture();
         }
         closeEditor();

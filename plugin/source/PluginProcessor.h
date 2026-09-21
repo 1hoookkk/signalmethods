@@ -1,13 +1,15 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 #include "parameters/TrenchParameters.h"
 #include "TrenchBodyRoster.h"
 #include "dsp/TrenchDspBridge.h"
 #include "dsp/TrenchRuntimePreset.h"
 #include "dsp/Movement.h"
+#include "dsp/UserMotion.h"
 #include "dsp/KeyDetector.h"
-#include "dsp/EnvFollower.h"
+#include "dsp/TransientDetector.h"
 #include "dsp/DeskDrive.h"
 #include "dsp/TrenchCleanBody.h"
 #include "dsp/WheelLoop.h"
@@ -16,7 +18,6 @@
 #include <vector>
 class PluginProcessor final : public juce::AudioProcessor,
                               private juce::AudioProcessorValueTreeState::Listener,
-                              private juce::AudioProcessorParameter::Listener,
                               private juce::AsyncUpdater,
                               private juce::Timer
 {
@@ -41,19 +42,30 @@ public:
     void changeProgramName (int index, const juce::String& newName) override;
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    void restartMovement() noexcept { movementRestart.fetch_add (1, std::memory_order_relaxed); }
+    trench::UserMotionState userMotion;
+    bool usingUserMotion() const { return pMoveCustom->load() > 0.5f; }
+    trench::UserMotion motionForEditing() const;
+    void applyUserMotion (const trench::UserMotion&, bool restart = false);
     juce::AudioProcessorValueTreeState apvts;
     TrenchDspBridge dspBridge;
+#if TRENCH_DEV_PANEL
+    juce::ValueTree calibrationArchive { "DevCalibrationSession" };
+    juce::CriticalSection calibrationArchiveLock;
+    juce::MemoryBlock bodyBytesForCalibration() const { return currentBodyBytes; }
+    std::atomic<float> calibrationInputRms { 0 }, calibrationOutputRms { 0 }, calibrationCeilingFraction { 0 };
+    std::array<std::atomic<float>, trench::calibration::count> calibrationReceived {};
+    std::atomic<std::uint64_t> calibrationBlocks { 0 };
+#endif
     const std::atomic<float>& getInputMeterLeftForUi() const noexcept  { return inputMeterL; }
     const std::atomic<float>& getInputMeterRightForUi() const noexcept { return inputMeterR; }
     float getOutClipForUi() const noexcept { return outClipForUi.load (std::memory_order_relaxed); }
     float getGritActivityForUi() const noexcept { return gritActivityForUi.load (std::memory_order_relaxed); }
-    /// Positive dB the AGC is pulling down (0 = idle, ~18.4 = its table floor).
-    /// Idles at DAW levels by design: the AGC table is flat below +6.02 dBFS,
-    /// so PREAMP is what drives the cascade into E-mu's limiting character.
-    float getAgcReductionDbForUi() const noexcept { return agcReductionDbForUi.load (std::memory_order_relaxed); }
     bool isKeyModelReady() const noexcept { return keyDetector.isModelReady(); }
+    bool isNoteLatched() const noexcept { return noteLatched.load (std::memory_order_relaxed); }
+    float getNoteTrackRatio() const noexcept { return noteTrackRatio.load (std::memory_order_relaxed); }
+    float getNoteBite() const noexcept { return noteBite.load (std::memory_order_relaxed); }
     int getDetectedKeyForUi() const noexcept { return detectedKeyForUi.load (std::memory_order_relaxed); }
-    int getDetectedAltKeyForUi() const noexcept { return detectedAltKeyForUi.load (std::memory_order_relaxed); }
     float getKeyConfidenceForUi() const noexcept { return keyConfidenceForUi.load (std::memory_order_relaxed); }
     /// The editor's open state gates DISPLAY TELEMETRY ONLY (meters, curve
     /// snapshot). AUTO KEY listens whenever AUTO is selected — closing and
@@ -65,8 +77,11 @@ public:
     int  getLoadedBodyIndex() const noexcept { return loadedBodyIndex.load (std::memory_order_relaxed); }
     bool getLastLoadOk()      const noexcept { return lastLoadOk.load (std::memory_order_relaxed); }
     trench::WheelLoop& wheelLoop() noexcept { return wheelLoopSource; }
+    void clearCalibrationNoteLatch() noexcept { noteLatched.store (false, std::memory_order_relaxed); }
     bool isCleanGroundTruthAudio() const noexcept { return trench::clean_audio::kEnabled(); }
     float getEffectiveMorphForUi() const noexcept { return effectiveMorphForUi.load (std::memory_order_relaxed); }
+    std::uint32_t getMorphUpdatesForUi() const noexcept { return morphUpdatesForUi.load (std::memory_order_relaxed); }
+    float getEffectiveBiteForUi() const noexcept  { return effectiveBiteForUi.load (std::memory_order_relaxed); }
     float getEffectiveQForUi() const noexcept     { return effectiveQForUi.load (std::memory_order_relaxed); }
     bool isMorphModulatedForUi() const noexcept   { return morphModulatedForUi.load (std::memory_order_relaxed); }
     /// Hover-audition in the BODY menu: load a body for LISTENING only. It does
@@ -108,12 +123,9 @@ public:
         return "trench-plugin-processor-v1";
     }
 private:
+    // Serializes body producers and UI readers. Never acquired by processBlock.
+    juce::CriticalSection bodyStateLock;
     void parameterChanged (const juce::String& parameterID, float newValue) override;
-    void parameterValueChanged (int, float) override {}
-    /// MOVEMENT starts where you place it: the end of a MORPH wheel gesture
-    /// re-anchors the pattern at step 0. This arrives on the MESSAGE thread, so
-    /// it only sets an atomic — processChunk is what touches Movement.
-    void parameterGestureChanged (int parameterIndex, bool gestureIsStarting) override;
     void handleAsyncUpdate() override;
     void timerCallback() override;
     void forceCleanAudioUiState();
@@ -124,11 +136,19 @@ private:
     /// the buffers for.
     void processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset = 0);
     trench::Movement              movement;
-    trench::EnvFollower           follower;
-    float                         morphSmoother = 0.0f;
-    bool                          morphSmootherPrimed = false;
+    trench::UserMotionState::Audio audioMotion;
+    std::atomic<std::uint64_t> movementRestart { 0 };
+    trench::TransientDetector     transientDetector;
+    float previousDriveGain = 1.0f;
+#if TRENCH_DEV_PANEL
+    std::array<std::atomic<float>*, trench::calibration::count> calibrationParameters {};
+    float calibrationMorph = -1.0f;
+    float calibrationOutputGain = 1.0f;
+#endif
+    std::atomic<bool>             noteLatched { false };
+    std::atomic<float>            noteTrackRatio { 1.0f };
+    std::atomic<float>            noteBite { 0.0f };
     float                         wheelRampFrom = -1.0f;
-    std::atomic<bool>             morphRetrigger { false };
     std::vector<float>            morphBuffer;   // one authored Morph per sample
     /// What prepareToPlay sized every audio-thread buffer for. JUCE explicitly
     /// permits a later block to be LARGER than maximumExpectedSamplesPerBlock,
@@ -176,6 +196,7 @@ private:
     int currentProgram = 0;
     std::atomic<int>  pendingBodyIndex { trench::kNoFilterIndex };
     std::atomic<int>  loadedBodyIndex { trench::kNoFilterIndex };
+    std::atomic<bool> bodyInjected { false };
     // X3 runtime preset support.
     bool loadRuntimePresetForCurrentRate();
     void buildRuntimePresetProbeMirror (int bank);
@@ -193,19 +214,21 @@ private:
     // never does a string parameter lookup.
     std::atomic<float>* pMorph = nullptr;
     std::atomic<float>* pQ = nullptr;
-    std::atomic<float>* pChew = nullptr;
-    std::atomic<float>* pSlam = nullptr;
     std::atomic<float>* pPreamp = nullptr;
-    std::atomic<float>* pFollow = nullptr;
+    std::atomic<float>* pDistortion = nullptr;
     std::atomic<float>* pMovePreset = nullptr;
     std::atomic<float>* pMoveTransition = nullptr;
+    std::atomic<float>* pMoveLength = nullptr;
+    std::atomic<float>* pMovePlayback = nullptr;
+    std::atomic<float>* pMoveCustom = nullptr;
     std::atomic<float>* pKeySnap = nullptr;
     std::atomic<float> inputMeterL { 0.0f };
     std::atomic<float> inputMeterR { 0.0f };
     std::atomic<float> outClipForUi { 0.0f };
     std::atomic<float> gritActivityForUi { 0.0f };
-    std::atomic<float> agcReductionDbForUi { 0.0f };
     std::atomic<float> effectiveMorphForUi { 0.0f };
+    std::atomic<std::uint32_t> morphUpdatesForUi { 0 };
+    std::atomic<float> effectiveBiteForUi { 0.0f };
     std::atomic<float> effectiveQForUi { 0.0f };
     std::atomic<bool> morphModulatedForUi { false };
     std::atomic<bool> editorOpen { false };
@@ -214,7 +237,6 @@ private:
     // two agreeing windows (~2 s). An accepted key holds until a different
     // key clearly displaces it (hysteresis), so the snap never flaps.
     std::atomic<int> detectedKeyForUi { -1 };
-    std::atomic<int> detectedAltKeyForUi { -1 };
     std::atomic<float> keyConfidenceForUi { 0.0f };
     int candidateKey = -1;
     int candidateCount = 0;

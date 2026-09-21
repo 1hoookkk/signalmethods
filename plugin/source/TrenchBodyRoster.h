@@ -2,7 +2,10 @@
 #include "BinaryData.h"
 #include <juce_core/juce_core.h>
 #include <algorithm>
+#include <atomic>
 #include <cmath>
+#include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 namespace trench
@@ -57,6 +60,11 @@ inline constexpr int kUserSlotPool = 128;
 // it, and never narrow it: the range is part of the saved-project contract.
 inline constexpr int kBodyParamMaxIndex = 511;
 inline const BodyEntry* bakedRoster (int& countOut) noexcept;
+inline juce::File userBodyDirectory()
+{
+    return juce::File::getSpecialLocation (juce::File::userDocumentsDirectory)
+        .getChildFile ("TRENCH").getChildFile ("User Bodies");
+}
 inline juce::File auditionSlotFile() noexcept
 {
     return juce::File::getSpecialLocation (juce::File::userDocumentsDirectory)
@@ -145,19 +153,71 @@ inline void buildRosterStore (RosterStore& store)
             store.entries.push_back ({ store.names[i].c_str(), store.bases[i].c_str(),
                                        store.categories[i].c_str(), (int) TypeBehavior::Static });
 }
-inline RosterStore& rosterStore()
+inline void appendUserBodies (RosterStore& store, const juce::File& directory)
 {
-    static RosterStore store;
-    static bool built = false;
-    if (! built)
+    auto files = directory.findChildFiles (juce::File::findFiles, false, "*.body240");
+    std::sort (files.begin(), files.end(), [] (const auto& a, const auto& b)
     {
-        built = true;
-        buildRosterStore (store);
+        return a.getFileName().compareNatural (b.getFileName()) < 0;
+    });
+    for (const auto& file : files)
+    {
+        if (store.names.size() >= (size_t) kBodyParamMaxIndex + 1)
+            break;
+        if (file.getSize() != 240 || file.isHidden()
+            || file.getFileName().startsWithChar ('_'))
+            continue;
+        const auto path = file.getFullPathName().toStdString();
+        if (std::find (store.bases.begin(), store.bases.end(), path) != store.bases.end())
+            continue;
+        store.names.push_back (prettyBodyName (bodyStem (file)));
+        store.bases.push_back (path);
+        store.categories.emplace_back ("USER");
     }
-    return store;
+    store.entries.clear();
+    store.entries.reserve (store.names.size());
+    for (size_t i = 0; i < store.names.size(); ++i)
+        store.entries.push_back ({ store.names[i].c_str(), store.bases[i].c_str(),
+                                  store.categories[i].c_str(), (int) TypeBehavior::Static });
+}
+struct RosterRegistry
+{
+    std::atomic<const RosterStore*> current { nullptr };
+    std::mutex mutex;
+    std::vector<std::unique_ptr<RosterStore>> versions;
+
+    RosterRegistry()
+    {
+        auto store = std::make_unique<RosterStore>();
+        buildRosterStore (*store);
+        appendUserBodies (*store, userBodyDirectory());
+        current.store (store.get(), std::memory_order_release);
+        versions.push_back (std::move (store));
+    }
+    void refresh()
+    {
+        const std::lock_guard<std::mutex> lock (mutex);
+        const auto* previous = current.load (std::memory_order_acquire);
+        auto next = std::make_unique<RosterStore>(*previous);
+        appendUserBodies (*next, userBodyDirectory());
+        if (next->bases == previous->bases)
+            return;
+        const auto* published = next.get();
+        versions.push_back (std::move (next));
+        current.store (published, std::memory_order_release);
+    }
+};
+inline RosterRegistry& rosterRegistry()
+{
+    static RosterRegistry registry;
+    return registry;
+}
+inline const RosterStore& rosterStore()
+{
+    return *rosterRegistry().current.load (std::memory_order_acquire);
 }
 }
-inline void rescanBodyRoster() { detail::rosterStore(); }
+inline void rescanBodyRoster() { detail::rosterRegistry().refresh(); }
 inline const BodyEntry* bakedRoster (int& countOut) noexcept
 {
     static const BodyEntry entries[] = {

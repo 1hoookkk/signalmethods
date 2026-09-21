@@ -10,7 +10,7 @@ namespace trench::curves
 {
 inline constexpr std::size_t kTableSize = 129;
 using Table = std::array<float, kTableSize>;
-enum class Axis { morph = 0, q, bite, follow, slam, slamTrim, preamp, track, count };
+enum class Axis { morph = 0, q, bite, retiredFollow, slam, slamTrim, preamp, track, count };
 
 inline constexpr Table kMorph = {
     0.0f, 0.0078125f, 0.015625f, 0.0234375f, 0.03125f, 0.0390625f, 0.046875f, 0.0546875f,

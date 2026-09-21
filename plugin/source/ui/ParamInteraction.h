@@ -3,6 +3,22 @@
 #include <memory>
 namespace trench::ui
 {
+inline bool adjustParamFromKey (juce::RangedAudioParameter* param, const juce::KeyPress& key)
+{
+    if (param == nullptr) return false;
+    const int code = key.getKeyCode();
+    float next = param->getValue();
+    const float step = key.getModifiers().isShiftDown() ? 0.001f : 0.01f;
+    if (code == juce::KeyPress::leftKey || code == juce::KeyPress::downKey) next -= step;
+    else if (code == juce::KeyPress::rightKey || code == juce::KeyPress::upKey) next += step;
+    else if (code == juce::KeyPress::homeKey) next = 0.0f;
+    else if (code == juce::KeyPress::endKey) next = 1.0f;
+    else return false;
+    param->beginChangeGesture();
+    param->setValueNotifyingHost (juce::jlimit (0.0f, 1.0f, next));
+    param->endChangeGesture();
+    return true;
+}
 inline void resetParamToDefault (juce::RangedAudioParameter* p)
 {
     if (p == nullptr) return;

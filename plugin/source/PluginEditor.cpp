@@ -15,12 +15,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     uiBoldEnabled() = layout.param ("fontBold", 0.0) > 0.5;
     auto panel = juce::ImageCache::getFromMemory (BinaryData::df2_panel_beige_png,
                                                   BinaryData::df2_panel_beige_pngSize);
-    auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_roller_strip_png,
-                                                  BinaryData::trench_roller_strip_pngSize);
+    auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_ss3_strip_png,
+                                                  BinaryData::trench_ss3_strip_pngSize);
 #if TRENCH_DEV_PANEL
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
 #endif
+    if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
+        strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
@@ -46,8 +48,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
-    modulationChip = std::make_unique<ModulationChip> (theme);
-    zWord = std::make_unique<GlassValue> (processor.apvts, theme, ParamID::chew, "BITE");
+    modulationChip = std::make_unique<ModulationChip> (processor.apvts, theme);
+    modulationChip->onRestart = [this] { processor.restartMovement(); };
+    modulationBay = std::make_unique<ModulationBay> (processor, *modulationChip, theme);
+    modulationChip->onEdit = [this] { modulationBay->edit(); };
     labels = std::make_unique<LabelsLayer> (theme);
     labels->setRailLabels ("MORPH", "Q");
     addAndMakeVisible (*faceplate);
@@ -57,9 +61,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible (*typeSelector);
     addAndMakeVisible (*morphReadout);
     addAndMakeVisible (*secondaryReadout);
-    addAndMakeVisible (*modulationChip);
+    addAndMakeVisible (*modulationBay);
     addAndMakeVisible (*labels);
-    addChildComponent (*zWord);
     addChildComponent (*bodyBrowser);
     onboarding = std::make_unique<Onboarding> (theme);
     onboarding->onComplete = [this]
@@ -78,20 +81,18 @@ PluginEditor::PluginEditor (PluginProcessor& p)
             onboarding->forceHover (juce::String (hover).getIntValue());
     }
 #if TRENCH_DEV_PANEL
-    devPanel = std::make_unique<DevPanel> (theme, processor.wheelLoop(),
-                                           juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"),
-                                           [this] (bool on) { processor.dspBridge.setAgcEnabled (on); },
-                                           [this] (bool on) { processor.dspBridge.setBiteAuto (on); },
-                                           [this] (float scale) { processor.dspBridge.setLevellerScale (scale); });
+    devPanel = std::make_unique<DevPanel> (theme, processor,
+        juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"));
     addAndMakeVisible (*devPanel);
     setResizable (false, false);
-    setSize (kEditorWidth + kDevPanelWidth, kEditorHeight);
+    setSize (kEditorWidth + kDevPanelWidth, kDevPanelHeight);
 #else
     setResizable (false, false);
     setSize (kEditorWidth, kEditorHeight);
 #endif
     setWantsKeyboardFocus (false);
     vblank = std::make_unique<juce::VBlankAttachment> (this, [this] { onFrame(); });
+    onFrame();
 }
 PluginEditor::~PluginEditor()
 {
@@ -108,19 +109,17 @@ void PluginEditor::resized()
     typeSelector->setBounds (rectOf ("typeSelector"));
     morphWheel->setBounds (rectOf ("morphWheel"));
     secondaryWheel->setBounds (rectOf ("qWheel"));
+    const auto px = [] (float value) { return juce::roundToInt (value * (float) kEditorWidth / 250.0f); };
+    const auto wheel = secondaryWheel->getBounds();
+    modulationBay->setBounds (wheel.getX() + px (5), wheel.getBottom() + px (48), 240, 99);
     morphReadout->setBounds (rectOf ("morphReadout"));
     secondaryReadout->setBounds (rectOf ("qReadout"));
-    {
-        const auto glass = rectOf ("spectrumGrid");
-        modulationChip->setBounds (glass.getX() + 12, glass.getBottom() - 26, 110, 18);
-        zWord->setBounds (glass.getRight() - 12 - 104, glass.getY() + 8, 104, 18);
-    }
 #if TRENCH_DEV_PANEL
-    devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kEditorHeight);
+    devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kDevPanelHeight);
 #endif
     onboarding->setBounds (0, 0, kEditorWidth, kEditorHeight);
     onboarding->setTargets ({
-        { rectOf ("spectrumGrid"), "BITE", "drag up or down for BITE" },
+        { modulationBay->getBounds(), "MOVE", "choose movement and edit its properties" },
     });
 
 
@@ -149,6 +148,8 @@ void PluginEditor::markOnboardingSeen()
 }
 void PluginEditor::onFrame()
 {
+    modulationBay->refreshMotion();
+    modulationBay->setRadiusActivity (processor.getGritActivityForUi());
     modulationChip->setActive (processor.isMorphModulatedForUi());
     const auto read = [this] (const char* paramID)
     {
@@ -159,13 +160,29 @@ void PluginEditor::onFrame()
     float coeffs[trench::kUiCoeffCount] = {};
     float boost = 1.0f;
     const bool morphMoving = processor.isMorphModulatedForUi();
-    const float baseMorph = morphMoving ? processor.getEffectiveMorphForUi()
+    const double nowMs = juce::Time::getMillisecondCounterHiRes();
+    const auto morphUpdates = processor.getMorphUpdatesForUi();
+    if (morphUpdates != lastMorphUpdates)
+    {
+        const double gap = nowMs - morphArrivedMs;
+        if (gap > 0.0 && gap < 200.0) morphIntervalMs += 0.2 * (gap - morphIntervalMs);
+        lastMorphUpdates = morphUpdates;
+        morphFrom = morphShown;
+        morphTo = processor.getEffectiveMorphForUi();
+        morphArrivedMs = nowMs;
+    }
+    morphShown = morphFrom + (morphTo - morphFrom) * juce::jlimit (0.0, 1.0, (nowMs - morphArrivedMs) / juce::jmax (1.0, morphIntervalMs));
+    const float baseMorph = morphMoving ? (float) morphShown
                                         : trench::curves::curveMap (trench::curves::Axis::morph, read (ParamID::morph));
     const float baseQ = trench::curves::curveMap (trench::curves::Axis::q, read (ParamID::q));
     const int bodyVersion = processor.bodyVersionForUi.load (std::memory_order_relaxed);
     const double probeRate = processor.getSampleRate();
+    const double probeKeyRatio = TrenchDspBridge::transposeRatio (
+        processor.isNoteLatched(), processor.getNoteTrackRatio(),
+        juce::jlimit (0, 24, (int) processor.apvts.getRawParameterValue (ParamID::keySnap)->load()));
     if (baseMorph != lastProbedMorph || baseQ != lastProbedQ
-        || bodyVersion != lastProbedBodyVersion || probeRate != lastProbedRate)
+        || bodyVersion != lastProbedBodyVersion || probeRate != lastProbedRate
+        || probeKeyRatio != lastProbedKeyRatio)
     {
         if (processor.probeCurrentBodyForUi (baseMorph, baseQ, coeffs, boost))
         {
@@ -173,12 +190,13 @@ void PluginEditor::onFrame()
             lastProbedQ = baseQ;
             lastProbedBodyVersion = bodyVersion;
             lastProbedRate = probeRate;
+            lastProbedKeyRatio = probeKeyRatio;
             graph->updateFromCoeffs (coeffs, boost, probeRate > 0.0 ? probeRate : 44'100.0);
         }
     }
     const bool morphHandDown = morphWheel->isMouseButtonDown (true) || morphReadout->isMouseButtonDown (true);
     const bool moving = morphMoving && ! morphHandDown;
-    const float morphValue = moving ? processor.getEffectiveMorphForUi() : read (ParamID::morph);
+    const float morphValue = moving ? (float) morphShown : read (ParamID::morph);
     morphWheel->setDisplayOverride (moving, morphValue);
     morphReadout->setNormalised (morphValue);
     const float qValue = read (ParamID::q);

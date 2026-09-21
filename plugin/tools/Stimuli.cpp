@@ -62,7 +62,7 @@ void usage()
 {
     std::fprintf (stderr,
                   "usage: TRENCH_Stimuli --input <wav> --bpm <positive> "
-                  "--axis <output|input|z|morph|q|follow> --body <name|index> "
+                  "--axis <output|input|z|morph|q> --body <name|index> "
                   "--output-dir <dir> [--low <0..1>] [--high <0..1>]\n");
 }
 
@@ -178,7 +178,6 @@ const AxisSpec* findAxis (const juce::String& name)
         { "z",      ParamID::chew,      trench::curves::Axis::bite },
         { "morph",  ParamID::morph,     trench::curves::Axis::morph },
         { "q",      ParamID::q,         trench::curves::Axis::q },
-        { "follow", ParamID::envAmount, trench::curves::Axis::follow },
     };
     for (const auto& axis : axes)
         if (name == axis.name)
@@ -406,17 +405,14 @@ int main (int argc, char** argv)
             renders[(size_t) level] = std::move (render);
         }
 
-        if (options.axis == "output")
+        const double referenceRms = renders[0]->rmsBeforeMatch;
+        if (referenceRms <= 0.0)
+            throw std::runtime_error ("level-0 standard is silent; RMS matching is impossible");
+        for (auto& render : renders)
         {
-            const double referenceRms = renders[0]->rmsBeforeMatch;
-            if (referenceRms <= 0.0)
-                throw std::runtime_error ("OUTPUT level-0 standard is silent; RMS matching is impossible");
-            for (auto& render : renders)
-            {
-                if (render->rmsBeforeMatch <= 0.0)
-                    throw std::runtime_error ("an OUTPUT comparison is silent; RMS matching is impossible");
-                render->levelMatchGain = referenceRms / render->rmsBeforeMatch;
-            }
+            if (render->rmsBeforeMatch <= 0.0)
+                throw std::runtime_error ("a comparison render is silent; RMS matching is impossible");
+            render->levelMatchGain = referenceRms / render->rmsBeforeMatch;
         }
 
         double largestMatchedPeak = 0.0;

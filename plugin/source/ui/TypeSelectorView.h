@@ -144,7 +144,7 @@ public:
         // lets the frosted panel's own active hairline carry the hover; this bar
         // additionally darkened its text to pure black, so the name changed
         // weight under the cursor for no reason a user could name.
-        const auto ink = t.textColour ("typeName", juce::Colour (0xff0b0b0b));
+        const auto ink = t.textColour ("typeName", juce::Colour (0xff1a1713));
         const auto typeText = selectedIndex >= 0 ? trench::bodyDisplayName (selectedIndex) : juce::String();
         g.setColour (ink);
         g.drawText (typeText, textArea.toNearestInt(),

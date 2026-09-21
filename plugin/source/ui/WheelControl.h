@@ -17,6 +17,7 @@ class WheelControl : public juce::Component,
 public:
 
     static constexpr int kStripFrameWidth = 417;
+    static constexpr float kBodyDarken = 1.0f;
 
     static juce::Image recolourGlow (const juce::Image& source, juce::Colour target)
     {
@@ -31,13 +32,18 @@ public:
             for (int x = 0; x < data.width; ++x)
             {
                 const juce::Colour c = data.getPixelColour (x, y);
-                const float sat = c.getSaturation();
-                if (sat < 0.18f || c.getAlpha() == 0)
+                if (c.getAlpha() == 0)
                     continue;
+                const float sat = c.getSaturation();
                 float dh = std::abs (c.getHue() - mintHue);
                 dh = juce::jmin (dh, 1.0f - dh);
-                if (dh > 0.09f)
+                if (sat < 0.18f || dh > 0.09f)
+                {
+                    data.setPixelColour (x, y, juce::Colour::fromHSV (c.getHue(), sat,
+                                                                     c.getBrightness() * kBodyDarken,
+                                                                     c.getFloatAlpha()));
                     continue;
+                }
                 const float scaled = juce::jlimit (0.0f, 1.0f, targetSat * juce::jmin (1.0f, sat / mintSat));
                 data.setPixelColour (x, y, juce::Colour::fromHSV (targetHue, scaled, c.getBrightness(), c.getFloatAlpha()));
             }
@@ -201,7 +207,7 @@ public:
         if (fw <= 0 || fh <= 0)
             return;
 
-        const int usableFrames = numFrames == 129 ? 128 : numFrames;
+        const int usableFrames = numFrames;
         const int last = usableFrames - 1;
         const int frame = juce::jlimit (0, last, juce::roundToInt (displayNormalised() * (float) last));
 
@@ -211,15 +217,17 @@ public:
         const auto wheelRect = getLocalBounds().toFloat()
                                    .translated ((float) kSeatShift, (float) kSeatDrop);
 
-        const auto frameRect = wheelRect;
+        const float imageWidth = wheelRect.getWidth() + 8.0f;
+        const auto frameRect = juce::Rectangle<float> (imageWidth, imageWidth * (float) fh / (float) fw)
+                                   .withCentre (wheelRect.getCentre());
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         juce::Graphics::ScopedSaveState slotClip (g);
         {
-            const auto opening = wheelRect.reduced (0.8f, 2.7f);
+            const auto opening = wheelRect;
             juce::Path slot;
-            slot.addRoundedRectangle (opening, opening.getHeight() * 0.34f);
+            slot.addRoundedRectangle (opening, 3.0f);
             g.reduceClipRegion (slot);
         }
 
@@ -236,35 +244,44 @@ public:
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
         {
-            const auto wheel = frameRect;
-            const auto shade = juce::Colour (0xff17110a);
-            juce::Graphics::ScopedSaveState save (g);
-
+            juce::Graphics::ScopedSaveState light (g);
             g.reduceClipRegion (scaledFrame,
-                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
+                                juce::AffineTransform::scale (frameRect.getWidth() / (float) pw,
                                                               frameRect.getHeight() / (float) ph)
                                     .translated (frameRect.getX(), frameRect.getY()));
+            const auto front = wheelRect.withTop (wheelRect.getY() + wheelRect.getHeight() * 0.48f);
+            const auto lightColour = juce::Colour (0xffd4ddd8);
+            juce::ColourGradient sheen (lightColour.withAlpha (0.0f), front.getCentreX(), front.getY(),
+                                        lightColour.withAlpha (0.0f), front.getCentreX(), front.getBottom(), false);
+            sheen.addColour (0.35, lightColour.withAlpha (0.10f));
+            sheen.addColour (0.62, lightColour.withAlpha (0.15f));
+            g.setGradientFill (sheen);
+            g.fillRect (front);
+        }
 
-            const float endW = wheel.getWidth() * 0.19f;
-            juce::ColourGradient left (shade.withAlpha (0.92f), wheel.getX(), wheel.getCentreY(),
+        {
+            const auto wheel = wheelRect;
+            const auto shade = juce::Colour (0xff040608);
+            juce::Graphics::ScopedSaveState save (g);
+
+            const float endW = wheel.getWidth() * 0.18f;
+            juce::ColourGradient left (shade.withAlpha (0.96f), wheel.getX(), wheel.getCentreY(),
                                        shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);
-            left.addColour (0.30, shade.withAlpha (0.50f));
-            left.addColour (0.65, shade.withAlpha (0.16f));
+            left.addColour (0.18, shade.withAlpha (0.72f));
+            left.addColour (0.48, shade.withAlpha (0.32f));
+            left.addColour (0.78, shade.withAlpha (0.07f));
             g.setGradientFill (left);
             g.fillRect (wheel.withWidth (endW));
 
-            juce::ColourGradient right (shade.withAlpha (0.92f), wheel.getRight(), wheel.getCentreY(),
+            juce::ColourGradient right (shade.withAlpha (0.96f), wheel.getRight(), wheel.getCentreY(),
                                         shade.withAlpha (0.0f), wheel.getRight() - endW, wheel.getCentreY(), false);
-            right.addColour (0.30, shade.withAlpha (0.50f));
-            right.addColour (0.65, shade.withAlpha (0.16f));
+            right.addColour (0.18, shade.withAlpha (0.72f));
+            right.addColour (0.48, shade.withAlpha (0.32f));
+            right.addColour (0.78, shade.withAlpha (0.07f));
             g.setGradientFill (right);
             g.fillRect (wheel.withLeft (wheel.getRight() - endW));
 
-            const float lipH = wheel.getHeight() * 0.26f;
-            juce::ColourGradient lip (shade.withAlpha (0.48f), wheel.getCentreX(), wheel.getY(),
-                                      shade.withAlpha (0.0f), wheel.getCentreX(), wheel.getY() + lipH, false);
-            g.setGradientFill (lip);
-            g.fillRect (wheel.withHeight (lipH));
+
         }
 
     }
