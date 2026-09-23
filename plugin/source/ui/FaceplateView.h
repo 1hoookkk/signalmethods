@@ -88,8 +88,8 @@ public:
             g.drawImage (panelImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         }
 
-        drawWheelContactShadow (g, WheelControl::silhouetteForHole (t.rect ("morphWell")).withTrimmedBottom (-1.35f));
-        drawWheelContactShadow (g, WheelControl::silhouetteForHole (t.rect ("qWell")).withTrimmedBottom (-1.35f));
+        drawWheelContactShadow (g, WheelControl::silhouetteForHole (t.rect ("morphWell")).withBottom (t.rect ("morphWell").getBottom() + 1.35f));
+        drawWheelContactShadow (g, WheelControl::silhouetteForHole (t.rect ("qWell")).withBottom (t.rect ("qWell").getBottom() + 1.35f));
         if (! roomFrame.isEmpty())
         {
             g.setColour (juce::Colours::white.withAlpha (0.62f));

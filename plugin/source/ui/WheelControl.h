@@ -191,7 +191,7 @@ public:
         repaint();
     }
 
-    static constexpr float kWellGapX = 4.5f, kWellGapTop = 1.0f;
+    static constexpr float kWellGapX = 3.0f, kWellOverlap = 1.5f, kWellCorner = 3.5f;
     static constexpr float kRibTravel = 190.5f / 417.0f;
     static constexpr float kSilX0 = 7.0f, kSilX1 = 410.0f, kSilY0 = 8.0f, kSilY1 = 87.0f;
     static constexpr float kSeatSide = 2.7f;
@@ -207,7 +207,7 @@ public:
     }
     static juce::Rectangle<float> silhouetteForHole (juce::Rectangle<float> hole)
     {
-        return hole.reduced (kWellGapX, 0.0f).withTrimmedTop (kWellGapTop);
+        return hole.reduced (kWellGapX, 0.0f).expanded (0.0f, kWellOverlap);
     }
 
     void paint (juce::Graphics& g) override
@@ -230,6 +230,12 @@ public:
         const juce::Rectangle<float> frameRect { sil.getX() - kSilX0 * sx, sil.getY() - kSilY0 * sy,
                                                  (float) fw * sx, (float) fh * sy };
         shownFrameWidth = frameRect.getWidth();
+        juce::Graphics::ScopedSaveState well (g);
+        {
+            juce::Path opening;
+            opening.addRoundedRectangle (hole, kWellCorner);
+            g.reduceClipRegion (opening);
+        }
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
