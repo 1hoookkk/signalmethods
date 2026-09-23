@@ -191,7 +191,7 @@ public:
         repaint();
     }
 
-    static constexpr float kWellGapX = -0.5f, kHeightFrom = -4.0f;
+    static constexpr float kWellGapX = -3.0f, kHeightFrom = -6.0f, kOpeningCorner = 3.5f;
     static constexpr float kRibTravel = 190.5f / 417.0f;
     static constexpr float kSilX0 = 7.0f, kSilX1 = 410.0f, kSilY0 = 8.0f, kSilY1 = 87.0f;
     static constexpr float kSeatSide = 2.7f;
@@ -232,30 +232,36 @@ public:
         const juce::Rectangle<float> frameRect { sil.getX() - kSilX0 * sx, sil.getY() - kSilY0 * sy,
                                                  (float) fw * sx, (float) fh * sy };
         shownFrameWidth = frameRect.getWidth();
+        juce::Graphics::ScopedSaveState behind (g);
+        {
+            juce::Path opening;
+            opening.addRoundedRectangle (hole, kOpeningCorner);
+            g.reduceClipRegion (opening);
+        }
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
-        const int pw = juce::jmax (1, juce::roundToInt (frameRect.getWidth()  * pixelScale));
-        const int ph = juce::jmax (1, juce::roundToInt (frameRect.getHeight() * pixelScale));
-        if (scaledIndex != frame || scaledFrame.getWidth() != pw
-            || scaledFrame.getHeight() != ph)
+        const auto snap = [pixelScale] (float v) { return std::round (v * pixelScale) / pixelScale; };
+        const juce::Rectangle<float> dest { snap (frameRect.getX()), snap (frameRect.getY()),
+                                            snap (frameRect.getRight()) - snap (frameRect.getX()),
+                                            snap (frameRect.getBottom()) - snap (frameRect.getY()) };
+        if (scaledIndex != frame)
         {
-            scaledFrame = strip.getClippedImage ({ frame * fw, 0, fw, fh })
-                              .rescaled (pw, ph, juce::Graphics::highResamplingQuality);
+            scaledFrame = strip.getClippedImage ({ frame * fw, 0, fw, fh });
             scaledIndex = frame;
         }
-        g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
+        g.drawImage (scaledFrame, dest, juce::RectanglePlacement::stretchToFit);
 
         {
             const auto wheel = frameRect;
             const auto shade = juce::Colour (0xff17110a);
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (scaledFrame,
-                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
-                                                              frameRect.getHeight() / (float) ph)
-                                    .translated (frameRect.getX(), frameRect.getY()));
+                                juce::AffineTransform::scale (dest.getWidth()  / (float) fw,
+                                                              dest.getHeight() / (float) fh)
+                                    .translated (dest.getX(), dest.getY()));
             const float endW = wheel.getWidth() * 0.24f;
             juce::ColourGradient left (shade.withAlpha (0.97f), wheel.getX(), wheel.getCentreY(),
                                        shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);

@@ -79,8 +79,12 @@ public:
             const float frameD = d * (96.0f / 76.0f);
             g.setOpacity (1.0f);
             g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-            g.drawImage (strip, (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f), (int) frameD, (int) frameD,
-                         frame * frameSize, 0, frameSize, frameSize, false);
+            const float scale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
+            const auto snap = [scale] (float v) { return std::round (v * scale) / scale; };
+            const float x0 = snap (c.x - frameD * 0.5f), y0 = snap (c.y - frameD * 0.5f);
+            const float side = snap (c.x + frameD * 0.5f) - x0;
+            g.drawImage (strip.getClippedImage ({ frame * frameSize, 0, frameSize, frameSize }),
+                         { x0, y0, side, side }, juce::RectanglePlacement::stretchToFit);
         }
 
         const float fontSize = juce::jlimit (8.0f, 11.0f, legend.getHeight() * 0.75f);
