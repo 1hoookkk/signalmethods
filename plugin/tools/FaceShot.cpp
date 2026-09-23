@@ -63,9 +63,9 @@ int main()
         std::printf ("%s: movement=%g (%s)\n", stem,
                      processor.apvts.getRawParameterValue (ParamID::movePreset)->load(),
                      processor.motionForEditing().name.toRawUTF8());
-        save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 1.0f, juce::SoftwareImageType()), juce::String (stem) + ".png");
-        save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 2.0f, juce::SoftwareImageType()), juce::String (stem) + "_200.png");
-        save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 3.0f, juce::SoftwareImageType()), juce::String (stem) + "_300.png");
+        save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 1.0f, juce::NativeImageType()), juce::String (stem) + ".png");
+        save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 2.0f, juce::NativeImageType()), juce::String (stem) + "_200.png");
+        save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 3.0f, juce::NativeImageType()), juce::String (stem) + "_300.png");
     };
     const auto set = [&] (const char* id, float denorm)
     {

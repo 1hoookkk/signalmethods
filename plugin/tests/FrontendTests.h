@@ -24,7 +24,7 @@ inline int frontendTests()
     trench::ui::GraphDisplay* glass = nullptr;
     std::vector<trench::ui::DeskKnob*> knobs;
     int wheels = 0, values = 0, others = 0;
-    const juce::Rectangle<float> notch { 742.0f * 310.0f / 1024.0f, 1216.0f * 506.0f / 1536.0f, 310.0f, 506.0f };
+    const juce::Rectangle<float> notch { 753.0f * 310.0f / 1024.0f, 1185.0f * 506.0f / 1536.0f, 310.0f, 506.0f };
     bool insideChassis = true, clearOfNotch = true, key = false;
     for (auto* child : face->getChildren())
     {

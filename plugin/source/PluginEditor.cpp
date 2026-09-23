@@ -22,8 +22,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     uiFontFamily() = layout.string ("fontFamily", kUiFontName);
     uiEmphasisFontFamily() = layout.string ("fontFamilyEmphasis", kUiEmphasisFontName);
     uiBoldEnabled() = layout.param ("fontBold", 0.0) > 0.5;
-    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_iridescent_png,
-                                                  BinaryData::trench_plate_iridescent_pngSize);
+    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_sage_png,
+                                                  BinaryData::trench_plate_sage_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_ss3_strip_png,
                                                   BinaryData::trench_ss3_strip_pngSize);
 #if TRENCH_DEV_PANEL

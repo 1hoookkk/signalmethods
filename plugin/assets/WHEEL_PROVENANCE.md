@@ -45,3 +45,5 @@ each end and 1.2 px low, with the 3 Aug contact shadow under it.
 `trench_ss3_strip.png` is `trench-x3-clean/plugin/assets/trench_roller_strip_ss3steel_master.png` byte for byte (md5 e46582ef..., 128 x 417x93; the same bytes as trench-workstation's `.bak_ss3steel_orig`), the "OLD gunmetal (crown)" wheel of the 21 Jul comparison screenshot. No code overlays and no runtime tint: the lamp is the render's own teal.
 
 The strip now carries 129 frames: the 128 master frames plus frame 0 appended as the wrap sentinel (frame 128 == frame 0). Ribs travel 1.5 px per frame at the drum centre (190.5 px of 417 over the range), and the drag throw equals that travel so the surface rolls with the cursor.
+
+Darker aluminium (23 Sep late): the body was separated from the lamp with `retint_roller_glow.solve_screen_layer`, set to 35 % own colour + 65 % grey, x0.74 and cooled (0.97, 0.99, 1.04), then the untouched lamp layer was screened back on. Body mean 0.233 -> 0.172.

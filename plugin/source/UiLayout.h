@@ -21,10 +21,10 @@ public:
     {
         UiLayout layout;
 
-        layout.elements["morphWheel"]   = { { 118.7f, 675.6f, 429.1f, 75.6f }, {}, {} };
-        layout.elements["qWheel"]       = { { 118.7f, 840.0f, 429.1f, 75.6f }, {}, {} };
-        layout.elements["morphWell"]    = { { 116.3f, 672.0f, 432.9f, 81.6f }, {}, {} };
-        layout.elements["qWell"]        = { { 116.3f, 836.4f, 432.9f, 84.0f }, {}, {} };
+        layout.elements["morphWheel"]   = { { 117.4f, 676.6f, 426.2f, 74.0f }, {}, {} };
+        layout.elements["qWheel"]       = { { 117.4f, 840.6f, 426.2f, 76.0f }, {}, {} };
+        layout.elements["morphWell"]    = { { 115.0f, 673.0f, 430.0f, 80.0f }, {}, {} };
+        layout.elements["qWell"]        = { { 115.0f, 837.0f, 430.0f, 82.0f }, {}, {} };
         layout.elements["typeSelector"] = { { 233.2f, 137.1f, 675.8f, 67.1f },  {}, {} };
 
         layout.elements["keyBox"]       = { { 559.2f, 64.1f, 349.8f, 61.2f }, {}, {} };
@@ -32,7 +32,7 @@ public:
         layout.elements["morphReadout"] = { { 563.2f, 684.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["qReadout"]     = { { 563.2f, 849.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
 
-        layout.elements["spectrumGrid"] = { { 126.0f, 238.0f, 769.0f, 350.0f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 128.1f, 245.6f, 768.7f, 342.7f }, {}, {} };
 
         layout.elements["typeLabel"]    = { { 128.7f, 137.1f, 98.3f, 67.1f },  12.9f, juce::Colour (0xff2a2722) };
         layout.elements["typeLabel"].text = "BODY";
