@@ -39,3 +39,7 @@ each end and 1.2 px low, with the 3 Aug contact shadow under it.
 ## 23 Sep 2026, evening: SS3 strip and crown restored
 
 `trench_ss3_strip.png` is again the 129-frame SS3 3x strip (git blob 90791af, commit 265d6b3d, the wheel ruled "Perfect"), frame 128 blank. The crown (belly highlight, underside darkening, warm end shade 0xff17110a) and the drum-in-slot seating are that commit's code verbatim. The lamp is re-tinted at load from the face accent (`WheelControl::tintLamp`, lamp measured hue 175 deg, saturation 0.64, value 0.81; saturation held at 0.6 or more).
+
+## 23 Sep 2026, night: gunmetal SS3 master
+
+`trench_ss3_strip.png` is `trench-x3-clean/plugin/assets/trench_roller_strip_ss3steel_master.png` byte for byte (md5 e46582ef..., 128 x 417x93; the same bytes as trench-workstation's `.bak_ss3steel_orig`), the "OLD gunmetal (crown)" wheel of the 21 Jul comparison screenshot. No code overlays and no runtime tint: the lamp is the render's own teal.

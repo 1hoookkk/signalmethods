@@ -32,7 +32,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 #endif
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
-    strip = WheelControl::tintLamp (strip, theme.curveColour());
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
