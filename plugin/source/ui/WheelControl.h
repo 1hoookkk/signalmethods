@@ -246,6 +246,29 @@ public:
         }
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
+        {
+            const auto wheel = frameRect;
+            const auto shade = juce::Colour (0xff17110a);
+            juce::Graphics::ScopedSaveState save (g);
+            g.reduceClipRegion (scaledFrame,
+                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
+                                                              frameRect.getHeight() / (float) ph)
+                                    .translated (frameRect.getX(), frameRect.getY()));
+            const float endW = wheel.getWidth() * 0.19f;
+            juce::ColourGradient left (shade.withAlpha (0.92f), wheel.getX(), wheel.getCentreY(),
+                                       shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);
+            left.addColour (0.30, shade.withAlpha (0.50f));
+            left.addColour (0.65, shade.withAlpha (0.16f));
+            g.setGradientFill (left);
+            g.fillRect (wheel.withWidth (endW));
+            juce::ColourGradient right (shade.withAlpha (0.92f), wheel.getRight(), wheel.getCentreY(),
+                                        shade.withAlpha (0.0f), wheel.getRight() - endW, wheel.getCentreY(), false);
+            right.addColour (0.30, shade.withAlpha (0.50f));
+            right.addColour (0.65, shade.withAlpha (0.16f));
+            g.setGradientFill (right);
+            g.fillRect (wheel.withLeft (wheel.getRight() - endW));
+        }
+
         if (hovering || pressing)
         {
             juce::ColourGradient lift (juce::Colours::white.withAlpha (pressing ? 0.10f : 0.06f),
