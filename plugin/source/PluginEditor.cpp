@@ -32,6 +32,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 #endif
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
+    strip = WheelControl::tintLamp (strip, theme.curveColour());
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
@@ -162,7 +163,13 @@ void PluginEditor::resized()
     secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
     {
         const auto hole = theme.rect ("qWell");
-        modulationChip->setBounds (juce::Rectangle<float> (hole.getX(), hole.getBottom() + 12.0f, 100.0f, 17.0f).toNearestInt());
+        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 12.0f, 100.0f, 17.0f);
+        modulationChip->setBounds (chip.toNearestInt());
+        const float left = hole.getX() - 6.0f;
+        const float right = theme.rect ("outputReadout").getRight() + 25.5f;
+        const float bottom = theme.rect ("outputReadout").getBottom() + 10.0f;
+        faceplate->setRoomFrame ({ left, chip.getCentreY(), right - left, bottom - chip.getCentreY() },
+                                 chip.getX() - 3.0f, chip.getRight() + 3.0f);
     }
     {
         const auto key = rectOf ("keyBox");

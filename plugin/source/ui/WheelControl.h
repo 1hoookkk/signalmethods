@@ -17,6 +17,34 @@ class WheelControl : public juce::Component,
 public:
 
     static constexpr int kStripFrameWidth = 417;
+    static constexpr float kLampHue = 172.7f / 360.0f;
+    static constexpr float kLampSat = 0.80f;
+    static constexpr float kLampVal = 0.85f;
+
+    static juce::Image tintLamp (const juce::Image& source, juce::Colour accent)
+    {
+        if (! source.isValid() || std::abs (accent.getHue() - kLampHue) < 0.002f
+            && std::abs (accent.getSaturation() - kLampSat) < 0.01f && std::abs (accent.getBrightness() - kLampVal) < 0.01f)
+            return source;
+        auto out = source.createCopy();
+        const float satScale = accent.getSaturation() / kLampSat;
+        const float valScale = accent.getBrightness() / kLampVal;
+        juce::Image::BitmapData data (out, juce::Image::BitmapData::readWrite);
+        for (int y = 0; y < data.height; ++y)
+            for (int x = 0; x < data.width; ++x)
+            {
+                const auto c = data.getPixelColour (x, y);
+                if (c.getAlpha() == 0)
+                    continue;
+                float h, sat, val;
+                c.getHSB (h, sat, val);
+                if (sat <= 0.15f || h < 140.0f / 360.0f || h > 205.0f / 360.0f)
+                    continue;
+                data.setPixelColour (x, y, juce::Colour::fromHSV (accent.getHue(), juce::jmin (1.0f, sat * satScale),
+                                                                  juce::jmin (1.0f, val * valScale), c.getFloatAlpha()));
+            }
+        return out;
+    }
 
     WheelControl (juce::AudioProcessorValueTreeState& apvts, juce::String paramID,
                   juce::Image filmstrip, const Theme& theme)

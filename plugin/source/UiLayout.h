@@ -43,19 +43,25 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 199.0f, 1054.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 168.0f, 1054.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["inputLabel"].text = "INPUT";
-        layout.elements["outputLabel"]  = { { 473.0f, 1054.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"]  = { { 442.0f, 1054.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["outputLabel"].text = "OUTPUT";
-        layout.elements["inputKnob"]    = { { 209.0f, 1099.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["outputKnob"]   = { { 483.0f, 1099.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 212.0f, 1241.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["outputReadout"] = { { 486.0f, 1241.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["inputKnob"]    = { { 178.0f, 1099.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 452.0f, 1099.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 181.0f, 1241.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["outputReadout"] = { { 455.0f, 1241.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 15.9f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        const juce::Colour lamp (0xff2ad7c2);
+        juce::Colour lamp (0xff2ad7c2);
+        if (const char* accent = std::getenv ("TRENCH_ACCENT"))
+        {
+            const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");
+            if (hex.length() == 6)
+                lamp = juce::Colour ((juce::uint32) (0xff000000u | (juce::uint32) hex.getHexValue32()));
+        }
         layout.colours["accent"]             = lamp;
         layout.colours["curveColour"]        = lamp;
         layout.colours["curveHighlight"]     = lamp;
