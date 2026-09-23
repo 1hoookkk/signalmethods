@@ -30,10 +30,10 @@ inline constexpr Variable variables[] {
     { "cal_desk_clip", "Desk saturation", "", 0, 1, 1, 1, false, "Disables only desk clipping; preserves drive and its filters." },
     { "cal_comp", "Desk compensation", "", 0, 1, 1, 1, false, "Existing static desk gain compensation; not audio-reactive AGC." },
     { "cal_coupling", "Desk output coupling", "Hz", 0, 100, 0.1f, 0, false, "0: original coupling. Otherwise sets the output high-pass coefficient." },
-    { "cal_output_db", "Monitor trim", "dB", -36, 6, 0.1f, 0, false, "Final comparison trim before the optional output guard. No automatic loudness matching." },
+    { "cal_output_db", "Monitor trim", "dB", -36, 6, 0.1f, 0, false, "Final comparison trim after the soft clip that follows the filter. No automatic loudness matching." },
     { "cal_guard_knee", "Final guard linear fraction", "", 0.1f, 0.99f, 0.01f, 0.5f, false, "Linear region as a fraction of the output ceiling. Guard curvature above this point changes distortion." },
     { "cal_guard_ceiling", "Final output ceiling", "dBFS", -12, -0.1f, 0.1f, -0.1f, false, "Ceiling when Final output guard is enabled. No limiting when it is off." },
-    { "cal_guard", "Final output guard", "", 0, 1, 1, 1, false, "Optional final soft ceiling. OFF leaves the finite filter output unbounded." }
+    { "cal_guard", "Final output guard", "", 0, 1, 1, 1, false, "Soft clip after the filter. OFF leaves the finite filter output unbounded." }
 };
 inline constexpr const char* retired[] { "cal_stage", "cal_stage_db", "cal_agc", "cal_agc_db", "cal_agc_strength", "cal_agc_recovery", "cal_knee_db", "cal_knee_slope", "cal_release_slow", "cal_release_fast", "cal_hold", "cal_quiet_db", "cal_agc_position" };
 inline constexpr size_t count = std::size (variables);

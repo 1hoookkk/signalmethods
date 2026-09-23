@@ -139,7 +139,7 @@ public:
                             || (transition == PatternTransition && p.smooth);
             if (glide)
                 v += (p.values[next] - v) * frac;
-            morphBuffer[i] = (v + 1.0f) * 0.5f * (1.0f - base);
+            morphBuffer[i] = clamp01 (base + v) - base;
         }
 
         updateClock (t, numSamples);

@@ -57,14 +57,17 @@ RootPair pair_geometry(double encoded_magnitude, double encoded_radius_squared,
 }
 
 double decode_word(std::uint16_t word) {
+  static constexpr double kScale[16] = {
+      0x1p-15, 0x1p-14, 0x1p-13, 0x1p-12, 0x1p-11, 0x1p-10, 0x1p-9, 0x1p-8,
+      0x1p-7,  0x1p-6,  0x1p-5,  0x1p-4,  0x1p-3,  0x1p-2,  0x1p-1, 0x1p0};
   const std::uint32_t u = static_cast<std::uint32_t>(word) + 1U;
   if (u == 65'536U) return 1.0;
   if (u == 1U) return 0.0;
-  const auto exponent = static_cast<int>((u >> 12U) & 0xFU);
+  const auto exponent = static_cast<std::size_t>((u >> 12U) & 0xFU);
   const auto mantissa = static_cast<double>(u & 0xFFFU);
-  const double x = exponent == 0 ? mantissa / 4096.0
-                                 : (mantissa + 4096.0) / 8192.0;
-  return std::ldexp(x, exponent - 15);
+  const double x = exponent == 0 ? mantissa * (1.0 / 4096.0)
+                                 : (mantissa + 4096.0) * (1.0 / 8192.0);
+  return x * kScale[exponent];
 }
 
 std::uint16_t encode_word(double value) {

@@ -1,5 +1,6 @@
 #pragma once
 #include "Theme.h"
+#include "SelectorLookAndFeel.h"
 #include "../parameters/TrenchParameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <functional>
@@ -10,7 +11,7 @@ class ModulationChip final : public juce::Component, public juce::SettableToolti
 public:
     ModulationChip (juce::AudioProcessorValueTreeState& apvts, const Theme& theme)
         : t (theme), param (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::movePreset))),
-          morph (apvts.getParameter (ParamID::morph)), custom (apvts.getParameter (ParamID::moveCustom)),
+          custom (apvts.getParameter (ParamID::moveCustom)),
           length (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::moveLength))),
           playback (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::movePlayback)))
     {
@@ -33,13 +34,12 @@ public:
         const int wanted = juce::jlimit (0, param->choices.size() - 1, index);
         const bool wasCustom = custom != nullptr && custom->getValue() > 0.5f;
         if (wasCustom) { custom->beginChangeGesture(); custom->setValueNotifyingHost (0); custom->endChangeGesture(); }
-        if (wanted > 0 && (wanted != selectedPattern() || wasCustom) && morph != nullptr)
-        {
-            morph->beginChangeGesture(); morph->setValueNotifyingHost (0.0f); morph->endChangeGesture();
-        }
         attachment->setValueAsCompleteGesture ((float) wanted);
     }
     std::function<void()> onRestart;
+    std::function<juce::String()> customName;
+    std::function<juce::StringArray()> savedNames;
+    std::function<void (int)> onSaved;
     std::function<void()> onEdit;
     void selectLength (int index)
     {
@@ -53,6 +53,8 @@ public:
     }
     juce::String displayText() const
     {
+        if (custom != nullptr && custom->getValue() > 0.5f && customName != nullptr)
+            return customName();
         if (selectedPattern() == 0 || param == nullptr) return "Modulation: off";
         auto label = param->choices[selectedPattern()];
         const auto separator = " " + juce::String::charToString (0x00b7) + " ";
@@ -66,11 +68,23 @@ public:
     {
         if (onEdit) { onEdit(); return; }
         if (param == nullptr) return;
+        juce::SharedResourcePointer<SelectorLookAndFeel> look;
         juce::PopupMenu menu;
+        menu.setLookAndFeel (&*look);
+        const bool usingCustom = custom != nullptr && custom->getValue() > 0.5f;
         for (int i = 0; i < param->choices.size(); ++i)
-            menu.addItem (i + 1, param->choices[i], true, selectedPattern() == i);
+            menu.addItem (i + 1, param->choices[i], true, ! usingCustom && selectedPattern() == i);
+        const auto saved = savedNames != nullptr ? savedNames() : juce::StringArray();
+        if (! saved.isEmpty())
+        {
+            menu.addSeparator();
+            for (int i = 0; i < saved.size(); ++i)
+                menu.addItem (400 + i, saved[i], true, usingCustom && customName != nullptr && customName() == saved[i]);
+        }
         menu.addSeparator();
         juce::PopupMenu lengths, modes;
+        lengths.setLookAndFeel (&*look);
+        modes.setLookAndFeel (&*look);
         if (length != nullptr)
             for (int i = 0; i < length->choices.size(); ++i)
                 lengths.addItem (100 + i, length->choices[i], true, length->getIndex() == i);
@@ -81,10 +95,11 @@ public:
         menu.addSubMenu ("Playback", modes);
         menu.addItem (300, "Restart", selectedPattern() > 0 && onRestart != nullptr);
         menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this),
-            [safe = juce::Component::SafePointer<ModulationChip> (this)] (int result)
+            [safe = juce::Component::SafePointer<ModulationChip> (this), look] (int result)
             {
                 if (safe == nullptr || result <= 0) return;
-                if (result == 300) { if (safe->onRestart != nullptr) safe->onRestart(); }
+                if (result >= 400) { if (safe->onSaved != nullptr) safe->onSaved (result - 400); }
+                else if (result == 300) { if (safe->onRestart != nullptr) safe->onRestart(); }
                 else if (result >= 200) safe->selectPlayback (result - 200);
                 else if (result >= 100) safe->selectLength (result - 100);
                 else safe->selectPattern (result - 1);
@@ -117,16 +132,17 @@ public:
         g.setFont (displayFont (10.5f * (float) kEditorWidth / 250.0f, active));
         g.setColour (active ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (0.58f));
         const auto label = displayText();
-        g.drawText (label, b.withTrimmedLeft (11).withTrimmedRight (12), juce::Justification::centredLeft, false);
+        const auto textArea = b.withTrimmedLeft (11).withTrimmedRight (12);
+        g.drawText (label, textArea, juce::Justification::centredLeft, true);
+        const float textWidth = juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), label);
         juce::Path arrow;
-        const float x = (float) b.getRight() - 5.0f, y = (float) b.getCentreY();
+        const float x = juce::jmin ((float) b.getRight() - 5.0f, (float) textArea.getX() + textWidth + 9.0f), y = (float) b.getCentreY();
         arrow.addTriangle (x - 3.0f, y - 1.5f, x + 3.0f, y - 1.5f, x, y + 2.0f);
         g.fillPath (arrow);
     }
 private:
     Theme t;
     juce::AudioParameterChoice* param = nullptr;
-    juce::RangedAudioParameter* morph = nullptr;
     juce::RangedAudioParameter* custom = nullptr;
     juce::AudioParameterChoice* length = nullptr;
     juce::AudioParameterChoice* playback = nullptr;

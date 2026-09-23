@@ -215,7 +215,7 @@ private:
     std::atomic<float>* pMorph = nullptr;
     std::atomic<float>* pQ = nullptr;
     std::atomic<float>* pPreamp = nullptr;
-    std::atomic<float>* pDistortion = nullptr;
+    std::atomic<float>* pOutput = nullptr;
     std::atomic<float>* pMovePreset = nullptr;
     std::atomic<float>* pMoveTransition = nullptr;
     std::atomic<float>* pMoveLength = nullptr;

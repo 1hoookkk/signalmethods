@@ -21,8 +21,8 @@ if(NOT TARGET juce::juce_audio_processors)
   set(JUCE_BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
   set(JUCE_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
   FetchContent_Declare(juce
-    URL https://codeload.github.com/juce-framework/JUCE/tar.gz/refs/tags/9.0.1
-    URL_HASH SHA256=3D8561EE685592513EB546B10D10DC078AE857644E18AEB1E1B4C1F1758492EB
+    URL https://codeload.github.com/juce-framework/JUCE/tar.gz/refs/tags/9.0.2
+    URL_HASH SHA256=16D01C27E8327F3644306CC5C223AA6E21AF1CC1EC62FAA709FC0DCED57D208A
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
   FetchContent_MakeAvailable(juce)
 endif()

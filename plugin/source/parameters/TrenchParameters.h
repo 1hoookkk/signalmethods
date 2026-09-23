@@ -6,6 +6,7 @@ namespace ParamID
     inline constexpr auto q         = "q";
     inline constexpr auto chew      = "chew";
     inline constexpr auto distortion = "distortion";
+    inline constexpr auto output    = "output";
     inline constexpr auto body      = "body";
     inline constexpr auto slamDrive = "slamDrive";
     inline constexpr auto preamp    = "preamp";    // desk BEFORE the cascade (input drive)

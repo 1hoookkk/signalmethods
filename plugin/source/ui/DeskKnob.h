@@ -38,7 +38,7 @@ public:
 
     void updateTooltip()
     {
-        const auto role = label == "INPUT" ? "level into the filter" : "saturation after the filter";
+        const auto role = label == "INPUT" ? "level into the filter, soft clip after it" : "desk drive and inflator after the filter";
         setTooltip (label + " (" + role + "): " + juce::String (juce::roundToInt (getDrive() * 100.0f)) + "% - drag/wheel; Shift for fine adjustment; double-click reset");
     }
 
@@ -64,17 +64,9 @@ public:
         const juce::Point<float> c { b.getCentreX(), b.getY() + 5.0f + d * 0.5f };
         const float drive = getDrive();
 
-        const auto mount = juce::Rectangle<float> (d + 3.0f, d + 3.0f).withCentre (c);
-        juce::ColourGradient seat (juce::Colour (0xff514e45), c.x, mount.getY(),
-                                   juce::Colour (0xffeee8d8), c.x, mount.getBottom(), false);
-        seat.addColour (0.45, juce::Colour (0xff8b877c));
-        g.setGradientFill (seat);
-        g.fillEllipse (mount);
-        g.setColour (juce::Colour (0xff292c29));
-        g.fillEllipse (mount.reduced (0.7f));
         juce::Path contact;
-        contact.addEllipse (mount.reduced (3.0f).translated (0.0f, 1.0f));
-        juce::DropShadow (juce::Colours::black.withAlpha (0.32f), 2, { 0, 1 }).drawForPath (g, contact);
+        contact.addEllipse (juce::Rectangle<float> (d, d).withCentre (c));
+        juce::DropShadow (juce::Colours::black.withAlpha (0.45f), juce::jmax (1, juce::roundToInt (d * 0.05f)), { 0, juce::jmax (1, juce::roundToInt (d * 0.07f)) }).drawForPath (g, contact);
 
         if (strip.isValid())
         {

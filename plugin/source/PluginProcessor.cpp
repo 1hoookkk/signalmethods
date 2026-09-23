@@ -44,7 +44,7 @@ PluginProcessor::PluginProcessor()
 #endif
     pQ          = apvts.getRawParameterValue (ParamID::q);
     pPreamp     = apvts.getRawParameterValue (ParamID::preamp);
-    pDistortion = apvts.getRawParameterValue (ParamID::distortion);
+    pOutput     = apvts.getRawParameterValue (ParamID::output);
     pMovePreset = apvts.getRawParameterValue (ParamID::movePreset);
     pMoveTransition = apvts.getRawParameterValue (ParamID::moveTransition);
     pMoveLength = apvts.getRawParameterValue (ParamID::moveLength);
@@ -410,11 +410,10 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     }
 #endif
     // 8. Static controls that changed since last block.
-    const float distortionAmount = juce::jlimit (0.0f, 1.0f, pDistortion->load());
+    const float outputAmount = juce::jlimit (0.0f, 1.0f, pOutput->load());
     const float inputDrive = trench::preampGain (juce::jlimit (0.0f, 1.0f, pPreamp->load()));
     dspBridge.setInputDrive (inputDrive);
-    dspBridge.setInputDesk (trench::driveTaper (distortionAmount));
-    dspBridge.setOutputDrive (0.0f);
+    dspBridge.setOutputDrive (outputAmount, trench::deskCompensationGain (outputAmount));
     TrenchParams params;
     params.q = q;                       // the static authored second axis
     params.poleDistortion = 0.0f;
@@ -453,27 +452,21 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     calibrationOutputGain = monitorGain;
 #endif
 #if TRENCH_DEV_PANEL
-    const float ceiling = std::pow (10.0f, calibration[18] / 20.0f);
-    const bool guarded = calibration[19] > 0.5f;
-    int limitedSamples = 0;
-    for (int i = 0; i < numSamples; ++i)
+    for (int c = 0; c < buffer.getNumChannels(); ++c)
     {
-        bool limited = false;
-        for (int c = 0; c < buffer.getNumChannels(); ++c)
-        {
-            const float x = buffer.getSample (c, i);
-            limited = limited || (guarded && (! std::isfinite (x) || std::abs (x) > calibration[17] * ceiling));
-            buffer.setSample (c, i, guarded ? trench::calibration::guard (x, calibration[17], ceiling)
-                                                          : std::isfinite (x) ? x : 0.0f);
-        }
-        limitedSamples += limited ? 1 : 0;
+        auto* d = buffer.getWritePointer (c);
+        for (int i = 0; i < numSamples; ++i)
+            d[i] = std::isfinite (d[i]) ? d[i] : 0.0f;
     }
-    const float limitFrac = (float) limitedSamples / (float) juce::jmax (1, numSamples);
+    const float limitFrac = dspBridge.caughtFractionForUi();
 #else
-    const float limitFrac = trench::finalSafetyCeilingBlockStereo (
-        buffer.getNumChannels() >= 1 ? buffer.getWritePointer (0) : nullptr,
-        buffer.getNumChannels() >= 2 ? buffer.getWritePointer (1) : nullptr,
-        numSamples);
+    for (int c = 0; c < buffer.getNumChannels(); ++c)
+    {
+        auto* d = buffer.getWritePointer (c);
+        for (int i = 0; i < numSamples; ++i)
+            d[i] = std::isfinite (d[i]) ? juce::jlimit (-trench::kFinalSafetyCeiling, trench::kFinalSafetyCeiling, d[i]) : 0.0f;
+    }
+    const float limitFrac = dspBridge.caughtFractionForUi();
 #endif
 #if TRENCH_DEV_PANEL
     calibrationOutputRms.store (rms(), std::memory_order_relaxed);
@@ -859,6 +852,7 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
         {
             const auto id = tree.getChild (i).getProperty ("id").toString();
             if (id == "amount" || id == "outputTrim" || id == ParamID::slamDrive || id == ParamID::chew || id == ParamID::deskPosition
+                || id == ParamID::distortion
 #if TRENCH_DEV_PANEL
                 || std::any_of (std::begin (trench::calibration::retired), std::end (trench::calibration::retired),
                     [&id] (const char* retired) { return id == retired; })

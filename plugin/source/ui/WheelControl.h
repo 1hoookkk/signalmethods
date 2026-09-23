@@ -25,6 +25,7 @@ public:
         juce::Image::BitmapData data (out, juce::Image::BitmapData::readWrite);
         const float mintHue = juce::Colour (0xff3cc8be).getHue();
         const float mintSat = juce::Colour (0xff3cc8be).getSaturation();
+        const float mintValue = juce::Colour (0xff3cc8be).getBrightness();
         const float targetHue = target.getHue();
         const float targetSat = target.getSaturation();
         for (int y = 0; y < data.height; ++y)
@@ -44,8 +45,9 @@ public:
                                                                      c.getFloatAlpha()));
                     continue;
                 }
-                const float scaled = juce::jlimit (0.0f, 1.0f, targetSat * juce::jmin (1.0f, sat / mintSat));
-                data.setPixelColour (x, y, juce::Colour::fromHSV (targetHue, scaled, c.getBrightness(), c.getFloatAlpha()));
+                const float scaled = juce::jlimit (0.0f, 1.0f, targetSat * juce::jmin (1.2f, sat / (mintSat * 0.84f)));
+                const float lifted = juce::jlimit (0.0f, 1.0f, c.getBrightness() * target.getBrightness() / mintValue);
+                data.setPixelColour (x, y, juce::Colour::fromHSV (targetHue, scaled, lifted, c.getFloatAlpha()));
             }
         }
         return out;
@@ -56,8 +58,8 @@ public:
         : strip (std::move (filmstrip)), t (theme)
     {
         numFrames = juce::jmax (1, strip.getWidth() / kStripFrameWidth);
-        if (strip.isValid() && t.rollerIllumination() != juce::Colour (0xff3cc8be))
-            strip = recolourGlow (strip, t.rollerIllumination());
+        if (strip.isValid())
+            strip = recolourGlow (strip, t.curveColour().interpolatedWith (t.curveHighlight(), 0.30f));
         jassert (! strip.isValid() || strip.getWidth() % kStripFrameWidth == 0);
         isQControl = paramID.containsIgnoreCase ("q") || paramID.containsIgnoreCase ("slam");
         param = apvts.getParameter (paramID);
@@ -197,6 +199,18 @@ public:
         repaint();
     }
 
+    static constexpr float kSeatSide = 2.7f;
+    static constexpr float kSeatBottom = 4.1f;
+    static constexpr float kSeatCorner = 3.5f;
+    static constexpr float kDrumProud = 2.46f;
+    static constexpr float kDrumBelow = 4.49f;
+    static constexpr float kSideOverhang = 5.0f;
+    static juce::Rectangle<float> drumForHole (juce::Rectangle<float> hole)
+    {
+        return { hole.getX() - kSideOverhang, hole.getY() - kDrumProud,
+                 hole.getWidth() + 2.0f * kSideOverhang, hole.getHeight() + kDrumProud + kDrumBelow };
+    }
+
     void paint (juce::Graphics& g) override
     {
         if (! strip.isValid())
@@ -207,28 +221,21 @@ public:
         if (fw <= 0 || fh <= 0)
             return;
 
-        const int usableFrames = numFrames;
-        const int last = usableFrames - 1;
+        const int last = (numFrames == 129 ? 128 : numFrames) - 1;
         const int frame = juce::jlimit (0, last, juce::roundToInt (displayNormalised() * (float) last));
 
-        static constexpr int kSeatDrop  = 0;
-        static constexpr int kSeatShift = 0;
-
-        const auto wheelRect = getLocalBounds().toFloat()
-                                   .translated ((float) kSeatShift, (float) kSeatDrop);
-
-        const float imageWidth = wheelRect.getWidth() + 8.0f;
-        const auto frameRect = juce::Rectangle<float> (imageWidth, imageWidth * (float) fh / (float) fw)
-                                   .withCentre (wheelRect.getCentre());
+        const auto wheelRect = getLocalBounds().toFloat();
+        const auto frameRect = wheelRect;
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-        juce::Graphics::ScopedSaveState slotClip (g);
+        juce::Graphics::ScopedSaveState seatClip (g);
         {
-            const auto opening = wheelRect;
-            juce::Path slot;
-            slot.addRoundedRectangle (opening, 3.0f);
-            g.reduceClipRegion (slot);
+            const auto hole = wheelRect.reduced (kSideOverhang, 0.0f).withTrimmedTop (kDrumProud).withTrimmedBottom (kDrumBelow);
+            juce::Path seat;
+            seat.addRoundedRectangle (hole.getX(), hole.getY(), hole.getWidth(), hole.getHeight(),
+                                      kSeatCorner, kSeatCorner, true, true, true, true);
+            g.reduceClipRegion (seat);
         }
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
@@ -244,46 +251,54 @@ public:
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
         {
-            juce::Graphics::ScopedSaveState light (g);
+            juce::Graphics::ScopedSaveState crown (g);
             g.reduceClipRegion (scaledFrame,
-                                juce::AffineTransform::scale (frameRect.getWidth() / (float) pw,
+                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
                                                               frameRect.getHeight() / (float) ph)
                                     .translated (frameRect.getX(), frameRect.getY()));
-            const auto front = wheelRect.withTop (wheelRect.getY() + wheelRect.getHeight() * 0.48f);
-            const auto lightColour = juce::Colour (0xffd4ddd8);
-            juce::ColourGradient sheen (lightColour.withAlpha (0.0f), front.getCentreX(), front.getY(),
-                                        lightColour.withAlpha (0.0f), front.getCentreX(), front.getBottom(), false);
-            sheen.addColour (0.35, lightColour.withAlpha (0.10f));
-            sheen.addColour (0.62, lightColour.withAlpha (0.15f));
-            g.setGradientFill (sheen);
-            g.fillRect (front);
+            const float top = frameRect.getY(), h = frameRect.getHeight();
+            juce::ColourGradient belly (juce::Colours::white.withAlpha (0.0f), 0.0f, top + h * 0.06f,
+                                        juce::Colours::white.withAlpha (0.0f), 0.0f, top + h * 0.56f, false);
+            belly.addColour (0.42, juce::Colours::white.withAlpha (0.16f));
+            g.setGradientFill (belly);
+            g.fillRect (frameRect);
+            juce::ColourGradient under (juce::Colours::black.withAlpha (0.0f), 0.0f, top + h * 0.58f,
+                                        juce::Colours::black.withAlpha (0.42f), 0.0f, frameRect.getBottom(), false);
+            g.setGradientFill (under);
+            g.fillRect (frameRect);
         }
 
         {
-            const auto wheel = wheelRect;
-            const auto shade = juce::Colour (0xff040608);
+            const auto wheel = frameRect;
+            const auto shade = juce::Colour (0xff17110a);
             juce::Graphics::ScopedSaveState save (g);
-
-            const float endW = wheel.getWidth() * 0.18f;
-            juce::ColourGradient left (shade.withAlpha (0.96f), wheel.getX(), wheel.getCentreY(),
+            g.reduceClipRegion (scaledFrame,
+                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
+                                                              frameRect.getHeight() / (float) ph)
+                                    .translated (frameRect.getX(), frameRect.getY()));
+            const float endW = wheel.getWidth() * 0.19f;
+            juce::ColourGradient left (shade.withAlpha (0.92f), wheel.getX(), wheel.getCentreY(),
                                        shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);
-            left.addColour (0.18, shade.withAlpha (0.72f));
-            left.addColour (0.48, shade.withAlpha (0.32f));
-            left.addColour (0.78, shade.withAlpha (0.07f));
+            left.addColour (0.30, shade.withAlpha (0.50f));
+            left.addColour (0.65, shade.withAlpha (0.16f));
             g.setGradientFill (left);
             g.fillRect (wheel.withWidth (endW));
-
-            juce::ColourGradient right (shade.withAlpha (0.96f), wheel.getRight(), wheel.getCentreY(),
+            juce::ColourGradient right (shade.withAlpha (0.92f), wheel.getRight(), wheel.getCentreY(),
                                         shade.withAlpha (0.0f), wheel.getRight() - endW, wheel.getCentreY(), false);
-            right.addColour (0.18, shade.withAlpha (0.72f));
-            right.addColour (0.48, shade.withAlpha (0.32f));
-            right.addColour (0.78, shade.withAlpha (0.07f));
+            right.addColour (0.30, shade.withAlpha (0.50f));
+            right.addColour (0.65, shade.withAlpha (0.16f));
             g.setGradientFill (right);
             g.fillRect (wheel.withLeft (wheel.getRight() - endW));
-
-
         }
 
+        if (hovering || pressing)
+        {
+            juce::ColourGradient lift (juce::Colours::white.withAlpha (pressing ? 0.10f : 0.06f),
+                                       0.0f, wheelRect.getY() + wheelRect.getHeight() * 0.30f,
+                                       juce::Colours::transparentBlack, 0.0f, wheelRect.getBottom(), false);
+            g.setGradientFill (lift);
+            g.fillRect (wheelRect);
+        }
     }
 
 private:

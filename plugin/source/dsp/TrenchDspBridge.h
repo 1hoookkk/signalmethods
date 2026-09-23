@@ -1,5 +1,7 @@
 #pragma once
 #include "DeskDrive.h"
+#include "DriveLaw.h"
+#include "Inflator.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -116,8 +118,6 @@ public:
 #endif
         inputGain.reset (sampleRateHz, 0.005);
         inputGain.setCurrentAndTargetValue (1.0f);
-        preDeskL.prepare (sampleRateHz);
-        preDeskR.prepare (sampleRateHz);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
@@ -159,6 +159,9 @@ public:
         postDeskL.setBypassSaturation (v[13] < 0.5f);
         postDeskR.setBypassSaturation (v[13] < 0.5f);
         setDeskCoupling (v[15]);
+        postClipOn = v[19] > 0.5f;
+        postClipKnee = v[17];
+        postClipCeiling = std::pow (10.0f, v[18] / 20.0f);
     }
     double declaredDatumForCalibration() const noexcept { return reportedDatum.load(); }
     float preDeskPeakForCalibration() const noexcept { return reportedPreDesk.load(); }
@@ -275,8 +278,9 @@ public:
         const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
         left.set_pole_distortion (bite);
         right.set_pole_distortion (bite);
-        left.set_stage_saturation (true, 1.0);
-        right.set_stage_saturation (true, 1.0);
+        left.set_stage_saturation (false, 1.0);
+        right.set_stage_saturation (false, 1.0);
+        int caught = 0;
 #if TRENCH_DEV_PANEL
         float preDeskPeak = 0.0f, postDeskPeak = 0.0f;
 #endif
@@ -361,9 +365,9 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                outL[sample] = preDeskL.process (outL[sample] * gain, inputDeskDrive);
+                outL[sample] *= gain;
                 if (outR != nullptr)
-                    outR[sample] = preDeskR.process (outR[sample] * gain, inputDeskDrive);
+                    outR[sample] *= gain;
             }
             left.process (std::span<float> (outL + blockStart, (size_t) blockLen));
             if (outR != nullptr)
@@ -374,15 +378,17 @@ public:
 #if TRENCH_DEV_PANEL
                 preDeskPeak = std::max (preDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
-                outL[sample] = postDeskL.process (outL[sample], outputDrive) * outputCompensation;
+                caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
+                outL[sample] = outputStage (postDeskL, postClip (outL[sample]));
                 if (outR != nullptr)
-                    outR[sample] = postDeskR.process (outR[sample], outputDrive) * outputCompensation;
+                    outR[sample] = outputStage (postDeskR, postClip (outR[sample]));
 #if TRENCH_DEV_PANEL
                     postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
             }
         }
         publishCascade (cachedCascade);
+        caughtFraction = (float) caught / (float) samples;
 #if TRENCH_DEV_PANEL
         reportedDatum.store (snapshot->datumRate);
         reportedPreDesk.store (preDeskPeak);
@@ -403,13 +409,6 @@ public:
     {
         inputGain.setTargetValue (std::clamp (gain, 1.0f, 10.0f));
     }
-    void setInputDesk (float amount) noexcept
-    {
-        inputDeskDrive = std::clamp (amount, 0.0f, 1.0f);
-        const bool on = inputDeskDrive > 0.001f;
-        preDeskL.setEnabled (on);
-        preDeskR.setEnabled (on);
-    }
     bool inputDriveIsUnity() const noexcept
     {
         return inputGain.getCurrentValue() == 1.0f && inputGain.getTargetValue() == 1.0f;
@@ -427,6 +426,7 @@ public:
         for (auto* desk : { &postDeskL, &postDeskR })
             desk->setOutputCoupling ((double) hz);
     }
+    float caughtFractionForUi() const noexcept { return caughtFraction; }
     float gritActivity() const noexcept
     {
         return (float) std::max (left.grit_activity(), right.grit_activity());
@@ -594,6 +594,20 @@ private:
         reclaim();
     }
 
+#if TRENCH_DEV_PANEL
+    float postClip (float x) const noexcept { return postClipOn ? trench::calibration::guard (x, postClipKnee, postClipCeiling) : x; }
+    bool clipEngaged (float x) const noexcept { return postClipOn && (! std::isfinite (x) || std::abs (x) > postClipKnee * postClipCeiling); }
+#else
+    static float postClip (float x) noexcept { return trench::softGuard (x); }
+    static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > trench::kFinalSafetyKnee; }
+#endif
+    float outputStage (trench::DeskDrive& desk, float x) const noexcept
+    {
+        if (! desk.isActive())
+            return x;
+        return trench::inflate (desk.process (x, outputDrive) * outputCompensation, outputDrive, trench::kFinalSafetyCeiling);
+    }
+
     void publishCascade (const trench::core::Cascade& cascade) noexcept
     {
         // Telemetry is allowed to skip an update; the audio callback must never
@@ -641,9 +655,8 @@ private:
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
-    trench::DeskDrive preDeskL, preDeskR;
-    float inputDeskDrive = 0.0f;
     float outputDrive = 0.0f;
+    float caughtFraction = 0.0f;
     float outputCompensation = 1.0f;
     bool outputStageOn = true;
     bool compensate = true;
@@ -652,6 +665,9 @@ private:
 #if TRENCH_DEV_PANEL
     trench::calibration::Values calibrationValues = trench::calibration::defaults();
     bool calibrationValid = false;
+    bool postClipOn = true;
+    float postClipKnee = trench::kGuardLinearZone;
+    float postClipCeiling = trench::kFinalSafetyCeiling;
     std::atomic<double> reportedDatum { kBodyDatumRate };
     std::atomic<float> reportedPreDesk { 0 }, reportedPostDesk { 0 };
 #endif

@@ -23,6 +23,8 @@ public:
 
         layout.elements["morphWheel"]   = { { 118.7f, 675.6f, 429.1f, 75.6f }, {}, {} };
         layout.elements["qWheel"]       = { { 118.7f, 840.0f, 429.1f, 75.6f }, {}, {} };
+        layout.elements["morphWell"]    = { { 116.3f, 672.0f, 432.9f, 81.6f }, {}, {} };
+        layout.elements["qWell"]        = { { 116.3f, 836.4f, 432.9f, 84.0f }, {}, {} };
         layout.elements["typeSelector"] = { { 233.2f, 137.1f, 675.8f, 67.1f },  {}, {} };
 
         layout.elements["keyBox"]       = { { 559.2f, 64.1f, 349.8f, 61.2f }, {}, {} };
@@ -41,6 +43,14 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  17.0f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
+        layout.elements["inputLabel"]   = { { 199.0f, 975.0f, 200.0f, 48.0f },  15.0f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"].text = "INPUT";
+        layout.elements["outputLabel"]  = { { 473.0f, 975.0f, 200.0f, 48.0f },  15.0f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"].text = "OUTPUT";
+        layout.elements["inputKnob"]    = { { 209.0f, 1020.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 483.0f, 1020.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 212.0f, 1162.0f, 174.4f, 61.2f },  18.0f, juce::Colour (0xff191714) };
+        layout.elements["outputReadout"] = { { 486.0f, 1162.0f, 174.4f, 61.2f },  18.0f, juce::Colour (0xff191714) };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 14.5f, juce::Colour (0xff0f0c09) };
 

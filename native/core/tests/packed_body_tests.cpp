@@ -1,6 +1,7 @@
 #include "trench/core/packed_body.hpp"
 #include "trench/core/native_body.hpp"
 #include "trench/core/audition.hpp"
+#include "radius_distortion_tests.hpp"
 
 #include <cmath>
 
@@ -29,7 +30,8 @@ std::uint16_t reference(std::uint16_t a, std::uint16_t b, float fraction) {
 
 }  // namespace
 
-int main() {
+int main(int argc, char**) {
+  if (argc > 1) return radius_distortion_tests() == 0 ? 0 : 1;
   using trench::core::interpolate_word;
   using trench::core::PackedBody;
 
@@ -252,6 +254,96 @@ int main() {
           static_cast<long>(worst_difference * 1.0e9), 100000);
   }
 
+  {
+    trench::core::Cascade cascade;
+    for (auto& section : cascade) section = {1.0, 0.0, 0.0, 0.0, 0.0};
+    cascade[0] = {1.0, 0.0, 0.0, -1.8, 0.81};
+    trench::core::CascadeRunner linear, rossum;
+    for (auto* runner : {&linear, &rossum}) {
+      runner->set_immediate(cascade);
+      runner->set_ring_leveller(false);
+    }
+    rossum.set_pole_distortion(1.0);
+    std::array<float, 256> quiet{}, guarded{};
+    quiet[0] = guarded[0] = 0.001f;
+    linear.process(quiet);
+    rossum.process(guarded);
+    check(quiet == guarded, "Rossum saturation is sample-identical below the feedback ceiling");
+    check(rossum.grit_activity() == 0.0, "quiet poles report no bite activity");
+    rossum.reset();
+    std::array<float, 256> hot{}, reference{};
+    hot[0] = reference[0] = 2.0f;
+    double z1 = 0.0, z2 = 0.0;
+    for (auto& sample : reference) {
+      const double accumulator = sample + 1.8 * z1 - 0.81 * z2;
+      z2 = z1;
+      z1 = std::clamp(accumulator, -1.0, 1.0);
+      sample = (float) accumulator;
+    }
+    rossum.process(hot);
+    double error = 0.0;
+    bool finite = true;
+    for (std::size_t i = 0; i < hot.size(); ++i) {
+      error = std::max(error, std::abs((double) hot[i] - reference[i]));
+      finite = finite && std::isfinite(hot[i]);
+    }
+    check(error < 1.0e-6, "Rossum matches Figure 3 bounded feedback-delay reference");
+    check(hot[0] == 2.0f, "Rossum preserves accumulator output headroom");
+    check(finite && std::abs(hot.back()) < 0.0001f, "overloaded poles recover to a finite quiet tail");
+    check(rossum.grit_activity() > 0.0, "bite activity follows actual feedback overload");
+    check(rossum.coefficients() == cascade, "Rossum does not explicitly move the stored poles");
+  }
+
+  {
+    trench::core::Cascade cascade;
+    for (auto& section : cascade) section = {1.0, 0.0, 0.0, 0.0, 0.0};
+    cascade[0] = {0.5, 0.2, -0.1, -1.2, 0.49};
+    cascade[1] = {1.0, -1.9, 0.95, -1.97, 0.994};
+    const auto burst = [] {
+      std::array<float, 512> x{};
+      for (std::size_t i = 0; i < 64; ++i) x[i] = (i % 16 < 8) ? 0.5f : -0.5f;
+      return x;
+    };
+    const auto energy = [](const std::array<float, 512>& x) {
+      double sum = 0.0;
+      for (const float v : x) sum += (double) v * v;
+      return sum;
+    };
+    trench::core::CascadeRunner linear, idle, late, lifted;
+    for (auto* runner : {&linear, &idle, &late, &lifted}) {
+      runner->set_immediate(cascade);
+      runner->set_ring_leveller(false);
+    }
+    auto reference = burst();
+    linear.process(reference);
+    auto unreached = burst();
+    idle.set_radius_distortion(1.0e9);
+    idle.process(unreached);
+    auto engaged = burst();
+    late.process(std::span<float>(engaged.data(), 100));
+    late.set_radius_distortion(1.0e9);
+    late.process(std::span<float>(engaged.data() + 100, engaged.size() - 100));
+    double idle_error = 0.0, late_error = 0.0;
+    for (std::size_t i = 0; i < reference.size(); ++i) {
+      idle_error = std::max(idle_error, std::abs((double) unreached[i] - reference[i]));
+      late_error = std::max(late_error, std::abs((double) engaged[i] - reference[i]));
+    }
+    std::printf("radius distortion: unreached error %.3e, mid-stream engagement error %.3e\n", idle_error, late_error);
+    check(idle_error < 1.0e-5, "radius distortion below its threshold is the linear cascade");
+    check(late_error < 1.0e-5, "radius distortion engages mid-stream without a state step");
+    check(idle.grit_activity() == 0.0, "an unreached radius threshold reports no activity");
+    auto bloomed = burst();
+    lifted.set_radius_distortion(1.0e-3);
+    lifted.process(bloomed);
+    bool finite = true;
+    for (const float v : bloomed) finite = finite && std::isfinite(v);
+    std::printf("radius distortion: linear energy %.4f, lifted energy %.4f, activity %.3f\n", energy(reference), energy(bloomed), lifted.grit_activity());
+    check(finite, "radius distortion output is finite");
+    check(lifted.grit_activity() > 0.0, "radius distortion reports activity when the state passes the threshold");
+    check(lifted.coefficients() == cascade, "radius distortion does not move the stored poles");
+  }
+
+  failures += radius_distortion_tests();
   std::printf("%d failure(s)\n", failures);
   return failures == 0 ? 0 : 1;
 }

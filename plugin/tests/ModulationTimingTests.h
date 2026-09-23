@@ -12,6 +12,8 @@ inline int modulationTimingTests()
         std::printf ("%s  %s\n", ok ? "PASS" : "FAIL", name);
         if (! ok) ++failures;
     };
+    const auto& oneShot = trench::kFuncGenPatterns[4];
+    const float ending = oneShot.values[oneShot.steps - 1];
     for (double rate : { 44100.0, 48000.0, 96000.0 })
     {
         trench::Movement movement;
@@ -19,45 +21,46 @@ inline int modulationTimingTests()
         trench::MovementTransport t;
         t.bpm = 120.0; t.playing = true; t.ppq = 10.0;
         float sample = 0.0f;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 3, 2);
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 2);
         check (sample == 0.0f, "four-bar Long Return starts at its first point");
         t.ppq = 26.0 - 2.0 / rate;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 3, 2);
-        check (sample < 0.5f && sample > 0.49f, "one-shot has not reached its ending a sample before four bars");
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 2);
+        check (sample < ending && sample > ending - 0.01f, "one-shot has not reached its ending a sample before four bars");
         t.ppq = 26.0;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 3, 2);
-        check (std::abs (sample - 0.5f) < 1.0e-7f, "one-shot reaches its authored ending exactly at four bars");
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 2);
+        check (std::abs (sample - ending) < 1.0e-7f, "one-shot reaches its authored ending exactly at four bars");
         t.ppq = 42.0;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 3, 2);
-        check (sample == 0.5f, "one-shot holds after completion");
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 2);
+        check (sample == ending, "one-shot holds after completion");
         t.ppq = 10.0;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 0, 0);
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 0, 0);
         check (sample == 0.0f, "one-shot at its own timing starts at its first point");
         t.ppq = 13.9;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 0, 0);
-        check (sample < 0.5f, "Long Return is still short of its ending before its own one-bar cycle");
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 0, 0);
+        check (sample < ending, "Long Return is still short of its ending before its own one-bar cycle");
         t.ppq = 14.0;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 0, 0);
-        check (std::abs (sample - 0.5f) < 1.0e-7f, "Long Return completes its own one-bar cycle exactly at the bar");
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 0, 0);
+        check (std::abs (sample - ending) < 1.0e-7f, "Long Return completes its own one-bar cycle exactly at the bar");
         t.ppq = 10.0;
-        movement.render (&sample, 1, 0.0f, t, 8, 0, 3, 2, 1);
+        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 2, 1);
         check (sample == 0.0f, "Restart replays a completed one-shot");
     }
     {
+        const auto& loop = trench::kFuncGenPatterns[6];
         trench::Movement movement;
         movement.prepare (64.0);
         trench::MovementTransport t;
         t.bpm = 120.0; t.playing = true; t.ppq = 0.0; t.beatsPerBar = 3.5;
         float sample = 0.0f;
-        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 1);
+        movement.render (&sample, 1, 0.5f, t, 7, 0, 3, 1);
         t.ppq = 7.0;
-        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 1);
-        check (sample == 1.0f, "four-bar loop reaches midpoint after seven quarter-note beats in 7/8");
+        movement.render (&sample, 1, 0.5f, t, 7, 0, 3, 1);
+        check (sample == loop.values[4], "four-bar loop lands on its fifth cell at two bars in 7/8");
         t.ppq = 14.0;
-        movement.render (&sample, 1, 0.0f, t, 5, 0, 3, 1);
-        check (sample == 0.0f, "four-bar loop restarts after fourteen quarter-note beats in 7/8");
+        movement.render (&sample, 1, 0.5f, t, 7, 0, 3, 1);
+        check (sample == loop.values[0], "four-bar loop restarts after fourteen quarter-note beats in 7/8");
     }
-    for (int preset : { 4, 5, 6, 8 })
+    for (int preset : { 2, 4, 5, 6 })
     {
         trench::Movement whole, sliced;
         whole.prepare (64.0); sliced.prepare (64.0);
@@ -79,7 +82,7 @@ inline int modulationTimingTests()
         const auto layout = trench::UiLayout::defaults();
         const trench::ui::Theme theme { layout };
         trench::ui::ModulationChip chip (p.apvts, theme);
-        chip.selectPattern (8); chip.selectLength (3); chip.selectPlayback (2);
+        chip.selectPattern (5); chip.selectLength (3); chip.selectPlayback (2);
         check (p.apvts.getRawParameterValue (ParamID::moveLength)->load() == 3.0f
             && p.apvts.getRawParameterValue (ParamID::movePlayback)->load() == 2.0f,
             "modulation menu reaches host timing parameters");
@@ -123,14 +126,14 @@ inline int modulationTimingTests()
             auto* parameter = p.apvts.getParameter (id);
             parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
         };
-        set (ParamID::morph, 0.0f); set (ParamID::movePreset, 8.0f);
+        set (ParamID::morph, 0.0f); set (ParamID::movePreset, 5.0f);
         set (ParamID::moveLength, 3.0f); set (ParamID::movePlayback, 2.0f);
         juce::AudioBuffer<float> buffer (2, 1);
         juce::MidiBuffer midi;
         buffer.clear(); p.processBlock (buffer, midi);
         clock.ppq = 14.0;
         buffer.clear(); p.processBlock (buffer, midi);
-        check (std::abs (p.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f,
+        check (std::abs (p.getEffectiveMorphForUi() - ending) < 1.0e-6f,
                "processor connects host meter and menu timing to the actual Morph trajectory");
         p.restartMovement();
         buffer.clear(); p.processBlock (buffer, midi);

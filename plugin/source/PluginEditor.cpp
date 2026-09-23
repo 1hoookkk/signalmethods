@@ -4,6 +4,15 @@
 #include <cstdlib>
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
+static juce::PropertiesFile::Options trenchSettingsOptions()
+{
+    juce::PropertiesFile::Options o;
+    o.applicationName = "TRENCH";
+    o.filenameSuffix = "settings";
+    o.folderName = "Signal Methods";
+    o.osxLibrarySubFolder = "Application Support";
+    return o;
+}
 using namespace trench::ui;
 PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p),
@@ -41,7 +50,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     bodyBrowser->onPreview = [this] (int index) { processor.previewBodyForUi (index); };
     bodyBrowser->onCommit  = [this] (int index) { typeSelector->setSelectedBody (index); processor.restoreBodyForUi (index); };
     bodyBrowser->onRestore = [this] (int index) { processor.restoreBodyForUi (index); };
-    typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, getLocalBounds()); };
+    typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, face.getLocalBounds()); };
     morphWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::morph, strip, theme);
     secondaryWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::q, strip, theme);
     morphReadout = std::make_unique<ValueReadout> ("morphReadout", theme);
@@ -50,27 +59,63 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
     modulationChip = std::make_unique<ModulationChip> (processor.apvts, theme);
     modulationChip->onRestart = [this] { processor.restartMovement(); };
-    modulationBay = std::make_unique<ModulationBay> (processor, *modulationChip, theme);
-    modulationChip->onEdit = [this] { modulationBay->edit(); };
+    modulationChip->customName = [this] { return processor.userMotion.get().name; };
+    modulationChip->savedNames = []
+    {
+        juce::StringArray names;
+        for (const auto& motion : trench::MotionLibrary::load())
+            names.add (motion.name);
+        return names;
+    };
+    modulationChip->onSaved = [this] (int index)
+    {
+        const auto library = trench::MotionLibrary::load();
+        if (index >= 0 && index < (int) library.size())
+            processor.applyUserMotion (library[(size_t) index], true);
+    };
+    keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
+    keySnapBox->setSuggestionProviders ([this] { return processor.getDetectedKeyForUi(); });
+    keySnapBox->setListeningProvider ([this]
+    {
+        return juce::jmax (processor.getInputMeterLeftForUi().load (std::memory_order_relaxed),
+                           processor.getInputMeterRightForUi().load (std::memory_order_relaxed))
+               > 0.0015f;
+    });
+    inputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::preamp, "INPUT");
+    outputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::output, "OUTPUT");
+    inputKnob->setLegendVisible (false);
+    outputKnob->setLegendVisible (false);
+    inputReadout = std::make_unique<ValueReadout> ("inputReadout", theme);
+    outputReadout = std::make_unique<ValueReadout> ("outputReadout", theme);
+    inputReadout->bindParameter (processor.apvts.getParameter (ParamID::preamp));
+    outputReadout->bindParameter (processor.apvts.getParameter (ParamID::output));
     labels = std::make_unique<LabelsLayer> (theme);
     labels->setRailLabels ("MORPH", "Q");
-    addAndMakeVisible (*faceplate);
-    addAndMakeVisible (*morphWheel);
-    addAndMakeVisible (*secondaryWheel);
-    addAndMakeVisible (*graph);
-    addAndMakeVisible (*typeSelector);
-    addAndMakeVisible (*morphReadout);
-    addAndMakeVisible (*secondaryReadout);
-    addAndMakeVisible (*modulationBay);
-    addAndMakeVisible (*labels);
-    addChildComponent (*bodyBrowser);
+    face.setComponentID ("face");
+    face.setInterceptsMouseClicks (false, true);
+    addAndMakeVisible (face);
+    face.addAndMakeVisible (*faceplate);
+    face.addAndMakeVisible (*morphWheel);
+    face.addAndMakeVisible (*secondaryWheel);
+    face.addAndMakeVisible (*graph);
+    face.addAndMakeVisible (*typeSelector);
+    face.addAndMakeVisible (*morphReadout);
+    face.addAndMakeVisible (*secondaryReadout);
+    face.addAndMakeVisible (*labels);
+    face.addAndMakeVisible (*modulationChip);
+    face.addAndMakeVisible (*keySnapBox);
+    face.addAndMakeVisible (*inputKnob);
+    face.addAndMakeVisible (*outputKnob);
+    face.addAndMakeVisible (*inputReadout);
+    face.addAndMakeVisible (*outputReadout);
+    face.addChildComponent (*bodyBrowser);
     onboarding = std::make_unique<Onboarding> (theme);
     onboarding->onComplete = [this]
     {
         markOnboardingSeen();
         onboarding->setVisible (false);
     };
-    addChildComponent (*onboarding);
+    face.addChildComponent (*onboarding);
     {
         const bool headless = std::getenv ("TRENCH_HEADLESS") != nullptr;
         const bool forced = std::getenv ("TRENCH_SHOW_ONBOARDING") != nullptr;
@@ -88,7 +133,11 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     setSize (kEditorWidth + kDevPanelWidth, kDevPanelHeight);
 #else
     setResizable (false, false);
-    setSize (kEditorWidth, kEditorHeight);
+    {
+        juce::PropertiesFile file (trenchSettingsOptions());
+        uiScale = juce::jlimit (1.0f, 2.0f, (float) file.getDoubleValue ("ui.scale", 1.0));
+    }
+    setSize (juce::roundToInt (kEditorWidth * uiScale), juce::roundToInt (kEditorHeight * uiScale));
 #endif
     setWantsKeyboardFocus (false);
     vblank = std::make_unique<juce::VBlankAttachment> (this, [this] { onFrame(); });
@@ -102,38 +151,71 @@ PluginEditor::~PluginEditor()
 void PluginEditor::resized()
 {
     const juce::Rectangle<int> base { 0, 0, kEditorWidth, kEditorHeight };
+    face.setBounds (base);
+    face.setTransform (juce::AffineTransform::scale (uiScale));
     const auto rectOf = [this] (const char* id) { return theme.rect (id).getSmallestIntegerContainer(); };
     faceplate->setBounds (base);
     labels->setBounds (base);
     graph->setBounds (rectOf ("spectrumGrid"));
     typeSelector->setBounds (rectOf ("typeSelector"));
-    morphWheel->setBounds (rectOf ("morphWheel"));
-    secondaryWheel->setBounds (rectOf ("qWheel"));
-    const auto px = [] (float value) { return juce::roundToInt (value * (float) kEditorWidth / 250.0f); };
-    const auto wheel = secondaryWheel->getBounds();
-    modulationBay->setBounds (wheel.getX() + px (5), wheel.getBottom() + px (48), 240, 99);
+    morphWheel->setBounds (WheelControl::drumForHole (theme.rect ("morphWell")).getSmallestIntegerContainer());
+    secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
+    {
+        const auto glass = rectOf ("spectrumGrid");
+        modulationChip->setBounds (glass.getX() + 12, glass.getBottom() - 26, glass.getWidth() - 24, 18);
+    }
+    {
+        const auto key = rectOf ("keyBox");
+        keySnapBox->setBounds (key.getX(), key.getCentreY() - 11, key.getWidth(), 22);
+    }
+    inputKnob->setBounds (rectOf ("inputKnob"));
+    outputKnob->setBounds (rectOf ("outputKnob"));
+    inputReadout->setBounds (rectOf ("inputReadout"));
+    outputReadout->setBounds (rectOf ("outputReadout"));
     morphReadout->setBounds (rectOf ("morphReadout"));
     secondaryReadout->setBounds (rectOf ("qReadout"));
 #if TRENCH_DEV_PANEL
     devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kDevPanelHeight);
 #endif
-    onboarding->setBounds (0, 0, kEditorWidth, kEditorHeight);
+    onboarding->setBounds (base);
     onboarding->setTargets ({
-        { modulationBay->getBounds(), "MOVE", "choose movement and edit its properties" },
+        { modulationChip->getBounds(), "MOVE", "choose a movement, its length and playback" },
     });
 
 
 
     onboarding->toFront (false);
 }
-static juce::PropertiesFile::Options trenchSettingsOptions()
+void PluginEditor::setUiScale (float scale)
 {
-    juce::PropertiesFile::Options o;
-    o.applicationName = "TRENCH";
-    o.filenameSuffix = "settings";
-    o.folderName = "Signal Methods";
-    o.osxLibrarySubFolder = "Application Support";
-    return o;
+#if ! TRENCH_DEV_PANEL
+    uiScale = juce::jlimit (1.0f, 2.0f, scale);
+    juce::PropertiesFile file (trenchSettingsOptions());
+    file.setValue ("ui.scale", (double) uiScale);
+    file.saveIfNeeded();
+    setSize (juce::roundToInt (kEditorWidth * uiScale), juce::roundToInt (kEditorHeight * uiScale));
+    resized();
+#else
+    juce::ignoreUnused (scale);
+#endif
+}
+void PluginEditor::mouseDown (const juce::MouseEvent& e)
+{
+#if ! TRENCH_DEV_PANEL
+    if (! e.mods.isPopupMenu())
+        return;
+    juce::SharedResourcePointer<SelectorLookAndFeel> look;
+    juce::PopupMenu menu;
+    menu.setLookAndFeel (&*look);
+    menu.addSectionHeader ("Size");
+    for (const float s : { 1.0f, 1.5f, 2.0f })
+        menu.addItem (juce::String (juce::roundToInt (s * 100.0f)) + "%", true, std::abs (uiScale - s) < 0.01f,
+                      [safe = juce::Component::SafePointer<PluginEditor> (this), s] { if (safe != nullptr) safe->setUiScale (s); });
+    menu.showMenuAsync (juce::PopupMenu::Options().withTargetScreenArea ({ e.getScreenX(), e.getScreenY(), 1, 1 }),
+                        [look] (int) {});
+#else
+    juce::ignoreUnused (e);
+#endif
 }
 bool PluginEditor::onboardingSeen() const
 {
@@ -148,8 +230,6 @@ void PluginEditor::markOnboardingSeen()
 }
 void PluginEditor::onFrame()
 {
-    modulationBay->refreshMotion();
-    modulationBay->setRadiusActivity (processor.getGritActivityForUi());
     modulationChip->setActive (processor.isMorphModulatedForUi());
     const auto read = [this] (const char* paramID)
     {
@@ -204,4 +284,9 @@ void PluginEditor::onFrame()
     secondaryReadout->setNormalised (qValue);
     morphReadout->setActive (morphWheel->isMouseOverOrDragging (true) || morphReadout->isMouseOverOrDragging (true));
     secondaryReadout->setActive (secondaryWheel->isMouseOverOrDragging (true) || secondaryReadout->isMouseOverOrDragging (true));
+    keySnapBox->refreshSuggestion();
+    inputReadout->setNormalised (read (ParamID::preamp));
+    outputReadout->setNormalised (read (ParamID::output));
+    inputReadout->setActive (inputKnob->isMouseOverOrDragging (true) || inputReadout->isMouseOverOrDragging (true));
+    outputReadout->setActive (outputKnob->isMouseOverOrDragging (true) || outputReadout->isMouseOverOrDragging (true));
 }

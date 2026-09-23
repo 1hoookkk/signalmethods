@@ -110,8 +110,6 @@ public:
     {
         library = trench::MotionLibrary::load (libraryDirectory);
         if (index < 0 || index >= (int) library.size()) return;
-        auto* morph = processor.apvts.getParameter (ParamID::morph);
-        morph->beginChangeGesture(); morph->setValueNotifyingHost (0); morph->endChangeGesture();
         processor.applyUserMotion (library[(size_t) index], true); refreshMotion (true);
     }
     void stepPattern (int delta)

@@ -1,4 +1,5 @@
 #pragma once
+#include "SelectorLookAndFeel.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <memory>
 namespace trench::ui
@@ -36,7 +37,9 @@ inline void showParamContextMenu (juce::Component& owner, juce::RangedAudioParam
                 std::shared_ptr<juce::HostProvidedContextMenu> keep = std::move (host);
                 auto m = keep->getEquivalentPopupMenu();
                 
+                juce::SharedResourcePointer<SelectorLookAndFeel> look;
                 juce::PopupMenu filtered;
+                filtered.setLookAndFeel (&*look);
                 juce::PopupMenu::MenuItemIterator it (m);
                 while (it.next())
                 {
@@ -59,7 +62,7 @@ inline void showParamContextMenu (juce::Component& owner, juce::RangedAudioParam
 
                 if (filtered.getNumItems() > 0)
                     filtered.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&owner),
-                                     [keep] (int) {});
+                                     [keep, look] (int) {});
             }
 }
 inline float fineDragScale (const juce::MouseEvent& e)

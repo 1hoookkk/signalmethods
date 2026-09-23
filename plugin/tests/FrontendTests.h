@@ -1,6 +1,5 @@
 #pragma once
 #include "PluginEditor.h"
-#include "ui/MixKnob.h"
 
 inline int frontendTests()
 {
@@ -12,26 +11,43 @@ inline int frontendTests()
     };
     PluginProcessor processor;
     std::unique_ptr<juce::AudioProcessorEditor> editor (processor.createEditor());
+    auto* trenchEditor = dynamic_cast<PluginEditor*> (editor.get());
+    const float savedScale = trenchEditor != nullptr ? trenchEditor->getUiScale() : 1.0f;
+    if (trenchEditor != nullptr) trenchEditor->setUiScale (1.0f);
     check (editor->getWidth() == 310 && editor->getHeight() == 506, "face retains the requested 310 x 506 size");
+    auto* face = editor->findChildWithID ("face");
+    check (face != nullptr, "the face lives in one scalable panel");
+    if (face == nullptr) return failed + 1;
     trench::ui::TypeSelectorView* selector = nullptr;
     trench::ui::BodyBrowser* browser = nullptr;
-    trench::ui::ModulationBay* move = nullptr;
-    int wheels = 0, values = 0, utilities = 0;
-    for (auto* child : editor->getChildren())
+    trench::ui::ModulationChip* chip = nullptr;
+    trench::ui::GraphDisplay* glass = nullptr;
+    std::vector<trench::ui::DeskKnob*> knobs;
+    int wheels = 0, values = 0, others = 0;
+    const juce::Rectangle<float> notch { 742.0f * 310.0f / 1024.0f, 1216.0f * 506.0f / 1536.0f, 310.0f, 506.0f };
+    bool insideChassis = true, clearOfNotch = true, key = false;
+    for (auto* child : face->getChildren())
     {
         if (auto* s = dynamic_cast<trench::ui::TypeSelectorView*> (child)) selector = s;
         if (auto* b = dynamic_cast<trench::ui::BodyBrowser*> (child)) browser = b;
-        if (auto* m = dynamic_cast<trench::ui::ModulationBay*> (child)) move = m;
+        if (auto* g = dynamic_cast<trench::ui::GraphDisplay*> (child)) glass = g;
         if (! child->isVisible()) continue;
-        check (editor->getLocalBounds().contains (child->getBounds()), "face control remains inside the chassis");
+        insideChassis = insideChassis && face->getLocalBounds().contains (child->getBounds());
+        if (auto* c = dynamic_cast<trench::ui::ModulationChip*> (child)) chip = c;
+        if (auto* k = dynamic_cast<trench::ui::DeskKnob*> (child)) knobs.push_back (k);
         if (dynamic_cast<trench::ui::WheelControl*> (child)) ++wheels;
         if (dynamic_cast<trench::ui::ValueReadout*> (child)) ++values;
-        if (dynamic_cast<trench::ui::DeskKnob*> (child)
-            || dynamic_cast<trench::ui::KeySnapBox*> (child)
-            || dynamic_cast<trench::ui::ModulationChip*> (child)) ++utilities;
+        if (dynamic_cast<trench::ui::KeySnapBox*> (child)) key = true;
+        if (dynamic_cast<trench::ui::ModulationBay*> (child)
+            || dynamic_cast<trench::ui::MixKnob*> (child)) ++others;
+        if (dynamic_cast<trench::ui::DeskKnob*> (child) || dynamic_cast<trench::ui::ValueReadout*> (child))
+            clearOfNotch = clearOfNotch && ! child->getBounds().toFloat().intersects (notch);
     }
-    check (selector && move && wheels == 2 && values == 2 && utilities == 0,
-           "only BODY, MORPH, Q and the MOVE block occupy the permanent face");
+    check (insideChassis, "face controls remain inside the chassis");
+    check (selector && chip && key && wheels == 2 && values == 4 && knobs.size() == 2 && others == 0,
+           "BODY, KEY, MORPH, Q, the movement chip, INPUT and OUTPUT are the whole face");
+    check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
+    check (chip && glass && glass->getBounds().contains (chip->getBounds()), "the movement chip sits on the glass");
     if (selector && browser)
     {
         selector->onOpenBrowser (selector->selectedBody());
@@ -39,94 +55,49 @@ inline int frontendTests()
                "body browser remains reachable");
         browser->close (false);
     }
-
-    if (! move) return failed + 1;
-    juce::Component* duration = nullptr;
-    juce::TextButton* selectorButton = nullptr;
-    trench::ui::MixKnob* notch = nullptr;
-    for (auto* child : move->getChildren())
+    check (processor.apvts.getParameter (ParamID::distortion) == nullptr && processor.apvts.getParameter (ParamID::output) != nullptr,
+           "Distortion is retired and OUTPUT is a host parameter");
+    if (knobs.size() == 2)
     {
-        check (dynamic_cast<juce::ComboBox*> (child) == nullptr
-               && dynamic_cast<trench::ui::ValueReadout*> (child) == nullptr,
-               "MOVE has no property form or text fields");
-        if (child->getTitle() == "Movement duration") duration = child;
-        check (child->getTitle() != "Movement playback", "playback behaviour belongs to the preset, not another control");
-        if (child->getTitle() == "Movement") selectorButton = dynamic_cast<juce::TextButton*> (child);
-        if (auto* k = dynamic_cast<trench::ui::MixKnob*> (child)) notch = k;
+        const char* ids[] = { ParamID::preamp, ParamID::output };
+        bool driven = true;
+        for (size_t i = 0; i < 2; ++i)
+        {
+            const float before = processor.apvts.getRawParameterValue (ids[i])->load();
+            juce::MouseWheelDetails wheel;
+            wheel.deltaY = 0.25f;
+            knobs[i]->mouseWheelMove (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 4, 4 }, {},
+                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, knobs[i], knobs[i], {}, { 4, 4 }, {}, 1, false), wheel);
+            driven = driven && processor.apvts.getRawParameterValue (ids[i])->load() > before;
+            processor.apvts.getParameter (ids[i])->setValueNotifyingHost (0.0f);
+        }
+        check (driven, "the knobs drive INPUT and OUTPUT in that order");
     }
-    check (duration && selectorButton && notch && move->getNumChildComponents() == 3,
-           "MOVE exposes the movement controls and the distortion knob");
-    if (! duration || ! selectorButton || ! notch) return failed + 1;
-    check (! duration->isVisible(), "Off hides duration");
-    const int faceChildren = editor->getNumChildComponents();
-    move->keyPressed (juce::KeyPress (juce::KeyPress::rightKey));
+    if (trenchEditor != nullptr)
+    {
+        trenchEditor->setUiScale (2.0f);
+        const auto scaledChip = chip != nullptr ? editor->getLocalArea (chip, chip->getLocalBounds()) : juce::Rectangle<int>();
+        check (editor->getWidth() == 620 && editor->getHeight() == 1012 && face->getBounds() == juce::Rectangle<int> (0, 0, 310, 506)
+               && chip != nullptr && scaledChip.getWidth() == chip->getWidth() * 2,
+               "200% doubles the editor and scales every control with it");
+        trenchEditor->setUiScale (savedScale);
+    }
+    if (! chip) return failed + 1;
+    check (chip->displayText() == "Modulation: off", "the chip reads Off with no movement");
+    chip->keyPressed (juce::KeyPress (juce::KeyPress::rightKey));
     check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1
-           && duration->isVisible(),
-           "Next auditions a movement immediately and reveals its small performance settings");
-    move->selectPattern (5);
-    move->keyPressed (juce::KeyPress (juce::KeyPress::leftKey));
-    check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 4,
-           "Previous auditions the preceding movement without a popup");
-    const int swayWidth = selectorButton->getWidth();
-    move->selectPattern (2);
-    check (selectorButton->getWidth() > swayWidth, "preset field expands to fit Backbeat Bloom");
-    check (duration->getX() == selectorButton->getX() && duration->getY() >= selectorButton->getBottom(),
-           "duration stacks under the preset as its width changes");
-    move->selectPattern (8);
-    move->selectLength (2);
-    duration->keyPressed (juce::KeyPress (juce::KeyPress::upKey));
-    check (processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 3
-           && move->durationText() == "4 BAR", "duration arrows set the whole phrase to four bars");
-    const juce::MouseEvent down (juce::Desktop::getInstance().getMainMouseSource(), { 4, 4 }, {},
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, duration, duration, {}, { 4, 4 }, {}, 1, false);
-    const juce::MouseEvent drag (juce::Desktop::getInstance().getMainMouseSource(), { 4, -8 }, {},
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, duration, duration, {}, { 4, 4 }, {}, 1, true);
-    duration->mouseDown (down); duration->mouseDrag (drag);
-    check (move->lengthChoice() == 4 && move->durationText() == "8 BAR",
-           "dragging the duration stretches the phrase without opening a menu");
-    duration->keyPressed (juce::KeyPress (juce::KeyPress::downKey));
-    check (processor.apvts.getRawParameterValue (ParamID::movePlayback)->load() == 0
-           && move->isOnce(), "Long Return supplies its one-shot behaviour without a mode control");
-    move->selectPattern (4);
-    check (! move->isOnce(), "Eighth Sway supplies its looping behaviour without a mode control");
-    move->selectPattern (8);
-    check (editor->getNumChildComponents() == faceChildren,
-           "performing movement never materializes another panel");
-    move->selectLength (0);
-    check (move->durationText() == "1 BAR", "Long Return reports its own one-bar completion");
-    move->selectLength (3);
-    for (auto* child : move->getChildren())
-        if (child->isVisible()) check (move->getLocalBounds().contains (child->getBounds()), "inline control fits within MOVE");
+           && chip->displayText() == trench::kFuncGenPatterns[0].name,
+           "Next auditions a movement and the chip names it");
+    chip->selectPattern (5);
+    chip->selectLength (3);
+    check (chip->displayText().startsWith (trench::kFuncGenPatterns[4].name) && chip->displayText().contains ("4 bars"),
+           "the chip names the movement and its length");
     juce::MemoryBlock state;
     processor.getStateInformation (state);
     PluginProcessor restored;
     restored.setStateInformation (state.getData(), (int) state.getSize());
-    check (restored.apvts.getRawParameterValue (ParamID::movePreset)->load() == 8
-           && restored.apvts.getRawParameterValue (ParamID::moveLength)->load() == 3
-           && restored.apvts.getRawParameterValue (ParamID::movePlayback)->load() == 0,
-           "the chosen movement, duration and authored behaviour survive project recall");
-    processor.apvts.getParameter (ParamID::movePreset)->setValueNotifyingHost (0);
-    juce::MessageManager::getInstance()->runDispatchLoopUntil (20);
-    check (! duration->isVisible(),
-           "host automation to Off collapses the performance settings");
-    auto* motionParameter = processor.apvts.getParameter (ParamID::movePreset);
-    motionParameter->setValueNotifyingHost (motionParameter->convertTo0to1 (8));
-    move->refreshMotion();
-    for (auto* child : move->getChildren())
-        if (auto* button = dynamic_cast<juce::TextButton*> (child); button && button->getTitle() == "Movement")
-            check (button->getButtonText() == "Long Return",
-                   "automation cannot leave the selected movement label stale between callbacks");
-    check (processor.apvts.getParameter (ParamID::preamp) && processor.apvts.getParameter (ParamID::keySnap),
-           "input and key remain available to the host without cluttering MOVE");
-    {
-        const float before = processor.apvts.getRawParameterValue (ParamID::distortion)->load();
-        juce::MouseWheelDetails notchWheel;
-        notchWheel.deltaY = 0.25f;
-        notch->mouseWheelMove (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 4, 4 }, {},
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, notch, notch, {}, { 4, 4 }, {}, 1, false), notchWheel);
-        check (processor.apvts.getRawParameterValue (ParamID::distortion)->load() > before,
-               "the compact knob drives the distortion parameter");
-        processor.apvts.getParameter (ParamID::distortion)->setValueNotifyingHost (0.0f);
-    }
+    check (restored.apvts.getRawParameterValue (ParamID::movePreset)->load() == 5
+           && restored.apvts.getRawParameterValue (ParamID::moveLength)->load() == 3,
+           "the chosen movement and length survive project recall");
     return failed;
 }

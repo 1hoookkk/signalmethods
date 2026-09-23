@@ -28,7 +28,11 @@ public:
     ~PluginEditor() override;
     void resized() override;
     void paint (juce::Graphics& g) override { g.fillAll (juce::Colour (0xff1d1915)); }
+    void mouseDown (const juce::MouseEvent& e) override;
+    void setUiScale (float scale);
+    float getUiScale() const noexcept { return uiScale; }
 private:
+    float uiScale = 1.0f;
     void onFrame();
     PluginProcessor& processor;
     float lastProbedMorph = -1.0f, lastProbedQ = -1.0f;
@@ -41,12 +45,17 @@ private:
     trench::ui::Theme theme { layout };
     std::unique_ptr<juce::VBlankAttachment> vblank;
     juce::TooltipWindow tooltipWindow { this, 650 };
+    juce::Component face;
     std::unique_ptr<trench::ui::FaceplateView>    faceplate;
     std::unique_ptr<trench::ui::GraphDisplay>     graph;
     std::unique_ptr<trench::ui::TypeSelectorView> typeSelector;
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
     std::unique_ptr<trench::ui::ModulationChip>   modulationChip;
-    std::unique_ptr<trench::ui::ModulationBay>    modulationBay;
+    std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
+    std::unique_ptr<trench::ui::DeskKnob>         inputKnob;
+    std::unique_ptr<trench::ui::DeskKnob>         outputKnob;
+    std::unique_ptr<trench::ui::ValueReadout>     inputReadout;
+    std::unique_ptr<trench::ui::ValueReadout>     outputReadout;
     std::unique_ptr<trench::ui::WheelControl>     morphWheel;
     std::unique_ptr<trench::ui::WheelControl>     secondaryWheel;
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;

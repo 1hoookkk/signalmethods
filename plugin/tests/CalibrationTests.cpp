@@ -234,11 +234,11 @@ void defaultsUnity()
             for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i) audio.setSample (c, i, i % 2 ? -level : level);
             p.processBlock (audio, midi);
             for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i)
-                worst = std::max (worst, std::abs (std::abs (audio.getSample (c, i)) - trench::softGuard (identitySaturationReference (level))));
+                worst = std::max (worst, std::abs (std::abs (audio.getSample (c, i)) - trench::softGuard (level)));
         }
-        require (worst == 0.0f, "default No filter differs from fixed stage saturation plus final guard");
+        require (worst == 0.0f, "default No filter differs from the post-filter soft clip");
     }
-    std::puts ("DEFAULTS: No filter follows fixed saturation and final guard across tested levels");
+    std::puts ("DEFAULTS: No filter follows the post-filter soft clip across tested levels");
 }
 void nakedDefaults()
 {
@@ -257,11 +257,11 @@ void nakedDefaults()
     const auto fill = [&] { for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i) audio.setSample (c, i, i % 2 ? -1.25f : 1.25f); };
     fill(); p.processBlock (audio, midi);
     for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i)
-        require (std::abs (audio.getSample (c, i) - identitySaturationReference (i % 2 ? -1.25f : 1.25f)) < 1.0e-6f, "naked reset preserves fixed inter-stage saturation");
+        require (std::abs (audio.getSample (c, i) - (i % 2 ? -1.25f : 1.25f)) < 1.0e-6f, "naked reset leaves the finite filter output unbounded");
     set (p, "cal_guard", 1);
     fill(); p.processBlock (audio, midi);
     for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i)
-        require (std::abs (audio.getSample (c, i) - trench::softGuard (identitySaturationReference (i % 2 ? -1.25f : 1.25f))) < 1.0e-6f, "output guard contains No filter");
+        require (std::abs (audio.getSample (c, i) - trench::softGuard (i % 2 ? -1.25f : 1.25f)) < 1.0e-6f, "output guard contains No filter");
     const auto bytes = body();
     require (p.installBodyBytes (bytes.getData(), bytes.getSize()), "naked reset body fixture");
     const int selectedBody = p.getLoadedBodyIndex();

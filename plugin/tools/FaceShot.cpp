@@ -26,7 +26,9 @@ int main()
     juce::Component holder;
     holder.setSize (editor->getWidth(), editor->getHeight());
     holder.addAndMakeVisible (editor);
-    holder.addToDesktop (juce::ComponentPeer::windowIsTemporary);
+    const bool headless = std::getenv ("TRENCH_HEADLESS") != nullptr;
+    if (! headless)
+        holder.addToDesktop (juce::ComponentPeer::windowIsTemporary);
     if (auto* peer = holder.getPeer())
     {
         const auto engines = peer->getAvailableRenderingEngines();
@@ -45,9 +47,16 @@ int main()
             audio.clear();
             processor.processBlock (audio, midi);
         }
+        if (headless)
+        {
+            processor.editorBeingDeleted (editor);
+            holder.removeChildComponent (editor);
+            delete editor;
+            editor = processor.createEditorIfNeeded();
+            holder.addAndMakeVisible (editor);
+            settle (900);
+        }
         settle (150);
-        for (auto* child : editor->getChildren())
-            if (auto* bay = dynamic_cast<trench::ui::ModulationBay*> (child)) bay->refreshMotion();
         std::printf ("%s: movement=%g (%s)\n", stem,
                      processor.apvts.getRawParameterValue (ParamID::movePreset)->load(),
                      processor.motionForEditing().name.toRawUTF8());
@@ -95,7 +104,8 @@ int main()
     shoot ("trench_face_qmax");
 
     set (ParamID::q, 0.30f);
-    set (ParamID::distortion, 1.0f);
+    set (ParamID::preamp, 0.35f);
+    set (ParamID::output, 0.6f);
     settle (250);
     shoot ("trench_face_bite");
 
@@ -110,7 +120,7 @@ int main()
     settle (250);
     shoot ("trench_face_four_bars");
     shoot ("trench_face_move_inline");
-    set (ParamID::distortion, 0.35f);
+    set (ParamID::output, 0.35f);
     settle (250);
     shoot ("trench_face_move_knob");
 

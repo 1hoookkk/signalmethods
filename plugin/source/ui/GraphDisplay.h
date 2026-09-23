@@ -156,7 +156,6 @@ public:
             }
         }
         responsePath = std::move (path);
-        traceDirty = true;
         if (! isTimerRunning()) startTimer (30);
         repaint();
     }
@@ -346,58 +345,15 @@ private:
 
     void strokeTrace (juce::Graphics& g, const juce::Path& path, juce::Colour colour) const
     {
-
-        const int kSS = juce::jmax (1, (int) std::ceil (
-            g.getInternalContext().getPhysicalPixelScaleFactor()));
-        const auto area = getLocalBounds();
-        if (area.isEmpty() || path.isEmpty())
+        if (getLocalBounds().isEmpty() || path.isEmpty())
             return;
-        const bool resized = ! traceCache.isValid()
-            || traceCache.getWidth() != area.getWidth() * kSS
-            || traceCache.getHeight() != area.getHeight() * kSS;
-        if (resized || traceDirty || cachedColour != colour)
-        {
-            if (resized)
-                traceCache = juce::Image (juce::Image::ARGB,
-                                          area.getWidth() * kSS, area.getHeight() * kSS, true);
-            else
-                traceCache.clear (traceCache.getBounds(), juce::Colours::transparentBlack);
-            traceDirty = false;
-            cachedColour = colour;
-            {
-                juce::Graphics ig (traceCache);
-                ig.addTransform (juce::AffineTransform::scale ((float) kSS));
-                ig.setColour (colour);
-                ig.strokePath (path, { kTraceWidth, juce::PathStrokeType::curved,
-                                       juce::PathStrokeType::butt });
-            }
-            {
-                juce::Image::BitmapData data (traceCache, juce::Image::BitmapData::readWrite);
-                const juce::uint32 solid = colour.getARGB();
-                const auto pb = path.getBounds();
-                const int y0 = juce::jlimit (0, data.height, (int) std::floor (pb.getY() * (float) kSS) - 2);
-                const int y1 = juce::jlimit (0, data.height, (int) std::ceil (pb.getBottom() * (float) kSS) + 3);
-                for (int y = y0; y < y1; ++y)
-                {
-                    auto* line = reinterpret_cast<juce::uint32*> (data.getLinePointer (y));
-                    for (int x = 0; x < data.width; ++x)
-                        line[x] = (line[x] >> 24) < 128u ? 0u : solid;
-                }
-            }
-            {
-                juce::Graphics ig (traceCache);
-                ig.addTransform (juce::AffineTransform::scale ((float) kSS));
-                ig.setColour (colour.withMultipliedAlpha (0.05f));
-                ig.strokePath (path, { kTraceWidth * 1.9f, juce::PathStrokeType::curved,
-                                       juce::PathStrokeType::butt });
-                ig.setColour (colour.withMultipliedAlpha (0.10f));
-                ig.strokePath (path, { kTraceWidth * 1.1f, juce::PathStrokeType::curved,
-                                       juce::PathStrokeType::butt });
-            }
-        }
-        g.setImageResamplingQuality (juce::Graphics::lowResamplingQuality);
-        g.drawImageTransformed (traceCache,
-                                juce::AffineTransform::scale (1.0f / (float) kSS), false);
+        const juce::PathStrokeType::JointStyle joint = juce::PathStrokeType::curved;
+        const juce::PathStrokeType::EndCapStyle cap = juce::PathStrokeType::butt;
+        const float px = 1.0f / juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
+        g.setColour (colour.withMultipliedAlpha (0.22f));
+        g.strokePath (path, { 2.0f * px, joint, cap });
+        g.setColour (colour.interpolatedWith (t.curveHighlight(), 0.30f));
+        g.strokePath (path, { px, joint, cap });
     }
     void drawResponseTrace (juce::Graphics& g) const
     {
@@ -526,9 +482,6 @@ private:
     juce::Path responsePath;
 
     static constexpr float kTraceWidth = 1.0f;
-    mutable juce::Image traceCache;
-    mutable bool traceDirty = true;
-    mutable juce::Colour cachedColour;
     std::vector<float> traceXs;
     std::vector<float> traceDbs;
     float lastCoeffs[trench::kUiCoeffCount] = {};

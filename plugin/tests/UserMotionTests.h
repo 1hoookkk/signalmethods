@@ -115,7 +115,7 @@ inline int userMotionTests()
     const auto low = settle();
     processor.applyUserMotion (b);
     const auto high = settle();
-    check (std::abs (low - 0.125f) < 0.001f && std::abs (high - 0.75f) < 0.001f,
+    check (std::abs (low) < 0.001f && std::abs (high - 0.5f) < 0.001f,
            "live point edits reach the processor's effective MORPH position");
     juce::MemoryBlock state;
     processor.getStateInformation (state);

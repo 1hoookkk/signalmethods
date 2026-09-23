@@ -11,7 +11,7 @@ namespace trench
 {
 struct UserMotion
 {
-    std::array<float, 64> values { -1.0f, -0.85f, -0.4f, 0.35f, 1.0f, 0.35f, -0.4f, -0.85f };
+    std::array<float, 64> values { -0.5f, -0.425f, -0.2f, 0.175f, 0.5f, 0.175f, -0.2f, -0.425f };
     int steps = 8, direction = 0, length = 3, playback = 1;
     int loopSteps = 0;
     bool smooth = true, dirty = true;

@@ -2,16 +2,8 @@
 #include "PluginProcessor.h"
 #include "BinaryData.h"
 #include "dsp/PreampLaw.h"
+#include "dsp/Inflator.h"
 #include <cstdio>
-
-inline float identitySaturationReference (float input)
-{
-    double value = input;
-    for (int stage = 0; stage < trench::kUiStageCount; ++stage)
-        if (std::abs (value) > 1.0)
-            value = std::copysign (1.0 + 0.5 * std::tanh (2.0 * (std::abs (value) - 1.0)), value);
-    return (float) value;
-}
 
 inline int driveSlamTests()
 {
@@ -37,9 +29,9 @@ inline int driveSlamTests()
                 bridge.process (audio, {});
                 for (int c = 0; c < channels; ++c)
                     for (int i = 0; i < 128; ++i)
-                        exact = exact && std::abs (audio.getSample (c, i) - identitySaturationReference (c == 0 ? level : 0.125f)) < 1.0e-6f;
+                        exact = exact && std::abs (audio.getSample (c, i) - trench::softGuard (c == 0 ? level : 0.125f)) < 1.0e-6f;
             }
-            check (exact, "fixed stage saturation bounds hot signals; quiet recovery is immediate and channels are independent");
+            check (exact, "the soft clip after the filter bounds hot signals; quiet recovery is immediate and channels are independent");
             bridge.setInputDrive (trench::preampGain (1.0f));
             for (int block = 0; block < 12; ++block)
             {
@@ -66,8 +58,8 @@ inline int driveSlamTests()
             runner.set_radius_distortion (radiusMode);
             float sample = 0.1f;
             runner.process (std::span<float> (&sample, 1));
-            check (std::abs (sample - 0.0015f) < 1.0e-6f,
-                "first section clips a +40 dBFS peak before downstream attenuation in every processing branch");
+            check (std::isfinite (sample) && std::abs (sample) <= 0.002f,
+                "first section bounds a +40 dBFS peak before downstream attenuation in every processing branch");
         }
     {
         PluginProcessor plain, nonlinear;
@@ -84,7 +76,7 @@ inline int driveSlamTests()
                     check (p->installBodyBytes (bytes, (size_t) size), "resonance integration body loads");
                 }
         }
-        nonlinear.apvts.getParameter (ParamID::distortion)->setValueNotifyingHost (0.75f);
+        nonlinear.apvts.getParameter (ParamID::output)->setValueNotifyingHost (0.75f);
         juce::AudioBuffer<float> a (2, 128), b (2, 128);
         juce::MidiBuffer midi;
         double difference = 0.0;
@@ -93,7 +85,7 @@ inline int driveSlamTests()
         {
             for (int i = 0; i < 128; ++i)
             {
-                const float x = block < 40 ? 0.2f * std::sin (0.073f * (float) (block * 128 + i)) : 0.0f;
+                const float x = block < 40 ? 0.9f * std::sin (0.073f * (float) (block * 128 + i)) : 0.0f;
                 a.setSample (0, i, x);
                 b.setSample (0, i, x);
                 a.setSample (1, i, 0.0f);
@@ -104,19 +96,19 @@ inline int driveSlamTests()
             for (int i = 0; i < 128; ++i)
             {
                 difference += std::abs (a.getSample (0, i) - b.getSample (0, i));
-                bounded = bounded && std::isfinite (b.getSample (0, i)) && std::abs (b.getSample (0, i)) <= 1.0f
+                bounded = bounded && std::isfinite (b.getSample (0, i)) && std::abs (b.getSample (0, i)) <= trench::kFinalSafetyCeiling
                     && b.getSample (1, i) == 0.0f;
             }
         }
-        check (difference > 0.01, "host Distortion parameter changes audio with movement disabled");
-        check (bounded, "nonlinear resonance keeps the output guarded and stereo states independent");
+        check (difference > 0.01, "OUTPUT changes audio with movement disabled");
+        check (bounded, "OUTPUT stays under the -0.1 dBFS ceiling and stereo states stay independent");
         check (std::abs (nonlinear.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f,
-            "signal-dependent resonance does not move the MORPH wheel");
+            "OUTPUT does not move the MORPH wheel");
         juce::MemoryBlock saved;
         nonlinear.getStateInformation (saved);
         plain.setStateInformation (saved.getData(), (int) saved.getSize());
-        check (std::abs (plain.apvts.getRawParameterValue (ParamID::distortion)->load() - 0.75f) < 1.0e-6f,
-            "resonance amount survives project recall");
+        check (std::abs (plain.apvts.getRawParameterValue (ParamID::output)->load() - 0.75f) < 1.0e-6f,
+            "OUTPUT survives project recall");
     }
     PluginProcessor processor;
     processor.setRateAndBufferSizeDetails (48000, 128);
@@ -134,7 +126,7 @@ inline int driveSlamTests()
         processor.processBlock (audio, midi);
         for (int c = 0; c < 2; ++c)
             for (int i = 0; i < 128; ++i)
-                clipped = clipped && std::abs (audio.getSample (c, i) - trench::softGuard (identitySaturationReference (c == 0 ? level : -level))) < 1.0e-6f;
+                clipped = clipped && std::abs (audio.getSample (c, i) - trench::softGuard (c == 0 ? level : -level)) < 1.0e-6f;
         if (level == 0.6f)
             check (processor.getOutClipForUi() > 0.99f, "clip activity begins at the actual soft knee");
     }
@@ -196,6 +188,34 @@ inline int driveSlamTests()
     processor.setStateInformation (legacyBytes.getData(), (int) legacyBytes.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", ParamID::slamDrive).isValid(),
         "old SLAM settings cannot silently re-enable output distortion");
+    auto withDistortion = processor.apvts.copyState();
+    juce::ValueTree oldDistortion ("PARAM");
+    oldDistortion.setProperty ("id", ParamID::distortion, nullptr);
+    oldDistortion.setProperty ("value", 1.0f, nullptr);
+    withDistortion.addChild (oldDistortion, -1, nullptr);
+    juce::MemoryBlock distortionBytes;
+    juce::AudioProcessor::copyXmlToBinary (*withDistortion.createXml(), distortionBytes);
+    processor.setStateInformation (distortionBytes.getData(), (int) distortionBytes.getSize());
+    check (! processor.apvts.copyState().getChildWithProperty ("id", ParamID::distortion).isValid(),
+        "old Distortion settings are discarded on project recall");
+    {
+        const float c = trench::kFinalSafetyCeiling;
+        bool identity = true, monotone = true;
+        float previous = -1.0f;
+        for (int i = -200; i <= 200; ++i)
+        {
+            const float x = c * (float) i / 200.0f;
+            identity = identity && std::abs (trench::inflate (x, 0.0f, c) - x) < 1.0e-6f;
+            const float y = trench::inflate (x, 1.0f, c);
+            monotone = monotone && y >= previous;
+            previous = y;
+        }
+        check (identity, "inflator at zero effect passes the clipped signal unchanged");
+        check (monotone && std::abs (trench::inflate (4.0f, 1.0f, c) - c) < 1.0e-6f,
+            "inflator is monotone and holds full scale at the ceiling");
+        check (std::abs (trench::inflate (1.0e-4f, 1.0f, c) / 1.0e-4f - 1.5f) < 1.0e-3f,
+            "inflator lifts quiet material by 3.5 dB at full effect");
+    }
 #if TRENCH_DEV_PANEL
     for (const char* id : trench::calibration::retired)
         check (processor.apvts.getParameter (id) == nullptr, "retired dynamics control is absent from Dev");

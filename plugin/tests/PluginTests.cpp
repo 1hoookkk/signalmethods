@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "DriveSlamTests.h"
+#include "DriveLawTests.h"
 #include "FrontendTests.h"
 #include "ModulationTimingTests.h"
 #include "UserMotionTests.h"
@@ -105,6 +106,7 @@ int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
     failures += driveSlamTests();
+    failures += driveLawTests();
     failures += frontendTests();
     failures += modulationTimingTests();
     failures += userMotionTests();
@@ -162,59 +164,73 @@ int main()
         transport.bpm = 60.0;
         transport.ppq = 0.0;
         transport.playing = true;
-        float stepped[4] = {}, glided[4] = {};
+        const auto& rail = trench::kFuncGenPatterns[1];
+        float stepped[8] = {}, glided[8] = {};
         trench::Movement stepMovement, glideMovement;
         stepMovement.prepare (16.0);
         glideMovement.prepare (16.0);
-        stepMovement.render (stepped, 4, 0.5f, transport, 1,
-                             trench::Movement::StepTransition);
-        glideMovement.render (glided, 4, 0.5f, transport, 1,
-                              trench::Movement::GlideTransition);
-        check (std::abs (stepped[2] - 0.25f) < 1.0e-6f,
-               "STEP holds the current Morph cell above the wheel floor", stepped[2], 0.25);
-        check (std::abs (glided[2] - 0.125f) < 1.0e-6f,
-               "GLIDE interpolates directly between Morph cells", glided[2], 0.125);
+        stepMovement.render (stepped, 8, 0.5f, transport, 2, trench::Movement::StepTransition);
+        glideMovement.render (glided, 8, 0.5f, transport, 2, trench::Movement::GlideTransition);
+        check (std::abs (stepped[6] - rail.values[1]) < 1.0e-6f,
+               "STEP holds the pattern's cell where the wheel put it", stepped[6], rail.values[1]);
+        const float between = rail.values[1] + (rail.values[2] - rail.values[1]) * 0.5f;
+        check (std::abs (glided[6] - between) < 1.0e-6f,
+               "GLIDE interpolates directly between Morph cells", glided[6], between);
         float anchored[1] = {};
         trench::Movement anchorMovement;
         anchorMovement.prepare (16.0);
-        anchorMovement.render (anchored, 1, 0.8f, transport, 2,
-                               trench::Movement::StepTransition);
-        check (std::abs ((0.8f + anchored[0]) - 0.82f) < 1.0e-6f,
-               "pattern travel is squeezed into the room above the Morph wheel",
-               0.8f + anchored[0], 0.82);
-        float full[64] = {};
-        trench::Movement fullMovement;
+        anchorMovement.render (anchored, 1, 0.8f, transport, 3, trench::Movement::StepTransition);
+        const auto& bloom = trench::kFuncGenPatterns[2];
+        check (std::abs ((0.8f + anchored[0]) - (0.8f + bloom.values[0])) < 1.0e-6f,
+               "the cell adds to the wheel, so the figure sits around where you put it",
+               0.8f + anchored[0], 0.8f + bloom.values[0]);
+        const float railLow = *std::min_element (rail.values, rail.values + rail.steps);
+        const float railHigh = *std::max_element (rail.values, rail.values + rail.steps);
+        float full[64] = {}, atQuarter[64] = {};
+        trench::Movement fullMovement, quarterMovement;
         fullMovement.prepare (16.0);
-        fullMovement.render (full, 64, 0.0f, transport, 1, trench::Movement::StepTransition);
-        float low = 1.0f, high = 0.0f;
+        quarterMovement.prepare (16.0);
+        fullMovement.render (full, 64, 0.5f, transport, 2, trench::Movement::StepTransition);
+        quarterMovement.render (atQuarter, 64, 0.25f, transport, 2, trench::Movement::StepTransition);
+        float low = 1.0f, high = -1.0f;
         for (float v : full) { low = std::min (low, v); high = std::max (high, v); }
-        check (low == 0.0f && high == 1.0f, "at Morph 0 the pattern plays its full authored travel", high - low, 1.0);
+        check (low == railLow && high == railHigh,
+               "at the resting wheel the whole authored travel plays", high - low, railHigh - railLow);
+        bool exact = true;
+        for (int i = 0; i < rail.steps && 4 * i < 64; ++i)
+            exact = exact && full[4 * i] == rail.values[i];
+        check (exact, "at the resting wheel every cell plays exactly as authored");
+        check (atQuarter[8] == rail.values[2] && atQuarter[12] == rail.values[3],
+               "the wheel offsets the figure without rescaling it", atQuarter[12], rail.values[3]);
         float before[8] = {}, after[8] = {};
         trench::Movement heldMovement;
         heldMovement.prepare (16.0);
-        heldMovement.render (before, 8, 0.0f, transport, 1, trench::Movement::StepTransition);
+        heldMovement.render (before, 8, 0.0f, transport, 2, trench::Movement::StepTransition);
         auto later = transport; later.ppq = 0.5;
-        heldMovement.render (after, 8, 0.4f, later, 1, trench::Movement::StepTransition);
-        check (std::abs (after[0] - 0.5f * 0.6f) < 1.0e-6f && std::abs (after[4] - 0.875f * 0.6f) < 1.0e-6f,
-               "moving the Morph wheel continues the pattern from where it is", after[4], 0.525);
+        heldMovement.render (after, 8, 0.4f, later, 2, trench::Movement::StepTransition);
+        check (std::abs (after[0] - rail.values[2]) < 1.0e-6f
+               && std::abs (after[4] - rail.values[3]) < 1.0e-6f,
+               "moving the Morph wheel moves the whole figure with it", after[4], rail.values[3]);
         float anchorSample[1] = {}, wrapped[1] = {};
         trench::Movement loopMovement;
         loopMovement.prepare (16.0);
         auto loopEnd = transport; loopEnd.ppq = 9.0;
-        loopMovement.render (anchorSample, 1, 0.0f, loopEnd, 1, trench::Movement::StepTransition);
+        loopMovement.render (anchorSample, 1, 0.0f, loopEnd, 2, trench::Movement::StepTransition);
         auto loopStart = transport; loopStart.ppq = 0.5;
-        loopMovement.render (wrapped, 1, 0.0f, loopStart, 1, trench::Movement::StepTransition);
-        check (std::abs (wrapped[0] - 1.0f) < 1.0e-6f,
-               "a host loop wrap behind the anchor keeps the pattern running on its grid", wrapped[0], 1.0);
+        loopMovement.render (wrapped, 1, 0.0f, loopStart, 2, trench::Movement::StepTransition);
+        check (std::abs (wrapped[0] - rail.values[14]) < 1.0e-6f,
+               "a host loop wrap behind the anchor keeps the pattern running on its grid",
+               wrapped[0], rail.values[14]);
         PluginProcessor chipProcessor;
         const trench::UiLayout chipLayout { trench::UiLayout::defaults() };
         const trench::ui::Theme chipTheme { chipLayout };
         trench::ui::ModulationChip chip (chipProcessor.apvts, chipTheme);
         setParam (chipProcessor, ParamID::morph, 0.7f);
+        const float morphBefore = chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load();
         chip.selectPattern (2);
-        check (chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load() == 0.0f
+        check (std::abs (chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load() - morphBefore) < 1.0e-6f
                    && chipProcessor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 2.0f,
-               "selecting a modulation preset snaps Morph to 0", chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load(), 0.0);
+               "selecting a modulation preset leaves Morph where it is", chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load(), morphBefore);
         setParam (chipProcessor, ParamID::morph, 0.3f);
         chip.selectPattern (0);
         check (chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load() == 0.3f,
@@ -882,7 +898,9 @@ int main()
         pump (50);
         const auto frame = editor->getLocalBounds();
         int outside = 0;
-        for (auto* c : editor->getChildren())
+        auto* facePanel = editor->findChildWithID ("face");
+        check (facePanel != nullptr, "the face lives in one scalable panel");
+        for (auto* c : (facePanel != nullptr ? facePanel : editor)->getChildren())
         {
             if (! c->isVisible()) continue;
             const auto b = editor->getLocalArea (c, c->getLocalBounds());
@@ -893,10 +911,12 @@ int main()
                          b.getX(), b.getY(), b.getWidth(), b.getHeight());
         }
         check (outside == 0, "every visible child sits inside the face", outside, 0);
-        check (findChild<trench::ui::DeskKnob> (*editor) == nullptr,
-               "gain knobs are absent from the four-control face");
-        check (findChild<trench::ui::KeySnapBox> (*editor) == nullptr,
-               "KEY is absent from the permanent face");
+        int deskKnobs = 0;
+        for (auto* c : (facePanel != nullptr ? facePanel : editor)->getChildren())
+            if (c->isVisible() && dynamic_cast<trench::ui::DeskKnob*> (c) != nullptr) ++deskKnobs;
+        check (deskKnobs == 2, "INPUT and OUTPUT are the only gain knobs on the face", deskKnobs, 2);
+        check (findChild<trench::ui::KeySnapBox> (*editor) != nullptr,
+               "KEY sits on the permanent face");
         if (auto* graph = findChild<trench::ui::GraphDisplay> (*editor))
         {
             bool self = true, children = true;
@@ -906,11 +926,11 @@ int main()
         const trench::UiLayout faceLayout { trench::UiLayout::defaults() };
         const trench::ui::Theme faceTheme { faceLayout };
         const auto glass = faceTheme.rect ("spectrumGrid").getSmallestIntegerContainer();
-        auto* movement = findChild<trench::ui::ModulationBay> (*editor);
-        check (movement != nullptr, "MOVE exists below the performance wheels");
+        auto* movement = findChild<trench::ui::ModulationChip> (*editor);
+        check (movement != nullptr, "MOVE exists on the glass");
         if (movement != nullptr)
         {
-            check (movement->getY() > glass.getBottom(), "MOVE is outside the response display");
+            check (glass.contains (movement->getBounds()), "MOVE sits inside the response display");
             movement->selectPattern (1);
             check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1.0f,
                    "MOVE pattern selector changes the processor pattern");
@@ -958,14 +978,13 @@ int main()
     pump (600);
     check (! editor->isResizable() && editor->getWidth() == trench::ui::kFaceLockedWidth,
            "editor uses the reference hardware face size", editor->getWidth(), editor->getHeight());
-    auto* faceMove = findChild<trench::ui::ModulationBay> (*editor);
+    auto* faceMove = findChild<trench::ui::ModulationChip> (*editor);
     check (faceMove != nullptr, "MOVE selector exists");
     if (faceMove == nullptr)
         return 1;
     check (faceMove->isShowing(), "MOVE is visible as an inline performance control");
     for (const char* gone : { "Follow", "Low", "Track", "Division", "Color 1", "Color 2", "Color 3", "Generator" })
         check (! anyVisibleOfTitle (*editor, gone), (juce::String ("absent from the face: ") + gone).toRawUTF8());
-    check (faceMove->getHeight() == 99, "modulation and distortion occupy one compact block", faceMove->getHeight(), 99);
     pump (150);
     {
         const float shotScale = std::getenv ("TRENCH_SHOT_SCALE") != nullptr ? (float) std::atof (std::getenv ("TRENCH_SHOT_SCALE")) : 1.0f;

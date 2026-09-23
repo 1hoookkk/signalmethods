@@ -37,8 +37,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { ParamID::distortion, 1 },
-        "Distortion",
+        juce::ParameterID { ParamID::output, 1 },
+        "Output",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
     // The shipping bank is independently authored in

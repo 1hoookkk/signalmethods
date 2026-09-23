@@ -69,6 +69,7 @@
     {
       "name": "headspace",
       "configurePreset": "vst3",
+      "jobs": 1,
       "targets": [
         "TRENCH_Headspace_App",
         "TRENCH_QuadTests"
@@ -76,6 +77,21 @@
     }
   ],
   "testPresets": [
+    {
+      "name": "headspace",
+      "configurePreset": "vst3",
+      "filter": {
+        "include": {
+          "name": "^trench_headspace_slice$"
+        }
+      },
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
     {
       "name": "windows-msvc-debug",
       "configurePreset": "windows-msvc-debug",
@@ -86,18 +102,6 @@
     {
       "name": "windows-msvc-release",
       "configurePreset": "windows-msvc-release",
-      "output": {
-        "outputOnFailure": true
-      }
-    },
-    {
-      "name": "headspace",
-      "configurePreset": "vst3",
-      "filter": {
-        "include": {
-          "name": "^trench_quad$"
-        }
-      },
       "output": {
         "outputOnFailure": true
       }
