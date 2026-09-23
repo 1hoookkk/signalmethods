@@ -6,6 +6,7 @@
 #include "UserMotionTests.h"
 #include "PluginEditor.h"
 #include "BinaryData.h"
+#include "TestFixtures.h"
 #include "TrenchBodyRoster.h"
 #include "dsp/PreampLaw.h"
 #include "dsp/SlamStage.h"
@@ -259,13 +260,7 @@ int main()
     std::printf ("== bridge cost ==\n");
     {
         juce::MemoryBlock crisp;
-        for (int r = 0; r < BinaryData::namedResourceListSize; ++r)
-            if (juce::String (BinaryData::originalFilenames[r]) == "xml_crisp.body240")
-            {
-                int size = 0;
-                const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
-                crisp = juce::MemoryBlock (data, (size_t) size);
-            }
+        crisp = fixtureBody ("xml_crisp.body240");
         check (crisp.getSize() > 0, "crisp body bytes found for the cost probe", (double) crisp.getSize(), 240.0);
         for (const double rate : { 44100.0, 48000.0, 96000.0 })
         {
@@ -296,13 +291,7 @@ int main()
     std::printf ("== bank parity at 48k ==\n");
     {
         juce::MemoryBlock crisp;
-        for (int r = 0; r < BinaryData::namedResourceListSize; ++r)
-            if (juce::String (BinaryData::originalFilenames[r]) == "xml_crisp.body240")
-            {
-                int size = 0;
-                const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
-                crisp = juce::MemoryBlock (data, (size_t) size);
-            }
+        crisp = fixtureBody ("xml_crisp.body240");
         const auto packed = trench::core::PackedBody::from_body_bytes (std::span {
             static_cast<const std::uint8_t*> (crisp.getData()), crisp.getSize() });
         double worst = 0.0;
@@ -339,13 +328,7 @@ int main()
         bridge.prepare (48000.0, 512);
         juce::MemoryBlock first (BinaryData::identity_body240, (size_t) BinaryData::identity_body240Size);
         juce::MemoryBlock second;
-        for (int r = 0; r < BinaryData::namedResourceListSize; ++r)
-            if (juce::String (BinaryData::originalFilenames[r]) == "xml_crisp.body240")
-            {
-                int size = 0;
-                const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
-                second = juce::MemoryBlock (data, (size_t) size);
-            }
+        second = fixtureBody ("xml_crisp.body240");
         check (bridge.loadCartridgeBytes (first), "hammer: first body loads");
         std::atomic<bool> stop { false };
         std::atomic<bool> audioFinite { true };
@@ -479,9 +462,12 @@ int main()
         trench::rescanBodyRoster();
         int rosterCount = 0; trench::bodyRoster (rosterCount);
         struct ToneRun { double thd = 0.0; double fundamental = 0.0; float peak = 0.0f; };
-        const auto measure = [&processor, hostRate] (int bodyIndex, float morph, float qValue)
+        const auto measure = [&processor, hostRate] (int bodyIndex, float morph, float qValue, const juce::MemoryBlock* installed = nullptr)
         {
-            setParam (processor, ParamID::body, (float) bodyIndex);
+            if (installed != nullptr)
+                processor.installBodyBytes (installed->getData(), installed->getSize());
+            else
+                setParam (processor, ParamID::body, (float) bodyIndex);
             setParam (processor, ParamID::morph, morph);
             setParam (processor, ParamID::q, qValue);
             setParam (processor, ParamID::chew, 0.0f);
@@ -532,16 +518,16 @@ int main()
                 run.peak = juce::jmax (run.peak, std::abs (v));
             return run;
         };
-        int crossBand = -1;
-        for (int i = 0; i < rosterCount; ++i)
-            if (trench::bodyDisplayName (i).containsIgnoreCase ("Cross Band")) { crossBand = i; break; }
-        check (crossBand >= 0, "Cross Band is in the roster", crossBand, rosterCount);
-        if (crossBand >= 0)
+        const auto crossBandBytes = fixtureBody ("xml_cross_band.body240");
+        check (crossBandBytes.getSize() == 240, "Cross Band fixture is available", (double) crossBandBytes.getSize(), 240.0);
+        if (crossBandBytes.getSize() == 240)
         {
-            const auto crossed = measure (crossBand, 0.5f, 0.3f);
+            const auto crossed = measure (-1, 0.5f, 0.3f, &crossBandBytes);
             std::printf ("THD 220 Hz at -12 dBFS, Cross Band MORPH 0.5 Q 0.3: %.3f %%  (fundamental %.4f, peak %.4f)\n",
                          crossed.thd, crossed.fundamental, crossed.peak);
             check (crossed.thd < 1.0, "Cross Band leaves a -12 dBFS sine under 1 % THD below the clip knee", crossed.thd, 1.0);
+            setParam (processor, ParamID::body, 0.0f);
+            pump (100);
         }
         double worst = 0.0;
         int worstBody = -1;
@@ -679,13 +665,7 @@ int main()
     std::printf ("== Z bites ==\n");
     {
         juce::MemoryBlock crisp;
-        for (int r = 0; r < BinaryData::namedResourceListSize; ++r)
-            if (juce::String (BinaryData::originalFilenames[r]) == "xml_crisp.body240")
-            {
-                int size = 0;
-                const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
-                crisp = juce::MemoryBlock (data, (size_t) size);
-            }
+        crisp = fixtureBody ("xml_crisp.body240");
         auto runBite = [&crisp] (float bite, float* activityOut = nullptr, float amplitude = 0.1f)
         {
             TrenchDspBridge bridge;
@@ -734,13 +714,7 @@ int main()
     /*
     {
         juce::MemoryBlock crisp;
-        for (int r = 0; r < BinaryData::namedResourceListSize; ++r)
-            if (juce::String (BinaryData::originalFilenames[r]) == "xml_crisp.body240")
-            {
-                int size = 0;
-                const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
-                crisp = juce::MemoryBlock (data, (size_t) size);
-            }
+        crisp = fixtureBody ("xml_crisp.body240");
         auto runBridge = [&crisp] (TrenchParams params)
         {
             TrenchDspBridge bridge;

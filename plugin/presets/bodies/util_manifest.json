@@ -1,0 +1,386 @@
+{
+ "fs": 44100.0,
+ "method": {
+  "filters": "RBJ Audio EQ Cookbook (lp, hp, bp constant 0 dB peak, peaking EQ); formants are two-pole resonators in the Klatt 1980 cascade form with unit DC gain; notches are cookbook peaking cuts (unity away from the notch)",
+  "encoding": "each section mapped to the engine's five values and encoded with its 16-bit word encoder; unused sections are the identity row; low-gain numerators are carried by a gain word that is an exact power-of-two multiple of a pole word so word interpolation keeps the level",
+  "vowels": "Peterson and Barney 1952, adult male averages for /a/, /i/, /u/ (F1-F3); formant bandwidths 90/110/170 Hz are our choice",
+  "check": "65 x 17 Morph x Q states, floor word interpolation as the engine does, response 20 Hz-20 kHz"
+ },
+ "bodies": {
+  "LP 12": {
+   "file": "util_lp_12.body240",
+   "corners": {
+    "m": [
+     80.0,
+     8000.0
+    ],
+    "q": [
+     0.7071,
+     6.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 17.01,
+   "max_at_morph_q": [
+    0.65625,
+    1.0
+   ],
+   "min_gain_db": -123.07,
+   "min_at_morph_q": [
+    0.0,
+    0.375
+   ]
+  },
+  "LP 24": {
+   "file": "util_lp_24.body240",
+   "corners": {
+    "m": [
+     80.0,
+     8000.0
+    ],
+    "q": [
+     0.7071,
+     6.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 12.74,
+   "max_at_morph_q": [
+    0.671875,
+    1.0
+   ],
+   "min_gain_db": -246.11,
+   "min_at_morph_q": [
+    0.0,
+    0.5
+   ]
+  },
+  "LP 36": {
+   "file": "util_lp_36.body240",
+   "corners": {
+    "m": [
+     80.0,
+     8000.0
+    ],
+    "q": [
+     0.7071,
+     6.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 10.51,
+   "max_at_morph_q": [
+    0.84375,
+    1.0
+   ],
+   "min_gain_db": -300.0,
+   "min_at_morph_q": [
+    0.0,
+    0.3125
+   ]
+  },
+  "HP 12": {
+   "file": "util_hp_12.body240",
+   "corners": {
+    "m": [
+     80.0,
+     18000.0
+    ],
+    "q": [
+     0.7071,
+     6.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 15.7,
+   "max_at_morph_q": [
+    0.015625,
+    1.0
+   ],
+   "min_gain_db": -135.29,
+   "min_at_morph_q": [
+    1.0,
+    0.375
+   ]
+  },
+  "HP 24": {
+   "file": "util_hp_24.body240",
+   "corners": {
+    "m": [
+     80.0,
+     18000.0
+    ],
+    "q": [
+     0.7071,
+     6.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 10.5,
+   "max_at_morph_q": [
+    0.015625,
+    1.0
+   ],
+   "min_gain_db": -269.63,
+   "min_at_morph_q": [
+    1.0,
+    0.0625
+   ]
+  },
+  "BP 6": {
+   "file": "util_bp_6.body240",
+   "corners": {
+    "m": [
+     80.0,
+     16000.0
+    ],
+    "q": [
+     0.7071,
+     8.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 0.01,
+   "max_at_morph_q": [
+    0.296875,
+    0.0
+   ],
+   "min_gain_db": -81.73,
+   "min_at_morph_q": [
+    1.0,
+    1.0
+   ]
+  },
+  "BP 12": {
+   "file": "util_bp_12.body240",
+   "corners": {
+    "m": [
+     80.0,
+     16000.0
+    ],
+    "q": [
+     0.7071,
+     4.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 0.0,
+   "max_at_morph_q": [
+    0.296875,
+    0.0
+   ],
+   "min_gain_db": -151.42,
+   "min_at_morph_q": [
+    1.0,
+    1.0
+   ]
+  },
+  "Sweep EQ 1 oct": {
+   "file": "util_sweep_eq_1_oct.body240",
+   "corners": {
+    "m": [
+     80.0,
+     12000.0
+    ],
+    "q": [
+     -24.0,
+     24.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 25.8,
+   "max_at_morph_q": [
+    0.25,
+    1.0
+   ],
+   "min_gain_db": -25.28,
+   "min_at_morph_q": [
+    0.96875,
+    0.0
+   ]
+  },
+  "Sweep EQ 2 oct": {
+   "file": "util_sweep_eq_2_oct.body240",
+   "corners": {
+    "m": [
+     80.0,
+     12000.0
+    ],
+    "q": [
+     -24.0,
+     24.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 25.96,
+   "max_at_morph_q": [
+    0.109375,
+    1.0
+   ],
+   "min_gain_db": -25.65,
+   "min_at_morph_q": [
+    0.109375,
+    0.0
+   ]
+  },
+  "Sweep EQ 3 oct": {
+   "file": "util_sweep_eq_3_oct.body240",
+   "corners": {
+    "m": [
+     80.0,
+     12000.0
+    ],
+    "q": [
+     -24.0,
+     24.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 25.41,
+   "max_at_morph_q": [
+    0.96875,
+    1.0
+   ],
+   "min_gain_db": -25.31,
+   "min_at_morph_q": [
+    0.96875,
+    0.0
+   ]
+  },
+  "Vowel Ah-Ee": {
+   "file": "util_vowel_ah_ee.body240",
+   "corners": {
+    "m": [
+     "a",
+     "i"
+    ],
+    "q": [
+     1.15,
+     0.85
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 25.39,
+   "max_at_morph_q": [
+    0.0,
+    0.0
+   ],
+   "min_gain_db": -134.3,
+   "min_at_morph_q": [
+    0.90625,
+    1.0
+   ]
+  },
+  "Vowel Oo-Ah": {
+   "file": "util_vowel_oo_ah.body240",
+   "corners": {
+    "m": [
+     "u",
+     "a"
+    ],
+    "q": [
+     1.15,
+     0.85
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 25.39,
+   "max_at_morph_q": [
+    1.0,
+    0.0
+   ],
+   "min_gain_db": -154.45,
+   "min_at_morph_q": [
+    0.0,
+    1.0
+   ]
+  },
+  "Phaser A": {
+   "file": "util_phaser_a.body240",
+   "corners": {
+    "m": [
+     120.0,
+     2400.0
+    ],
+    "q": [
+     8.0,
+     24.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 1.7,
+   "max_at_morph_q": [
+    0.578125,
+    1.0
+   ],
+   "min_gain_db": -27.69,
+   "min_at_morph_q": [
+    0.875,
+    1.0
+   ]
+  },
+  "Phaser B": {
+   "file": "util_phaser_b.body240",
+   "corners": {
+    "m": [
+     120.0,
+     3200.0
+    ],
+    "q": [
+     8.0,
+     24.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 1.03,
+   "max_at_morph_q": [
+    0.375,
+    1.0
+   ],
+   "min_gain_db": -29.1,
+   "min_at_morph_q": [
+    0.78125,
+    1.0
+   ]
+  },
+  "Flanger 3": {
+   "file": "util_flanger_3.body240",
+   "corners": {
+    "m": [
+     150.0,
+     3500.0
+    ],
+    "q": [
+     8.0,
+     24.0
+    ]
+   },
+   "states": 1105,
+   "unstable_or_nonfinite": 0,
+   "max_gain_db": 1.68,
+   "max_at_morph_q": [
+    0.609375,
+    0.9375
+   ],
+   "min_gain_db": -29.65,
+   "min_at_morph_q": [
+    0.734375,
+    1.0
+   ]
+  }
+ }
+}

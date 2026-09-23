@@ -1,6 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
 #include "BinaryData.h"
+#include "TestFixtures.h"
 #include "dsp/PreampLaw.h"
 #include "dsp/Inflator.h"
 #include <cstdio>
@@ -68,13 +69,10 @@ inline int driveSlamTests()
             p->setRateAndBufferSizeDetails (48000, 128);
             p->prepareToPlay (48000, 128);
             p->setEditorOpen (true);
-            for (int r = 0; r < BinaryData::namedResourceListSize; ++r)
-                if (juce::String (BinaryData::originalFilenames[r]) == "xml_crisp.body240")
-                {
-                    int size = 0;
-                    const auto* bytes = BinaryData::getNamedResource (BinaryData::namedResourceList[r], size);
-                    check (p->installBodyBytes (bytes, (size_t) size), "resonance integration body loads");
-                }
+            {
+                const auto fixture = fixtureBody ("xml_crisp.body240");
+                check (p->installBodyBytes (fixture.getData(), fixture.getSize()), "resonance integration body loads");
+            }
         }
         nonlinear.apvts.getParameter (ParamID::output)->setValueNotifyingHost (0.75f);
         juce::AudioBuffer<float> a (2, 128), b (2, 128);
