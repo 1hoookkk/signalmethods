@@ -55,7 +55,7 @@ public:
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 15.9f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        juce::Colour lamp (0xff9ed6b4);
+        juce::Colour lamp (0xff3fd7d9);
         if (const char* accent = std::getenv ("TRENCH_ACCENT"))
         {
             const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");
