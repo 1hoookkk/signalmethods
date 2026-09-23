@@ -191,7 +191,8 @@ public:
         repaint();
     }
 
-    static constexpr float kCastAlpha = 0.70f, kCastBlur = 4.0f, kCastDrop = 3.0f;
+    static constexpr float kWellGapX = 2.5f, kWellGapTop = 1.0f;
+    static constexpr float kSilX0 = 7.0f, kSilX1 = 410.0f, kSilY0 = 8.0f, kSilY1 = 87.0f;
     static constexpr float kSeatSide = 2.7f;
     static constexpr float kSeatBottom = 4.1f;
     static constexpr float kSeatCorner = 3.5f;
@@ -205,7 +206,7 @@ public:
     }
     static juce::Rectangle<float> silhouetteForHole (juce::Rectangle<float> hole)
     {
-        return hole;
+        return hole.reduced (kWellGapX, 0.0f).withTrimmedTop (kWellGapTop);
     }
 
     void paint (juce::Graphics& g) override
@@ -222,7 +223,11 @@ public:
         const int frame = juce::jlimit (0, last, juce::roundToInt (displayNormalised() * (float) last));
 
         const auto wheelRect = getLocalBounds().toFloat();
-        const auto frameRect = wheelRect;
+        const auto hole = wheelRect.reduced (kSideOverhang, 0.0f).withTrimmedTop (kDrumProud).withTrimmedBottom (kDrumBelow);
+        const auto sil = silhouetteForHole (hole);
+        const float sx = sil.getWidth() / (kSilX1 - kSilX0), sy = sil.getHeight() / (kSilY1 - kSilY0);
+        const juce::Rectangle<float> frameRect { sil.getX() - kSilX0 * sx, sil.getY() - kSilY0 * sy,
+                                                 (float) fw * sx, (float) fh * sy };
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
@@ -236,15 +241,6 @@ public:
             scaledFrame = strip.getClippedImage ({ frame * fw, 0, fw, fh })
                               .rescaled (pw, ph, juce::Graphics::highResamplingQuality);
             scaledIndex = frame;
-        }
-        {
-            juce::Graphics::ScopedSaveState cast (g);
-            g.addTransform (juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
-                                                          frameRect.getHeight() / (float) ph)
-                                .translated (frameRect.getX(), frameRect.getY()));
-            juce::DropShadow (juce::Colours::black.withAlpha (kCastAlpha),
-                              juce::roundToInt (kCastBlur * pixelScale),
-                              { 0, juce::roundToInt (kCastDrop * pixelScale) }).drawForImage (g, scaledFrame);
         }
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
