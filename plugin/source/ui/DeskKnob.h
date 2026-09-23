@@ -81,20 +81,6 @@ public:
             g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
             g.drawImage (strip, (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f), (int) frameD, (int) frameD,
                          frame * frameSize, 0, frameSize, frameSize, false);
-            {
-                juce::Graphics::ScopedSaveState save (g);
-                juce::Path cap;
-                cap.addEllipse (c.x - d * 0.5f, c.y - d * 0.5f, d, d);
-                g.reduceClipRegion (cap);
-                const float rimD = d - 1.2f;
-                juce::Path rim;
-                rim.addEllipse (c.x - rimD * 0.5f, c.y - rimD * 0.5f, rimD, rimD);
-                juce::ColourGradient edge (juce::Colours::white.withAlpha (0.55f), c.x, c.y - d * 0.5f,
-                                           juce::Colour (0xff100c07).withAlpha (0.75f), c.x, c.y + d * 0.5f, false);
-                edge.addColour (0.5, juce::Colours::transparentBlack);
-                g.setGradientFill (edge);
-                g.strokePath (rim, juce::PathStrokeType (1.1f));
-            }
         }
 
         const float fontSize = juce::jlimit (8.0f, 11.0f, legend.getHeight() * 0.75f);
