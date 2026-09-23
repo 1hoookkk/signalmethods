@@ -191,7 +191,8 @@ public:
         repaint();
     }
 
-    static constexpr float kWellGapX = 2.5f, kWellGapTop = 1.0f;
+    static constexpr float kWellGapX = 4.5f, kWellGapTop = 1.0f;
+    static constexpr float kRibTravel = 190.5f / 417.0f;
     static constexpr float kSilX0 = 7.0f, kSilX1 = 410.0f, kSilY0 = 8.0f, kSilY1 = 87.0f;
     static constexpr float kSeatSide = 2.7f;
     static constexpr float kSeatBottom = 4.1f;
@@ -228,6 +229,7 @@ public:
         const float sx = sil.getWidth() / (kSilX1 - kSilX0), sy = sil.getHeight() / (kSilY1 - kSilY0);
         const juce::Rectangle<float> frameRect { sil.getX() - kSilX0 * sx, sil.getY() - kSilY0 * sy,
                                                  (float) fw * sx, (float) fh * sy };
+        shownFrameWidth = frameRect.getWidth();
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
@@ -279,6 +281,7 @@ public:
 
 private:
     juce::Image scaledFrame;
+    float shownFrameWidth = 0.0f;
     int scaledIndex = -1;
 
     float currentNormalised() const
@@ -300,7 +303,7 @@ private:
         if (attachment == nullptr || param == nullptr)
             return;
 
-        const float throwPx = juce::jmax (1.0f, (kPacketX1 - kPacketX0) * (float) getWidth());
+        const float throwPx = juce::jmax (1.0f, kRibTravel * (shownFrameWidth > 0.0f ? shownFrameWidth : (float) getWidth()));
         const float next = juce::jlimit (0.0f, 1.0f,
                                          valueAtStart + (e.position.x - dragStartX) / throwPx);
         attachment->setValueAsPartOfGesture (param->convertFrom0to1 (next));
