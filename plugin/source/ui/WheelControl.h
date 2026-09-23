@@ -191,6 +191,7 @@ public:
         repaint();
     }
 
+    static constexpr float kCastAlpha = 0.70f, kCastBlur = 4.0f, kCastDrop = 3.0f;
     static constexpr float kSeatSide = 2.7f;
     static constexpr float kSeatBottom = 4.1f;
     static constexpr float kSeatCorner = 3.5f;
@@ -225,14 +226,6 @@ public:
 
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-        juce::Graphics::ScopedSaveState seatClip (g);
-        {
-            const auto hole = wheelRect.reduced (kSideOverhang, 0.0f).withTrimmedTop (kDrumProud).withTrimmedBottom (kDrumBelow);
-            juce::Path seat;
-            seat.addRoundedRectangle (hole.getX(), hole.getY(), hole.getWidth(), hole.getHeight(),
-                                      kSeatCorner, kSeatCorner, true, true, true, true);
-            g.reduceClipRegion (seat);
-        }
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
         const int pw = juce::jmax (1, juce::roundToInt (frameRect.getWidth()  * pixelScale));
@@ -243,6 +236,15 @@ public:
             scaledFrame = strip.getClippedImage ({ frame * fw, 0, fw, fh })
                               .rescaled (pw, ph, juce::Graphics::highResamplingQuality);
             scaledIndex = frame;
+        }
+        {
+            juce::Graphics::ScopedSaveState cast (g);
+            g.addTransform (juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
+                                                          frameRect.getHeight() / (float) ph)
+                                .translated (frameRect.getX(), frameRect.getY()));
+            juce::DropShadow (juce::Colours::black.withAlpha (kCastAlpha),
+                              juce::roundToInt (kCastBlur * pixelScale),
+                              { 0, juce::roundToInt (kCastDrop * pixelScale) }).drawForImage (g, scaledFrame);
         }
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 

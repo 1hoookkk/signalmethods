@@ -88,8 +88,6 @@ public:
             g.drawImage (panelImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         }
 
-        drawWheelContactShadow (g, t.rect ("morphWell"));
-        drawWheelContactShadow (g, t.rect ("qWell"));
         if (! roomFrame.isEmpty())
         {
             g.setColour (juce::Colours::white.withAlpha (0.62f));
@@ -138,25 +136,19 @@ public:
     {
         if (hole.isEmpty())
             return;
-        const auto well = WheelControl::silhouetteForHole (hole);
-        const float castH = 11.0f;
-        const float overlap = 1.5f;
-        const float cx = well.getCentreX();
-        const float cy = hole.getBottom() - overlap + 0.5f;
-        const float rx = well.getWidth() * 0.48f;
         juce::Graphics::ScopedSaveState save (g);
-        g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
-                                                  (int) well.getWidth(), (int) (castH + overlap)));
-        g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
-        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.86f), cx, cy,
-                                 juce::Colours::transparentBlack, cx + rx, cy, true);
-        sh.addColour (0.40, juce::Colours::black.withAlpha (0.62f));
-        sh.addColour (0.75, juce::Colours::black.withAlpha (0.24f));
-        g.setGradientFill (sh);
-        g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
+        g.reduceClipRegion (juce::Rectangle<float> (hole.getX() - 12.0f, hole.getBottom() - 0.5f,
+                                                    hole.getWidth() + 24.0f, 24.0f).getSmallestIntegerContainer());
+        juce::Path edge;
+        edge.addRoundedRectangle (hole.getX() + 1.5f, hole.getBottom() - 4.0f, hole.getWidth() - 3.0f, 4.0f, 2.0f);
+        juce::DropShadow (juce::Colours::black.withAlpha (kUnderAlpha), kUnderBlur, { 0, kUnderDrop }).drawForPath (g, edge);
+        juce::DropShadow (juce::Colours::black.withAlpha (kUnderAlpha), kUnderBlur / 2, { 0, kUnderDrop / 2 }).drawForPath (g, edge);
+        juce::DropShadow (juce::Colours::black.withAlpha (kContactAlpha), 3, { 0, 2 }).drawForPath (g, edge);
     }
 private:
 
+    static constexpr float kUnderAlpha = 0.95f, kContactAlpha = 0.80f;
+    static constexpr int kUnderBlur = 14, kUnderDrop = 7;
     juce::Image panelImage;
     juce::Rectangle<float> roomFrame;
     float roomGapX0 = 0.0f, roomGapX1 = 0.0f;
