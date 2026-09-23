@@ -940,10 +940,10 @@ int main()
         const trench::ui::Theme faceTheme { faceLayout };
         const auto glass = faceTheme.rect ("spectrumGrid").getSmallestIntegerContainer();
         auto* movement = findChild<trench::ui::ModulationChip> (*editor);
-        check (movement != nullptr, "MOVE exists on the glass");
+        check (movement != nullptr, "MOVE exists on the face");
         if (movement != nullptr)
         {
-            check (glass.contains (movement->getBounds()), "MOVE sits inside the response display");
+            check (! glass.intersects (movement->getBounds()) && movement->getY() > glass.getBottom(), "MOVE sits under the wheels, below the response display");
             movement->selectPattern (1);
             check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1.0f,
                    "MOVE pattern selector changes the processor pattern");

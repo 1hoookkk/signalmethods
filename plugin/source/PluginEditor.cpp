@@ -161,8 +161,8 @@ void PluginEditor::resized()
     morphWheel->setBounds (WheelControl::drumForHole (theme.rect ("morphWell")).getSmallestIntegerContainer());
     secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
     {
-        const auto glass = rectOf ("spectrumGrid");
-        modulationChip->setBounds (glass.getX() + 12, glass.getBottom() - 26, glass.getWidth() - 24, 18);
+        const auto hole = theme.rect ("qWell");
+        modulationChip->setBounds (juce::Rectangle<float> (hole.getX(), hole.getBottom() + 12.0f, 100.0f, 17.0f).toNearestInt());
     }
     {
         const auto key = rectOf ("keyBox");
@@ -269,7 +269,6 @@ void PluginEditor::onFrame()
             lastProbedBodyVersion = bodyVersion;
             lastProbedRate = probeRate;
             lastProbedKeyRatio = probeKeyRatio;
-            graph->setKeyChoice ((int) probeKeyRatio);
             graph->updateFromCoeffs (coeffs, boost, probeRate > 0.0 ? probeRate : 44'100.0);
         }
     }

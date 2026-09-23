@@ -21,7 +21,7 @@ public:
         setTitle (label);
         setWantsKeyboardFocus (true);
         setRepaintsOnMouseActivity (true);
-        strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_front_strip_png, BinaryData::trench_knob_front_strip_pngSize);
+        strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_black_strip_png, BinaryData::trench_knob_black_strip_pngSize);
         if (driveParam != nullptr)
             driveAttachment = std::make_unique<juce::ParameterAttachment> (*driveParam, [this] (float) { updateTooltip(); repaint(); });
         updateTooltip();
@@ -60,16 +60,19 @@ public:
     {
         const auto b = getLocalBounds().toFloat();
         const auto legend = getLegendArea();
-        const float d = juce::jmin (b.getWidth() * 0.66f, b.getHeight() - legend.getHeight() - 7.0f);
-        const juce::Point<float> c { b.getCentreX(), b.getY() + 5.0f + d * 0.5f };
+        const float d = juce::jmin (kBayKnobDiameter, b.getWidth() * 0.9f);
+        const juce::Point<float> c { b.getCentreX(), getKnobArea().getCentreY() };
         const float drive = getDrive();
-
-        juce::Path contact;
-        contact.addEllipse (juce::Rectangle<float> (d, d).withCentre (c));
-        juce::DropShadow (juce::Colours::black.withAlpha (0.45f), juce::jmax (1, juce::roundToInt (d * 0.05f)), { 0, juce::jmax (1, juce::roundToInt (d * 0.07f)) }).drawForPath (g, contact);
 
         if (strip.isValid())
         {
+            {
+                const auto shade = juce::Colour (0xff2a1f12);
+                juce::ColourGradient cast (shade.withAlpha (0.42f), c.x + d * 0.06f, c.y + d * 0.10f,
+                                           shade.withAlpha (0.0f), c.x + d * 0.06f, c.y + d * 0.62f, true);
+                g.setGradientFill (cast);
+                g.fillEllipse (c.x - d * 0.54f + d * 0.06f, c.y - d * 0.54f + d * 0.10f, d * 1.08f, d * 1.08f);
+            }
             constexpr int frameSize = 96, frameCount = 61;
             const int frame = juce::jlimit (0, frameCount - 1,
                                             juce::roundToInt ((1.0f - drive) * (float) (frameCount - 1)));
@@ -78,6 +81,20 @@ public:
             g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
             g.drawImage (strip, (int) (c.x - frameD * 0.5f), (int) (c.y - frameD * 0.5f), (int) frameD, (int) frameD,
                          frame * frameSize, 0, frameSize, frameSize, false);
+            {
+                juce::Graphics::ScopedSaveState save (g);
+                juce::Path cap;
+                cap.addEllipse (c.x - d * 0.5f, c.y - d * 0.5f, d, d);
+                g.reduceClipRegion (cap);
+                const float rimD = d - 1.2f;
+                juce::Path rim;
+                rim.addEllipse (c.x - rimD * 0.5f, c.y - rimD * 0.5f, rimD, rimD);
+                juce::ColourGradient edge (juce::Colours::white.withAlpha (0.55f), c.x, c.y - d * 0.5f,
+                                           juce::Colour (0xff100c07).withAlpha (0.75f), c.x, c.y + d * 0.5f, false);
+                edge.addColour (0.5, juce::Colours::transparentBlack);
+                g.setGradientFill (edge);
+                g.strokePath (rim, juce::PathStrokeType (1.1f));
+            }
         }
 
         const float fontSize = juce::jlimit (8.0f, 11.0f, legend.getHeight() * 0.75f);

@@ -120,14 +120,15 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                      float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
-    const auto top    = t.wellTop();
-    const auto bottom = t.wellBottom();
-    const auto middle = top.interpolatedWith (bottom, 0.45f);
+    const auto warmth = juce::Colour (0xffe7edf5);
+    const auto top    = juce::Colour (0xffc9d6e2).interpolatedWith (warmth, 0.10f);
+    const auto middle = juce::Colour (0xffb2c4d6).interpolatedWith (warmth, 0.08f);
+    const auto bottom = juce::Colour (0xff94a8c0).interpolatedWith (warmth, 0.06f);
     const float faceRad = juce::jmax (2.0f, radius - 1.3f);
     {
-        juce::ColourGradient edge (t.wellKeyline(), 0.0f, face.getY(),
-                                   bottom.darker (0.55f), 0.0f, face.getBottom(), false);
-        edge.addColour (0.5, middle);
+        juce::ColourGradient edge (juce::Colour (0xffe9eff5), 0.0f, face.getY(),
+                                   juce::Colour (0xff5f6e7e), 0.0f, face.getBottom(), false);
+        edge.addColour (0.5, juce::Colour (0xffa6b4c4));
         g.setGradientFill (edge);
         g.fillRoundedRectangle (face, faceRad);
     }
@@ -142,19 +143,27 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
         juce::Path clip;
         clip.addRoundedRectangle (body, juce::jmax (1.5f, faceRad - 1.2f));
         g.reduceClipRegion (clip);
-        g.setColour (juce::Colours::white.withAlpha (0.26f));
+        g.setColour (juce::Colours::white.withAlpha (0.55f));
         g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
+        juce::ColourGradient frost (juce::Colours::white.withAlpha (0.18f),
+                                    0.0f, body.getY() + 1.6f,
+                                    juce::Colours::transparentWhite,
+                                    0.0f, body.getY() + body.getHeight() * 0.34f, false);
+        g.setGradientFill (frost);
+        g.fillRoundedRectangle (body.reduced (0.6f),
+                                juce::jmax (1.2f, faceRad - 1.8f));
         juce::ColourGradient skirt (juce::Colours::transparentBlack,
-                                    0.0f, body.getBottom() - 5.0f,
-                                    juce::Colours::black.withAlpha (0.26f),
+                                    0.0f, body.getBottom() - 4.0f,
+                                    juce::Colours::black.withAlpha (0.16f),
                                     0.0f, body.getBottom(), false);
         g.setGradientFill (skirt);
-        g.fillRect (body.getX(), body.getBottom() - 5.0f, body.getWidth(), 5.0f);
+        g.fillRect (body.getX(), body.getBottom() - 4.0f, body.getWidth(), 4.0f);
     }
     g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.80f));
     g.drawRoundedRectangle (face.reduced (0.35f),
                             juce::jmax (2.0f, radius - 1.5f), 0.9f);
-    g.setColour (isActive ? t.accent().withAlpha (0.55f) : juce::Colours::white.withAlpha (0.06f));
+    g.setColour (isActive ? t.accent().withAlpha (0.36f)
+                          : juce::Colours::white.withAlpha (0.06f));
     g.drawRoundedRectangle (face.reduced (1.05f),
                             juce::jmax (1.6f, radius - 2.1f), 0.55f);
 }

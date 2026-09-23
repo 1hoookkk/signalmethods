@@ -47,7 +47,15 @@ inline int frontendTests()
     check (selector && chip && key && wheels == 2 && values == 4 && knobs.size() == 2 && others == 0,
            "BODY, KEY, MORPH, Q, the movement chip, INPUT and OUTPUT are the whole face");
     check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
-    check (chip && glass && glass->getBounds().contains (chip->getBounds()), "the movement chip sits on the glass");
+    {
+        int wheelsBottom = 0, knobsTop = face->getHeight();
+        for (auto* child : face->getChildren())
+            if (dynamic_cast<trench::ui::WheelControl*> (child) != nullptr) wheelsBottom = juce::jmax (wheelsBottom, child->getBottom());
+        for (auto* k : knobs) knobsTop = juce::jmin (knobsTop, k->getY());
+        check (chip && glass && ! glass->getBounds().intersects (chip->getBounds())
+                   && chip->getY() >= wheelsBottom - 4 && chip->getBottom() <= knobsTop,
+               "the movement dropdown sits under the wheels, off the glass and above INPUT and OUTPUT");
+    }
     if (selector && browser)
     {
         selector->onOpenBrowser (selector->selectedBody());

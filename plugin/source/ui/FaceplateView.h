@@ -30,22 +30,6 @@ public:
                     data.setPixelColour (x, y, juce::Colour::fromFloatRGBA (lifted, lifted, lifted * 1.02f, c.getFloatAlpha()));
                 }
         }
-        if (panelImage.isValid())
-        {
-            shadowPlate = juce::Image (juce::Image::ARGB, panelImage.getWidth(), panelImage.getHeight(), true, juce::SoftwareImageType());
-            {
-                juce::Graphics sg (shadowPlate);
-                sg.drawImageAt (panelImage, 0, 0);
-            }
-            juce::Image::BitmapData data (shadowPlate, juce::Image::BitmapData::readWrite);
-            for (int y = 0; y < data.height; ++y)
-                for (int x = 0; x < data.width; ++x)
-                {
-                    const juce::Colour c = data.getPixelColour (x, y);
-                    data.setPixelColour (x, y, juce::Colour::fromFloatRGBA (c.getFloatRed() * kShadowFloor, c.getFloatGreen() * kShadowFloor,
-                                                                            c.getFloatBlue() * kShadowFloor, c.getFloatAlpha()));
-                }
-        }
         setOpaque (false);
         setBufferedToImage (true);
         setInterceptsMouseClicks (false, false);
@@ -104,73 +88,34 @@ public:
             g.drawImage (panelImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         }
 
-        drawPlateShadow (g, t.rect ("morphWell"));
-        drawPlateShadow (g, t.rect ("qWell"));
-        for (const char* id : { "morphReadout", "qReadout", "inputReadout", "outputReadout" })
-            drawReadoutShadow (g, t.rect (id));
+        drawWheelContactShadow (g, t.rect ("morphWell"));
+        drawWheelContactShadow (g, t.rect ("qWell"));
     }
 
-    void drawShadowMask (juce::Graphics& g, juce::Rectangle<float> area,
-                         const std::function<void (juce::Graphics&)>& paintMask) const
+    static void drawWheelContactShadow (juce::Graphics& g, juce::Rectangle<float> hole)
     {
-        constexpr float k = 4.0f;
-        juce::Image mask (juce::Image::SingleChannel, (int) std::ceil (area.getWidth() * k), (int) std::ceil (area.getHeight() * k),
-                          true, juce::SoftwareImageType());
-        {
-            juce::Graphics mg (mask);
-            mg.addTransform (juce::AffineTransform::translation (-area.getX(), -area.getY()).scaled (k));
-            paintMask (mg);
-        }
+        if (hole.isEmpty())
+            return;
+        const auto well = WheelControl::silhouetteForHole (hole);
+        const float castH = 7.0f;
+        const float overlap = 1.5f;
+        const float cx = well.getCentreX();
+        const float cy = well.getBottom() - overlap + 1.35f;
+        const float rx = well.getWidth() * 0.48f;
         juce::Graphics::ScopedSaveState save (g);
-        g.reduceClipRegion (mask, juce::AffineTransform::scale (1.0f / k).translated (area.getX(), area.getY()));
-        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-        g.drawImage (shadowPlate, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
-    }
-
-    void drawPlateShadow (juce::Graphics& g, juce::Rectangle<float> well) const
-    {
-        if (well.isEmpty() || ! shadowPlate.isValid())
-            return;
-        drawShadowMask (g, well.expanded (4.0f, 16.0f), [well] (juce::Graphics& mg)
-        {
-            const auto ink = juce::Colours::white;
-            const float cx = well.getCentreX();
-            const float cy = well.getBottom();
-            const float rx = well.getWidth() * 0.5f;
-            const float ry = well.getHeight() * 0.40f;
-            {
-                juce::Graphics::ScopedSaveState lens (mg);
-                mg.reduceClipRegion (juce::Rectangle<float> (well.getX() - 4.0f, cy, well.getWidth() + 8.0f, ry + 2.0f).getSmallestIntegerContainer());
-                mg.addTransform (juce::AffineTransform::scale (1.0f, ry / rx, cx, cy));
-                juce::ColourGradient sh (ink.withAlpha (0.78f), cx, cy, ink.withAlpha (0.0f), cx + rx, cy, true);
-                sh.addColour (0.55, ink.withAlpha (0.62f));
-                sh.addColour (0.82, ink.withAlpha (0.24f));
-                mg.setGradientFill (sh);
-                mg.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
-            }
-            juce::Path contact;
-            contact.addRoundedRectangle (well.getX() + 1.0f, cy - 0.6f, well.getWidth() - 2.0f, 1.8f, 0.9f);
-            mg.setColour (ink.withAlpha (0.95f));
-            mg.fillPath (contact);
-        });
-    }
-
-    void drawReadoutShadow (juce::Graphics& g, juce::Rectangle<float> box) const
-    {
-        if (box.isEmpty() || ! shadowPlate.isValid())
-            return;
-        drawShadowMask (g, box.expanded (6.0f), [box] (juce::Graphics& mg)
-        {
-            juce::Path outline;
-            outline.addRoundedRectangle (box, 3.0f);
-            juce::DropShadow (juce::Colours::white.withAlpha (0.85f), 3, { 0, 1 }).drawForPath (mg, outline);
-        });
+        g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
+                                                  (int) well.getWidth(), (int) (castH + overlap)));
+        g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
+        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.74f), cx, cy,
+                                 juce::Colours::transparentBlack, cx + rx, cy, true);
+        sh.addColour (0.50, juce::Colours::black.withAlpha (0.50f));
+        sh.addColour (0.82, juce::Colours::black.withAlpha (0.18f));
+        g.setGradientFill (sh);
+        g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
     }
 private:
 
-    static constexpr float kShadowFloor = 0.34f;
     juce::Image panelImage;
-    juce::Image shadowPlate;
     Theme t;
 };
 

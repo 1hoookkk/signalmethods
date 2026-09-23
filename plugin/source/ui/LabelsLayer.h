@@ -39,15 +39,15 @@ public:
         // printed panel text is ink on metal, whatever the body underneath.
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
-        draw ("inputLabel",  t.text ("inputLabel",  ""), true, true);
-        draw ("outputLabel", t.text ("outputLabel", ""), true, true);
+        draw ("inputLabel",  t.text ("inputLabel",  ""), true, false);
+        draw ("outputLabel", t.text ("outputLabel", ""), true, false);
         {
             const auto br = t.rect ("brandLabel");
             const float bfs = t.fontSize ("brandLabel", 16.5f);
             if (br.getWidth() >= 1.0f && bfs >= 0.5f)
             {
                 g.setFont (juce::Font (juce::FontOptions ("Arial", bfs, juce::Font::bold))
-                               .withExtraKerningFactor (0.045f));
+                               .withExtraKerningFactor (-0.012f));
                 const auto text = t.text ("brandLabel", "");
                 const auto box  = br.toNearestInt();
                 if (brandLit)
@@ -59,8 +59,8 @@ public:
                                 g.drawText (text, box.translated (dx, dy),
                                             juce::Justification::centredLeft, false);
                 }
-                g.setColour (t.textColour ("brandLabel", t.labelInk()));
-                g.drawText (text, box, juce::Justification::centredLeft, false);
+                drawEngravedText (g, text, box, juce::Justification::centredLeft,
+                                  t.textColour ("brandLabel", t.labelInk()), 0.72f);
             }
             const auto sr = t.rect ("brandSub");
             const float sfs = t.fontSize ("brandSub", 9.0f);

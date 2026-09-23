@@ -43,7 +43,6 @@ public:
         startTimer (30);
         repaint();
     }
-    void setKeyChoice (int choice) noexcept { keyChoice = choice; }
     void updateFromCoeffs (const float coeffs[trench::kUiCoeffCount], float boost, double sr)
     {
         const float qNow = qParam != nullptr ? qParam->getValue() : 0.0f;
@@ -52,10 +51,8 @@ public:
         lastQ = qNow;
         for (int i = 0; same && i < trench::kUiCoeffCount; ++i)
             same = juce::approximatelyEqual (coeffs[i], lastCoeffs[i]);
-        same = same && keyChoice == lastKeyChoice;
         if (same && haveCurve)
             return;
-        lastKeyChoice = keyChoice;
         for (int i = 0; i < trench::kUiCoeffCount; ++i) lastCoeffs[i] = coeffs[i];
         lastBoost = boost; lastSr = sr; haveCurve = true;
         if (! bootStarted)
@@ -159,28 +156,6 @@ public:
             }
         }
         responsePath = std::move (path);
-        noteMarks.clear();
-        if (trench::KeySnap::active (keyChoice) && ! traceXs.empty())
-        {
-            static const char* const names[12] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-            for (int s = 0; s < trench::kUiStageCount; ++s)
-            {
-                const trench::core::Biquad b { coeffs[s * 5], coeffs[s * 5 + 1], coeffs[s * 5 + 2], coeffs[s * 5 + 3], coeffs[s * 5 + 4] };
-                double hz = 0.0, radius = 0.0;
-                if (! trench::KeySnap::snappable (b, sr, hz, radius) || hz < fLo || hz > fHi)
-                    continue;
-                const int midi = (int) std::lround (69.0 + 12.0 * std::log2 (hz / 440.0));
-                const float x = plot.getX() + (float) (std::log (hz / fLo) / std::log (fHi / fLo)) * plot.getWidth();
-                size_t nearest = 0;
-                for (size_t i = 1; i < traceXs.size(); ++i)
-                    if (std::abs (traceXs[i] - x) < std::abs (traceXs[nearest] - x))
-                        nearest = i;
-                const double yt = juce::jlimit (-0.25, 1.25, (dbTop - (double) traceDbs[nearest]) / (dbTop - dbBot));
-                noteMarks.push_back ({ x, plot.getY() + (float) yt * plot.getHeight(),
-                                       juce::String (names[((midi % 12) + 12) % 12]) + juce::String (midi / 12 - 1) });
-            }
-            std::sort (noteMarks.begin(), noteMarks.end(), [] (const NoteMark& a, const NoteMark& b) { return a.x < b.x; });
-        }
         if (! isTimerRunning()) startTimer (30);
         repaint();
     }
@@ -297,7 +272,6 @@ public:
                 drawGraticule (g);
                 drawVignette (g);
                 drawResponseTrace (g);
-                drawNoteMarks (g);
                 if (sweeping)
                 {
                     g.setColour (t.curveColour().withAlpha (0.10f));
@@ -508,29 +482,6 @@ private:
     juce::Path responsePath;
 
     static constexpr float kTraceWidth = 1.0f;
-    struct NoteMark { float x, y; juce::String text; };
-    std::vector<NoteMark> noteMarks;
-    int keyChoice = 0;
-    int lastKeyChoice = -1;
-    void drawNoteMarks (juce::Graphics& g) const
-    {
-        if (noteMarks.empty())
-            return;
-        const auto plot = plotBounds();
-        g.setFont (telemetryFont (8.5f, false));
-        g.setColour (t.curveColour().withAlpha (0.85f));
-        float lastRight = -1.0e9f;
-        for (const auto& mark : noteMarks)
-        {
-            const float w = juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), mark.text) + 2.0f;
-            auto box = juce::Rectangle<float> (w, 10.0f).withCentre ({ mark.x, mark.y - 9.0f });
-            box = box.constrainedWithin (plot);
-            if (box.getX() < lastRight + 2.0f)
-                continue;
-            g.drawText (mark.text, box, juce::Justification::centred, false);
-            lastRight = box.getRight();
-        }
-    }
     std::vector<float> traceXs;
     std::vector<float> traceDbs;
     float lastCoeffs[trench::kUiCoeffCount] = {};

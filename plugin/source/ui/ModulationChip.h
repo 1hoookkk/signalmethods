@@ -124,22 +124,28 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        const auto b = getLocalBounds();
-        const auto ink = t.curveColour();
-        const juce::Rectangle<float> lamp { (float) b.getX() + 1.0f, (float) b.getCentreY() - 2.5f, 5.0f, 5.0f };
-        g.setColour (active ? t.modulationLamp() : ink.withAlpha (0.30f));
-        g.fillEllipse (lamp);
-        g.setFont (displayFont (10.5f * (float) kEditorWidth / 250.0f, active));
-        g.setColour (active ? t.modulationLamp().withAlpha (0.95f) : ink.withAlpha (0.58f));
-        const auto label = displayText();
-        const auto textArea = b.withTrimmedLeft (11).withTrimmedRight (12);
-        g.drawText (label, textArea, juce::Justification::centredLeft, true);
-        const float textWidth = juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), label);
-        juce::Path arrow;
-        const float x = juce::jmin ((float) b.getRight() - 5.0f, (float) textArea.getX() + textWidth + 9.0f), y = (float) b.getCentreY();
-        arrow.addTriangle (x - 3.0f, y - 1.5f, x + 3.0f, y - 1.5f, x, y + 2.0f);
-        g.fillPath (arrow);
+        const auto b = getLocalBounds().toFloat();
+        drawFrostedGlassControl (g, b, 3.0f, active || isMouseOver (true), t);
+        const float chevronW = juce::jmin (16.0f, b.getHeight());
+        const float divider = b.getRight() - chevronW;
+        g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.35f));
+        g.fillRect (divider, b.getY() + 3.0f, 1.0f, b.getHeight() - 6.0f);
+        g.setColour (juce::Colours::white.withAlpha (0.35f));
+        g.fillRect (divider + 1.0f, b.getY() + 3.0f, 1.0f, b.getHeight() - 6.0f);
+        const auto ink = t.labelInk();
+        const float cx = divider + chevronW * 0.5f + 0.5f, cy = b.getCentreY();
+        juce::Path chevron;
+        chevron.startNewSubPath (cx - 3.5f, cy - 1.8f);
+        chevron.lineTo (cx, cy + 1.8f);
+        chevron.lineTo (cx + 3.5f, cy - 1.8f);
+        g.setColour (ink);
+        g.strokePath (chevron, juce::PathStrokeType (1.2f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
+        g.setFont (displayFont (juce::jmin (11.0f, b.getHeight() * 0.68f), false));
+        g.drawText (displayText(), b.withRight (divider).reduced (5.0f, 0.0f).toNearestInt(),
+                    juce::Justification::centredLeft, true);
     }
+    void mouseEnter (const juce::MouseEvent&) override { repaint(); }
+    void mouseExit (const juce::MouseEvent&) override { repaint(); }
 private:
     Theme t;
     juce::AudioParameterChoice* param = nullptr;

@@ -148,7 +148,7 @@ public:
             textArea = textArea.withTrimmedRight (7.0f);
 
         drawCrispText (g, textArea, numeric, fs,
-                       t.textColour (id, juce::Colour (0xff191714)), true);
+                       t.textColour (id, juce::Colour (0xff4a3520)));
         if (adjustCue && param != nullptr)
         {
             const float cxr = b.getRight() - 7.5f;

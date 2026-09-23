@@ -17,7 +17,6 @@ class WheelControl : public juce::Component,
 public:
 
     static constexpr int kStripFrameWidth = 417;
-    static constexpr float kBodyDarken = 1.0f;
 
     WheelControl (juce::AudioProcessorValueTreeState& apvts, juce::String paramID,
                   juce::Image filmstrip, const Theme& theme)
@@ -163,49 +162,26 @@ public:
         repaint();
     }
 
-    static constexpr float kSeatSide = 2.7f;
-    static constexpr float kSeatBottom = 4.1f;
-    static constexpr float kSeatCorner = 3.5f;
-    static constexpr float kDrumProud = 2.46f;
-    static constexpr float kDrumBelow = 4.49f;
-    static constexpr float kSideOverhang = 5.0f;
+    static constexpr float kHoleInsetX = 2.0f;
+    static constexpr float kSeatDrop = 1.2f;
+    static constexpr float kHitMargin = 4.0f;
+    static constexpr float kSilhouetteX0 = 7.0f, kSilhouetteX1 = 410.0f;
+    static constexpr float kSilhouetteY0 = 8.0f, kSilhouetteY1 = 87.0f;
     static juce::Rectangle<float> drumForHole (juce::Rectangle<float> hole)
     {
-        return { hole.getX() - kSideOverhang, hole.getY() - kDrumProud,
-                 hole.getWidth() + 2.0f * kSideOverhang, hole.getHeight() + kDrumProud + kDrumBelow };
+        return hole.expanded (kHitMargin);
+    }
+    static juce::Rectangle<float> silhouetteForHole (juce::Rectangle<float> hole)
+    {
+        return hole.reduced (kHoleInsetX, 0.0f).translated (0.0f, kSeatDrop);
     }
 
-    void drawLamp (juce::Graphics& g, juce::Rectangle<float> drum, float value) const
+    juce::Rectangle<float> frameRectFor (juce::Rectangle<float> silhouette, int fh) const
     {
-        if (value <= 0.0f)
-            return;
-        const float fade = juce::jmin (1.0f, value / 0.03f);
-        const auto ink = t.curveColour().interpolatedWith (t.curveHighlight(), 0.30f);
-        const float cx = drum.getX() + drum.getWidth() * 0.4988f;
-        const float r = drum.getWidth() * 0.48f;
-        const float cy = drum.getY() + drum.getHeight() * 0.495f;
-        const float pitch = juce::degreesToRadians (7.6f);
-        const float head = juce::degreesToRadians (-61.0f + 138.0f * value);
-        const float arc = juce::degreesToRadians (84.0f);
-        const float ledH = drum.getHeight() * 0.19f;
-        for (int k = 0; (float) k * pitch <= arc; ++k)
-        {
-            const float a = head - (float) k * pitch;
-            if (std::abs (a) >= juce::MathConstants<float>::halfPi)
-                continue;
-            const float along = 1.0f - (float) k * pitch / arc;
-            const float level = fade * (0.25f + 0.75f * along) * std::sqrt (std::cos (a));
-            const float x = cx + r * std::sin (a);
-            const float w = r * pitch * std::cos (a) * 0.70f;
-            const auto core = juce::Rectangle<float> (w, ledH).withCentre ({ x, cy });
-            const auto haloArea = core.expanded (core.getWidth() * 0.55f, ledH * 0.75f);
-            juce::ColourGradient halo (ink.withAlpha (0.30f * level), x, cy,
-                                       ink.withAlpha (0.0f), haloArea.getRight(), cy, true);
-            g.setGradientFill (halo);
-            g.fillEllipse (haloArea);
-            g.setColour (ink.withAlpha (0.62f * level));
-            g.fillRoundedRectangle (core, ledH * 0.3f);
-        }
+        const float sx = silhouette.getWidth() / (kSilhouetteX1 - kSilhouetteX0);
+        const float sy = silhouette.getHeight() / (kSilhouetteY1 - kSilhouetteY0);
+        return { silhouette.getX() - kSilhouetteX0 * sx, silhouette.getY() - kSilhouetteY0 * sy,
+                 (float) kStripFrameWidth * sx, (float) fh * sy };
     }
 
     void paint (juce::Graphics& g) override
@@ -218,84 +194,38 @@ public:
         if (fw <= 0 || fh <= 0)
             return;
 
-        const int frame = 0;
-
-        const auto wheelRect = getLocalBounds().toFloat();
-        const auto frameRect = wheelRect;
-
-        g.setOpacity (1.0f);
-        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-        juce::Graphics::ScopedSaveState seatClip (g);
-        {
-            const auto hole = wheelRect.reduced (kSideOverhang, 0.0f).withTrimmedTop (kDrumProud).withTrimmedBottom (kDrumBelow);
-            juce::Path seat;
-            seat.addRoundedRectangle (hole.getX(), hole.getY(), hole.getWidth(), hole.getHeight(),
-                                      kSeatCorner, kSeatCorner, true, true, true, true);
-            g.reduceClipRegion (seat);
-        }
+        const int frame = juce::jlimit (0, numFrames - 1, juce::roundToInt (displayNormalised() * (float) (numFrames - 1)));
+        const auto hole = getLocalBounds().toFloat().reduced (kHitMargin);
+        auto frameRect = frameRectFor (silhouetteForHole (hole), fh);
 
         const float pixelScale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
+        frameRect.setPosition (std::round (frameRect.getX() * pixelScale) / pixelScale,
+                               std::round (frameRect.getY() * pixelScale) / pixelScale);
         const int pw = juce::jmax (1, juce::roundToInt (frameRect.getWidth()  * pixelScale));
         const int ph = juce::jmax (1, juce::roundToInt (frameRect.getHeight() * pixelScale));
-        if (scaledIndex != frame || scaledFrame.getWidth() != pw
-            || scaledFrame.getHeight() != ph)
+        if (scaledIndex != frame || scaledFrame.getWidth() != pw || scaledFrame.getHeight() != ph)
         {
             scaledFrame = strip.getClippedImage ({ frame * fw, 0, fw, fh })
                               .rescaled (pw, ph, juce::Graphics::highResamplingQuality);
             scaledIndex = frame;
         }
+        frameRect.setSize ((float) pw / pixelScale, (float) ph / pixelScale);
+        g.setOpacity (1.0f);
+        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
-        drawLamp (g, frameRect, displayNormalised());
-
+        if (hovering || pressing)
         {
-            juce::Graphics::ScopedSaveState crown (g);
-            g.reduceClipRegion (scaledFrame,
-                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
-                                                              frameRect.getHeight() / (float) ph)
-                                    .translated (frameRect.getX(), frameRect.getY()));
-            const float top = frameRect.getY(), h = frameRect.getHeight();
-            juce::ColourGradient belly (juce::Colours::white.withAlpha (0.0f), 0.0f, top + h * 0.06f,
-                                        juce::Colours::white.withAlpha (0.0f), 0.0f, top + h * 0.56f, false);
-            belly.addColour (0.42, juce::Colours::white.withAlpha (0.16f));
-            g.setGradientFill (belly);
-            g.fillRect (frameRect);
-            juce::ColourGradient under (juce::Colours::black.withAlpha (0.0f), 0.0f, top + h * 0.58f,
-                                        juce::Colours::black.withAlpha (0.42f), 0.0f, frameRect.getBottom(), false);
-            g.setGradientFill (under);
-            g.fillRect (frameRect);
-        }
-
-        {
-            const auto wheel = frameRect;
-            const auto shade = juce::Colour (0xff17110a);
             juce::Graphics::ScopedSaveState save (g);
             g.reduceClipRegion (scaledFrame,
                                 juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
                                                               frameRect.getHeight() / (float) ph)
                                     .translated (frameRect.getX(), frameRect.getY()));
-            const float endW = wheel.getWidth() * 0.19f;
-            juce::ColourGradient left (shade.withAlpha (0.92f), wheel.getX(), wheel.getCentreY(),
-                                       shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);
-            left.addColour (0.30, shade.withAlpha (0.50f));
-            left.addColour (0.65, shade.withAlpha (0.16f));
-            g.setGradientFill (left);
-            g.fillRect (wheel.withWidth (endW));
-            juce::ColourGradient right (shade.withAlpha (0.92f), wheel.getRight(), wheel.getCentreY(),
-                                        shade.withAlpha (0.0f), wheel.getRight() - endW, wheel.getCentreY(), false);
-            right.addColour (0.30, shade.withAlpha (0.50f));
-            right.addColour (0.65, shade.withAlpha (0.16f));
-            g.setGradientFill (right);
-            g.fillRect (wheel.withLeft (wheel.getRight() - endW));
-        }
-
-        if (hovering || pressing)
-        {
             juce::ColourGradient lift (juce::Colours::white.withAlpha (pressing ? 0.10f : 0.06f),
-                                       0.0f, wheelRect.getY() + wheelRect.getHeight() * 0.30f,
-                                       juce::Colours::transparentBlack, 0.0f, wheelRect.getBottom(), false);
+                                       0.0f, frameRect.getY() + frameRect.getHeight() * 0.30f,
+                                       juce::Colours::transparentBlack, 0.0f, frameRect.getBottom(), false);
             g.setGradientFill (lift);
-            g.fillRect (wheelRect);
+            g.fillRect (frameRect);
         }
     }
 
