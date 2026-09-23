@@ -30,8 +30,8 @@ trail fades per tooth; it is never re-laid through a chroma mask.
 
 `trench_ss3_strip.png` is the 128-frame roller strip from trench-workstation commit a4f88ad2
 (`plugin/assets/trench_roller_strip.png`, 53376x93, 417x93 frames), the wheel in the 3 Aug
-screenshot. Its baked glow was hue-shifted from about 173 deg to the curve colour #5ae0a9 (155 deg),
-saturation and value kept, by `recolour_strip.py` (pixels with saturation > 0.15 and hue 140-205 deg).
+screenshot, byte for byte. Its lamp is one chromaticity (hue 172.7 deg, saturation 0.80, peak
+#2AD7C2); that value is the face accent, the curve colour and the TRENCH outline.
 The wheel draws its full silhouette (frame x 7-410, y 8-87) inside the plate hole, 2 px in from
 each end and 1.2 px low, with the 3 Aug contact shadow under it.
 `trench_knob_black_strip.png` is the knob strip from trench-x3-clean commit 3192f66dd (12 Aug).

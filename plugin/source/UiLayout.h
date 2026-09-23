@@ -55,10 +55,10 @@ public:
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 15.9f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        const juce::Colour lamp (0xff82c8bc);
-        layout.colours["accent"]             = lamp.darker (0.35f);
+        const juce::Colour lamp (0xff2ad7c2);
+        layout.colours["accent"]             = lamp;
         layout.colours["curveColour"]        = lamp;
-        layout.colours["curveHighlight"]     = lamp.interpolatedWith (juce::Colours::white, 0.55f);
+        layout.colours["curveHighlight"]     = lamp;
         layout.colours["telemetry"]          = juce::Colour (0xff5d8079);
         layout.colours["dashed"]             = juce::Colour (0xff5d8079);
         layout.colours["rollerIllumination"] = lamp;
