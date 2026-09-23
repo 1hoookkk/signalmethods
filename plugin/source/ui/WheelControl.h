@@ -195,6 +195,8 @@ public:
     static constexpr float kSeatTop = 1.2f;
     static constexpr float kSeatBottom = 1.4f;
     static constexpr float kHoleCorner = 3.5f;
+    static constexpr float kCrownEnd = 0.72f;
+    static constexpr float kCrownRidge = 0.12f;
     static constexpr float kHitMargin = 4.0f;
     static constexpr float kSilhouetteX0 = 7.0f, kSilhouetteX1 = 410.0f;
     static constexpr float kSilhouetteY0 = 8.0f, kSilhouetteY1 = 87.0f;
@@ -251,6 +253,29 @@ public:
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
+        {
+            juce::Graphics::ScopedSaveState crown (g);
+            g.reduceClipRegion (scaledFrame,
+                                juce::AffineTransform::scale (frameRect.getWidth()  / (float) pw,
+                                                              frameRect.getHeight() / (float) ph)
+                                    .translated (frameRect.getX(), frameRect.getY()));
+            const auto body = silhouetteForHole (hole);
+            const auto shade = juce::Colours::black;
+            juce::ColourGradient ends (shade.withAlpha (kCrownEnd), body.getX(), 0.0f,
+                                       shade.withAlpha (kCrownEnd), body.getRight(), 0.0f, false);
+            for (const auto& stop : { std::pair<double, float> { 0.07, 0.42f }, { 0.17, 0.16f }, { 0.28, 0.0f },
+                                      { 0.72, 0.0f }, { 0.83, 0.16f }, { 0.93, 0.42f } })
+                ends.addColour (stop.first, shade.withAlpha (stop.second * kCrownEnd / 0.72f));
+            g.setGradientFill (ends);
+            g.fillRect (body);
+            juce::ColourGradient ridge (juce::Colours::white.withAlpha (0.0f), body.getX(), 0.0f,
+                                        juce::Colours::white.withAlpha (0.0f), body.getRight(), 0.0f, false);
+            ridge.addColour (0.38, juce::Colours::white.withAlpha (0.0f));
+            ridge.addColour (0.50, juce::Colours::white.withAlpha (kCrownRidge));
+            ridge.addColour (0.62, juce::Colours::white.withAlpha (0.0f));
+            g.setGradientFill (ridge);
+            g.fillRect (body);
+        }
         {
             juce::ColourGradient lip (juce::Colours::black.withAlpha (0.55f), 0.0f, hole.getY(),
                                       juce::Colours::transparentBlack, 0.0f, hole.getY() + 3.0f, false);
