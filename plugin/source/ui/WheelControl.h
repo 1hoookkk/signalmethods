@@ -19,47 +19,11 @@ public:
     static constexpr int kStripFrameWidth = 417;
     static constexpr float kBodyDarken = 1.0f;
 
-    static juce::Image recolourGlow (const juce::Image& source, juce::Colour target)
-    {
-        juce::Image out = source.createCopy();
-        juce::Image::BitmapData data (out, juce::Image::BitmapData::readWrite);
-        const float mintHue = juce::Colour (0xff3cc8be).getHue();
-        const float mintSat = juce::Colour (0xff3cc8be).getSaturation();
-        const float mintValue = juce::Colour (0xff3cc8be).getBrightness();
-        const float targetHue = target.getHue();
-        const float targetSat = target.getSaturation();
-        for (int y = 0; y < data.height; ++y)
-        {
-            for (int x = 0; x < data.width; ++x)
-            {
-                const juce::Colour c = data.getPixelColour (x, y);
-                if (c.getAlpha() == 0)
-                    continue;
-                const float sat = c.getSaturation();
-                float dh = std::abs (c.getHue() - mintHue);
-                dh = juce::jmin (dh, 1.0f - dh);
-                if (sat < 0.18f || dh > 0.09f)
-                {
-                    data.setPixelColour (x, y, juce::Colour::fromHSV (c.getHue(), sat,
-                                                                     c.getBrightness() * kBodyDarken,
-                                                                     c.getFloatAlpha()));
-                    continue;
-                }
-                const float scaled = juce::jlimit (0.0f, 1.0f, targetSat * juce::jmin (1.2f, sat / (mintSat * 0.84f)));
-                const float lifted = juce::jlimit (0.0f, 1.0f, c.getBrightness() * target.getBrightness() / mintValue);
-                data.setPixelColour (x, y, juce::Colour::fromHSV (targetHue, scaled, lifted, c.getFloatAlpha()));
-            }
-        }
-        return out;
-    }
-
     WheelControl (juce::AudioProcessorValueTreeState& apvts, juce::String paramID,
                   juce::Image filmstrip, const Theme& theme)
         : strip (std::move (filmstrip)), t (theme)
     {
         numFrames = juce::jmax (1, strip.getWidth() / kStripFrameWidth);
-        if (strip.isValid())
-            strip = recolourGlow (strip, t.curveColour().interpolatedWith (t.curveHighlight(), 0.30f));
         jassert (! strip.isValid() || strip.getWidth() % kStripFrameWidth == 0);
         isQControl = paramID.containsIgnoreCase ("q") || paramID.containsIgnoreCase ("slam");
         param = apvts.getParameter (paramID);
@@ -211,6 +175,39 @@ public:
                  hole.getWidth() + 2.0f * kSideOverhang, hole.getHeight() + kDrumProud + kDrumBelow };
     }
 
+    void drawLamp (juce::Graphics& g, juce::Rectangle<float> drum, float value) const
+    {
+        if (value <= 0.0f)
+            return;
+        const float fade = juce::jmin (1.0f, value / 0.03f);
+        const auto ink = t.curveColour().interpolatedWith (t.curveHighlight(), 0.30f);
+        const float cx = drum.getX() + drum.getWidth() * 0.4988f;
+        const float r = drum.getWidth() * 0.48f;
+        const float cy = drum.getY() + drum.getHeight() * 0.495f;
+        const float pitch = juce::degreesToRadians (7.6f);
+        const float head = juce::degreesToRadians (-61.0f + 138.0f * value);
+        const float arc = juce::degreesToRadians (84.0f);
+        const float ledH = drum.getHeight() * 0.19f;
+        for (int k = 0; (float) k * pitch <= arc; ++k)
+        {
+            const float a = head - (float) k * pitch;
+            if (std::abs (a) >= juce::MathConstants<float>::halfPi)
+                continue;
+            const float along = 1.0f - (float) k * pitch / arc;
+            const float level = fade * (0.25f + 0.75f * along) * std::sqrt (std::cos (a));
+            const float x = cx + r * std::sin (a);
+            const float w = r * pitch * std::cos (a) * 0.70f;
+            const auto core = juce::Rectangle<float> (w, ledH).withCentre ({ x, cy });
+            const auto haloArea = core.expanded (core.getWidth() * 0.55f, ledH * 0.75f);
+            juce::ColourGradient halo (ink.withAlpha (0.30f * level), x, cy,
+                                       ink.withAlpha (0.0f), haloArea.getRight(), cy, true);
+            g.setGradientFill (halo);
+            g.fillEllipse (haloArea);
+            g.setColour (ink.withAlpha (0.62f * level));
+            g.fillRoundedRectangle (core, ledH * 0.3f);
+        }
+    }
+
     void paint (juce::Graphics& g) override
     {
         if (! strip.isValid())
@@ -221,8 +218,7 @@ public:
         if (fw <= 0 || fh <= 0)
             return;
 
-        const int last = (numFrames == 129 ? 128 : numFrames) - 1;
-        const int frame = juce::jlimit (0, last, juce::roundToInt (displayNormalised() * (float) last));
+        const int frame = 0;
 
         const auto wheelRect = getLocalBounds().toFloat();
         const auto frameRect = wheelRect;
@@ -249,6 +245,8 @@ public:
             scaledIndex = frame;
         }
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
+
+        drawLamp (g, frameRect, displayNormalised());
 
         {
             juce::Graphics::ScopedSaveState crown (g);
