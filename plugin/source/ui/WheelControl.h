@@ -191,7 +191,7 @@ public:
         repaint();
     }
 
-    static constexpr float kWellGapX = 1.5f;
+    static constexpr float kWellGapX = -4.0f;
     static constexpr float kRibTravel = 190.5f / 417.0f;
     static constexpr float kSilX0 = 7.0f, kSilX1 = 410.0f, kSilY0 = 8.0f, kSilY1 = 87.0f;
     static constexpr float kSeatSide = 2.7f;
