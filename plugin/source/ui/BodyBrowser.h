@@ -34,6 +34,8 @@ public:
         setWantsKeyboardFocus (true);
         setTitle ("Bodies");
     }
+    struct Row { juce::String text; int body; bool ticked = false; bool heading = false; };
+    std::function<std::vector<Row>()> rowSource;
     std::function<void (int)> onPreview;   // hover/arrow: ear only, no parameter
     std::function<void (int)> onCommit;    // click/Enter: this is the body
     std::function<void (int)> onRestore;   // cancel: put the old one back, no travel
@@ -50,8 +52,11 @@ public:
         layOut (faceLocal.getHeight(), faceLocal.getWidth());
         highlight = 0;
         for (int r = 0; r < (int) rows.size(); ++r)
-            if (rows[(size_t) r].body == current)
+            if (isTicked (r))
+            {
                 highlight = r;
+                break;
+            }
         const int w = juce::roundToInt (columnW * (float) columns) + 2;
         const int h = juce::roundToInt (kRowH * (float) perColumn) + 2;
         panel = juce::Rectangle<float> ((float) w, (float) h)
@@ -116,6 +121,8 @@ public:
             close (false);            // clicked off the list: nothing chosen
             return;
         }
+        if (rows[(size_t) row].heading)
+            return;
         highlight = row;
         close (true);
     }
@@ -138,6 +145,15 @@ public:
         for (int r = 0; r < (int) rows.size(); ++r)
         {
             const auto cell = cellFor (inner, r);
+            if (rows[(size_t) r].heading)
+            {
+                g.setFont (displayFont (10.5f, true));
+                g.setColour (juce::Colour (kInk).withAlpha (0.55f));
+                g.drawText (rows[(size_t) r].text.toUpperCase(), cell.withTrimmedLeft (kGutter).toNearestInt(),
+                            juce::Justification::centredLeft, false);
+                g.setFont (rowFont());
+                continue;
+            }
             const bool hot = r == highlight;
             if (hot)
             {
@@ -146,7 +162,7 @@ public:
                 g.setColour (juce::Colour (kHighlight).withAlpha (0.85f));
                 g.fillRect (cell.withWidth (2.0f).translated (1.0f, 0.0f));
             }
-            if (rows[(size_t) r].body == current)
+            if (isTicked (r))
             {
                 // the reference's one mark: a checkmark in the gutter
                 juce::Path check;
@@ -165,7 +181,10 @@ public:
         }
     }
 private:
-    struct Row { juce::String text; int body; };
+    bool isTicked (int r) const
+    {
+        return rowSource != nullptr ? rows[(size_t) r].ticked : rows[(size_t) r].body == current;
+    }
     static constexpr float kRowH = 20.0f, kGutter = 16.0f, kPadRight = 12.0f;
     // Plain Arial (Tyson 2026-08-05: "plain arial"). 13.5pt so the roster is
     // legible at the 352px face ("still reading too small", 2026-08-06).
@@ -194,7 +213,10 @@ private:
     void setHighlight (int r)
     {
         r = juce::jlimit (0, juce::jmax (0, (int) rows.size() - 1), r);
-        if (r == highlight)
+        const int dir = r >= highlight ? 1 : -1;
+        while (r > 0 && r < (int) rows.size() - 1 && rows[(size_t) r].heading)
+            r += dir;
+        if (rows[(size_t) r].heading || r == highlight)
             return;
         highlight = r;
         startTimer (120);             // audition, debounced
@@ -233,6 +255,11 @@ private:
     void buildRows()
     {
         rows.clear();
+        if (rowSource != nullptr)
+        {
+            rows = rowSource();
+            return;
+        }
         int count = 0;
         const auto* entries = trench::bodyRoster (count);
         rows.push_back ({ trench::kNoFilterName, trench::kNoFilterIndex });

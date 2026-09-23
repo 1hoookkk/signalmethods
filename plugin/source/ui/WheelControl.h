@@ -20,6 +20,7 @@ public:
     static constexpr float kLampHue = 172.7f / 360.0f;
     static constexpr float kLampSat = 0.80f;
     static constexpr float kLampVal = 0.85f;
+    static constexpr float kLampMinSat = 0.6f;
 
     static juce::Image tintLamp (const juce::Image& source, juce::Colour accent)
     {
@@ -27,7 +28,7 @@ public:
             && std::abs (accent.getSaturation() - kLampSat) < 0.01f && std::abs (accent.getBrightness() - kLampVal) < 0.01f)
             return source;
         auto out = source.createCopy();
-        const float satScale = accent.getSaturation() / kLampSat;
+        const float satScale = juce::jmax (accent.getSaturation(), kLampMinSat) / kLampSat;
         const float valScale = accent.getBrightness() / kLampVal;
         juce::Image::BitmapData data (out, juce::Image::BitmapData::readWrite);
         for (int y = 0; y < data.height; ++y)
@@ -190,9 +191,10 @@ public:
         repaint();
     }
 
-    static constexpr float kHoleInsetX = 3.5f;
-    static constexpr float kSeatTop = 1.5f;
-    static constexpr float kSeatBottom = 0.5f;
+    static constexpr float kHoleInsetX = 0.5f;
+    static constexpr float kSeatTop = 1.2f;
+    static constexpr float kSeatBottom = 1.4f;
+    static constexpr float kHoleCorner = 3.5f;
     static constexpr float kHitMargin = 4.0f;
     static constexpr float kSilhouetteX0 = 7.0f, kSilhouetteX1 = 410.0f;
     static constexpr float kSilhouetteY0 = 8.0f, kSilhouetteY1 = 87.0f;
@@ -202,7 +204,7 @@ public:
     }
     static juce::Rectangle<float> silhouetteForHole (juce::Rectangle<float> hole)
     {
-        return hole.reduced (kHoleInsetX, 0.0f).withTrimmedTop (kSeatTop).withTrimmedBottom (kSeatBottom);
+        return hole.reduced (kHoleInsetX, 0.0f).withTrimmedTop (-kSeatTop).withTrimmedBottom (-kSeatBottom);
     }
 
     juce::Rectangle<float> frameRectFor (juce::Rectangle<float> silhouette, int fh) const
@@ -239,10 +241,22 @@ public:
             scaledIndex = frame;
         }
         frameRect.setSize ((float) pw / pixelScale, (float) ph / pixelScale);
+        juce::Graphics::ScopedSaveState seat (g);
+        {
+            juce::Path slot;
+            slot.addRoundedRectangle (hole, kHoleCorner);
+            g.reduceClipRegion (slot);
+        }
         g.setOpacity (1.0f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         g.drawImage (scaledFrame, frameRect, juce::RectanglePlacement::stretchToFit);
 
+        {
+            juce::ColourGradient lip (juce::Colours::black.withAlpha (0.55f), 0.0f, hole.getY(),
+                                      juce::Colours::transparentBlack, 0.0f, hole.getY() + 3.0f, false);
+            g.setGradientFill (lip);
+            g.fillRect (hole.withHeight (3.0f));
+        }
         if (hovering || pressing)
         {
             juce::Graphics::ScopedSaveState save (g);

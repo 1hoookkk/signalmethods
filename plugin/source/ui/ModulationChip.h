@@ -1,6 +1,7 @@
 #pragma once
 #include "Theme.h"
 #include "SelectorLookAndFeel.h"
+#include "BodyBrowser.h"
 #include "../parameters/TrenchParameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <functional>
@@ -63,6 +64,44 @@ public:
         if (playback != nullptr && playback->getIndex() > 0)
             label += separator + (playback->getIndex() == 1 ? "Loop" : "Once");
         return label;
+    }
+    std::vector<BodyBrowser::Row> browserRows() const
+    {
+        std::vector<BodyBrowser::Row> out;
+        if (param == nullptr) return out;
+        const bool usingCustom = custom != nullptr && custom->getValue() > 0.5f;
+        for (int i = 0; i < param->choices.size(); ++i)
+            out.push_back ({ param->choices[i], i, ! usingCustom && selectedPattern() == i });
+        const auto saved = savedNames != nullptr ? savedNames() : juce::StringArray();
+        if (! saved.isEmpty())
+        {
+            out.push_back ({ "Saved", -1, false, true });
+            for (int i = 0; i < saved.size(); ++i)
+                out.push_back ({ saved[i], 400 + i, usingCustom && customName != nullptr && customName() == saved[i] });
+        }
+        if (length != nullptr)
+        {
+            out.push_back ({ "Length", -1, false, true });
+            for (int i = 0; i < length->choices.size(); ++i)
+                out.push_back ({ length->choices[i], 100 + i, length->getIndex() == i });
+        }
+        if (playback != nullptr)
+        {
+            out.push_back ({ "Playback", -1, false, true });
+            for (int i = 0; i < playback->choices.size(); ++i)
+                out.push_back ({ playback->choices[i], 200 + i, playback->getIndex() == i });
+        }
+        if (selectedPattern() > 0 && onRestart != nullptr)
+            out.push_back ({ "Restart", 300 });
+        return out;
+    }
+    void commitBrowserRow (int id)
+    {
+        if (id >= 400) { if (onSaved != nullptr) onSaved (id - 400); }
+        else if (id == 300) { if (onRestart != nullptr) onRestart(); }
+        else if (id >= 200) selectPlayback (id - 200);
+        else if (id >= 100) selectLength (id - 100);
+        else if (id >= 0) selectPattern (id);
     }
     void showPatterns()
     {

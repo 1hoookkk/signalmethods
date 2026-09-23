@@ -50,6 +50,7 @@ private:
     std::unique_ptr<trench::ui::GraphDisplay>     graph;
     std::unique_ptr<trench::ui::TypeSelectorView> typeSelector;
     std::unique_ptr<trench::ui::BodyBrowser>      bodyBrowser;
+    std::unique_ptr<trench::ui::BodyBrowser>      motionBrowser;
     std::unique_ptr<trench::ui::ModulationChip>   modulationChip;
     std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
     std::unique_ptr<trench::ui::DeskKnob>         inputKnob;

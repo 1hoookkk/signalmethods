@@ -74,6 +74,11 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         if (index >= 0 && index < (int) library.size())
             processor.applyUserMotion (library[(size_t) index], true);
     };
+    motionBrowser = std::make_unique<BodyBrowser> (theme);
+    motionBrowser->setTitle ("Movement");
+    motionBrowser->rowSource = [this] { return modulationChip->browserRows(); };
+    motionBrowser->onCommit = [this] (int id) { modulationChip->commitBrowserRow (id); };
+    modulationChip->onEdit = [this] { motionBrowser->open (-1, face.getLocalBounds()); };
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders ([this] { return processor.getDetectedKeyForUi(); });
     keySnapBox->setListeningProvider ([this]
@@ -110,6 +115,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     face.addAndMakeVisible (*inputReadout);
     face.addAndMakeVisible (*outputReadout);
     face.addChildComponent (*bodyBrowser);
+    face.addChildComponent (*motionBrowser);
     onboarding = std::make_unique<Onboarding> (theme);
     onboarding->onComplete = [this]
     {
@@ -163,7 +169,7 @@ void PluginEditor::resized()
     secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
     {
         const auto hole = theme.rect ("qWell");
-        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 12.0f, 128.0f, 22.0f);
+        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f, 128.0f, 22.0f);
         modulationChip->setBounds (chip.toNearestInt());
         const float left = hole.getX() - 10.0f;
         const float right = theme.rect ("outputReadout").getRight() + 30.0f;

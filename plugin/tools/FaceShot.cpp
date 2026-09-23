@@ -1,8 +1,10 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "ui/ModulationChip.h"
 #include "TrenchBodyRoster.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cstdio>
+#include <functional>
 
 namespace
 {
@@ -38,7 +40,7 @@ int main()
     holder.setVisible (true);
     juce::MessageManager::getInstance()->runDispatchLoopUntil (600);
     const auto settle = [&] (int ms) { juce::MessageManager::getInstance()->runDispatchLoopUntil (ms); };
-    const auto shoot = [&] (const char* stem)
+    const auto shoot = [&] (const char* stem, std::function<void (juce::Component&)> prepare = {})
     {
         juce::AudioBuffer<float> audio (2, 512);
         juce::MidiBuffer midi;
@@ -57,6 +59,7 @@ int main()
             settle (900);
         }
         settle (150);
+        if (prepare) { prepare (*editor); settle (200); }
         std::printf ("%s: movement=%g (%s)\n", stem,
                      processor.apvts.getRawParameterValue (ParamID::movePreset)->load(),
                      processor.motionForEditing().name.toRawUTF8());
@@ -132,6 +135,17 @@ int main()
     set (ParamID::keySnap, 10.0f);
     settle (500);
     shoot ("trench_face_key");
+    shoot ("trench_face_motion_list", [] (juce::Component& root)
+    {
+        std::function<trench::ui::ModulationChip* (juce::Component&)> find = [&] (juce::Component& c) -> trench::ui::ModulationChip*
+        {
+            if (auto* m = dynamic_cast<trench::ui::ModulationChip*> (&c)) return m;
+            for (auto* child : c.getChildren())
+                if (auto* m = find (*child)) return m;
+            return nullptr;
+        };
+        if (auto* chip = find (root)) chip->showPatterns();
+    });
     set (ParamID::keySnap, 0.0f);
     set (ParamID::movePreset, 0.0f);
     set (ParamID::distortion, 0.0f);

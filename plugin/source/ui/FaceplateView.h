@@ -142,7 +142,7 @@ public:
         const float castH = 7.0f;
         const float overlap = 1.5f;
         const float cx = well.getCentreX();
-        const float cy = well.getBottom() - overlap + 1.85f;
+        const float cy = hole.getBottom() - overlap + 1.35f;
         const float rx = well.getWidth() * 0.48f;
         juce::Graphics::ScopedSaveState save (g);
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),

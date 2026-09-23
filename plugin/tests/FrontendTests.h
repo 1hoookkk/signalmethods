@@ -29,7 +29,7 @@ inline int frontendTests()
     for (auto* child : face->getChildren())
     {
         if (auto* s = dynamic_cast<trench::ui::TypeSelectorView*> (child)) selector = s;
-        if (auto* b = dynamic_cast<trench::ui::BodyBrowser*> (child)) browser = b;
+        if (auto* b = dynamic_cast<trench::ui::BodyBrowser*> (child); b != nullptr && b->getTitle() == "Bodies") browser = b;
         if (auto* g = dynamic_cast<trench::ui::GraphDisplay*> (child)) glass = g;
         if (! child->isVisible()) continue;
         insideChassis = insideChassis && face->getLocalBounds().contains (child->getBounds());

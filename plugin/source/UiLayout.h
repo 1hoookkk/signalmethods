@@ -43,14 +43,14 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 123.0f, 1096.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 123.0f, 1120.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["inputLabel"].text = "INPUT";
-        layout.elements["outputLabel"]  = { { 397.0f, 1096.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"]  = { { 397.0f, 1120.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["outputLabel"].text = "OUTPUT";
-        layout.elements["inputKnob"]    = { { 133.0f, 1141.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["outputKnob"]   = { { 407.0f, 1141.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 136.0f, 1283.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["outputReadout"] = { { 410.0f, 1283.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["inputKnob"]    = { { 133.0f, 1165.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 407.0f, 1165.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 136.0f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["outputReadout"] = { { 410.0f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 15.9f, juce::Colour (0xff0f0c09) };
 
@@ -85,8 +85,8 @@ public:
         layout.params["wellRadius"]        = 9.0;
         layout.params["readoutAliasScale"] = 0.95;
         layout.params["typeArrowExtra"]    = 6.0;
-        layout.params["curveDbTop"]        = 40.0;
-        layout.params["curveDbBottom"]     = -40.0;
+        layout.params["curveDbTop"]        = 75.0;
+        layout.params["curveDbBottom"]     = -75.0;
         layout.params["fontBold"]          = 1.0;
         layout.params["gridBoost"]         = 2.0;
         layout.colours["gridTint"]           = juce::Colour (0xff243038);
