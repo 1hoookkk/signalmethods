@@ -191,7 +191,7 @@ public:
         repaint();
     }
 
-    static constexpr float kWellGapX = -4.0f;
+    static constexpr float kWellGapX = -0.5f, kHeightFrom = -4.0f;
     static constexpr float kRibTravel = 190.5f / 417.0f;
     static constexpr float kSilX0 = 7.0f, kSilX1 = 410.0f, kSilY0 = 8.0f, kSilY1 = 87.0f;
     static constexpr float kSeatSide = 2.7f;
@@ -208,7 +208,7 @@ public:
     static juce::Rectangle<float> silhouetteForHole (juce::Rectangle<float> hole)
     {
         const float w = hole.getWidth() - 2.0f * kWellGapX;
-        const float h = w * (87.0f - 8.0f) / (410.0f - 7.0f);
+        const float h = (hole.getWidth() - 2.0f * kHeightFrom) * (87.0f - 8.0f) / (410.0f - 7.0f);
         return juce::Rectangle<float> (w, h).withCentre (hole.getCentre());
     }
 
@@ -257,16 +257,16 @@ public:
                                                               frameRect.getHeight() / (float) ph)
                                     .translated (frameRect.getX(), frameRect.getY()));
             const float endW = wheel.getWidth() * 0.24f;
-            juce::ColourGradient left (shade.withAlpha (0.92f), wheel.getX(), wheel.getCentreY(),
+            juce::ColourGradient left (shade.withAlpha (0.97f), wheel.getX(), wheel.getCentreY(),
                                        shade.withAlpha (0.0f), wheel.getX() + endW, wheel.getCentreY(), false);
-            left.addColour (0.30, shade.withAlpha (0.70f));
-            left.addColour (0.65, shade.withAlpha (0.30f));
+            left.addColour (0.30, shade.withAlpha (0.82f));
+            left.addColour (0.65, shade.withAlpha (0.40f));
             g.setGradientFill (left);
             g.fillRect (wheel.withWidth (endW));
-            juce::ColourGradient right (shade.withAlpha (0.92f), wheel.getRight(), wheel.getCentreY(),
+            juce::ColourGradient right (shade.withAlpha (0.97f), wheel.getRight(), wheel.getCentreY(),
                                         shade.withAlpha (0.0f), wheel.getRight() - endW, wheel.getCentreY(), false);
-            right.addColour (0.30, shade.withAlpha (0.70f));
-            right.addColour (0.65, shade.withAlpha (0.30f));
+            right.addColour (0.30, shade.withAlpha (0.82f));
+            right.addColour (0.65, shade.withAlpha (0.40f));
             g.setGradientFill (right);
             g.fillRect (wheel.withLeft (wheel.getRight() - endW));
         }
