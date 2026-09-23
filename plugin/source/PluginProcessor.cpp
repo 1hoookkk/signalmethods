@@ -242,6 +242,8 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     // The worker owns analyse(); stop it before re-sizing the capture slots
     // underneath it, and start it again once they are the new size.
     keyWorker.stop();
+    keyEvidence.fill (0.0);
+    keyWindows = 0;
     keyDetector.prepare (sampleRate, 1.0);
     keyWorker.start();
 }
@@ -685,16 +687,12 @@ bool PluginProcessor::probeCurrentBodyForUi (float morph, float q, float outCoef
     if (currentBodyBytes.getSize() != 240)
         return false;
     const int keyChoice = juce::jlimit (0, 24, (int) pKeySnap->load());
-    const double ratio = TrenchDspBridge::transposeRatio (
-        noteLatched.load (std::memory_order_relaxed),
-        noteTrackRatio.load (std::memory_order_relaxed),
-        keyChoice);
     return TrenchDspBridge::probePackedBody (currentBodyBytes.getData(), currentBodyBytes.getSize(),
                                              morph, q,
                                              getSampleRate() > 0.0 ? getSampleRate() : 48'000.0,
                                              outCoeffs, outBoost,
                                              currentBodyDatumRate,
-                                             ratio);
+                                             keyChoice);
 }
 // AUTO KEY hysteresis. Runs on the WORKER (never the message thread), editor
 // open or not — a 131,072-point FFT and an RTNeural pass do not belong on the
@@ -707,32 +705,23 @@ bool PluginProcessor::probeCurrentBodyForUi (float morph, float q, float outCoef
 void PluginProcessor::updateAutoKey()
 {
     if (juce::jlimit (0, 24, (int) pKeySnap->load()) != 0)
-        return;   // manual key: detection is bypassed at the processBlock tap
+        return;
     trench::KeyDetector::Result window;
     while (keyDetector.analyse (window))
     {
-        keyConfidenceForUi.store (window.confidence, std::memory_order_relaxed);
-        const bool useful = window.confidence >= 0.20f && window.margin >= 0.03f;
-        if (! useful)
-            continue;   // a weak window neither builds nor tears down a verdict
-        if (window.labelIndex == candidateKey)
-            ++candidateCount;
-        else
-        {
-            candidateKey = window.labelIndex;
-            candidateCount = 1;
-        }
-        const bool confident = window.confidence >= 0.40f && window.margin >= 0.10f;
-        if (acceptedKey < 0)
-        {
-            if (confident || candidateCount >= 2)
-                acceptedKey = candidateKey;
-        }
-        else if (candidateKey != acceptedKey && candidateCount >= 3)
-        {
-            acceptedKey = candidateKey;   // clearly displaced
-        }
-        detectedKeyForUi.store (acceptedKey, std::memory_order_relaxed);
+        for (size_t k = 0; k < keyEvidence.size(); ++k)
+            keyEvidence[k] = keyEvidence[k] * kKeyForget + std::log (juce::jmax (1.0e-4, (double) window.probabilities[k]));
+        ++keyWindows;
+        size_t best = 0;
+        for (size_t k = 1; k < keyEvidence.size(); ++k)
+            if (keyEvidence[k] > keyEvidence[best])
+                best = k;
+        double spread = 0.0;
+        for (const double e : keyEvidence)
+            spread += std::exp (e - keyEvidence[best]);
+        keyConfidenceForUi.store ((float) (1.0 / spread), std::memory_order_relaxed);
+        if (keyWindows >= kKeyMinWindows)
+            detectedKeyForUi.store ((int) best, std::memory_order_relaxed);
     }
 }
 

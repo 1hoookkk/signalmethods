@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "BinaryData.h"
+#include "TestFixtures.h"
 #include "TrenchBodyRoster.h"
 #include "dsp/TrenchDspBridge.h"
 #include "parameters/TrenchParameters.h"
@@ -156,7 +157,7 @@ constexpr float kVoiceGain = 1.0f;
 int main()
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
-    const juce::MemoryBlock crisp = resourceBytes ("xml_crisp.body240");
+    const juce::MemoryBlock crisp = fixtureBody ("xml_crisp.body240");
     check (crisp.getSize() == 240, "crisp body bytes available", (double) crisp.getSize(), 240.0);
 
     std::printf ("== engine budget: seconds of engine per second of audio, per instance ==\n");
@@ -230,7 +231,7 @@ int main()
 
     std::printf ("== processor: body switch is never dry ==\n");
     trench::rescanBodyRoster();
-    const int crispIndex = rosterIndexContaining ("crisp");
+    const int crispIndex = rosterIndexContaining ("vowel ah");
     const int otherIndex = anotherPackedBody (crispIndex);
     check (crispIndex >= 0 && otherIndex >= 0, "two packed bodies in the roster", crispIndex, otherIndex);
     if (crispIndex >= 0 && otherIndex >= 0)

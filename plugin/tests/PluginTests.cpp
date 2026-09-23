@@ -832,25 +832,64 @@ int main()
         }
     }
     std::printf ("== key ==\n");
-    check (TrenchDspBridge::keySnapRatio (0) == 1.0, "KEY OFF is ratio 1", TrenchDspBridge::keySnapRatio (0), 1.0);
-    check (std::abs (TrenchDspBridge::keySnapRatio (7) - std::pow (2.0, 6.0 / 12.0)) < 1e-9, "KEY F# min is +6 semitones", TrenchDspBridge::keySnapRatio (7), std::pow (2.0, 0.5));
-    check (std::abs (TrenchDspBridge::keySnapRatio (20) - std::pow (2.0, -5.0 / 12.0)) < 1e-9, "KEY G maj is -5 semitones", TrenchDspBridge::keySnapRatio (20), std::pow (2.0, -5.0 / 12.0));
+    {
+        const double fs = 44100.0;
+        const auto pole = [fs] (double hz, double r)
+        {
+            trench::core::Cascade c {};
+            for (auto& sec : c) sec = { 1.0, 0.0, 0.0, 0.0, 0.0 };
+            c[0] = { 1.0, 0.3, 0.2, -2.0 * r * std::cos (2.0 * juce::MathConstants<double>::pi * hz / fs), r * r };
+            return c;
+        };
+        const auto hzOf = [fs] (const trench::core::Biquad& b)
+        {
+            const double r = std::sqrt (b[4]);
+            return std::acos (-b[3] / (2.0 * r)) * fs / (2.0 * juce::MathConstants<double>::pi);
+        };
+        const auto sharp = pole (460.0, 0.995);
+        check (trench::KeySnap::apply (sharp, 0, fs, nullptr, 1.0) == sharp, "KEY OFF leaves the cascade untouched");
+        const auto inC = trench::KeySnap::apply (sharp, 13, fs, nullptr, 1.0);
+        check (std::abs (hzOf (inC[0]) - 440.0) < 0.05, "KEY C major moves a sharp 460 Hz peak to A 440", hzOf (inC[0]), 440.0);
+        check (inC[0][4] == sharp[0][4] && inC[0][0] == sharp[0][0] && inC[0][1] == sharp[0][1] && inC[0][2] == sharp[0][2],
+               "KEY keeps the pole radius and the zeros");
+        const auto broad = pole (460.0, 0.6);
+        check (trench::KeySnap::apply (broad, 13, fs, nullptr, 1.0) == broad, "KEY leaves a broad pole alone");
+        const auto eb = pole (305.0, 0.995);
+        const double inMinor = hzOf (trench::KeySnap::apply (eb, 1, fs, nullptr, 1.0)[0]);
+        const double inMajor = hzOf (trench::KeySnap::apply (eb, 13, fs, nullptr, 1.0)[0]);
+        check (std::abs (inMinor - 311.13) < 0.1 && std::abs (inMajor - 293.66) < 0.1, "KEY 305 Hz goes to Eb in C minor and to D in C major", inMinor, inMajor);
+    }
     {
         trench::rescanBodyRoster();
         int n = 0; trench::bodyRoster (n);
         int bodyIndex = -1;
         for (int i = 0; i < n; ++i)
-            if (trench::bodyDisplayName (i).containsIgnoreCase ("Crisp")) { bodyIndex = i; break; }
+            if (trench::bodyDisplayName (i).containsIgnoreCase ("Vowel Ah")) { bodyIndex = i; break; }
+        check (bodyIndex >= 0, "a sharp-peaked body is in the roster", bodyIndex, n);
         if (bodyIndex >= 0)
         {
             setParam (processor, ParamID::body, (float) bodyIndex);
+            setParam (processor, ParamID::morph, 0.3f);
+            setParam (processor, ParamID::q, 0.4f);
+            setParam (processor, ParamID::keySnap, 10.0f);
             pump (400);
-            setParam (processor, ParamID::morph, 0.0f);
-            setParam (processor, ParamID::keySnap, 0.0f);
-            const auto off = runSine (processor, 0.01f);
-            setParam (processor, ParamID::keySnap, 7.0f);
-            const auto snapped = runSine (processor, 0.01f);
-            check (snapped.finite && std::abs (db (snapped.peak / off.peak)) > 1.0, "KEY F# audibly shifts the Crisp body at 220 Hz (dB)", db (snapped.peak / off.peak), 1.0);
+            float coeffs[trench::kUiCoeffCount] = {};
+            float boost = 1.0f;
+            const bool probed = processor.probeCurrentBodyForUi (0.3f, 0.4f, coeffs, boost);
+            double worstCents = 0.0;
+            int snapped = 0;
+            for (int s = 0; probed && s < trench::kUiStageCount; ++s)
+            {
+                trench::core::Biquad b { coeffs[s * 5], coeffs[s * 5 + 1], coeffs[s * 5 + 2], coeffs[s * 5 + 3], coeffs[s * 5 + 4] };
+                double hz = 0.0, r = 0.0;
+                if (! trench::KeySnap::snappable (b, processor.getSampleRate(), hz, r))
+                    continue;
+                ++snapped;
+                const double midi = 69.0 + 12.0 * std::log2 (hz / 440.0);
+                worstCents = juce::jmax (worstCents, 100.0 * std::abs (midi - std::round (midi)));
+                check (trench::KeySnap::inScale ((int) std::round (midi), 10), "every sharp peak lands on an A minor note");
+            }
+            check (probed && snapped >= 3 && worstCents < 1.0, "Vowel Ah-Ee peaks sit on A minor notes within 1 cent", worstCents, (double) snapped);
             setParam (processor, ParamID::keySnap, 0.0f);
             {
             }

@@ -125,6 +125,15 @@ int main()
     shoot ("trench_face_move_knob");
 
     set (ParamID::movePreset, 0.0f);
+    set (ParamID::output, 0.0f);
+    set (ParamID::body, bodyIndex ("Vowel Ah"));
+    set (ParamID::morph, 0.4f);
+    set (ParamID::q, 0.5f);
+    set (ParamID::keySnap, 10.0f);
+    settle (500);
+    shoot ("trench_face_key");
+    set (ParamID::keySnap, 0.0f);
+    set (ParamID::movePreset, 0.0f);
     set (ParamID::distortion, 0.0f);
     set (ParamID::body, bodyIndex ("No filter"));
     set (ParamID::slamDrive, 1.0f);

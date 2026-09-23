@@ -257,9 +257,7 @@ void PluginEditor::onFrame()
     const float baseQ = trench::curves::curveMap (trench::curves::Axis::q, read (ParamID::q));
     const int bodyVersion = processor.bodyVersionForUi.load (std::memory_order_relaxed);
     const double probeRate = processor.getSampleRate();
-    const double probeKeyRatio = TrenchDspBridge::transposeRatio (
-        processor.isNoteLatched(), processor.getNoteTrackRatio(),
-        juce::jlimit (0, 24, (int) processor.apvts.getRawParameterValue (ParamID::keySnap)->load()));
+    const double probeKeyRatio = (double) juce::jlimit (0, 24, (int) processor.apvts.getRawParameterValue (ParamID::keySnap)->load());
     if (baseMorph != lastProbedMorph || baseQ != lastProbedQ
         || bodyVersion != lastProbedBodyVersion || probeRate != lastProbedRate
         || probeKeyRatio != lastProbedKeyRatio)
@@ -271,6 +269,7 @@ void PluginEditor::onFrame()
             lastProbedBodyVersion = bodyVersion;
             lastProbedRate = probeRate;
             lastProbedKeyRatio = probeKeyRatio;
+            graph->setKeyChoice ((int) probeKeyRatio);
             graph->updateFromCoeffs (coeffs, boost, probeRate > 0.0 ? probeRate : 44'100.0);
         }
     }

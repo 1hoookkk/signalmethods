@@ -2,6 +2,7 @@
 #include "DeskDrive.h"
 #include "DriveLaw.h"
 #include "Inflator.h"
+#include "KeySnap.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -215,7 +216,7 @@ public:
     static bool probePackedBody (const void* bytes, size_t len, float morph, float q,
                                  double runtimeRate,
                                  float outCoefficients[trench::kUiCoeffCount], float& outBoost,
-                                 double datumRate = kBodyDatumRate, double keyRatio = 1.0)
+                                 double datumRate = kBodyDatumRate, int keyChoice = 0)
     {
         if (bytes == nullptr || outCoefficients == nullptr)
             return false;
@@ -225,8 +226,7 @@ public:
                 static_cast<const std::uint8_t*> (bytes), len });
             auto cascade = cascadeAt (body, datumRate, runtimeRate,
                                       juce::jlimit (0.0f, 1.0f, morph), juce::jlimit (0.0f, 1.0f, q));
-            if (keyRatio > 0.0 && keyRatio != 1.0)
-                cascade = trench::core::transpose_cascade (cascade, keyRatio, runtimeRate);
+            cascade = trench::KeySnap::apply (cascade, keyChoice, runtimeRate, nullptr, 1.0);
             int index = 0;
             for (const auto& section : cascade)
                 for (const double coefficient : section)
@@ -274,7 +274,13 @@ public:
         const int samples = buffer.getNumSamples();
         if (channels <= 0 || samples <= 0)
             return;
-        const double keyRatio = transposeRatio (params);
+        const double keyRatio = 1.0;
+        const int keyChoice = trench::KeySnap::active (params.keySnap) ? params.keySnap : 0;
+        if (keyChoice != heardKeyChoice)
+        {
+            keyLanes = {};
+            heardKeyChoice = keyChoice;
+        }
         const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
         left.set_pole_distortion (bite);
         right.set_pole_distortion (bite);
@@ -307,7 +313,7 @@ public:
             if (std::abs (qTarget - smoothedQ) < 1.0e-6f) smoothedQ = qTarget;
             const float morph = smoothedMorph;
             const float q = smoothedQ;
-            if (first || morph != cachedMorph || q != cachedQ || keyRatio != cachedKeyRatio)
+            if (first || morph != cachedMorph || q != cachedQ || keyRatio != cachedKeyRatio || keyChoice != 0 || keyWasActive)
             {
                 bool changed = true;
                 if (snapshot->gridded
@@ -327,27 +333,34 @@ public:
                 cachedMorph = morph;
                 cachedQ = q;
                 cachedKeyRatio = keyRatio;
+                if (keyChoice != 0 || keyWasActive)
+                    changed = true;
+                keyWasActive = keyChoice != 0;
+                heardCascade = keyChoice != 0
+                    ? trench::KeySnap::apply (cachedCascade, keyChoice, sampleRateHz, &keyLanes,
+                                              first ? 1.0 : trench::KeySnap::glideFor (blockLen, sampleRateHz))
+                    : cachedCascade;
                 if (changed)
                 {
 #if TRENCH_DEV_PANEL
                     if (first || calibrationValues[2] < 0.5f)
                     {
-                        left.set_immediate (cachedCascade);
-                        right.set_immediate (cachedCascade);
+                        left.set_immediate (heardCascade);
+                        right.set_immediate (heardCascade);
                     }
                     else
 #else
                     if (first)
                     {
-                        const auto encoded = trench::core::encode_cascade (cachedCascade);
+                        const auto encoded = trench::core::encode_cascade (heardCascade);
                         left.set_target (encoded);
                         right.set_target (encoded);
                     }
                     else
 #endif
                     {
-                        left.set_kernel_targets (cachedCascade, (size_t) blockLen);
-                        right.set_kernel_targets (cachedCascade, (size_t) blockLen);
+                        left.set_kernel_targets (heardCascade, (size_t) blockLen);
+                        right.set_kernel_targets (heardCascade, (size_t) blockLen);
                     }
                 }
                 else
@@ -387,7 +400,7 @@ public:
 #endif
             }
         }
-        publishCascade (cachedCascade);
+        publishCascade (keyWasActive ? heardCascade : cachedCascade);
         caughtFraction = (float) caught / (float) samples;
 #if TRENCH_DEV_PANEL
         reportedDatum.store (snapshot->datumRate);
@@ -645,6 +658,10 @@ private:
     float cachedQ = -1.0f;
     double cachedKeyRatio = 0.0;
     trench::core::Cascade cachedCascade {};
+    trench::core::Cascade heardCascade {};
+    trench::KeySnap::Lanes keyLanes {};
+    int heardKeyChoice = 0;
+    bool keyWasActive = false;
     trench::core::Cascade cachedBase {};
     trench::core::CornerWords cachedWords {};
     bool cachedWordsValid = false;

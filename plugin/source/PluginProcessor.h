@@ -238,9 +238,10 @@ private:
     // key clearly displaces it (hysteresis), so the snap never flaps.
     std::atomic<int> detectedKeyForUi { -1 };
     std::atomic<float> keyConfidenceForUi { 0.0f };
-    int candidateKey = -1;
-    int candidateCount = 0;
-    int acceptedKey = -1;
+    static constexpr double kKeyForget = 0.97;
+    static constexpr int kKeyMinWindows = 3;
+    std::array<double, 24> keyEvidence {};
+    int keyWindows = 0;
     juce::MemoryBlock currentBodyBytes;
     double currentBodyDatumRate = 44'100.0;
     juce::MemoryBlock rosterBodyBytes;
