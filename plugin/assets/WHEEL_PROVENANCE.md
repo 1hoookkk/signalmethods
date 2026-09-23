@@ -35,3 +35,7 @@ screenshot, byte for byte. Its lamp is one chromaticity (hue 172.7 deg, saturati
 The wheel draws its full silhouette (frame x 7-410, y 8-87) inside the plate hole, 2 px in from
 each end and 1.2 px low, with the 3 Aug contact shadow under it.
 `trench_knob_black_strip.png` is the knob strip from trench-x3-clean commit 3192f66dd (12 Aug).
+
+## 23 Sep 2026, evening: SS3 strip and crown restored
+
+`trench_ss3_strip.png` is again the 129-frame SS3 3x strip (git blob 90791af, commit 265d6b3d, the wheel ruled "Perfect"), frame 128 blank. The crown (belly highlight, underside darkening, warm end shade 0xff17110a) and the drum-in-slot seating are that commit's code verbatim. The lamp is re-tinted at load from the face accent (`WheelControl::tintLamp`, lamp measured hue 175 deg, saturation 0.64, value 0.81; saturation held at 0.6 or more).

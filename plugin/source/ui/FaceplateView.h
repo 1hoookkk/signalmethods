@@ -139,19 +139,19 @@ public:
         if (hole.isEmpty())
             return;
         const auto well = WheelControl::silhouetteForHole (hole);
-        const float castH = 7.0f;
+        const float castH = 11.0f;
         const float overlap = 1.5f;
         const float cx = well.getCentreX();
-        const float cy = hole.getBottom() - overlap + 1.35f;
+        const float cy = hole.getBottom() - overlap + 0.5f;
         const float rx = well.getWidth() * 0.48f;
         juce::Graphics::ScopedSaveState save (g);
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
                                                   (int) well.getWidth(), (int) (castH + overlap)));
         g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
-        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.74f), cx, cy,
+        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.86f), cx, cy,
                                  juce::Colours::transparentBlack, cx + rx, cy, true);
-        sh.addColour (0.50, juce::Colours::black.withAlpha (0.50f));
-        sh.addColour (0.82, juce::Colours::black.withAlpha (0.18f));
+        sh.addColour (0.40, juce::Colours::black.withAlpha (0.62f));
+        sh.addColour (0.75, juce::Colours::black.withAlpha (0.24f));
         g.setGradientFill (sh);
         g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
     }
