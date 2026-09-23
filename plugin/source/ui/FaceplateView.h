@@ -96,9 +96,16 @@ public:
             g.strokePath (roomFramePath (roomFrame.translated (0.8f, 0.8f), 5.5f, roomGapX0, roomGapX1), juce::PathStrokeType (1.0f));
             g.setColour (juce::Colour (0xff453424).withAlpha (0.55f));
             g.strokePath (roomFramePath (roomFrame, 5.5f, roomGapX0, roomGapX1), juce::PathStrokeType (1.0f));
+            if (roomCaption.isNotEmpty())
+            {
+                g.setFont (displayFont (10.5f, true));
+                const auto box = juce::Rectangle<float> (roomGapX0, roomFrame.getY() - 7.0f, roomGapX1 - roomGapX0, 14.0f).toNearestInt();
+                drawEngravedText (g, roomCaption, box, juce::Justification::centred, t.labelInk(), 0.45f);
+            }
         }
     }
 
+    void setRoomCaption (const juce::String& text) { roomCaption = text; repaint(); }
     void setRoomFrame (juce::Rectangle<float> frame, float gapX0, float gapX1)
     {
         if (frame != roomFrame || gapX0 != roomGapX0 || gapX1 != roomGapX1)
@@ -135,7 +142,7 @@ public:
         const float castH = 7.0f;
         const float overlap = 1.5f;
         const float cx = well.getCentreX();
-        const float cy = well.getBottom() - overlap + 1.35f;
+        const float cy = well.getBottom() - overlap + 1.85f;
         const float rx = well.getWidth() * 0.48f;
         juce::Graphics::ScopedSaveState save (g);
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
@@ -153,6 +160,7 @@ private:
     juce::Image panelImage;
     juce::Rectangle<float> roomFrame;
     float roomGapX0 = 0.0f, roomGapX1 = 0.0f;
+    juce::String roomCaption;
     Theme t;
 };
 

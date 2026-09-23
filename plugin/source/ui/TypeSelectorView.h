@@ -189,8 +189,17 @@ private:
         selector.clear (juce::dontSendNotification);
         int count = 0;
         const auto* entries = trench::bodyRoster (count);
+        bool userHeading = false;
         for (int i = 0; i < count; ++i)
+        {
+            if (! userHeading && juce::String (entries[i].category) == "USER")
+            {
+                selector.addSeparator();
+                selector.addSectionHeading ("Your bodies");
+                userHeading = true;
+            }
             selector.addItem (entries[i].displayName, i + 1);
+        }
     }
     Theme t;
     SelectorLookAndFeel menuLookAndFeel;

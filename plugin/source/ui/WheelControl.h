@@ -190,8 +190,9 @@ public:
         repaint();
     }
 
-    static constexpr float kHoleInsetX = 2.0f;
-    static constexpr float kSeatDrop = 1.2f;
+    static constexpr float kHoleInsetX = 3.5f;
+    static constexpr float kSeatTop = 1.5f;
+    static constexpr float kSeatBottom = 0.5f;
     static constexpr float kHitMargin = 4.0f;
     static constexpr float kSilhouetteX0 = 7.0f, kSilhouetteX1 = 410.0f;
     static constexpr float kSilhouetteY0 = 8.0f, kSilhouetteY1 = 87.0f;
@@ -201,7 +202,7 @@ public:
     }
     static juce::Rectangle<float> silhouetteForHole (juce::Rectangle<float> hole)
     {
-        return hole.reduced (kHoleInsetX, 0.0f).translated (0.0f, kSeatDrop);
+        return hole.reduced (kHoleInsetX, 0.0f).withTrimmedTop (kSeatTop).withTrimmedBottom (kSeatBottom);
     }
 
     juce::Rectangle<float> frameRectFor (juce::Rectangle<float> silhouette, int fh) const

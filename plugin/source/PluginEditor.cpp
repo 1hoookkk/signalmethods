@@ -163,13 +163,14 @@ void PluginEditor::resized()
     secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
     {
         const auto hole = theme.rect ("qWell");
-        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f, 100.0f, 17.0f);
+        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 12.0f, 128.0f, 22.0f);
         modulationChip->setBounds (chip.toNearestInt());
         const float left = hole.getX() - 10.0f;
         const float right = theme.rect ("outputReadout").getRight() + 30.0f;
+        const float top = chip.getBottom() + 12.0f;
         const float bottom = theme.rect ("outputReadout").getBottom() + 10.0f;
-        faceplate->setRoomFrame ({ left, chip.getCentreY(), right - left, bottom - chip.getCentreY() },
-                                 chip.getX() - 3.0f, chip.getRight() + 3.0f);
+        faceplate->setRoomCaption ("GAIN");
+        faceplate->setRoomFrame ({ left, top, right - left, bottom - top }, left + 10.0f, left + 46.0f);
     }
     {
         const auto key = rectOf ("keyBox");

@@ -126,7 +126,7 @@ public:
     {
         const auto b = getLocalBounds().toFloat();
         drawFrostedGlassControl (g, b, 3.0f, active || isMouseOver (true), t);
-        const float chevronW = juce::jmin (16.0f, b.getHeight());
+        const float chevronW = juce::jmin (20.0f, b.getHeight());
         const float divider = b.getRight() - chevronW;
         g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.35f));
         g.fillRect (divider, b.getY() + 3.0f, 1.0f, b.getHeight() - 6.0f);
@@ -140,7 +140,7 @@ public:
         chevron.lineTo (cx + 3.5f, cy - 1.8f);
         g.setColour (ink);
         g.strokePath (chevron, juce::PathStrokeType (1.2f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
-        g.setFont (displayFont (juce::jmin (11.0f, b.getHeight() * 0.68f), false));
+        g.setFont (displayFont (juce::jmin (13.0f, b.getHeight() * 0.6f), false));
         g.drawText (displayText(), b.withRight (divider).reduced (5.0f, 0.0f).toNearestInt(),
                     juce::Justification::centredLeft, true);
     }
