@@ -43,19 +43,19 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 168.0f, 1054.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 123.0f, 1078.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["inputLabel"].text = "INPUT";
-        layout.elements["outputLabel"]  = { { 442.0f, 1054.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"]  = { { 397.0f, 1078.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["outputLabel"].text = "OUTPUT";
-        layout.elements["inputKnob"]    = { { 178.0f, 1099.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["outputKnob"]   = { { 452.0f, 1099.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 181.0f, 1241.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["outputReadout"] = { { 455.0f, 1241.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["inputKnob"]    = { { 133.0f, 1123.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 407.0f, 1123.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 136.0f, 1265.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["outputReadout"] = { { 410.0f, 1265.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 15.9f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        juce::Colour lamp (0xff2ad7c2);
+        juce::Colour lamp (0xff9ed6b4);
         if (const char* accent = std::getenv ("TRENCH_ACCENT"))
         {
             const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");

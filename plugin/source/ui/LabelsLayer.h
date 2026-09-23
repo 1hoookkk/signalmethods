@@ -60,7 +60,8 @@ public:
                                             juce::Justification::centredLeft, false);
                 }
                 drawEngravedText (g, text, box, juce::Justification::centredLeft,
-                                  t.textColour ("brandLabel", t.labelInk()), 1.0f, t.accent());
+                                  t.textColour ("brandLabel", t.labelInk()), 1.0f,
+                                  t.accent().withSaturation (t.accent().getSaturation() * 0.4f));
             }
             const auto sr = t.rect ("brandSub");
             const float sfs = t.fontSize ("brandSub", 9.0f);
