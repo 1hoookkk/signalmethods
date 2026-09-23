@@ -138,7 +138,7 @@ public:
     {
         if (well.isEmpty())
             return;
-        const float castH = 7.0f;
+        const float castH = 10.0f;
         const float cx = well.getCentreX();
         const float overlap = 1.5f;
         const float cy = well.getBottom() - overlap;
@@ -147,10 +147,10 @@ public:
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
                                                   (int) well.getWidth(), (int) (castH + overlap)));
         g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
-        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.74f), cx, cy,
+        juce::ColourGradient sh (juce::Colours::black.withAlpha (0.88f), cx, cy,
                                  juce::Colours::transparentBlack, cx + rx, cy, true);
-        sh.addColour (0.50, juce::Colours::black.withAlpha (0.50f));
-        sh.addColour (0.82, juce::Colours::black.withAlpha (0.18f));
+        sh.addColour (0.50, juce::Colours::black.withAlpha (0.64f));
+        sh.addColour (0.82, juce::Colours::black.withAlpha (0.26f));
         g.setGradientFill (sh);
         g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
     }
