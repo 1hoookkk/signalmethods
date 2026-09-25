@@ -690,7 +690,7 @@ int main()
                      ringBody >= 0 ? trench::bodyDisplayName (ringBody).toRawUTF8() : "none", ringDb);
 
         struct RingRun { double thd = 0.0; double fundamental = 0.0; float peak = 0.0f; };
-        const auto ringMeasure = [&processor, hostRate] (int bodyIndex, bool leveller)
+        const auto ringMeasure = [hostRate] (PluginProcessor& processor, int bodyIndex, bool leveller)
         {
             processor.dspBridge.setRingLeveller (leveller);
             setParam (processor, ParamID::body, (float) bodyIndex);
@@ -746,8 +746,15 @@ int main()
         };
         if (ringBody >= 0)
         {
-            const auto off = ringMeasure (ringBody, false);
-            const auto on = ringMeasure (ringBody, true);
+            const auto measureFresh = [&] (bool leveller)
+            {
+                PluginProcessor fresh;
+                fresh.setPlayConfigDetails (2, 2, hostRate, 512);
+                fresh.prepareToPlay (hostRate, 512);
+                return ringMeasure (fresh, ringBody, leveller);
+            };
+            const auto off = measureFresh (false);
+            const auto on = measureFresh (true);
             const double drop = db (off.peak / juce::jmax (on.peak, 1.0e-9f));
             std::printf ("220 Hz at -12 dBFS through %s, MORPH 0.5 Q 0.5 BITE 0: "
                          "leveller off THD %.3f %% peak %.4f, on THD %.3f %% peak %.4f, drop %.2f dB\n",

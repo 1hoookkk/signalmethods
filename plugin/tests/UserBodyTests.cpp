@@ -62,6 +62,26 @@ int main (int argc, char** argv)
                && recalled.copyCurrentBodyBytes (got.data(), got.size()) && foreign == juce::MemoryBlock (got.data(), got.size()),
                "a project whose body file is missing recovers it from the embedded bytes into the library");
     }
+    {
+        juce::MemoryBlock saved;
+        juce::File (juce::String (TRENCH_TABLE_STITCH_ROOT)).getChildFile ("plugin/presets/bodies/xml_crisp.body240").loadFileAsData (saved);
+        juce::MemoryBlock library;
+        const int lp12 = trench::bodyIndexForBase ("util_lp_12");
+        PluginProcessor recalled;
+        auto state = recalled.apvts.copyState();
+        state.setProperty ("bodyId", "util_lp_12", nullptr);
+        state.setProperty ("bodyBytes", saved.toBase64Encoding(), nullptr);
+        juce::MemoryBlock packed;
+        juce::AudioProcessor::copyXmlToBinary (*state.createXml(), packed);
+        recalled.setStateInformation (packed.getData(), (int) packed.getSize());
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (50);
+        std::array<unsigned char, 240> got {};
+        juce::MemoryBlock libraryAfter;
+        check (lp12 > 0 && saved.getSize() == 240 && trench::bodyRawBytes (lp12, library) && library != saved
+               && recalled.copyCurrentBodyBytes (got.data(), got.size()) && saved == juce::MemoryBlock (got.data(), got.size())
+               && trench::bodyRawBytes (lp12, libraryAfter) && libraryAfter == library,
+               "recall plays the saved bytes when the library body under the same id has changed, and leaves the library alone");
+    }
     for (const auto& file : fixture.findChildFiles (juce::File::findFiles, false)) file.deleteFile();
     fixture.deleteFile();
 

@@ -55,16 +55,20 @@ public:
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        juce::Colour lamp (0xff3fd7d9);
+        juce::Colour lamp (0xff85cdb4);
+        juce::Colour trace (0xffaedbca);
         if (const char* accent = std::getenv ("TRENCH_ACCENT"))
         {
             const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");
             if (hex.length() == 6)
+            {
                 lamp = juce::Colour ((juce::uint32) (0xff000000u | (juce::uint32) hex.getHexValue32()));
+                trace = lamp;
+            }
         }
         layout.colours["accent"]             = lamp;
-        layout.colours["curveColour"]        = lamp;
-        layout.colours["curveHighlight"]     = lamp;
+        layout.colours["curveColour"]        = trace;
+        layout.colours["curveHighlight"]     = trace;
         layout.colours["telemetry"]          = juce::Colour (0xff5d8079);
         layout.colours["dashed"]             = juce::Colour (0xff5d8079);
         layout.colours["rollerIllumination"] = lamp;

@@ -18,8 +18,8 @@ public:
         setInterceptsMouseClicks (true, false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Key Snap");
-        setHelpText ("KEY OFF leaves the body as authored. A heard key is offered; click it to lock, click the locked key to return to OFF.");
-        setTooltip ("KEY: OFF by default. Click the heard key to lock it; click again for OFF");
+        setHelpText ("KEY OFF leaves the body as authored. Scroll to choose a key. A heard key is offered; click it to lock, click the locked key to return to OFF.");
+        setTooltip ("KEY: scroll to choose, click the offered key to lock, click again for OFF");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (
                 *param, [this] (float) { repaint(); });

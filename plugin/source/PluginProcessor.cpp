@@ -812,6 +812,13 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
             }
             if (index < 0)
                 index = recoverBodyFromState (bodyId, bodyBytesText, recoveredBytes);
+            else if (bodyBytesText.isNotEmpty())
+            {
+                juce::MemoryBlock embedded, library;
+                if (embedded.fromBase64Encoding (bodyBytesText) && embedded.getSize() == 240
+                    && trench::bodyRawBytes (index, library) && library != embedded)
+                    recoveredBytes = embedded;
+            }
             setParameterDenormalized (ParamID::body,
                                       (float) (index >= 0 ? index : trench::kNoFilterIndex));
         }
@@ -830,8 +837,12 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
                                ? restoredIndex : trench::kNoFilterIndex,
                            std::memory_order_relaxed);
     handleAsyncUpdate();
-    if (recoveredBytes.getSize() == 240 && loadedBodyIndex.load (std::memory_order_relaxed) == trench::kNoFilterIndex)
-        installBodyBytes (recoveredBytes.getData(), recoveredBytes.getSize());
+    if (recoveredBytes.getSize() == 240)
+    {
+        const juce::ScopedLock bodyLock (bodyStateLock);
+        if (currentBodyBytes != recoveredBytes)
+            installBodyBytes (recoveredBytes.getData(), recoveredBytes.getSize());
+    }
 }
 int PluginProcessor::recoverBodyFromState (const juce::String& bodyId, const juce::String& bodyBytesText, juce::MemoryBlock& unlisted)
 {

@@ -127,26 +127,66 @@ inline int frontendTests()
                "200% doubles the editor and scales every control with it");
         trenchEditor->setUiScale (savedScale);
     }
+    {
+        MorphFollower follower;
+        bool advances = true;
+        double shown = follower.advance (0.0, 0.0), previous = shown;
+        for (int tick = 1; tick <= 200; ++tick)
+        {
+            shown = follower.advance (0.5, tick * 4.0);
+            advances = advances && shown >= previous;
+            previous = shown;
+        }
+        check (advances && std::abs (shown - 0.5) < 0.01, "the displayed Morph keeps advancing toward the audio value when updates arrive faster than frames");
+        trench::ui::WheelControl* morphWheel = nullptr;
+        for (auto* child : face->getChildren())
+            if (auto* w = dynamic_cast<trench::ui::WheelControl*> (child); w != nullptr && w->getTitle() == "Morph") morphWheel = w;
+        processor.setPlayConfigDetails (2, 2, 48000.0, 256);
+        processor.prepareToPlay (48000.0, 256);
+        processor.apvts.getParameter (ParamID::movePreset)->setValueNotifyingHost (
+            processor.apvts.getParameter (ParamID::movePreset)->convertTo0to1 (7.0f));
+        juce::AudioBuffer<float> audio (2, 256);
+        juce::MidiBuffer midi;
+        float lowest = 1.0f, highest = 0.0f;
+        for (int round = 0; round < 40; ++round)
+        {
+            for (int block = 0; block < 4; ++block) { audio.clear(); processor.processBlock (audio, midi); }
+            juce::MessageManager::getInstance()->runDispatchLoopUntil (20);
+            if (morphWheel != nullptr)
+            {
+                lowest = std::min (lowest, morphWheel->shownNormalised());
+                highest = std::max (highest, morphWheel->shownNormalised());
+            }
+        }
+        check (morphWheel != nullptr && highest - lowest > 0.1f, "the rendered MORPH wheel follows a running movement through the editor timer");
+        processor.apvts.getParameter (ParamID::movePreset)->setValueNotifyingHost (0.0f);
+    }
     if (! chip) return failed + 1;
     check (chip->displayText() == "Modulation: off", "the chip reads Off with no movement");
     chip->keyPressed (juce::KeyPress (juce::KeyPress::rightKey));
     check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1
            && chip->displayText().startsWith (trench::kFuncGenPatterns[0].name)
-           && chip->displayText().endsWith (juce::String::fromUTF8 ("1/2 bar \xc2\xb7 loop"))
+           && chip->displayText().endsWith ("1/2 bar")
            && processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 1,
-           "Next auditions a movement at its authored length and the chip names it with its length and loop");
+           "Next auditions a movement at its authored length and the chip names it with its length");
     chip->selectPattern (5);
     check (processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 2
-           && chip->displayText().endsWith (juce::String::fromUTF8 ("1 bar \xc2\xb7 once")),
-           "a one-shot movement arrives at its authored 1 bar and reads once");
+           && chip->displayText().endsWith (juce::String::fromUTF8 ("1 bar \xc2\xb7 lands")),
+           "a one-shot movement arrives at its authored 1 bar and reads lands");
     chip->selectLength (4);
     check (chip->displayText().startsWith (trench::kFuncGenPatterns[4].name) && chip->displayText().contains ("4 bars"),
            "the chip names the movement and its length");
     {
-        bool onlyMovements = true;
+        bool onlyMovements = true, grouped = false, lands = false;
+        juce::String heading;
         for (const auto& row : chip->browserRows())
+        {
             onlyMovements = onlyMovements && (row.heading || (row.body >= 0 && row.body <= trench::kNumFuncGenPatterns) || row.body >= 400);
-        check (onlyMovements, "the movement browser lists movements only; length lives in the bar box");
+            if (row.heading) heading = row.text;
+            if (row.body == 20) grouped = heading == "4 bars";
+            if (row.body == 5) lands = row.text.endsWith ("lands");
+        }
+        check (onlyMovements && grouped && lands, "the movement browser groups movements under their authored length and marks the ones that land");
     }
     juce::MemoryBlock state;
     processor.getStateInformation (state);

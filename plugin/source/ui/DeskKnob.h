@@ -38,8 +38,8 @@ public:
 
     void updateTooltip()
     {
-        const auto role = label == "INPUT" ? "level into the filter, soft clip after it" : "Mackity desk after the filter";
-        setTooltip (label + " (" + role + "): " + juce::String (juce::roundToInt (getDrive() * 100.0f)) + "% - drag/wheel; Shift for fine adjustment; double-click reset");
+        const auto role = label == "INPUT" ? "level into the filter" : "saturation after the filter";
+        setTooltip (label + ": " + role + ", " + juce::String (juce::roundToInt (getDrive() * 100.0f)) + "%");
     }
 
     juce::Rectangle<float> getLegendArea() const

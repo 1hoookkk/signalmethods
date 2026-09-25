@@ -21,6 +21,21 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <memory>
+struct MorphFollower
+{
+    static constexpr double kSmoothMs = 25.0;
+    double shown = 0.0, lastMs = 0.0;
+    bool primed = false;
+    double advance (double target, double nowMs)
+    {
+        if (! primed) { shown = target; lastMs = nowMs; primed = true; return shown; }
+        const double dt = juce::jlimit (0.0, 100.0, nowMs - lastMs);
+        lastMs = nowMs;
+        shown += (target - shown) * (1.0 - std::exp (-dt / kSmoothMs));
+        if (std::abs (target - shown) < 1.0e-4) shown = target;
+        return shown;
+    }
+};
 class PluginEditor final : public juce::AudioProcessorEditor,
                            private juce::Timer
 {
@@ -41,8 +56,7 @@ private:
     int lastProbedBodyVersion = -1;
     double lastProbedRate = 0.0;
     double lastProbedKeyRatio = -1.0;
-    std::uint32_t lastMorphUpdates = 0;
-    double morphFrom = 0.0, morphTo = 0.0, morphShown = 0.0, morphArrivedMs = 0.0, morphIntervalMs = 20.0;
+    MorphFollower morphFollower;
     const trench::UiLayout layout { trench::UiLayout::defaults() };
     trench::ui::Theme theme { layout };
     juce::TooltipWindow tooltipWindow { this, 650 };

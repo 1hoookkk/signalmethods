@@ -20,7 +20,6 @@ public:
     static constexpr float kLampHue = 175.0f / 360.0f;
     static constexpr float kLampSat = 0.64f;
     static constexpr float kLampVal = 0.81f;
-    static constexpr float kLampMinSat = 0.6f;
 
     static juce::Image tintLamp (const juce::Image& source, juce::Colour accent)
     {
@@ -28,7 +27,7 @@ public:
             && std::abs (accent.getSaturation() - kLampSat) < 0.01f && std::abs (accent.getBrightness() - kLampVal) < 0.01f)
             return source;
         auto out = source.createCopy();
-        const float satScale = juce::jmax (accent.getSaturation(), kLampMinSat) / kLampSat;
+        const float satScale = accent.getSaturation() / kLampSat;
         const float valScale = accent.getBrightness() / kLampVal;
         juce::Image::BitmapData data (out, juce::Image::BitmapData::readWrite);
         for (int y = 0; y < data.height; ++y)
@@ -103,6 +102,7 @@ public:
         }
     }
 
+    float shownNormalised() const noexcept { return displayNormalised(); }
     void mouseEnter (const juce::MouseEvent&) override { hovering = true;  repaint(); }
     void mouseExit  (const juce::MouseEvent&) override { hovering = false; repaint(); }
 

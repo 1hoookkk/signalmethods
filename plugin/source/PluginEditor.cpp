@@ -22,8 +22,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     uiFontFamily() = layout.string ("fontFamily", kUiFontName);
     uiEmphasisFontFamily() = layout.string ("fontFamilyEmphasis", kUiEmphasisFontName);
     uiBoldEnabled() = layout.param ("fontBold", 0.0) > 0.5;
-    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_sage_png,
-                                                  BinaryData::trench_plate_sage_pngSize);
+    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_sage_putty_png,
+                                                  BinaryData::trench_plate_sage_putty_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_ss3_strip_png,
                                                   BinaryData::trench_ss3_strip_pngSize);
 #if TRENCH_DEV_PANEL
@@ -32,6 +32,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 #endif
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
+    strip = WheelControl::tintLamp (strip, theme.rollerIllumination());
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
@@ -259,18 +260,7 @@ void PluginEditor::onFrame()
     float coeffs[trench::kUiCoeffCount] = {};
     float boost = 1.0f;
     const bool morphMoving = processor.isMorphModulatedForUi();
-    const double nowMs = juce::Time::getMillisecondCounterHiRes();
-    const auto morphUpdates = processor.getMorphUpdatesForUi();
-    if (morphUpdates != lastMorphUpdates)
-    {
-        const double gap = nowMs - morphArrivedMs;
-        if (gap > 0.0 && gap < 200.0) morphIntervalMs += 0.2 * (gap - morphIntervalMs);
-        lastMorphUpdates = morphUpdates;
-        morphFrom = morphShown;
-        morphTo = processor.getEffectiveMorphForUi();
-        morphArrivedMs = nowMs;
-    }
-    morphShown = morphFrom + (morphTo - morphFrom) * juce::jlimit (0.0, 1.0, (nowMs - morphArrivedMs) / juce::jmax (1.0, morphIntervalMs));
+    const double morphShown = morphFollower.advance (processor.getEffectiveMorphForUi(), juce::Time::getMillisecondCounterHiRes());
     const float baseMorph = morphMoving ? (float) morphShown
                                         : trench::curves::curveMap (trench::curves::Axis::morph, read (ParamID::morph));
     const float baseQ = trench::curves::curveMap (trench::curves::Axis::q, read (ParamID::q));

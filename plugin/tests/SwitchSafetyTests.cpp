@@ -202,6 +202,7 @@ int main()
     const auto hedz = body ("talking_hedz.body240");
     const auto millennium = body ("millennium.body240");
     const auto vowel = fixtureBody ("util_vowel_ah_ee.body240");
+    const auto identity = fixtureBody ("identity.body240");
     std::printf ("fixtures hedz=%zu millennium=%zu vowel=%zu\n", hedz.getSize(), millennium.getSize(), vowel.getSize());
     if (hedz.getSize() != 240 || millennium.getSize() != 240 || vowel.getSize() != 240) return 1;
     for (const auto rate : { 44100.0, 48000.0 })
@@ -245,6 +246,12 @@ int main()
         for (int blockSize : { 64, 256, 512 })
         {
             rapidSwitch (rate, blockSize, vowel, hedz);
+            rapidSwitch (rate, blockSize, identity, hedz);
+            for (int key : { 0, 1 })
+            {
+                referenceSwitch (rate, blockSize, hedz, identity, key, 1, 2);
+                referenceSwitch (rate, blockSize, identity, hedz, key, 1, 2);
+            }
             for (int key : { 0, 1 })
                 for (int signal : { 0, 1, 2 })
                     for (int channels : { 1, 2 })

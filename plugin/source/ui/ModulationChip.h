@@ -72,8 +72,9 @@ public:
         if (selectedPattern() == 0 || param == nullptr || (custom != nullptr && custom->getValue() > 0.5f))
             return nameText();
         const auto separator = " " + juce::String::charToString (0x00b7) + " ";
-        return nameText() + separator + rateText() + separator + playbackText();
+        return nameText() + separator + rateText() + (isOnce() ? landsSuffix() : juce::String());
     }
+    static juce::String landsSuffix() { return " " + juce::String::charToString (0x00b7) + " lands"; }
     bool isOnce() const
     {
         const int mode = playback != nullptr ? playback->getIndex() : 0;
@@ -81,7 +82,6 @@ public:
         return mode == 2 || (mode == 0 && pattern >= 1 && pattern <= trench::kNumFuncGenPatterns
                              && trench::kFuncGenPatterns[pattern - 1].direction == 5);
     }
-    juce::String playbackText() const { return isOnce() ? "once" : "loop"; }
     juce::String rateText() const
     {
         return barsText (trench::Movement::rateBars (length != nullptr ? length->getIndex() : trench::Movement::kDefaultRate));
@@ -105,8 +105,22 @@ public:
         if (param == nullptr) return out;
         const bool usingCustom = custom != nullptr && custom->getValue() > 0.5f;
         out.push_back ({ "Off", 0, ! usingCustom && selectedPattern() == 0 });
-        for (int i = 1; i < param->choices.size(); ++i)
-            out.push_back ({ param->choices[i], i, ! usingCustom && selectedPattern() == i });
+        for (int choice = 0; choice < trench::Movement::kRateChoices; ++choice)
+        {
+            bool heading = false;
+            for (int i = 1; i <= trench::kNumFuncGenPatterns && i < param->choices.size(); ++i)
+            {
+                const auto& pattern = trench::kFuncGenPatterns[i - 1];
+                if (trench::Movement::authoredLengthChoice (pattern) != choice) continue;
+                if (! heading)
+                {
+                    out.push_back ({ barsText (trench::Movement::rateBars (choice)), -1, false, true });
+                    heading = true;
+                }
+                out.push_back ({ param->choices[i] + (pattern.direction == 5 ? landsSuffix() : juce::String()), i,
+                                 ! usingCustom && selectedPattern() == i });
+            }
+        }
         const auto saved = savedNames != nullptr ? savedNames() : juce::StringArray();
         if (! saved.isEmpty())
         {

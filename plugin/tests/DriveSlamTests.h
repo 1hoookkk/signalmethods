@@ -122,6 +122,38 @@ inline int driveSlamTests()
     processor.setEditorOpen (true);
     check (processor.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "soft clip test body loads");
     check (processor.apvts.getParameter (ParamID::slamDrive) == nullptr, "separate SLAM parameter is retired");
+    {
+        PluginProcessor colour;
+        colour.setRateAndBufferSizeDetails (48000, 128);
+        colour.prepareToPlay (48000, 128);
+        colour.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+        juce::AudioBuffer<float> dry (2, 128), wet (2, 128);
+        juce::MidiBuffer m;
+        auto* out = colour.apvts.getParameter (ParamID::output);
+        double difference = 0.0; float peak = 0.0f; bool finite = true;
+        for (int block = 0; block < 40; ++block)
+        {
+            for (int i = 0; i < 128; ++i) { const float s = 0.25f * (float) std::sin (0.1 * (block * 128 + i)); dry.setSample (0, i, s); dry.setSample (1, i, s); }
+            wet.makeCopyOf (dry);
+            out->setValueNotifyingHost (block < 20 ? 0.0f : 1.0f);
+            colour.processBlock (wet, m);
+            for (int i = 0; i < 128; ++i)
+            {
+                const float v = wet.getSample (0, i);
+                finite = finite && std::isfinite (v);
+                peak = std::max (peak, std::abs (v));
+                if (block >= 30) difference += std::abs (v - dry.getSample (0, i));
+                if (block >= 10 && block < 20) difference -= std::abs (v - dry.getSample (0, i));
+            }
+        }
+#if TRENCH_DEV_PANEL
+        const float colourBound = 1.5f;
+#else
+        const float colourBound = trench::kFinalSafetyCeiling;
+#endif
+        check (finite && difference > 1.0 && peak <= colourBound,
+            "No Filter is a colour path: OUTPUT saturates the dry signal and stays under the ceiling");
+    }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
     bool clipped = true;
