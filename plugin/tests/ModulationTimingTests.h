@@ -166,5 +166,50 @@ inline int modulationTimingTests()
         check (p.getEffectiveMorphForUi() == 0.0f, "processor Restart reaches the gesture renderer");
         p.setPlayHead (nullptr);
     }
+    {
+        struct Clock final : juce::AudioPlayHead
+        {
+            double ppq = 1234.5; bool playing = true;
+            juce::Optional<PositionInfo> getPosition() const override
+            {
+                PositionInfo info;
+                info.setIsPlaying (playing); info.setBpm (140.0); info.setPpqPosition (ppq);
+                info.setTimeSignature (juce::AudioPlayHead::TimeSignature { 4, 4 });
+                return info;
+            }
+        } clock;
+        PluginProcessor p;
+        p.setPlayHead (&clock);
+        p.setPlayConfigDetails (2, 2, 44100.0, 512);
+        p.prepareToPlay (44100.0, 512);
+        p.setEditorOpen (true);
+        const auto set = [&] (const char* id, float value)
+        {
+            auto* parameter = p.apvts.getParameter (id);
+            parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
+        };
+        set (ParamID::morph, 0.108f); set (ParamID::movePreset, 9.0f); set (ParamID::moveLength, 3.0f); set (ParamID::movePlayback, 0.0f);
+        juce::AudioBuffer<float> buffer (2, 512);
+        juce::MidiBuffer midi;
+        float low = 1.0f, high = 0.0f;
+        for (int block = 0; block < 200; ++block)
+        {
+            for (int i = 0; i < 512; ++i) { const float s = 0.1f * (float) std::sin (0.05 * (block * 512 + i)); buffer.setSample (0, i, s); buffer.setSample (1, i, s); }
+            p.processBlock (buffer, midi);
+            low = std::min (low, p.getEffectiveMorphForUi()); high = std::max (high, p.getEffectiveMorphForUi());
+            clock.ppq += 512.0 * 140.0 / 60.0 / 44100.0;
+        }
+        std::printf ("      Relay Teeth 2 bars from bar 309 at 140 BPM: effective Morph %g .. %g, modulated=%d\n", low, high, (int) p.isMorphModulatedForUi());
+        check (high - low > 0.5f && p.isMorphModulatedForUi(), "a movement runs from a mid-song transport with 512-sample blocks");
+        clock.playing = false;
+        low = 1.0f; high = 0.0f;
+        for (int block = 0; block < 200; ++block)
+        {
+            buffer.clear(); p.processBlock (buffer, midi);
+            low = std::min (low, p.getEffectiveMorphForUi()); high = std::max (high, p.getEffectiveMorphForUi());
+        }
+        check (high - low > 0.5f, "a movement keeps running on its own clock when the transport stops");
+        p.setPlayHead (nullptr);
+    }
     return failures;
 }
