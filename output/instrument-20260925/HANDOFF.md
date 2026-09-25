@@ -23,7 +23,7 @@ TRENCH_Tests 275 PASS, 1 FAIL (ring leveller, see below). TRENCH_CalibrationTest
 ## Not done
 
 - Install: FL Studio (FL64.exe) still holds `C:\Program Files\Common Files\VST3\TRENCH.vst3`. Built module SHA256 `524c7741a17640eade95ab1f25e01741688e5e3844ebdcb30f99fafbf2192da0`; installed is still `1076811f...`. Save the project, close FL, run `Install TRENCH.cmd`, reopen.
-- Listening: the user heard the bare-filter corner renders (`preset-check/`) and confirmed the preset. INPUT gain versus OUTPUT Mackity renders are in `gain-in-mackity-out/`; the in-loop laws he did not choose are in `inloop/`; the glide domain comparison in `lerp/` (50 to 96 dB under the signal).
+- Listening: the user heard the bare-filter corner renders (`preset-check/`, 5 files) and confirmed the preset. The final chain is in `gain-in-mackity-out/` (10 files: ref, INPUT 100, OUTPUT 50, OUTPUT 100, both at 50, for Hedz and Millennium). Rejected in-loop and glide-domain renders were deleted; the glide difference measured 50 to 96 dB under the signal.
 - OUTPUT taper: the knob rides Mackity's own square law, so 50 is already +30 dB into its clip. If that is too hot in the hands, the mapping (`DeskDrive::inTrim`) is the one place to change.
 - Dev only: `trench_calibration` fails on `cal_grid audio delta 0`. That control only forces a body re-switch, which the crossfade from the earlier session now makes seamless, so it has been inert since then; not touched.
 - KEY hysteresis: audio holds a note within 0.15 semitone of a scale boundary while the graph probe shows the nearest note; static agreement is proven, the hold band is not drawn.
