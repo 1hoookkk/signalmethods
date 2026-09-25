@@ -5,9 +5,6 @@
 
 namespace trench::curves
 {
-// The dev bisection host drives one axis in its INTERNAL units, so that axis
-// must not see the table it is being used to measure. Every other shipping
-// axis remains mapped, including slamTrim while slam is bypassed.
 inline std::atomic<int>& bypassAxis() noexcept
 {
     static std::atomic<int> axis { -1 };
@@ -40,5 +37,22 @@ inline float curveMap (Axis axis, float knob) noexcept
     if (bypassAxis().load (std::memory_order_relaxed) == (int) axis)
         return knob;
     return curveMap (*kTables[(std::size_t) axis], knob);
+}
+
+inline float uncurveMap (Axis axis, float value) noexcept
+{
+    if (bypassAxis().load (std::memory_order_relaxed) == (int) axis)
+        return value;
+    const auto& table = *kTables[(std::size_t) axis];
+    if (value <= table[0])
+        return 0.0f;
+    for (std::size_t i = 1; i < kTableSize; ++i)
+        if (value <= table[i])
+        {
+            const float span = table[i] - table[i - 1];
+            const float frac = span > 0.0f ? (value - table[i - 1]) / span : 0.0f;
+            return ((float) (i - 1) + frac) / (float) (kTableSize - 1);
+        }
+    return 1.0f;
 }
 }

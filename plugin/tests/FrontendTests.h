@@ -48,6 +48,43 @@ inline int frontendTests()
            "BODY, KEY, MORPH, Q, the movement chip, INPUT and OUTPUT are the whole face");
     check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
     {
+        trench::UiLayout wheelLayout;
+        trench::ui::WheelControl wheel (processor.apvts, ParamID::morph, {}, trench::ui::Theme { wheelLayout });
+        wheel.setSize (110, 30);
+        auto* parameter = processor.apvts.getParameter (ParamID::morph);
+        int starts = 0, ends = 0;
+        wheel.onGestureStart = [&] { ++starts; };
+        wheel.onGestureEnd = [&] { ++ends; };
+        const auto event = [&] (float x, int flags = juce::ModifierKeys::leftButtonModifier)
+        {
+            return juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { x, 15 }, juce::ModifierKeys (flags),
+                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, &wheel, &wheel, {}, { x, 15 }, {}, 1, true);
+        };
+        parameter->setValueNotifyingHost (0.9f);
+        wheel.mouseDown (event (55));
+        check (std::abs (parameter->getValue() - 0.5f) < 1.0e-6f, "wheel center click sets 50 percent independently of its previous value");
+        wheel.mouseDrag (event (105));
+        check (parameter->getValue() == 1.0f, "wheel right edge reaches 100 percent");
+        wheel.mouseDrag (event (5));
+        check (parameter->getValue() == 0.0f, "wheel left edge reaches zero");
+        wheel.mouseUp (event (5));
+        parameter->setValueNotifyingHost (0.5f);
+        const int fine = juce::ModifierKeys::leftButtonModifier | juce::ModifierKeys::shiftModifier;
+        wheel.mouseDown (event (10, fine));
+        check (parameter->getValue() == 0.5f, "Shift-click preserves the current wheel position");
+        wheel.mouseDrag (event (21, fine));
+        check (std::abs (parameter->getValue() - 0.525f) < 1.0e-6f, "Shift-drag makes a fine relative adjustment");
+        wheel.mouseUp (event (21, fine));
+        juce::MouseWheelDetails scroll;
+        scroll.deltaY = 0.25f;
+        wheel.mouseWheelMove (event (55), scroll);
+        wheel.mouseDoubleClick (event (55));
+        check (starts == 4 && ends == 4 && parameter->getValue() == parameter->getDefaultValue(),
+               "drag, fine drag, scroll and reset each bracket a complete manual gesture");
+        wheel.mouseUp (event (55, juce::ModifierKeys::rightButtonModifier));
+        check (ends == 4, "a context-menu release does not end a manual gesture");
+    }
+    {
         int wheelsBottom = 0, knobsTop = face->getHeight();
         for (auto* child : face->getChildren())
             if (dynamic_cast<trench::ui::WheelControl*> (child) != nullptr) wheelsBottom = juce::jmax (wheelsBottom, child->getBottom());
@@ -94,18 +131,33 @@ inline int frontendTests()
     check (chip->displayText() == "Modulation: off", "the chip reads Off with no movement");
     chip->keyPressed (juce::KeyPress (juce::KeyPress::rightKey));
     check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1
-           && chip->displayText() == trench::kFuncGenPatterns[0].name,
-           "Next auditions a movement and the chip names it");
+           && chip->displayText().startsWith (trench::kFuncGenPatterns[0].name)
+           && chip->displayText().endsWith (juce::String::fromUTF8 ("1/2 bar \xc2\xb7 loop"))
+           && processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 1,
+           "Next auditions a movement at its authored length and the chip names it with its length and loop");
     chip->selectPattern (5);
-    chip->selectLength (3);
+    check (processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 2
+           && chip->displayText().endsWith (juce::String::fromUTF8 ("1 bar \xc2\xb7 once")),
+           "a one-shot movement arrives at its authored 1 bar and reads once");
+    chip->selectLength (4);
     check (chip->displayText().startsWith (trench::kFuncGenPatterns[4].name) && chip->displayText().contains ("4 bars"),
            "the chip names the movement and its length");
+    {
+        bool length = false, once = false, restart = false;
+        for (const auto& row : chip->browserRows())
+        {
+            length = length || (row.body == 104 && row.ticked);
+            once = once || (row.body == 202 && ! row.ticked);
+            restart = restart || row.body == 300;
+        }
+        check (length && once && restart, "the movement browser offers Length, Playback and Restart rows");
+    }
     juce::MemoryBlock state;
     processor.getStateInformation (state);
     PluginProcessor restored;
     restored.setStateInformation (state.getData(), (int) state.getSize());
     check (restored.apvts.getRawParameterValue (ParamID::movePreset)->load() == 5
-           && restored.apvts.getRawParameterValue (ParamID::moveLength)->load() == 3,
+           && restored.apvts.getRawParameterValue (ParamID::moveLength)->load() == 4,
            "the chosen movement and length survive project recall");
     return failed;
 }

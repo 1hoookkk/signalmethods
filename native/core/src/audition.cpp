@@ -130,7 +130,7 @@ void CascadeRunner::decode() {
   for (std::size_t si = 0; si < kSectionCount; ++si) coefficients_[si] = decode_section(current_[si]);
 }
 
-void CascadeRunner::set_target(const EncodedCascade& target) {
+void CascadeRunner::set_target(const EncodedCascade& target, std::size_t samples) {
   kernel_ramp_ = false;
   kernel_valid_ = false;
   if (!primed_) {
@@ -152,7 +152,7 @@ void CascadeRunner::set_target(const EncodedCascade& target) {
       target_ = target;
       return;
     }
-    remaining_ = kApproachSamples;
+    remaining_ = samples > 0 ? samples : kApproachSamples;
   } else if (target == target_) {
     return;
   }

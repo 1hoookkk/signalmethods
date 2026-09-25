@@ -1,4 +1,3 @@
-// Embedded shipping bodies. The plug-in embeds only these entries.
 TRENCH_PRESET("LP 12", "util_lp_12", "LOWPASS")
 TRENCH_PRESET("LP 24", "util_lp_24", "LOWPASS")
 TRENCH_PRESET("LP 36", "util_lp_36", "LOWPASS")

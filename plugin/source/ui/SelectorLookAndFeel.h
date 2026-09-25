@@ -6,15 +6,13 @@ namespace trench::ui
 class SelectorLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    float itemFontSize = 13.5f;   // menus may compact this (modulation: 11.5)
+    float itemFontSize = 13.5f;
     int itemHeight = 24;
     void drawComboBox (juce::Graphics&, int, int, bool, int, int, int, int, juce::ComboBox&) override {}
     juce::Font getComboBoxFont (juce::ComboBox&) override { return displayFont (12.0f, true); }
     juce::Font getPopupMenuFont() override { return displayFont (itemFontSize, false); }
     static constexpr juce::uint32 kGlassTop = 0xff10201d, kGlassBot = 0xff0b1715;
     static constexpr juce::uint32 kInk = 0xffcfe8de, kInkDim = 0xff4e6a63;
-    // selection = where your hand is -> teal, the hands voice (the lavender
-    // here was an unexplained fourth accent; colour audit 2026-07-31)
     static constexpr juce::uint32 kLamp = 0xff2bd8c3;
     void drawPopupMenuBackground (juce::Graphics& g, int width, int height) override
     {

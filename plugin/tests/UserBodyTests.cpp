@@ -44,6 +44,24 @@ int main (int argc, char** argv)
            && store.bases.back() == a.getFullPathName().toStdString(), "new files do not renumber existing bodies");
     trench::detail::appendUserBodies (store, fixture);
     check (store.entries.size() == baked + 2, "rescan does not duplicate bodies");
+    {
+        juce::MemoryBlock foreign;
+        juce::File (juce::String (TRENCH_TABLE_STITCH_ROOT)).getChildFile ("plugin/presets/bodies/xml_crisp.body240").loadFileAsData (foreign);
+        PluginProcessor recalled;
+        recalled.bodyRecoveryDirectory = fixture;
+        auto state = recalled.apvts.copyState();
+        state.setProperty ("bodyId", "D:/somewhere else/Crisp Take.body240", nullptr);
+        state.setProperty ("bodyBytes", foreign.toBase64Encoding(), nullptr);
+        juce::MemoryBlock packed;
+        juce::AudioProcessor::copyXmlToBinary (*state.createXml(), packed);
+        recalled.setStateInformation (packed.getData(), (int) packed.getSize());
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (50);
+        std::array<unsigned char, 240> got {};
+        const auto recovered = fixture.getChildFile ("Crisp Take.body240");
+        check (foreign.getSize() == 240 && recovered.existsAsFile() && recalled.getLastLoadOk()
+               && recalled.copyCurrentBodyBytes (got.data(), got.size()) && foreign == juce::MemoryBlock (got.data(), got.size()),
+               "a project whose body file is missing recovers it from the embedded bytes into the library");
+    }
     for (const auto& file : fixture.findChildFiles (juce::File::findFiles, false)) file.deleteFile();
     fixture.deleteFile();
 

@@ -44,14 +44,11 @@ inline void showParamContextMenu (juce::Component& owner, juce::RangedAudioParam
                 while (it.next())
                 {
                     auto& item = it.getItem();
-                    // Filter out JUCE's default parameter context menu items
                     if (item.text.containsIgnoreCase ("Value") || 
                         item.text.containsIgnoreCase ("Set..."))
                         continue;
-                    // Filter out trailing/double separators caused by the above
                     if (item.isSeparator && filtered.getNumItems() > 0)
                     {
-                        // Check if last item was a separator (or maybe don't bother for now)
                         filtered.addItem (item);
                     }
                     else if (!item.isSeparator)

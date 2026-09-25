@@ -1,7 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
-#include "dsp/PreampLaw.h"
 #include "dsp/DeskCompensation.h"
 #include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
@@ -14,13 +13,11 @@ namespace
 constexpr int kCleanInputMode = 0;
 constexpr int kMackieDeskSlam = 1;
 constexpr int kSpatialOff = 2;
-// KEY AUTO label mapping (same as KeySnapBox::snapChoiceForSuggestion):
-// detector labels are 0..11 major, 12..23 minor; the parameter is
-// 1..12 minor, 13..24 major, 0 = AUTO.
+constexpr double kMovementReturnSeconds = 0.25;
 int snapChoiceForDetection (int label) noexcept
 {
     if (label < 0 || label >= 24)
-        return 0;   // unknown: NO snap — never a fabricated C
+        return 0;
     return label < 12 ? 13 + label : 1 + (label - 12);
 }
 }
@@ -35,8 +32,6 @@ PluginProcessor::PluginProcessor()
                         ),
        apvts (*this, nullptr, "TRENCH_STATE", TrenchParameters::createParameterLayout())
 {
-    // Every audio-thread parameter read goes through these — resolved ONCE,
-    // never a string lookup in the callback.
     pMorph      = apvts.getRawParameterValue (ParamID::morph);
 #if TRENCH_DEV_PANEL
     for (size_t i = 0; i < trench::calibration::count; ++i)
@@ -56,7 +51,6 @@ PluginProcessor::PluginProcessor()
         forceCleanAudioUiState();
     const int startIndex = juce::jlimit (0, juce::jmax (0, trench::bodyCount() - 1),
                                          (int) apvts.getRawParameterValue (ParamID::body)->load());
-    // Load the initial body synchronously so the curve is ready for first paint.
     juce::MemoryBlock startRaw;
     if (trench::bodyRawBytes (startIndex, startRaw))
     {
@@ -97,8 +91,6 @@ PluginProcessor::PluginProcessor()
 }
 PluginProcessor::~PluginProcessor()
 {
-    // Order matters. The worker reads keyDetector, so it stops (bounded, 2 s)
-    // before anything it touches goes away.
     keyWorker.stop();
     stopTimer();
     apvts.removeParameterListener (ParamID::body, this);
@@ -159,9 +151,6 @@ bool PluginProcessor::loadRuntimePresetForCurrentRate()
         loadedRuntimePreset.activeStages,
         loadedRuntimePresetBankRate);
 }
-// UI-only: pad the selected bank's 1-3 active stages out to six with the
-// identity sentinel so the curve display has 240 words to probe. Never fed to
-// the engine (the engine took the unpadded bank) and never exported.
 void PluginProcessor::buildRuntimePresetProbeMirror (int bank)
 {
     runtimePresetProbeBytes.reset();
@@ -172,8 +161,6 @@ void PluginProcessor::buildRuntimePresetProbeMirror (int bank)
     const int stages = loadedRuntimePreset.activeStages;
     if (src.size() != (size_t) (4 * stages * 5))
         return;
-    // The pad sentinel — same row Morph Designer and body240 use; decodes to
-    // the exact unity biquad, so the padded stages are electrically invisible.
     static constexpr unsigned short kIdentity[5] =
         { 0xdfff, 0xffff, 0xdfff, 0xffff, 0xe000 };
     std::vector<unsigned short> padded;
@@ -207,9 +194,6 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     previousDriveGain = 1.0f;
     dspBridge.setRingLeveller (false);
     transientDetector.prepare (sampleRate);
-    // The selected bank is a function of the host rate: a preset chosen at
-    // 44.1k is an octave out once the host moves to 96k. prepare() has just
-    // reset the engine, so re-select and re-load whenever the rate moved.
     if (loadedRuntimePreset.isValid())
     {
         const int bank = loadedRuntimePreset.bankForRate (sampleRate);
@@ -230,17 +214,14 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dspBridge.setQSoundFallbackPan (1.0f);
     movement.prepare (sampleRate);
     wheelRampFrom = trench::curves::curveMap (trench::curves::Axis::morph, juce::jlimit (0.0f, 1.0f, pMorph->load()));
-    // The trajectory buffer is the audio thread's — sized here, never touched
-    // by the allocator again.
+    morphWasHeld = false;
+    movementDepth = 1.0f;
+    movementReturnStep = (float) (1.0 / (kMovementReturnSeconds * sampleRate));
     morphBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
     effectiveMorphForUi.store (pMorph->load(), std::memory_order_relaxed);
     effectiveQForUi.store (pQ->load(), std::memory_order_relaxed);
     morphModulatedForUi.store (false, std::memory_order_relaxed);
     preparedBlockSize = juce::jmax (1, samplesPerBlock);
-    // ~1 s analysis windows: the first useful AUTO KEY verdict lands at
-    // loop-creation speed instead of the heritage 17.8 s.
-    // The worker owns analyse(); stop it before re-sizing the capture slots
-    // underneath it, and start it again once they are the new size.
     keyWorker.stop();
     keyEvidence.fill (0.0);
     keyWindows = 0;
@@ -282,23 +263,12 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         noteLatched.store (true, std::memory_order_relaxed);
         break;
     }
-    // 1. Surplus output channels carry silence, not garbage.
     for (auto ch = getTotalNumInputChannels(); ch < getTotalNumOutputChannels(); ++ch)
         buffer.clear (ch, 0, buffer.getNumSamples());
     const int numSamples = buffer.getNumSamples();
-    // 2. A body that failed to load returns DRY audio — never mute the track.
     if (! lastLoadOk.load (std::memory_order_acquire) || numSamples <= 0 || morphBuffer.empty())
         return;
-    // 3. The engine cannot be freed while this scope is alive. One acquisition
-    //    covers every engine touch below, telemetry included.
     TrenchDspBridge::AudioScope engineScope (dspBridge);
-    // 4. OVERSIZED HOST BLOCK. JUCE: "the host may well pass a larger block".
-    //    morphBuffer and monoScratch are sized from the PREPARED size, and
-    //    processBlock may not allocate. Dropping to dry
-    //    (what this did before) makes a whole block silent-of-effect at exactly
-    //    the moment the host changes its buffer — audible, and nondeterministic.
-    //    So walk the block in prepared-size chunks. The channel pointer array is
-    //    a fixed stack array; nothing here allocates.
     const int maxChunk = juce::jmax (1, juce::jmin (preparedBlockSize, (int) morphBuffer.size()));
     if (numSamples > maxChunk)
     {
@@ -340,19 +310,14 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     };
     calibrationInputRms.store (rms(), std::memory_order_relaxed);
 #endif
-    // 3. Every parameter, read once from the cached atomics.
-    // EVERY MACRO READS THROUGH ITS TABLE (plugin/tools/gen_curves.py). The
-    // tables are identity until a bisection session has measured that axis.
     using trench::curves::Axis;
     using trench::curves::curveMap;
+    const bool held = morphHeld.load (std::memory_order_acquire);
     const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
     const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
     const int movePreset  = (int) pMovePreset->load();
     const int moveTransition = (int) pMoveTransition->load();
     const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
-    // 4. THE INPUT METER IS THE INPUT. Taken here from the untouched buffer,
-    //    not after the cascade and output stage, where it becomes an output
-    //    meter wearing an input label.
     float dryPeakL = 0.0f, dryPeakR = 0.0f;
     if (editorOpen.load (std::memory_order_relaxed))
     {
@@ -369,11 +334,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         dryPeakL = dryPeakOf (0);
         dryPeakR = dryPeakOf (1);
     }
-    // 5. AUTO KEY hears the dry input whenever AUTO is selected — editor or
-    //    no editor. A manual key bypasses detection immediately.
     if (keyChoice == 0)
         keyDetector.pushAudio (buffer);
-    // 6. Host timing, read once.
     trench::MovementTransport transport;
     if (auto* ph = getPlayHead())
         if (auto pos = ph->getPosition())
@@ -387,19 +349,34 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         }
     if (sampleOffset > 0 && transport.ppq >= 0.0 && getSampleRate() > 0.0)
         transport.ppq += (double) sampleOffset * transport.bpm / 60.0 / getSampleRate();
-    // 7. The per-sample Morph trajectory — the ONLY movement law.
     const bool customMotion = pMoveCustom->load() > 0.5f;
     if (customMotion) userMotion.readAudio (audioMotion);
     const auto customPattern = audioMotion.pattern();
-    movement.render (morphBuffer.data(), numSamples, baseMorph, transport,
+    movement.render (morphBuffer.data(), numSamples, transport,
                      movePreset, customMotion ? 0 : moveTransition, (int) pMoveLength->load(),
                      (int) pMovePlayback->load(), movementRestart.load (std::memory_order_relaxed),
                      customMotion ? &customPattern : nullptr, customMotion ? audioMotion.loopSteps : 0);
     const float wheel = baseMorph;
+    if (held && ! morphWasHeld)
+    {
+        wheelRampFrom = wheel;
+        movementDepth = 0.0f;
+    }
+    morphWasHeld = held;
+    float low = 0.0f, high = 0.0f;
+    if (customMotion)
+        trench::Movement::travel (customPattern, low, high);
+    else if (movePreset >= 1 && movePreset <= trench::kNumFuncGenPatterns)
+        trench::Movement::travel (trench::kFuncGenPatterns[movePreset - 1], low, high);
     const float from = wheelRampFrom < 0.0f ? wheel : wheelRampFrom;
     const float step = (wheel - from) / (float) juce::jmax (1, numSamples);
     for (int i = 0; i < numSamples; ++i)
-        morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, from + step * (float) (i + 1) + morphBuffer[(size_t) i]);
+    {
+        movementDepth = held ? 0.0f : juce::jmin (1.0f, movementDepth + movementReturnStep);
+        const float room = juce::jmax (0.0f, 1.0f - movementDepth * (high - low));
+        const float place = (from + step * (float) (i + 1)) * room;
+        morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, place + movementDepth * (morphBuffer[(size_t) i] - low));
+    }
     wheelRampFrom = wheel;
 #if TRENCH_DEV_PANEL
     wheelLoopSource.process (morphBuffer.data(), numSamples, transport.ppq, transport.playing, transport.bpm, getSampleRate());
@@ -411,31 +388,16 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         morphBuffer[(size_t) i] = calibrationMorph;
     }
 #endif
-    // 8. Static controls that changed since last block.
     const float outputAmount = juce::jlimit (0.0f, 1.0f, pOutput->load());
-    const float inputDrive = trench::preampGain (juce::jlimit (0.0f, 1.0f, pPreamp->load()));
-    dspBridge.setInputDrive (inputDrive);
+    dspBridge.setInputDrive (1.0f);
+    dspBridge.setInputDesk (juce::jlimit (0.0f, 1.0f, pPreamp->load()));
     dspBridge.setOutputDrive (outputAmount, trench::deskCompensationGain (outputAmount));
     TrenchParams params;
-    params.q = q;                       // the static authored second axis
+    params.q = q;
     params.poleDistortion = 0.0f;
 #if TRENCH_DEV_PANEL
     params.poleDistortion = calibration[5];
 #endif
-    // AUTO DETECTS. IT DOES NOT RETUNE.
-    //
-    // This line used to substitute the DETECTOR'S guess for the player's
-    // choice, so the default state — AUTO — handed the filter's tuning to
-    // whatever the plug-in happened to be hearing. Fed pink noise it heard G
-    // minor and moved the whole geometry about a semitone, which is most of why
-    // a capture of an X3 preset did not sound like the X3. The X3 has no key
-    // tracking at all; nothing that retunes the filter belongs in the state a
-    // preset is judged in.
-    //
-    // Nothing is lost. The detector still runs, and KeySnapBox still shows what
-    // it heard as a primary and secondary suggestion you can click to commit
-    // (applySuggestedChoice). Snapping is now something the player asks for.
-    // 0 = no snap.
     params.keySnap = keyChoice;
     params.noteLatched = noteLatched.load (std::memory_order_relaxed);
     params.noteTrackRatio = noteTrackRatio.load (std::memory_order_relaxed);
@@ -477,7 +439,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         calibrationReceived[i].store (calibration[i], std::memory_order_relaxed);
     calibrationBlocks.fetch_add (1, std::memory_order_release);
 #endif
-    // 12. Telemetry only while the editor is looking.
     if (editorOpen.load (std::memory_order_relaxed))
     {
         auto smoothMeter = [] (std::atomic<float>& target, float next)
@@ -512,9 +473,6 @@ void PluginProcessor::parameterChanged (const juce::String& parameterID, float n
     if (parameterID == ParamID::body)
     {
         const int raw = juce::roundToInt (newValue);
-        // An out-of-range index must never resolve to a DIFFERENT preset. The
-        // old modulo wrap silently loaded some other body when a saved project
-        // named a slot this roster no longer has; land on NO FILTER instead.
         const int wanted = (raw >= 0 && raw < trench::bodyCount()) ? raw : trench::kNoFilterIndex;
         pendingBodyIndex.store (wanted, std::memory_order_relaxed);
         triggerAsyncUpdate();
@@ -553,12 +511,10 @@ void PluginProcessor::handleAsyncUpdate()
             TrenchDspBridge::bodyBytesFromJson (json, raw);
     }
     loadedRuntimePreset = {};
-    // UI updates first — curve draws the new body immediately.
     bodyVersionForUi.fetch_add (1, std::memory_order_relaxed);
     bool ok;
     if (raw.getSize() == 240)
     {
-        // reloadCartridgeBytes keeps cascade states alive — no click
         ok = dspBridge.reloadCartridgeBytes (raw);
         currentBodyBytes = raw;
         uiBodyBytes = raw;
@@ -590,8 +546,6 @@ void PluginProcessor::captureCurrentBodyBytes (const juce::String& cartridgeJson
 }
 bool PluginProcessor::seedCurrentBody()
 {
-    // The sibling-seeding experiment retired with trench_seed_body; the
-    // editor affordance stays until the five-point cleanup rules on it.
     return false;
 }
 void PluginProcessor::exportCurrentBody()
@@ -672,11 +626,6 @@ bool PluginProcessor::probeCurrentBodyForUi (float morph, float q, float outCoef
     const juce::ScopedLock bodyLock (bodyStateLock);
     if (outCoeffs == nullptr)
         return false;
-    // A runtime preset has no 240-word interchange form — it is a bank
-    // selection, and currentBodyBytes is deliberately empty so export
-    // and the datum path cannot treat it as an Hz-anchored body. The curve
-    // still needs something to probe, so mirror the SELECTED bank (padded to
-    // six stages) and probe it verbatim, datum 0.
     if (loadedRuntimePreset.isValid() && runtimePresetProbeBytes.getSize() == 240)
         return TrenchDspBridge::probePackedBody (
             runtimePresetProbeBytes.getData(), runtimePresetProbeBytes.getSize(),
@@ -694,14 +643,6 @@ bool PluginProcessor::probeCurrentBodyForUi (float morph, float q, float outCoef
                                              currentBodyDatumRate,
                                              keyChoice);
 }
-// AUTO KEY hysteresis. Runs on the WORKER (never the message thread), editor
-// open or not — a 131,072-point FFT and an RTNeural pass do not belong on the
-// thread that draws the host. candidateKey/candidateCount/acceptedKey are the
-// worker's own state; everything the UI reads leaves through atomics. Windows are
-// ~1 s; the first useful verdict is one confident window (~1.3 s worst case)
-// or two agreeing windows (~2.3 s). An accepted key holds until a DIFFERENT
-// key wins three consecutive useful windows — no flapping. Unknown stays
-// unknown; the engine snaps to nothing rather than a fabricated C.
 void PluginProcessor::updateAutoKey()
 {
     if (juce::jlimit (0, 24, (int) pKeySnap->load()) != 0)
@@ -729,8 +670,6 @@ void PluginProcessor::timerCallback()
 {
     const juce::ScopedLock bodyLock (bodyStateLock);
     dspBridge.reclaim();
-    // user bodies hot-reload in place: the Workstation saves, the plugin
-    // follows - no TYPE menu round trip. Only disk-loaded .body240 bodies.
     {
         const auto base = trench::bodyBaseForIndex (loadedBodyIndex.load (std::memory_order_relaxed));
         if (juce::File::isAbsolutePath (base) && base.endsWithIgnoreCase (".body240"))
@@ -739,7 +678,7 @@ void PluginProcessor::timerCallback()
             const auto t = f.existsAsFile() ? f.getLastModificationTime() : juce::Time();
             if (base != watchedBodyPath)
             {
-                watchedBodyPath = base;   // new selection: arm, don't reload
+                watchedBodyPath = base;
                 watchedBodyMtime = t;
             }
             else if (t != watchedBodyMtime)
@@ -796,17 +735,17 @@ void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
         state.addChild (calibrationArchive.createCopy(), -1, nullptr);
     }
 #endif
-    // BODY travels by stable id, never by index alone: the roster appends the
-    // user's bodies folder, so slot N names a different filter on another
-    // machine or after any roster edit.
     state.setProperty ("bodyId",
                        trench::bodyBaseForIndex (
                            juce::roundToInt (apvts.getRawParameterValue (ParamID::body)->load())),
                        nullptr);
-    // MOVEMENT travels by NAME, never by index alone (same law as BODY). A
-    // future original-bank edit must not re-author saved projects.
     if (auto* mp = apvts.getParameter (ParamID::movePreset))
         state.setProperty ("movePresetName", mp->getCurrentValueAsText(), nullptr);
+    {
+        const juce::ScopedLock bodyLock (bodyStateLock);
+        if (currentBodyBytes.getSize() == 240)
+            state.setProperty ("bodyBytes", currentBodyBytes.toBase64Encoding(), nullptr);
+    }
 #ifdef TRENCH_PLAYER_EXTRAS
     state.setProperty ("clean_audio_enabled",
                        juce::var (trench::clean_audio::kEnabled()),
@@ -818,6 +757,7 @@ void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    juce::MemoryBlock recoveredBytes;
     if (xmlState != nullptr && xmlState->hasTagName (apvts.state.getType()))
     {
         auto tree = juce::ValueTree::fromXml (*xmlState);
@@ -834,9 +774,9 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
         }
 #endif
         const auto bodyId = tree.getProperty ("bodyId").toString();
+        const auto bodyBytesText = tree.getProperty ("bodyBytes").toString();
+        tree.removeProperty ("bodyBytes", nullptr);
         const auto moveName = tree.getProperty ("movePresetName").toString();
-        // Discard retired controls that have no processing effect. Live
-        // parameter IDs remain unchanged so existing projects retain them.
         for (int i = tree.getNumChildren(); --i >= 0;)
         {
             const auto id = tree.getChild (i).getProperty ("id").toString();
@@ -849,21 +789,6 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
                )
                 tree.removeChild (i, nullptr);
         }
-        // MIGRATION, stated once and applied to every parameter.
-        //
-        // The rewrite dropped modOn/modTrigger/modShape/modNote/modFeel/
-        // modDepth/bloom and added movePreset/track. JUCE keys a VST3
-        // parameter by its id STRING, so no removed id's value can arrive at a
-        // new control — an old session simply has no child for the new ones,
-        // and replaceState leaves a parameter it finds no child for at
-        // WHATEVER THE LIVE INSTANCE HAPPENED TO BE SHOWING. That is the bug:
-        // opening an old project inherited the previous patch's MOVEMENT and
-        // TRACK. (It had already been patched by hand for CHEW alone.)
-        //
-        // So: absent from the saved tree means DEFAULT. Nothing is guessed —
-        // the removed modulation has no equivalent among the curated MOVEMENT
-        // phrases, and inventing a mapping would put a value on the face that
-        // the session never held.
         juce::StringArray absentFromState;
         for (auto* parameter : getParameters())
             if (auto* withID = dynamic_cast<juce::AudioProcessorParameterWithID*> (parameter))
@@ -880,23 +805,17 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
                 parameter->setValueNotifyingHost (parameter->getDefaultValue());
         if (bodyId.isNotEmpty())
         {
-            // A project opens SOUNDING AS SAVED: restoring a body is a load, not
-            // a travel. The flag is consumed by the async body swap this write
-            // queues (handleAsyncUpdate).
             int index = trench::bodyIndexForBase (bodyId);
             if (index < 0)
             {
-                trench::rescanBodyRoster();     // the saved body may be a user file
+                trench::rescanBodyRoster();
                 index = trench::bodyIndexForBase (bodyId);
             }
-            // A body this machine does not have lands on NO FILTER - never on
-            // whatever else happens to occupy the saved index.
+            if (index < 0)
+                index = recoverBodyFromState (bodyId, bodyBytesText, recoveredBytes);
             setParameterDenormalized (ParamID::body,
                                       (float) (index >= 0 ? index : trench::kNoFilterIndex));
         }
-        // MOVEMENT recalls by name: the saved pattern is found in the CURRENT
-        // bank, wherever it sits today. A name this build does not have lands
-        // on OFF - never on whatever else occupies the saved index.
         if (moveName.isNotEmpty())
             if (auto* mp = apvts.getParameter (ParamID::movePreset))
             {
@@ -907,14 +826,51 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
     }
     if (trench::clean_audio::kEnabled())
         forceCleanAudioUiState();
-    // A host may render immediately after restore without dispatching UI
-    // messages. Finish the body load here; the callback only consumes the
-    // published snapshot and never takes bodyStateLock or allocates a body.
     const int restoredIndex = juce::roundToInt (apvts.getRawParameterValue (ParamID::body)->load());
     pendingBodyIndex.store (restoredIndex >= 0 && restoredIndex < trench::bodyCount()
                                ? restoredIndex : trench::kNoFilterIndex,
                            std::memory_order_relaxed);
     handleAsyncUpdate();
+    if (recoveredBytes.getSize() == 240 && loadedBodyIndex.load (std::memory_order_relaxed) == trench::kNoFilterIndex)
+        installBodyBytes (recoveredBytes.getData(), recoveredBytes.getSize());
+}
+int PluginProcessor::recoverBodyFromState (const juce::String& bodyId, const juce::String& bodyBytesText, juce::MemoryBlock& unlisted)
+{
+    juce::MemoryBlock bytes;
+    if (bodyBytesText.isEmpty() || ! bytes.fromBase64Encoding (bodyBytesText) || bytes.getSize() != 240)
+        return -1;
+    unlisted = bytes;
+    const int count = trench::bodyCount();
+    for (int i = 0; i < count; ++i)
+    {
+        juce::MemoryBlock existing;
+        if (! trench::bodyIsNoFilter (i) && trench::bodyRawBytes (i, existing) && existing == bytes)
+        {
+            unlisted.reset();
+            return i;
+        }
+    }
+    auto stem = juce::File (bodyId).getFileNameWithoutExtension();
+    if (! juce::File::isAbsolutePath (bodyId))
+        stem = bodyId;
+    stem = stem.retainCharacters ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ").trim();
+    if (stem.isEmpty() || stem.startsWithChar ('_'))
+        stem = "recovered body";
+    const auto directory = bodyRecoveryDirectory;
+    if (! directory.createDirectory())
+        return -1;
+    juce::File target = directory.getChildFile (stem + ".body240");
+    if (target.existsAsFile())
+        target = directory.getChildFile (stem + " " + juce::String::toHexString (bytes.getData(), 4, 0) + ".body240");
+    if (target.existsAsFile() || ! target.replaceWithData (bytes.getData(), bytes.getSize()))
+        return -1;
+    trench::rescanBodyRoster();
+    const int index = trench::bodyIndexForBase (target.getFullPathName());
+    if (index >= 0)
+        unlisted.reset();
+    juce::Logger::writeToLog ("body recovered from project state -> " + target.getFullPathName()
+                              + (index >= 0 ? "" : " (not listed)"));
+    return index;
 }
 void PluginProcessor::setParameterDenormalized (const char* parameterID, float value)
 {
@@ -924,6 +880,14 @@ void PluginProcessor::setParameterDenormalized (const char* parameterID, float v
         if (std::abs (parameter->getValue() - normalized) > 0.000001f)
             parameter->setValueNotifyingHost (normalized);
     }
+}
+void PluginProcessor::holdMorph (bool hold)
+{
+    if (hold && morphModulatedForUi.load (std::memory_order_relaxed))
+        setParameterDenormalized (ParamID::morph,
+                                  trench::curves::uncurveMap (trench::curves::Axis::morph,
+                                                              effectiveMorphForUi.load (std::memory_order_relaxed)));
+    morphHeld.store (hold, std::memory_order_release);
 }
 void PluginProcessor::forceCleanAudioUiState()
 {

@@ -170,58 +170,31 @@ int main()
         trench::Movement stepMovement, glideMovement;
         stepMovement.prepare (16.0);
         glideMovement.prepare (16.0);
-        stepMovement.render (stepped, 8, 0.5f, transport, 2, trench::Movement::StepTransition);
-        glideMovement.render (glided, 8, 0.5f, transport, 2, trench::Movement::GlideTransition);
+        stepMovement.render (stepped, 8, transport, 2, trench::Movement::StepTransition);
+        glideMovement.render (glided, 8, transport, 2, trench::Movement::GlideTransition);
         check (std::abs (stepped[6] - rail.values[1]) < 1.0e-6f,
-               "STEP holds the pattern's cell where the wheel put it", stepped[6], rail.values[1]);
+               "STEP holds the pattern's cell", stepped[6], rail.values[1]);
         const float between = rail.values[1] + (rail.values[2] - rail.values[1]) * 0.5f;
         check (std::abs (glided[6] - between) < 1.0e-6f,
                "GLIDE interpolates directly between Morph cells", glided[6], between);
-        float anchored[1] = {};
-        trench::Movement anchorMovement;
-        anchorMovement.prepare (16.0);
-        anchorMovement.render (anchored, 1, 0.8f, transport, 3, trench::Movement::StepTransition);
-        const auto& bloom = trench::kFuncGenPatterns[2];
-        check (std::abs ((0.8f + anchored[0]) - (0.8f + bloom.values[0])) < 1.0e-6f,
-               "the cell adds to the wheel, so the figure sits around where you put it",
-               0.8f + anchored[0], 0.8f + bloom.values[0]);
-        const float railLow = *std::min_element (rail.values, rail.values + rail.steps);
-        const float railHigh = *std::max_element (rail.values, rail.values + rail.steps);
-        float full[64] = {}, atQuarter[64] = {};
-        trench::Movement fullMovement, quarterMovement;
+        float full[64] = {};
+        trench::Movement fullMovement;
         fullMovement.prepare (16.0);
-        quarterMovement.prepare (16.0);
-        fullMovement.render (full, 64, 0.5f, transport, 2, trench::Movement::StepTransition);
-        quarterMovement.render (atQuarter, 64, 0.25f, transport, 2, trench::Movement::StepTransition);
-        float low = 1.0f, high = -1.0f;
-        for (float v : full) { low = std::min (low, v); high = std::max (high, v); }
-        check (low == railLow && high == railHigh,
-               "at the resting wheel the whole authored travel plays", high - low, railHigh - railLow);
+        fullMovement.render (full, 64, transport, 2, trench::Movement::StepTransition);
         bool exact = true;
         for (int i = 0; i < rail.steps && 4 * i < 64; ++i)
             exact = exact && full[4 * i] == rail.values[i];
-        check (exact, "at the resting wheel every cell plays exactly as authored");
-        check (atQuarter[8] == rail.values[2] && atQuarter[12] == rail.values[3],
-               "the wheel offsets the figure without rescaling it", atQuarter[12], rail.values[3]);
-        float before[8] = {}, after[8] = {};
-        trench::Movement heldMovement;
-        heldMovement.prepare (16.0);
-        heldMovement.render (before, 8, 0.0f, transport, 2, trench::Movement::StepTransition);
-        auto later = transport; later.ppq = 0.5;
-        heldMovement.render (after, 8, 0.4f, later, 2, trench::Movement::StepTransition);
-        check (std::abs (after[0] - rail.values[2]) < 1.0e-6f
-               && std::abs (after[4] - rail.values[3]) < 1.0e-6f,
-               "moving the Morph wheel moves the whole figure with it", after[4], rail.values[3]);
+        check (exact, "every cell plays exactly as authored");
         float anchorSample[1] = {}, wrapped[1] = {};
         trench::Movement loopMovement;
         loopMovement.prepare (16.0);
         auto loopEnd = transport; loopEnd.ppq = 9.0;
-        loopMovement.render (anchorSample, 1, 0.0f, loopEnd, 2, trench::Movement::StepTransition);
+        loopMovement.render (anchorSample, 1, loopEnd, 2, trench::Movement::StepTransition);
         auto loopStart = transport; loopStart.ppq = 0.5;
-        loopMovement.render (wrapped, 1, 0.0f, loopStart, 2, trench::Movement::StepTransition);
-        check (std::abs (wrapped[0] - rail.values[14]) < 1.0e-6f,
-               "a host loop wrap behind the anchor keeps the pattern running on its grid",
-               wrapped[0], rail.values[14]);
+        loopMovement.render (wrapped, 1, loopStart, 2, trench::Movement::StepTransition);
+        check (std::abs (wrapped[0] - rail.values[2]) < 1.0e-6f,
+               "a host loop wrap keeps the pattern on the song's bar grid",
+               wrapped[0], rail.values[2]);
         PluginProcessor chipProcessor;
         const trench::UiLayout chipLayout { trench::UiLayout::defaults() };
         const trench::ui::Theme chipTheme { chipLayout };
@@ -236,6 +209,137 @@ int main()
         chip.selectPattern (0);
         check (chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load() == 0.3f,
                "selecting OFF leaves Morph where it is", chipProcessor.apvts.getRawParameterValue (ParamID::morph)->load(), 0.3);
+
+        const auto heardOver = [] (PluginProcessor& p, int blocks)
+        {
+            juce::AudioBuffer<float> buf (2, 64);
+            juce::MidiBuffer midi;
+            std::vector<float> heard;
+            for (int b = 0; b < blocks; ++b)
+            {
+                buf.clear();
+                p.processBlock (buf, midi);
+                heard.push_back (p.getEffectiveMorphForUi());
+            }
+            return heard;
+        };
+        juce::MemoryBlock hedz;
+        juce::File (juce::String (TRENCH_TABLE_STITCH_ROOT)).getChildFile ("plugin/presets/p2k/talking_hedz.body240").loadFileAsData (hedz);
+        if (hedz.getSize() != 240)
+            check (false, "the decoded Talking Hedz body is on disk", (double) hedz.getSize(), 240.0);
+        else
+        {
+            const auto decoded = trench::core::PackedBody::from_body_bytes (std::span { static_cast<const std::uint8_t*> (hedz.getData()), hedz.getSize() });
+            const auto poleHz = [] (const trench::core::Cascade& c, double rate)
+            {
+                std::vector<double> hz;
+                for (const auto& s : c)
+                    if (s[4] > 0.0 && s[3] * s[3] < 4.0 * s[4])
+                        hz.push_back (std::acos (-s[3] / (2.0 * std::sqrt (s[4]))) * rate / (2.0 * juce::MathConstants<double>::pi));
+                std::sort (hz.begin(), hz.end());
+                return hz;
+            };
+            const auto peakOf = [] (const trench::core::Cascade& c, double rate)
+            {
+                const auto db = [&c, rate] (double f) { return trench::core::cascade_response_db (c, f, rate); };
+                double best = 20.0, bestDb = db (20.0);
+                for (double f = 20.0; f < std::min (20000.0, 0.45 * rate); f *= std::pow (2.0, 1.0 / 48.0))
+                    if (const double d = db (f); d > bestDb) { best = f; bestDb = d; }
+                const double coarse = best;
+                for (double f = coarse * std::pow (2.0, -50.0 / 1200.0); f <= coarse * std::pow (2.0, 50.0 / 1200.0); f *= std::pow (2.0, 1.0 / 1200.0))
+                    if (const double d = db (f); d > bestDb) { best = f; bestDb = d; }
+                return std::pair<double, double> { best, bestDb };
+            };
+            const auto played = [] (PluginProcessor& p)
+            {
+                float raw[trench::kUiCoeffCount] = {};
+                float boost = 1.0f;
+                p.dspBridge.readUiSnapshot (raw, boost);
+                trench::core::Cascade c {};
+                for (std::size_t s = 0; s < c.size(); ++s)
+                    for (std::size_t k = 0; k < c[s].size(); ++k)
+                        c[s][k] = (double) raw[s * c[s].size() + k];
+                return c;
+            };
+            const auto cents = [] (double a, double b) { return 1200.0 * std::abs (std::log2 (a / b)); };
+            const auto hedzAt = [&hedz] (double rate, float morph, float q, float pattern)
+            {
+                auto p = std::make_unique<PluginProcessor>();
+                setParam (*p, ParamID::morph, morph);
+                setParam (*p, ParamID::q, q);
+                setParam (*p, ParamID::movePreset, pattern);
+                p->prepareToPlay (rate, 64);
+                p->installBodyBytes (hedz.getData(), hedz.getSize());
+                p->setEditorOpen (true);
+                return p;
+            };
+            const auto c0Poles = poleHz (decoded.interpolate_biquads (0.0f, 0.0f, 0.0f), 44100.0);
+            const auto reference = peakOf (decoded.interpolate_biquads (0.47f, 1.0f, 0.0f), 44100.0);
+            std::printf ("decoded Talking Hedz at 44.1 kHz: C0 poles");
+            for (const double hz : c0Poles) std::printf (" %.0f", hz);
+            std::printf (" Hz; MORPH 47 %% Q 100 %% peak %.1f Hz %+.2f dB\n", reference.first, reference.second);
+            bool polesMatch = c0Poles.size() == 6, grabbed = true, still = true, noJump = true, inStep = true;
+            double worstPoleCents = 0.0, worstPeakCents = 0.0, worstPeakDb = 0.0;
+            float fitLow = 1.0f, fitHigh = 0.0f, topLow = 1.0f, topHigh = 0.0f;
+            for (const double rate : { 44100.0, 48000.0, 96000.0 })
+            {
+                const int second = (int) std::lround (rate / 64.0);
+                {
+                    auto corner = hedzAt (rate, 0.0f, 0.0f, 0.0f);
+                    heardOver (*corner, second / 4);
+                    const auto poles = poleHz (played (*corner), rate);
+                    polesMatch = polesMatch && poles.size() == c0Poles.size();
+                    for (std::size_t i = 0; polesMatch && i < poles.size(); ++i)
+                        worstPoleCents = std::max (worstPoleCents, cents (poles[i], c0Poles[i]));
+                }
+                {
+                    auto edge = hedzAt (rate, 0.0f, 0.0f, 1.0f);
+                    const auto heard = heardOver (*edge, second * 2);
+                    fitLow = std::min (fitLow, *std::min_element (heard.begin(), heard.end()));
+                    fitHigh = std::max (fitHigh, *std::max_element (heard.begin(), heard.end()));
+                }
+                {
+                    auto top = hedzAt (rate, 0.9f, 0.0f, 1.0f);
+                    const auto heard = heardOver (*top, second * 2);
+                    topLow = std::min (topLow, *std::min_element (heard.begin(), heard.end()));
+                    topHigh = std::max (topHigh, *std::max_element (heard.begin(), heard.end()));
+                }
+                {
+                    auto grab = hedzAt (rate, 0.47f, 1.0f, 2.0f);
+                    auto twin = hedzAt (rate, 0.47f, 1.0f, 2.0f);
+                    const float caught = heardOver (*grab, second * 3 / 10).back();
+                    heardOver (*twin, second * 3 / 10);
+                    grab->holdMorph (true);
+                    grabbed = grabbed && std::abs (grab->apvts.getRawParameterValue (ParamID::morph)->load() - caught) < 0.001f;
+                    setParam (*grab, ParamID::morph, 0.47f);
+                    const auto held = heardOver (*grab, second / 2);
+                    heardOver (*twin, second / 2);
+                    still = still && std::all_of (held.begin(), held.end(), [] (float m) { return std::abs (m - 0.47f) < 1.0e-6f; });
+                    const auto peak = peakOf (played (*grab), rate);
+                    std::printf ("held at MORPH 47 %% Q 100 %% at %.0f Hz: peak %.1f Hz %+.2f dB\n", rate, peak.first, peak.second);
+                    worstPeakCents = std::max (worstPeakCents, cents (peak.first, reference.first));
+                    worstPeakDb = std::max (worstPeakDb, std::abs (peak.second - reference.second));
+                    grab->holdMorph (false);
+                    const auto back = heardOver (*grab, second / 2);
+                    const auto twinBack = heardOver (*twin, second / 2);
+                    noJump = noJump && std::abs (back.front() - 0.47f) < 0.01f;
+                    for (std::size_t b = (std::size_t) std::ceil (0.25 * rate / 64.0) + 1; b < back.size(); ++b)
+                        inStep = inStep && std::abs (back[b] - twinBack[b]) < 1.0e-6f;
+                }
+            }
+            check (polesMatch && worstPoleCents < 17.0,
+                   "Talking Hedz C0 plays its decoded poles at 44.1, 48 and 96 kHz", worstPoleCents, 17.0);
+            check (std::abs (fitLow) < 1.0e-6f && std::abs (fitHigh - 0.5f) < 1.0e-6f
+                       && std::abs (topLow - 0.45f) < 1.0e-5f && std::abs (topHigh - 0.95f) < 1.0e-5f,
+                   "the wheel places the whole riff in its room: at the bottom at 0 %, 90 % of the way up at 90 %",
+                   topLow, topHigh);
+            check (grabbed && still,
+                   "grabbing MORPH catches it where you hear it and holds it where the hand puts it");
+            check (worstPeakCents < 17.0 && worstPeakDb < 1.0,
+                   "held at MORPH 47 % Q 100 % the sound is Hedz's decoded peak at every rate", worstPeakCents, worstPeakDb);
+            check (noJump && inStep,
+                   "letting go brings the movement back without a jump, in step with an untouched twin after 0.25 s at every rate");
+        }
     }
 
     std::printf ("== bridge boundary ==\n");
@@ -710,49 +814,6 @@ int main()
         check (clean.first == cleanAgain.first, "Z at 0 is deterministic and untouched");
     }
 
-    /* TRACK was intentionally removed from the shipping modulation contract. */
-    /*
-    {
-        juce::MemoryBlock crisp;
-        crisp = fixtureBody ("xml_crisp.body240");
-        auto runBridge = [&crisp] (TrenchParams params)
-        {
-            TrenchDspBridge bridge;
-            bridge.prepare (48000.0, 512);
-            bridge.loadCartridgeBytes (crisp);
-            juce::AudioBuffer<float> buf (2, 512);
-            juce::Random rng (23);
-            juce::MemoryBlock out;
-            for (int b = 0; b < 8; ++b)
-            {
-                for (int c = 0; c < 2; ++c)
-                    for (int i = 0; i < 512; ++i)
-                        buf.setSample (c, i, rng.nextFloat() * 0.2f - 0.1f);
-                bridge.process (buf, params);
-                out.append (buf.getReadPointer (0), 512 * sizeof (float));
-            }
-            return out;
-        };
-        TrenchParams off;
-        off.morph = 0.4f;
-        TrenchParams zeroDepth = off;
-        zeroDepth.trackKey = 7;
-        TrenchParams following = off;
-        following.track = 1.0f;
-        following.trackKey = 7;
-        TrenchParams snapped = off;
-        snapped.keySnap = 8;
-        TrenchParams parked = following;
-        parked.keySnap = 8;
-        const auto offOut = runBridge (off);
-        check (offOut == runBridge (zeroDepth), "TRACK at 0 is bit-identical to today");
-        const auto followOut = runBridge (following);
-        check (! (followOut == offOut), "TRACK at full moves the geometry");
-        check (followOut == runBridge (snapped), "TRACK full to the heard root equals the KEY snap to that root");
-        check (runBridge (parked) == runBridge (snapped), "a manual KEY parks TRACK");
-    }
-
-    */
     std::printf ("== state recall ==\n");
     {
         PluginProcessor saved;

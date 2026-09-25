@@ -352,7 +352,7 @@ int main (int argc, char** argv)
             std::fprintf (stderr, "TRENCH_Stimuli: failed while reading WAV samples\n");
             return 2;
         }
-        measure (source); // Validate source samples before starting any render.
+        measure (source);
 
         const juce::File outputDirectory (options.outputDir);
         if (! outputDirectory.exists() && ! outputDirectory.createDirectory())

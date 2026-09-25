@@ -118,7 +118,7 @@ int main()
     shoot ("trench_face_modulated");
     set (ParamID::morph, 0.0f);
     set (ParamID::movePreset, 8.0f);
-    set (ParamID::moveLength, 3.0f);
+    set (ParamID::moveLength, 4.0f);
     set (ParamID::movePlayback, 2.0f);
     settle (250);
     shoot ("trench_face_four_bars");

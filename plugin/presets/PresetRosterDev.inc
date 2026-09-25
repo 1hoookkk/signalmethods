@@ -1,5 +1,3 @@
-// Dev-build roster: the 33 Proteus 2000 / X3 bodies, read from the repo at runtime.
-// Display name, absolute path (TRENCH_TABLE_STITCH_ROOT is the workspace), E-mu filter type.
 TRENCH_PRESET("Ace Of Bass", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/ace_of_bass.body240", "EQ+")
 TRENCH_PRESET("Megasweepz", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/megasweepz.body240", "LPF")
 TRENCH_PRESET("Early Rizer", TRENCH_TABLE_STITCH_ROOT "/plugin/presets/p2k/early_rizer.body240", "LPF")

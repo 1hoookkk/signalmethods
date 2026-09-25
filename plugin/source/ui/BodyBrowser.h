@@ -6,25 +6,10 @@
 #include <vector>
 namespace trench::ui
 {
-// THE BODY LIST - the E-mu filter menu, as it actually looked.
-//
-// Tyson's reference (2026-07-24 screenshot, ruled final 2026-08-04): a plain
-// light popup that breaks into COLUMNS so the whole roster is on screen at
-// once. No scrolling, no headings, no submenus, no accent colour, no bevel -
-// a thin border, tight rows of small dark type, and a checkmark in the gutter
-// against the one that is loaded. The palette is the face's own '95 menu
-// (SectionRail::LightMenuLnF): bone field, graphite ink.
-//
-// It stays a component rather than a juce::PopupMenu so the audition flow and
-// the offline PNG harness both keep working.
-//
-// Order is the roster's own: the shipped bodies in menu law (tame first,
-// craziest last), the user's own bodies after them.
 class BodyBrowser final : public juce::Component,
                           private juce::Timer
 {
 public:
-    // the face's own light-menu palette - do not invent a second one
     static constexpr juce::uint32 kField = 0xfffcfcfd, kBorder = 0xff5a5750,
                                   kHighlight = 0xff3cc8be, kInk = 0xff2a2722;
 
@@ -36,15 +21,10 @@ public:
     }
     struct Row { juce::String text; int body; bool ticked = false; bool heading = false; };
     std::function<std::vector<Row>()> rowSource;
-    std::function<void (int)> onPreview;   // hover/arrow: ear only, no parameter
-    std::function<void (int)> onCommit;    // click/Enter: this is the body
-    std::function<void (int)> onRestore;   // cancel: put the old one back, no travel
+    std::function<void (int)> onPreview;
+    std::function<void (int)> onCommit;
+    std::function<void (int)> onRestore;
 
-    /// The list is an overlay ON the face (2026-08-06): no desktop window. The
-    /// separate window mis-positioned and mis-scaled under host scaling and
-    /// read as a beige ghost of the plate. The component covers the whole face
-    /// so a click outside the list still dismisses it; `face` is the editor's
-    /// local bounds.
     void open (int currentBodyIndex, juce::Rectangle<int> faceLocal)
     {
         current = openedWith = currentBodyIndex;
@@ -70,17 +50,16 @@ public:
     void close (bool commit)
     {
         stopTimer();
-        setVisible (false);           // the list gets out of the way FIRST, so the
+        setVisible (false);
         const int body = highlight >= 0 && highlight < (int) rows.size()
                              ? rows[(size_t) highlight].body : -1;
         if (commit && body >= 0)
         {
-            if (onCommit) onCommit (body);   // ...4-second travel is watched, not covered
+            if (onCommit) onCommit (body);
         }
         else if (onRestore)
             onRestore (openedWith);
     }
-    /// Face-shot proof hooks.
     juce::String debugState() const
     {
         return "current=" + juce::String (current) + " highlight=" + juce::String (highlight)
@@ -110,15 +89,13 @@ public:
     }
     void mouseMove (const juce::MouseEvent&) override
     {
-        // Hover no longer switches presets. Arrow keys and mouse wheel still
-        // walk the list; click/Enter commits.
     }
     void mouseDown (const juce::MouseEvent& e) override
     {
         const int row = rowAt (e.position);
         if (row < 0)
         {
-            close (false);            // clicked off the list: nothing chosen
+            close (false);
             return;
         }
         if (rows[(size_t) row].heading)
@@ -128,14 +105,12 @@ public:
     }
     void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
     {
-        if (w.deltaY != 0.0f)         // nothing scrolls; the wheel walks the list
+        if (w.deltaY != 0.0f)
             setHighlight (highlight + (w.deltaY > 0.0f ? -1 : 1));
     }
     void paint (juce::Graphics& g) override
     {
         const auto menuRect = panelBounds();
-        // Opaque clean field (2026-08-06): the plate bleeding through read as a
-        // beige tint. White panels are locked - the list is one of them.
         g.setColour (juce::Colour (kField));
         g.fillRect (menuRect);
         g.setColour (juce::Colour (kBorder));
@@ -164,7 +139,6 @@ public:
             }
             if (isTicked (r))
             {
-                // the reference's one mark: a checkmark in the gutter
                 juce::Path check;
                 const float cx = cell.getX() + 8.0f, cy = cell.getCentreY();
                 check.startNewSubPath (cx - 3.0f, cy);
@@ -186,8 +160,6 @@ private:
         return rowSource != nullptr ? rows[(size_t) r].ticked : rows[(size_t) r].body == current;
     }
     static constexpr float kRowH = 20.0f, kGutter = 16.0f, kPadRight = 12.0f;
-    // Plain Arial (Tyson 2026-08-05: "plain arial"). 13.5pt so the roster is
-    // legible at the 352px face ("still reading too small", 2026-08-06).
     static juce::Font rowFont()
     {
         return displayFont (13.5f, false);
@@ -219,7 +191,7 @@ private:
         if (rows[(size_t) r].heading || r == highlight)
             return;
         highlight = r;
-        startTimer (120);             // audition, debounced
+        startTimer (120);
         repaint();
     }
     void timerCallback() override
@@ -228,10 +200,6 @@ private:
         if (onPreview != nullptr && highlight >= 0 && highlight < (int) rows.size())
             onPreview (rows[(size_t) highlight].body);
     }
-    // COLUMNS, NOT SCROLLING: the whole roster is on screen at once, and the
-    // list runs a little WIDER than the plugin - a menu overhangs its host.
-    // Columns are added until the list is at least that much wider than the
-    // face, which also keeps it shorter than the face (the reference's shape).
     void layOut (int faceHeight, int faceWidth)
     {
         const auto font = rowFont();
@@ -241,17 +209,12 @@ private:
         columnW = widest + kGutter + kPadRight;
         const int maxPerColumn = juce::jmax (1, (int) (((float) faceHeight - 32.0f) / kRowH));
         const int n = juce::jmax (1, (int) rows.size());
-        // Never wider than the face ("so wide", 2026-08-06): up to 3 columns,
-        // shrunk to fit inside it, no forced overhang.
         columns = juce::jlimit (1, 3, (n + maxPerColumn - 1) / maxPerColumn);
         perColumn = (n + columns - 1) / columns;
         const float maxW = (float) faceWidth - 24.0f;
         if (columnW * (float) columns > maxW)
             columnW = maxW / (float) columns;
     }
-    // The roster is ALREADY authored tame -> craziest (PresetRoster.inc's menu
-    // law), so the list is simply the roster: "No filter" first, the shipped
-    // bodies in their authored order, the user's own bodies after them.
     void buildRows()
     {
         rows.clear();

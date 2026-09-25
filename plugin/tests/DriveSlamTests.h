@@ -131,13 +131,26 @@ inline int driveSlamTests()
     check (clipped, "filter output soft clips without gain recovery or attenuation below the knee");
     auto* drive = processor.apvts.getParameter (ParamID::preamp);
     drive->setValueNotifyingHost (1.0f);
-    for (int block = 0; block < 12; ++block)
+    const auto slammed = [&]
     {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
-        processor.processBlock (audio, midi);
-    }
-    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f, "INPUT reaches filter soft clipping without an output drive stage");
+        for (int block = 0; block < 96; ++block)
+        {
+            for (int c = 0; c < 2; ++c)
+                for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f * (float) std::sin (juce::MathConstants<double>::twoPi * i / 128.0));
+            processor.processBlock (audio, midi);
+        }
+        return std::vector<float> (audio.getReadPointer (0), audio.getReadPointer (0) + 128);
+    };
+    const auto sameAs = [] (const std::vector<float>& a, const std::vector<float>& b)
+    {
+        float worst = 0.0f;
+        for (size_t i = 0; i < a.size(); ++i) worst = std::max (worst, std::abs (a[i] - b[i]));
+        std::printf ("      recalled block differs from the reference by %g\n", worst);
+        return worst < 1.0e-4f;
+    };
+    const auto reference = slammed();
+    check (*std::max_element (reference.begin(), reference.end()) > trench::kFinalSafetyKnee,
+           "INPUT slams a -20 dBFS sine into the final guard without an output drive stage");
     check (processor.apvts.getParameter ("outputTrim") == nullptr, "no output gain control follows the soft clipper");
     auto savedTree = processor.apvts.copyState();
     juce::ValueTree retired ("PARAM");
@@ -149,14 +162,7 @@ inline int driveSlamTests()
     processor.setStateInformation (saved.getData(), (int) saved.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "outputTrim").isValid(),
         "retired output trim is discarded when loading an interim saved project");
-    for (int block = 0; block < 12; ++block)
-    {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
-        processor.processBlock (audio, midi);
-    }
-    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f,
-        "saved output gain cannot change the final soft-clipped signal");
+    check (sameAs (slammed(), reference), "saved output gain cannot change the final soft-clipped signal");
     check (processor.apvts.getParameter ("amount") == nullptr, "redundant MIX parameter is removed");
     auto oldMixState = processor.apvts.copyState();
     juce::ValueTree oldMix ("PARAM");
@@ -168,14 +174,7 @@ inline int driveSlamTests()
     processor.setStateInformation (oldMixBytes.getData(), (int) oldMixBytes.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "amount").isValid(),
         "old dry MIX settings are discarded on project recall");
-    for (int block = 0; block < 12; ++block)
-    {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
-        processor.processBlock (audio, midi);
-    }
-    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f,
-        "effect stays fully wet after recalling a former dry MIX setting");
+    check (sameAs (slammed(), reference), "effect stays fully wet after recalling a former dry MIX setting");
     auto legacy = processor.apvts.copyState();
     juce::ValueTree oldSlam ("PARAM");
     oldSlam.setProperty ("id", ParamID::slamDrive, nullptr);

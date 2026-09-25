@@ -122,7 +122,7 @@ public:
         canvas.onBegin = [this] { remember(); };
         canvas.onChange = [this] { publish(); };
         configure (smooth, "Motion smoothing", { "Smooth", "Step" });
-        configure (duration, "Motion duration", { "Preset", "1 bar", "2 bars", "4 bars", "8 bars" });
+        configure (duration, "Motion duration", { "1/4 bar", "1/2 bar", "1 bar", "2 bars", "4 bars" });
         configure (rate, "Motion rate", { "Sync", "0.5 Hz", "1 Hz", "2 Hz", "3 Hz", "4 Hz", "6 Hz", "8 Hz", "12 Hz", "16 Hz" });
         configure (play, "Motion playback", { "Loop", "Once" });
         smooth.onChange = [this] { remember(); draft.smooth = smooth.getSelectedId() == 1; publish(); };

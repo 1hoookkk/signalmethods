@@ -41,16 +41,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         "Output",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.0f, pctAttribs()));
-    // The shipping bank is independently authored in
-    // filters/original_patterns.json and baked into FuncGenPatterns.h. The
-    // choice list contains no vendor template names or values.
     {
         juce::StringArray presetNames { "OFF" };
         for (int i = 0; i < trench::kNumFuncGenPatterns; ++i)
             presetNames.add (trench::kFuncGenPatterns[i].name);
-        // GROWL (verdicted 2026-08-10 "speaker in a trunk"): pitch-locked
-        // sub-octave wheel oscillation, rendered inside the engine. One dumb
-        // button — no rate, no depth.
         layout.add (std::make_unique<juce::AudioParameterChoice> (
             juce::ParameterID { ParamID::movePreset, 1 },
             "Movement",
@@ -74,8 +68,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         },
         0));
     layout.add (std::make_unique<juce::AudioParameterChoice> (
-        juce::ParameterID { ParamID::moveLength, 1 }, "Movement Length",
-        juce::StringArray { "Preset timing", "1 bar", "2 bars", "4 bars", "8 bars" }, 0));
+        juce::ParameterID { ParamID::moveLength, 1 }, "Movement Rate",
+        juce::StringArray { "1/4 bar", "1/2 bar", "1 bar", "2 bars", "4 bars" }, trench::Movement::kDefaultRate));
     layout.add (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { ParamID::movePlayback, 1 }, "Movement Playback",
         juce::StringArray { "Preset playback", "Loop", "Once" }, 0));

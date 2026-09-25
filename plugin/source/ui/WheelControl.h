@@ -64,8 +64,8 @@ public:
             const auto name = param->getName (32);
             setMouseCursor (juce::MouseCursor::LeftRightResizeCursor);
             setTitle (name);
-            setHelpText (name + " - drag left/right or mouse-wheel; double-click to reset");
-            setTooltip (name + ": drag/wheel, double-click reset");
+            setHelpText (name + " - click or drag to position; Shift-drag for fine adjustment; double-click to reset");
+            setTooltip (name + ": click/drag, Shift fine, double-click reset");
             attachment->sendInitialUpdate();
         }
         setInterceptsMouseClicks (true, false);
@@ -85,8 +85,8 @@ public:
             defaultDenorm = param->convertFrom0to1 (param->getDefaultValue());
             const auto name = param->getName (32);
             setTitle (name);
-            setHelpText (name + " - drag left/right or mouse-wheel; double-click to reset");
-            setTooltip (name + ": drag/wheel, double-click reset");
+            setHelpText (name + " - click or drag to position; Shift-drag for fine adjustment; double-click to reset");
+            setTooltip (name + ": click/drag, Shift fine, double-click reset");
             attachment->sendInitialUpdate();
         }
         repaint();
@@ -106,6 +106,7 @@ public:
     void mouseEnter (const juce::MouseEvent&) override { hovering = true;  repaint(); }
     void mouseExit  (const juce::MouseEvent&) override { hovering = false; repaint(); }
 
+    std::function<void()> onGestureStart;
     std::function<void()> onGestureEnd;
     std::function<void()> onAltDragStart;
     std::function<void (float)> onAltDragSample;
@@ -125,9 +126,13 @@ public:
             attachment->beginGesture();
             gestureOpen = true;
         }
+        if (onGestureStart != nullptr)
+            onGestureStart();
 
-        e.source.enableUnboundedMouseMovement (true, false);
         dragStartX   = e.position.x;
+        valueAtStart = currentNormalised();
+        if (! e.mods.isShiftDown())
+            dragToPosition (e);
         valueAtStart = currentNormalised();
 
         if (altRecording)
@@ -139,7 +144,7 @@ public:
 
     void mouseDrag (const juce::MouseEvent& e) override
     {
-        if (e.mods.isPopupMenu())
+        if (! pressing || e.mods.isPopupMenu())
             return;
         if (e.mods.isShiftDown() && attachment != nullptr && param != nullptr)
         {
@@ -152,14 +157,17 @@ public:
         }
         else
         {
-            dragRelative (e);
+            dragToPosition (e);
         }
+        dragStartX = e.position.x;
+        valueAtStart = currentNormalised();
         if (altRecording && onAltDragSample != nullptr)
             onAltDragSample (currentNormalised());
     }
 
     void mouseUp (const juce::MouseEvent&) override
     {
+        if (! pressing) return;
         pressing = false;
         if (attachment != nullptr && gestureOpen)
             attachment->endGesture();
@@ -177,7 +185,12 @@ public:
     void mouseDoubleClick (const juce::MouseEvent&) override
     {
         if (attachment != nullptr)
-            attachment->setValueAsCompleteGesture (defaultDenorm);
+        {
+            if (! pressing && onGestureStart != nullptr) onGestureStart();
+            if (gestureOpen) attachment->setValueAsPartOfGesture (defaultDenorm);
+            else attachment->setValueAsCompleteGesture (defaultDenorm);
+            if (! pressing && onGestureEnd != nullptr) onGestureEnd();
+        }
     }
 
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
@@ -187,7 +200,10 @@ public:
             return;
 
         const float next = juce::jlimit (0.0f, 1.0f, currentNormalised() + wheel.deltaY * 0.08f);
-        attachment->setValueAsCompleteGesture (param->convertFrom0to1 (next));
+        if (! pressing && onGestureStart != nullptr) onGestureStart();
+        if (gestureOpen) attachment->setValueAsPartOfGesture (param->convertFrom0to1 (next));
+        else attachment->setValueAsCompleteGesture (param->convertFrom0to1 (next));
+        if (! pressing && onGestureEnd != nullptr) onGestureEnd();
         repaint();
     }
 
@@ -306,14 +322,13 @@ private:
     static constexpr float kPacketX0 = 0.0398f;
     static constexpr float kPacketX1 = 0.8367f;
 
-    void dragRelative (const juce::MouseEvent& e)
+    void dragToPosition (const juce::MouseEvent& e)
     {
         if (attachment == nullptr || param == nullptr)
             return;
 
-        const float throwPx = juce::jmax (1.0f, kRibTravel * (shownFrameWidth > 0.0f ? shownFrameWidth : (float) getWidth()));
-        const float next = juce::jlimit (0.0f, 1.0f,
-                                         valueAtStart + (e.position.x - dragStartX) / throwPx);
+        const float travel = juce::jmax (1.0f, (float) getWidth() - 2.0f * kSideOverhang);
+        const float next = juce::jlimit (0.0f, 1.0f, (e.position.x - kSideOverhang) / travel);
         attachment->setValueAsPartOfGesture (param->convertFrom0to1 (next));
         repaint();
     }

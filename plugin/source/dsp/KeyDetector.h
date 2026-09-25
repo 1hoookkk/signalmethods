@@ -43,14 +43,6 @@ private:
     std::array<CaptureSlot, 2> slots;
     int activeSlot = -1;
     int writePosition = 0;
-    /// THE TEARDOWN RACE. prepare() used to size the capture slots with
-    /// assign(), which REALLOCATES — and pushAudio writes into those same
-    /// vectors from the AUDIO thread. A host that calls prepareToPlay or
-    /// releaseResources without first stopping its audio callback (the same
-    /// hosts that make the engine free unsafe) freed the buffer under the
-    /// writer. So the storage is allocated ONCE, at its maximum, in the
-    /// constructor, and never resized again: only this window length moves,
-    /// and it is read once per callback.
     std::atomic<int> captureSamples { kFftSize };
     double preparedSampleRate = kTargetSampleRate;
     juce::dsp::FFT fft { kFftOrder };

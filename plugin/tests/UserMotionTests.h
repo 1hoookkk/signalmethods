@@ -29,8 +29,8 @@ inline int userMotionTests()
                     {
                         t.ppq = (double) tick * 0.025;
                         float a = 0, b = 0;
-                        original.render (&a, 1, 0.2f, t, index, transition, length, playback);
-                        duplicate.render (&b, 1, 0.2f, t, index, 0, length, playback, 0, &pattern, copy.loopSteps);
+                        original.render (&a, 1, t, index, transition, length, playback);
+                        duplicate.render (&b, 1, t, index, 0, length, playback, 0, &pattern, copy.loopSteps);
                         faithful = faithful && std::abs (a - b) < 1.0e-5f;
                     }
                 }
@@ -58,7 +58,7 @@ inline int userMotionTests()
             {
                 t.ppq = (double) (block * 256) * bpm / 60.0 / 48000.0;
                 float out[256] = {};
-                movement.render (out, 256, 0.0f, t, 0, 0, 0, 0, 0, &pattern);
+                movement.render (out, 256, t, 0, 0, 0, 0, 0, &pattern);
                 target->insert (target->end(), out, out + 256);
             }
         }
@@ -66,7 +66,7 @@ inline int userMotionTests()
         for (std::size_t i = 0; same && i < at60.size(); ++i)
             same = std::abs (at60[i] - at120[i]) < 1.0e-6f;
         check (same, "a free step rate runs on its own clock, not the host tempo");
-        check (at60[23999] == 0.0f && at60[24000] == 1.0f,
+        check (at60[23999] == -1.0f && at60[24000] == 1.0f,
                "2 Hz advances one step every half second");
     }
 
@@ -113,6 +113,7 @@ inline int userMotionTests()
     a.name = "Test draft";
     processor.applyUserMotion (a);
     const auto low = settle();
+    b.values[0] = 0.0f;
     processor.applyUserMotion (b);
     const auto high = settle();
     check (std::abs (low) < 0.001f && std::abs (high - 0.5f) < 0.001f,

@@ -67,13 +67,13 @@ public:
     float getNoteBite() const noexcept { return noteBite.load (std::memory_order_relaxed); }
     int getDetectedKeyForUi() const noexcept { return detectedKeyForUi.load (std::memory_order_relaxed); }
     float getKeyConfidenceForUi() const noexcept { return keyConfidenceForUi.load (std::memory_order_relaxed); }
-    /// The editor's open state gates DISPLAY TELEMETRY ONLY (meters, curve
-    /// snapshot). AUTO KEY listens whenever AUTO is selected — closing and
-    /// reopening the editor never changes sound or detector progress.
     void setEditorOpen (bool open) noexcept
     {
         editorOpen.store (open, std::memory_order_relaxed);
+        if (! open)
+            morphHeld.store (false, std::memory_order_release);
     }
+    void holdMorph (bool hold);
     int  getLoadedBodyIndex() const noexcept { return loadedBodyIndex.load (std::memory_order_relaxed); }
     bool getLastLoadOk()      const noexcept { return lastLoadOk.load (std::memory_order_relaxed); }
     trench::WheelLoop& wheelLoop() noexcept { return wheelLoopSource; }
@@ -84,11 +84,6 @@ public:
     float getEffectiveBiteForUi() const noexcept  { return effectiveBiteForUi.load (std::memory_order_relaxed); }
     float getEffectiveQForUi() const noexcept     { return effectiveQForUi.load (std::memory_order_relaxed); }
     bool isMorphModulatedForUi() const noexcept   { return morphModulatedForUi.load (std::memory_order_relaxed); }
-    /// Hover-audition in the BODY menu: load a body for LISTENING only. It does
-    /// NOT touch the body parameter, so hovering a menu writes no automation and
-    /// leaves no undo step — only a click commits.
-    /// Browsing cancelled: the body that was playing comes straight back, with
-    /// no travel — nothing was chosen, so nothing should move.
     bool hasLivePhraseForUi() const noexcept { return false; }
     void restoreBodyForUi (int index)
     {
@@ -109,31 +104,26 @@ public:
     void forgeAuditionTyped (const std::vector<double>& cards);
     juce::File forgeSaveBody (const juce::String& name, bool overwrite = false);
     enum Axis { AxisFamily = 0, AxisMorph, AxisQ, AxisQSound, AxisSlam };
-    // datumRate declares the rate the 240 bytes are Hz-anchored at; canonical
-    // .body240 files keep the ROM/heritage datum default, native authoring
-    // surfaces pass their host rate.
     bool installBodyBytes (const void* bytes, size_t len, double datumRate = 44'100.0);
     bool copyCurrentBodyBytes (void* out, size_t len);
     bool probeCurrentBodyForUi (float morph, float q, float outCoeffs[trench::kUiCoeffCount], float& outBoost);
-    /// Bumped on every body swap/hot-reload so the editor can skip the
-    /// per-frame packed probe when nothing it depends on has changed.
     std::atomic<int> bodyVersionForUi { 0 };
     static constexpr const char* processorBuildIdentifier() noexcept
     {
         return "trench-plugin-processor-v1";
     }
 private:
-    // Serializes body producers and UI readers. Never acquired by processBlock.
     juce::CriticalSection bodyStateLock;
     void parameterChanged (const juce::String& parameterID, float newValue) override;
     void handleAsyncUpdate() override;
     void timerCallback() override;
     void forceCleanAudioUiState();
     void setParameterDenormalized (const char* parameterID, float value);
+    int recoverBodyFromState (const juce::String& bodyId, const juce::String& bodyBytesText, juce::MemoryBlock& unlisted);
+public:
+    juce::File bodyRecoveryDirectory = trench::userBodyDirectory();
+private:
     void updateAutoKey();
-    /// One prepared-size slice of a host block. processBlock walks an oversized
-    /// block through this; it never sees more samples than prepareToPlay sized
-    /// the buffers for.
     void processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset = 0);
     trench::Movement              movement;
     trench::UserMotionState::Audio audioMotion;
@@ -149,25 +139,14 @@ private:
     std::atomic<float>            noteTrackRatio { 1.0f };
     std::atomic<float>            noteBite { 0.0f };
     float                         wheelRampFrom = -1.0f;
-    std::vector<float>            morphBuffer;   // one authored Morph per sample
-    /// What prepareToPlay sized every audio-thread buffer for. JUCE explicitly
-    /// permits a later block to be LARGER than maximumExpectedSamplesPerBlock,
-    /// and processBlock may not allocate, so a bigger block is walked in
-    /// chunks of this size instead of being dropped to dry.
+    std::atomic<bool>             morphHeld { false };
+    bool                          morphWasHeld = false;
+    float                         movementDepth = 1.0f;
+    float                         movementReturnStep = 0.0f;
+    std::vector<float>            morphBuffer;
     int                           preparedBlockSize = 0;
 
     trench::KeyDetector           keyDetector;
-    /// AUTO KEY's worker. analyse() is a 131,072-point FFT plus an RTNeural
-    /// forward pass; it used to run in timerCallback, which JUCE runs on the
-    /// MESSAGE thread — every window stalled the whole UI, and the host's, for
-    /// as long as the transform took. The capture tap in processBlock stays
-    /// where it was (allocation-free, lock-free, two slots); only the analysis
-    /// moved here. Results are published through the same atomics the editor
-    /// already reads, so nothing else changed hands.
-    ///
-    /// Owned below keyDetector so it is destroyed FIRST, and stopped
-    /// explicitly with a bounded timeout at every teardown — shutdown never
-    /// waits on it indefinitely.
     class KeyWorker final : public juce::Thread
     {
     public:
@@ -178,8 +157,6 @@ private:
             if (! isThreadRunning())
                 startThread (juce::Thread::Priority::low);
         }
-        /// Bounded: signal, wait 2 s, then kill. A DAW closing must not hang on
-        /// an analysis window.
         void stop() { stopThread (2000); }
         void run() override
         {
@@ -197,21 +174,16 @@ private:
     std::atomic<int>  pendingBodyIndex { trench::kNoFilterIndex };
     std::atomic<int>  loadedBodyIndex { trench::kNoFilterIndex };
     std::atomic<bool> bodyInjected { false };
-    // X3 runtime preset support.
     bool loadRuntimePresetForCurrentRate();
     void buildRuntimePresetProbeMirror (int bank);
     trench::RuntimePreset loadedRuntimePreset;
     double loadedRuntimePresetBankRate { 0.0 };
-    /// UI-only mirror of the selected bank, identity-padded to six stages, so
-    /// the curve has 240 words to probe. Not the engine's copy, not exportable.
     juce::MemoryBlock runtimePresetProbeBytes;
     std::atomic<bool> lastLoadOk { true };
     trench::WheelLoop wheelLoopSource;
     juce::Time        auditionSlotMtime;
-    juce::String      watchedBodyPath;      // in-place reload of a disk-loaded body
+    juce::String      watchedBodyPath;
     juce::Time        watchedBodyMtime;
-    // Cached APVTS atomics — resolved once at construction; the audio thread
-    // never does a string parameter lookup.
     std::atomic<float>* pMorph = nullptr;
     std::atomic<float>* pQ = nullptr;
     std::atomic<float>* pPreamp = nullptr;
@@ -232,10 +204,6 @@ private:
     std::atomic<float> effectiveQForUi { 0.0f };
     std::atomic<bool> morphModulatedForUi { false };
     std::atomic<bool> editorOpen { false };
-    // AUTO KEY — always listening while AUTO is selected. ~1 s analysis
-    // windows; a verdict needs either one confident window plus agreement or
-    // two agreeing windows (~2 s). An accepted key holds until a different
-    // key clearly displaces it (hysteresis), so the snap never flaps.
     std::atomic<int> detectedKeyForUi { -1 };
     std::atomic<float> keyConfidenceForUi { 0.0f };
     static constexpr double kKeyForget = 0.97;
@@ -245,8 +213,6 @@ private:
     juce::MemoryBlock currentBodyBytes;
     double currentBodyDatumRate = 44'100.0;
     juce::MemoryBlock rosterBodyBytes;
-    // The curve draws the new body instantly.
-    // reloadCartridgeBytes keeps cascade states alive — no click, no crossfade.
     juce::MemoryBlock uiBodyBytes;
     void captureCurrentBodyBytes (const juce::String& cartridgeJson);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)

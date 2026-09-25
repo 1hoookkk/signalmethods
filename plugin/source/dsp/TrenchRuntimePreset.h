@@ -4,35 +4,11 @@
 
 namespace trench
 {
-// X3 RUNTIME PRESET — the xStream law, plugin side.
-//
-// The Emulator X3 stores FOUR pre-compiled coefficient banks per filter
-// (44.1k / 48k / 96k / 192k). They are distinct designs, not rate-converted
-// copies (proven by cross-rate re-encoding mismatch,
-// scratchpad/rate_bank_redundancy.py). The engine selects the nearest bank and
-// plays it verbatim - datum_rate = 0, no recompilation, ever.
-//
-// This is the OTHER regime to .body240. A body we author from a measurement is
-// Hz-anchored and recompiles to the host rate; it has to be, because there is
-// no factory bank set to select from. A runtime preset already has its banks,
-// so migrating one would be inventing data E-mu never shipped.
-//
-// Consequence the caller must honour: the chosen bank is a function of the
-// host rate. A preset loaded at 44.1k is WRONG once the host switches to 96k -
-// an octave out. Whoever owns prepareToPlay must re-load on a rate change.
-// That is what `bankForRate` exists to make cheap.
-//
-// File form: X3F_<stem>.x3preset.json, written by
-// tools/x3_fundamentals_to_cartridges.py. Words are UNPADDED
-// (4 corners x activeStages x 5) - exactly what the FFI wants; the Rust side
-// pads to six stages with the identity sentinel.
 struct RuntimePreset
 {
     juce::String name;
     juce::String stem;
     int activeStages = 0;
-    // Parallel arrays, one entry per populated bank. Small and fixed (<= 4),
-    // so a flat scan beats a map.
     std::vector<double> bankRates;
     std::vector<std::vector<unsigned short>> bankWords;
 
@@ -42,7 +18,6 @@ struct RuntimePreset
             && bankRates.size() == bankWords.size();
     }
 
-    /// Index of the bank whose authored rate is nearest `hostRate`, or -1.
     int bankForRate (double hostRate) const noexcept
     {
         int best = -1;
@@ -60,9 +35,6 @@ struct RuntimePreset
     }
 };
 
-/// Is this a runtime-preset cartridge rather than a keyframe cartridge?
-/// Both are .json, so the roster's `*.json` glob catches both — the format
-/// string is what separates them. Cheap enough to run before a full parse.
 inline bool isRuntimePresetJson (const juce::String& json) noexcept
 {
     return json.contains ("trench-x3-runtime-preset");
@@ -73,8 +45,6 @@ inline bool isRuntimePresetFile (const juce::File& file) noexcept
     return file.getFileName().endsWithIgnoreCase (".x3preset.json");
 }
 
-/// Parse X3F_*.x3preset.json. Returns an invalid preset on any malformed
-/// input — the caller checks isValid() and falls back rather than half-loading.
 inline RuntimePreset parseRuntimePreset (const juce::String& json)
 {
     RuntimePreset preset;
@@ -105,7 +75,7 @@ inline RuntimePreset parseRuntimePreset (const juce::String& json)
             continue;
         const auto* arr = entry.value.getArray();
         if (arr == nullptr || (size_t) arr->size() != expected)
-            continue;   // wrong word count: skip this bank, keep the others
+            continue;
 
         std::vector<unsigned short> words;
         words.reserve (expected);

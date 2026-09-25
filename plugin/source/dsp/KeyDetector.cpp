@@ -8,8 +8,6 @@ KeyDetector::KeyDetector()
     : resampled ((size_t) kFftSize, 0.0f),
       fftData ((size_t) kFftSize * 2u, 0.0f)
 {
-    // Capture storage at its MAXIMUM, once, here — never resized again while
-    // the audio thread might be writing into it. See captureSamples.
     for (auto& slot : slots)
         slot.samples.assign ((size_t) kFftSize, 0.0f);
 }
@@ -37,14 +35,8 @@ bool KeyDetector::loadModel (const void* jsonData, size_t jsonSize)
 void KeyDetector::prepare (double hostSampleRate, double windowSeconds)
 {
     preparedSampleRate = std::max (1.0, hostSampleRate);
-    // Short analysis windows (default ~1 s) make the first useful verdict
-    // arrive at loop-creation speed; the FFT is zero-padded to kFftSize so
-    // the chroma binning is unchanged. windowSeconds is clamped so the
-    // window never exceeds what the FFT frame can hold at the target rate.
     const double maxSeconds = (double) kFftSize / (double) kTargetSampleRate;
     const double seconds = std::min (std::max (windowSeconds, 0.25), maxSeconds);
-    // Clamped to the storage that already exists — the window may shrink, the
-    // buffer never moves.
     captureSamples.store (std::min (kFftSize, std::max (1, (int) std::llround (
                               preparedSampleRate * seconds))),
                           std::memory_order_relaxed);
@@ -85,9 +77,6 @@ void KeyDetector::pushAudio (const juce::AudioBuffer<float>& buffer) noexcept
 {
     const int channels = buffer.getNumChannels();
     const int samples = buffer.getNumSamples();
-    // Read the window length ONCE for this callback: the message thread may
-    // change it between blocks, and half a block written to one length and half
-    // to another is how a window ends up mismatched with what analysed it.
     const int window = captureSamples.load (std::memory_order_relaxed);
     if (channels <= 0 || samples <= 0 || window <= 0)
         return;
@@ -121,9 +110,6 @@ bool KeyDetector::computeChroma (const float* source, int sourceSamples,
     chroma.fill (0.0f);
     if (source == nullptr || sourceSamples <= 1)
         return false;
-    // Convert the host-rate window to the target rate, then zero-pad the FFT
-    // frame. A full-length window at the target rate (the parity tool and the
-    // heritage 5.9 s window) reduces to the exact previous path.
     const int targetSamples = std::min (kFftSize, std::max (2, (int) std::llround (
         (double) sourceSamples * (double) kTargetSampleRate / preparedSampleRate)));
     if (sourceSamples == targetSamples)
@@ -189,8 +175,6 @@ bool KeyDetector::analyse (Result& result)
         if (! slot.state.compare_exchange_strong (expected, reading, std::memory_order_acq_rel))
             continue;
         std::array<float, 12> chroma {};
-        // The WINDOW, not the storage: the buffer is permanently kFftSize long,
-        // and only the first captureSamples of it were written.
         const bool valid = computeChroma (slot.samples.data(),
                                           captureSamples.load (std::memory_order_relaxed),
                                           chroma);

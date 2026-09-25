@@ -390,8 +390,6 @@ int main()
         b.setPlayConfigDetails (2, 2, kHostRate, 512);
         b.prepareToPlay (kHostRate, 512);
         b.setStateInformation (saved.getData(), (int) saved.getSize());
-        // Start the bounce immediately: no message-loop pump and no silent
-        // settling blocks are allowed between restoring the project and audio.
         juce::AudioBuffer<float> immediateRecall;
         immediateRecall.makeCopyOf (recallInput);
         b.processBlock (immediateRecall, recallMidi);
@@ -450,6 +448,55 @@ int main()
             std::printf ("  %7.0f Hz  heard %7.2f  shown %7.2f\n", f, heard, shown);
         }
         check (worst < 1.0, "graph matches audio with KEY F# (worst dB)", worst, 1.0);
+    }
+
+    std::printf ("== processor: changing the filter type keeps the performance ==\n");
+    if (crispIndex >= 0)
+    {
+        const int other = anotherPackedBody (crispIndex);
+        PluginProcessor a, twin;
+        for (auto* p : { &a, &twin })
+        {
+            p->setPlayConfigDetails (2, 2, kHostRate, 512);
+            p->prepareToPlay (kHostRate, 512);
+            p->setEditorOpen (true);
+            setParam (*p, ParamID::body, (float) crispIndex);
+            setParam (*p, ParamID::morph, 0.3f);
+            setParam (*p, ParamID::q, 0.7f);
+            setParam (*p, ParamID::keySnap, 5.0f);
+            setParam (*p, ParamID::preamp, 0.4f);
+            setParam (*p, ParamID::output, 0.6f);
+            setParam (*p, ParamID::movePreset, 7.0f);
+        }
+        pump (300);
+        juce::MidiBuffer midi;
+        juce::AudioBuffer<float> buf (2, 512);
+        double phase = 0.0;
+        for (int b = 0; b < 20; ++b)
+        {
+            fillSine (buf, phase, 220.0, kHostRate, 0.05f);
+            juce::AudioBuffer<float> copy; copy.makeCopyOf (buf);
+            a.processBlock (buf, midi);
+            twin.processBlock (copy, midi);
+        }
+        setParam (a, ParamID::body, (float) other);
+        pump (300);
+        bool finite = true;
+        for (int b = 0; b < 20; ++b)
+        {
+            fillSine (buf, phase, 220.0, kHostRate, 0.05f);
+            juce::AudioBuffer<float> copy; copy.makeCopyOf (buf);
+            a.processBlock (buf, midi);
+            twin.processBlock (copy, midi);
+            for (int i = 0; i < 512; ++i) finite = finite && std::isfinite (buf.getSample (0, i));
+        }
+        const auto read = [] (PluginProcessor& p, const char* id) { return p.apvts.getRawParameterValue (id)->load(); };
+        const auto near = [] (float v, float want) { return std::abs (v - want) < 1.0e-3f; };
+        const bool kept = near (read (a, ParamID::morph), 0.3f) && near (read (a, ParamID::q), 0.7f) && read (a, ParamID::keySnap) == 5.0f
+                       && near (read (a, ParamID::preamp), 0.4f) && near (read (a, ParamID::output), 0.6f) && read (a, ParamID::movePreset) == 7.0f;
+        const double phaseGap = std::abs (a.getEffectiveMorphForUi() - twin.getEffectiveMorphForUi());
+        check (other >= 0 && a.getLoadedBodyIndex() == other && finite && kept && phaseGap < 1.0e-6,
+               "a filter type change keeps Morph, Q, KEY, INPUT, OUTPUT and the movement phase", phaseGap, 1.0e-6);
     }
 
     std::printf ("== processor: mono layout ==\n");

@@ -513,6 +513,8 @@ int main (int argc, char** argv)
             setParameter (processor, ParamID::distortion, (float) options.distortion);
         if (hasSlam)
             setParameter (processor, ParamID::slamDrive, slamValue);
+        if (options.haveSlam)
+            setParameter (processor, ParamID::output, (float) options.slam);
         setParameter (processor, ParamID::morph, (float) morphAt (morphCurve, 0.0));
         processor.dspBridge.setRingLeveller (options.ring);
         std::printf ("ring       %s\n", options.ring ? "on" : "off");

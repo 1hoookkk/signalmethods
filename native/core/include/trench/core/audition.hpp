@@ -20,7 +20,7 @@ Biquad decode_section(const EncodedSection& encoded);
 class CascadeRunner {
  public:
   CascadeRunner();
-  void set_target(const EncodedCascade& target);
+  void set_target(const EncodedCascade& target, std::size_t samples = 0);
   void set_immediate(const Cascade& coefficients);
   void set_glide(const Cascade& coefficients, std::size_t samples);
   void set_kernel_targets(std::span<const Biquad> targets, std::size_t ramp_samples);

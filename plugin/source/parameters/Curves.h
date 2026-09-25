@@ -1,7 +1,5 @@
 #pragma once
 
-// Shipping control tables. Identity until an individualized calibration is loaded.
-// Do not edit by hand; rerun the generator after a bisection session.
 
 #include <array>
 #include <cstddef>

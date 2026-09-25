@@ -46,7 +46,7 @@ class ModulationBay final : public juce::Component
         {
             setTitle ("Movement duration"); setWantsKeyboardFocus (true);
             setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
-            setTooltip ("Drag up/right or use arrows: original length, 1, 2, 4 or 8 bars. Double-click for original timing.");
+            setTooltip ("Drag up/right or use arrows: 1/4, 1/2, 1, 2 or 4 bars. Double-click for 1 bar.");
         }
         void paint (juce::Graphics& g) override
         {
@@ -60,7 +60,7 @@ class ModulationBay final : public juce::Component
         {
             owner.selectLength (start + juce::roundToInt ((e.getDistanceFromDragStartX() - e.getDistanceFromDragStartY()) / 12.0f));
         }
-        void mouseDoubleClick (const juce::MouseEvent&) override { owner.selectLength (0); }
+        void mouseDoubleClick (const juce::MouseEvent&) override { owner.selectLength (trench::Movement::kDefaultRate); }
         void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
         {
             if (wheel.deltaY != 0) owner.selectLength (owner.lengthChoice() + (wheel.deltaY > 0 ? 1 : -1));
@@ -70,7 +70,7 @@ class ModulationBay final : public juce::Component
             if (k == juce::KeyPress::upKey || k == juce::KeyPress::rightKey) { owner.selectLength (owner.lengthChoice() + 1); return true; }
             if (k == juce::KeyPress::downKey || k == juce::KeyPress::leftKey) { owner.selectLength (owner.lengthChoice() - 1); return true; }
             if (k == juce::KeyPress::homeKey) { owner.selectLength (0); return true; }
-            if (k == juce::KeyPress::endKey) { owner.selectLength (4); return true; }
+            if (k == juce::KeyPress::endKey) { owner.selectLength (trench::Movement::kRateChoices - 1); return true; }
             return false;
         }
     private:
@@ -105,7 +105,7 @@ public:
         chip.selectPlayback (0); chip.selectPattern (index);
         processor.restartMovement(); refreshMotion (true);
     }
-    void selectLength (int index) { chip.selectLength (juce::jlimit (0, 4, index)); refreshMotion (true); }
+    void selectLength (int index) { chip.selectLength (juce::jlimit (0, trench::Movement::kRateChoices - 1, index)); refreshMotion (true); }
     void selectSaved (int index)
     {
         library = trench::MotionLibrary::load (libraryDirectory);
@@ -159,21 +159,13 @@ public:
     }
     juce::String durationText() const
     {
-        if (lengthChoice() > 0)
-        {
-            const int bars = 1 << (lengthChoice() - 1);
-            return juce::String (bars) + " BAR";
-        }
         const auto motion = processor.motionForEditing();
+        if (motion.rateHz <= 0)
+            return ModulationChip::barsText (trench::Movement::rateBars (lengthChoice())).toUpperCase();
         const int loopSteps = motion.loopSteps > 0 ? motion.loopSteps
                              : (motion.direction == 2 ? 2 * motion.steps - 2 : motion.steps);
-        const double time = loopSteps * (motion.rateHz > 0 ? 1.0 / motion.rateHz : motion.stepBeats);
-        if (motion.rateHz > 0)
-            return juce::String (time, std::abs (time - std::round (time)) < 0.001 ? 0 : 2) + " S";
-        const double bars = time / 4.0;
-        if (bars >= 1.0 && std::abs (bars - std::round (bars)) < 0.001)
-            return juce::String (juce::roundToInt (bars)) + " BAR";
-        return juce::String (time, std::abs (time - std::round (time)) < 0.001 ? 0 : 2) + " BEAT";
+        const double time = loopSteps / motion.rateHz;
+        return juce::String (time, std::abs (time - std::round (time)) < 0.001 ? 0 : 2) + " S";
     }
     void refreshMotion (bool force = false)
     {

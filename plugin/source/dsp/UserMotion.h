@@ -1,5 +1,6 @@
 #pragma once
 #include "FuncGenPatterns.h"
+#include "Movement.h"
 #include <juce_core/juce_core.h>
 #include <array>
 #include <atomic>
@@ -12,7 +13,7 @@ namespace trench
 struct UserMotion
 {
     std::array<float, 64> values { -0.5f, -0.425f, -0.2f, 0.175f, 0.5f, 0.175f, -0.2f, -0.425f };
-    int steps = 8, direction = 0, length = 3, playback = 1;
+    int steps = 8, direction = 0, length = 4, playback = 1;
     int loopSteps = 0;
     bool smooth = true, dirty = true;
     double stepBeats = 0.5, rateHz = 0.0;
@@ -94,7 +95,7 @@ struct UserMotion
         candidate.rateHz = (double) o->getProperty ("rateHz");
         candidate.loopSteps = (int) o->getProperty ("loopSteps");
         if ((candidate.direction != 0 && candidate.direction != 5)
-            || candidate.length < 0 || candidate.length > 4 || candidate.playback < 0 || candidate.playback > 2
+            || candidate.length < 0 || candidate.length >= Movement::kRateChoices || candidate.playback < 0 || candidate.playback > 2
             || ! std::isfinite (candidate.stepBeats) || candidate.stepBeats <= 0 || candidate.stepBeats > 64
             || ! std::isfinite (candidate.rateHz) || candidate.rateHz < 0 || candidate.rateHz > 100
             || candidate.loopSteps < 0 || candidate.loopSteps > 64) return false;

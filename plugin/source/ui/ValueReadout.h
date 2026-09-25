@@ -80,6 +80,8 @@ public:
             showParamContextMenu (*this, param);
             return;
         }
+        if (onHold != nullptr)
+            onHold (true);
         dragStartY = e.position.y;
         dragStartValue = param != nullptr ? param->getValue() : 0.0f;
         dragging = false;
@@ -106,7 +108,10 @@ public:
         if (dragging && param != nullptr)
             param->endChangeGesture();
         dragging = false;
+        if (onHold != nullptr)
+            onHold (false);
     }
+    std::function<void (bool)> onHold;
     void mouseDoubleClick (const juce::MouseEvent&) override
     {
         if (param == nullptr || textOverride.isNotEmpty() || editor != nullptr) return;

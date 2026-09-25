@@ -33,7 +33,7 @@ AXIS_SYMBOLS = {
 
 
 class CurveBakeError(ValueError):
-    """A ratings session cannot be safely fitted or baked."""
+    pass
 
 
 @dataclass(frozen=True)
@@ -397,7 +397,6 @@ def patch_curves(
         rf"(?P<body>.*?)(?P<suffix>\}};)",
         re.DOTALL,
     )
-    # Resolve and validate both regions before touching the file.
     if len(list(table_pattern.finditer(text))) != 1:
         count = len(list(table_pattern.finditer(text)))
         raise CurveBakeError(f"expected exactly one {symbol} declaration, found {count}")
@@ -499,8 +498,6 @@ def bake(
         fit.normalized_rmse,
         fit.r_squared,
     )
-    # Render first, then perform the single atomic source mutation only after all
-    # fitting and plotting work has succeeded.
     make_plot(plot_path, result, fit.evaluate)
     patch_curves(curves_path, symbol, table, low, high)
     if print_output:

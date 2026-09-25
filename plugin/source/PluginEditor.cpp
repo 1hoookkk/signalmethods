@@ -57,6 +57,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     secondaryReadout = std::make_unique<ValueReadout> ("qReadout", theme);
     morphReadout->bindParameter (processor.apvts.getParameter (ParamID::morph));
     secondaryReadout->bindParameter (processor.apvts.getParameter (ParamID::q));
+    morphWheel->onGestureStart = [this] { processor.holdMorph (true); };
+    morphWheel->onGestureEnd = [this] { processor.holdMorph (false); };
+    morphReadout->onHold = [this] (bool hold) { processor.holdMorph (hold); };
     modulationChip = std::make_unique<ModulationChip> (processor.apvts, theme);
     modulationChip->onRestart = [this] { processor.restartMovement(); };
     modulationChip->customName = [this] { return processor.userMotion.get().name; };
@@ -168,8 +171,11 @@ void PluginEditor::resized()
     secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
     {
         const auto hole = theme.rect ("qWell");
-        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f, 128.0f, 22.0f);
-        modulationChip->setBounds (chip.toNearestInt());
+        const auto value = theme.rect ("qReadout");
+        const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f,
+                                                  value.getRight() - hole.getX(), value.getHeight());
+        modulationChip->setBounds (chip.getSmallestIntegerContainer());
+        modulationChip->setRateBox (chip.withLeft (value.getX()) - modulationChip->getBounds().getPosition().toFloat());
         const float left = hole.getX() - 10.0f;
         const float right = theme.rect ("outputReadout").getRight() + 30.0f;
         const float top = chip.getBottom() + 12.0f;
@@ -192,7 +198,7 @@ void PluginEditor::resized()
 #endif
     onboarding->setBounds (base);
     onboarding->setTargets ({
-        { modulationChip->getBounds(), "MOVE", "choose a movement, its length and playback" },
+        { modulationChip->getBounds(), "MOVE", "choose a movement, its rate and playback" },
     });
 
 

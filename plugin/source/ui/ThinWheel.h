@@ -86,7 +86,6 @@ public:
     {
         if (! strip.isValid())
             return;
-        // Integer scale only — the frame's 1px ribs must stay crisp.
         const int scale = juce::jmax (1, juce::jmin (getWidth() / kFrameW,
                                                      getHeight() / kFrameH));
         const int dw = kFrameW * scale;
@@ -112,10 +111,6 @@ public:
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         g.drawImage (strip, dx, dy, dw, dh, frame * kFrameW, 0, kFrameW, kFrameH);
         {
-            // Position light: the ladder's frames encode rotation, not value, so
-            // MIX was the one continuous control without the hands voice — it
-            // read as trim ("mix is getting lost", 2026-07-31). Same X3
-            // treatment as the knobs: a teal glint riding the current position.
             const float v = currentNormalised();
             const float span = (float) dh - 6.0f;
             const float py = (float) dy + 3.0f + (1.0f - v) * span;

@@ -35,8 +35,6 @@ public:
             g.drawFittedText (text.toUpperCase(), r.toNearestInt(), just, 1);
         };
         draw ("typeLabel",   t.text ("typeLabel",   "BODY"), true, true);
-        // Silkscreen never fades (Tyson 2026-08-15 "No fucking fade") — the
-        // printed panel text is ink on metal, whatever the body underneath.
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
         draw ("inputLabel",  t.text ("inputLabel",  ""), true, false);

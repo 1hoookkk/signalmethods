@@ -44,20 +44,9 @@ struct BodyBehavior
 };
 inline constexpr const char* kAuditionBase = "@audition";
 inline constexpr int kNoFilterIndex = 0;
-// A fresh instance lands on NO FILTER (Tyson 2026-08-14 ship audit: "it should
-// load to no filter"). Supersedes the 2026-07-31 ruling that landed on a real
-// filter ("this DRIVE only shit") - the neutral slot is now the front door.
 inline constexpr int kDefaultBodyIndex = kNoFilterIndex;
-// Slot 0 is an exact identity body, but the wet path remains live: SLAM and
-// the console stages still work. The honest name for the neutral path (Tyson 2026-07-31);
-// sentence case like every other body name ("not all caps").
 inline constexpr const char* kNoFilterName = "No filter";
 inline constexpr int kUserSlotPool = 128;
-// The BODY parameter's range is FROZEN. If it tracked bodyCount() the range
-// would differ per machine (the roster appends the user's bodies folder), and a
-// host automation lane - normalised 0..1 on the wire - would resolve to a
-// different filter on someone else's system. Widen only if the roster outgrows
-// it, and never narrow it: the range is part of the saved-project contract.
 inline constexpr int kBodyParamMaxIndex = 511;
 inline const BodyEntry* bakedRoster (int& countOut) noexcept;
 inline juce::File userBodyDirectory()
@@ -116,14 +105,10 @@ inline std::string bodyFolderCategory (const juce::File& root, const juce::File&
                       .replaceCharacter ('\\', '/')
                       .trimCharactersAtStart ("/")
                       .trimCharactersAtEnd ("/");
-    // "." is what a file sitting in the folder root reports. It is not a
-    // category name; loose files are just USER.
     if (parent.isEmpty() || parent == ".")
         return std::string ("USER");
     return parent.toStdString();
 }
-// Working shelves are not a menu. A folder whose name starts with "." or "_"
-// is scratch (dotfiles, "_noise" study dumps) and never reaches the face.
 inline bool isHiddenBodyFolder (const std::string& category)
 {
     for (const auto& segment : juce::StringArray::fromTokens (juce::String (category), "/", {}))
@@ -147,7 +132,6 @@ inline void buildRosterStore (RosterStore& store)
             store.bases.emplace_back (baked[index].base);
             store.categories.emplace_back (baked[index].category);
         }
-        // The audio plug-in embeds a fixed roster. Authoring belongs to native/.
         store.entries.reserve (store.names.size());
         for (size_t i = 0; i < store.names.size(); ++i)
             store.entries.push_back ({ store.names[i].c_str(), store.bases[i].c_str(),
@@ -319,8 +303,6 @@ inline juce::String bodyDisplayName (int index) noexcept
     const auto* roster = bodyRoster (count);
     return count > 0 ? roster[wrapBodyIndex (index)].displayName : juce::String();
 }
-// Stable identity for save/recall: the baked resource stem, or the file path for
-// a user body. An index alone means nothing across machines or roster versions.
 inline juce::String bodyBaseForIndex (int index) noexcept
 {
     int count = 0;

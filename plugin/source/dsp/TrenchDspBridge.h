@@ -119,9 +119,13 @@ public:
 #endif
         inputGain.reset (sampleRateHz, 0.005);
         inputGain.setCurrentAndTargetValue (1.0f);
+        preDeskL.prepare (sampleRateHz);
+        preDeskR.prepare (sampleRateHz);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+        left = trench::core::CascadeRunner {};
+        right = trench::core::CascadeRunner {};
         left.set_sample_rate (sampleRateHz);
         right.set_sample_rate (sampleRateHz);
         left.reset();
@@ -129,6 +133,11 @@ public:
         smoothedMorph = -1.0f;
         smoothedQ = -1.0f;
         controlTick = juce::jmax (1, (int) std::lround (sampleRateHz * 88.0 / 44100.0));
+        fadeLeft.resize ((size_t) std::max (128, controlTick));
+        fadeRight.resize (fadeLeft.size());
+        bodyFadeLength = std::max (1, (int) std::lround (sampleRateHz * 0.010));
+        bodyFadeRemaining = 0;
+        heardGeneration = 0;
         left.set_feedback_ceiling (kStateCeiling);
         right.set_feedback_ceiling (kStateCeiling);
         if (! sourceBytes.empty())
@@ -137,6 +146,7 @@ public:
 
     void setRingLeveller (bool enabled) noexcept
     {
+        ringEnabled = enabled;
         left.set_ring_leveller (enabled);
         right.set_ring_leveller (enabled);
     }
@@ -224,8 +234,8 @@ public:
         {
             const auto body = trench::core::PackedBody::from_body_bytes (std::span {
                 static_cast<const std::uint8_t*> (bytes), len });
-            auto cascade = cascadeAt (body, datumRate, runtimeRate,
-                                      juce::jlimit (0.0f, 1.0f, morph), juce::jlimit (0.0f, 1.0f, q));
+            auto cascade = cascadeAt (body.interpolate_words (juce::jlimit (0.0f, 1.0f, morph), juce::jlimit (0.0f, 1.0f, q), 0.0f),
+                                      datumRate, runtimeRate);
             cascade = trench::KeySnap::apply (cascade, keyChoice, runtimeRate, nullptr, 1.0);
             int index = 0;
             for (const auto& section : cascade)
@@ -290,8 +300,35 @@ public:
 #if TRENCH_DEV_PANEL
         float preDeskPeak = 0.0f, postDeskPeak = 0.0f;
 #endif
-        const bool switched = snapshot->generation != heardGeneration;
-        heardGeneration = snapshot->generation;
+        const bool switched = snapshot->generation != heardGeneration && bodyFadeRemaining == 0;
+        if (switched)
+        {
+            if (heardGeneration != 0)
+            {
+                outgoingLeft = left;
+                outgoingRight = right;
+                outgoingLeft.zero_kernel_deltas();
+                outgoingRight.zero_kernel_deltas();
+                bodyFadeRemaining = bodyFadeLength;
+            }
+            audioSnapshot = *snapshot;
+            heardGeneration = snapshot->generation;
+            keyLanes = {};
+            for (auto* runner : { &left, &right })
+            {
+                *runner = trench::core::CascadeRunner {};
+                runner->set_sample_rate (sampleRateHz);
+                runner->set_feedback_ceiling (kStateCeiling);
+                runner->set_ring_leveller (ringEnabled);
+                runner->set_pole_distortion (bite);
+#if TRENCH_DEV_PANEL
+                runner->set_feedback_ceiling (std::pow (10.0, calibrationValues[6] / 20.0));
+                runner->set_ring_leveller (calibrationValues[7] > 0.5f);
+                runner->set_ring_calibration (calibrationValues[8], calibrationValues[9], calibrationValues[10], calibrationValues[11]);
+#endif
+            }
+        }
+        snapshot = &audioSnapshot;
         float* outL = buffer.getWritePointer (0);
         float* outR = channels > 1 ? buffer.getWritePointer (1) : nullptr;
 #if TRENCH_DEV_PANEL
@@ -315,21 +352,19 @@ public:
             const float q = smoothedQ;
             if (first || morph != cachedMorph || q != cachedQ || keyRatio != cachedKeyRatio || keyChoice != 0 || keyWasActive)
             {
-                bool changed = true;
-                if (snapshot->gridded
-#if TRENCH_DEV_PANEL
-                    && calibrationValues[0] > 0.5f
-#endif
-                   )
-                    refreshFromGrid (*snapshot, morph, q, keyRatio);
-                else
+                bool changed = first || keyRatio != cachedKeyRatio;
+                if (first || morph != cachedMorph || q != cachedQ)
                 {
-                    changed = first || keyRatio != cachedKeyRatio;
-                    if (first || morph != cachedMorph || q != cachedQ)
-                        changed = refreshBase (*snapshot, morph, q, first) || changed;
-                    if (changed)
-                        cachedCascade = keyRatio != 1.0 ? trench::core::transpose_cascade (cachedBase, keyRatio, sampleRateHz) : cachedBase;
+                    const auto words = snapshot->bank.interpolate_words (morph, q, 0.0f);
+                    if (first || words != cachedWords)
+                    {
+                        cachedWords = words;
+                        cachedBase = cascadeAt (words, snapshot->datumRate, sampleRateHz);
+                        changed = true;
+                    }
                 }
+                if (changed)
+                    cachedCascade = keyRatio != 1.0 ? trench::core::transpose_cascade (cachedBase, keyRatio, sampleRateHz) : cachedBase;
                 cachedMorph = morph;
                 cachedQ = q;
                 cachedKeyRatio = keyRatio;
@@ -352,15 +387,15 @@ public:
 #else
                     if (first)
                     {
-                        const auto encoded = trench::core::encode_cascade (heardCascade);
-                        left.set_target (encoded);
-                        right.set_target (encoded);
+                        left.set_immediate (heardCascade);
+                        right.set_immediate (heardCascade);
                     }
                     else
 #endif
                     {
-                        left.set_kernel_targets (heardCascade, (size_t) blockLen);
-                        right.set_kernel_targets (heardCascade, (size_t) blockLen);
+                        const auto encoded = trench::core::encode_cascade (heardCascade);
+                        left.set_target (encoded, (size_t) blockLen);
+                        right.set_target (encoded, (size_t) blockLen);
                     }
                 }
                 else
@@ -378,9 +413,20 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                outL[sample] *= gain;
+                outL[sample] = preDeskL.process (outL[sample] * gain, inputDeskDrive);
                 if (outR != nullptr)
-                    outR[sample] *= gain;
+                    outR[sample] = preDeskR.process (outR[sample] * gain, inputDeskDrive);
+            }
+            const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
+            if (fadeSamples > 0)
+            {
+                std::copy_n (outL + blockStart, fadeSamples, fadeLeft.data());
+                outgoingLeft.process (std::span<float> (fadeLeft.data(), (size_t) fadeSamples));
+                if (outR != nullptr)
+                {
+                    std::copy_n (outR + blockStart, fadeSamples, fadeRight.data());
+                    outgoingRight.process (std::span<float> (fadeRight.data(), (size_t) fadeSamples));
+                }
             }
             left.process (std::span<float> (outL + blockStart, (size_t) blockLen));
             if (outR != nullptr)
@@ -388,6 +434,14 @@ public:
             for (int s = 0; s < blockLen; ++s)
             {
                 const int sample = blockStart + s;
+                if (s < fadeSamples)
+                {
+                    const float mix = (float) (bodyFadeLength - bodyFadeRemaining + 1) / (float) bodyFadeLength;
+                    outL[sample] = fadeLeft[(size_t) s] * (1.0f - mix) + outL[sample] * mix;
+                    if (outR != nullptr)
+                        outR[sample] = fadeRight[(size_t) s] * (1.0f - mix) + outR[sample] * mix;
+                    --bodyFadeRemaining;
+                }
 #if TRENCH_DEV_PANEL
                 preDeskPeak = std::max (preDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
@@ -421,6 +475,13 @@ public:
     void setInputDrive (float gain) noexcept
     {
         inputGain.setTargetValue (std::clamp (gain, 1.0f, 10.0f));
+    }
+    void setInputDesk (float amount) noexcept
+    {
+        inputDeskDrive = std::clamp (amount, 0.0f, 1.0f);
+        const bool on = inputDeskDrive > 0.001f;
+        preDeskL.setEnabled (on);
+        preDeskR.setEnabled (on);
     }
     bool inputDriveIsUnity() const noexcept
     {
@@ -490,106 +551,32 @@ public:
         return transposeRatio (params.noteLatched, params.noteTrackRatio, params.keySnap);
     }
 private:
-    static constexpr int kGridMorph = 65;
-    static constexpr int kGridQ = 17;
     struct Snapshot
     {
         trench::core::PackedBody bank {};
         double datumRate = 0.0;
-        double runtimeRate = 0.0;
         std::uint64_t generation = 0;
-        bool gridded = false;
-        std::vector<trench::core::Cascade> grid;
-        std::vector<trench::core::Cascade> keyed;
-        std::vector<std::uint8_t> keyedValid;
-        double keyedRatio = 1.0;
     };
 
-    void refreshFromGrid (Snapshot& snapshot, float morph, float q, double keyRatio)
-    {
-        const bool keyed = keyRatio != 1.0;
-        if (keyed && keyRatio != snapshot.keyedRatio)
-        {
-            std::fill (snapshot.keyedValid.begin(), snapshot.keyedValid.end(), (std::uint8_t) 0);
-            snapshot.keyedRatio = keyRatio;
-        }
-        const float mPos = juce::jlimit (0.0f, 1.0f, morph) * (float) (kGridMorph - 1);
-        const float qPos = juce::jlimit (0.0f, 1.0f, q) * (float) (kGridQ - 1);
-        const int mi = juce::jmin ((int) mPos, kGridMorph - 2);
-        const int qi = juce::jmin ((int) qPos, kGridQ - 2);
-        const double mf = (double) mPos - (double) mi, qf = (double) qPos - (double) qi;
-        const auto node = [&] (int index) -> const trench::core::Cascade&
-        {
-            if (! keyed)
-                return snapshot.grid[(size_t) index];
-            if (! snapshot.keyedValid[(size_t) index])
-            {
-                snapshot.keyed[(size_t) index] = trench::core::transpose_cascade (snapshot.grid[(size_t) index], keyRatio, sampleRateHz);
-                snapshot.keyedValid[(size_t) index] = 1;
-            }
-            return snapshot.keyed[(size_t) index];
-        };
-        const auto& c00 = node (qi * kGridMorph + mi);
-        const auto& c10 = node (qi * kGridMorph + mi + 1);
-        const auto& c01 = node ((qi + 1) * kGridMorph + mi);
-        const auto& c11 = node ((qi + 1) * kGridMorph + mi + 1);
-        for (size_t s = 0; s < cachedCascade.size(); ++s)
-            for (size_t k = 0; k < cachedCascade[s].size(); ++k)
-            {
-                const double e0 = c00[s][k] + (c10[s][k] - c00[s][k]) * mf;
-                const double e1 = c01[s][k] + (c11[s][k] - c01[s][k]) * mf;
-                cachedCascade[s][k] = e0 + (e1 - e0) * qf;
-            }
-    }
-    bool refreshBase (const Snapshot& snapshot, float morph, float q, bool force)
-    {
-        if (snapshot.datumRate <= 0.0 || snapshot.runtimeRate <= 0.0
-            || juce::approximatelyEqual (snapshot.datumRate, snapshot.runtimeRate))
-        {
-            cachedBase = snapshot.bank.interpolate_biquads (morph, q, 0.0f);
-            return true;
-        }
-        const auto words = snapshot.bank.interpolate_words (morph, q, 0.0f);
-        if (! force && cachedWordsValid && words == cachedWords)
-            return false;
-        cachedWords = words;
-        cachedWordsValid = true;
-        cachedBase = trench::core::native::rewarp_cascade (words, snapshot.datumRate, snapshot.runtimeRate);
-        return true;
-    }
-
-    static trench::core::Cascade cascadeAt (const trench::core::PackedBody& bank, double datumRate,
-                                            double runtimeRate, float morph, float q)
+    static trench::core::Cascade cascadeAt (const trench::core::CornerWords& words, double datumRate, double runtimeRate)
     {
         if (datumRate > 0.0 && runtimeRate > 0.0 && ! juce::approximatelyEqual (datumRate, runtimeRate))
-            return trench::core::native::rewarp_cascade (bank.interpolate_words (morph, q, 0.0f),
-                                                         datumRate, runtimeRate);
-        return bank.interpolate_biquads (morph, q, 0.0f);
+            return trench::core::native::rewarp_cascade (words, datumRate, runtimeRate);
+        trench::core::Cascade out {};
+        for (std::size_t i = 0; i < out.size(); ++i)
+            out[i] = trench::core::section_words_to_biquad (words[i]);
+        return out;
     }
 
     bool publishSnapshot (const std::vector<std::uint8_t>& bytes, double datumRate)
     {
         try
         {
-            const auto packed = trench::core::PackedBody::from_body_bytes (bytes);
             auto next = std::make_unique<Snapshot>();
-            next->bank = packed;
+            next->bank = trench::core::PackedBody::from_body_bytes (bytes);
             next->datumRate = datumRate;
-            next->runtimeRate = sampleRateHz;
             next->generation = ++publishedGeneration;
-            if (datumRate > 0.0 && ! juce::approximatelyEqual (datumRate, sampleRateHz))
-            {
-                next->grid.resize ((size_t) kGridMorph * (size_t) kGridQ);
-                for (int qi = 0; qi < kGridQ; ++qi)
-                    for (int mi = 0; mi < kGridMorph; ++mi)
-                        next->grid[(size_t) (qi * kGridMorph + mi)] = cascadeAt (packed, datumRate, sampleRateHz,
-                                                                                (float) mi / (float) (kGridMorph - 1),
-                                                                                (float) qi / (float) (kGridQ - 1));
-                next->keyed.resize (next->grid.size());
-                next->keyedValid.assign (next->grid.size(), (std::uint8_t) 0);
-                next->gridded = true;
-            }
-            publishCascade (cascadeAt (next->bank, datumRate, sampleRateHz, 0.0f, 0.0f));
+            publishCascade (cascadeAt (next->bank.interpolate_words (0.0f, 0.0f, 0.0f), datumRate, sampleRateHz));
             retireSnapshot (next.release());
             return true;
         }
@@ -623,8 +610,6 @@ private:
 
     void publishCascade (const trench::core::Cascade& cascade) noexcept
     {
-        // Telemetry is allowed to skip an update; the audio callback must never
-        // wait for a reader or for the message thread publishing a new body.
         if (uiSnapshotBusy.test_and_set (std::memory_order_acquire))
             return;
         size_t index = 0;
@@ -649,6 +634,11 @@ private:
     std::vector<std::unique_ptr<Snapshot>> graveyard;
     trench::core::CascadeRunner left;
     trench::core::CascadeRunner right;
+    trench::core::CascadeRunner outgoingLeft, outgoingRight;
+    Snapshot audioSnapshot;
+    std::vector<float> fadeLeft, fadeRight;
+    int bodyFadeRemaining = 0, bodyFadeLength = 1;
+    bool ringEnabled = true;
     std::uint64_t publishedGeneration = 0;
     std::uint64_t heardGeneration = 0;
     float cachedMorph = -1.0f;
@@ -664,7 +654,6 @@ private:
     bool keyWasActive = false;
     trench::core::Cascade cachedBase {};
     trench::core::CornerWords cachedWords {};
-    bool cachedWordsValid = false;
     std::array<float, trench::kUiCoeffCount> uiCoefficients {};
     mutable std::atomic_flag uiSnapshotBusy = ATOMIC_FLAG_INIT;
     static_assert (std::atomic<float>::is_always_lock_free);
@@ -672,6 +661,8 @@ private:
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
+    trench::DeskDrive preDeskL, preDeskR;
+    float inputDeskDrive = 0.0f;
     float outputDrive = 0.0f;
     float caughtFraction = 0.0f;
     float outputCompensation = 1.0f;

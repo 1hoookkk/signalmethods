@@ -9,18 +9,10 @@
 #include <vector>
 namespace trench::ui
 {
-// The section selector below Q (Tyson 2026-07-31): ONE engraved word with a
-// tiny chevron — "GAIN ▾" — the same grammar as the BODY dropdown above.
-// Clicking offers GAIN / MOVEMENT; only the chosen group's lanes
-// appear in the lower bay. Defaults to GAIN (No filter still hands the user
-// PREAMP and SLAM immediately). A hot section you cannot see earns a tiny
-// teal dot beside the word and beside its menu entry — no invisible active
-// settings. Engraved text, generous invisible hit target, never a pill.
 class SectionRail final : public juce::Component,
                           public juce::SettableTooltipClient
 {
 public:
-    // SOURCE (the resample room) is gone; two rooms is the whole bay.
     enum Section { kDrive = 0, kMotion, kNumSections };
     explicit SectionRail (const Theme& theme) : t (theme)
     {
@@ -29,7 +21,7 @@ public:
         setTitle ("Section");
         setTooltip ("GAIN / MOVEMENT - choose which room is open below");
     }
-    std::function<void (int)> onToggleSection;   // editor owns the open state
+    std::function<void (int)> onToggleSection;
     void setOpenSection (int s)      { if (open != s)      { open = s; repaint(); } }
     void setHot (int s, bool h)
     {
@@ -40,7 +32,6 @@ public:
         }
     }
     void setMotionAvailable (bool a) { if (motionOk != a) { motionOk = a; repaint(); } }
-    /// FaceShot hook: same path as choosing from the menu.
     void activate (int s) { if (onToggleSection) onToggleSection (s); }
     void mouseEnter (const juce::MouseEvent&) override { hoverIdx = 0; repaint(); }
     void mouseExit (const juce::MouseEvent&) override { hoverIdx = -1; repaint(); }
@@ -62,16 +53,11 @@ public:
     }
     void paint (juce::Graphics& g) override
     {
-        // The room selector in the face's OWN readout material (mock_sel comp,
-        // 2026-07-31): the frosted-glass part MORPH/Q read from, seated in the
-        // break at the room frame's top-left. TypeSelectorView's grammar at bay
-        // scale — flush-left name, hairline divider, stroked chevron.
         const auto b = getLocalBounds().toFloat();
         drawMutedBoneReadout (g, b, b.getHeight() * 0.18f, hoverIdx >= 0, t);
         g.setFont (displayFont (9.5f, true).withExtraKerningFactor (0.03f));
         g.setColour (juce::Colour (0xff0b0b0b).withAlpha (hoverIdx >= 0 ? 1.0f : 0.9f));
         const float dividerX = b.getRight() - 21.0f;
-        // closed (open < 0) reads as the empty bar — the machine at rest
         if (open >= 0 && open < kNumSections)
             g.drawText (kNames[open],
                         juce::Rectangle<float> (b.getX() + 6.0f, b.getY(),
@@ -90,7 +76,6 @@ public:
         g.setColour (t.arrow());
         g.strokePath (chevron, { 1.2f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
     }
-    // light, plain popup — the E-mu/'95 menu, not the dark glass family
     struct LightMenuLnF : juce::LookAndFeel_V4
     {
         juce::Font getPopupMenuFont() override { return displayFont (11.0f, false); }
@@ -126,13 +111,11 @@ public:
         }
     };
 private:
-    // E-mu's own voice: the X3 face says GAIN (dB). MOVEMENT is the phrase
-    // machine in plain words (renamed from FUNC GEN, Tyson 2026-07-31).
     static constexpr const char* kNames[kNumSections] = { "GAIN", "MOVEMENT" };
     Theme t;
     LightMenuLnF lightMenu;
     int open = kDrive, hoverIdx = -1;
-    bool hot[kNumSections] = { false, false };   // kept for the editor's truth feed
+    bool hot[kNumSections] = { false, false };
     bool motionOk = true;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SectionRail)
 };
