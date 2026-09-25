@@ -1,7 +1,6 @@
 #pragma once
 #include "DeskDrive.h"
 #include "DriveLaw.h"
-#include "Inflator.h"
 #include "KeySnap.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -119,8 +118,6 @@ public:
 #endif
         inputGain.reset (sampleRateHz, 0.005);
         inputGain.setCurrentAndTargetValue (1.0f);
-        preDeskL.prepare (sampleRateHz);
-        preDeskR.prepare (sampleRateHz);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
@@ -165,7 +162,6 @@ public:
             runner->set_ring_leveller (v[7] > 0.5f);
             runner->set_ring_calibration (v[8], v[9], v[10], v[11]);
         }
-        compensate = v[14] > 0.5f;
         outputStageOn = v[12] > 0.5f;
         postDeskL.setBypassSaturation (v[13] < 0.5f);
         postDeskR.setBypassSaturation (v[13] < 0.5f);
@@ -413,9 +409,9 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                outL[sample] = preDeskL.process (outL[sample] * gain, inputDeskDrive);
+                outL[sample] *= gain;
                 if (outR != nullptr)
-                    outR[sample] = preDeskR.process (outR[sample] * gain, inputDeskDrive);
+                    outR[sample] *= gain;
             }
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
@@ -476,22 +472,14 @@ public:
     {
         inputGain.setTargetValue (std::clamp (gain, 1.0f, 10.0f));
     }
-    void setInputDesk (float amount) noexcept
-    {
-        inputDeskDrive = std::clamp (amount, 0.0f, 1.0f);
-        const bool on = inputDeskDrive > 0.001f;
-        preDeskL.setEnabled (on);
-        preDeskR.setEnabled (on);
-    }
     bool inputDriveIsUnity() const noexcept
     {
         return inputGain.getCurrentValue() == 1.0f && inputGain.getTargetValue() == 1.0f;
     }
-    void setOutputDrive (float drive, float compensation = 1.0f) noexcept
+    void setOutputDrive (float drive) noexcept
     {
         outputDrive = std::clamp (drive, 0.0f, 1.0f);
         const bool on = outputStageOn && outputDrive > 0.001f;
-        outputCompensation = on && compensate ? compensation : 1.0f;
         postDeskL.setEnabled (on);
         postDeskR.setEnabled (on);
     }
@@ -605,7 +593,7 @@ private:
     {
         if (! desk.isActive())
             return x;
-        return trench::inflate (desk.process (x, outputDrive) * outputCompensation, outputDrive, trench::kFinalSafetyCeiling);
+        return desk.process (x, outputDrive);
     }
 
     void publishCascade (const trench::core::Cascade& cascade) noexcept
@@ -661,13 +649,9 @@ private:
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
-    trench::DeskDrive preDeskL, preDeskR;
-    float inputDeskDrive = 0.0f;
     float outputDrive = 0.0f;
     float caughtFraction = 0.0f;
-    float outputCompensation = 1.0f;
     bool outputStageOn = true;
-    bool compensate = true;
     trench::DeskDrive postDeskL, postDeskR;
     Bypass bypass;
 #if TRENCH_DEV_PANEL

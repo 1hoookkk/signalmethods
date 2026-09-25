@@ -285,6 +285,16 @@ void trench_runner_set_bite(void* runner, double bite) {
   static_cast<trench::core::CascadeRunner*>(runner)->set_pole_distortion(bite);
 }
 
+void trench_runner_set_radius_distortion(void* runner, double threshold) {
+  if (!runner) return;
+  static_cast<trench::core::CascadeRunner*>(runner)->set_radius_distortion(threshold);
+}
+
+void trench_runner_set_feedback_ceiling(void* runner, double linear) {
+  if (!runner) return;
+  static_cast<trench::core::CascadeRunner*>(runner)->set_feedback_ceiling(linear);
+}
+
 void trench_runner_set_sample_rate(void* runner, double sample_rate_hz) {
   if (!runner) return;
   static_cast<trench::core::CascadeRunner*>(runner)->set_sample_rate(sample_rate_hz);

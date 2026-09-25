@@ -38,7 +38,7 @@ public:
 
     void updateTooltip()
     {
-        const auto role = label == "INPUT" ? "level into the filter, soft clip after it" : "desk drive and inflator after the filter";
+        const auto role = label == "INPUT" ? "level into the filter, soft clip after it" : "Mackity desk after the filter";
         setTooltip (label + " (" + role + "): " + juce::String (juce::roundToInt (getDrive() * 100.0f)) + "% - drag/wheel; Shift for fine adjustment; double-click reset");
     }
 

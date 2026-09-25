@@ -67,6 +67,8 @@ TRENCH_CORE_C_API void trench_runner_set_target(void* runner, const double biqua
 TRENCH_CORE_C_API void trench_runner_set_immediate(void* runner, const double biquads[7][5], size_t section_count);
 TRENCH_CORE_C_API void trench_runner_set_glide(void* runner, const double biquads[7][5], size_t section_count, size_t samples);
 TRENCH_CORE_C_API void trench_runner_set_bite(void* runner, double bite);
+TRENCH_CORE_C_API void trench_runner_set_radius_distortion(void* runner, double threshold);
+TRENCH_CORE_C_API void trench_runner_set_feedback_ceiling(void* runner, double linear);
 TRENCH_CORE_C_API void trench_runner_set_sample_rate(void* runner, double sample_rate_hz);
 TRENCH_CORE_C_API void trench_runner_set_ring_leveller(void* runner, int enabled);
 TRENCH_CORE_C_API void trench_runner_reset(void* runner);

@@ -39,22 +39,24 @@ public:
     {
         if (! enabled)
             return input;
-        const double d = std::clamp ((double) drive, 0.0, 1.0);
         double s = (double) input;
         iirA = guard (iirA * (1.0 - iirAmountA) + s * iirAmountA);
         s -= iirA;
-        s *= 1.0 + d * kSlamToInputGain;
+        s *= inTrim (drive);
         s = biquadA.process (s);
         if (! bypassSaturate)
-        {
-            s = saturate (s, d);
-        }
+            s = saturate (s);
         s = biquadB.process (s);
         iirB = guard (iirB * (1.0 - iirAmountB) + s * iirAmountB);
         s -= iirB;
-        return std::isfinite (s) ? (float) std::clamp (s, -8.0, 8.0) : 0.0f;
+        return std::isfinite (s) ? (float) s : 0.0f;
     }
-    static double saturate (double sample, double) noexcept
+    static double inTrim (float knob) noexcept
+    {
+        const double a = kInTrimUnity + (1.0 - kInTrimUnity) * std::clamp ((double) knob, 0.0, 1.0);
+        return (a * 10.0) * (a * 10.0);
+    }
+    static double saturate (double sample) noexcept
     {
         const double x = std::clamp (sample, -1.0, 1.0);
         return x - std::pow (x, 5.0) * 0.1768;
@@ -65,7 +67,7 @@ private:
     static constexpr double kBiquadBQ = 1.1582298;
     static constexpr double kIirA = 0.001860867;
     static constexpr double kIirB = 0.000287496;
-    static constexpr double kSlamToInputGain = 9.0;
+    static constexpr double kInTrimUnity = 0.1;
     static double guard (double x) noexcept { return std::abs (x) < 1.18e-37 ? 0.0 : x; }
     struct Biquad
     {

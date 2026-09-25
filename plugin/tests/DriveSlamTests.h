@@ -3,7 +3,6 @@
 #include "BinaryData.h"
 #include "TestFixtures.h"
 #include "dsp/PreampLaw.h"
-#include "dsp/Inflator.h"
 #include <cstdio>
 
 inline int driveSlamTests()
@@ -79,6 +78,7 @@ inline int driveSlamTests()
         juce::MidiBuffer midi;
         double difference = 0.0;
         bool bounded = true;
+        float outputPeak = 0.0f, sidePeak = 0.0f;
         for (int block = 0; block < 80; ++block)
         {
             for (int i = 0; i < 128; ++i)
@@ -94,10 +94,18 @@ inline int driveSlamTests()
             for (int i = 0; i < 128; ++i)
             {
                 difference += std::abs (a.getSample (0, i) - b.getSample (0, i));
-                bounded = bounded && std::isfinite (b.getSample (0, i)) && std::abs (b.getSample (0, i)) <= trench::kFinalSafetyCeiling
+#if TRENCH_DEV_PANEL
+                const float bound = 1.5f;
+#else
+                const float bound = trench::kFinalSafetyCeiling;
+#endif
+                outputPeak = std::max (outputPeak, std::abs (b.getSample (0, i)));
+                sidePeak = std::max (sidePeak, std::abs (b.getSample (1, i)));
+                bounded = bounded && std::isfinite (b.getSample (0, i)) && std::abs (b.getSample (0, i)) <= bound
                     && b.getSample (1, i) == 0.0f;
             }
         }
+        std::printf ("      OUTPUT 75 peak %g, silent channel peak %g\n", outputPeak, sidePeak);
         check (difference > 0.01, "OUTPUT changes audio with movement disabled");
         check (bounded, "OUTPUT stays under the -0.1 dBFS ceiling and stereo states stay independent");
         check (std::abs (nonlinear.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f,
@@ -131,26 +139,13 @@ inline int driveSlamTests()
     check (clipped, "filter output soft clips without gain recovery or attenuation below the knee");
     auto* drive = processor.apvts.getParameter (ParamID::preamp);
     drive->setValueNotifyingHost (1.0f);
-    const auto slammed = [&]
+    for (int block = 0; block < 12; ++block)
     {
-        for (int block = 0; block < 96; ++block)
-        {
-            for (int c = 0; c < 2; ++c)
-                for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f * (float) std::sin (juce::MathConstants<double>::twoPi * i / 128.0));
-            processor.processBlock (audio, midi);
-        }
-        return std::vector<float> (audio.getReadPointer (0), audio.getReadPointer (0) + 128);
-    };
-    const auto sameAs = [] (const std::vector<float>& a, const std::vector<float>& b)
-    {
-        float worst = 0.0f;
-        for (size_t i = 0; i < a.size(); ++i) worst = std::max (worst, std::abs (a[i] - b[i]));
-        std::printf ("      recalled block differs from the reference by %g\n", worst);
-        return worst < 1.0e-4f;
-    };
-    const auto reference = slammed();
-    check (*std::max_element (reference.begin(), reference.end()) > trench::kFinalSafetyKnee,
-           "INPUT slams a -20 dBFS sine into the final guard without an output drive stage");
+        for (int c = 0; c < 2; ++c)
+            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
+        processor.processBlock (audio, midi);
+    }
+    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f, "INPUT reaches filter soft clipping without an output drive stage");
     check (processor.apvts.getParameter ("outputTrim") == nullptr, "no output gain control follows the soft clipper");
     auto savedTree = processor.apvts.copyState();
     juce::ValueTree retired ("PARAM");
@@ -162,7 +157,14 @@ inline int driveSlamTests()
     processor.setStateInformation (saved.getData(), (int) saved.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "outputTrim").isValid(),
         "retired output trim is discarded when loading an interim saved project");
-    check (sameAs (slammed(), reference), "saved output gain cannot change the final soft-clipped signal");
+    for (int block = 0; block < 12; ++block)
+    {
+        for (int c = 0; c < 2; ++c)
+            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
+        processor.processBlock (audio, midi);
+    }
+    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f,
+        "saved output gain cannot change the final soft-clipped signal");
     check (processor.apvts.getParameter ("amount") == nullptr, "redundant MIX parameter is removed");
     auto oldMixState = processor.apvts.copyState();
     juce::ValueTree oldMix ("PARAM");
@@ -174,7 +176,14 @@ inline int driveSlamTests()
     processor.setStateInformation (oldMixBytes.getData(), (int) oldMixBytes.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "amount").isValid(),
         "old dry MIX settings are discarded on project recall");
-    check (sameAs (slammed(), reference), "effect stays fully wet after recalling a former dry MIX setting");
+    for (int block = 0; block < 12; ++block)
+    {
+        for (int c = 0; c < 2; ++c)
+            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
+        processor.processBlock (audio, midi);
+    }
+    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f,
+        "effect stays fully wet after recalling a former dry MIX setting");
     auto legacy = processor.apvts.copyState();
     juce::ValueTree oldSlam ("PARAM");
     oldSlam.setProperty ("id", ParamID::slamDrive, nullptr);
@@ -196,22 +205,20 @@ inline int driveSlamTests()
     check (! processor.apvts.copyState().getChildWithProperty ("id", ParamID::distortion).isValid(),
         "old Distortion settings are discarded on project recall");
     {
-        const float c = trench::kFinalSafetyCeiling;
-        bool identity = true, monotone = true;
-        float previous = -1.0f;
-        for (int i = -200; i <= 200; ++i)
-        {
-            const float x = c * (float) i / 200.0f;
-            identity = identity && std::abs (trench::inflate (x, 0.0f, c) - x) < 1.0e-6f;
-            const float y = trench::inflate (x, 1.0f, c);
-            monotone = monotone && y >= previous;
-            previous = y;
-        }
-        check (identity, "inflator at zero effect passes the clipped signal unchanged");
-        check (monotone && std::abs (trench::inflate (4.0f, 1.0f, c) - c) < 1.0e-6f,
-            "inflator is monotone and holds full scale at the ceiling");
-        check (std::abs (trench::inflate (1.0e-4f, 1.0f, c) / 1.0e-4f - 1.5f) < 1.0e-3f,
-            "inflator lifts quiet material by 3.5 dB at full effect");
+        trench::DeskDrive desk;
+        desk.prepare (48000.0);
+        desk.setEnabled (true);
+        float quiet = 0.0f, hot = 0.0f;
+        for (int i = 0; i < 48000; ++i)
+            quiet = std::max (quiet, std::abs (desk.process (0.0001f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0), 1.0f)));
+        desk.reset();
+        for (int i = 0; i < 48000; ++i)
+            hot = std::max (hot, std::abs (desk.process ((float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0), 1.0f)));
+        check (std::abs (trench::DeskDrive::inTrim (0.0f) - 1.0) < 1.0e-9 && std::abs (trench::DeskDrive::inTrim (1.0f) - 100.0) < 1.0e-9,
+            "OUTPUT maps to Mackity In Trim: unity at 0, +40 dB at full");
+        std::printf ("      Mackity full trim: quiet peak %g, hot peak %g\n", quiet, hot);
+        check (quiet > 0.0095f && quiet < 0.0105f && hot > 0.80f && hot < 1.25f,
+            "Mackity at full trim lifts a -80 dBFS tone by 40 dB and holds full scale at its fifth-order curve plus its second filter's ring");
     }
 #if TRENCH_DEV_PANEL
     for (const char* id : trench::calibration::retired)

@@ -1,7 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
-#include "dsp/DeskCompensation.h"
+#include "dsp/PreampLaw.h"
 #include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
 #include "BinaryData.h"
@@ -389,9 +389,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     }
 #endif
     const float outputAmount = juce::jlimit (0.0f, 1.0f, pOutput->load());
-    dspBridge.setInputDrive (1.0f);
-    dspBridge.setInputDesk (juce::jlimit (0.0f, 1.0f, pPreamp->load()));
-    dspBridge.setOutputDrive (outputAmount, trench::deskCompensationGain (outputAmount));
+    dspBridge.setInputDrive (trench::preampGain (juce::jlimit (0.0f, 1.0f, pPreamp->load())));
+    dspBridge.setOutputDrive (outputAmount);
     TrenchParams params;
     params.q = q;
     params.poleDistortion = 0.0f;
