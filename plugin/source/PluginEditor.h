@@ -21,7 +21,8 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <memory>
-class PluginEditor final : public juce::AudioProcessorEditor
+class PluginEditor final : public juce::AudioProcessorEditor,
+                           private juce::Timer
 {
 public:
     explicit PluginEditor (PluginProcessor&);
@@ -34,6 +35,7 @@ public:
 private:
     float uiScale = 1.0f;
     void onFrame();
+    void timerCallback() override { onFrame(); }
     PluginProcessor& processor;
     float lastProbedMorph = -1.0f, lastProbedQ = -1.0f;
     int lastProbedBodyVersion = -1;
@@ -43,7 +45,6 @@ private:
     double morphFrom = 0.0, morphTo = 0.0, morphShown = 0.0, morphArrivedMs = 0.0, morphIntervalMs = 20.0;
     const trench::UiLayout layout { trench::UiLayout::defaults() };
     trench::ui::Theme theme { layout };
-    std::unique_ptr<juce::VBlankAttachment> vblank;
     juce::TooltipWindow tooltipWindow { this, 650 };
     juce::Component face;
     std::unique_ptr<trench::ui::FaceplateView>    faceplate;

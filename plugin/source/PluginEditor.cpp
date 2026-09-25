@@ -149,12 +149,12 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     setSize (juce::roundToInt (kEditorWidth * uiScale), juce::roundToInt (kEditorHeight * uiScale));
 #endif
     setWantsKeyboardFocus (false);
-    vblank = std::make_unique<juce::VBlankAttachment> (this, [this] { onFrame(); });
+    startTimerHz (60);
     onFrame();
 }
 PluginEditor::~PluginEditor()
 {
-    vblank.reset();
+    stopTimer();
     processor.setEditorOpen (false);
 }
 void PluginEditor::resized()
