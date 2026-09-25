@@ -114,16 +114,6 @@ public:
             for (int i = 0; i < saved.size(); ++i)
                 out.push_back ({ saved[i], 400 + i, usingCustom && customName != nullptr && customName() == saved[i] });
         }
-        if (! isOn()) return out;
-        out.push_back ({ "Length", -1, false, true });
-        if (length != nullptr)
-            for (int i = 0; i < length->choices.size(); ++i)
-                out.push_back ({ length->choices[i], 100 + i, length->getIndex() == i });
-        out.push_back ({ "Playback", -1, false, true });
-        if (playback != nullptr)
-            for (int i = 0; i < playback->choices.size(); ++i)
-                out.push_back ({ playback->choices[i], 200 + i, playback->getIndex() == i });
-        out.push_back ({ "Restart", 300, false });
         return out;
     }
     void commitBrowserRow (int id)

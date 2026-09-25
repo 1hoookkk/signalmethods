@@ -143,14 +143,10 @@ inline int frontendTests()
     check (chip->displayText().startsWith (trench::kFuncGenPatterns[4].name) && chip->displayText().contains ("4 bars"),
            "the chip names the movement and its length");
     {
-        bool length = false, once = false, restart = false;
+        bool onlyMovements = true;
         for (const auto& row : chip->browserRows())
-        {
-            length = length || (row.body == 104 && row.ticked);
-            once = once || (row.body == 202 && ! row.ticked);
-            restart = restart || row.body == 300;
-        }
-        check (length && once && restart, "the movement browser offers Length, Playback and Restart rows");
+            onlyMovements = onlyMovements && (row.heading || (row.body >= 0 && row.body <= trench::kNumFuncGenPatterns) || row.body >= 400);
+        check (onlyMovements, "the movement browser lists movements only; length lives in the bar box");
     }
     juce::MemoryBlock state;
     processor.getStateInformation (state);
