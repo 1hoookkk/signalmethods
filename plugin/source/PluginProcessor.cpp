@@ -99,11 +99,7 @@ PluginProcessor::~PluginProcessor()
 const juce::String PluginProcessor::getName() const { return "TRENCH"; }
 bool PluginProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
     return true;
-   #else
-    return false;
-   #endif
 }
 bool PluginProcessor::producesMidi() const
 {
@@ -269,25 +265,40 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     if (! lastLoadOk.load (std::memory_order_acquire) || numSamples <= 0 || morphBuffer.empty())
         return;
     TrenchDspBridge::AudioScope engineScope (dspBridge);
+    static constexpr int kMaxNotes = 64;
+    std::array<int, kMaxNotes> noteAt {};
+    int notes = 0;
+    for (const auto metadata : midiMessages)
+        if (metadata.getMessage().isNoteOn() && notes < kMaxNotes)
+            noteAt[(size_t) notes++] = juce::jlimit (0, numSamples - 1, metadata.samplePosition);
     const int maxChunk = juce::jmax (1, juce::jmin (preparedBlockSize, (int) morphBuffer.size()));
-    if (numSamples > maxChunk)
+    if (numSamples <= maxChunk && notes == 0)
     {
-        static constexpr int kMaxChannels = 8;
-        const int channels = juce::jmin (kMaxChannels, buffer.getNumChannels());
-        if (channels <= 0)
-            return;
-        for (int start = 0; start < numSamples; start += maxChunk)
-        {
-            float* chans[kMaxChannels];
-            const int n = juce::jmin (maxChunk, numSamples - start);
-            for (int c = 0; c < channels; ++c)
-                chans[c] = buffer.getWritePointer (c) + start;
-            juce::AudioBuffer<float> slice (chans, channels, n);
-            processChunk (slice, start);
-        }
+        processChunk (buffer);
         return;
     }
-    processChunk (buffer);
+    static constexpr int kMaxChannels = 8;
+    const int channels = juce::jmin (kMaxChannels, buffer.getNumChannels());
+    if (channels <= 0)
+        return;
+    int next = 0;
+    for (int start = 0; start < numSamples;)
+    {
+        while (next < notes && noteAt[(size_t) next] <= start)
+        {
+            restartMovement();
+            ++next;
+        }
+        int end = juce::jmin (numSamples, start + maxChunk);
+        if (next < notes)
+            end = juce::jmin (end, noteAt[(size_t) next]);
+        float* chans[kMaxChannels];
+        for (int c = 0; c < channels; ++c)
+            chans[c] = buffer.getWritePointer (c) + start;
+        juce::AudioBuffer<float> slice (chans, channels, end - start);
+        processChunk (slice, start);
+        start = end;
+    }
 }
 void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sampleOffset)
 {

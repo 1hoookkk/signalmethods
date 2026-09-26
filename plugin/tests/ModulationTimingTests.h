@@ -169,6 +169,48 @@ inline int modulationTimingTests()
     {
         struct Clock final : juce::AudioPlayHead
         {
+            double ppq = 0.0;
+            juce::Optional<PositionInfo> getPosition() const override
+            {
+                PositionInfo info;
+                info.setIsPlaying (true); info.setBpm (120.0); info.setPpqPosition (ppq);
+                info.setTimeSignature (juce::AudioPlayHead::TimeSignature { 4, 4 });
+                return info;
+            }
+        } clock;
+        PluginProcessor p;
+        p.setPlayHead (&clock);
+        p.setPlayConfigDetails (2, 2, 48000.0, 512);
+        p.prepareToPlay (48000.0, 512);
+        p.setEditorOpen (true);
+        const auto set = [&] (const char* id, float value)
+        {
+            auto* parameter = p.apvts.getParameter (id);
+            parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
+        };
+        set (ParamID::morph, 0.0f); set (ParamID::movePreset, 5.0f);
+        set (ParamID::moveLength, 4.0f); set (ParamID::movePlayback, 2.0f);
+        juce::AudioBuffer<float> buffer (2, 512);
+        juce::MidiBuffer midi;
+        for (int block = 0; block < 1200; ++block)
+        {
+            buffer.clear(); p.processBlock (buffer, midi);
+            clock.ppq += 512.0 * 2.0 / 48000.0;
+        }
+        const float ended = p.getEffectiveMorphForUi();
+        midi.addEvent (juce::MidiMessage::noteOn (1, 60, (juce::uint8) 100), 256);
+        buffer.clear(); p.processBlock (buffer, midi);
+        const float restarted = p.getEffectiveMorphForUi();
+        const float expected = trench::kFuncGenPatterns[4].values[0]
+            + (trench::kFuncGenPatterns[4].values[1] - trench::kFuncGenPatterns[4].values[0]) * (float) (256.0 * 2.0 / 48000.0 / (16.0 / 15.0));
+        std::printf ("      note-on restart: held %g, after a note at sample 256 %g (expected %g)\n", ended, restarted, expected);
+        check (p.acceptsMidi() && std::abs (ended - ending) < 1.0e-6f && std::abs (restarted - expected) < 2.0e-3f,
+               "a MIDI note replays a landed movement from the note's own sample");
+        p.setPlayHead (nullptr);
+    }
+    {
+        struct Clock final : juce::AudioPlayHead
+        {
             double ppq = 1234.5; bool playing = true;
             juce::Optional<PositionInfo> getPosition() const override
             {
