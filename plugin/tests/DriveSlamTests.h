@@ -3,6 +3,7 @@
 #include "BinaryData.h"
 #include "TestFixtures.h"
 #include "dsp/PreampLaw.h"
+#include "dsp/EmuLimiter.h"
 #include <cstdio>
 
 inline int driveSlamTests()
@@ -20,28 +21,39 @@ inline int driveSlamTests()
             bridge.prepare (rate, 128);
             check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
             juce::AudioBuffer<float> audio (channels, 128);
-            bool exact = true;
+            trench::EmuLimiter model;
+            model.prepare (rate);
+            bool exact = true, bounded = true;
             for (int block = 0; block < 32; ++block)
             {
                 const float level = block < 16 ? 4.0f : 0.125f;
                 for (int c = 0; c < channels; ++c)
                     for (int i = 0; i < 128; ++i) audio.setSample (c, i, c == 0 ? level : 0.125f);
                 bridge.process (audio, {});
-                for (int c = 0; c < channels; ++c)
-                    for (int i = 0; i < 128; ++i)
-                        exact = exact && std::abs (audio.getSample (c, i) - trench::softGuard (c == 0 ? level : 0.125f)) < 1.0e-6f;
+                for (int i = 0; i < 128; ++i)
+                {
+                    float left = level, right = 0.125f;
+                    model.process (left, channels > 1 ? &right : nullptr);
+                    exact = exact && std::abs (audio.getSample (0, i) - trench::softGuard (left)) < 1.0e-6f;
+                    if (channels > 1) exact = exact && std::abs (audio.getSample (1, i) - trench::softGuard (right)) < 1.0e-6f;
+                    for (int c = 0; c < channels; ++c) bounded = bounded && std::abs (audio.getSample (c, i)) <= trench::kFinalSafetyCeiling;
+                }
             }
-            check (exact, "the soft clip after the filter bounds hot signals; quiet recovery is immediate and channels are independent");
-            bridge.setInputDrive (trench::preampGain (1.0f));
+            check (exact && bounded, "the crossing limiter then the soft clip shape every sample: hot input is pulled toward -4 dBFS, recovery follows the limiter's release, stereo is linked");
+            TrenchDspBridge clean;
+            clean.prepare (rate, 128);
+            clean.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+            bridge.process (audio, {});
+            clean.setInputDrive (trench::preampGain (1.0f));
             for (int block = 0; block < 12; ++block)
             {
                 for (int c = 0; c < channels; ++c)
                     for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.01f);
-                bridge.process (audio, {});
+                clean.process (audio, {});
             }
-            check (std::abs (audio.getSample (0, 127) - 0.1f) < 1.0e-6f, "INPUT supplies +20 dB clean gain at maximum");
-            bridge.setInputDrive (1.0f);
-            check (! bridge.inputDriveIsUnity(), "INPUT return keeps processing active while the gain ramp settles");
+            check (std::abs (audio.getSample (0, 127) - 0.1f) < 1.0e-6f, "INPUT supplies +20 dB clean gain at maximum below the limiter threshold");
+            clean.setInputDrive (1.0f);
+            check (! clean.inputDriveIsUnity(), "INPUT return keeps processing active while the gain ramp settles");
         }
     for (const double radiusMode : { 0.0, 0.01 })
         for (const double feedbackMode : { 0.0, 1.0 })
@@ -156,28 +168,40 @@ inline int driveSlamTests()
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
+    trench::EmuLimiter model;
+    model.prepare (48000.0);
     bool clipped = true;
     for (const float level : { 0.1f, 0.6f, 1.0f, 4.0f, 0.125f })
     {
         for (int c = 0; c < 2; ++c)
             for (int i = 0; i < 128; ++i) audio.setSample (c, i, c == 0 ? level : -level);
         processor.processBlock (audio, midi);
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i)
-                clipped = clipped && std::abs (audio.getSample (c, i) - trench::softGuard (c == 0 ? level : -level)) < 1.0e-6f;
+        for (int i = 0; i < 128; ++i)
+        {
+            float left = level, right = -level;
+            model.process (left, &right);
+            clipped = clipped && std::abs (audio.getSample (0, i) - trench::softGuard (left)) < 1.0e-6f
+                              && std::abs (audio.getSample (1, i) - trench::softGuard (right)) < 1.0e-6f;
+        }
         if (level == 0.6f)
             check (processor.getOutClipForUi() > 0.99f, "clip activity begins at the actual soft knee");
     }
-    check (clipped, "filter output soft clips without gain recovery or attenuation below the knee");
+    check (clipped, "filter output passes the crossing limiter then the soft clip; below -4 dBFS neither acts");
     auto* drive = processor.apvts.getParameter (ParamID::preamp);
     drive->setValueNotifyingHost (1.0f);
-    for (int block = 0; block < 12; ++block)
+    const auto settled = [&]
     {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
-        processor.processBlock (audio, midi);
-    }
-    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f, "INPUT reaches filter soft clipping without an output drive stage");
+        for (int block = 0; block < 1600; ++block)
+        {
+            for (int c = 0; c < 2; ++c)
+                for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
+            processor.processBlock (audio, midi);
+        }
+        return audio.getSample (0, 127);
+    };
+    const float held = settled();
+    check (std::abs (held - trench::softGuard ((float) trench::EmuLimiter::kThreshold)) < 0.01f,
+        "INPUT at full is held at the crossing limiter's -4 dBFS threshold, with no output drive stage");
     check (processor.apvts.getParameter ("outputTrim") == nullptr, "no output gain control follows the soft clipper");
     auto savedTree = processor.apvts.copyState();
     juce::ValueTree retired ("PARAM");
@@ -189,14 +213,11 @@ inline int driveSlamTests()
     processor.setStateInformation (saved.getData(), (int) saved.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "outputTrim").isValid(),
         "retired output trim is discarded when loading an interim saved project");
-    for (int block = 0; block < 12; ++block)
     {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
-        processor.processBlock (audio, midi);
+        const float after = settled();
+        std::printf ("      held %g, after retired trim %g, ripple bound 0.01\n", held, after);
+        check (std::abs (after - trench::softGuard ((float) trench::EmuLimiter::kThreshold)) < 0.01f, "saved output gain cannot change the final limited signal");
     }
-    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f,
-        "saved output gain cannot change the final soft-clipped signal");
     check (processor.apvts.getParameter ("amount") == nullptr, "redundant MIX parameter is removed");
     auto oldMixState = processor.apvts.copyState();
     juce::ValueTree oldMix ("PARAM");
@@ -208,14 +229,7 @@ inline int driveSlamTests()
     processor.setStateInformation (oldMixBytes.getData(), (int) oldMixBytes.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "amount").isValid(),
         "old dry MIX settings are discarded on project recall");
-    for (int block = 0; block < 12; ++block)
-    {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
-        processor.processBlock (audio, midi);
-    }
-    check (std::abs (audio.getSample (0, 127) - trench::softGuard (1.0f)) < 1.0e-6f,
-        "effect stays fully wet after recalling a former dry MIX setting");
+    check (std::abs (settled() - trench::softGuard ((float) trench::EmuLimiter::kThreshold)) < 0.01f, "effect stays fully wet after recalling a former dry MIX setting");
     auto legacy = processor.apvts.copyState();
     juce::ValueTree oldSlam ("PARAM");
     oldSlam.setProperty ("id", ParamID::slamDrive, nullptr);

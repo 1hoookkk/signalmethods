@@ -114,7 +114,13 @@ void referenceSwitch (double rate, int blockSize, const juce::MemoryBlock& from,
                       const juce::MemoryBlock& to, int key, int signal, int channels)
 {
     TrenchDspBridge tested, oldReference, newReference;
-    for (auto* bridge : { &tested, &oldReference, &newReference }) bridge->prepare (rate, blockSize);
+    for (auto* bridge : { &tested, &oldReference, &newReference })
+    {
+        bridge->prepare (rate, blockSize);
+        auto filtersOnly = bridge->getBypass();
+        filtersOnly.crossingLimiter = false;
+        bridge->setBypass (filtersOnly);
+    }
     tested.loadCartridgeBytes (from);
     oldReference.loadCartridgeBytes (from);
     newReference.loadCartridgeBytes (to);
@@ -160,6 +166,44 @@ void referenceSwitch (double rate, int blockSize, const juce::MemoryBlock& from,
                      rate, blockSize, key, signal, channels, violation, finalError);
     check (finite && violation <= 2.0e-6 && finalError <= 2.0e-6,
            "switch stays between independent old/new outputs and reaches the new body");
+}
+
+void limitedSwitch (double rate, int blockSize, const juce::MemoryBlock& from, const juce::MemoryBlock& to)
+{
+    TrenchDspBridge bridge;
+    bridge.prepare (rate, blockSize);
+    bridge.loadCartridgeBytes (from);
+    TrenchParams params;
+    params.morph = 0.5f;
+    params.q = 1.0f;
+    juce::AudioBuffer<float> audio (2, blockSize);
+    const int switchBlock = (int) std::ceil (rate * 0.5 / blockSize);
+    double settledPeak = 0.0, switchPeak = 0.0, afterPeak = 0.0;
+    bool finite = true;
+    for (int b = 0; b < switchBlock * 2; ++b)
+    {
+        if (b == switchBlock) bridge.loadCartridgeBytes (to);
+        for (int i = 0; i < blockSize; ++i)
+        {
+            const double phase = (double) (b * blockSize + i) / rate * 49.0;
+            const float x = (float) (0.2511886 * (2.0 * (phase - std::floor (phase)) - 1.0));
+            audio.setSample (0, i, x);
+            audio.setSample (1, i, x);
+        }
+        bridge.process (audio, params);
+        for (int i = 0; i < blockSize; ++i)
+        {
+            const float y = audio.getSample (0, i);
+            finite = finite && std::isfinite (y);
+            if (b >= switchBlock / 2 && b < switchBlock) settledPeak = std::max (settledPeak, (double) std::abs (y));
+            if (b >= switchBlock && b < switchBlock + (int) std::ceil (rate * 0.05 / blockSize)) switchPeak = std::max (switchPeak, (double) std::abs (y));
+            if (b >= switchBlock * 3 / 2) afterPeak = std::max (afterPeak, (double) std::abs (y));
+        }
+    }
+    const bool ok = finite && switchPeak <= trench::kFinalSafetyCeiling && switchPeak <= std::max (settledPeak, afterPeak) * 1.26 + 0.02;
+    if (! ok)
+        std::printf ("limited switch sr=%.0f block=%d before %.3f switch %.3f after %.3f\n", rate, blockSize, settledPeak, switchPeak, afterPeak);
+    check (ok, "with the crossing limiter engaged a body switch stays finite, under the ceiling and within 2 dB of the louder of the two settled bodies");
 }
 
 void rapidSwitch (double rate, int blockSize, const juce::MemoryBlock& a, const juce::MemoryBlock& b)
@@ -247,6 +291,9 @@ int main()
         {
             rapidSwitch (rate, blockSize, vowel, hedz);
             rapidSwitch (rate, blockSize, identity, hedz);
+            limitedSwitch (rate, blockSize, vowel, hedz);
+            limitedSwitch (rate, blockSize, hedz, identity);
+            limitedSwitch (rate, blockSize, identity, hedz);
             for (int key : { 0, 1 })
             {
                 referenceSwitch (rate, blockSize, hedz, identity, key, 1, 2);

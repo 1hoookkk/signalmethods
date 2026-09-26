@@ -523,7 +523,8 @@ int main()
         const auto driven = capture (1.0f, 0.0f, 0.25f);
         const double f = goertzel (driven, 37);
         const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
-        check (f > 0.01 && h / f > 0.02, "DRIVE pushes the final soft clip into harmonics", h / f, 0.02);
+        check (f > 0.01 && h / f > 0.002 && h / f < 0.02,
+               "INPUT at full is caught by the crossing limiter: the soft clip adds mild colour, not a square", h / f, 0.02);
         const auto clean = capture (0.0f, 0.0f, 0.25f);
         const double f0 = goertzel (clean, 37);
         const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
