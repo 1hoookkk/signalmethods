@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include <juce_audio_formats/juce_audio_formats.h>
 #include "PluginEditor.h"
 #include "ui/ModulationChip.h"
 #include "TrenchBodyRoster.h"
@@ -150,18 +151,90 @@ int main()
     shoot ("trench_face_modulated");
     if (const char* frames = std::getenv ("TRENCH_FRAMES"))
     {
-        set (ParamID::movePreset, 7.0f);
-        set (ParamID::moveLength, 1.0f);
-        const int count = juce::jlimit (1, 600, std::atoi (frames));
+        const auto env = [] (const char* name, float fallback)
+        {
+            const char* v = std::getenv (name);
+            return v != nullptr ? (float) std::atof (v) : fallback;
+        };
+        if (const char* body = std::getenv ("TRENCH_SHOW_BODY")) set (ParamID::body, bodyIndex (body));
+        set (ParamID::morph, env ("TRENCH_SHOW_MORPH", 0.3f));
+        set (ParamID::q, env ("TRENCH_SHOW_Q", 0.5f));
+        set (ParamID::preamp, env ("TRENCH_SHOW_IN_GAIN", 0.0f));
+        set (ParamID::output, env ("TRENCH_SHOW_OUT_GAIN", 0.0f));
+        set (ParamID::movePreset, env ("TRENCH_SHOW_MOVE", 7.0f));
+        set (ParamID::moveLength, env ("TRENCH_SHOW_LENGTH", 1.0f));
+        struct Clock final : juce::AudioPlayHead
+        {
+            double bpm = 120.0, rate = 48000.0;
+            juce::int64 sample = 0;
+            juce::Optional<PositionInfo> getPosition() const override
+            {
+                PositionInfo info;
+                info.setBpm (bpm); info.setIsPlaying (true);
+                info.setTimeInSamples (sample); info.setTimeInSeconds ((double) sample / rate);
+                info.setPpqPosition ((double) sample / rate * bpm / 60.0);
+                info.setTimeSignature (juce::AudioPlayHead::TimeSignature { 4, 4 });
+                return info;
+            }
+        } clock;
+        clock.bpm = env ("TRENCH_SHOW_BPM", 120.0f);
+        juce::AudioBuffer<float> source;
+        double rate = 48000.0;
+        if (const char* in = std::getenv ("TRENCH_SHOW_IN"))
+        {
+            juce::AudioFormatManager formats;
+            formats.registerBasicFormats();
+            std::unique_ptr<juce::AudioFormatReader> reader (formats.createReaderFor (juce::File (juce::String::fromUTF8 (in))));
+            if (reader != nullptr)
+            {
+                rate = reader->sampleRate;
+                source.setSize (2, (int) reader->lengthInSamples);
+                reader->read (&source, 0, (int) reader->lengthInSamples, 0, true, true);
+                if (reader->numChannels == 1) source.copyFrom (1, 0, source, 0, 0, source.getNumSamples());
+            }
+        }
+        clock.rate = rate;
+        processor.setPlayHead (&clock);
+        processor.setPlayConfigDetails (2, 2, rate, 512);
+        processor.prepareToPlay (rate, 512);
+        settle (300);
+        const int blocksPerFrame = 3;
+        const int count = source.getNumSamples() > 0
+            ? juce::jmin (std::atoi (frames), (source.getNumSamples() + blocksPerFrame * 512 - 1) / (blocksPerFrame * 512))
+            : juce::jlimit (1, 600, std::atoi (frames));
+        juce::AudioBuffer<float> rendered (2, count * blocksPerFrame * 512);
+        rendered.clear();
         juce::AudioBuffer<float> audio (2, 512);
         juce::MidiBuffer midi;
         for (int frame = 0; frame < count; ++frame)
         {
-            for (int block = 0; block < 3; ++block) { audio.clear(); processor.processBlock (audio, midi); }
+            for (int block = 0; block < blocksPerFrame; ++block)
+            {
+                const int at = (frame * blocksPerFrame + block) * 512;
+                audio.clear();
+                for (int c = 0; c < 2; ++c)
+                    for (int i = 0; i < 512 && at + i < source.getNumSamples(); ++i)
+                        audio.setSample (c, i, source.getSample (c, at + i));
+                processor.processBlock (audio, midi);
+                for (int c = 0; c < 2; ++c) rendered.copyFrom (c, at, audio, c, 0, 512);
+                clock.sample = at + 512;
+            }
             settle (33);
-            save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 1.0f, juce::NativeImageType()),
+            save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 2.0f, juce::NativeImageType()),
                   "frame_" + juce::String (frame).paddedLeft ('0', 3) + ".png");
         }
+        if (const char* out = std::getenv ("TRENCH_SHOW_OUT"))
+        {
+            juce::File file (juce::String::fromUTF8 (out));
+            file.deleteFile();
+            std::unique_ptr<juce::OutputStream> stream = file.createOutputStream();
+            juce::WavAudioFormat wav;
+            if (stream != nullptr)
+                if (auto writer = wav.createWriterFor (stream, juce::AudioFormatWriterOptions {}.withSampleRate (rate).withNumChannels (2).withBitsPerSample (24)))
+                    writer->writeFromAudioSampleBuffer (rendered, 0, rendered.getNumSamples());
+        }
+        std::printf ("showcase: %d frames at %.3f fps, %d samples at %.0f Hz\n", count, rate / (blocksPerFrame * 512.0), rendered.getNumSamples(), rate);
+        processor.setPlayHead (nullptr);
     }
     set (ParamID::morph, 0.0f);
     set (ParamID::movePreset, 8.0f);
