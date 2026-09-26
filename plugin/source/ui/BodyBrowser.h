@@ -226,12 +226,27 @@ private:
         int count = 0;
         const auto* entries = trench::bodyRoster (count);
         rows.push_back ({ trench::kNoFilterName, trench::kNoFilterIndex });
+        bool basicHeading = false, userHeading = false;
         for (int i = 0; i < count; ++i)
             if (! trench::bodyIsNoFilter (i) && ! juce::File::isAbsolutePath (entries[i].base))
+            {
+                if (! basicHeading && juce::String (entries[i].category) == "BASIC SHAPES")
+                {
+                    rows.push_back ({ "Basic shapes", -1, false, true });
+                    basicHeading = true;
+                }
                 rows.push_back ({ trench::bodyDisplayName (i), i });
+            }
         for (int i = 0; i < count; ++i)
             if (! trench::bodyIsNoFilter (i) && juce::File::isAbsolutePath (entries[i].base))
+            {
+                if (! userHeading)
+                {
+                    rows.push_back ({ "Your bodies", -1, false, true });
+                    userHeading = true;
+                }
                 rows.push_back ({ trench::bodyDisplayName (i), i });
+            }
     }
     Theme t;
     juce::Rectangle<float> panel;
