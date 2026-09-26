@@ -1,7 +1,6 @@
 #pragma once
 #include "DeskDrive.h"
 #include "DriveLaw.h"
-#include "EmuLimiter.h"
 #include "KeySnap.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -57,7 +56,6 @@ public:
         bool saturate = false;
         bool dcBlock = false;
         bool x3Movement = true;
-        bool crossingLimiter = true;
         bool operator== (const Bypass&) const noexcept = default;
     };
 
@@ -122,7 +120,6 @@ public:
         inputGain.setCurrentAndTargetValue (1.0f);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
-        crossingLimiter.prepare (sampleRateHz);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
         left = trench::core::CascadeRunner {};
         right = trench::core::CascadeRunner {};
@@ -441,15 +438,13 @@ public:
                         outR[sample] = fadeRight[(size_t) s] * (1.0f - mix) + outR[sample] * mix;
                     --bodyFadeRemaining;
                 }
-                if (bypass.crossingLimiter)
-                    crossingLimiter.process (outL[sample], outR != nullptr ? &outR[sample] : nullptr);
 #if TRENCH_DEV_PANEL
                 preDeskPeak = std::max (preDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
-                caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
                 outL[sample] = outputStage (postDeskL, postClip (outL[sample]));
                 if (outR != nullptr)
                     outR[sample] = outputStage (postDeskR, postClip (outR[sample]));
+                caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
 #if TRENCH_DEV_PANEL
                     postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
@@ -591,8 +586,8 @@ private:
     float postClip (float x) const noexcept { return postClipOn ? trench::calibration::guard (x, postClipKnee, postClipCeiling) : x; }
     bool clipEngaged (float x) const noexcept { return postClipOn && (! std::isfinite (x) || std::abs (x) > postClipKnee * postClipCeiling); }
 #else
-    static float postClip (float x) noexcept { return trench::softGuard (x); }
-    static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > trench::kFinalSafetyKnee; }
+    static float postClip (float x) noexcept { return x; }
+    static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > trench::kFinalSafetyCeiling; }
 #endif
     float outputStage (trench::DeskDrive& desk, float x) const noexcept
     {
@@ -658,7 +653,6 @@ private:
     float caughtFraction = 0.0f;
     bool outputStageOn = true;
     trench::DeskDrive postDeskL, postDeskR;
-    trench::EmuLimiter crossingLimiter;
     Bypass bypass;
 #if TRENCH_DEV_PANEL
     trench::calibration::Values calibrationValues = trench::calibration::defaults();

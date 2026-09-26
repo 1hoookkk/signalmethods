@@ -114,13 +114,7 @@ void referenceSwitch (double rate, int blockSize, const juce::MemoryBlock& from,
                       const juce::MemoryBlock& to, int key, int signal, int channels)
 {
     TrenchDspBridge tested, oldReference, newReference;
-    for (auto* bridge : { &tested, &oldReference, &newReference })
-    {
-        bridge->prepare (rate, blockSize);
-        auto filtersOnly = bridge->getBypass();
-        filtersOnly.crossingLimiter = false;
-        bridge->setBypass (filtersOnly);
-    }
+    for (auto* bridge : { &tested, &oldReference, &newReference }) bridge->prepare (rate, blockSize);
     tested.loadCartridgeBytes (from);
     oldReference.loadCartridgeBytes (from);
     newReference.loadCartridgeBytes (to);
@@ -200,10 +194,10 @@ void limitedSwitch (double rate, int blockSize, const juce::MemoryBlock& from, c
             if (b >= switchBlock * 3 / 2) afterPeak = std::max (afterPeak, (double) std::abs (y));
         }
     }
-    const bool ok = finite && switchPeak <= trench::kFinalSafetyCeiling && switchPeak <= std::max (settledPeak, afterPeak) * 1.26 + 0.02;
+    const bool ok = finite && switchPeak <= std::max (settledPeak, afterPeak) * 1.26 + 0.02;
     if (! ok)
         std::printf ("limited switch sr=%.0f block=%d before %.3f switch %.3f after %.3f\n", rate, blockSize, settledPeak, switchPeak, afterPeak);
-    check (ok, "with the crossing limiter engaged a body switch stays finite, under the ceiling and within 2 dB of the louder of the two settled bodies");
+    check (ok, "a body switch on a driven saw stays finite and within 2 dB of the louder of the two settled bodies");
 }
 
 void rapidSwitch (double rate, int blockSize, const juce::MemoryBlock& a, const juce::MemoryBlock& b)

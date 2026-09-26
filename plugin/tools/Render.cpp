@@ -38,6 +38,7 @@ struct Options
     bool ring = false;
     bool haveSeconds = false;
     int move = 0;
+    int length = -1;
     double bpm = 0.0;
 };
 
@@ -147,6 +148,15 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
             if (options.move < 0 || options.move > 64)
             {
                 error = "--move must be a preset index 0..64";
+                return false;
+            }
+        }
+        else if (option == "--length")
+        {
+            options.length = value.getIntValue();
+            if (options.length < 0 || options.length > 4)
+            {
+                error = "--length must be 0..4 (1/4 bar .. 4 bars)";
                 return false;
             }
         }
@@ -495,6 +505,8 @@ int main (int argc, char** argv)
             throw std::runtime_error (("installBodyBytes refused: " + options.bodyFile).toStdString());
 
         setParameter (processor, ParamID::movePreset, (float) options.move);
+        if (options.length >= 0)
+            setParameter (processor, ParamID::moveLength, (float) options.length);
         setParameter (processor, ParamID::keySnap, 0.0f);
         setParameter (processor, ParamID::q, (float) (qCurve.empty() ? options.q : morphAt (qCurve, 0.0)));
 

@@ -1,6 +1,6 @@
 # Gain staging (release/v1)
 
-`INPUT -> six-section filter -> soft clip -> OUTPUT (Mackity desk) -> safety clamp`
+`INPUT -> six-section filter (linear) -> OUTPUT (Mackity) -> zero-latency clip at -0.1 dBFS`
 
 - **INPUT** (`preamp`): clean gain into the filter, unity to +20 dB (`preampGain`, 5 ms smoothing).
 - **Filter**: the body's six sections, Morph x Q word interpolation at the 44.1 kHz datum
@@ -10,9 +10,11 @@
   peaks after the filter. Its activity drives the clip meter.
 - **OUTPUT** (`output`): 0 bypasses the stage exactly. Above 0 it is the Airwindows Mackity
   process path (`DeskDrive.h`, source in `DeskDrive-SOURCE.md`) with its two controls tied to the
-  knob: In Trim rises to +18 dB at full and Out Pad takes back three quarters of it, so the colour
-  builds while the level holds (measured on Millennium through a real loop: within 1 dB up to 80,
-  -2.6 dB at full; crest 8.9 -> 4.7 dB). The first law (+40 dB, no pad) added about 12 dB of level.
+  knob: In Trim rises to +18 dB at full and Out Pad takes back 40 % of it. On the D Rich loop
+  (hot, +4 dBFS peak) full OUTPUT costs about 3 dB; on -14 dBFS rms material it adds about 4 dB.
+- **No dynamic limiter.** The X3 CStereoLimiter (-4 dBFS, slow release) was tried on 26 Sep and
+  removed: on a hot loop through Talking Hedz it held the mix 12 dB down (copy in
+  output/instrument-20260925/parked).
 - **Safety clamp**: non-finite samples become 0; the release build clamps to the ceiling.
 
 Retired: the Distortion parameter (dropped on project recall), per-section saturation, AGC,

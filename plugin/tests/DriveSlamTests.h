@@ -3,7 +3,6 @@
 #include "BinaryData.h"
 #include "TestFixtures.h"
 #include "dsp/PreampLaw.h"
-#include "dsp/EmuLimiter.h"
 #include <cstdio>
 
 inline int driveSlamTests()
@@ -21,25 +20,18 @@ inline int driveSlamTests()
             bridge.prepare (rate, 128);
             check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
             juce::AudioBuffer<float> audio (channels, 128);
-            trench::EmuLimiter model;
-            model.prepare (rate);
-            bool exact = true, bounded = true;
+            bool exact = true;
             for (int block = 0; block < 32; ++block)
             {
                 const float level = block < 16 ? 4.0f : 0.125f;
                 for (int c = 0; c < channels; ++c)
                     for (int i = 0; i < 128; ++i) audio.setSample (c, i, c == 0 ? level : 0.125f);
                 bridge.process (audio, {});
-                for (int i = 0; i < 128; ++i)
-                {
-                    float left = level, right = 0.125f;
-                    model.process (left, channels > 1 ? &right : nullptr);
-                    exact = exact && std::abs (audio.getSample (0, i) - trench::softGuard (left)) < 1.0e-6f;
-                    if (channels > 1) exact = exact && std::abs (audio.getSample (1, i) - trench::softGuard (right)) < 1.0e-6f;
-                    for (int c = 0; c < channels; ++c) bounded = bounded && std::abs (audio.getSample (c, i)) <= trench::kFinalSafetyCeiling;
-                }
+                for (int c = 0; c < channels; ++c)
+                    for (int i = 0; i < 128; ++i)
+                        exact = exact && audio.getSample (c, i) == (c == 0 ? level : 0.125f);
             }
-            check (exact && bounded, "the crossing limiter then the soft clip shape every sample: hot input is pulled toward -4 dBFS, recovery follows the limiter's release, stereo is linked");
+            check (exact, "at OUTPUT 0 the filter output leaves the bridge untouched: no limiter, no soft clip, channels independent");
             TrenchDspBridge clean;
             clean.prepare (rate, 128);
             clean.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
@@ -168,25 +160,21 @@ inline int driveSlamTests()
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
-    trench::EmuLimiter model;
-    model.prepare (48000.0);
     bool clipped = true;
     for (const float level : { 0.1f, 0.6f, 1.0f, 4.0f, 0.125f })
     {
         for (int c = 0; c < 2; ++c)
             for (int i = 0; i < 128; ++i) audio.setSample (c, i, c == 0 ? level : -level);
         processor.processBlock (audio, midi);
+        const float want = juce::jmin (level, trench::kFinalSafetyCeiling);
         for (int i = 0; i < 128; ++i)
-        {
-            float left = level, right = -level;
-            model.process (left, &right);
-            clipped = clipped && std::abs (audio.getSample (0, i) - trench::softGuard (left)) < 1.0e-6f
-                              && std::abs (audio.getSample (1, i) - trench::softGuard (right)) < 1.0e-6f;
-        }
+            clipped = clipped && audio.getSample (0, i) == want && audio.getSample (1, i) == -want;
         if (level == 0.6f)
-            check (processor.getOutClipForUi() > 0.99f, "clip activity begins at the actual soft knee");
+            check (processor.getOutClipForUi() == 0.0f, "no clip activity below the -0.1 dBFS safety clip");
+        if (level == 4.0f)
+            check (processor.getOutClipForUi() > 0.99f, "clip activity shows when the safety clip catches");
     }
-    check (clipped, "filter output passes the crossing limiter then the soft clip; below -4 dBFS neither acts");
+    check (clipped, "the only stage after the filter at OUTPUT 0 is a zero-latency clip at -0.1 dBFS");
     auto* drive = processor.apvts.getParameter (ParamID::preamp);
     drive->setValueNotifyingHost (1.0f);
     const auto settled = [&]
@@ -200,8 +188,7 @@ inline int driveSlamTests()
         return audio.getSample (0, 127);
     };
     const float held = settled();
-    check (std::abs (held - trench::softGuard ((float) trench::EmuLimiter::kThreshold)) < 0.01f,
-        "INPUT at full is held at the crossing limiter's -4 dBFS threshold, with no output drive stage");
+    check (held == trench::kFinalSafetyCeiling, "INPUT at full reaches the safety clip, with no output drive stage");
     check (processor.apvts.getParameter ("outputTrim") == nullptr, "no output gain control follows the soft clipper");
     auto savedTree = processor.apvts.copyState();
     juce::ValueTree retired ("PARAM");
@@ -216,7 +203,7 @@ inline int driveSlamTests()
     {
         const float after = settled();
         std::printf ("      held %g, after retired trim %g, ripple bound 0.01\n", held, after);
-        check (std::abs (after - trench::softGuard ((float) trench::EmuLimiter::kThreshold)) < 0.01f, "saved output gain cannot change the final limited signal");
+        check (after == held, "saved output gain cannot change the final clipped signal");
     }
     check (processor.apvts.getParameter ("amount") == nullptr, "redundant MIX parameter is removed");
     auto oldMixState = processor.apvts.copyState();
@@ -229,7 +216,7 @@ inline int driveSlamTests()
     processor.setStateInformation (oldMixBytes.getData(), (int) oldMixBytes.getSize());
     check (! processor.apvts.copyState().getChildWithProperty ("id", "amount").isValid(),
         "old dry MIX settings are discarded on project recall");
-    check (std::abs (settled() - trench::softGuard ((float) trench::EmuLimiter::kThreshold)) < 0.01f, "effect stays fully wet after recalling a former dry MIX setting");
+    check (settled() == held, "effect stays fully wet after recalling a former dry MIX setting");
     auto legacy = processor.apvts.copyState();
     juce::ValueTree oldSlam ("PARAM");
     oldSlam.setProperty ("id", ParamID::slamDrive, nullptr);
@@ -261,10 +248,10 @@ inline int driveSlamTests()
         for (int i = 0; i < 48000; ++i)
             hot = std::max (hot, std::abs (desk.process ((float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0), 1.0f)));
         check (std::abs (trench::DeskDrive::inTrim (0.0f) - 1.0) < 1.0e-9 && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::inTrim (1.0f)) - 18.0) < 1.0e-6
-               && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::outPad (1.0f)) + 13.5) < 1.0e-6, "OUTPUT maps to Mackity In Trim up to +18 dB with Out Pad taking back three quarters");
+               && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::outPad (1.0f)) + 7.2) < 1.0e-6, "OUTPUT maps to Mackity In Trim up to +18 dB with Out Pad taking back 40 %");
         std::printf ("      Mackity full trim: quiet peak %g, hot peak %g\n", quiet, hot);
-        check (quiet > 1.55e-4f && quiet < 1.80e-4f && hot > 0.15f && hot < 0.30f,
-            "OUTPUT at full adds only +4.5 dB to quiet material and saturates full scale at Mackity's fifth-order curve, padded");
+        check (quiet > 3.3e-4f && quiet < 3.6e-4f && hot > 0.3f && hot < 0.6f,
+            "OUTPUT at full adds +10.8 dB to quiet material and saturates full scale at Mackity's fifth-order curve, padded");
     }
 #if TRENCH_DEV_PANEL
     for (const char* id : trench::calibration::retired)

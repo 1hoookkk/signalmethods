@@ -72,7 +72,7 @@ private:
     static constexpr double kIirA = 0.001860867;
     static constexpr double kIirB = 0.000287496;
     static constexpr double kInTrimTopDb = 18.0;
-    static constexpr double kOutPadShare = 0.75;
+    static constexpr double kOutPadShare = 0.4;
     static double guard (double x) noexcept { return std::abs (x) < 1.18e-37 ? 0.0 : x; }
     struct Biquad
     {
