@@ -114,7 +114,13 @@ void referenceSwitch (double rate, int blockSize, const juce::MemoryBlock& from,
                       const juce::MemoryBlock& to, int key, int signal, int channels)
 {
     TrenchDspBridge tested, oldReference, newReference;
-    for (auto* bridge : { &tested, &oldReference, &newReference }) bridge->prepare (rate, blockSize);
+    for (auto* bridge : { &tested, &oldReference, &newReference })
+    {
+        bridge->prepare (rate, blockSize);
+        auto filtersOnly = bridge->getBypass();
+        filtersOnly.mackity = false;
+        bridge->setBypass (filtersOnly);
+    }
     tested.loadCartridgeBytes (from);
     oldReference.loadCartridgeBytes (from);
     newReference.loadCartridgeBytes (to);

@@ -2,7 +2,6 @@
 #include "PluginProcessor.h"
 #include "BinaryData.h"
 #include "TestFixtures.h"
-#include "dsp/PreampLaw.h"
 #include <cstdio>
 
 inline int driveSlamTests()
@@ -20,30 +19,53 @@ inline int driveSlamTests()
             bridge.prepare (rate, 128);
             check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
             juce::AudioBuffer<float> audio (channels, 128);
+            trench::DeskDrive modelL, modelR;
+            for (auto* m : { &modelL, &modelR }) { m->prepare (rate); m->setEnabled (true); }
             bool exact = true;
             for (int block = 0; block < 32; ++block)
             {
                 const float level = block < 16 ? 4.0f : 0.125f;
                 for (int c = 0; c < channels; ++c)
-                    for (int i = 0; i < 128; ++i) audio.setSample (c, i, c == 0 ? level : 0.125f);
+                    for (int i = 0; i < 128; ++i) audio.setSample (c, i, (c == 0 ? level : 0.125f) * (float) std::sin (0.07 * (block * 128 + i)));
+                juce::AudioBuffer<float> dry;
+                dry.makeCopyOf (audio);
                 bridge.process (audio, {});
-                for (int c = 0; c < channels; ++c)
-                    for (int i = 0; i < 128; ++i)
-                        exact = exact && audio.getSample (c, i) == (c == 0 ? level : 0.125f);
+                for (int i = 0; i < 128; ++i)
+                {
+                    exact = exact && audio.getSample (0, i) == modelL.process (dry.getSample (0, i));
+                    if (channels > 1) exact = exact && audio.getSample (1, i) == modelR.process (dry.getSample (1, i));
+                }
             }
-            check (exact, "at OUTPUT 0 the filter output leaves the bridge untouched: no limiter, no soft clip, channels independent");
+            check (exact, "after the filter every sample passes Mackity at its own unity setting, per channel, with nothing else in the bridge");
+            const auto tonePeak = [&] (float inputGain, float outputGain)
+            {
+                TrenchDspBridge b;
+                b.prepare (rate, 128);
+                b.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+                b.setInputDrive (inputGain);
+                b.setOutputLevel (outputGain);
+                juce::AudioBuffer<float> a (channels, 128);
+                float peak = 0.0f;
+                for (int block = 0; block < 200; ++block)
+                {
+                    for (int c = 0; c < channels; ++c)
+                        for (int i = 0; i < 128; ++i) a.setSample (c, i, 0.001f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 1000.0 * (block * 128 + i) / rate));
+                    b.process (a, {});
+                    if (block >= 150) peak = std::max (peak, a.getMagnitude (0, 0, 128));
+                }
+                return peak;
+            };
+            const float unity = tonePeak (1.0f, 1.0f);
+            check (std::abs (juce::Decibels::gainToDecibels (tonePeak (juce::Decibels::decibelsToGain (24.0f), 1.0f) / unity) - 24.0f) < 0.1f
+                   && std::abs (juce::Decibels::gainToDecibels (tonePeak (juce::Decibels::decibelsToGain (-24.0f), 1.0f) / unity) + 24.0f) < 0.1f,
+                   "INPUT is a clean level from -24 to +24 dB");
+            check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
+                   "OUTPUT is a clean level after Mackity");
             TrenchDspBridge clean;
             clean.prepare (rate, 128);
             clean.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-            bridge.process (audio, {});
-            clean.setInputDrive (trench::preampGain (1.0f));
-            for (int block = 0; block < 12; ++block)
-            {
-                for (int c = 0; c < channels; ++c)
-                    for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.01f);
-                clean.process (audio, {});
-            }
-            check (std::abs (audio.getSample (0, 127) - 0.1f) < 1.0e-6f, "INPUT supplies +20 dB clean gain at maximum below the limiter threshold");
+            clean.setInputDrive (2.0f);
+            clean.process (audio, {});
             clean.setInputDrive (1.0f);
             check (! clean.inputDriveIsUnity(), "INPUT return keeps processing active while the gain ramp settles");
         }
@@ -117,7 +139,7 @@ inline int driveSlamTests()
         juce::MemoryBlock saved;
         nonlinear.getStateInformation (saved);
         plain.setStateInformation (saved.getData(), (int) saved.getSize());
-        check (std::abs (plain.apvts.getRawParameterValue (ParamID::output)->load() - 0.75f) < 1.0e-6f,
+        check (std::abs (plain.apvts.getParameter (ParamID::output)->getValue() - 0.75f) < 1.0e-3f,
             "OUTPUT survives project recall");
     }
     PluginProcessor processor;
@@ -131,64 +153,57 @@ inline int driveSlamTests()
         colour.setRateAndBufferSizeDetails (48000, 128);
         colour.prepareToPlay (48000, 128);
         colour.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-        juce::AudioBuffer<float> dry (2, 128), wet (2, 128);
+        juce::AudioBuffer<float> wet (2, 128);
         juce::MidiBuffer m;
-        auto* out = colour.apvts.getParameter (ParamID::output);
-        double difference = 0.0; float peak = 0.0f; bool finite = true;
-        for (int block = 0; block < 40; ++block)
+        auto* in = colour.apvts.getParameter (ParamID::preamp);
+        const auto harmonics = [&] (float db)
         {
-            for (int i = 0; i < 128; ++i) { const float s = 0.25f * (float) std::sin (0.1 * (block * 128 + i)); dry.setSample (0, i, s); dry.setSample (1, i, s); }
-            wet.makeCopyOf (dry);
-            out->setValueNotifyingHost (block < 20 ? 0.0f : 1.0f);
-            colour.processBlock (wet, m);
-            for (int i = 0; i < 128; ++i)
+            in->setValueNotifyingHost (in->convertTo0to1 (db));
+            std::vector<float> tail;
+            float peak = 0.0f;
+            for (int block = 0; block < 64; ++block)
             {
-                const float v = wet.getSample (0, i);
-                finite = finite && std::isfinite (v);
-                peak = std::max (peak, std::abs (v));
-                if (block >= 30) difference += std::abs (v - dry.getSample (0, i));
-                if (block >= 10 && block < 20) difference -= std::abs (v - dry.getSample (0, i));
+                for (int i = 0; i < 128; ++i) { const float v = 0.25f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 375.0 * (block * 128 + i) / 48000.0); wet.setSample (0, i, v); wet.setSample (1, i, v); }
+                colour.processBlock (wet, m);
+                if (block >= 32) { tail.insert (tail.end(), wet.getReadPointer (0), wet.getReadPointer (0) + 128); peak = std::max (peak, wet.getMagnitude (0, 0, 128)); }
             }
-        }
-#if TRENCH_DEV_PANEL
-        const float colourBound = 1.5f;
-#else
-        const float colourBound = trench::kFinalSafetyCeiling;
-#endif
-        check (finite && difference > 1.0 && peak <= colourBound,
-            "No Filter is a colour path: OUTPUT saturates the dry signal and stays under the ceiling");
+            double f = 0.0, h = 0.0;
+            for (int k = 1; k <= 7; ++k)
+            {
+                double re = 0.0, im = 0.0;
+                for (size_t i = 0; i < tail.size(); ++i)
+                {
+                    const double a = 2.0 * juce::MathConstants<double>::pi * 375.0 * k * (double) i / 48000.0;
+                    re += tail[i] * std::cos (a); im += tail[i] * std::sin (a);
+                }
+                (k == 1 ? f : h) += re * re + im * im;
+            }
+            return std::make_pair (std::sqrt (h / f), peak);
+        };
+        const auto soft = harmonics (0.0f), hard = harmonics (18.0f);
+        std::printf ("      No Filter: harmonic ratio %.4f at INPUT 0 dB, %.4f at +18 dB, peak %.3f\n", soft.first, hard.first, hard.second);
+        check (soft.first < 0.005 && hard.first > 0.05 && hard.second <= trench::kFinalSafetyCeiling,
+            "No Filter is a colour path: INPUT drives Mackity into saturation and the output stays under the ceiling");
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
-    bool clipped = true;
-    for (const float level : { 0.1f, 0.6f, 1.0f, 4.0f, 0.125f })
-    {
-        for (int c = 0; c < 2; ++c)
-            for (int i = 0; i < 128; ++i) audio.setSample (c, i, c == 0 ? level : -level);
-        processor.processBlock (audio, midi);
-        const float want = juce::jmin (level, trench::kFinalSafetyCeiling);
-        for (int i = 0; i < 128; ++i)
-            clipped = clipped && audio.getSample (0, i) == want && audio.getSample (1, i) == -want;
-        if (level == 0.6f)
-            check (processor.getOutClipForUi() == 0.0f, "no clip activity below the -0.1 dBFS safety clip");
-        if (level == 4.0f)
-            check (processor.getOutClipForUi() > 0.99f, "clip activity shows when the safety clip catches");
-    }
-    check (clipped, "the only stage after the filter at OUTPUT 0 is a zero-latency clip at -0.1 dBFS");
-    auto* drive = processor.apvts.getParameter (ParamID::preamp);
-    drive->setValueNotifyingHost (1.0f);
+    auto* outLevel = processor.apvts.getParameter (ParamID::output);
+    outLevel->setValueNotifyingHost (outLevel->convertTo0to1 (24.0f));
     const auto settled = [&]
     {
-        for (int block = 0; block < 1600; ++block)
+        float peak = 0.0f;
+        for (int block = 0; block < 400; ++block)
         {
             for (int c = 0; c < 2; ++c)
-                for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.1f);
+                for (int i = 0; i < 128; ++i) audio.setSample (c, i, 0.9f * (float) std::sin (0.05 * (block * 128 + i)));
             processor.processBlock (audio, midi);
+            if (block >= 300) peak = std::max (peak, audio.getMagnitude (0, 0, 128));
         }
-        return audio.getSample (0, 127);
+        return peak;
     };
     const float held = settled();
-    check (held == trench::kFinalSafetyCeiling, "INPUT at full reaches the safety clip, with no output drive stage");
+    check (held == trench::kFinalSafetyCeiling && processor.getOutClipForUi() > 0.0f,
+        "the last stage is a zero-latency clip at -0.1 dBFS; OUTPUT +24 dB is caught there and shows on the clip meter");
     check (processor.apvts.getParameter ("outputTrim") == nullptr, "no output gain control follows the soft clipper");
     auto savedTree = processor.apvts.copyState();
     juce::ValueTree retired ("PARAM");
@@ -202,7 +217,6 @@ inline int driveSlamTests()
         "retired output trim is discarded when loading an interim saved project");
     {
         const float after = settled();
-        std::printf ("      held %g, after retired trim %g, ripple bound 0.01\n", held, after);
         check (after == held, "saved output gain cannot change the final clipped signal");
     }
     check (processor.apvts.getParameter ("amount") == nullptr, "redundant MIX parameter is removed");
@@ -243,15 +257,15 @@ inline int driveSlamTests()
         desk.setEnabled (true);
         float quiet = 0.0f, hot = 0.0f;
         for (int i = 0; i < 48000; ++i)
-            quiet = std::max (quiet, std::abs (desk.process (0.0001f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0), 1.0f)));
+        {
+            const float v = desk.process (0.01f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0));
+            if (i > 24000) quiet = std::max (quiet, std::abs (v));
+        }
         desk.reset();
         for (int i = 0; i < 48000; ++i)
-            hot = std::max (hot, std::abs (desk.process ((float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0), 1.0f)));
-        check (std::abs (trench::DeskDrive::inTrim (0.0f) - 1.0) < 1.0e-9 && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::inTrim (1.0f)) - 18.0) < 1.0e-6
-               && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::outPad (1.0f)) + 7.2) < 1.0e-6, "OUTPUT maps to Mackity In Trim up to +18 dB with Out Pad taking back 40 %");
-        std::printf ("      Mackity full trim: quiet peak %g, hot peak %g\n", quiet, hot);
-        check (quiet > 3.3e-4f && quiet < 3.6e-4f && hot > 0.3f && hot < 0.6f,
-            "OUTPUT at full adds +10.8 dB to quiet material and saturates full scale at Mackity's fifth-order curve, padded");
+            hot = std::max (hot, std::abs (desk.process (4.0f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0))));
+        check (std::abs (quiet - 0.01f) < 1.0e-4f && hot > 0.80f && hot < 1.25f,
+            "Mackity at its own unity setting passes quiet material and holds a hot one at its fifth-order rail");
     }
 #if TRENCH_DEV_PANEL
     for (const char* id : trench::calibration::retired)

@@ -8,7 +8,6 @@
 #include "BinaryData.h"
 #include "TestFixtures.h"
 #include "TrenchBodyRoster.h"
-#include "dsp/PreampLaw.h"
 #include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
 #include "ui/ModulationChip.h"
@@ -155,9 +154,14 @@ int main()
     }
 
     std::printf ("== PREAMP law ==\n");
-    check (trench::preampGain (0.0f) == 1.0f, "preampGain(0) is exactly unity", trench::preampGain (0.0f), 1.0);
-    check (std::abs (db (trench::preampGain (0.5f)) - 5.0) < 0.01, "SLAM gain mapping at halfway is +5 dB", db (trench::preampGain (0.5f)), 5.0);
-    check (std::abs (db (trench::preampGain (1.0f)) - 20.0) < 0.01, "SLAM gain mapping at full is +20 dB", db (trench::preampGain (1.0f)), 20.0);
+    {
+        PluginProcessor ranges;
+        auto* in = ranges.apvts.getParameter (ParamID::preamp);
+        auto* out = ranges.apvts.getParameter (ParamID::output);
+        check (in->convertFrom0to1 (in->getDefaultValue()) == 0.0f && out->convertFrom0to1 (out->getDefaultValue()) == 0.0f
+               && in->convertFrom0to1 (0.0f) == -24.0f && in->convertFrom0to1 (1.0f) == 24.0f && out->getLabel() == "dB",
+               "INPUT and OUTPUT are levels from -24 to +24 dB, 0 dB by default", 0.0, 0.0);
+    }
 
     std::printf ("== movement interpolation ==\n");
     {
@@ -348,17 +352,19 @@ int main()
         bridge.prepare (48000.0, 512);
         const bool loaded = bridge.loadCartridgeBytes (BinaryData::identity_body240, (size_t) BinaryData::identity_body240Size);
         check (loaded, "identity body loads into the bridge");
-        bridge.setInputDrive (trench::preampGain (0.0f));
+        bridge.setInputDrive (1.0f);
         juce::AudioBuffer<float> buf (2, 64);
         buf.clear();
         buf.setSample (0, 0, 0.0625f);
         buf.setSample (1, 0, 0.0625f);
         TrenchParams params;
         bridge.process (buf, params);
-        float sum = 0.0f;
-        for (int i = 0; i < 64; ++i) sum += buf.getSample (0, i);
-        check (std::abs (buf.getSample (0, 0) - 0.0625f) < 1.0e-5f && std::abs (sum - 0.0625f) < 1.0e-4f,
-               "PREAMP 0 through identity body returns a -24 dBFS impulse unchanged", buf.getSample (0, 0), 0.0625);
+        trench::DeskDrive model;
+        model.prepare (48000.0);
+        model.setEnabled (true);
+        float worst = 0.0f;
+        for (int i = 0; i < 64; ++i) worst = std::max (worst, std::abs (buf.getSample (0, i) - model.process (i == 0 ? 0.0625f : 0.0f)));
+        check (worst < 1.0e-7f, "INPUT 0 dB through the identity body is exactly Mackity's own impulse response", worst, 1.0e-7);
     }
 
     std::printf ("== bridge cost ==\n");
@@ -478,9 +484,9 @@ int main()
     check (std::abs (db (base.peak / in)) < 0.2, "PREAMP 0 = unity through the path", db (base.peak / in), 0.0);
 
 
-    setParam (processor, ParamID::preamp, 1.0f);
+    setParam (processor, ParamID::preamp, 20.0f);
     const auto driven = runSine (processor, in);
-    check (std::abs (db (driven.peak / base.peak) - 20.0) < 0.1, "DRIVE at full adds 20 dB before the filter", db (driven.peak / base.peak), 20.0);
+    check (std::abs (db (driven.peak / base.peak) - 20.0) < 0.1, "INPUT +20 dB adds 20 dB before the filter", db (driven.peak / base.peak), 20.0);
     setParam (processor, ParamID::preamp, 0.0f);
     {
         setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
@@ -520,7 +526,7 @@ int main()
             setParam (processor, ParamID::slamDrive, 0.0f);
             return out;
         };
-        const auto driven = capture (1.0f, 0.0f, 0.25f);
+        const auto driven = capture (24.0f, 0.0f, 0.25f);
         const double f = goertzel (driven, 37);
         const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
         check (f > 0.01 && h / f > 0.02, "INPUT at full into the safety clip: overs are clipped, not ducked", h / f, 0.02);
@@ -536,7 +542,7 @@ int main()
     check (loud.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "safety ceiling bounds a full-scale input at -0.1 dBFS", loud.peak, trench::kFinalSafetyCeiling);
     const auto over = runSine (processor, 1.25f);
     check (over.finite && over.peak <= trench::kFinalSafetyCeiling, "No filter also contains over-range input", over.peak, trench::kFinalSafetyCeiling);
-    setParam (processor, ParamID::preamp, 1.0f);
+    setParam (processor, ParamID::preamp, 24.0f);
     const auto ceilinged = runSine (processor, 0.9f);
     check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at full", ceilinged.peak, trench::kFinalSafetyCeiling);
     check (ceilinged.peak > 0.5f, "full DRIVE into the ceiling does not mute", ceilinged.peak, 0.5);

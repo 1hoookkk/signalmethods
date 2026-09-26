@@ -35,30 +35,20 @@ public:
         iirA = 0.0; iirB = 0.0;
         biquadA.reset(); biquadB.reset();
     }
-    float process (float input, float drive) noexcept
+    float process (float input) noexcept
     {
         if (! enabled)
             return input;
         double s = (double) input;
         iirA = guard (iirA * (1.0 - iirAmountA) + s * iirAmountA);
         s -= iirA;
-        s *= inTrim (drive);
         s = biquadA.process (s);
         if (! bypassSaturate)
             s = saturate (s);
         s = biquadB.process (s);
         iirB = guard (iirB * (1.0 - iirAmountB) + s * iirAmountB);
         s -= iirB;
-        s *= outPad (drive);
         return std::isfinite (s) ? (float) s : 0.0f;
-    }
-    static double inTrim (float knob) noexcept
-    {
-        return std::pow (10.0, kInTrimTopDb * std::clamp ((double) knob, 0.0, 1.0) / 20.0);
-    }
-    static double outPad (float knob) noexcept
-    {
-        return std::pow (inTrim (knob), -kOutPadShare);
     }
     static double saturate (double sample) noexcept
     {
@@ -71,8 +61,6 @@ private:
     static constexpr double kBiquadBQ = 1.1582298;
     static constexpr double kIirA = 0.001860867;
     static constexpr double kIirB = 0.000287496;
-    static constexpr double kInTrimTopDb = 18.0;
-    static constexpr double kOutPadShare = 0.4;
     static double guard (double x) noexcept { return std::abs (x) < 1.18e-37 ? 0.0 : x; }
     struct Biquad
     {

@@ -15,6 +15,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             .withStringFromValueFunction ([] (float v, int) { return juce::String (v * 100.0f, 1); })
             .withValueFromStringFunction ([] (const juce::String& s) { return s.getFloatValue() / 100.0f; });
     };
+    const auto dbAttribs = [] {
+        return juce::AudioParameterFloatAttributes()
+            .withLabel ("dB")
+            .withStringFromValueFunction ([] (float v, int) { return juce::String (v, 1); })
+            .withValueFromStringFunction ([] (const juce::String& s) { return s.getFloatValue(); });
+    };
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::morph, 1 },
         "Morph",
@@ -34,13 +40,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::preamp, 1 },
         "Input",
-        juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f, pctAttribs()));
+        juce::NormalisableRange<float> { -24.0f, 24.0f, 0.1f },
+        0.0f, dbAttribs()));
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ParamID::output, 1 },
         "Output",
-        juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
-        0.0f, pctAttribs()));
+        juce::NormalisableRange<float> { -24.0f, 24.0f, 0.1f },
+        0.0f, dbAttribs()));
     {
         juce::StringArray presetNames { "OFF" };
         for (int i = 0; i < trench::kNumFuncGenPatterns; ++i)

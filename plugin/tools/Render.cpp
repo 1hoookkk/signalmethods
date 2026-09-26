@@ -170,17 +170,16 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
             }
             options.bpm = parsed;
         }
-        else if (option == "--input")
+        else if (option == "--input" || option == "--output")
         {
-            if (! parseUnit (option, value, options.preamp, error))
+            double db = 0.0;
+            if (! parseFiniteDouble (value, db) || db < -24.0 || db > 24.0)
+            {
+                error = option + " must be a level in dB from -24 to 24";
                 return false;
-            options.havePreamp = true;
-        }
-        else if (option == "--output")
-        {
-            if (! parseUnit (option, value, options.slam, error))
-                return false;
-            options.haveSlam = true;
+            }
+            (option == "--input" ? options.preamp : options.slam) = db;
+            (option == "--input" ? options.havePreamp : options.haveSlam) = true;
         }
         else if (option == "--seconds")
         {

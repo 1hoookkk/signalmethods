@@ -38,8 +38,8 @@ public:
 
     void updateTooltip()
     {
-        const auto role = label == "INPUT" ? "level into the filter" : "saturation after the filter";
-        setTooltip (label + ": " + role + ", " + juce::String (juce::roundToInt (getDrive() * 100.0f)) + "%");
+        const auto role = label == "INPUT" ? "level into the filter" : "level out";
+        setTooltip (label + ": " + role + ", " + (driveParam != nullptr ? driveParam->getCurrentValueAsText() : juce::String()) + " dB");
     }
 
     juce::Rectangle<float> getLegendArea() const

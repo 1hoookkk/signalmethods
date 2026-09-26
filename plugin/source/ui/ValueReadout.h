@@ -143,10 +143,10 @@ public:
         const auto b = getLocalBounds().toFloat();
         drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isActive || hasKeyboardFocus (true), t);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
-        const auto numeric = textOverride.isNotEmpty()
-                               ? textOverride
-                               : (decimals <= 0 ? juce::String (juce::roundToInt (pct))
-                                                : juce::String (pct, decimals));
+        const auto numeric = textOverride.isNotEmpty() ? textOverride
+                           : isDecibels() ? juce::String (param->convertFrom0to1 (juce::jlimit (0.0f, 1.0f, value)), 1)
+                           : (decimals <= 0 ? juce::String (juce::roundToInt (pct))
+                                            : juce::String (pct, decimals));
         const float fs = t.fontSize (id, 20.0f);
         auto textArea = b.reduced (4.0f, 1.0f);
         if (adjustCue)
@@ -167,24 +167,27 @@ public:
         }
     }
 private:
+    bool isDecibels() const { return param != nullptr && param->getLabel() == "dB"; }
     void commitEditor()
     {
         if (editor == nullptr) return;
-        const auto text = editor->getText().trim().trimCharactersAtEnd ("%").trim();
+        const auto text = editor->getText().trim().trimCharactersAtEnd ("%").trimCharactersAtEnd ("dBB").trim();
         char* end = nullptr;
         const char* start = text.toRawUTF8();
-        const double pct = std::strtod (start, &end);
-        if (end == start || *end != '\0' || ! std::isfinite (pct) || pct < 0.0 || pct > 100.0)
+        const double number = std::strtod (start, &end);
+        const double low = isDecibels() ? (double) param->getNormalisableRange().start : 0.0;
+        const double high = isDecibels() ? (double) param->getNormalisableRange().end : 100.0;
+        if (end == start || *end != '\0' || ! std::isfinite (number) || number < low || number > high)
         {
             editor->setColour (juce::TextEditor::outlineColourId, juce::Colour (0xffa33f2f));
             editor->setColour (juce::TextEditor::focusedOutlineColourId, juce::Colour (0xffa33f2f));
-            editor->setTooltip ("Enter a number from 0 to 100, or press Escape to cancel.");
+            editor->setTooltip ("Enter a number from " + juce::String (low, 0) + " to " + juce::String (high, 0) + ", or press Escape to cancel.");
             return;
         }
         if (param != nullptr)
         {
             param->beginChangeGesture();
-            param->setValueNotifyingHost ((float) (pct / 100.0));
+            param->setValueNotifyingHost (isDecibels() ? param->convertTo0to1 ((float) number) : (float) (number / 100.0));
             param->endChangeGesture();
         }
         closeEditor();

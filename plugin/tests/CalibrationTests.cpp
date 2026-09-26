@@ -36,7 +36,7 @@ std::vector<float> render (trench::calibration::Values values, float drive = 0.7
     const auto bytes = body();
     require (bridge.loadCartridgeBytes (bytes), "body load");
     bridge.applyCalibration (values);
-    bridge.setOutputDrive (drive);
+    bridge.setOutputLevel (juce::Decibels::decibelsToGain (drive));
     TrenchParams p; p.q = 0.7f; p.poleDistortion = values[5];
     std::vector<float> result;
     float trajectory[128];

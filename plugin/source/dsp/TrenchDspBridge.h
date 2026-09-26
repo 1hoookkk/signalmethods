@@ -56,6 +56,7 @@ public:
         bool saturate = false;
         bool dcBlock = false;
         bool x3Movement = true;
+        bool mackity = true;
         bool operator== (const Bypass&) const noexcept = default;
     };
 
@@ -118,8 +119,12 @@ public:
 #endif
         inputGain.reset (sampleRateHz, 0.005);
         inputGain.setCurrentAndTargetValue (1.0f);
+        outputGain.reset (sampleRateHz, 0.005);
+        outputGain.setCurrentAndTargetValue (1.0f);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
+        postDeskL.setEnabled (outputStageOn);
+        postDeskR.setEnabled (outputStageOn);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
         left = trench::core::CascadeRunner {};
         right = trench::core::CascadeRunner {};
@@ -163,6 +168,8 @@ public:
             runner->set_ring_calibration (v[8], v[9], v[10], v[11]);
         }
         outputStageOn = v[12] > 0.5f;
+        postDeskL.setEnabled (outputStageOn);
+        postDeskR.setEnabled (outputStageOn);
         postDeskL.setBypassSaturation (v[13] < 0.5f);
         postDeskR.setBypassSaturation (v[13] < 0.5f);
         setDeskCoupling (v[15]);
@@ -441,9 +448,10 @@ public:
 #if TRENCH_DEV_PANEL
                 preDeskPeak = std::max (preDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
-                outL[sample] = outputStage (postDeskL, postClip (outL[sample]));
+                const float level = outputGain.getNextValue();
+                outL[sample] = outputStage (postDeskL, postClip (outL[sample])) * level;
                 if (outR != nullptr)
-                    outR[sample] = outputStage (postDeskR, postClip (outR[sample]));
+                    outR[sample] = outputStage (postDeskR, postClip (outR[sample])) * level;
                 caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
 #if TRENCH_DEV_PANEL
                     postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
@@ -470,18 +478,15 @@ public:
     }
     void setInputDrive (float gain) noexcept
     {
-        inputGain.setTargetValue (std::clamp (gain, 1.0f, 10.0f));
+        inputGain.setTargetValue (std::clamp (gain, 0.0f, 16.0f));
     }
     bool inputDriveIsUnity() const noexcept
     {
         return inputGain.getCurrentValue() == 1.0f && inputGain.getTargetValue() == 1.0f;
     }
-    void setOutputDrive (float drive) noexcept
+    void setOutputLevel (float gain) noexcept
     {
-        outputDrive = std::clamp (drive, 0.0f, 1.0f);
-        const bool on = outputStageOn && outputDrive > 0.001f;
-        postDeskL.setEnabled (on);
-        postDeskR.setEnabled (on);
+        outputGain.setTargetValue (std::clamp (gain, 0.0f, 16.0f));
     }
     void setDeskCoupling (float hz)
     {
@@ -591,9 +596,9 @@ private:
 #endif
     float outputStage (trench::DeskDrive& desk, float x) const noexcept
     {
-        if (! desk.isActive())
+        if (! bypass.mackity || ! desk.isActive())
             return x;
-        return desk.process (x, outputDrive);
+        return desk.process (x);
     }
 
     void publishCascade (const trench::core::Cascade& cascade) noexcept
@@ -649,7 +654,7 @@ private:
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
-    float outputDrive = 0.0f;
+    juce::SmoothedValue<float> outputGain { 1.0f };
     float caughtFraction = 0.0f;
     bool outputStageOn = true;
     trench::DeskDrive postDeskL, postDeskR;

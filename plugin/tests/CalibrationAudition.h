@@ -1,7 +1,6 @@
 #pragma once
 #include "PluginProcessor.h"
 #include <juce_audio_formats/juce_audio_formats.h>
-#include "dsp/PreampLaw.h"
 
 inline void calibrationAudition (const juce::File& directory)
 {
@@ -77,7 +76,7 @@ inline void sweepAudition (const juce::File& directory, bool emu = false)
         if (! bridge.loadCartridgeBytes (bytes)) throw std::runtime_error ("sweep body load");
         bridge.applyCalibration (values);
         bridge.setInputDrive (1.0f);
-        bridge.setOutputDrive (0.0f);
+        bridge.setOutputLevel (1.0f);
         TrenchParams params;
         params.q = q;
         params.poleDistortion = 0.0f;

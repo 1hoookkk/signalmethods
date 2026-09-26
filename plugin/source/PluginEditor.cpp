@@ -291,8 +291,8 @@ void PluginEditor::onFrame()
     morphReadout->setActive (morphWheel->isMouseOverOrDragging (true) || morphReadout->isMouseOverOrDragging (true));
     secondaryReadout->setActive (secondaryWheel->isMouseOverOrDragging (true) || secondaryReadout->isMouseOverOrDragging (true));
     keySnapBox->refreshSuggestion();
-    inputReadout->setNormalised (read (ParamID::preamp));
-    outputReadout->setNormalised (read (ParamID::output));
+    inputReadout->setNormalised (processor.apvts.getParameter (ParamID::preamp)->getValue());
+    outputReadout->setNormalised (processor.apvts.getParameter (ParamID::output)->getValue());
     inputReadout->setActive (inputKnob->isMouseOverOrDragging (true) || inputReadout->isMouseOverOrDragging (true));
     outputReadout->setActive (outputKnob->isMouseOverOrDragging (true) || outputReadout->isMouseOverOrDragging (true));
 }

@@ -1,7 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
-#include "dsp/PreampLaw.h"
 #include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
 #include "BinaryData.h"
@@ -399,9 +398,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         morphBuffer[(size_t) i] = calibrationMorph;
     }
 #endif
-    const float outputAmount = juce::jlimit (0.0f, 1.0f, pOutput->load());
-    dspBridge.setInputDrive (trench::preampGain (juce::jlimit (0.0f, 1.0f, pPreamp->load())));
-    dspBridge.setOutputDrive (outputAmount);
+    dspBridge.setInputDrive (juce::Decibels::decibelsToGain (pPreamp->load()));
+    dspBridge.setOutputLevel (juce::Decibels::decibelsToGain (pOutput->load()));
     TrenchParams params;
     params.q = q;
     params.poleDistortion = 0.0f;
