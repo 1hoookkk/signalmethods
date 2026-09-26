@@ -6,6 +6,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cstdio>
 #include <functional>
+#include <vector>
 
 namespace
 {
@@ -198,6 +199,47 @@ int main()
         processor.setPlayConfigDetails (2, 2, rate, 512);
         processor.prepareToPlay (rate, 512);
         settle (300);
+        if (const char* seconds = std::getenv ("TRENCH_SHOW_SECONDS"); seconds != nullptr && source.getNumSamples() > 0)
+        {
+            const int wanted = (int) (std::atof (seconds) * rate);
+            juce::AudioBuffer<float> looped (2, wanted);
+            for (int at = 0; at < wanted; at += source.getNumSamples())
+                for (int c = 0; c < 2; ++c)
+                    looped.copyFrom (c, at, source, c, 0, juce::jmin (source.getNumSamples(), wanted - at));
+            source = std::move (looped);
+        }
+        struct Event { double from = 0.0, to = 0.0; juce::String id, text; float a = 0.0f, b = 0.0f; };
+        std::vector<Event> script;
+        if (const char* text = std::getenv ("TRENCH_SHOW_SCRIPT"))
+            for (const auto& item : juce::StringArray::fromTokens (juce::String::fromUTF8 (text), ";", {}))
+            {
+                Event e;
+                const auto when = item.upToFirstOccurrenceOf (":", false, false);
+                const auto what = item.fromFirstOccurrenceOf (":", false, false);
+                e.from = when.upToFirstOccurrenceOf ("-", false, false).getDoubleValue();
+                e.to = when.contains ("-") ? when.fromFirstOccurrenceOf ("-", false, false).getDoubleValue() : e.from;
+                e.id = what.upToFirstOccurrenceOf ("=", false, false).trim();
+                e.text = what.fromFirstOccurrenceOf ("=", false, false).trim();
+                e.a = e.text.upToFirstOccurrenceOf (">", false, false).getFloatValue();
+                e.b = e.text.contains (">") ? e.text.fromFirstOccurrenceOf (">", false, false).getFloatValue() : e.a;
+                script.push_back (e);
+            }
+        const auto applyScript = [&] (double now)
+        {
+            for (auto& e : script)
+            {
+                if (now < e.from) continue;
+                const float k = e.to > e.from ? (float) juce::jlimit (0.0, 1.0, (now - e.from) / (e.to - e.from)) : 1.0f;
+                const float v = e.a + (e.b - e.a) * k;
+                if (e.id == "body") { if (e.text.isNotEmpty()) { set (ParamID::body, bodyIndex (e.text.toRawUTF8())); e.text.clear(); } }
+                else if (e.id == "move") set (ParamID::movePreset, v);
+                else if (e.id == "length") set (ParamID::moveLength, v);
+                else if (e.id == "in") set (ParamID::preamp, v);
+                else if (e.id == "out") set (ParamID::output, v);
+                else if (e.id == "q") set (ParamID::q, v);
+                else if (e.id == "morph") set (ParamID::morph, v);
+            }
+        };
         const int blocksPerFrame = 3;
         const int count = source.getNumSamples() > 0
             ? juce::jmin (std::atoi (frames), (source.getNumSamples() + blocksPerFrame * 512 - 1) / (blocksPerFrame * 512))
@@ -208,6 +250,7 @@ int main()
         juce::MidiBuffer midi;
         for (int frame = 0; frame < count; ++frame)
         {
+            applyScript ((double) frame * blocksPerFrame * 512 / rate);
             for (int block = 0; block < blocksPerFrame; ++block)
             {
                 const int at = (frame * blocksPerFrame + block) * 512;
