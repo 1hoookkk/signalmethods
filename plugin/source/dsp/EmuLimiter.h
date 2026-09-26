@@ -24,8 +24,8 @@ public:
     }
     double currentGain() const noexcept { return gain; }
     static constexpr double kThreshold = 0.63;
-    static constexpr double kAttack = 0.999;
-    static constexpr double kRelease = 1.0 / 0.9999;
+    static constexpr double kAttack = 0.99;
+    static constexpr double kRelease = 1.0 / 0.99999;
 private:
     double attack = kAttack, release = kRelease, gain = 1.0;
 };
