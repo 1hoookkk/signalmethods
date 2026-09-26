@@ -295,6 +295,11 @@ void trench_runner_set_feedback_ceiling(void* runner, double linear) {
   static_cast<trench::core::CascadeRunner*>(runner)->set_feedback_ceiling(linear);
 }
 
+double trench_runner_take_peak_state(void* runner) {
+  if (!runner) return 0.0;
+  return static_cast<trench::core::CascadeRunner*>(runner)->take_peak_state();
+}
+
 void trench_runner_set_sample_rate(void* runner, double sample_rate_hz) {
   if (!runner) return;
   static_cast<trench::core::CascadeRunner*>(runner)->set_sample_rate(sample_rate_hz);
