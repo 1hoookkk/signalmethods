@@ -177,16 +177,32 @@ inline int frontendTests()
     check (chip->displayText().startsWith (trench::kFuncGenPatterns[4].name) && chip->displayText().contains ("4 bars"),
            "the chip names the movement and its length");
     {
-        bool onlyMovements = true, grouped = false, lands = false;
+        bool onlyMovements = true, tide = false, lands = false, pulse = false, ordered = true;
         juce::String heading;
+        int lastChoice = -1;
         for (const auto& row : chip->browserRows())
         {
             onlyMovements = onlyMovements && (row.heading || (row.body >= 0 && row.body <= trench::kNumFuncGenPatterns) || row.body >= 400);
-            if (row.heading) heading = row.text;
-            if (row.body == 20) grouped = heading == "4 bars";
-            if (row.body == 5) lands = row.text.endsWith ("lands");
+            if (row.heading) { heading = row.text; lastChoice = -1; continue; }
+            if (row.body >= 1 && row.body <= trench::kNumFuncGenPatterns)
+            {
+                const int choice = trench::Movement::authoredLengthChoice (trench::kFuncGenPatterns[row.body - 1]);
+                ordered = ordered && choice >= lastChoice;
+                lastChoice = choice;
+            }
+            if (row.body == 20) tide = heading == "Sways" && row.text.endsWith ("4 bars");
+            if (row.body == 5) lands = heading == "Lands" && row.text.endsWith ("1 bar");
+            if (row.body == 22) pulse = heading == "Pulses" && row.text.endsWith ("1/4 bar");
         }
-        check (onlyMovements && grouped && lands, "the movement browser groups movements under their authored length and marks the ones that land");
+        check (onlyMovements && tide && lands && pulse && ordered,
+               "the movement browser groups movements by what they do, shortest first, each with its length");
+        const auto before = processor.apvts.getRawParameterValue (ParamID::moveLength)->load();
+        chip->setRateBox ({ 200.0f, 0.0f, 40.0f, 20.0f });
+        chip->mouseDown (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 210.0f, 10.0f },
+            juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier),
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, chip, chip, {}, { 210.0f, 10.0f }, {}, 1, false));
+        check (processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == before,
+               "the length box shows the movement's own length and cannot be set from the face");
     }
     juce::MemoryBlock state;
     processor.getStateInformation (state);

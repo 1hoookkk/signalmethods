@@ -75,6 +75,18 @@ public:
         return nameText() + separator + rateText() + (isOnce() ? landsSuffix() : juce::String());
     }
     static juce::String landsSuffix() { return " " + juce::String::charToString (0x00b7) + " lands"; }
+    static constexpr const char* kRoles[] = { "Pulses", "Sways", "Climbs", "Falls", "Lands" };
+    static const char* role (const trench::FuncGenPattern& pattern)
+    {
+        if (pattern.direction == 5) return "Lands";
+        if (pattern.direction == 1) return "Falls";
+        const juce::String name (pattern.name);
+        for (const auto* pulse : { "Triplet Relay", "Rail Switch", "Relay Teeth", "Nerve Tick", "Flip Relay", "Square Bloom" })
+            if (name == pulse) return "Pulses";
+        for (const auto* sway : { "Backbeat Bloom", "Eighth Sway", "Quarter Arc", "Pendulum Teeth", "Wide Breath", "Long Arc", "Slow Tide" })
+            if (name == sway) return "Sways";
+        return "Climbs";
+    }
     bool isOnce() const
     {
         const int mode = playback != nullptr ? playback->getIndex() : 0;
@@ -105,21 +117,23 @@ public:
         if (param == nullptr) return out;
         const bool usingCustom = custom != nullptr && custom->getValue() > 0.5f;
         out.push_back ({ "Off", 0, ! usingCustom && selectedPattern() == 0 });
-        for (int choice = 0; choice < trench::Movement::kRateChoices; ++choice)
+        const auto separator = " " + juce::String::charToString (0x00b7) + " ";
+        for (const auto* group : kRoles)
         {
             bool heading = false;
-            for (int i = 1; i <= trench::kNumFuncGenPatterns && i < param->choices.size(); ++i)
-            {
-                const auto& pattern = trench::kFuncGenPatterns[i - 1];
-                if (trench::Movement::authoredLengthChoice (pattern) != choice) continue;
-                if (! heading)
+            for (int choice = 0; choice < trench::Movement::kRateChoices; ++choice)
+                for (int i = 1; i <= trench::kNumFuncGenPatterns && i < param->choices.size(); ++i)
                 {
-                    out.push_back ({ barsText (trench::Movement::rateBars (choice)), -1, false, true });
-                    heading = true;
+                    const auto& pattern = trench::kFuncGenPatterns[i - 1];
+                    if (juce::String (role (pattern)) != group || trench::Movement::authoredLengthChoice (pattern) != choice) continue;
+                    if (! heading)
+                    {
+                        out.push_back ({ group, -1, false, true });
+                        heading = true;
+                    }
+                    out.push_back ({ param->choices[i] + separator + barsText (trench::Movement::rateBars (choice)), i,
+                                     ! usingCustom && selectedPattern() == i });
                 }
-                out.push_back ({ param->choices[i] + (pattern.direction == 5 ? landsSuffix() : juce::String()), i,
-                                 ! usingCustom && selectedPattern() == i });
-            }
         }
         const auto saved = savedNames != nullptr ? savedNames() : juce::StringArray();
         if (! saved.isEmpty())
@@ -190,25 +204,15 @@ public:
     {
         return isOn() || ! rateBox.contains ((float) x, (float) y);
     }
-    void mouseDown (const juce::MouseEvent& e) override
-    {
-        rateClick = isOn() && rateBox.contains (e.position);
-        if (rateClick)
-            selectLength (rateIndex() + (e.position.y < rateBox.getCentreY() ? 1 : -1));
-    }
     void mouseUp (const juce::MouseEvent& e) override
     {
-        if (! rateClick && ! e.mouseWasDraggedSinceMouseDown() && e.getNumberOfClicks() == 1) showPatterns();
+        if (! e.mouseWasDraggedSinceMouseDown() && e.getNumberOfClicks() == 1) showPatterns();
     }
-    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
     {
         if (wheel.deltaY == 0.0f)
             return;
-        const int step = wheel.deltaY > 0.0f ? 1 : -1;
-        if (isOn() && rateBox.contains (e.position))
-            selectLength (rateIndex() + step);
-        else
-            selectPattern (selectedPattern() - step);
+        selectPattern (selectedPattern() - (wheel.deltaY > 0.0f ? 1 : -1));
     }
     bool keyPressed (const juce::KeyPress& key) override
     {
@@ -249,9 +253,7 @@ public:
         if (rateBox.isEmpty() || ! isOn())
             return;
         drawMutedBoneReadout (g, rateBox, rateBox.getHeight() * 0.17f, lit, t);
-        auto valueArea = rateBox;
-        const auto spinner = valueArea.removeFromRight (12.0f);
-        drawEmuSpinner (g, spinner, true, t);
+        const auto valueArea = rateBox;
         g.setFont (displayFont (t.fontSize ("qReadout", 20.0f), false));
         g.setColour (t.textColour ("qReadout", juce::Colour (0xff4a3520)));
         g.drawFittedText (rateText(), valueArea.reduced (3.0f, 1.0f).toNearestInt(), juce::Justification::centred, 1, 0.7f);
@@ -267,7 +269,6 @@ private:
     std::unique_ptr<juce::ParameterAttachment> attachment, lengthAttachment, playbackAttachment;
     bool active = false;
     juce::Rectangle<float> rateBox;
-    bool rateClick = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModulationChip)
 };
 }
