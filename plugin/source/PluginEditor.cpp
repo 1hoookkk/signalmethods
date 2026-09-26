@@ -22,8 +22,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     uiFontFamily() = layout.string ("fontFamily", kUiFontName);
     uiEmphasisFontFamily() = layout.string ("fontFamilyEmphasis", kUiEmphasisFontName);
     uiBoldEnabled() = layout.param ("fontBold", 0.0) > 0.5;
-    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_sage_putty_png,
-                                                  BinaryData::trench_plate_sage_putty_pngSize);
+    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_sage_png,
+                                                  BinaryData::trench_plate_sage_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_ss3_strip_png,
                                                   BinaryData::trench_ss3_strip_pngSize);
 #if TRENCH_DEV_PANEL
@@ -176,7 +176,6 @@ void PluginEditor::resized()
         const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f,
                                                   value.getRight() - hole.getX(), value.getHeight());
         modulationChip->setBounds (chip.getSmallestIntegerContainer());
-        modulationChip->setRateBox (chip.withLeft (value.getX()) - modulationChip->getBounds().getPosition().toFloat());
         const float left = hole.getX() - 10.0f;
         const float right = theme.rect ("outputReadout").getRight() + 30.0f;
         const float top = chip.getBottom() + 12.0f;

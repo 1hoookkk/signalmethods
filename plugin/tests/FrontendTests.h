@@ -165,17 +165,14 @@ inline int frontendTests()
     check (chip->displayText() == "Modulation: off", "the chip reads Off with no movement");
     chip->keyPressed (juce::KeyPress (juce::KeyPress::rightKey));
     check (processor.apvts.getRawParameterValue (ParamID::movePreset)->load() == 1
-           && chip->displayText().startsWith (trench::kFuncGenPatterns[0].name)
-           && chip->displayText().endsWith ("1/2 bar")
+           && chip->displayText() == trench::kFuncGenPatterns[0].name
            && processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 1,
-           "Next auditions a movement at its authored length and the chip names it with its length");
+           "Next auditions a movement at its authored length and the chip shows its name only");
     chip->selectPattern (5);
     check (processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == 2
-           && chip->displayText().endsWith (juce::String::fromUTF8 ("1 bar \xc2\xb7 lands")),
-           "a one-shot movement arrives at its authored 1 bar and reads lands");
+           && chip->displayText() == trench::kFuncGenPatterns[4].name,
+           "a one-shot movement arrives at its authored 1 bar");
     chip->selectLength (4);
-    check (chip->displayText().startsWith (trench::kFuncGenPatterns[4].name) && chip->displayText().contains ("4 bars"),
-           "the chip names the movement and its length");
     {
         bool onlyMovements = true, tide = false, lands = false, pulse = false, ordered = true;
         juce::String heading;
@@ -196,13 +193,6 @@ inline int frontendTests()
         }
         check (onlyMovements && tide && lands && pulse && ordered,
                "the movement browser groups movements by what they do, shortest first, each with its length");
-        const auto before = processor.apvts.getRawParameterValue (ParamID::moveLength)->load();
-        chip->setRateBox ({ 200.0f, 0.0f, 40.0f, 20.0f });
-        chip->mouseDown (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 210.0f, 10.0f },
-            juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier),
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, chip, chip, {}, { 210.0f, 10.0f }, {}, 1, false));
-        check (processor.apvts.getRawParameterValue (ParamID::moveLength)->load() == before,
-               "the length box shows the movement's own length and cannot be set from the face");
     }
     juce::MemoryBlock state;
     processor.getStateInformation (state);

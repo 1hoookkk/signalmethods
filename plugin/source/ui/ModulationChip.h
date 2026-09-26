@@ -67,14 +67,7 @@ public:
         if (selectedPattern() == 0 || param == nullptr) return "Modulation: off";
         return param->choices[selectedPattern()];
     }
-    juce::String displayText() const
-    {
-        if (selectedPattern() == 0 || param == nullptr || (custom != nullptr && custom->getValue() > 0.5f))
-            return nameText();
-        const auto separator = " " + juce::String::charToString (0x00b7) + " ";
-        return nameText() + separator + rateText() + (isOnce() ? landsSuffix() : juce::String());
-    }
-    static juce::String landsSuffix() { return " " + juce::String::charToString (0x00b7) + " lands"; }
+    juce::String displayText() const { return nameText(); }
     static constexpr const char* kRoles[] = { "Pulses", "Sways", "Climbs", "Falls", "Lands" };
     static const char* role (const trench::FuncGenPattern& pattern)
     {
@@ -86,17 +79,6 @@ public:
         for (const auto* sway : { "Backbeat Bloom", "Eighth Sway", "Quarter Arc", "Pendulum Teeth", "Wide Breath", "Long Arc", "Slow Tide" })
             if (name == sway) return "Sways";
         return "Climbs";
-    }
-    bool isOnce() const
-    {
-        const int mode = playback != nullptr ? playback->getIndex() : 0;
-        const int pattern = selectedPattern();
-        return mode == 2 || (mode == 0 && pattern >= 1 && pattern <= trench::kNumFuncGenPatterns
-                             && trench::kFuncGenPatterns[pattern - 1].direction == 5);
-    }
-    juce::String rateText() const
-    {
-        return barsText (trench::Movement::rateBars (length != nullptr ? length->getIndex() : trench::Movement::kDefaultRate));
     }
     static juce::String barsText (double bars)
     {
@@ -193,17 +175,7 @@ public:
                 else safe->selectPattern (result - 1);
             });
     }
-    void setRateBox (juce::Rectangle<float> box)
-    {
-        rateBox = box;
-        repaint();
-    }
-    int rateIndex() const noexcept { return length != nullptr ? length->getIndex() : trench::Movement::kDefaultRate; }
     bool isOn() const { return selectedPattern() > 0 || (custom != nullptr && custom->getValue() > 0.5f); }
-    bool hitTest (int x, int y) override
-    {
-        return isOn() || ! rateBox.contains ((float) x, (float) y);
-    }
     void mouseUp (const juce::MouseEvent& e) override
     {
         if (! e.mouseWasDraggedSinceMouseDown() && e.getNumberOfClicks() == 1) showPatterns();
@@ -230,8 +202,7 @@ public:
     void paint (juce::Graphics& g) override
     {
         const bool lit = active || isMouseOver (true);
-        const auto b = rateBox.isEmpty() ? getLocalBounds().toFloat()
-                                         : getLocalBounds().toFloat().withRight (rateBox.getX() - 4.0f);
+        const auto b = getLocalBounds().toFloat();
         drawFrostedGlassControl (g, b, 3.0f, lit, t);
         const float chevronW = juce::jmin (20.0f, b.getHeight());
         const float divider = b.getRight() - chevronW;
@@ -248,15 +219,8 @@ public:
         g.setColour (ink);
         g.strokePath (chevron, juce::PathStrokeType (1.2f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
         g.setFont (displayFont (juce::jmin (13.0f, b.getHeight() * 0.68f), false));
-        g.drawFittedText (rateBox.isEmpty() ? displayText() : nameText(), b.withRight (divider).reduced (6.0f, 0.0f).toNearestInt(),
+        g.drawFittedText (displayText(), b.withRight (divider).reduced (6.0f, 0.0f).toNearestInt(),
                           juce::Justification::centredLeft, 1, 0.8f);
-        if (rateBox.isEmpty() || ! isOn())
-            return;
-        drawMutedBoneReadout (g, rateBox, rateBox.getHeight() * 0.17f, lit, t);
-        const auto valueArea = rateBox;
-        g.setFont (displayFont (t.fontSize ("qReadout", 20.0f), false));
-        g.setColour (t.textColour ("qReadout", juce::Colour (0xff4a3520)));
-        g.drawFittedText (rateText(), valueArea.reduced (3.0f, 1.0f).toNearestInt(), juce::Justification::centred, 1, 0.7f);
     }
     void mouseEnter (const juce::MouseEvent&) override { repaint(); }
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
@@ -268,7 +232,6 @@ private:
     juce::AudioParameterChoice* playback = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment, lengthAttachment, playbackAttachment;
     bool active = false;
-    juce::Rectangle<float> rateBox;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModulationChip)
 };
 }

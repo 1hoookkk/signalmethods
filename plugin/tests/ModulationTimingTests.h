@@ -112,7 +112,7 @@ inline int modulationTimingTests()
         check (p.apvts.getRawParameterValue (ParamID::moveLength)->load() == 4.0f
             && p.apvts.getRawParameterValue (ParamID::movePlayback)->load() == 2.0f,
             "modulation menu reaches host timing parameters");
-        check (chip.displayText() == juce::String::fromUTF8 ("Long Return \xc2\xb7 4 bars \xc2\xb7 lands"), "modulation status shows the selected pattern, its length and whether it lands");
+        check (chip.displayText() == "Long Return", "modulation status shows the selected movement by name");
         juce::MemoryBlock state;
         p.getStateInformation (state);
         PluginProcessor restored;
