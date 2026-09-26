@@ -1,0 +1,36 @@
+diff --git a/plugin/source/dsp/TrenchDspBridge.h b/plugin/source/dsp/TrenchDspBridge.h
+index 428474b9..707ea218 100644
+--- a/plugin/source/dsp/TrenchDspBridge.h
++++ b/plugin/source/dsp/TrenchDspBridge.h
+@@ -1,6 +1,7 @@
+ #pragma once
+ #include "DeskDrive.h"
+ #include "DriveLaw.h"
++#include "EmuLimiter.h"
+ #include "KeySnap.h"
+ 
+ #include <juce_audio_processors/juce_audio_processors.h>
+@@ -120,6 +121,7 @@ public:
+         inputGain.setCurrentAndTargetValue (1.0f);
+         postDeskL.prepare (sampleRateHz);
+         postDeskR.prepare (sampleRateHz);
++        crossingLimiter.prepare (sampleRateHz);
+         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+         left = trench::core::CascadeRunner {};
+         right = trench::core::CascadeRunner {};
+@@ -438,6 +440,7 @@ public:
+                         outR[sample] = fadeRight[(size_t) s] * (1.0f - mix) + outR[sample] * mix;
+                     --bodyFadeRemaining;
+                 }
++                crossingLimiter.process (outL[sample], outR != nullptr ? &outR[sample] : nullptr);
+ #if TRENCH_DEV_PANEL
+                 preDeskPeak = std::max (preDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
+ #endif
+@@ -653,6 +656,7 @@ private:
+     float caughtFraction = 0.0f;
+     bool outputStageOn = true;
+     trench::DeskDrive postDeskL, postDeskR;
++    trench::EmuLimiter crossingLimiter;
+     Bypass bypass;
+ #if TRENCH_DEV_PANEL
+     trench::calibration::Values calibrationValues = trench::calibration::defaults();
