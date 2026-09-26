@@ -81,6 +81,38 @@ int main()
         return n > 1 ? 1.0f : 0.0f;
     };
 
+    if (std::getenv ("TRENCH_FACESHOT_MOTION") != nullptr)
+    {
+        int march = 0;
+        for (int i = 0; i < trench::kNumFuncGenPatterns; ++i)
+            if (juce::String (trench::kFuncGenPatterns[i].name) == "Minor March") march = i + 1;
+        set (ParamID::body, bodyIndex ("Talking Hedz"));
+        set (ParamID::movePreset, (float) march);
+        set (ParamID::moveLength, 4.0f);
+        set (ParamID::morph, 0.25f);
+        set (ParamID::q, 0.25f);
+        settle (400);
+        juce::AudioBuffer<float> audio (2, 512);
+        juce::MidiBuffer midi;
+        for (int step = 0; step <= 8; ++step)
+        {
+            for (int block = 0; block < 94; ++block)
+            {
+                audio.clear();
+                processor.processBlock (audio, midi);
+            }
+            settle (150);
+            std::printf ("half bar %d: effective morph %.4f, wheel parameter %.4f, movement %g\n", step,
+                         processor.getEffectiveMorphForUi(), processor.apvts.getRawParameterValue (ParamID::morph)->load(),
+                         processor.apvts.getRawParameterValue (ParamID::movePreset)->load());
+            save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 2.0f, juce::NativeImageType()), "trench_motion_" + juce::String (step) + ".png");
+        }
+        processor.editorBeingDeleted (editor);
+        holder.removeChildComponent (editor);
+        delete editor;
+        return 0;
+    }
+
     shoot ("trench_face");
 
     set (ParamID::body, bodyIndex ("Blade"));
@@ -116,6 +148,21 @@ int main()
     set (ParamID::movePreset, 1.0f);
     settle (500);
     shoot ("trench_face_modulated");
+    if (const char* frames = std::getenv ("TRENCH_FRAMES"))
+    {
+        set (ParamID::movePreset, 7.0f);
+        set (ParamID::moveLength, 1.0f);
+        const int count = juce::jlimit (1, 600, std::atoi (frames));
+        juce::AudioBuffer<float> audio (2, 512);
+        juce::MidiBuffer midi;
+        for (int frame = 0; frame < count; ++frame)
+        {
+            for (int block = 0; block < 3; ++block) { audio.clear(); processor.processBlock (audio, midi); }
+            settle (33);
+            save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 1.0f, juce::NativeImageType()),
+                  "frame_" + juce::String (frame).paddedLeft ('0', 3) + ".png");
+        }
+    }
     set (ParamID::morph, 0.0f);
     set (ParamID::movePreset, 8.0f);
     set (ParamID::moveLength, 4.0f);
