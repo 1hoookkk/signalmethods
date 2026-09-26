@@ -260,11 +260,11 @@ inline int driveSlamTests()
         desk.reset();
         for (int i = 0; i < 48000; ++i)
             hot = std::max (hot, std::abs (desk.process ((float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0), 1.0f)));
-        check (std::abs (trench::DeskDrive::inTrim (0.0f) - 1.0) < 1.0e-9 && std::abs (trench::DeskDrive::inTrim (1.0f) - 100.0) < 1.0e-9,
-            "OUTPUT maps to Mackity In Trim: unity at 0, +40 dB at full");
+        check (std::abs (trench::DeskDrive::inTrim (0.0f) - 1.0) < 1.0e-9 && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::inTrim (1.0f)) - 18.0) < 1.0e-6
+               && std::abs (juce::Decibels::gainToDecibels (trench::DeskDrive::outPad (1.0f)) + 13.5) < 1.0e-6, "OUTPUT maps to Mackity In Trim up to +18 dB with Out Pad taking back three quarters");
         std::printf ("      Mackity full trim: quiet peak %g, hot peak %g\n", quiet, hot);
-        check (quiet > 0.0095f && quiet < 0.0105f && hot > 0.80f && hot < 1.25f,
-            "Mackity at full trim lifts a -80 dBFS tone by 40 dB and holds full scale at its fifth-order curve plus its second filter's ring");
+        check (quiet > 1.55e-4f && quiet < 1.80e-4f && hot > 0.15f && hot < 0.30f,
+            "OUTPUT at full adds only +4.5 dB to quiet material and saturates full scale at Mackity's fifth-order curve, padded");
     }
 #if TRENCH_DEV_PANEL
     for (const char* id : trench::calibration::retired)
