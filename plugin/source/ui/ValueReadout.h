@@ -149,27 +149,7 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto b = getLocalBounds().toFloat();
-        {
-            const auto box = getLocalBounds();
-            const int x = box.getX(), right = box.getRight(), top = box.getY(), bottom = box.getBottom();
-            g.setGradientFill (juce::ColourGradient (juce::Colour (0xffd4d4d8), 0.0f, (float) top,
-                                                     juce::Colour (0xffffffff), 0.0f, (float) bottom, false));
-            g.fillRect (box);
-            g.setColour (juce::Colour (0x60000000));
-            g.drawHorizontalLine (top, (float) x, (float) right);
-            g.setColour (juce::Colour (0x25000000));
-            g.drawHorizontalLine (top + 1, (float) x, (float) right);
-            g.setColour (juce::Colour (0x80ffffff));
-            g.drawHorizontalLine (bottom - 1, (float) x, (float) right);
-            g.setColour (juce::Colour (0x40000000));
-            g.drawVerticalLine (x, (float) top, (float) bottom);
-            g.drawVerticalLine (right - 1, (float) top, (float) bottom);
-            if (isActive || hasKeyboardFocus (true))
-            {
-                g.setColour (t.accent().withAlpha (0.5f));
-                g.drawRect (box.reduced (1), 1);
-            }
-        }
+        drawFrostedGlassControl (g, b, 3.0f, isActive || hasKeyboardFocus (true), t);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
         const auto numeric = textOverride.isNotEmpty() ? textOverride
                            : isDecibels() ? juce::String (param->convertFrom0to1 (juce::jlimit (0.0f, 1.0f, value)), 1)
