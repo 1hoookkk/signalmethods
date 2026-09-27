@@ -364,9 +364,9 @@ int main()
         const auto during = names();
         setParam (named, ParamID::body, (float) trench::kNoFilterIndex);
         pump (200);
-        check (lp >= 0 && before == "Morph/Q" && during == "Cutoff/Reso" && names() == "Morph/Q"
+        check (lp >= 0 && before == "Morph/Q" && during == "Frequency/Q" && names() == "Morph/Q"
                    && morph->getParameterID() == ParamID::morph && q->getParameterID() == ParamID::q,
-               "the host reads each body's own axis names, LP 24 reports Cutoff and Reso, IDs stay morph and q");
+               "the host reads each body's own axis names, LP 24 reports Frequency and Q as E-mu names them, IDs stay morph and q");
     }
     std::printf ("== bridge boundary ==\n");
     {

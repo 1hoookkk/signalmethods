@@ -12,12 +12,10 @@ struct AxisNames
 
 inline AxisNames axisNamesForBase (const juce::String& base) noexcept
 {
-    if (base.startsWith ("util_lp_") || base.startsWith ("util_hp_")) return { "CUTOFF", "RESO" };
-    if (base.startsWith ("util_bp_")) return { "CENTER", "RESO" };
-    if (base.startsWith ("util_sweep_eq_")) return { "FREQ", "GAIN" };
-    if (base.startsWith ("util_vowel_")) return { "VOWEL", "MOUTH" };
-    if (base.startsWith ("util_phaser_")) return { "NOTCH", "DEPTH" };
-    if (base.startsWith ("util_flanger_")) return { "SWEEP", "DEPTH" };
+    if (base.startsWith ("util_lp_") || base.startsWith ("util_hp_") || base.startsWith ("util_bp_")) return { "FREQUENCY", "Q" };
+    if (base.startsWith ("util_sweep_eq_")) return { "FREQUENCY", "GAIN" };
+    if (base.startsWith ("util_vowel_")) return { "FREQUENCY", "BODY SIZE" };
+    if (base.startsWith ("util_phaser_") || base.startsWith ("util_flanger_")) return { "FREQUENCY", "DEPTH" };
     return { "MORPH", "Q" };
 }
 
