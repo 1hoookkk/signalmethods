@@ -113,6 +113,14 @@ public:
 
         drawWheelContactShadow (g, t.rect ("morphWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
         drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
+        for (const char* id : { "morphReadout", "qReadout", "inputReadout", "outputReadout" })
+        {
+            const auto tile = t.rect (id);
+            if (tile.isEmpty()) continue;
+            juce::Path seat;
+            seat.addRoundedRectangle (tile.reduced (0.5f), 3.0f);
+            juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 4, { 0, 1 }).drawForPath (g, seat);
+        }
         if (! roomFrame.isEmpty())
         {
             g.setColour (juce::Colours::white.withAlpha (0.62f));

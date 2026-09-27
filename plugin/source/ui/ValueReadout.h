@@ -149,14 +149,26 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto b = getLocalBounds().toFloat();
-        const auto well = b.reduced (2.0f);
-        const float wellRadius = well.getHeight() * 0.17f;
-        for (int ring = 3; ring >= 1; --ring)
         {
-            g.setColour (juce::Colours::black.withAlpha (0.07f * (float) (4 - ring)));
-            g.drawRoundedRectangle (well.expanded ((float) ring * 0.55f), wellRadius + (float) ring * 0.55f, 1.1f);
+            const auto tile = b.reduced (0.5f);
+            constexpr float radius = 3.0f;
+            const bool pearl = t.themeParam ("readoutPearl", 0.0) > 0.0;
+            juce::ColourGradient fill (pearl ? juce::Colour (0xfff4f4f6) : t.wellTop(), 0.0f, tile.getY(),
+                                       pearl ? juce::Colour (0xffd8d8dc) : t.wellBottom(), 0.0f, tile.getBottom(), false);
+            g.setGradientFill (fill);
+            g.fillRoundedRectangle (tile, radius);
+            g.setColour (juce::Colour (0xff707378));
+            g.drawRoundedRectangle (tile, radius, 1.0f);
+            g.setColour (juce::Colour (0xff3a3d42));
+            g.fillRect (tile.getX() + radius, tile.getBottom() - 1.0f, tile.getWidth() - 2.0f * radius, 1.0f);
+            g.setColour (juce::Colours::white.withAlpha (0.6f));
+            g.fillRect (tile.getX() + radius, tile.getY() + 1.0f, tile.getWidth() - 2.0f * radius, 1.0f);
+            if (isActive || hasKeyboardFocus (true))
+            {
+                g.setColour (t.accent().withAlpha (0.5f));
+                g.drawRoundedRectangle (tile.reduced (1.5f), radius - 1.0f, 1.0f);
+            }
         }
-        drawMutedBoneReadout (g, well, wellRadius, isActive || hasKeyboardFocus (true), t);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
         const auto numeric = textOverride.isNotEmpty() ? textOverride
                            : isDecibels() ? juce::String (param->convertFrom0to1 (juce::jlimit (0.0f, 1.0f, value)), 1)
