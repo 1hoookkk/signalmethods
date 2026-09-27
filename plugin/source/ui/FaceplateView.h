@@ -115,12 +115,9 @@ public:
         drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
         for (const auto& [tile, radius] : seats)
         {
-            g.setColour (juce::Colours::black.withAlpha (0.10f));
-            g.fillRoundedRectangle (tile.expanded (2.0f), radius + 2.0f);
-            g.setColour (juce::Colours::black.withAlpha (0.28f));
-            g.fillRoundedRectangle (tile.expanded (1.0f), radius + 1.0f);
-            g.setColour (juce::Colours::black.withAlpha (0.30f));
-            g.fillRect (tile.getX() + radius, tile.getBottom(), tile.getWidth() - 2.0f * radius, 2.0f);
+            juce::Path seat;
+            seat.addRoundedRectangle (tile, radius);
+            juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 4, { 0, 0 }).drawForPath (g, seat);
         }
         if (! roomFrame.isEmpty())
         {
