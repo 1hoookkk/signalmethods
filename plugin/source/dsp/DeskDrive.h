@@ -29,6 +29,11 @@ public:
     }
     bool isActive() const noexcept { return enabled; }
     void setBypassSaturation (bool bypass) noexcept { bypassSaturate = bypass; }
+    void setTrims (double inTrimKnob, double outPadKnob) noexcept
+    {
+        inTrim = (inTrimKnob * 10.0) * (inTrimKnob * 10.0);
+        outPad = outPadKnob;
+    }
     bool isBypassSaturation() const noexcept { return bypassSaturate; }
     void reset()
     {
@@ -42,12 +47,14 @@ public:
         double s = (double) input;
         iirA = guard (iirA * (1.0 - iirAmountA) + s * iirAmountA);
         s -= iirA;
+        s *= inTrim;
         s = biquadA.process (s);
         if (! bypassSaturate)
             s = saturate (s);
         s = biquadB.process (s);
         iirB = guard (iirB * (1.0 - iirAmountB) + s * iirAmountB);
         s -= iirB;
+        s *= outPad;
         return std::isfinite (s) ? (float) s : 0.0f;
     }
     static double saturate (double sample) noexcept
@@ -87,6 +94,7 @@ private:
         iirAmountB = couplingHz > 0.0 ? 2.0 * 3.14159265358979323846 * couplingHz / sr : kIirB / (sr / 44100.0);
     }
     bool enabled = false;
+    double inTrim = 1.0, outPad = 1.0;
     bool bypassSaturate = false;
     double sr = 44100.0;
     double couplingHz = 0.0;

@@ -68,6 +68,7 @@ inline int driveSlamTests()
                 slam.setInputSlam (true);
                 trench::DeskDrive pre, post;
                 for (auto* m : { &pre, &post }) { m->prepare (rate); m->setEnabled (true); }
+                pre.setTrims (1.0, 0.25);
                 juce::AudioBuffer<float> a (1, 128);
                 bool matches = true;
                 double moved = 0.0;
@@ -83,7 +84,7 @@ inline int driveSlamTests()
                         moved += std::abs (want - dry.getSample (0, i));
                     }
                 }
-                check (matches && moved > 1.0, "SLAM puts a Mackie preamp before the filter, in series with the one after it");
+                check (matches && moved > 1.0, "SLAM puts Mackity before the filter at full In Trim (+40 dB) and Out Pad 0.25, in series with the one after it");
             }
             TrenchDspBridge clean;
             clean.prepare (rate, 128);

@@ -15,7 +15,7 @@ public:
     {
         setTitle ("Slam");
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
-        setTooltip ("SLAM: Mackie preamp before the filter, driven by INPUT");
+        setTooltip ("SLAM: Mackity slammed at full In Trim before the filter");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
     }

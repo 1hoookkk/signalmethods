@@ -123,6 +123,8 @@ public:
         outputGain.setCurrentAndTargetValue (1.0f);
         preDeskL.prepare (sampleRateHz);
         preDeskR.prepare (sampleRateHz);
+        for (auto* desk : { &preDeskL, &preDeskR })
+            desk->setTrims (kSlamInTrim, kSlamOutPad);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
         postDeskL.setEnabled (outputStageOn);
@@ -663,6 +665,8 @@ private:
     juce::SmoothedValue<float> inputGain { 1.0f };
     juce::SmoothedValue<float> outputGain { 1.0f };
     trench::DeskDrive preDeskL, preDeskR;
+    static constexpr double kSlamInTrim = 1.0;
+    static constexpr double kSlamOutPad = 0.25;
     float caughtFraction = 0.0f;
     bool outputStageOn = true;
     trench::DeskDrive postDeskL, postDeskR;
