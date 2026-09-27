@@ -154,20 +154,15 @@ private:
         selector.clear (juce::dontSendNotification);
         int count = 0;
         const auto* entries = trench::bodyRoster (count);
-        bool userHeading = false, basicHeading = false;
+        juce::String heading;
         for (int i = 0; i < count; ++i)
         {
-            if (! basicHeading && juce::String (entries[i].category) == "BASIC SHAPES")
+            const juce::String category (entries[i].category);
+            if (category != heading && category != "SYSTEM")
             {
                 selector.addSeparator();
-                selector.addSectionHeading ("Basic shapes");
-                basicHeading = true;
-            }
-            if (! userHeading && juce::String (entries[i].category) == "USER")
-            {
-                selector.addSeparator();
-                selector.addSectionHeading ("Your bodies");
-                userHeading = true;
+                selector.addSectionHeading (category == "USER" ? juce::String ("Your bodies") : category);
+                heading = category;
             }
             selector.addItem (entries[i].displayName, i + 1);
         }

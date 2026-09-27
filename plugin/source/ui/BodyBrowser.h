@@ -226,14 +226,16 @@ private:
         int count = 0;
         const auto* entries = trench::bodyRoster (count);
         rows.push_back ({ trench::kNoFilterName, trench::kNoFilterIndex });
-        bool basicHeading = false, userHeading = false;
+        juce::String heading;
+        bool userHeading = false;
         for (int i = 0; i < count; ++i)
             if (! trench::bodyIsNoFilter (i) && ! juce::File::isAbsolutePath (entries[i].base))
             {
-                if (! basicHeading && juce::String (entries[i].category) == "BASIC SHAPES")
+                const juce::String category (entries[i].category);
+                if (category != heading)
                 {
-                    rows.push_back ({ "Basic shapes", -1, false, true });
-                    basicHeading = true;
+                    rows.push_back ({ category, -1, false, true });
+                    heading = category;
                 }
                 rows.push_back ({ trench::bodyDisplayName (i), i });
             }
