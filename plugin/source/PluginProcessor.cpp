@@ -221,6 +221,7 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     movementDepth = 1.0f;
     movementReturnStep = (float) (1.0 / (kMovementReturnSeconds * sampleRate));
     morphBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
+    qBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
     effectiveMorphForUi.store (pMorph->load(), std::memory_order_relaxed);
     effectiveQForUi.store (pQ->load(), std::memory_order_relaxed);
     morphModulatedForUi.store (false, std::memory_order_relaxed);
@@ -334,6 +335,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
     const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
     float qHeard = q;
+    bool qFollowing = false;
     const int movePreset  = (int) pMovePreset->load();
     const int moveTransition = (int) pMoveTransition->load();
     const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
@@ -430,9 +432,13 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
                 followPush = depth * juce::jlimit (0.0f, 1.0f, (db - floorDb) / (topDb - floorDb));
                 if (follow1)
                     morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, morphBuffer[(size_t) i] + followPush);
+                qBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, q + followPush);
             }
             if (follow2)
-                qHeard = juce::jlimit (0.0f, 1.0f, q + followPush);
+            {
+                qHeard = qBuffer[(size_t) numSamples - 1];
+                qFollowing = true;
+            }
         }
         else
         {
@@ -461,7 +467,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         ;
     buffer.applyGainRamp (0, numSamples, previousDriveGain, driveGain);
     previousDriveGain = driveGain;
-    dspBridge.processTrajectory (buffer, morphBuffer.data(), params);
+    dspBridge.processTrajectory (buffer, morphBuffer.data(), params, qFollowing ? qBuffer.data() : nullptr);
 #if TRENCH_DEV_PANEL
     const float monitorGain = std::pow (10.0f, calibration[16] / 20.0f);
     buffer.applyGainRamp (0, numSamples, calibrationOutputGain, monitorGain);

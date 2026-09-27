@@ -446,6 +446,17 @@ int main (int argc, char** argv)
             const float back = run (0.0f, 200);
             std::printf ("follow: wheel 1 at rest %.4f, under a -6 dBFS tone %.4f, after silence %.4f\n", rest, loud, back);
             require (loud > rest + 0.3f && std::abs (back - rest) < 0.01f, "FOLLOW moves wheel 1 with the level and returns it to where it is set");
+            set (follower, "cal_follow_1", 0.0f);
+            set (follower, "cal_follow_2", 1.0f);
+            set (follower, ParamID::q, 0.1f);
+            run (0.0f, 200);
+            const float qRest = follower.getEffectiveQForUi();
+            run (0.5f, 20);
+            const float qLoud = follower.getEffectiveQForUi();
+            run (0.0f, 200);
+            const float qBack = follower.getEffectiveQForUi();
+            std::printf ("follow: wheel 2 at rest %.4f, under the tone %.4f, after silence %.4f\n", qRest, qLoud, qBack);
+            require (qLoud > qRest + 0.3f && std::abs (qBack - qRest) < 0.01f, "FOLLOW moves wheel 2 with the level and returns it to where it is set");
         }
         auto base = trench::calibration::defaults();
         base[2] = 1; base[5] = 1; base[13] = 1; base[14] = 1;

@@ -146,6 +146,7 @@ private:
     float                         movementDepth = 1.0f;
     float                         movementReturnStep = 0.0f;
     std::vector<float>            morphBuffer;
+    std::vector<float>            qBuffer;
     int                           preparedBlockSize = 0;
 
     trench::KeyDetector           keyDetector;

@@ -279,7 +279,7 @@ public:
     }
 
     void processTrajectory (juce::AudioBuffer<float>& buffer, const float* morphPerSample,
-                            const TrenchParams& params)
+                            const TrenchParams& params, const float* qPerSample = nullptr)
     {
         AudioScope scope (*this);
         if (retired.load (std::memory_order_relaxed) || morphPerSample == nullptr)
@@ -349,7 +349,7 @@ public:
             const int targetIdx = blockStart + blockLen - 1;
             const bool first = switched && blockStart == 0;
             const float morphTarget = juce::jlimit (0.0f, 1.0f, morphPerSample[targetIdx]);
-            const float qTarget = juce::jlimit (0.0f, 1.0f, params.q);
+            const float qTarget = juce::jlimit (0.0f, 1.0f, qPerSample != nullptr ? qPerSample[targetIdx] : params.q);
             const float glide = 1.0f - (float) std::pow (1.0 - kControlGlide, (double) blockLen / (double) controlTick);
             smoothedMorph = first || smoothedMorph < 0.0f ? morphTarget : smoothedMorph + glide * (morphTarget - smoothedMorph);
             smoothedQ = first || smoothedQ < 0.0f ? qTarget : smoothedQ + glide * (qTarget - smoothedQ);
