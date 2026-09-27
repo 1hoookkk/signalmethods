@@ -292,10 +292,13 @@ private:
         if (live && processor.getLastLoadOk() && processor.calibrationInputRms.load() < 0.000001f)
             audioStatus += " / input silent";
         const auto db = [] (float x) { return juce::String (juce::Decibels::gainToDecibels (x, -120.0f), 1); };
+        const float outPeak = processor.dspBridge.postDeskPeakForCalibration();
+        if (outPeak >= heldPeak || now - heldAt > 3000) { heldPeak = outPeak; heldAt = now; }
         meters.setText ("Host " + juce::String (processor.getSampleRate(), 0) + " Hz / datum "
             + juce::String (processor.dspBridge.declaredDatumForCalibration(), 0) + " Hz (declared)\n"
             + "RMS in/out " + db (processor.calibrationInputRms.load()) + " / " + db (processor.calibrationOutputRms.load())
             + " dBFS\n"
+            + "Output peak " + db (outPeak) + "   held 3 s " + db (heldPeak) + " dBFS" + (heldPeak > 1.0f ? "   OVER 0 dBFS" : "") + "\n"
             + "Peak pre/post desk " + db (processor.dspBridge.preDeskPeakForCalibration()) + " / " + db (processor.dspBridge.postDeskPeakForCalibration())
             + (read (19) < 0.5f ? "   Guard OFF\n" : "   Guard " + juce::String (100 * processor.calibrationCeilingFraction.load(), 1) + "%\n")
             + audioStatus, juce::dontSendNotification);
@@ -307,6 +310,8 @@ private:
     juce::Viewport viewport, loopViewport;
     juce::ComboBox page;
     juce::Label status, meters;
+    float heldPeak = 0.0f;
+    juce::uint32 heldAt = 0;
     juce::TextEditor notes;
     juce::TextButton captureA, captureB, recallA, recallB, exportButton, resetButton, hardwareButton;
     std::uint64_t lastBlocks = 0;

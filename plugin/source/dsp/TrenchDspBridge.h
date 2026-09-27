@@ -291,7 +291,12 @@ public:
         const int samples = buffer.getNumSamples();
         if (channels <= 0 || samples <= 0)
             return;
+#if TRENCH_DEV_PANEL
+        const double keyRatio = calibrationValid && calibrationValues[trench::calibration::indexOf ("cal_note_track")] > 0.5f
+                                    ? transposeRatio (params.noteLatched, params.noteTrackRatio, 0) : 1.0;
+#else
         const double keyRatio = 1.0;
+#endif
         const int keyChoice = trench::KeySnap::active (params.keySnap) ? params.keySnap : 0;
         if (keyChoice != heardKeyChoice)
         {

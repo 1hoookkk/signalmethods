@@ -457,6 +457,53 @@ int main (int argc, char** argv)
             const float qBack = follower.getEffectiveQForUi();
             std::printf ("follow: wheel 2 at rest %.4f, under the tone %.4f, after silence %.4f\n", qRest, qLoud, qBack);
             require (qLoud > qRest + 0.3f && std::abs (qBack - qRest) < 0.01f, "FOLLOW moves wheel 2 with the level and returns it to where it is set");
+            set (follower, "cal_follow_1", 1.0f);
+            set (follower, "cal_follow_depth", 0.5f);
+            set (follower, "cal_follow_depth_2", -0.5f);
+            set (follower, ParamID::morph, 0.3f);
+            set (follower, ParamID::q, 0.8f);
+            run (0.0f, 200);
+            const float mRest = follower.getEffectiveMorphForUi(), qRest2 = follower.getEffectiveQForUi();
+            run (0.5f, 20);
+            const float mLoud = follower.getEffectiveMorphForUi(), qLoud2 = follower.getEffectiveQForUi();
+            std::printf ("opposite: wheel 1 %.3f -> %.3f, wheel 2 %.3f -> %.3f\n", mRest, mLoud, qRest2, qLoud2);
+            require (mLoud > mRest + 0.2f && qLoud2 < qRest2 - 0.2f, "opposite depths move the two wheels in opposite directions");
+            set (follower, "cal_follow_2", 0.0f);
+            set (follower, "cal_follow_depth", 1.0f);
+            set (follower, "cal_swing", 1.0f);
+            run (0.0f, 400);
+            const float sRest = follower.getEffectiveMorphForUi();
+            run (0.5f, 20);
+            float sLow = 1.0f;
+            for (int k = 0; k < 60; ++k) sLow = std::min (sLow, run (0.0f, 1));
+            const float sBack = run (0.0f, 600);
+            std::printf ("swing: wheel 1 rests %.3f, swings back to %.3f after the burst, settles at %.3f\n", sRest, sLow, sBack);
+            require (sLow < sRest - 0.05f && std::abs (sBack - sRest) < 0.01f, "SWING overshoots past the rest point after a hit and settles back");
+            set (follower, "cal_swing", 0.0f);
+            set (follower, "cal_follow_1", 0.0f);
+            const auto noted = [&] (bool tracking, int note)
+            {
+                PluginProcessor p;
+                p.setRateAndBufferSizeDetails (48000, 512);
+                p.prepareToPlay (48000, 512);
+                require (p.installBodyBytes (fixture.getData(), fixture.getSize()), "note body loads");
+                set (p, "cal_note_track", tracking ? 1.0f : 0.0f);
+                set (p, ParamID::q, 0.6f);
+                juce::MidiBuffer midi;
+                midi.addEvent (juce::MidiMessage::noteOn (1, note, 0.8f), 0);
+                std::vector<float> out;
+                for (int k = 0; k < 40; ++k)
+                {
+                    for (int c = 0; c < 2; ++c) for (int i = 0; i < 512; ++i) audio.setSample (c, i, 0.3f * (float) std::sin (0.031 * (k * 512 + i)) + 0.2f * (float) std::sin (0.17 * (k * 512 + i)));
+                    p.processBlock (audio, k == 0 ? midi : none);
+                    if (k >= 20) out.insert (out.end(), audio.getReadPointer (0), audio.getReadPointer (0) + 512);
+                }
+                return out;
+            };
+            const double tracked = difference (noted (true, 60), noted (true, 72));
+            const double untracked = difference (noted (false, 60), noted (false, 72));
+            std::printf ("note tracking: an octave up changes the output by %.6f when on, %.6f when off\n", tracked, untracked);
+            require (tracked > 1.0e-3 && untracked == 0.0, "MIDI note tracking transposes the filter only when switched on");
         }
         {
             const auto worst = [] (int flipEvery, float still)
