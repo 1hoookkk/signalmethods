@@ -196,7 +196,7 @@ void PluginEditor::resized()
     inputReadout->setBounds (rectOf ("inputReadout"));
     {
         std::vector<std::pair<juce::Rectangle<float>, float>> seats;
-        for (const char* id : { "morphReadout", "qReadout", "inputReadout", "outputReadout", "slamButton" })
+        for (const char* id : { "slamButton" })
         {
             const auto r = rectOf (id).toFloat();
             seats.push_back ({ r, r.getHeight() * 0.17f });
