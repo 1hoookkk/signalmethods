@@ -665,8 +665,8 @@ private:
     juce::SmoothedValue<float> inputGain { 1.0f };
     juce::SmoothedValue<float> outputGain { 1.0f };
     trench::DeskDrive preDeskL, preDeskR;
-    static constexpr double kSlamInTrim = 1.0;
-    static constexpr double kSlamOutPad = 0.25;
+    static constexpr double kSlamInTrim = 0.4;
+    static constexpr double kSlamOutPad = 0.5;
     float caughtFraction = 0.0f;
     bool outputStageOn = true;
     trench::DeskDrive postDeskL, postDeskR;
