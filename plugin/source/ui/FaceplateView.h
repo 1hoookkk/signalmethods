@@ -117,7 +117,8 @@ public:
         {
             juce::Path seat;
             seat.addRoundedRectangle (tile, radius);
-            juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 4, { 0, 0 }).drawForPath (g, seat);
+            juce::DropShadow (juce::Colours::black.withAlpha (0.35f), 5, { 0, 0 }).drawForPath (g, seat);
+            juce::DropShadow (juce::Colours::black.withAlpha (0.55f), 2, { 0, 0 }).drawForPath (g, seat);
         }
         if (! roomFrame.isEmpty())
         {
