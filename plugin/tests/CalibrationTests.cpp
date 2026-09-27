@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <stdexcept>
 #include "CalibrationAudition.h"
+#include "dsp/Movement.h"
 
 namespace
 {
@@ -469,18 +470,33 @@ int main (int argc, char** argv)
             std::printf ("opposite: wheel 1 %.3f -> %.3f, wheel 2 %.3f -> %.3f\n", mRest, mLoud, qRest2, qLoud2);
             require (mLoud > mRest + 0.2f && qLoud2 < qRest2 - 0.2f, "opposite depths move the two wheels in opposite directions");
             set (follower, "cal_follow_2", 0.0f);
-            set (follower, "cal_follow_depth", 1.0f);
-            set (follower, "cal_swing", 1.0f);
-            run (0.0f, 400);
-            const float sRest = follower.getEffectiveMorphForUi();
-            run (0.5f, 20);
-            float sLow = 1.0f;
-            for (int k = 0; k < 60; ++k) sLow = std::min (sLow, run (0.0f, 1));
-            const float sBack = run (0.0f, 600);
-            std::printf ("swing: wheel 1 rests %.3f, swings back to %.3f after the burst, settles at %.3f\n", sRest, sLow, sBack);
-            require (sLow < sRest - 0.05f && std::abs (sBack - sRest) < 0.01f, "SWING overshoots past the rest point after a hit and settles back");
-            set (follower, "cal_swing", 0.0f);
             set (follower, "cal_follow_1", 0.0f);
+            int stepped = -1;
+            for (int k = 0; k < trench::kNumFuncGenPatterns && stepped < 0; ++k)
+            {
+                const auto& pattern = trench::kFuncGenPatterns[k];
+                if (pattern.steps >= 3 && pattern.direction == 0 && pattern.rateHz <= 0.0
+                    && pattern.values[0] != pattern.values[1] && pattern.values[1] != pattern.values[2]) stepped = k;
+            }
+            require (stepped >= 0, "a stepped movement exists for the swing check");
+            const auto changes = [&] (double amount)
+            {
+                trench::Movement motion;
+                motion.prepare (48000.0);
+                motion.setSwing (amount);
+                trench::MovementTransport clockNow; clockNow.bpm = 120.0; clockNow.ppq = 0.0; clockNow.playing = true;
+                std::vector<float> path (48000 * 8);
+                motion.render (path.data(), (int) path.size(), clockNow, stepped + 1, trench::Movement::StepTransition,
+                               trench::Movement::authoredLengthChoice (trench::kFuncGenPatterns[stepped]));
+                std::vector<int> at;
+                for (size_t i = 1; i < path.size() && at.size() < 2; ++i) if (path[i] != path[i - 1]) at.push_back ((int) i);
+                return at;
+            };
+            const auto straight = changes (0.0), swung = changes (1.0);
+            require (straight.size() == 2 && swung.size() == 2, "the stepped movement changes twice");
+            std::printf ("swing: off step starts at sample %d straight, %d swung; next on-step %d straight, %d swung\n", straight[0], swung[0], straight[1], swung[1]);
+            require (std::abs ((double) swung[0] / straight[0] - 1.5) < 0.01 && std::abs (swung[1] - straight[1]) <= 1,
+                     "SWING pushes the off step late by half a step at 100 % and leaves the next on-step in place");
             const auto noted = [&] (bool tracking, int note)
             {
                 PluginProcessor p;

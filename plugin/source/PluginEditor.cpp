@@ -257,7 +257,7 @@ void PluginEditor::onFrame()
     {
         const auto names = trench::axisNamesForBody (processor.getLoadedBodyIndex());
         const auto follows = [this] (const char* id) { auto* v = processor.apvts.getRawParameterValue (id); return v != nullptr && v->load() > 0.5f; };
-        const auto tag = juce::String (juce::CharPointer_UTF8 (follows ("cal_swing") ? " \xc2\xb7 SWING" : " \xc2\xb7 FOLLOW"));
+        const auto tag = juce::String (juce::CharPointer_UTF8 (" \xc2\xb7 FOLLOW"));
         labels->setRailLabels (juce::String (names.morph) + (follows ("cal_follow_1") ? tag : juce::String()),
                                juce::String (names.q) + (follows ("cal_follow_2") ? tag : juce::String()));
     }

@@ -43,14 +43,12 @@ inline constexpr Variable variables[] {
     { "cal_follow_top", "Follow top", "dBFS", -48, 6, 0.1f, -6, false, "At this level the wheel is pushed the full depth." },
     { "cal_follow_depth", "Follow depth, wheel 1", "", -1, 1, 0.01f, 1, false, "Wheel 1 travel at the top level. Negative: louder closes." },
     { "cal_follow_depth_2", "Follow depth, wheel 2", "", -1, 1, 0.01f, 1, false, "Wheel 2 travel at the top level. Opposite signs on the two wheels give opposite motion." },
-    { "cal_swing", "Swing", "", 0, 1, 1, 0, false, "ON: following wheels swing like a pendulum locked to the host tempo, pushed by the input, instead of tracking it." },
-    { "cal_swing_period", "Swing period", "beats", 0.25f, 2, 0.25f, 0.5f, false, "Pendulum period in beats: 0.25 = 1/16, 0.5 = 1/8, 1 = 1/4, 2 = 1/2. 120 BPM when the host sends no tempo." },
-    { "cal_swing_decay", "Swing decay", "swings", 0.5f, 16, 0.1f, 3, true, "Swings until the motion falls to about a third of its size." },
+    { "cal_swing", "Swing", "%", 0, 100, 1, 0, false, "Pushes every second step of the movement late, like MPC swing, on the movement's own steps. 0: straight. 100: the off step lands three quarters of the way through the pair." },
     { "cal_note_track", "MIDI note tracking", "", 0, 1, 1, 0, false, "ON: the last MIDI note transposes the whole filter relative to middle C. OFF: as release, notes only restart movements." }
 };
 inline constexpr const char* retired[] { "cal_stage", "cal_stage_db", "cal_agc", "cal_agc_db", "cal_agc_strength", "cal_agc_recovery", "cal_knee_db", "cal_knee_slope", "cal_release_slow", "cal_release_fast", "cal_hold", "cal_quiet_db", "cal_agc_position" };
 inline constexpr size_t count = std::size (variables);
-inline constexpr const char* taste[] { "cal_feedback", "cal_feedback_db", "cal_follow_1", "cal_follow_2", "cal_follow_attack", "cal_follow_release", "cal_follow_floor", "cal_follow_top", "cal_follow_depth", "cal_follow_depth_2", "cal_swing", "cal_swing_period", "cal_swing_decay", "cal_note_track" };
+inline constexpr const char* taste[] { "cal_feedback", "cal_feedback_db", "cal_follow_1", "cal_follow_2", "cal_follow_attack", "cal_follow_release", "cal_follow_floor", "cal_follow_top", "cal_follow_depth", "cal_follow_depth_2", "cal_swing", "cal_note_track" };
 inline constexpr const char* processing[] { "cal_ramp", "cal_feedback", "cal_desk", "cal_desk_clip", "cal_comp", "cal_guard" };
 constexpr size_t indexOf (std::string_view id)
 {

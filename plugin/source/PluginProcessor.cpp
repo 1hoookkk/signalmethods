@@ -373,6 +373,9 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     const bool customMotion = pMoveCustom->load() > 0.5f;
     if (customMotion) userMotion.readAudio (audioMotion);
     const auto customPattern = audioMotion.pattern();
+#if TRENCH_DEV_PANEL
+    movement.setSwing (calibration[trench::calibration::indexOf ("cal_swing")] / 100.0f);
+#endif
     movement.render (morphBuffer.data(), numSamples, transport,
                      movePreset, customMotion ? 0 : moveTransition, (int) pMoveLength->load(),
                      (int) pMovePlayback->load(), movementRestart.load (std::memory_order_relaxed),
@@ -421,11 +424,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
             const float topDb = juce::jmax (floorDb + 1.0f, calibration[indexOf ("cal_follow_top")]);
             const float depth1 = calibration[indexOf ("cal_follow_depth")];
             const float depth2 = calibration[indexOf ("cal_follow_depth_2")];
-            const bool swing = calibration[indexOf ("cal_swing")] > 0.5f;
-            const double bpm = transport.bpm > 0.0 ? transport.bpm : 120.0;
-            const double omega = 2.0 * juce::MathConstants<double>::pi / juce::jmax (0.001, calibration[indexOf ("cal_swing_period")] * 60.0 / bpm);
-            const double zeta = 1.0 / (2.0 * juce::MathConstants<double>::pi * juce::jmax (0.1f, calibration[indexOf ("cal_swing_decay")]));
-            const double dt = 1.0 / fs;
             const float drive = juce::Decibels::decibelsToGain (pPreamp->load());
             const int channels = juce::jmin (2, buffer.getNumChannels());
             for (int i = 0; i < numSamples; ++i)
@@ -436,18 +434,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
                 followEnvelope = x + (x > followEnvelope ? attack : release) * (followEnvelope - x);
                 const float db = juce::Decibels::gainToDecibels (followEnvelope, -120.0f);
                 const float level = juce::jlimit (0.0f, 1.0f, (db - floorDb) / (topDb - floorDb));
-                if (swing)
-                {
-                    swingVelocity += (omega * omega * ((double) level - swingPosition) - 2.0 * zeta * omega * swingVelocity) * dt;
-                    swingPosition += swingVelocity * dt;
-                    followPush = (float) swingPosition;
-                }
-                else
-                {
-                    swingPosition = level;
-                    swingVelocity = 0.0;
-                    followPush = level;
-                }
+                followPush = level;
                 if (follow1)
                     morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, morphBuffer[(size_t) i] + depth1 * followPush);
                 qBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, q + depth2 * followPush);
@@ -462,8 +449,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         {
             followEnvelope = 0.0f;
             followPush = 0.0f;
-            swingPosition = 0.0;
-            swingVelocity = 0.0;
         }
     }
 #endif

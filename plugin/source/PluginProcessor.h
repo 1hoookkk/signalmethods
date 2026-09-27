@@ -135,8 +135,6 @@ private:
     float calibrationMorph = -1.0f;
     float followEnvelope = 0.0f;
     float followPush = 0.0f;
-    double swingPosition = 0.0;
-    double swingVelocity = 0.0;
     float calibrationOutputGain = 1.0f;
 #endif
     std::atomic<bool>             noteLatched { false };

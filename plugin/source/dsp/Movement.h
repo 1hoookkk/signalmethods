@@ -50,6 +50,8 @@ public:
         }
     }
 
+    void setSwing (double amount) noexcept { swing = amount < 0.0 ? 0.0 : amount > 1.0 ? 1.0 : amount; }
+
     void prepare (double sampleRate) noexcept
     {
         sr = sampleRate > 0.0 ? sampleRate : 48000.0;
@@ -126,6 +128,13 @@ public:
         {
             const double clock = clockStart + (double) i * clockPerSample;
             double stepPos = (clock - clockAnchor) / clockPeriod;
+            if (swing > 0.0)
+            {
+                const double late = 1.0 + 0.5 * swing;
+                const double pair = std::floor (stepPos * 0.5);
+                const double f = stepPos - 2.0 * pair;
+                stepPos = 2.0 * pair + (f < late ? f / late : 1.0 + (f - late) / (2.0 - late));
+            }
             if (once) stepPos = std::fmax (0.0, std::fmin ((double) intervals, stepPos));
             const std::int64_t g = (std::int64_t) std::floor (stepPos);
             const float frac = (float) (stepPos - (double) g);
@@ -150,6 +159,7 @@ public:
     }
 
 private:
+    double swing = 0.0;
     void stepPositions (const FuncGenPattern& p, std::int64_t g,
                         int& pos, int& next) noexcept
     {
