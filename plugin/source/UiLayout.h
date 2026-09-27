@@ -95,6 +95,7 @@ public:
         layout.params["fontBold"]          = 1.0;
         layout.params["gridBoost"]         = 2.0;
         layout.colours["gridTint"]           = juce::Colour (0xff243038);
+        layout.params["plateGrain"]        = 1.0;
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {

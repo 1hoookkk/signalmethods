@@ -24,8 +24,9 @@ public:
         {
             const auto name = p->getName (24);
             setTitle (name);
-            setHelpText (name + " - scroll to adjust; double-click to type an exact value; right-click for parameter options.");
-            setTooltip (p->getName (24) + " - scroll to adjust, double-click to type, right-click for menu");
+            const auto unit = isDecibels() ? " in dB" : "";
+            setHelpText (name + " - scroll to adjust; Shift for fine adjustment; double-click to type an exact value" + unit + "; right-click for parameter options.");
+            setTooltip (name + " - scroll to adjust, Shift for fine adjustment, double-click to type" + unit + ", right-click for menu");
         }
     }
     void setNormalised (float v)
@@ -59,13 +60,9 @@ public:
     {
         if (s != textOverride) { textOverride = s; repaint(); }
     }
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override
     {
-        if (param == nullptr) return;
-        const float next = juce::jlimit (0.0f, 1.0f, param->getValue() + w.deltaY * 0.05f);
-        param->beginChangeGesture();
-        param->setValueNotifyingHost (next);
-        param->endChangeGesture();
+        if (editor == nullptr) adjustParamFromWheel (param, e, w);
     }
     void mouseDown (const juce::MouseEvent& e) override
     {
@@ -84,6 +81,7 @@ public:
             onHold (true);
         dragStartY = e.position.y;
         dragStartValue = param != nullptr ? param->getValue() : 0.0f;
+        dragValueDb = param != nullptr ? param->convertFrom0to1 (dragStartValue) : 0.0f;
         dragging = false;
     }
     void mouseDrag (const juce::MouseEvent& e) override
@@ -96,6 +94,14 @@ public:
                 return;
             dragging = true;
             param->beginChangeGesture();
+        }
+        if (isDecibels())
+        {
+            const float dy = dragStartY - e.position.y;
+            dragStartY = e.position.y;
+            if (dy != 0.0f)
+                param->setValueNotifyingHost (param->convertTo0to1 (gainDragValue (*param, dragValueDb, dy, e.mods.isShiftDown())));
+            return;
         }
         const float scale = e.mods.isShiftDown() ? 0.25f : 1.0f;
         const float travel = 140.0f;
@@ -124,9 +130,11 @@ public:
         editor->setColour (juce::TextEditor::highlightColourId, t.labelInk().withAlpha (0.25f));
         editor->setWantsKeyboardFocus (true);
         {
-            const float pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
-            editor->setText (decimals <= 0 ? juce::String (juce::roundToInt (pct))
-                                           : juce::String (pct, decimals), false);
+            const float current = isDecibels() ? param->convertFrom0to1 (param->getValue())
+                                              : juce::jlimit (0.0f, 1.0f, value) * 100.0f;
+            editor->setText (isDecibels() ? juce::String (current, 1)
+                            : decimals <= 0 ? juce::String (juce::roundToInt (current))
+                                            : juce::String (current, decimals), false);
         }
         editor->onReturnKey  = [this] { commitEditor(); };
         editor->onEscapeKey  = [this] { closeEditor(); };
@@ -141,7 +149,14 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto b = getLocalBounds().toFloat();
-        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isActive || hasKeyboardFocus (true), t);
+        const auto well = b.reduced (2.0f);
+        const float wellRadius = well.getHeight() * 0.17f;
+        for (int ring = 3; ring >= 1; --ring)
+        {
+            g.setColour (juce::Colours::black.withAlpha (0.07f * (float) (4 - ring)));
+            g.drawRoundedRectangle (well.expanded ((float) ring * 0.55f), wellRadius + (float) ring * 0.55f, 1.1f);
+        }
+        drawMutedBoneReadout (g, well, wellRadius, isActive || hasKeyboardFocus (true), t);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
         const auto numeric = textOverride.isNotEmpty() ? textOverride
                            : isDecibels() ? juce::String (param->convertFrom0to1 (juce::jlimit (0.0f, 1.0f, value)), 1)
@@ -152,8 +167,9 @@ public:
         if (adjustCue)
             textArea = textArea.withTrimmedRight (7.0f);
 
-        drawCrispText (g, textArea, numeric, fs,
-                       t.textColour (id, juce::Colour (0xff4a3520)));
+        g.setFont (displayFont (fs, true).withExtraKerningFactor (-0.035f));
+        g.setColour (juce::Colours::black);
+        g.drawText (numeric, textArea.toNearestInt(), juce::Justification::centred, false);
         if (adjustCue && param != nullptr)
         {
             const float cxr = b.getRight() - 7.5f;
@@ -167,7 +183,7 @@ public:
         }
     }
 private:
-    bool isDecibels() const { return param != nullptr && param->getLabel() == "dB"; }
+    bool isDecibels() const { return isGainParameter (param); }
     void commitEditor()
     {
         if (editor == nullptr) return;
@@ -216,6 +232,7 @@ private:
     std::unique_ptr<juce::TextEditor> editor;
     float dragStartY = 0.0f;
     float dragStartValue = 0.0f;
+    float dragValueDb = 0.0f;
     bool dragging = false;
     bool adjustCue = false;
     int decimals = 1;
