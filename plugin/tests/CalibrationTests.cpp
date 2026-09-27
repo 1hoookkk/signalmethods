@@ -458,6 +458,54 @@ int main (int argc, char** argv)
             std::printf ("follow: wheel 2 at rest %.4f, under the tone %.4f, after silence %.4f\n", qRest, qLoud, qBack);
             require (qLoud > qRest + 0.3f && std::abs (qBack - qRest) < 0.01f, "FOLLOW moves wheel 2 with the level and returns it to where it is set");
         }
+        {
+            const auto worst = [] (int flipEvery, float still)
+            {
+                TrenchDspBridge bridge;
+                bridge.prepare (44100, 512);
+                const auto bytes = body();
+                require (bridge.loadCartridgeBytes (bytes), "pumping body loads");
+                TrenchParams params; params.q = 1.0f;
+                std::vector<float> trajectory (512);
+                juce::AudioBuffer<float> audio (2, 512);
+                juce::Random noise (7);
+                float peak = 0.0f;
+                bool finite = true;
+                for (int block = 0; block < 400; ++block)
+                {
+                    for (int i = 0; i < 512; ++i)
+                    {
+                        const int n = block * 512 + i;
+                        trajectory[(size_t) i] = flipEvery <= 0 ? still : ((n / flipEvery) % 2 == 0 ? 0.0f : 1.0f);
+                        const float x = 0.5f * (noise.nextFloat() * 2.0f - 1.0f);
+                        audio.setSample (0, i, x); audio.setSample (1, i, x);
+                    }
+                    bridge.processTrajectory (audio, trajectory.data(), params);
+                    for (int i = 0; i < 512; ++i)
+                    {
+                        const float y = audio.getSample (0, i);
+                        finite = finite && std::isfinite (y);
+                        if (block >= 20) peak = std::max (peak, std::abs (y));
+                    }
+                }
+                return finite ? peak : -1.0f;
+            };
+            float still = 0.0f, stillAt = 0.0f;
+            for (int k = 0; k <= 20; ++k)
+            {
+                const float at = worst (0, (float) k / 20.0f);
+                if (at > still) { still = at; stillAt = (float) k / 20.0f; }
+            }
+            float fastest = 0.0f;
+            for (const int flip : { 88, 176, 352, 1024, 4410 })
+            {
+                const float moving = worst (flip, 0.0f);
+                std::printf ("pumping: Morph flips 0<->1 every %d samples at Q 100, peak %.2f dB vs %.2f dB at the loudest still Morph (%.2f)\n", flip,
+                             juce::Decibels::gainToDecibels (moving), juce::Decibels::gainToDecibels (still), stillAt);
+                require (moving > 0.0f, "non-finite output under fastest Morph motion");
+                fastest = std::max (fastest, moving);
+            }
+        }
         auto base = trench::calibration::defaults();
         base[2] = 1; base[5] = 1; base[13] = 1; base[14] = 1;
         base[12] = 0;
