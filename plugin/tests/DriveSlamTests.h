@@ -19,8 +19,6 @@ inline int driveSlamTests()
             bridge.prepare (rate, 128);
             check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
             juce::AudioBuffer<float> audio (channels, 128);
-            trench::DeskDrive modelL, modelR;
-            for (auto* m : { &modelL, &modelR }) { m->prepare (rate); m->setEnabled (true); }
             bool exact = true;
             for (int block = 0; block < 32; ++block)
             {
@@ -32,11 +30,11 @@ inline int driveSlamTests()
                 bridge.process (audio, {});
                 for (int i = 0; i < 128; ++i)
                 {
-                    exact = exact && audio.getSample (0, i) == modelL.process (dry.getSample (0, i));
-                    if (channels > 1) exact = exact && audio.getSample (1, i) == modelR.process (dry.getSample (1, i));
+                    exact = exact && audio.getSample (0, i) == dry.getSample (0, i);
+                    if (channels > 1) exact = exact && audio.getSample (1, i) == dry.getSample (1, i);
                 }
             }
-            check (exact, "after the filter every sample passes Mackity at its own unity setting, per channel, with nothing else in the bridge");
+            check (exact, "with SLAM off nothing but the filter touches the signal: no Mackity after it, per channel");
             const auto tonePeak = [&] (float inputGain, float outputGain)
             {
                 TrenchDspBridge b;
@@ -60,14 +58,14 @@ inline int driveSlamTests()
                    && std::abs (juce::Decibels::gainToDecibels (tonePeak (juce::Decibels::decibelsToGain (-24.0f), 1.0f) / unity) + 24.0f) < 0.1f,
                    "INPUT is a clean level from -24 to +24 dB");
             check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
-                   "OUTPUT is a clean level after Mackity");
+                   "OUTPUT is a clean level after the filter");
             {
                 TrenchDspBridge slam;
                 slam.prepare (rate, 128);
                 slam.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
                 slam.setInputSlam (true);
-                trench::DeskDrive pre, post;
-                for (auto* m : { &pre, &post }) { m->prepare (rate); m->setEnabled (true); }
+                trench::DeskDrive pre;
+                pre.prepare (rate); pre.setEnabled (true);
                 pre.setTrims (0.4, 0.5);
                 juce::AudioBuffer<float> a (1, 128);
                 bool matches = true;
@@ -79,12 +77,12 @@ inline int driveSlamTests()
                     slam.process (a, {});
                     for (int i = 0; i < 128; ++i)
                     {
-                        const float want = post.process (pre.process (dry.getSample (0, i)));
+                        const float want = pre.process (dry.getSample (0, i));
                         matches = matches && a.getSample (0, i) == want;
                         moved += std::abs (want - dry.getSample (0, i));
                     }
                 }
-                check (matches && moved > 1.0, "SLAM puts Mackity before the filter at In Trim 0.4 (+24 dB) and Out Pad 0.5, in series with the one after it");
+                check (matches && moved > 1.0, "SLAM puts Mackity before the filter at In Trim 0.4 (+24 dB) and Out Pad 0.5, and it is the only Mackity in the chain");
             }
             TrenchDspBridge clean;
             clean.prepare (rate, 128);
@@ -182,8 +180,9 @@ inline int driveSlamTests()
         juce::AudioBuffer<float> wet (2, 128);
         juce::MidiBuffer m;
         auto* in = colour.apvts.getParameter (ParamID::preamp);
-        const auto harmonics = [&] (float db)
+        const auto harmonics = [&] (float db, bool slamOn)
         {
+            colour.apvts.getParameter (ParamID::inputSlam)->setValueNotifyingHost (slamOn ? 1.0f : 0.0f);
             in->setValueNotifyingHost (in->convertTo0to1 (db));
             std::vector<float> tail;
             float peak = 0.0f;
@@ -206,10 +205,10 @@ inline int driveSlamTests()
             }
             return std::make_pair (std::sqrt (h / f), peak);
         };
-        const auto soft = harmonics (0.0f), hard = harmonics (18.0f);
-        std::printf ("      No Filter: harmonic ratio %.4f at INPUT 0 dB, %.4f at +18 dB, peak %.3f\n", soft.first, hard.first, hard.second);
+        const auto soft = harmonics (18.0f, false), hard = harmonics (0.0f, true);
+        std::printf ("      No Filter: harmonic ratio %.4f at INPUT +18 dB, %.4f with SLAM, peak %.3f\n", soft.first, hard.first, hard.second);
         check (soft.first < 0.005 && hard.first > 0.05 && std::isfinite (hard.second),
-            "No Filter is a colour path: INPUT drives Mackity into saturation");
+            "No Filter: INPUT alone stays clean, SLAM drives Mackity into saturation");
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;

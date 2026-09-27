@@ -668,7 +668,7 @@ private:
     static constexpr double kSlamInTrim = 0.4;
     static constexpr double kSlamOutPad = 0.5;
     float caughtFraction = 0.0f;
-    bool outputStageOn = true;
+    bool outputStageOn = false;
     trench::DeskDrive postDeskL, postDeskR;
     Bypass bypass;
 #if TRENCH_DEV_PANEL

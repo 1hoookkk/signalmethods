@@ -359,12 +359,9 @@ int main()
         buf.setSample (1, 0, 0.0625f);
         TrenchParams params;
         bridge.process (buf, params);
-        trench::DeskDrive model;
-        model.prepare (48000.0);
-        model.setEnabled (true);
         float worst = 0.0f;
-        for (int i = 0; i < 64; ++i) worst = std::max (worst, std::abs (buf.getSample (0, i) - model.process (i == 0 ? 0.0625f : 0.0f)));
-        check (worst < 1.0e-7f, "INPUT 0 dB through the identity body is exactly Mackity's own impulse response", worst, 1.0e-7);
+        for (int i = 0; i < 64; ++i) worst = std::max (worst, std::abs (buf.getSample (0, i) - (i == 0 ? 0.0625f : 0.0f)));
+        check (worst < 1.0e-7f, "INPUT 0 dB through the identity body is exactly the input: nothing after the filter", worst, 1.0e-7);
     }
 
     std::printf ("== bridge cost ==\n");
@@ -526,10 +523,12 @@ int main()
             setParam (processor, ParamID::slamDrive, 0.0f);
             return out;
         };
+        setParam (processor, ParamID::inputSlam, 1.0f);
         const auto driven = capture (24.0f, 0.0f, 0.25f);
+        setParam (processor, ParamID::inputSlam, 0.0f);
         const double f = goertzel (driven, 37);
         const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
-        check (f > 0.01 && h / f > 0.02, "INPUT at full into the safety clip: overs are clipped, not ducked", h / f, 0.02);
+        check (f > 0.01 && h / f > 0.02, "SLAM with INPUT at full drives Mackity saturation", h / f, 0.02);
         const auto clean = capture (0.0f, 0.0f, 0.25f);
         const double f0 = goertzel (clean, 37);
         const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
@@ -539,13 +538,16 @@ int main()
     }
     const auto loud = runSine (processor, 0.9f);
     check (loud.finite && loud.peak > 0.1f, "full-scale input at defaults stays finite and audible", loud.peak, 0.9);
-    check (loud.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "safety ceiling bounds a full-scale input at -0.1 dBFS", loud.peak, trench::kFinalSafetyCeiling);
     const auto over = runSine (processor, 1.25f);
-    check (over.finite && over.peak <= trench::kFinalSafetyCeiling, "No filter also contains over-range input", over.peak, trench::kFinalSafetyCeiling);
+    check (over.finite && over.peak > 0.5f, "No filter passes hot input", over.peak, 0.5);
     setParam (processor, ParamID::preamp, 24.0f);
-    const auto ceilinged = runSine (processor, 0.9f);
-    check (ceilinged.finite && ceilinged.peak <= trench::kFinalSafetyCeiling + 1.0e-4f, "ceiling holds with INPUT at full", ceilinged.peak, trench::kFinalSafetyCeiling);
-    check (ceilinged.peak > 0.5f, "full DRIVE into the ceiling does not mute", ceilinged.peak, 0.5);
+    const auto saturated = runSine (processor, 0.9f);
+    setParam (processor, ParamID::output, 12.0f);
+    const auto amplified = runSine (processor, 0.9f);
+    check (saturated.finite && amplified.finite && amplified.peak > 1.0f
+           && std::abs (db (amplified.peak / saturated.peak) - 12.0) < 0.001,
+           "OUTPUT adds exactly 12 dB to saturated material without a final level cap", db (amplified.peak / saturated.peak), 12.0);
+    setParam (processor, ParamID::output, 0.0f);
     setParam (processor, ParamID::preamp, 0.0f);
 
     std::printf ("== guard shape ==\n");
@@ -642,12 +644,11 @@ int main()
         double worst = 0.0;
         int worstBody = -1;
         float worstPeak = 0.0f;
-        bool bounded = true, cleanBelowKnee = true;
+        bool finite = true, cleanBelowKnee = true;
         for (int i = 1; i < rosterCount; ++i)
         {
             const auto run = measure (i, 0.5f, 0.3f);
-            bounded = bounded && std::isfinite (run.thd) && std::isfinite (run.fundamental)
-                && run.peak <= trench::kFinalSafetyCeiling;
+            finite = finite && std::isfinite (run.thd) && std::isfinite (run.fundamental) && std::isfinite (run.peak);
             if (run.fundamental >= 0.05 && run.peak <= trench::kFinalSafetyKnee)
                 cleanBelowKnee = cleanBelowKnee && run.thd < 1.0;
             if (run.fundamental < 0.05 || run.thd <= worst)
@@ -658,7 +659,7 @@ int main()
         }
         std::printf ("worst THD across the roster at MORPH 0.5 Q 0.3: %.3f %%  (%s, peak %.4f)\n",
                      worst, worstBody >= 0 ? trench::bodyDisplayName (worstBody).toRawUTF8() : "none", worstPeak);
-        check (bounded, "all bodies remain finite and bounded when filter gain reaches the soft clip");
+        check (finite, "all bodies remain finite when filter gain drives Mackity saturation");
         check (cleanBelowKnee, "bodies below the soft clip knee retain under 1 % THD");
         setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
         setParam (processor, ParamID::morph, 0.0f);
