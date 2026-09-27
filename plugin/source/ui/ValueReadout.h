@@ -159,8 +159,6 @@ public:
             g.fillRoundedRectangle (tile, radius);
             g.setColour (juce::Colour (0xff707378));
             g.drawRoundedRectangle (tile, radius, 1.0f);
-            g.setColour (juce::Colour (0xff3a3d42));
-            g.fillRect (tile.getX() + radius, tile.getBottom() - 1.0f, tile.getWidth() - 2.0f * radius, 1.0f);
             g.setColour (juce::Colours::white.withAlpha (0.6f));
             g.fillRect (tile.getX() + radius, tile.getY() + 1.0f, tile.getWidth() - 2.0f * radius, 1.0f);
             if (isActive || hasKeyboardFocus (true))
