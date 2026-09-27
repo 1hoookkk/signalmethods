@@ -93,6 +93,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     inputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::preamp, "INPUT");
     outputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::output, "OUTPUT");
     inputKnob->setLegendVisible (false);
+    slamButton = std::make_unique<SlamButton> (processor.apvts, theme);
     outputKnob->setLegendVisible (false);
     inputReadout = std::make_unique<ValueReadout> ("inputReadout", theme);
     outputReadout = std::make_unique<ValueReadout> ("outputReadout", theme);
@@ -115,6 +116,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     face.addAndMakeVisible (*keySnapBox);
     face.addAndMakeVisible (*inputKnob);
     face.addAndMakeVisible (*outputKnob);
+    face.addAndMakeVisible (*slamButton);
     face.addAndMakeVisible (*inputReadout);
     face.addAndMakeVisible (*outputReadout);
     face.addChildComponent (*bodyBrowser);
@@ -189,6 +191,7 @@ void PluginEditor::resized()
     }
     inputKnob->setBounds (rectOf ("inputKnob"));
     outputKnob->setBounds (rectOf ("outputKnob"));
+    slamButton->setBounds (rectOf ("slamButton"));
     inputReadout->setBounds (rectOf ("inputReadout"));
     outputReadout->setBounds (rectOf ("outputReadout"));
     morphReadout->setBounds (rectOf ("morphReadout"));

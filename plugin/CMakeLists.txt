@@ -101,7 +101,7 @@ set(TRENCH_PLUGIN_SOURCES
   source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/ModulationChip.h
   source/ui/ParamInteraction.h
   source/ui/SelectorLookAndFeel.h source/ui/Theme.h
-  source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h
+  source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h source/ui/SlamButton.h
   source/ui/DevPanel.h source/dsp/WheelLoop.h)
 
 add_library(TRENCHPluginCommon STATIC ${TRENCH_PLUGIN_SOURCES})

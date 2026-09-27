@@ -46,6 +46,7 @@ PluginProcessor::PluginProcessor()
     pMoveCustom = apvts.getRawParameterValue (ParamID::moveCustom);
     userMotion.readAudio (audioMotion);
     pKeySnap    = apvts.getRawParameterValue (ParamID::keySnap);
+    pSlam       = apvts.getRawParameterValue (ParamID::inputSlam);
     if (trench::clean_audio::kEnabled())
         forceCleanAudioUiState();
     const int startIndex = juce::jlimit (0, juce::jmax (0, trench::bodyCount() - 1),
@@ -400,6 +401,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
 #endif
     dspBridge.setInputDrive (juce::Decibels::decibelsToGain (pPreamp->load()));
     dspBridge.setOutputLevel (juce::Decibels::decibelsToGain (pOutput->load()));
+    dspBridge.setInputSlam (pSlam->load() > 0.5f);
     TrenchParams params;
     params.q = q;
     params.poleDistortion = 0.0f;
@@ -423,7 +425,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     buffer.applyGainRamp (0, numSamples, calibrationOutputGain, monitorGain);
     calibrationOutputGain = monitorGain;
 #endif
-#if TRENCH_DEV_PANEL
     for (int c = 0; c < buffer.getNumChannels(); ++c)
     {
         auto* d = buffer.getWritePointer (c);
@@ -431,15 +432,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
             d[i] = std::isfinite (d[i]) ? d[i] : 0.0f;
     }
     const float limitFrac = dspBridge.caughtFractionForUi();
-#else
-    for (int c = 0; c < buffer.getNumChannels(); ++c)
-    {
-        auto* d = buffer.getWritePointer (c);
-        for (int i = 0; i < numSamples; ++i)
-            d[i] = std::isfinite (d[i]) ? juce::jlimit (-trench::kFinalSafetyCeiling, trench::kFinalSafetyCeiling, d[i]) : 0.0f;
-    }
-    const float limitFrac = dspBridge.caughtFractionForUi();
-#endif
 #if TRENCH_DEV_PANEL
     calibrationOutputRms.store (rms(), std::memory_order_relaxed);
     calibrationCeilingFraction.store (limitFrac, std::memory_order_relaxed);

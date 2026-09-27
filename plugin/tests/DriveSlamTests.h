@@ -61,6 +61,30 @@ inline int driveSlamTests()
                    "INPUT is a clean level from -24 to +24 dB");
             check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
                    "OUTPUT is a clean level after Mackity");
+            {
+                TrenchDspBridge slam;
+                slam.prepare (rate, 128);
+                slam.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+                slam.setInputSlam (true);
+                trench::DeskDrive pre, post;
+                for (auto* m : { &pre, &post }) { m->prepare (rate); m->setEnabled (true); }
+                juce::AudioBuffer<float> a (1, 128);
+                bool matches = true;
+                double moved = 0.0;
+                for (int block = 0; block < 16; ++block)
+                {
+                    for (int i = 0; i < 128; ++i) a.setSample (0, i, 0.9f * (float) std::sin (0.05 * (block * 128 + i)));
+                    juce::AudioBuffer<float> dry; dry.makeCopyOf (a);
+                    slam.process (a, {});
+                    for (int i = 0; i < 128; ++i)
+                    {
+                        const float want = post.process (pre.process (dry.getSample (0, i)));
+                        matches = matches && a.getSample (0, i) == want;
+                        moved += std::abs (want - dry.getSample (0, i));
+                    }
+                }
+                check (matches && moved > 1.0, "SLAM puts a Mackie preamp before the filter, in series with the one after it");
+            }
             TrenchDspBridge clean;
             clean.prepare (rate, 128);
             clean.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
@@ -103,7 +127,9 @@ inline int driveSlamTests()
         juce::AudioBuffer<float> a (2, 128), b (2, 128);
         juce::MidiBuffer midi;
         double difference = 0.0;
-        bool bounded = true;
+        bool independent = true;
+        double gainError = 0.0;
+        const float requestedGain = juce::Decibels::decibelsToGain (12.0f);
         float outputPeak = 0.0f, sidePeak = 0.0f;
         for (int block = 0; block < 80; ++block)
         {
@@ -120,20 +146,19 @@ inline int driveSlamTests()
             for (int i = 0; i < 128; ++i)
             {
                 difference += std::abs (a.getSample (0, i) - b.getSample (0, i));
-#if TRENCH_DEV_PANEL
-                const float bound = 1.5f;
-#else
-                const float bound = trench::kFinalSafetyCeiling;
-#endif
                 outputPeak = std::max (outputPeak, std::abs (b.getSample (0, i)));
                 sidePeak = std::max (sidePeak, std::abs (b.getSample (1, i)));
-                bounded = bounded && std::isfinite (b.getSample (0, i)) && std::abs (b.getSample (0, i)) <= bound
+                independent = independent && std::isfinite (b.getSample (0, i))
                     && b.getSample (1, i) == 0.0f;
+                if (block >= 4)
+                    gainError = std::max (gainError, (double) std::abs (b.getSample (0, i) - a.getSample (0, i) * requestedGain));
             }
         }
         std::printf ("      OUTPUT 75 peak %g, silent channel peak %g\n", outputPeak, sidePeak);
         check (difference > 0.01, "OUTPUT changes audio with movement disabled");
-        check (bounded, "OUTPUT stays under the -0.1 dBFS ceiling and stereo states stay independent");
+        check (independent, "OUTPUT remains finite and stereo states stay independent");
+        check (outputPeak > 1.0f && gainError < 1.0e-5,
+               "OUTPUT +12 dB scales the entire resonant waveform exactly, including peaks above full scale");
         check (std::abs (nonlinear.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f,
             "OUTPUT does not move the MORPH wheel");
         juce::MemoryBlock saved;
@@ -146,7 +171,7 @@ inline int driveSlamTests()
     processor.setRateAndBufferSizeDetails (48000, 128);
     processor.prepareToPlay (48000, 128);
     processor.setEditorOpen (true);
-    check (processor.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "soft clip test body loads");
+    check (processor.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "output gain test body loads");
     check (processor.apvts.getParameter (ParamID::slamDrive) == nullptr, "separate SLAM parameter is retired");
     {
         PluginProcessor colour;
@@ -182,8 +207,8 @@ inline int driveSlamTests()
         };
         const auto soft = harmonics (0.0f), hard = harmonics (18.0f);
         std::printf ("      No Filter: harmonic ratio %.4f at INPUT 0 dB, %.4f at +18 dB, peak %.3f\n", soft.first, hard.first, hard.second);
-        check (soft.first < 0.005 && hard.first > 0.05 && hard.second <= trench::kFinalSafetyCeiling,
-            "No Filter is a colour path: INPUT drives Mackity into saturation and the output stays under the ceiling");
+        check (soft.first < 0.005 && hard.first > 0.05 && std::isfinite (hard.second),
+            "No Filter is a colour path: INPUT drives Mackity into saturation");
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
@@ -202,9 +227,15 @@ inline int driveSlamTests()
         return peak;
     };
     const float held = settled();
-    check (held == trench::kFinalSafetyCeiling && processor.getOutClipForUi() > 0.0f,
-        "the last stage is a zero-latency clip at -0.1 dBFS; OUTPUT +24 dB is caught there and shows on the clip meter");
-    check (processor.apvts.getParameter ("outputTrim") == nullptr, "no output gain control follows the soft clipper");
+    auto* output = processor.apvts.getParameter (ParamID::output);
+    output->setValueNotifyingHost (output->convertTo0to1 (0.0f));
+    const float unity = settled();
+    check (held > 1.0f && std::abs (juce::Decibels::gainToDecibels (held / unity) - 24.0f) < 0.001f,
+        "OUTPUT +24 dB delivers the requested gain with no final ceiling or compensation");
+    output->setValueNotifyingHost (output->convertTo0to1 (24.0f));
+    settled();
+    check (processor.getOutClipForUi() > 0.0f, "the output meter reports overs without changing the audio");
+    check (processor.apvts.getParameter ("outputTrim") == nullptr, "no secondary output trim control exists");
     auto savedTree = processor.apvts.copyState();
     juce::ValueTree retired ("PARAM");
     retired.setProperty ("id", "outputTrim", nullptr);
@@ -217,7 +248,7 @@ inline int driveSlamTests()
         "retired output trim is discarded when loading an interim saved project");
     {
         const float after = settled();
-        check (after == held, "saved output gain cannot change the final clipped signal");
+        check (after == held, "retired output trim cannot change the requested output gain");
     }
     check (processor.apvts.getParameter ("amount") == nullptr, "redundant MIX parameter is removed");
     auto oldMixState = processor.apvts.copyState();

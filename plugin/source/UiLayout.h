@@ -51,6 +51,7 @@ public:
         layout.elements["outputKnob"]   = { { 407.0f, 1165.0f, 180.0f, 180.0f }, {}, {} };
         layout.elements["inputReadout"] = { { 136.0f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["outputReadout"] = { { 410.0f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["slamButton"]   = { { 318.0f, 1232.0f, 84.0f, 46.0f }, {}, {} };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 

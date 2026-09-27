@@ -25,7 +25,7 @@ inline int frontendTests()
     std::vector<trench::ui::DeskKnob*> knobs;
     int wheels = 0, values = 0, others = 0;
     const juce::Rectangle<float> notch { 753.0f * 310.0f / 1024.0f, 1185.0f * 506.0f / 1536.0f, 310.0f, 506.0f };
-    bool insideChassis = true, clearOfNotch = true, key = false;
+    bool insideChassis = true, clearOfNotch = true, key = false, slamToggles = false;
     for (auto* child : face->getChildren())
     {
         if (auto* s = dynamic_cast<trench::ui::TypeSelectorView*> (child)) selector = s;
@@ -38,6 +38,13 @@ inline int frontendTests()
         if (dynamic_cast<trench::ui::WheelControl*> (child)) ++wheels;
         if (dynamic_cast<trench::ui::ValueReadout*> (child)) ++values;
         if (dynamic_cast<trench::ui::KeySnapBox*> (child)) key = true;
+        if (auto* slam = dynamic_cast<trench::ui::SlamButton*> (child))
+        {
+            slam->mouseUp (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 3.0f, 3.0f },
+                juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, slam, slam, {}, { 3.0f, 3.0f }, {}, 1, false));
+            slamToggles = processor.apvts.getRawParameterValue (ParamID::inputSlam)->load() > 0.5f;
+            processor.apvts.getParameter (ParamID::inputSlam)->setValueNotifyingHost (0.0f);
+        }
         if (dynamic_cast<trench::ui::ModulationBay*> (child)
             || dynamic_cast<trench::ui::MixKnob*> (child)) ++others;
         if (dynamic_cast<trench::ui::DeskKnob*> (child) || dynamic_cast<trench::ui::ValueReadout*> (child))
@@ -47,6 +54,7 @@ inline int frontendTests()
     check (selector && chip && key && wheels == 2 && values == 4 && knobs.size() == 2 && others == 0,
            "BODY, KEY, MORPH, Q, the movement chip, INPUT and OUTPUT are the whole face");
     check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
+    check (slamToggles, "the SLAM button on the face switches the preamp before the filter");
     {
         trench::UiLayout wheelLayout;
         trench::ui::WheelControl wheel (processor.apvts, ParamID::morph, {}, trench::ui::Theme { wheelLayout });
@@ -117,6 +125,87 @@ inline int frontendTests()
             processor.apvts.getParameter (ids[i])->setValueNotifyingHost (0.0f);
         }
         check (driven, "the knobs drive INPUT and OUTPUT in that order");
+    }
+    for (auto* knob : knobs)
+    {
+        auto* param = processor.apvts.getParameter (knob->getTitle() == "INPUT" ? ParamID::preamp : ParamID::output);
+        trench::ui::ValueReadout* readout = nullptr;
+        for (auto* child : face->getChildren())
+            if (auto* r = dynamic_cast<trench::ui::ValueReadout*> (child); r != nullptr && r->getTitle() == param->getName (24)) readout = r;
+        const auto setDb = [&] (float db) { param->setValueNotifyingHost (param->convertTo0to1 (db)); };
+        const auto atDb = [&] (float db) { return std::abs (param->convertFrom0to1 (param->getValue()) - db) < 0.001f; };
+        const auto event = [&] (juce::Component* c, float y, bool fine = false)
+        {
+            const int flags = juce::ModifierKeys::leftButtonModifier | (fine ? juce::ModifierKeys::shiftModifier : 0);
+            return juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 10, y }, juce::ModifierKeys (flags),
+                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, c, c, {}, { 10, 20 }, {}, 1, true);
+        };
+        for (auto* control : { static_cast<juce::Component*> (knob), static_cast<juce::Component*> (readout) })
+        {
+            if (control == nullptr) { check (false, "gain readout exists"); continue; }
+            setDb (-6.0f);
+            control->mouseDown (event (control, 20));
+            control->mouseDrag (event (control, 10));
+            const bool coarse = atDb (-4.0f);
+            control->mouseDrag (event (control, 10, true));
+            const bool shiftHeld = atDb (-4.0f);
+            control->mouseDrag (event (control, 5, true));
+            const bool fine = atDb (-3.9f);
+            control->mouseDrag (event (control, 5));
+            check (coarse && shiftHeld && fine && atDb (-3.9f), "gain knob and readout allow fine adjustment mid-drag without a level jump");
+            control->mouseUp (event (control, 5));
+            setDb (23.0f);
+            control->mouseDown (event (control, 20));
+            control->mouseDrag (event (control, -1000));
+            const bool bounded = atDb (24.0f);
+            control->mouseDrag (event (control, -999));
+            check (bounded && atDb (23.8f), "gain drag reverses immediately after reaching the limit");
+            control->mouseUp (event (control, -999));
+            setDb (-0.7f);
+            control->mouseDown (event (control, 20));
+            control->mouseDrag (event (control, 17));
+            check (atDb (0.0f), "gain drag catches unity when crossing the center");
+            control->mouseUp (event (control, 17));
+            setDb (0.0f);
+            control->keyPressed (juce::KeyPress (juce::KeyPress::upKey));
+            const bool keyCoarse = atDb (0.5f);
+            control->keyPressed (juce::KeyPress (juce::KeyPress::downKey, juce::ModifierKeys::shiftModifier, 0));
+            check (keyCoarse && atDb (0.4f), "gain keys use half-dB steps and Shift uses tenths");
+            juce::MouseWheelDetails scroll;
+            scroll.deltaY = 0.25f;
+            scroll.isSmooth = false;
+            control->mouseWheelMove (event (control, 20), scroll);
+            const bool scrollCoarse = atDb (0.9f);
+            control->mouseWheelMove (event (control, 20, true), scroll);
+            check (scrollCoarse && atDb (1.0f), "gain wheel and readout scrolling use the same coarse and fine steps");
+        }
+        if (readout != nullptr)
+        {
+            for (const float db : { -24.0f, -6.0f, 0.0f, 6.0f, 24.0f })
+            {
+                setDb (db);
+                readout->setNormalised (0.0f);
+                readout->mouseDoubleClick (event (readout, 20));
+                juce::TextEditor* entry = nullptr;
+                for (auto* child : readout->getChildren())
+                    if (auto* text = dynamic_cast<juce::TextEditor*> (child)) entry = text;
+                const bool actualDb = entry != nullptr && std::abs (entry->getText().getFloatValue() - db) < 0.001f;
+                if (entry != nullptr) entry->onReturnKey();
+                check (actualDb && readout->getNumChildComponents() == 0 && atDb (db),
+                       "opening and accepting gain entry preserves the current dB value, even before the display refreshes");
+            }
+            readout->mouseDoubleClick (event (readout, 20));
+            for (auto* child : readout->getChildren())
+                if (auto* entry = dynamic_cast<juce::TextEditor*> (child))
+                {
+                    entry->setText ("-12.3 dB", false);
+                    entry->onReturnKey();
+                    break;
+                }
+            check (atDb (-12.3f), "gain entry accepts an exact signed dB value");
+        }
+        knob->mouseDoubleClick (event (knob, 20));
+        check (atDb (0.0f), "gain knob double-click restores unity");
     }
     if (trenchEditor != nullptr)
     {

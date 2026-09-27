@@ -528,6 +528,7 @@ int main (int argc, char** argv)
             setParameter (processor, ParamID::output, (float) options.slam);
         setParameter (processor, ParamID::morph, (float) morphAt (morphCurve, 0.0));
         processor.dspBridge.setRingLeveller (options.ring);
+        if (const char* slam = std::getenv ("TRENCH_SLAM")) setParameter (processor, ParamID::inputSlam, std::atoi (slam) != 0 ? 1.0f : 0.0f);
         std::printf ("ring       %s\n", options.ring ? "on" : "off");
 
         std::printf ("body       %s [%d]\n", bodyName.toRawUTF8(), bodyIndex);

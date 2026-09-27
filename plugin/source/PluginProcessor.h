@@ -194,6 +194,7 @@ private:
     std::atomic<float>* pMovePlayback = nullptr;
     std::atomic<float>* pMoveCustom = nullptr;
     std::atomic<float>* pKeySnap = nullptr;
+    std::atomic<float>* pSlam = nullptr;
     std::atomic<float> inputMeterL { 0.0f };
     std::atomic<float> inputMeterR { 0.0f };
     std::atomic<float> outClipForUi { 0.0f };

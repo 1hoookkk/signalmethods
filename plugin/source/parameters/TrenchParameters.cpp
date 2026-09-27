@@ -81,6 +81,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::StringArray { "Preset playback", "Loop", "Once" }, 0));
     layout.add (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { ParamID::moveCustom, 1 }, "User Movement", false));
+    layout.add (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { ParamID::inputSlam, 1 }, "Slam", false));
 #if TRENCH_DEV_PANEL
     trench::calibration::addParameters (layout);
 #endif

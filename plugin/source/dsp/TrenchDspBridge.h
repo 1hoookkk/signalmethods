@@ -121,6 +121,8 @@ public:
         inputGain.setCurrentAndTargetValue (1.0f);
         outputGain.reset (sampleRateHz, 0.005);
         outputGain.setCurrentAndTargetValue (1.0f);
+        preDeskL.prepare (sampleRateHz);
+        preDeskR.prepare (sampleRateHz);
         postDeskL.prepare (sampleRateHz);
         postDeskR.prepare (sampleRateHz);
         postDeskL.setEnabled (outputStageOn);
@@ -416,9 +418,9 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                outL[sample] *= gain;
+                outL[sample] = preDeskL.process (outL[sample] * gain);
                 if (outR != nullptr)
-                    outR[sample] *= gain;
+                    outR[sample] = preDeskR.process (outR[sample] * gain);
             }
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
@@ -483,6 +485,11 @@ public:
     bool inputDriveIsUnity() const noexcept
     {
         return inputGain.getCurrentValue() == 1.0f && inputGain.getTargetValue() == 1.0f;
+    }
+    void setInputSlam (bool on) noexcept
+    {
+        preDeskL.setEnabled (on);
+        preDeskR.setEnabled (on);
     }
     void setOutputLevel (float gain) noexcept
     {
@@ -592,7 +599,7 @@ private:
     bool clipEngaged (float x) const noexcept { return postClipOn && (! std::isfinite (x) || std::abs (x) > postClipKnee * postClipCeiling); }
 #else
     static float postClip (float x) noexcept { return x; }
-    static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > trench::kFinalSafetyCeiling; }
+    static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > 1.0f; }
 #endif
     float outputStage (trench::DeskDrive& desk, float x) const noexcept
     {
@@ -655,6 +662,7 @@ private:
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
     juce::SmoothedValue<float> outputGain { 1.0f };
+    trench::DeskDrive preDeskL, preDeskR;
     float caughtFraction = 0.0f;
     bool outputStageOn = true;
     trench::DeskDrive postDeskL, postDeskR;
