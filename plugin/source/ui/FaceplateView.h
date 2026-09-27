@@ -118,7 +118,7 @@ public:
             const auto tile = t.rect (id);
             if (tile.isEmpty()) continue;
             juce::Path seat;
-            seat.addRoundedRectangle (tile.reduced (0.5f), 3.0f);
+            seat.addRoundedRectangle (tile, tile.getHeight() * 0.17f);
             juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 4, { 0, 1 }).drawForPath (g, seat);
         }
         if (! roomFrame.isEmpty())
