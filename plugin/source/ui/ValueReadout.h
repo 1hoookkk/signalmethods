@@ -149,7 +149,7 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto b = getLocalBounds().toFloat();
-        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isActive || hasKeyboardFocus (true), t);
+        drawFrostedGlassControl (g, b, b.getHeight() * 0.17f, isActive || hasKeyboardFocus (true), t, 0.18f);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
         const auto numeric = textOverride.isNotEmpty() ? textOverride
                            : isDecibels() ? juce::String (param->convertFrom0to1 (juce::jlimit (0.0f, 1.0f, value)), 1)
