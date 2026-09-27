@@ -133,6 +133,8 @@ private:
 #if TRENCH_DEV_PANEL
     std::array<std::atomic<float>*, trench::calibration::count> calibrationParameters {};
     float calibrationMorph = -1.0f;
+    float followEnvelope = 0.0f;
+    float followPush = 0.0f;
     float calibrationOutputGain = 1.0f;
 #endif
     std::atomic<bool>             noteLatched { false };

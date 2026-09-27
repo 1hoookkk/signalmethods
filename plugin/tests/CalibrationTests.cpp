@@ -233,11 +233,11 @@ void defaultsUnity()
             for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i) audio.setSample (c, i, i % 2 ? -level : level);
             p.processBlock (audio, midi);
             for (int c = 0; c < 2; ++c) for (int i = 0; i < 128; ++i)
-                worst = std::max (worst, std::abs (std::abs (audio.getSample (c, i)) - trench::softGuard (level)));
+                worst = std::max (worst, std::abs (std::abs (audio.getSample (c, i)) - level));
         }
-        require (worst == 0.0f, "default No filter differs from the post-filter soft clip");
+        require (worst == 0.0f, "default No filter changes the signal; the dev defaults must match release");
     }
-    std::puts ("DEFAULTS: No filter follows the post-filter soft clip across tested levels");
+    std::puts ("DEFAULTS: No filter passes every tested level unchanged, as in release");
 }
 void nakedDefaults()
 {
@@ -417,6 +417,35 @@ int main (int argc, char** argv)
             const double delta = difference (processorReference, processorRender (id, value));
             std::printf ("%s processor delta %.9g\n", id, delta);
             require (delta > 1.0e-7, "processor control has no effect");
+        }
+        {
+            PluginProcessor follower;
+            follower.setRateAndBufferSizeDetails (48000, 512);
+            follower.prepareToPlay (48000, 512);
+            follower.setEditorOpen (true);
+            const auto fixture = body();
+            require (follower.installBodyBytes (fixture.getData(), fixture.getSize()), "follow body loads");
+            set (follower, ParamID::morph, 0.2f);
+            set (follower, "cal_follow_1", 1.0f);
+            juce::MidiBuffer none;
+            juce::AudioBuffer<float> audio (2, 512);
+            int clock = 0;
+            const auto run = [&] (float amplitude, int blocks)
+            {
+                for (int k = 0; k < blocks; ++k, ++clock)
+                {
+                    for (int c = 0; c < 2; ++c)
+                        for (int i = 0; i < 512; ++i)
+                            audio.setSample (c, i, amplitude * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 220.0 * (clock * 512 + i) / 48000.0));
+                    follower.processBlock (audio, none);
+                }
+                return follower.getEffectiveMorphForUi();
+            };
+            const float rest = run (0.0f, 20);
+            const float loud = run (0.5f, 20);
+            const float back = run (0.0f, 200);
+            std::printf ("follow: wheel 1 at rest %.4f, under a -6 dBFS tone %.4f, after silence %.4f\n", rest, loud, back);
+            require (loud > rest + 0.3f && std::abs (back - rest) < 0.01f, "FOLLOW moves wheel 1 with the level and returns it to where it is set");
         }
         auto base = trench::calibration::defaults();
         base[2] = 1; base[5] = 1; base[13] = 1; base[14] = 1;

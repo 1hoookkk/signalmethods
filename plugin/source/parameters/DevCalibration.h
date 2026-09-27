@@ -1,6 +1,7 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <array>
+#include <string_view>
 
 namespace trench::calibration
 {
@@ -26,19 +27,32 @@ inline constexpr Variable variables[] {
     { "cal_ring_attack", "Ring attack", "ms", 0.1f, 100, 0.1f, 1, true, "Ring-gain attack time." },
     { "cal_ring_release", "Ring release", "ms", 5, 2000, 1, 120, true, "Ring envelope decay and gain-release time." },
     { "cal_ring_floor", "Ring absolute floor", "dBFS", -100, -30, 0.1f, -80, false, "Allows a small absolute tail beyond the relative ring limit." },
-    { "cal_desk", "Output desk", "", 0, 1, 1, 1, false, "Bypasses the entire output desk, including its filters and gain." },
+    { "cal_desk", "Output desk", "", 0, 1, 1, 0, false, "Bypasses the entire output desk, including its filters and gain." },
     { "cal_desk_clip", "Desk saturation", "", 0, 1, 1, 1, false, "Disables only desk clipping; preserves drive and its filters." },
     { "cal_comp", "Desk compensation", "", 0, 1, 1, 1, false, "Existing static desk gain compensation; not audio-reactive AGC." },
     { "cal_coupling", "Desk output coupling", "Hz", 0, 100, 0.1f, 0, false, "0: original coupling. Otherwise sets the output high-pass coefficient." },
     { "cal_output_db", "Monitor trim", "dB", -36, 6, 0.1f, 0, false, "Final comparison trim after the soft clip that follows the filter. No automatic loudness matching." },
     { "cal_guard_knee", "Final guard linear fraction", "", 0.1f, 0.99f, 0.01f, 0.5f, false, "Linear region as a fraction of the output ceiling. Guard curvature above this point changes distortion." },
     { "cal_guard_ceiling", "Final output ceiling", "dBFS", -12, -0.1f, 0.1f, -0.1f, false, "Ceiling when Final output guard is enabled. No limiting when it is off." },
-    { "cal_guard", "Final output guard", "", 0, 1, 1, 1, false, "Soft clip after the filter. OFF leaves the finite filter output unbounded." }
+    { "cal_guard", "Final output guard", "", 0, 1, 1, 0, false, "Soft clip after the filter. OFF leaves the finite filter output unbounded." },
+    { "cal_follow_1", "Wheel 1 follows", "", 0, 1, 1, 0, false, "FOLLOW: the level after INPUT pushes wheel 1 from where it is set. OFF: MANUAL." },
+    { "cal_follow_2", "Wheel 2 follows", "", 0, 1, 1, 0, false, "FOLLOW: the level after INPUT pushes wheel 2 along the body's own Q direction. OFF: MANUAL." },
+    { "cal_follow_attack", "Follow attack", "ms", 0.1f, 200, 0.1f, 5, true, "How fast a rise in level moves the wheel." },
+    { "cal_follow_release", "Follow release", "ms", 5, 2000, 1, 150, true, "How fast the wheel falls back when the level drops." },
+    { "cal_follow_floor", "Follow floor", "dBFS", -80, -12, 0.1f, -48, false, "At or below this level the wheel rests where it is set." },
+    { "cal_follow_top", "Follow top", "dBFS", -48, 6, 0.1f, -6, false, "At this level the wheel is pushed the full depth." },
+    { "cal_follow_depth", "Follow depth", "", -1, 1, 0.01f, 1, false, "Wheel travel at the top level. Negative: louder closes." }
 };
 inline constexpr const char* retired[] { "cal_stage", "cal_stage_db", "cal_agc", "cal_agc_db", "cal_agc_strength", "cal_agc_recovery", "cal_knee_db", "cal_knee_slope", "cal_release_slow", "cal_release_fast", "cal_hold", "cal_quiet_db", "cal_agc_position" };
 inline constexpr size_t count = std::size (variables);
-inline constexpr const char* taste[] { "cal_feedback", "cal_feedback_db" };
+inline constexpr const char* taste[] { "cal_feedback", "cal_feedback_db", "cal_follow_1", "cal_follow_2", "cal_follow_attack", "cal_follow_release", "cal_follow_floor", "cal_follow_top", "cal_follow_depth" };
 inline constexpr const char* processing[] { "cal_ramp", "cal_feedback", "cal_desk", "cal_desk_clip", "cal_comp", "cal_guard" };
+constexpr size_t indexOf (std::string_view id)
+{
+    for (size_t i = 0; i < count; ++i)
+        if (std::string_view (variables[i].id) == id) return i;
+    return count;
+}
 using Values = std::array<float, count>;
 inline Values defaults()
 {

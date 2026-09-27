@@ -35,11 +35,12 @@ public:
                 row->toggle.setTooltip (d.help);
                 row->toggle.setColour (juce::ToggleButton::textColourId, juce::Colour (0xffd4ded7));
                 auto* toggle = &row->toggle;
-                toggle->onStateChange = [toggle] { toggle->setButtonText (toggle->getToggleState() ? "ON" : "OFF"); };
+                const bool driver = juce::String (d.id).startsWith ("cal_follow_");
+                toggle->onStateChange = [toggle, driver] { toggle->setButtonText (toggle->getToggleState() ? (driver ? "FOLLOW" : "ON") : (driver ? "MANUAL" : "OFF")); };
                 form.addChildComponent (*toggle);
                 toggle->setVisible (shown);
                 row->buttonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (processor.apvts, d.id, *toggle);
-                toggle->setButtonText (toggle->getToggleState() ? "ON" : "OFF");
+                toggle->onStateChange();
             }
             else
             {

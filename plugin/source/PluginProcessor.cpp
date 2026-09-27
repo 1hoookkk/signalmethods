@@ -333,6 +333,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     const bool held = morphHeld.load (std::memory_order_acquire);
     const float baseMorph = curveMap (Axis::morph,  juce::jlimit (0.0f, 1.0f, pMorph->load()));
     const float q         = curveMap (Axis::q,      juce::jlimit (0.0f, 1.0f, pQ->load()));
+    float qHeard = q;
     const int movePreset  = (int) pMovePreset->load();
     const int moveTransition = (int) pMoveTransition->load();
     const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
@@ -405,12 +406,46 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         calibrationMorph = calibrationMorph < 0.0f ? target : target + alpha * (calibrationMorph - target);
         morphBuffer[(size_t) i] = calibrationMorph;
     }
+    {
+        using trench::calibration::indexOf;
+        const bool follow1 = calibration[indexOf ("cal_follow_1")] > 0.5f;
+        const bool follow2 = calibration[indexOf ("cal_follow_2")] > 0.5f;
+        if (follow1 || follow2)
+        {
+            const double fs = juce::jmax (1.0, getSampleRate());
+            const float attack = (float) std::exp (-1.0 / (0.001 * calibration[indexOf ("cal_follow_attack")] * fs));
+            const float release = (float) std::exp (-1.0 / (0.001 * calibration[indexOf ("cal_follow_release")] * fs));
+            const float floorDb = calibration[indexOf ("cal_follow_floor")];
+            const float topDb = juce::jmax (floorDb + 1.0f, calibration[indexOf ("cal_follow_top")]);
+            const float depth = calibration[indexOf ("cal_follow_depth")];
+            const float drive = juce::Decibels::decibelsToGain (pPreamp->load());
+            const int channels = juce::jmin (2, buffer.getNumChannels());
+            for (int i = 0; i < numSamples; ++i)
+            {
+                float x = 0.0f;
+                for (int c = 0; c < channels; ++c) x = juce::jmax (x, std::abs (buffer.getSample (c, i)));
+                x *= drive;
+                followEnvelope = x + (x > followEnvelope ? attack : release) * (followEnvelope - x);
+                const float db = juce::Decibels::gainToDecibels (followEnvelope, -120.0f);
+                followPush = depth * juce::jlimit (0.0f, 1.0f, (db - floorDb) / (topDb - floorDb));
+                if (follow1)
+                    morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, morphBuffer[(size_t) i] + followPush);
+            }
+            if (follow2)
+                qHeard = juce::jlimit (0.0f, 1.0f, q + followPush);
+        }
+        else
+        {
+            followEnvelope = 0.0f;
+            followPush = 0.0f;
+        }
+    }
 #endif
     dspBridge.setInputDrive (juce::Decibels::decibelsToGain (pPreamp->load()));
     dspBridge.setOutputLevel (juce::Decibels::decibelsToGain (pOutput->load()));
     dspBridge.setInputSlam (pSlam->load() > 0.5f);
     TrenchParams params;
-    params.q = q;
+    params.q = qHeard;
     params.poleDistortion = 0.0f;
 #if TRENCH_DEV_PANEL
     params.poleDistortion = calibration[5];
@@ -459,7 +494,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         const float effective = morphBuffer[(size_t) numSamples - 1];
         effectiveMorphForUi.store (effective, std::memory_order_relaxed);
         morphUpdatesForUi.fetch_add (1, std::memory_order_relaxed);
-        effectiveQForUi.store (q, std::memory_order_relaxed);
+        effectiveQForUi.store (qHeard, std::memory_order_relaxed);
         morphModulatedForUi.store (customMotion || (movePreset >= 1 && movePreset <= trench::kNumFuncGenPatterns)
 #if TRENCH_DEV_PANEL
                                    || (wheelLoopSource.currentMode() == trench::WheelLoop::Mode::Playing

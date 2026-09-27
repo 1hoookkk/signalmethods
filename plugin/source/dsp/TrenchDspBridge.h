@@ -598,7 +598,7 @@ private:
 
 #if TRENCH_DEV_PANEL
     float postClip (float x) const noexcept { return postClipOn ? trench::calibration::guard (x, postClipKnee, postClipCeiling) : x; }
-    bool clipEngaged (float x) const noexcept { return postClipOn && (! std::isfinite (x) || std::abs (x) > postClipKnee * postClipCeiling); }
+    bool clipEngaged (float x) const noexcept { return ! std::isfinite (x) || std::abs (x) > (postClipOn ? postClipKnee * postClipCeiling : 1.0f); }
 #else
     static float postClip (float x) noexcept { return x; }
     static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > 1.0f; }
@@ -674,7 +674,7 @@ private:
 #if TRENCH_DEV_PANEL
     trench::calibration::Values calibrationValues = trench::calibration::defaults();
     bool calibrationValid = false;
-    bool postClipOn = true;
+    bool postClipOn = false;
     float postClipKnee = trench::kGuardLinearZone;
     float postClipCeiling = trench::kFinalSafetyCeiling;
     std::atomic<double> reportedDatum { kBodyDatumRate };

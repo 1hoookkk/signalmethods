@@ -256,7 +256,9 @@ void PluginEditor::onFrame()
     modulationChip->setActive (processor.isMorphModulatedForUi());
     {
         const auto names = trench::axisNamesForBody (processor.getLoadedBodyIndex());
-        labels->setRailLabels (names.morph, names.q);
+        const auto follows = [this] (const char* id) { auto* v = processor.apvts.getRawParameterValue (id); return v != nullptr && v->load() > 0.5f; };
+        labels->setRailLabels (juce::String (names.morph) + (follows ("cal_follow_1") ? juce::String (juce::CharPointer_UTF8 (" \xc2\xb7 FOLLOW")) : juce::String()),
+                               juce::String (names.q) + (follows ("cal_follow_2") ? juce::String (juce::CharPointer_UTF8 (" \xc2\xb7 FOLLOW")) : juce::String()));
     }
     const auto read = [this] (const char* paramID)
     {
@@ -293,8 +295,10 @@ void PluginEditor::onFrame()
     const float morphValue = moving ? (float) morphShown : read (ParamID::morph);
     morphWheel->setDisplayOverride (moving, morphValue);
     morphReadout->setNormalised (morphValue);
-    const float qValue = read (ParamID::q);
-    secondaryWheel->setDisplayOverride (false, qValue);
+    const auto* followQ = processor.apvts.getRawParameterValue ("cal_follow_2");
+    const bool qFollowing = followQ != nullptr && followQ->load() > 0.5f && ! secondaryWheel->isMouseButtonDown (true);
+    const float qValue = qFollowing ? processor.getEffectiveQForUi() : read (ParamID::q);
+    secondaryWheel->setDisplayOverride (qFollowing, qValue);
     secondaryReadout->setNormalised (qValue);
     morphReadout->setActive (morphWheel->isMouseOverOrDragging (true) || morphReadout->isMouseOverOrDragging (true));
     secondaryReadout->setActive (secondaryWheel->isMouseOverOrDragging (true) || secondaryReadout->isMouseOverOrDragging (true));
