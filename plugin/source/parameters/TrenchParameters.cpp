@@ -21,12 +21,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             .withStringFromValueFunction ([] (float v, int) { return juce::String (v, 1); })
             .withValueFromStringFunction ([] (const juce::String& s) { return s.getFloatValue(); });
     };
-    layout.add (std::make_unique<juce::AudioParameterFloat> (
+    layout.add (std::make_unique<AxisParameter> (
         juce::ParameterID { ParamID::morph, 1 },
         "Morph",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },
         0.5f, pctAttribs()));
-    layout.add (std::make_unique<juce::AudioParameterFloat> (
+    layout.add (std::make_unique<AxisParameter> (
         juce::ParameterID { ParamID::q, 1 },
         "Q",
         juce::NormalisableRange<float> { 0.0f, 1.0f, 0.001f },

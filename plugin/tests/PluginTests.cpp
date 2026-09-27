@@ -346,6 +346,28 @@ int main()
         }
     }
 
+    {
+        PluginProcessor named;
+        named.setRateAndBufferSizeDetails (48000, 128);
+        named.prepareToPlay (48000, 128);
+        int count = 0;
+        const auto* roster = trench::bodyRoster (count);
+        int lp = -1;
+        for (int i = 0; i < count; ++i)
+            if (juce::String (roster[i].base) == "util_lp_24") lp = i;
+        auto* morph = named.apvts.getParameter (ParamID::morph);
+        auto* q = named.apvts.getParameter (ParamID::q);
+        const auto names = [&] { return morph->getName (64) + "/" + q->getName (64); };
+        const auto before = names();
+        setParam (named, ParamID::body, (float) lp);
+        pump (200);
+        const auto during = names();
+        setParam (named, ParamID::body, (float) trench::kNoFilterIndex);
+        pump (200);
+        check (lp >= 0 && before == "Morph/Q" && during == "Cutoff/Reso" && names() == "Morph/Q"
+                   && morph->getParameterID() == ParamID::morph && q->getParameterID() == ParamID::q,
+               "the host reads each body's own axis names, LP 24 reports Cutoff and Reso, IDs stay morph and q");
+    }
     std::printf ("== bridge boundary ==\n");
     {
         TrenchDspBridge bridge;

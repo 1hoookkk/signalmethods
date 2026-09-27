@@ -1,5 +1,6 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <functional>
 namespace ParamID
 {
     inline constexpr auto morph     = "morph";
@@ -21,5 +22,20 @@ namespace ParamID
 }
 namespace TrenchParameters
 {
+    class AxisParameter final : public juce::AudioParameterFloat
+    {
+    public:
+        AxisParameter (const juce::ParameterID& id, const juce::String& name, juce::NormalisableRange<float> range,
+                       float defaultValue, const juce::AudioParameterFloatAttributes& attributes)
+            : juce::AudioParameterFloat (id, name, range, defaultValue, attributes), fallbackName (name) {}
+        void setNameSource (std::function<juce::String()> source) { nameSource = std::move (source); }
+        juce::String getName (int maximumStringLength) const override
+        {
+            return (nameSource ? nameSource() : fallbackName).substring (0, maximumStringLength);
+        }
+    private:
+        juce::String fallbackName;
+        std::function<juce::String()> nameSource;
+    };
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 }

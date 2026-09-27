@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include "BodyAxes.h"
 #include "parameters/CurveMap.h"
 #include "ui/Onboarding.h"
 #include <cstdlib>
@@ -253,6 +254,10 @@ void PluginEditor::markOnboardingSeen()
 void PluginEditor::onFrame()
 {
     modulationChip->setActive (processor.isMorphModulatedForUi());
+    {
+        const auto names = trench::axisNamesForBody (processor.getLoadedBodyIndex());
+        labels->setRailLabels (names.morph, names.q);
+    }
     const auto read = [this] (const char* paramID)
     {
         if (auto* v = processor.apvts.getRawParameterValue (paramID))

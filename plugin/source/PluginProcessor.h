@@ -183,6 +183,7 @@ private:
     trench::WheelLoop wheelLoopSource;
     juce::Time        auditionSlotMtime;
     juce::String      watchedBodyPath;
+    juce::String      publishedAxisNames { "MORPH/Q" };
     juce::Time        watchedBodyMtime;
     std::atomic<float>* pMorph = nullptr;
     std::atomic<float>* pQ = nullptr;

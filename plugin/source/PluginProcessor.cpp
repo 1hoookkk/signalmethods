@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "TrenchBodyRoster.h"
+#include "BodyAxes.h"
 #include "dsp/SlamStage.h"
 #include "parameters/CurveMap.h"
 #include "BinaryData.h"
@@ -37,6 +38,12 @@ PluginProcessor::PluginProcessor()
         calibrationParameters[i] = apvts.getRawParameterValue (trench::calibration::variables[i].id);
 #endif
     pQ          = apvts.getRawParameterValue (ParamID::q);
+    for (const bool isMorph : { true, false })
+        if (auto* axis = dynamic_cast<TrenchParameters::AxisParameter*> (apvts.getParameter (isMorph ? ParamID::morph : ParamID::q)))
+            axis->setNameSource ([this, isMorph] {
+                const auto names = trench::axisNamesForBody (loadedBodyIndex.load (std::memory_order_relaxed));
+                return trench::hostAxisName (isMorph ? names.morph : names.q);
+            });
     pPreamp     = apvts.getRawParameterValue (ParamID::preamp);
     pOutput     = apvts.getRawParameterValue (ParamID::output);
     pMovePreset = apvts.getRawParameterValue (ParamID::movePreset);
@@ -670,6 +677,15 @@ void PluginProcessor::timerCallback()
 {
     const juce::ScopedLock bodyLock (bodyStateLock);
     dspBridge.reclaim();
+    {
+        const auto names = trench::axisNamesForBody (loadedBodyIndex.load (std::memory_order_relaxed));
+        const auto published = juce::String (names.morph) + "/" + names.q;
+        if (published != publishedAxisNames)
+        {
+            publishedAxisNames = published;
+            updateHostDisplay (ChangeDetails().withParameterInfoChanged (true));
+        }
+    }
     {
         const auto base = trench::bodyBaseForIndex (loadedBodyIndex.load (std::memory_order_relaxed));
         if (juce::File::isAbsolutePath (base) && base.endsWithIgnoreCase (".body240"))
