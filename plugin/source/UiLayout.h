@@ -97,7 +97,7 @@ public:
         layout.colours["gridTint"]           = juce::Colour (0xff243038);
         layout.params["plateGrain"]        = 1.0;
         layout.params["readoutPearl"]      = std::getenv ("TRENCH_READOUT_PEARL") != nullptr ? 1.0 : 0.0;
-        const auto envColour = [] (const char* name, juce::Colour fallback)
+        const auto envOverride = [] (const char* name, juce::Colour fallback)
         {
             if (const char* v = std::getenv (name))
             {
@@ -106,9 +106,9 @@ public:
             }
             return fallback;
         };
-        layout.colours["glassTop"]    = envColour ("TRENCH_GLASS_TOP", layout.colours["glassTop"]);
-        layout.colours["glassBottom"] = envColour ("TRENCH_GLASS_BOTTOM", layout.colours["glassBottom"]);
-        layout.colours["gridTint"]    = envColour ("TRENCH_GRID", layout.colours["gridTint"]);
+        layout.colours["glassTop"]    = envOverride ("TRENCH_GLASS_TOP", layout.colours["glassTop"]);
+        layout.colours["glassBottom"] = envOverride ("TRENCH_GLASS_BOTTOM", layout.colours["glassBottom"]);
+        layout.colours["gridTint"]    = envOverride ("TRENCH_GRID", layout.colours["gridTint"]);
         if (std::getenv ("TRENCH_PLATE_SILVER") != nullptr) layout.params["plateSilver"] = 1.0;
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
