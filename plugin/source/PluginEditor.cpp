@@ -194,6 +194,18 @@ void PluginEditor::resized()
     outputKnob->setBounds (rectOf ("outputKnob"));
     slamButton->setBounds (rectOf ("slamButton"));
     inputReadout->setBounds (rectOf ("inputReadout"));
+    {
+        std::vector<std::pair<juce::Rectangle<float>, float>> seats;
+        for (const char* id : { "morphReadout", "qReadout", "inputReadout", "outputReadout", "slamButton" })
+        {
+            const auto r = rectOf (id).toFloat();
+            seats.push_back ({ r, r.getHeight() * 0.17f });
+        }
+        const auto body = typeSelector->getBounds().toFloat();
+        seats.push_back ({ body, body.getHeight() * 0.18f });
+        seats.push_back ({ modulationChip->getBounds().toFloat(), 3.0f });
+        faceplate->setSeats (std::move (seats));
+    }
     outputReadout->setBounds (rectOf ("outputReadout"));
     morphReadout->setBounds (rectOf ("morphReadout"));
     secondaryReadout->setBounds (rectOf ("qReadout"));

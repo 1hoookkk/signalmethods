@@ -117,7 +117,7 @@ struct Theme
 };
 
 inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r,
-                                     float radius, bool isActive, const Theme& t, float outlineAlpha = 0.80f)
+                                     float radius, bool isActive, const Theme& t, float outlineAlpha = 0.80f, bool topGlint = true)
 {
         const auto face = r.reduced (0.35f);
     const auto warmth = juce::Colour (0xffe7edf5);
@@ -143,8 +143,11 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
         juce::Path clip;
         clip.addRoundedRectangle (body, juce::jmax (1.5f, faceRad - 1.2f));
         g.reduceClipRegion (clip);
-        g.setColour (juce::Colours::white.withAlpha (0.55f));
-        g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
+        if (topGlint)
+        {
+            g.setColour (juce::Colours::white.withAlpha (0.55f));
+            g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
+        }
         juce::ColourGradient frost (juce::Colours::white.withAlpha (0.18f),
                                     0.0f, body.getY() + 1.6f,
                                     juce::Colours::transparentWhite,

@@ -113,12 +113,10 @@ public:
 
         drawWheelContactShadow (g, t.rect ("morphWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
         drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
-        for (const char* id : { "morphReadout", "qReadout", "inputReadout", "outputReadout" })
+        for (const auto& [tile, radius] : seats)
         {
-            const auto tile = t.rect (id);
-            if (tile.isEmpty()) continue;
             juce::Path seat;
-            seat.addRoundedRectangle (tile, tile.getHeight() * 0.17f);
+            seat.addRoundedRectangle (tile, radius);
             juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 4, { 0, 1 }).drawForPath (g, seat);
         }
         if (! roomFrame.isEmpty())
@@ -137,6 +135,7 @@ public:
     }
 
     void setRoomCaption (const juce::String& text) { roomCaption = text; repaint(); }
+    void setSeats (std::vector<std::pair<juce::Rectangle<float>, float>> tiles) { seats = std::move (tiles); repaint(); }
     void setRoomFrame (juce::Rectangle<float> frame, float gapX0, float gapX1)
     {
         if (frame != roomFrame || gapX0 != roomGapX0 || gapX1 != roomGapX1)
@@ -187,6 +186,7 @@ public:
     }
 private:
 
+    std::vector<std::pair<juce::Rectangle<float>, float>> seats;
     juce::Image panelImage;
     juce::Rectangle<float> roomFrame;
     float roomGapX0 = 0.0f, roomGapX1 = 0.0f;
