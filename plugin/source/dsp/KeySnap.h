@@ -9,7 +9,7 @@ struct KeySnap
 {
     static constexpr double kPi = 3.14159265358979323846;
     static constexpr double kHoldSemitones = 0.15;
-    static constexpr double kGlideSeconds = 0.03;
+    static constexpr double kGlideSeconds = 0.005;
     static constexpr double kMaxBandwidthRatio = 0.7;
 
     static bool active (int choice) noexcept { return choice >= 1 && choice <= 24; }
