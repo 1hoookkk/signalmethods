@@ -22,6 +22,7 @@ inline int frontendTests()
     trench::ui::BodyBrowser* browser = nullptr;
     trench::ui::ModulationChip* chip = nullptr;
     trench::ui::GraphDisplay* glass = nullptr;
+    trench::ui::FiveDButton* fiveD = nullptr;
     std::vector<trench::ui::DeskKnob*> knobs;
     int wheels = 0, values = 0, others = 0;
     const juce::Rectangle<float> notch { 753.0f * 310.0f / 1024.0f, 1185.0f * 506.0f / 1536.0f, 310.0f, 506.0f };
@@ -38,6 +39,7 @@ inline int frontendTests()
         if (dynamic_cast<trench::ui::WheelControl*> (child)) ++wheels;
         if (dynamic_cast<trench::ui::ValueReadout*> (child)) ++values;
         if (dynamic_cast<trench::ui::KeySnapBox*> (child)) key = true;
+        if (auto* spatial = dynamic_cast<trench::ui::FiveDButton*> (child)) fiveD = spatial;
         if (auto* slam = dynamic_cast<trench::ui::SlamButton*> (child))
         {
             slam->mouseUp (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 3.0f, 3.0f },
@@ -51,8 +53,22 @@ inline int frontendTests()
             clearOfNotch = clearOfNotch && ! child->getBounds().toFloat().intersects (notch);
     }
     check (insideChassis, "face controls remain inside the chassis");
-    check (selector && chip && key && wheels == 2 && values == 4 && knobs.size() == 2 && others == 0,
-           "BODY, KEY, MORPH, Q, the movement chip, INPUT and OUTPUT are the whole face");
+    check (selector && chip && key && fiveD && wheels == 2 && values == 4 && knobs.size() == 2 && others == 0,
+           "BODY, KEY, 5D, MORPH, Q, movement, INPUT, SLAM and OUTPUT are on the face");
+    int rightmostKnob = 0;
+    for (auto* k : knobs) rightmostKnob = juce::jmax (rightmostKnob, k->getRight());
+    check (fiveD && ! knobs.empty() && fiveD->getX() >= rightmostKnob,
+           "5D sits after OUTPUT, the last control in the GAIN row");
+    if (fiveD != nullptr)
+    {
+        fiveD->triggerClick();
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (60);
+        check (processor.apvts.getRawParameterValue (ParamID::fiveD)->load() == 1.0f && fiveD->getToggleState(),
+               "clicking 5D enables its processor parameter and lights the button");
+        processor.apvts.getParameter (ParamID::fiveD)->setValueNotifyingHost (0.0f);
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (10);
+        check (! fiveD->getToggleState(), "5D follows host automation back to off");
+    }
     check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
     check (slamToggles, "the SLAM button on the face switches the preamp before the filter");
     {

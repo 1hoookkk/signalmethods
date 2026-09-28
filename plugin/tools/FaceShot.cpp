@@ -83,6 +83,21 @@ int main()
         return n > 1 ? 1.0f : 0.0f;
     };
 
+    if (std::getenv ("TRENCH_FACESHOT_FIVE_D") != nullptr)
+    {
+        set (ParamID::keySnap, 0.0f);
+        set (ParamID::fiveD, 0.0f);
+        shoot ("trench_5d_off");
+        set (ParamID::fiveD, 1.0f);
+        shoot ("trench_5d_on");
+        set (ParamID::keySnap, 7.0f);
+        shoot ("trench_5d_key_on");
+        processor.editorBeingDeleted (editor);
+        holder.removeChildComponent (editor);
+        delete editor;
+        return 0;
+    }
+
     if (std::getenv ("TRENCH_FACESHOT_MOTION") != nullptr)
     {
         int march = 0;

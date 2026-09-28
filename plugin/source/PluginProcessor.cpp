@@ -12,7 +12,6 @@ namespace
 {
 constexpr int kCleanInputMode = 0;
 constexpr int kMackieDeskSlam = 1;
-constexpr int kSpatialOff = 2;
 constexpr double kMovementReturnSeconds = 0.25;
 int snapChoiceForDetection (int label) noexcept
 {
@@ -54,6 +53,7 @@ PluginProcessor::PluginProcessor()
     userMotion.readAudio (audioMotion);
     pKeySnap    = apvts.getRawParameterValue (ParamID::keySnap);
     pSlam       = apvts.getRawParameterValue (ParamID::inputSlam);
+    pFiveD      = apvts.getRawParameterValue (ParamID::fiveD);
     if (trench::clean_audio::kEnabled())
         forceCleanAudioUiState();
     const int startIndex = juce::jlimit (0, juce::jmax (0, trench::bodyCount() - 1),
@@ -85,8 +85,6 @@ PluginProcessor::PluginProcessor()
     }
     pendingBodyIndex.store (startIndex, std::memory_order_relaxed);
     loadedBodyIndex.store (startIndex, std::memory_order_relaxed);
-    dspBridge.setSpatialMode (kSpatialOff);
-    dspBridge.setQSoundFallbackPan (1.0f);
     {
         int modelBytes = 0;
         const auto* modelJson = BinaryData::getNamedResource ("key_model_rtneural_json", modelBytes);
@@ -124,7 +122,10 @@ bool PluginProcessor::isMidiEffect() const
     return false;
    #endif
 }
-double PluginProcessor::getTailLengthSeconds() const { return dspBridge.tailSeconds(); }
+double PluginProcessor::getTailLengthSeconds() const
+{
+    return dspBridge.tailSeconds() + (pFiveD->load() > 0.5f ? trench::QSoundStage::kTailSeconds : 0.0);
+}
 int PluginProcessor::getNumPrograms() { return 1; }
 int PluginProcessor::getCurrentProgram() { return 0; }
 void PluginProcessor::setCurrentProgram (int index) { juce::ignoreUnused (index); }
@@ -213,8 +214,6 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     }
     setLatencySamples (0);
     dspBridge.setInputMode (kCleanInputMode);
-    dspBridge.setSpatialMode (kSpatialOff);
-    dspBridge.setQSoundFallbackPan (1.0f);
     movement.prepare (sampleRate);
     wheelRampFrom = trench::curves::curveMap (trench::curves::Axis::morph, juce::jlimit (0.0f, 1.0f, pMorph->load()));
     morphWasHeld = false;
@@ -462,6 +461,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     params.poleDistortion = calibration[5];
 #endif
     params.keySnap = keyChoice;
+    params.fiveD = pFiveD->load() > 0.5f;
     params.noteLatched = noteLatched.load (std::memory_order_relaxed);
     params.noteTrackRatio = noteTrackRatio.load (std::memory_order_relaxed);
     params.noteBite = noteBite.load (std::memory_order_relaxed);

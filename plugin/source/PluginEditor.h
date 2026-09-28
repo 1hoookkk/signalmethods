@@ -7,6 +7,7 @@
 #include "ui/WheelControl.h"
 #include "ui/DeskKnob.h"
 #include "ui/KeySnapBox.h"
+#include "ui/FiveDButton.h"
 #include "ui/SlamButton.h"
 #include "ui/ValueReadout.h"
 #include "ui/TypeSelectorView.h"
@@ -69,6 +70,7 @@ private:
     std::unique_ptr<trench::ui::BodyBrowser>      motionBrowser;
     std::unique_ptr<trench::ui::ModulationChip>   modulationChip;
     std::unique_ptr<trench::ui::KeySnapBox>       keySnapBox;
+    std::unique_ptr<trench::ui::FiveDButton>      fiveDButton;
     std::unique_ptr<trench::ui::DeskKnob>         inputKnob;
     std::unique_ptr<trench::ui::SlamButton> slamButton;
     std::unique_ptr<trench::ui::DeskKnob>         outputKnob;

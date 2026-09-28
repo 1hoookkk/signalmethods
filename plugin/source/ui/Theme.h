@@ -178,6 +178,30 @@ inline void drawMutedBoneReadout (juce::Graphics& g, juce::Rectangle<float> r,
     drawFrostedGlassControl (g, r, radius, isActive, t);
 }
 
+inline void drawSwitchFace (juce::Graphics& g, juce::Rectangle<float> b, bool on, bool hover,
+                            const juce::String& text, const Theme& t)
+{
+    const float radius = b.getHeight() * 0.17f;
+    if (on)
+    {
+        g.setColour (juce::Colours::white.withAlpha (0.45f));
+        g.fillRoundedRectangle (b.translated (0.0f, 0.8f), radius);
+        g.setColour (juce::Colour (0xff101416));
+        g.fillRoundedRectangle (b, radius);
+        g.setColour (juce::Colours::black.withAlpha (0.55f));
+        g.drawRoundedRectangle (b.reduced (0.5f), radius, 1.0f);
+        g.setColour (t.accent().withAlpha (0.18f));
+        g.fillRoundedRectangle (b.reduced (2.0f), radius);
+    }
+    else
+    {
+        drawMutedBoneReadout (g, b, radius, hover, t);
+    }
+    g.setFont (displayFont (juce::jmin (10.0f, b.getHeight() * 0.62f), true));
+    g.setColour (on ? t.accent() : t.labelInk().withAlpha (0.85f));
+    g.drawText (text, b.toNearestInt(), juce::Justification::centred, false);
+}
+
 inline void drawEmuSpinner (juce::Graphics& g, juce::Rectangle<float> box,
                             bool enabled, const Theme& t)
 {

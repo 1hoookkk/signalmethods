@@ -83,6 +83,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     motionBrowser->onCommit = [this] (int id) { modulationChip->commitBrowserRow (id); };
     modulationChip->onEdit = [this] { motionBrowser->open (-1, face.getLocalBounds()); };
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
+    fiveDButton = std::make_unique<FiveDButton> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders ([this] { return processor.getDetectedKeyForUi(); });
     keySnapBox->setListeningProvider ([this]
     {
@@ -114,6 +115,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     face.addAndMakeVisible (*labels);
     face.addAndMakeVisible (*modulationChip);
     face.addAndMakeVisible (*keySnapBox);
+    face.addAndMakeVisible (*fiveDButton);
     face.addAndMakeVisible (*inputKnob);
     face.addAndMakeVisible (*outputKnob);
     face.addAndMakeVisible (*slamButton);
@@ -192,6 +194,7 @@ void PluginEditor::resized()
     inputKnob->setBounds (rectOf ("inputKnob"));
     outputKnob->setBounds (rectOf ("outputKnob"));
     slamButton->setBounds (rectOf ("slamButton"));
+    fiveDButton->setBounds (rectOf ("fiveDButton"));
     inputReadout->setBounds (rectOf ("inputReadout"));
     outputReadout->setBounds (rectOf ("outputReadout"));
     morphReadout->setBounds (rectOf ("morphReadout"));

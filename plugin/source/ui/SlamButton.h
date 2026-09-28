@@ -35,11 +35,7 @@ public:
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
     void paint (juce::Graphics& g) override
     {
-        const auto b = getLocalBounds().toFloat();
-        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isOn() || isMouseOver(), t);
-        g.setFont (displayFont (juce::jmin (10.0f, b.getHeight() * 0.62f), true));
-        g.setColour (isOn() ? t.accent() : t.labelInk().withAlpha (0.85f));
-        g.drawText ("SLAM", b.toNearestInt(), juce::Justification::centred, false);
+        drawSwitchFace (g, getLocalBounds().toFloat(), isOn(), isMouseOver(), "SLAM", t);
     }
 private:
     Theme t;

@@ -83,6 +83,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ParamID::moveCustom, 1 }, "User Movement", false));
     layout.add (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { ParamID::inputSlam, 1 }, "Slam", false));
+    layout.add (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { ParamID::fiveD, 1 }, "5D", false));
 #if TRENCH_DEV_PANEL
     trench::calibration::addParameters (layout);
 #endif
