@@ -123,6 +123,11 @@ public:
         outputGain.setCurrentAndTargetValue (1.0f);
         preDeskL.prepare (sampleRateHz);
         preDeskR.prepare (sampleRateHz);
+        slamEnvCoeff = 1.0 - std::exp (-1.0 / (0.030 * sampleRateHz));
+        slamFallCoeff = 1.0 - std::exp (-1.0 / (0.005 * sampleRateHz));
+        slamRiseCoeff = 1.0 - std::exp (-1.0 / (0.060 * sampleRateHz));
+        slamInPower = slamOutPower = 0.0;
+        slamMakeup = kSlamMakeupStart;
         for (auto* desk : { &preDeskL, &preDeskR })
             desk->setTrims (kSlamInTrim, kSlamOutPad);
         postDeskL.prepare (sampleRateHz);
@@ -430,9 +435,25 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                outL[sample] = preDeskL.process (outL[sample] * gain);
+                const float inL = outL[sample] * gain;
+                const float inR = outR != nullptr ? outR[sample] * gain : inL;
+                float slamL = preDeskL.process (inL);
+                float slamR = outR != nullptr ? preDeskR.process (inR) : slamL;
+                if (preDeskL.isActive())
+                {
+                    slamInPower += slamEnvCoeff * (0.5 * ((double) inL * inL + (double) inR * inR) - slamInPower);
+                    slamOutPower += slamEnvCoeff * (0.5 * ((double) slamL * slamL + (double) slamR * slamR) - slamOutPower);
+                    if (slamInPower > 1.0e-12 && slamOutPower > 1.0e-12)
+                    {
+                        const double target = std::clamp (std::sqrt (slamInPower / slamOutPower), kSlamMakeupFloor, kSlamMakeupCeiling);
+                        slamMakeup += (target < slamMakeup ? slamFallCoeff : slamRiseCoeff) * (target - slamMakeup);
+                    }
+                    slamL *= (float) slamMakeup;
+                    slamR *= (float) slamMakeup;
+                }
+                outL[sample] = slamL;
                 if (outR != nullptr)
-                    outR[sample] = preDeskR.process (outR[sample] * gain);
+                    outR[sample] = slamR;
             }
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
@@ -500,6 +521,11 @@ public:
     }
     void setInputSlam (bool on) noexcept
     {
+        if (on && ! preDeskL.isActive())
+        {
+            slamInPower = slamOutPower = 0.0;
+            slamMakeup = kSlamMakeupStart;
+        }
         preDeskL.setEnabled (on);
         preDeskR.setEnabled (on);
     }
@@ -679,6 +705,11 @@ private:
     trench::DeskDrive preDeskL, preDeskR;
     static constexpr double kSlamInTrim = 0.4;
     static constexpr double kSlamOutPad = 0.5;
+    static constexpr double kSlamMakeupStart = 0.125;
+    static constexpr double kSlamMakeupFloor = 0.015625;
+    static constexpr double kSlamMakeupCeiling = 4.0;
+    double slamEnvCoeff = 0.0, slamFallCoeff = 0.0, slamRiseCoeff = 0.0;
+    double slamInPower = 0.0, slamOutPower = 0.0, slamMakeup = kSlamMakeupStart;
     float caughtFraction = 0.0f;
     bool outputStageOn = false;
     trench::DeskDrive postDeskL, postDeskR;

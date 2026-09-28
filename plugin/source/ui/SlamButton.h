@@ -15,7 +15,7 @@ public:
     {
         setTitle ("Slam");
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
-        setTooltip ("SLAM: Mackity at +24 dB before the filter");
+        setTooltip ("SLAM: Mackity driven +24 dB before the filter, level-matched");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
     }

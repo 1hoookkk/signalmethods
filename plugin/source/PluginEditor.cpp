@@ -186,12 +186,6 @@ void PluginEditor::resized()
         const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f,
                                                   hole.getWidth(), value.getHeight());
         modulationChip->setBounds (chip.getSmallestIntegerContainer());
-        const float left = hole.getX();
-        const float right = value.getRight();
-        const float top = chip.getBottom() + 12.0f;
-        const float bottom = theme.rect ("outputReadout").getBottom() + 10.0f;
-        faceplate->setRoomCaption ("GAIN");
-        faceplate->setRoomFrame ({ left, top, right - left, bottom - top }, left + 10.0f, left + 54.0f);
     }
     {
         const auto key = rectOf ("keyBox");

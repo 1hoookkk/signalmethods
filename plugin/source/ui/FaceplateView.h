@@ -90,49 +90,6 @@ public:
 
         drawWheelContactShadow (g, t.rect ("morphWell").withTrimmedBottom (-1.35f));
         drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f));
-        if (! roomFrame.isEmpty())
-        {
-            g.setColour (juce::Colours::white.withAlpha (0.62f));
-            g.strokePath (roomFramePath (roomFrame.translated (0.8f, 0.8f), 5.5f, roomGapX0, roomGapX1), juce::PathStrokeType (1.0f));
-            g.setColour (juce::Colour (0xff453424).withAlpha (0.55f));
-            g.strokePath (roomFramePath (roomFrame, 5.5f, roomGapX0, roomGapX1), juce::PathStrokeType (1.0f));
-            if (roomCaption.isNotEmpty())
-            {
-                g.setFont (displayFont (t.fontSize ("inputLabel", 13.9f), true));
-                const auto box = juce::Rectangle<float> (roomGapX0, roomFrame.getY() - 7.0f, roomGapX1 - roomGapX0, 14.0f).toNearestInt();
-                g.setColour (t.textColour ("inputLabel", t.labelInk()));
-                g.drawText (roomCaption, box, juce::Justification::centred, false);
-            }
-        }
-    }
-
-    void setRoomCaption (const juce::String& text) { roomCaption = text; repaint(); }
-    void setRoomFrame (juce::Rectangle<float> frame, float gapX0, float gapX1)
-    {
-        if (frame != roomFrame || gapX0 != roomGapX0 || gapX1 != roomGapX1)
-        {
-            roomFrame = frame;
-            roomGapX0 = gapX0;
-            roomGapX1 = gapX1;
-            repaint();
-        }
-    }
-
-    static juce::Path roomFramePath (juce::Rectangle<float> r, float rad, float gapX0, float gapX1)
-    {
-        constexpr float q = juce::MathConstants<float>::halfPi;
-        juce::Path p;
-        p.startNewSubPath (juce::jlimit (r.getX() + rad, r.getRight() - rad, gapX1), r.getY());
-        p.lineTo (r.getRight() - rad, r.getY());
-        p.addCentredArc (r.getRight() - rad, r.getY() + rad, rad, rad, 0.0f, 0.0f, q);
-        p.lineTo (r.getRight(), r.getBottom() - rad);
-        p.addCentredArc (r.getRight() - rad, r.getBottom() - rad, rad, rad, 0.0f, q, 2.0f * q);
-        p.lineTo (r.getX() + rad, r.getBottom());
-        p.addCentredArc (r.getX() + rad, r.getBottom() - rad, rad, rad, 0.0f, 2.0f * q, 3.0f * q);
-        p.lineTo (r.getX(), r.getY() + rad);
-        p.addCentredArc (r.getX() + rad, r.getY() + rad, rad, rad, 0.0f, 3.0f * q, 4.0f * q);
-        p.lineTo (juce::jlimit (r.getX() + rad, r.getRight() - rad, gapX0), r.getY());
-        return p;
     }
 
     static void drawWheelContactShadow (juce::Graphics& g, juce::Rectangle<float> well)
@@ -165,9 +122,6 @@ public:
 private:
 
     juce::Image panelImage;
-    juce::Rectangle<float> roomFrame;
-    float roomGapX0 = 0.0f, roomGapX1 = 0.0f;
-    juce::String roomCaption;
     Theme t;
 };
 

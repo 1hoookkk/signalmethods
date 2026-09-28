@@ -60,29 +60,38 @@ inline int driveSlamTests()
             check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
                    "OUTPUT is a clean level after the filter");
             {
-                TrenchDspBridge slam;
-                slam.prepare (rate, 128);
-                slam.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-                slam.setInputSlam (true);
-                trench::DeskDrive pre;
-                pre.prepare (rate); pre.setEnabled (true);
-                pre.setTrims (0.4, 0.5);
-                juce::AudioBuffer<float> a (1, 128);
-                bool matches = true;
-                double moved = 0.0;
-                for (int block = 0; block < 16; ++block)
+                const auto rmsDb = [rate] (bool slamOn, double peakDbfs)
                 {
-                    for (int i = 0; i < 128; ++i) a.setSample (0, i, 0.9f * (float) std::sin (0.05 * (block * 128 + i)));
-                    juce::AudioBuffer<float> dry; dry.makeCopyOf (a);
-                    slam.process (a, {});
-                    for (int i = 0; i < 128; ++i)
+                    TrenchDspBridge chain;
+                    chain.prepare (rate, 128);
+                    chain.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+                    chain.setInputSlam (slamOn);
+                    juce::AudioBuffer<float> a (2, 128);
+                    const double amplitude = juce::Decibels::decibelsToGain (peakDbfs);
+                    const int blocks = (int) (rate / 128.0);
+                    double sum = 0.0;
+                    int n = 0;
+                    for (int block = 0; block < blocks; ++block)
                     {
-                        const float want = pre.process (dry.getSample (0, i));
-                        matches = matches && a.getSample (0, i) == want;
-                        moved += std::abs (want - dry.getSample (0, i));
+                        for (int i = 0; i < 128; ++i)
+                        {
+                            const float x = (float) (amplitude * std::sin (2.0 * juce::MathConstants<double>::pi * 220.0 * (block * 128 + i) / rate));
+                            a.setSample (0, i, x); a.setSample (1, i, x);
+                        }
+                        chain.process (a, {});
+                        if (block >= blocks / 2)
+                            for (int i = 0; i < 128; ++i) { sum += (double) a.getSample (0, i) * a.getSample (0, i); ++n; }
                     }
+                    return 10.0 * std::log10 (sum / n);
+                };
+                double worst = 0.0;
+                for (const double level : { -40.0, -30.0, -18.0, -6.0, 0.0 })
+                {
+                    const double change = rmsDb (true, level) - rmsDb (false, level);
+                    std::printf ("      SLAM at %+.0f dBFS peak: level change %+.2f dB\n", level, change);
+                    worst = std::max (worst, std::abs (change));
                 }
-                check (matches && moved > 1.0, "SLAM puts Mackity before the filter at In Trim 0.4 (+24 dB) and Out Pad 0.5, and it is the only Mackity in the chain");
+                check (worst < 1.0, "SLAM leaves the level it was given within 1 dB from -40 to 0 dBFS");
             }
             TrenchDspBridge clean;
             clean.prepare (rate, 128);
