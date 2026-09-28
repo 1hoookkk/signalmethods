@@ -80,8 +80,8 @@ public:
         layout.colours["screenEdge"]         = juce::Colour (0xff171325);
 
         layout.colours["spectrumGhost"]      = juce::Colour (0xff8fd8d8);
-        layout.colours["glassTop"]           = juce::Colour (0xff070b0e);
-        layout.colours["glassBottom"]        = juce::Colour (0xff020405);
+        layout.colours["glassTop"]           = juce::Colour (0xff318786);
+        layout.colours["glassBottom"]        = juce::Colour (0xff1d504f);
         layout.colours["labelInk"]    = juce::Colour (0xff1e262c);
 
         layout.colours["wellTop"]            = juce::Colour (0xffcbd8e6);
@@ -93,8 +93,8 @@ public:
         layout.params["curveDbTop"]        = 75.0;
         layout.params["curveDbBottom"]     = -75.0;
         layout.params["fontBold"]          = 1.0;
-        layout.params["gridBoost"]         = 2.0;
-        layout.colours["gridTint"]           = juce::Colour (0xff243038);
+        layout.params["gridBoost"]         = 10.0;
+        layout.colours["gridTint"]           = juce::Colour (0xff276467);
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {
