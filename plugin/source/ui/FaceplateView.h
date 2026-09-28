@@ -88,8 +88,8 @@ public:
             g.drawImage (panelImage, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
         }
 
-        drawWheelContactShadow (g, t.rect ("morphWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
-        drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
+        drawWheelContactShadow (g, t.rect ("morphWell").withTrimmedBottom (-1.35f));
+        drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f));
         if (! roomFrame.isEmpty())
         {
             g.setColour (juce::Colours::white.withAlpha (0.62f));
@@ -145,6 +145,11 @@ public:
         const float rx = well.getWidth() * 0.56f;
         {
         juce::Graphics::ScopedSaveState save (g);
+        {
+            juce::Path outline;
+            outline.addRoundedRectangle (well.withTrimmedTop (well.getHeight() * 0.5f).withTrimmedBottom (-castH * 0.75f), 5.0f);
+            g.reduceClipRegion (outline);
+        }
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
                                                   (int) well.getWidth(), (int) (castH + overlap)));
         g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
