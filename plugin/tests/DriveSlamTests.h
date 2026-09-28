@@ -218,6 +218,8 @@ inline int driveSlamTests()
         std::printf ("      No Filter: harmonic ratio %.4f at INPUT +18 dB, %.4f with SLAM, peak %.3f\n", soft.first, hard.first, hard.second);
         check (soft.first < 0.005 && hard.first > 0.05 && std::isfinite (hard.second),
             "No Filter: INPUT alone stays clean, SLAM drives Mackity into saturation");
+        const auto first = harmonics (-24.0f, true);
+        check (first.first > 0.05, "SLAM runs before INPUT: it still saturates the source with INPUT at -24 dB");
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;

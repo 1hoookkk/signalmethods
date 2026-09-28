@@ -43,15 +43,15 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 159.3f, 1120.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 173.0f, 1120.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["inputLabel"].text = "INPUT (dB)";
         layout.elements["outputLabel"]  = { { 433.3f, 1120.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["outputLabel"].text = "OUTPUT (dB)";
-        layout.elements["inputKnob"]    = { { 199.3f, 1165.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputKnob"]    = { { 213.0f, 1165.0f, 180.0f, 180.0f }, {}, {} };
         layout.elements["outputKnob"]   = { { 473.3f, 1165.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 202.3f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["inputReadout"] = { { 215.8f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["outputReadout"] = { { 476.3f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["slamButton"]   = { { 371.3f, 1229.0f, 110.0f, 52.0f }, {}, {} };
+        layout.elements["slamButton"]   = { { 96.0f, 1120.0f, 92.0f, 48.0f }, {}, {} };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 

@@ -15,7 +15,7 @@ public:
     {
         setTitle ("Slam");
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
-        setTooltip ("SLAM: Mackity driven +24 dB before the filter, level-matched");
+        setTooltip ("SLAM: flattens the source first: Mackity driven +24 dB, brought back to the same level, before INPUT");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
     }
@@ -35,11 +35,19 @@ public:
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
     void paint (juce::Graphics& g) override
     {
-        const auto b = getLocalBounds().toFloat();
-        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isOn() || isMouseOver(), t);
-        g.setFont (displayFont (juce::jmin (10.0f, b.getHeight() * 0.62f), true));
-        g.setColour (isOn() ? t.accent() : t.labelInk().withAlpha (0.85f));
-        g.drawText ("SLAM", b.toNearestInt(), juce::Justification::centred, false);
+        const auto b = getLocalBounds();
+        g.setFont (displayFont (10.5f, true));
+        if (isOn())
+        {
+            g.setColour (juce::Colours::black.withAlpha (0.30f));
+            g.drawText ("SLAM", b.translated (0, 1), juce::Justification::centredRight, false);
+            g.setColour (t.accent());
+        }
+        else
+        {
+            g.setColour (t.labelInk().withAlpha (isMouseOver() ? 0.75f : 0.45f));
+        }
+        g.drawText ("SLAM", b, juce::Justification::centredRight, false);
     }
 private:
     Theme t;

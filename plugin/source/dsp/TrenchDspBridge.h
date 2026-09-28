@@ -435,8 +435,8 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                const float inL = outL[sample] * gain;
-                const float inR = outR != nullptr ? outR[sample] * gain : inL;
+                const float inL = outL[sample];
+                const float inR = outR != nullptr ? outR[sample] : inL;
                 float slamL = preDeskL.process (inL);
                 float slamR = outR != nullptr ? preDeskR.process (inR) : slamL;
                 if (preDeskL.isActive())
@@ -451,9 +451,9 @@ public:
                     slamL *= (float) slamMakeup;
                     slamR *= (float) slamMakeup;
                 }
-                outL[sample] = slamL;
+                outL[sample] = slamL * gain;
                 if (outR != nullptr)
-                    outR[sample] = slamR;
+                    outR[sample] = slamR * gain;
             }
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
