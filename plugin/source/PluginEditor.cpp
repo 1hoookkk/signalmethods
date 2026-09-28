@@ -183,7 +183,7 @@ void PluginEditor::resized()
         const float top = chip.getBottom() + 12.0f;
         const float bottom = theme.rect ("outputReadout").getBottom() + 10.0f;
         faceplate->setRoomCaption ("GAIN");
-        faceplate->setRoomFrame ({ left, top, right - left, bottom - top }, left + 10.0f, left + 46.0f);
+        faceplate->setRoomFrame ({ left, top, right - left, bottom - top }, left + 10.0f, left + 54.0f);
     }
     {
         const auto key = rectOf ("keyBox");

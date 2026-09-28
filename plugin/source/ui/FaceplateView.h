@@ -98,9 +98,10 @@ public:
             g.strokePath (roomFramePath (roomFrame, 5.5f, roomGapX0, roomGapX1), juce::PathStrokeType (1.0f));
             if (roomCaption.isNotEmpty())
             {
-                g.setFont (displayFont (10.5f, true));
+                g.setFont (displayFont (t.fontSize ("inputLabel", 13.9f), true));
                 const auto box = juce::Rectangle<float> (roomGapX0, roomFrame.getY() - 7.0f, roomGapX1 - roomGapX0, 14.0f).toNearestInt();
-                drawEngravedText (g, roomCaption, box, juce::Justification::centred, t.labelInk(), 0.45f);
+                g.setColour (t.textColour ("inputLabel", t.labelInk()));
+                g.drawText (roomCaption, box, juce::Justification::centred, false);
             }
         }
     }

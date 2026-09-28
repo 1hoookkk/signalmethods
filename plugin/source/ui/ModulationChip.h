@@ -215,8 +215,8 @@ public:
         g.setColour (ink);
         g.fillPath (arrowPath);
         g.setFont (displayFont (juce::jmin (13.0f, b.getHeight() * 0.68f), false));
-        g.drawFittedText (displayText(), b.withRight (divider).reduced (6.0f, 0.0f).toNearestInt(),
-                          juce::Justification::centredLeft, 1, 0.8f);
+        g.drawText (displayText(), b.withRight (divider).reduced (6.0f, 0.0f).toNearestInt(),
+                    juce::Justification::centredLeft, true);
     }
     void mouseEnter (const juce::MouseEvent&) override { repaint(); }
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
