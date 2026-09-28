@@ -147,11 +147,11 @@ public:
         juce::Graphics::ScopedSaveState save (g);
         {
             juce::Path outline;
-            outline.addRoundedRectangle (well.withTrimmedTop (well.getHeight() * 0.5f).withTrimmedBottom (-castH * 0.75f), 5.0f);
+            outline.addRoundedRectangle (well.withTrimmedTop (well.getHeight() * 0.5f).withTrimmedBottom (-castH), 5.0f);
             g.reduceClipRegion (outline);
         }
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
-                                                  (int) well.getWidth(), (int) (castH + overlap)));
+                                                  (int) well.getWidth(), (int) std::ceil (cy + castH + overlap) - (int) std::floor (cy)));
         g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
         juce::ColourGradient sh (juce::Colours::black.withAlpha (0.88f), cx, cy,
                                  juce::Colours::transparentBlack, cx + rx, cy, true);
