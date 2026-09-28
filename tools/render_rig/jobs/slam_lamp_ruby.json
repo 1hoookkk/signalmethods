@@ -1,0 +1,60 @@
+{
+  "name": "slam_lamp_ruby",
+  "mesh": "../sources/traceparts/2676_8073.stl",
+  "part": {
+    "front": "-x",
+    "keep_front_of": 0.0,
+    "materials": [
+      {
+        "material": "led_glass",
+        "axial_min": 2.4,
+        "radius_max": 5.3
+      },
+      {
+        "material": "satin_nickel"
+      }
+    ],
+    "smooth_angle_deg": 80.0
+  },
+  "extras": [
+    {
+      "type": "disc",
+      "radius": 5.2,
+      "z": 1.2,
+      "material": "cavity"
+    },
+    {
+      "type": "dome",
+      "radius": 2.2,
+      "z": 2.2,
+      "flatten": 0.55,
+      "material": "led"
+    }
+  ],
+  "frame_mm": 26.0,
+  "pixels": 128,
+  "supersample": 4,
+  "led_colour": "#E8203A",
+  "states": {
+    "off": {
+      "led_strength": 0.0
+    },
+    "on": {
+      "led_strength": 1.05,
+      "glow": [
+        {
+          "radius_px": 6,
+          "strength": 3.0
+        },
+        {
+          "radius_px": 32,
+          "strength": 9.0
+        }
+      ]
+    }
+  },
+  "lens_off_colour": "#5A1018",
+  "studio": {
+    "hdri_rotation_deg": 45.0
+  }
+}

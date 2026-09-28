@@ -37,6 +37,7 @@ public:
         draw ("typeLabel",   t.text ("typeLabel",   "BODY"), true, true);
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
+        draw ("slamLabel",   t.text ("slamLabel",   ""), true, true);
         draw ("inputLabel",  t.text ("inputLabel",  ""), true, true);
         draw ("outputLabel", t.text ("outputLabel", ""), true, true);
         {

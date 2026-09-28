@@ -1,0 +1,49 @@
+{
+  "name": "led_lamp",
+  "mesh": "../sources/traceparts/2676_8073.stl",
+  "part": {
+    "front": "-x",
+    "keep_front_of": 0.0,
+    "materials": [
+      {
+        "material": "led_glass",
+        "axial_min": 2.4,
+        "radius_max": 5.3
+      },
+      {
+        "material": "satin_nickel"
+      }
+    ]
+  },
+  "extras": [
+    {
+      "type": "disc",
+      "radius": 5.2,
+      "z": 1.2,
+      "material": "cavity"
+    },
+    {
+      "type": "dome",
+      "radius": 2.2,
+      "z": 2.2,
+      "flatten": 0.55,
+      "material": "led"
+    }
+  ],
+  "frame_mm": 16.0,
+  "pixels": 128,
+  "supersample": 4,
+  "led_colour": "#31ADAF",
+  "states": {
+    "off": {
+      "led_strength": 0.0
+    },
+    "on": {
+      "led_strength": 1.2,
+      "glow": {
+        "radius_px": 5,
+        "strength": 0.55
+      }
+    }
+  }
+}
