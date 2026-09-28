@@ -338,7 +338,10 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     bool qFollowing = false;
     const int movePreset  = (int) pMovePreset->load();
     const int moveTransition = (int) pMoveTransition->load();
-    const int keyChoice   = juce::jlimit (0, 24, (int) pKeySnap->load());
+    const int keySetting  = juce::jlimit (0, trench::KeySnap::kAutoChoice, (int) pKeySnap->load());
+    const int keyChoice   = keySetting == trench::KeySnap::kAutoChoice
+                                ? trench::KeySnap::choiceForLabel (detectedKeyForUi.load (std::memory_order_relaxed))
+                                : keySetting;
     float dryPeakL = 0.0f, dryPeakR = 0.0f;
     if (editorOpen.load (std::memory_order_relaxed))
     {
@@ -355,7 +358,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         dryPeakL = dryPeakOf (0);
         dryPeakR = dryPeakOf (1);
     }
-    if (keyChoice == 0)
+    if (keySetting == 0 || keySetting == trench::KeySnap::kAutoChoice)
         keyDetector.pushAudio (buffer);
     trench::MovementTransport transport;
     if (auto* ph = getPlayHead())
@@ -688,17 +691,17 @@ bool PluginProcessor::probeCurrentBodyForUi (float morph, float q, float outCoef
         captureCurrentBodyBytes (trench::bodyCartridgeJson (loadedBodyIndex.load (std::memory_order_relaxed)));
     if (currentBodyBytes.getSize() != 240)
         return false;
-    const int keyChoice = juce::jlimit (0, 24, (int) pKeySnap->load());
     return TrenchDspBridge::probePackedBody (currentBodyBytes.getData(), currentBodyBytes.getSize(),
                                              morph, q,
                                              getSampleRate() > 0.0 ? getSampleRate() : 48'000.0,
                                              outCoeffs, outBoost,
                                              currentBodyDatumRate,
-                                             keyChoice);
+                                             (double) dspBridge.keySemitonesForUi());
 }
 void PluginProcessor::updateAutoKey()
 {
-    if (juce::jlimit (0, 24, (int) pKeySnap->load()) != 0)
+    const int keySetting = juce::jlimit (0, trench::KeySnap::kAutoChoice, (int) pKeySnap->load());
+    if (keySetting != 0 && keySetting != trench::KeySnap::kAutoChoice)
         return;
     trench::KeyDetector::Result window;
     while (keyDetector.analyse (window))

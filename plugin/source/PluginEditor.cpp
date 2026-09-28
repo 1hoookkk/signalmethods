@@ -275,7 +275,7 @@ void PluginEditor::onFrame()
     const float baseQ = trench::curves::curveMap (trench::curves::Axis::q, read (ParamID::q));
     const int bodyVersion = processor.bodyVersionForUi.load (std::memory_order_relaxed);
     const double probeRate = processor.getSampleRate();
-    const double probeKeyRatio = (double) juce::jlimit (0, 24, (int) processor.apvts.getRawParameterValue (ParamID::keySnap)->load());
+    const double probeKeyRatio = (double) processor.getKeySemitonesForUi();
     if (baseMorph != lastProbedMorph || baseQ != lastProbedQ
         || bodyVersion != lastProbedBodyVersion || probeRate != lastProbedRate
         || probeKeyRatio != lastProbedKeyRatio)

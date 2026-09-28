@@ -1,6 +1,7 @@
 #pragma once
 #include "Theme.h"
 #include "ParamInteraction.h"
+#include "../dsp/KeySnap.h"
 #include "../parameters/TrenchParameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <cmath>
@@ -18,8 +19,8 @@ public:
         setInterceptsMouseClicks (true, false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Key Snap");
-        setHelpText ("KEY OFF leaves the body as authored. Scroll to choose a key. A heard key is offered; click it to lock, click the locked key to return to OFF.");
-        setTooltip ("KEY: scroll to choose, click the offered key to lock, click again for OFF");
+        setHelpText ("KEY OFF leaves the body as authored. AUTO follows the key heard in the input and shifts the whole body by up to a semitone so its strongest resonance sits on a note of the key.");
+        setTooltip ("KEY: click for AUTO (follows the key it hears) or OFF");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (
                 *param, [this] (float) { repaint(); });
@@ -92,16 +93,9 @@ public:
             showParamContextMenu (*this, param);
             return;
         }
-        const int current = currentChoice();
-        if (current == 0)
-        {
-            if (candidateAt (e.position) == 0)
-                applySuggestedChoice (suggestion (primarySuggestion));
-            return;
-        }
-
+        const int next = currentChoice() == 0 ? trench::KeySnap::kAutoChoice : 0;
         param->beginChangeGesture();
-        param->setValueNotifyingHost (param->convertTo0to1 (0.0f));
+        param->setValueNotifyingHost (param->convertTo0to1 ((float) next));
         param->endChangeGesture();
     }
     void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
@@ -145,7 +139,9 @@ public:
 
             if (locked)
             {
-                const auto text = shortChoiceText (currentChoice());
+                const auto text = currentChoice() == trench::KeySnap::kAutoChoice
+                    ? (first >= 0 ? "AUTO " + shortSuggestionText (first) : juce::String ("AUTO"))
+                    : shortChoiceText (currentChoice());
                 const auto box = valueBox (text, bigFont);
                 g.setFont (bigFont);
                 g.setColour (ink);
@@ -237,12 +233,6 @@ private:
             return shortSuggestionText (choice - 13);
         return "--";
     }
-    static int snapChoiceForSuggestion (int label)
-    {
-        if (label < 0 || label >= 24)
-            return -1;
-        return label < 12 ? 13 + label : 1 + (label - 12);
-    }
     int currentChoice() const
     {
         if (param == nullptr)
@@ -250,15 +240,6 @@ private:
         const int last = juce::jmax (0, param->getNumSteps() - 1);
         return juce::jlimit (0, last,
                              juce::roundToInt (param->convertFrom0to1 (param->getValue())));
-    }
-    void applySuggestedChoice (int label)
-    {
-        const int choice = snapChoiceForSuggestion (label);
-        if (choice < 0 || param == nullptr)
-            return;
-        param->beginChangeGesture();
-        param->setValueNotifyingHost (param->convertTo0to1 ((float) choice));
-        param->endChangeGesture();
     }
     Theme t;
     juce::RangedAudioParameter* param = nullptr;

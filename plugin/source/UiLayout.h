@@ -57,7 +57,7 @@ public:
 
         layout.elements["brandLabel"].text = "TRENCH";
         juce::Colour lamp (0xff44dede);
-        juce::Colour trace (0xe6b5ffff);
+        juce::Colour trace (0xff16afb1);
         if (const char* accent = std::getenv ("TRENCH_ACCENT"))
         {
             const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");
@@ -90,8 +90,8 @@ public:
         layout.params["wellRadius"]        = 9.0;
         layout.params["readoutAliasScale"] = 0.95;
         layout.params["typeArrowExtra"]    = 6.0;
-        layout.params["curveDbTop"]        = 75.0;
-        layout.params["curveDbBottom"]     = -75.0;
+        layout.params["curveDbTop"]        = 84.0;
+        layout.params["curveDbBottom"]     = -84.0;
         layout.params["fontBold"]          = 1.0;
         layout.params["gridBoost"]         = 2.5;
         layout.colours["gridTint"]           = juce::Colour (0xffa0b4bc);

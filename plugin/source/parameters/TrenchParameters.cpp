@@ -70,7 +70,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
             "C m", "C# m", "D m", "D# m", "E m", "F m",
             "F# m", "G m", "G# m", "A m", "A# m", "B m",
             "C M", "C# M", "D M", "D# M", "E M", "F M",
-            "F# M", "G M", "G# M", "A M", "A# M", "B M"
+            "F# M", "G M", "G# M", "A M", "A# M", "B M",
+            "AUTO"
         },
         0));
     layout.add (std::make_unique<juce::AudioParameterChoice> (

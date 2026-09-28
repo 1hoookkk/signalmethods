@@ -233,7 +233,7 @@ public:
     static bool probePackedBody (const void* bytes, size_t len, float morph, float q,
                                  double runtimeRate,
                                  float outCoefficients[trench::kUiCoeffCount], float& outBoost,
-                                 double datumRate = kBodyDatumRate, int keyChoice = 0)
+                                 double datumRate = kBodyDatumRate, double keySemitones = 0.0)
     {
         if (bytes == nullptr || outCoefficients == nullptr)
             return false;
@@ -243,7 +243,8 @@ public:
                 static_cast<const std::uint8_t*> (bytes), len });
             auto cascade = cascadeAt (body.interpolate_words (juce::jlimit (0.0f, 1.0f, morph), juce::jlimit (0.0f, 1.0f, q), 0.0f),
                                       datumRate, runtimeRate);
-            cascade = trench::KeySnap::apply (cascade, keyChoice, runtimeRate, nullptr, 1.0);
+            if (keySemitones != 0.0)
+                cascade = trench::core::transpose_cascade (cascade, trench::core::ratio_of_semitones (keySemitones), runtimeRate);
             int index = 0;
             for (const auto& section : cascade)
                 for (const double coefficient : section)
@@ -300,7 +301,7 @@ public:
         const int keyChoice = trench::KeySnap::active (params.keySnap) ? params.keySnap : 0;
         if (keyChoice != heardKeyChoice)
         {
-            keyLanes = {};
+            keyReferenceHz = -1.0;
             heardKeyChoice = keyChoice;
         }
         const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
@@ -325,7 +326,7 @@ public:
             }
             audioSnapshot = *snapshot;
             heardGeneration = snapshot->generation;
-            keyLanes = {};
+            keyReferenceHz = -1.0;
             for (auto* runner : { &left, &right })
             {
                 *runner = trench::core::CascadeRunner {};
@@ -362,9 +363,8 @@ public:
             if (std::abs (qTarget - smoothedQ) < 1.0e-6f) smoothedQ = qTarget;
             const float morph = smoothedMorph;
             const float q = smoothedQ;
-            if (first || morph != cachedMorph || q != cachedQ || keyRatio != cachedKeyRatio || keyChoice != 0 || keyWasActive)
             {
-                bool changed = first || keyRatio != cachedKeyRatio;
+                bool changed = first;
                 if (first || morph != cachedMorph || q != cachedQ)
                 {
                     const auto words = snapshot->bank.interpolate_words (morph, q, 0.0f);
@@ -375,18 +375,28 @@ public:
                         changed = true;
                     }
                 }
-                if (changed)
-                    cachedCascade = keyRatio != 1.0 ? trench::core::transpose_cascade (cachedBase, keyRatio, sampleRateHz) : cachedBase;
+                if (keyChoice != 0 && keyReferenceHz <= 0.0)
+                    keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz);
+                const double keyTarget = keyChoice != 0 ? trench::KeySnap::offsetSemitones (keyReferenceHz, keyChoice) : 0.0;
+                if (first)
+                    keyOffset = keyTarget;
+                else if (keyOffset != keyTarget)
+                {
+                    keyOffset += trench::KeySnap::glideFor (blockLen, sampleRateHz) * (keyTarget - keyOffset);
+                    if (std::abs (keyTarget - keyOffset) < 1.0e-4)
+                        keyOffset = keyTarget;
+                }
+                keyOffsetForUi.store ((float) keyOffset, std::memory_order_relaxed);
+                const double totalRatio = keyRatio * trench::core::ratio_of_semitones (keyOffset);
+                if (changed || totalRatio != cachedKeyRatio)
+                {
+                    cachedCascade = totalRatio != 1.0 ? trench::core::transpose_cascade (cachedBase, totalRatio, sampleRateHz) : cachedBase;
+                    changed = true;
+                }
                 cachedMorph = morph;
                 cachedQ = q;
-                cachedKeyRatio = keyRatio;
-                if (keyChoice != 0 || keyWasActive)
-                    changed = true;
-                keyWasActive = keyChoice != 0;
-                heardCascade = keyChoice != 0
-                    ? trench::KeySnap::apply (cachedCascade, keyChoice, sampleRateHz, &keyLanes,
-                                              first ? 1.0 : trench::KeySnap::glideFor (blockLen, sampleRateHz))
-                    : cachedCascade;
+                cachedKeyRatio = totalRatio;
+                heardCascade = cachedCascade;
                 if (changed)
                 {
 #if TRENCH_DEV_PANEL
@@ -415,11 +425,6 @@ public:
                     left.zero_kernel_deltas();
                     right.zero_kernel_deltas();
                 }
-            }
-            else
-            {
-                left.zero_kernel_deltas();
-                right.zero_kernel_deltas();
             }
             for (int s = 0; s < blockLen; ++s)
             {
@@ -467,7 +472,7 @@ public:
 #endif
             }
         }
-        publishCascade (keyWasActive ? heardCascade : cachedCascade);
+        publishCascade (heardCascade);
         caughtFraction = (float) caught / (float) samples;
 #if TRENCH_DEV_PANEL
         reportedDatum.store (snapshot->datumRate);
@@ -512,6 +517,7 @@ public:
     {
         return (float) std::max (left.grit_activity(), right.grit_activity());
     }
+    float keySemitonesForUi() const noexcept { return keyOffsetForUi.load (std::memory_order_relaxed); }
     double tailSeconds() const noexcept
     {
         return reportedTailSeconds.load (std::memory_order_relaxed);
@@ -656,15 +662,16 @@ private:
     double cachedKeyRatio = 0.0;
     trench::core::Cascade cachedCascade {};
     trench::core::Cascade heardCascade {};
-    trench::KeySnap::Lanes keyLanes {};
     int heardKeyChoice = 0;
-    bool keyWasActive = false;
+    double keyReferenceHz = -1.0;
+    double keyOffset = 0.0;
     trench::core::Cascade cachedBase {};
     trench::core::CornerWords cachedWords {};
     std::array<float, trench::kUiCoeffCount> uiCoefficients {};
     mutable std::atomic_flag uiSnapshotBusy = ATOMIC_FLAG_INIT;
     static_assert (std::atomic<float>::is_always_lock_free);
     std::atomic<float> reportedTailSeconds { 0.0f };
+    std::atomic<float> keyOffsetForUi { 0.0f };
     double sampleRateHz = 48'000.0;
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };

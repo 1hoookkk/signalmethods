@@ -66,6 +66,7 @@ public:
     float getNoteTrackRatio() const noexcept { return noteTrackRatio.load (std::memory_order_relaxed); }
     float getNoteBite() const noexcept { return noteBite.load (std::memory_order_relaxed); }
     int getDetectedKeyForUi() const noexcept { return detectedKeyForUi.load (std::memory_order_relaxed); }
+    float getKeySemitonesForUi() const noexcept { return dspBridge.keySemitonesForUi(); }
     float getKeyConfidenceForUi() const noexcept { return keyConfidenceForUi.load (std::memory_order_relaxed); }
     void setEditorOpen (bool open) noexcept
     {

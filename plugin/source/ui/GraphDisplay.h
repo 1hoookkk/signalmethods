@@ -350,9 +350,9 @@ private:
         const juce::PathStrokeType::JointStyle joint = juce::PathStrokeType::curved;
         const juce::PathStrokeType::EndCapStyle cap = juce::PathStrokeType::butt;
         g.setColour (colour.withMultipliedAlpha (0.22f));
-        g.strokePath (path, { 2.0f, joint, cap });
+        g.strokePath (path, { 1.7f, joint, cap });
         g.setColour (colour.interpolatedWith (t.curveHighlight(), 0.30f));
-        g.strokePath (path, { 1.0f, joint, cap });
+        g.strokePath (path, { 0.85f, joint, cap });
     }
     void drawResponseTrace (juce::Graphics& g) const
     {

@@ -39,11 +39,23 @@ juce::MemoryBlock body (const char* name)
     return bytes;
 }
 
+double keySemitones (const juce::MemoryBlock& bytes, float morph, float q, int key, double rate)
+{
+    float coeffs[trench::kUiCoeffCount] {}, boost = 1.0f;
+    if (key == 0 || ! TrenchDspBridge::probePackedBody (bytes.getData(), bytes.getSize(), morph, q, rate, coeffs, boost))
+        return 0.0;
+    trench::core::Cascade cascade {};
+    for (int s = 0; s < trench::kUiStageCount; ++s)
+        for (int c = 0; c < trench::kUiCoeffsPerStage; ++c)
+            cascade[(size_t) s][(size_t) c] = coeffs[s * 5 + c];
+    return trench::KeySnap::offsetSemitones (trench::KeySnap::referenceHz (cascade, rate), key);
+}
+
 double maxResponse (const juce::MemoryBlock& bytes, float morph, float q, int key, double rate)
 {
     float coeffs[trench::kUiCoeffCount] {}, boost = 1.0f;
     if (! TrenchDspBridge::probePackedBody (bytes.getData(), bytes.getSize(), morph, q, rate, coeffs, boost,
-                                           TrenchDspBridge::kBodyDatumRate, key))
+                                           TrenchDspBridge::kBodyDatumRate, keySemitones (bytes, morph, q, key, rate)))
         return 0.0;
     double maximum = 0.0;
     for (int i = 0; i < 12000; ++i)
@@ -233,7 +245,7 @@ void rapidSwitch (double rate, int blockSize, const juce::MemoryBlock& a, const 
     float heard[trench::kUiCoeffCount] {}, expected[trench::kUiCoeffCount] {}, boost = 1.0f;
     bridge.readUiSnapshot (heard, boost);
     TrenchDspBridge::probePackedBody (b.getData(), b.getSize(), params.morph, params.q, rate, expected, boost,
-                                    TrenchDspBridge::kBodyDatumRate, params.keySnap);
+                                    TrenchDspBridge::kBodyDatumRate, (double) bridge.keySemitonesForUi());
     double error = 0.0;
     for (int i = 0; i < trench::kUiCoeffCount; ++i) error = std::max (error, (double) std::abs (heard[i] - expected[i]));
     check (finite && error < 1.0e-6, "rapid requests stay quiet, preserve stereo and land on the latest body");
@@ -271,7 +283,7 @@ int main()
                         {
                             float coeffs[trench::kUiCoeffCount] {}, boost = 1.0f;
                             TrenchDspBridge::probePackedBody (bytes->getData(), bytes->getSize(), morph, q, rate, coeffs, boost,
-                                                             TrenchDspBridge::kBodyDatumRate, key);
+                                                             TrenchDspBridge::kBodyDatumRate, keySemitones (*bytes, morph, q, key, rate));
                             trench::core::Cascade cascade {};
                             for (int s = 0; s < trench::kUiStageCount; ++s)
                                 for (int c = 0; c < trench::kUiCoeffsPerStage; ++c)

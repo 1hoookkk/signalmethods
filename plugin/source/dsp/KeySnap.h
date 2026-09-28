@@ -1,18 +1,25 @@
 #pragma once
 #include <trench/core/packed_body.hpp>
-#include <array>
+#include <algorithm>
 #include <cmath>
+#include <complex>
 
 namespace trench
 {
 struct KeySnap
 {
     static constexpr double kPi = 3.14159265358979323846;
-    static constexpr double kHoldSemitones = 0.15;
-    static constexpr double kGlideSeconds = 0.005;
-    static constexpr double kMaxBandwidthRatio = 0.7;
+    static constexpr double kGlideSeconds = 0.08;
+    static constexpr int kAutoChoice = 25;
 
     static bool active (int choice) noexcept { return choice >= 1 && choice <= 24; }
+
+    static int choiceForLabel (int label) noexcept
+    {
+        if (label < 0 || label >= 24)
+            return 0;
+        return label < 12 ? 13 + label : 1 + (label - 12);
+    }
 
     static bool inScale (int midiNote, int choice) noexcept
     {
@@ -27,71 +34,53 @@ struct KeySnap
         return false;
     }
 
-    static double targetNote (double midi, int choice, double held) noexcept
+    static double referenceHz (const core::Cascade& cascade, double fs) noexcept
     {
-        double best = std::round (midi);
-        double bestDistance = 1.0e9;
+        constexpr int points = 480;
+        const double lo = 40.0, hi = std::min (16000.0, 0.45 * fs);
+        const double step = std::log (hi / lo) / (points - 1);
+        const auto powerDb = [&] (double hz)
+        {
+            const std::complex<double> z1 = std::polar (1.0, -2.0 * kPi * hz / fs);
+            const std::complex<double> z2 = z1 * z1;
+            double power = 1.0;
+            for (const auto& b : cascade)
+                power *= std::norm (b[0] + b[1] * z1 + b[2] * z2) / std::max (1.0e-300, std::norm (1.0 + b[3] * z1 + b[4] * z2));
+            return std::isfinite (power) && power > 0.0 ? 10.0 * std::log10 (power) : -1.0e9;
+        };
+        int best = -1;
+        double bestDb = -1.0e9;
+        for (int i = 0; i < points; ++i)
+        {
+            const double db = powerDb (lo * std::exp (i * step));
+            if (db > bestDb) { bestDb = db; best = i; }
+        }
+        if (best < 0)
+            return -1.0;
+        double centre = best;
+        if (best > 0 && best < points - 1)
+        {
+            const double a = powerDb (lo * std::exp ((best - 1) * step)), c = powerDb (lo * std::exp ((best + 1) * step));
+            const double curvature = a - 2.0 * bestDb + c;
+            if (curvature < 0.0)
+                centre += std::clamp (0.5 * (a - c) / curvature, -0.5, 0.5);
+        }
+        return lo * std::exp (centre * step);
+    }
+
+    static double offsetSemitones (double referenceHz, int choice) noexcept
+    {
+        if (! active (choice) || ! (referenceHz > 0.0))
+            return 0.0;
+        const double midi = 69.0 + 12.0 * std::log2 (referenceHz / 440.0);
+        double best = 0.0, bestDistance = 1.0e9;
         for (int n = (int) std::floor (midi) - 2; n <= (int) std::ceil (midi) + 2; ++n)
             if (inScale (n, choice) && std::abs (midi - n) < bestDistance)
             {
                 bestDistance = std::abs (midi - n);
-                best = n;
+                best = n - midi;
             }
-        if (held > 0.0 && inScale ((int) held, choice) && std::abs (midi - held) < bestDistance + kHoldSemitones)
-            return held;
         return best;
-    }
-
-    struct Lane
-    {
-        double note = -1.0;
-        double shown = -1.0;
-    };
-    using Lanes = std::array<Lane, core::kSectionCount>;
-
-    static bool snappable (const core::Biquad& b, double fs, double& hz, double& radius) noexcept
-    {
-        const double a1 = b[3], a2 = b[4];
-        if (!(a2 > 0.0 && a2 < 1.0))
-            return false;
-        radius = std::sqrt (a2);
-        const double c = -a1 / (2.0 * radius);
-        if (!(c > -1.0 && c < 1.0))
-            return false;
-        hz = std::acos (c) * fs / (2.0 * kPi);
-        const double bandwidth = -std::log (radius) * fs / kPi;
-        return hz >= 20.0 && hz <= 0.45 * fs && bandwidth < kMaxBandwidthRatio * hz;
-    }
-
-    static core::Cascade apply (const core::Cascade& in, int choice, double fs, Lanes* lanes, double glide) noexcept
-    {
-        if (!active (choice))
-            return in;
-        core::Cascade out = in;
-        for (std::size_t s = 0; s < in.size(); ++s)
-        {
-            double hz = 0.0, radius = 0.0;
-            if (!snappable (in[s], fs, hz, radius))
-            {
-                if (lanes != nullptr)
-                    (*lanes)[s] = {};
-                continue;
-            }
-            const double midi = 69.0 + 12.0 * std::log2 (hz / 440.0);
-            const double held = lanes != nullptr ? (*lanes)[s].note : -1.0;
-            const double note = targetNote (midi, choice, held);
-            double shown = note;
-            if (lanes != nullptr)
-            {
-                auto& lane = (*lanes)[s];
-                shown = lane.shown < 0.0 ? note : lane.shown + glide * (note - lane.shown);
-                lane.note = note;
-                lane.shown = shown;
-            }
-            const double snapped = 440.0 * std::pow (2.0, (shown - 69.0) / 12.0);
-            out[s][3] = -2.0 * radius * std::cos (2.0 * kPi * snapped / fs);
-        }
-        return out;
     }
 
     static double glideFor (int samples, double fs) noexcept
