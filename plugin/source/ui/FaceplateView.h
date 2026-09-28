@@ -138,11 +138,11 @@ public:
     {
         if (well.isEmpty())
             return;
-        const float castH = 10.0f;
+        const float castH = 8.0f;
         const float cx = well.getCentreX();
         const float overlap = 1.5f;
         const float cy = well.getBottom() - overlap;
-        const float rx = well.getWidth() * 0.56f;
+        const float rx = well.getWidth() * 0.46f;
         {
         juce::Graphics::ScopedSaveState save (g);
         {
@@ -155,9 +155,8 @@ public:
         g.addTransform (juce::AffineTransform::scale (1.0f, (castH + overlap) / rx, cx, cy));
         juce::ColourGradient sh (juce::Colours::black.withAlpha (0.88f), cx, cy,
                                  juce::Colours::transparentBlack, cx + rx, cy, true);
-        sh.addColour (0.50, juce::Colours::black.withAlpha (0.74f));
-        sh.addColour (0.82, juce::Colours::black.withAlpha (0.52f));
-        sh.addColour (0.93, juce::Colours::black.withAlpha (0.24f));
+        sh.addColour (0.50, juce::Colours::black.withAlpha (0.62f));
+        sh.addColour (0.85, juce::Colours::black.withAlpha (0.22f));
         g.setGradientFill (sh);
         g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
         }
