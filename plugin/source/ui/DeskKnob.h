@@ -38,8 +38,10 @@ public:
 
     void updateTooltip()
     {
-        const auto role = label == "INPUT" ? "level into the filter" : "level out";
-        setTooltip (label + ": " + role + ", " + (driveParam != nullptr ? driveParam->getCurrentValueAsText() : juce::String()) + " dB");
+        const auto role = label == "INPUT" ? "gain before the filter; drives Mackity when SLAM is on" : "final gain after processing";
+        const auto help = juce::String (role) + ". Shift for fine adjustment; double-click to reset to 0 dB.";
+        setHelpText (help);
+        setTooltip (label + ": " + (driveParam != nullptr ? driveParam->getCurrentValueAsText() : juce::String()) + " dB. " + help);
     }
 
     juce::Rectangle<float> getLegendArea() const
@@ -93,7 +95,7 @@ public:
         const auto driveBox = legend.toNearestInt();
         g.setColour (t.labelInk());
         if (legendVisible)
-            g.drawText (draggingKnob ? juce::String (juce::roundToInt (drive * 100.0f)) + "%" : label,
+            g.drawText (draggingKnob && driveParam != nullptr ? driveParam->getCurrentValueAsText() + " dB" : label,
                     driveBox, juce::Justification::centred, false);
     }
 
@@ -115,7 +117,7 @@ public:
             driveAttachment->beginGesture();
             gestureOpen = true;
             dragStartY = e.position.y;
-            valueAtStart = getDrive();
+            dragValueDb = driveParam->convertFrom0to1 (getDrive());
             draggingKnob = true;
             e.source.enableUnboundedMouseMovement (true, false);
         }
@@ -126,11 +128,10 @@ public:
         if (! draggingKnob || driveAttachment == nullptr || driveParam == nullptr || e.mods.isPopupMenu())
             return;
 
-        const float travel = 100.0f;
-        const float fine = fineDragScale (e);
         const float dy = dragStartY - e.position.y;
-        const float next = juce::jlimit (0.0f, 1.0f, valueAtStart + (dy / travel) * fine);
-        driveAttachment->setValueAsPartOfGesture (driveParam->convertFrom0to1 (next));
+        dragStartY = e.position.y;
+        if (dy == 0.0f) return;
+        driveAttachment->setValueAsPartOfGesture (gainDragValue (*driveParam, dragValueDb, dy, e.mods.isShiftDown()));
         updateTooltip();
         repaint();
     }
@@ -156,12 +157,11 @@ public:
         }
     }
 
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
     {
         if (driveAttachment != nullptr && driveParam != nullptr)
         {
-            const float next = juce::jlimit (0.0f, 1.0f, getDrive() + wheel.deltaY * 0.05f);
-            driveAttachment->setValueAsCompleteGesture (driveParam->convertFrom0to1 (next));
+            adjustParamFromWheel (driveParam, e, wheel);
             updateTooltip();
             repaint();
         }
@@ -175,7 +175,7 @@ private:
     juce::String label;
     std::unique_ptr<juce::ParameterAttachment> driveAttachment;
     float dragStartY = 0.0f;
-    float valueAtStart = 0.0f;
+    float dragValueDb = 0.0f;
     bool draggingKnob = false;
     bool gestureOpen = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeskKnob)

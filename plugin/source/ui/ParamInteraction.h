@@ -4,12 +4,26 @@
 #include <memory>
 namespace trench::ui
 {
+inline bool isGainParameter (const juce::RangedAudioParameter* param)
+{
+    return param != nullptr && param->getLabel() == "dB";
+}
+inline float gainDragValue (juce::RangedAudioParameter& param, float& valueDb, float deltaY, bool fine)
+{
+    const auto& range = param.getNormalisableRange();
+    valueDb = juce::jlimit (range.start, range.end, valueDb + deltaY * (fine ? 0.02f : 0.2f));
+    const float next = ! fine && std::abs (valueDb) < 0.25f ? 0.0f : valueDb;
+    return range.snapToLegalValue (next);
+}
 inline bool adjustParamFromKey (juce::RangedAudioParameter* param, const juce::KeyPress& key)
 {
     if (param == nullptr) return false;
     const int code = key.getKeyCode();
     float next = param->getValue();
-    const float step = key.getModifiers().isShiftDown() ? 0.001f : 0.01f;
+    const bool fine = key.getModifiers().isShiftDown();
+    const float step = isGainParameter (param)
+        ? (fine ? 0.1f : 0.5f) / (param->getNormalisableRange().end - param->getNormalisableRange().start)
+        : (fine ? 0.001f : 0.01f);
     if (code == juce::KeyPress::leftKey || code == juce::KeyPress::downKey) next -= step;
     else if (code == juce::KeyPress::rightKey || code == juce::KeyPress::upKey) next += step;
     else if (code == juce::KeyPress::homeKey) next = 0.0f;
@@ -19,6 +33,24 @@ inline bool adjustParamFromKey (juce::RangedAudioParameter* param, const juce::K
     param->setValueNotifyingHost (juce::jlimit (0.0f, 1.0f, next));
     param->endChangeGesture();
     return true;
+}
+inline void adjustParamFromWheel (juce::RangedAudioParameter* param, const juce::MouseEvent& e,
+                                  const juce::MouseWheelDetails& wheel)
+{
+    if (param == nullptr || wheel.deltaY == 0.0f) return;
+    float next = param->getValue() + wheel.deltaY * 0.05f;
+    if (isGainParameter (param))
+    {
+        const bool fine = e.mods.isShiftDown();
+        const float delta = wheel.isSmooth ? wheel.deltaY * (fine ? 1.0f : 5.0f)
+                                          : std::copysign (fine ? 0.1f : 0.5f, wheel.deltaY);
+        const auto& range = param->getNormalisableRange();
+        const float db = range.snapToLegalValue (param->convertFrom0to1 (param->getValue()) + delta);
+        next = param->convertTo0to1 (db);
+    }
+    param->beginChangeGesture();
+    param->setValueNotifyingHost (juce::jlimit (0.0f, 1.0f, next));
+    param->endChangeGesture();
 }
 inline void resetParamToDefault (juce::RangedAudioParameter* p)
 {

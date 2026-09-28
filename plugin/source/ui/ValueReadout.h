@@ -149,7 +149,7 @@ public:
     void paint (juce::Graphics& g) override
     {
         const auto b = getLocalBounds().toFloat();
-        drawFrostedGlassControl (g, b, 3.0f, isActive || hasKeyboardFocus (true), t);
+        drawMutedBoneReadout (g, b, b.getHeight() * 0.17f, isActive || hasKeyboardFocus (true), t);
         const auto pct = juce::jlimit (0.0f, 1.0f, value) * 100.0f;
         const auto numeric = textOverride.isNotEmpty() ? textOverride
                            : isDecibels() ? juce::String (param->convertFrom0to1 (juce::jlimit (0.0f, 1.0f, value)), 1)
@@ -160,9 +160,8 @@ public:
         if (adjustCue)
             textArea = textArea.withTrimmedRight (7.0f);
 
-        g.setFont (displayFont (fs, true).withExtraKerningFactor (-0.035f));
-        g.setColour (juce::Colours::black);
-        g.drawText (numeric, textArea.toNearestInt(), juce::Justification::centred, false);
+        drawCrispText (g, textArea, numeric, fs,
+                       t.textColour (id, juce::Colour (0xff4a3520)));
         if (adjustCue && param != nullptr)
         {
             const float cxr = b.getRight() - 7.5f;

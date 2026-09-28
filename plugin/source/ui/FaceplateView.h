@@ -30,29 +30,6 @@ public:
                     data.setPixelColour (x, y, juce::Colour::fromFloatRGBA (lifted, lifted, lifted * 1.02f, c.getFloatAlpha()));
                 }
         }
-        if (panelImage.isValid() && t.themeParam ("plateGrain", 0.0) > 0.0)
-        {
-            panelImage = panelImage.createCopy();
-            juce::Image::BitmapData data (panelImage, juce::Image::BitmapData::readWrite);
-            juce::Random streak (1985);
-            std::vector<float> column ((size_t) data.width);
-            float slow = 0.0f;
-            for (auto& c : column)
-            {
-                slow = slow * 0.92f + (streak.nextFloat() * 2.0f - 1.0f) * 0.08f;
-                c = 0.018f * (streak.nextFloat() * 2.0f - 1.0f) + 0.05f * slow;
-            }
-            juce::Random speck (1987);
-            for (int y = 0; y < data.height; ++y)
-                for (int x = 0; x < data.width; ++x)
-                {
-                    const juce::Colour c = data.getPixelColour (x, y);
-                    const float k = 1.0f + column[(size_t) x] + 0.006f * (speck.nextFloat() * 2.0f - 1.0f);
-                    data.setPixelColour (x, y, juce::Colour::fromFloatRGBA (juce::jlimit (0.0f, 1.0f, c.getFloatRed() * k),
-                                                                            juce::jlimit (0.0f, 1.0f, c.getFloatGreen() * k),
-                                                                            juce::jlimit (0.0f, 1.0f, c.getFloatBlue() * k), c.getFloatAlpha()));
-                }
-        }
         setOpaque (false);
         setBufferedToImage (true);
         setInterceptsMouseClicks (false, false);
@@ -113,12 +90,6 @@ public:
 
         drawWheelContactShadow (g, t.rect ("morphWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
         drawWheelContactShadow (g, t.rect ("qWell").withTrimmedBottom (-1.35f).translated (1.0f, 0.0f));
-        for (const auto& [tile, radius] : seats)
-        {
-            juce::Path seat;
-            seat.addRoundedRectangle (tile, radius);
-            juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 4, { 0, 0 }).drawForPath (g, seat);
-        }
         if (! roomFrame.isEmpty())
         {
             g.setColour (juce::Colours::white.withAlpha (0.62f));
@@ -135,7 +106,6 @@ public:
     }
 
     void setRoomCaption (const juce::String& text) { roomCaption = text; repaint(); }
-    void setSeats (std::vector<std::pair<juce::Rectangle<float>, float>> tiles) { seats = std::move (tiles); repaint(); }
     void setRoomFrame (juce::Rectangle<float> frame, float gapX0, float gapX1)
     {
         if (frame != roomFrame || gapX0 != roomGapX0 || gapX1 != roomGapX1)
@@ -186,7 +156,6 @@ public:
     }
 private:
 
-    std::vector<std::pair<juce::Rectangle<float>, float>> seats;
     juce::Image panelImage;
     juce::Rectangle<float> roomFrame;
     float roomGapX0 = 0.0f, roomGapX1 = 0.0f;

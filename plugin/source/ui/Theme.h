@@ -117,7 +117,7 @@ struct Theme
 };
 
 inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r,
-                                     float radius, bool isActive, const Theme& t, float outlineAlpha = 0.35f, bool topGlint = true, bool bottomSkirt = false)
+                                     float radius, bool isActive, const Theme& t)
 {
         const auto face = r.reduced (0.35f);
     const auto warmth = juce::Colour (0xffe7edf5);
@@ -143,11 +143,8 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
         juce::Path clip;
         clip.addRoundedRectangle (body, juce::jmax (1.5f, faceRad - 1.2f));
         g.reduceClipRegion (clip);
-        if (topGlint)
-        {
-            g.setColour (juce::Colours::white.withAlpha (0.55f));
-            g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
-        }
+        g.setColour (juce::Colours::white.withAlpha (0.55f));
+        g.fillRect (body.getX() + 2.0f, body.getY() + 0.6f, body.getWidth() - 4.0f, 1.0f);
         juce::ColourGradient frost (juce::Colours::white.withAlpha (0.18f),
                                     0.0f, body.getY() + 1.6f,
                                     juce::Colours::transparentWhite,
@@ -159,13 +156,10 @@ inline void drawFrostedGlassControl (juce::Graphics& g, juce::Rectangle<float> r
                                     0.0f, body.getBottom() - 4.0f,
                                     juce::Colours::black.withAlpha (0.16f),
                                     0.0f, body.getBottom(), false);
-        if (bottomSkirt)
-        {
-            g.setGradientFill (skirt);
-            g.fillRect (body.getX(), body.getBottom() - 4.0f, body.getWidth(), 4.0f);
-        }
+        g.setGradientFill (skirt);
+        g.fillRect (body.getX(), body.getBottom() - 4.0f, body.getWidth(), 4.0f);
     }
-    g.setColour (juce::Colour (0xff2e2b26).withAlpha (outlineAlpha));
+    g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.80f));
     g.drawRoundedRectangle (face.reduced (0.35f),
                             juce::jmax (2.0f, radius - 1.5f), 0.9f);
     g.setColour (isActive ? t.accent().withAlpha (0.36f)
