@@ -245,8 +245,8 @@ public:
         const auto hole = wheelRect.reduced (kSideOverhang, 0.0f).withTrimmedTop (kDrumProud).withTrimmedBottom (kDrumBelow);
         const auto sil = silhouetteForHole (hole);
         const float sx = sil.getWidth() / (kSilX1 - kSilX0), sy = sil.getHeight() / (kSilY1 - kSilY0);
-        const auto frameRect = juce::Rectangle<float> { sil.getX() - kSilX0 * sx + 2.4f, sil.getY() - kSilY0 * sy + 2.0f,
-                                                 (float) fw * sx, (float) fh * sy }.expanded (0.5f);
+        const auto frameRect = juce::Rectangle<float> { sil.getX() - kSilX0 * sx + 3.4f, sil.getY() - kSilY0 * sy + 2.0f,
+                                                 (float) fw * sx, (float) fh * sy }.expanded (1.0f);
         shownFrameWidth = frameRect.getWidth();
         juce::Graphics::ScopedSaveState behind (g);
         {
