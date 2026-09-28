@@ -170,8 +170,8 @@ void PluginEditor::resized()
     labels->setBounds (base);
     graph->setBounds (rectOf ("spectrumGrid"));
     typeSelector->setBounds (rectOf ("typeSelector"));
-    morphWheel->setBounds (WheelControl::drumForHole (theme.rect ("morphWell")).getSmallestIntegerContainer());
-    secondaryWheel->setBounds (WheelControl::drumForHole (theme.rect ("qWell")).getSmallestIntegerContainer());
+    morphWheel->setOpening (theme.rect ("morphWell"));
+    secondaryWheel->setOpening (theme.rect ("qWell"));
     {
         const auto hole = theme.rect ("qWell");
         const auto value = theme.rect ("qReadout");

@@ -206,18 +206,14 @@ public:
         drawFrostedGlassControl (g, b, 3.0f, lit, t);
         const float chevronW = juce::jmin (20.0f, b.getHeight());
         const float divider = b.getRight() - chevronW;
-        g.setColour (juce::Colour (0xff2e2b26).withAlpha (0.35f));
-        g.fillRect (divider, b.getY() + 3.0f, 1.0f, b.getHeight() - 6.0f);
-        g.setColour (juce::Colours::white.withAlpha (0.35f));
-        g.fillRect (divider + 1.0f, b.getY() + 3.0f, 1.0f, b.getHeight() - 6.0f);
-        const auto ink = t.labelInk();
-        const float cx = divider + chevronW * 0.5f + 0.5f, cy = b.getCentreY();
-        juce::Path chevron;
-        chevron.startNewSubPath (cx - 3.5f, cy - 1.8f);
-        chevron.lineTo (cx, cy + 1.8f);
-        chevron.lineTo (cx + 3.5f, cy - 1.8f);
+        const auto ink = t.textColour ("typeName", juce::Colour (0xff1a1713));
+        const auto arrow = b.withLeft (divider).withSizeKeepingCentre (9.0f, 5.0f).translated (0.0f, 0.5f);
+        juce::Path arrowPath;
+        arrowPath.addTriangle (arrow.getX(), arrow.getY(), arrow.getRight(), arrow.getY(), arrow.getCentreX(), arrow.getBottom());
+        g.setColour (juce::Colours::white.withAlpha (0.40f));
+        g.fillPath (arrowPath, juce::AffineTransform::translation (0.0f, 1.0f));
         g.setColour (ink);
-        g.strokePath (chevron, juce::PathStrokeType (1.2f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
+        g.fillPath (arrowPath);
         g.setFont (displayFont (juce::jmin (13.0f, b.getHeight() * 0.68f), false));
         g.drawFittedText (displayText(), b.withRight (divider).reduced (6.0f, 0.0f).toNearestInt(),
                           juce::Justification::centredLeft, 1, 0.8f);

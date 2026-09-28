@@ -37,8 +37,8 @@ public:
         draw ("typeLabel",   t.text ("typeLabel",   "BODY"), true, true);
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
-        draw ("inputLabel",  t.text ("inputLabel",  ""), true, false);
-        draw ("outputLabel", t.text ("outputLabel", ""), true, false);
+        draw ("inputLabel",  t.text ("inputLabel",  ""), true, true);
+        draw ("outputLabel", t.text ("outputLabel", ""), true, true);
         {
             const auto br = t.rect ("brandLabel");
             const float bfs = t.fontSize ("brandLabel", 16.5f);

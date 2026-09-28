@@ -51,7 +51,7 @@ public:
         layout.elements["outputKnob"]   = { { 473.3f, 1165.0f, 180.0f, 180.0f }, {}, {} };
         layout.elements["inputReadout"] = { { 202.3f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["outputReadout"] = { { 476.3f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["slamButton"]   = { { 384.3f, 1232.0f, 84.0f, 46.0f }, {}, {} };
+        layout.elements["slamButton"]   = { { 371.3f, 1229.0f, 110.0f, 52.0f }, {}, {} };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 
@@ -93,8 +93,8 @@ public:
         layout.params["curveDbTop"]        = 75.0;
         layout.params["curveDbBottom"]     = -75.0;
         layout.params["fontBold"]          = 1.0;
-        layout.params["gridBoost"]         = 2.0;
-        layout.colours["gridTint"]           = juce::Colour (0xff243038);
+        layout.params["gridBoost"]         = 2.5;
+        layout.colours["gridTint"]           = juce::Colour (0xffa0b4bc);
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {

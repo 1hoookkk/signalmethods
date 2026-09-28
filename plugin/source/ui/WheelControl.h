@@ -62,6 +62,13 @@ public:
         repaint();
     }
 
+    void setOpening (juce::Rectangle<float> openingInParent)
+    {
+        setBounds (drumForHole (openingInParent).getSmallestIntegerContainer());
+        opening = openingInParent - getPosition().toFloat();
+        repaint();
+    }
+
     void setDisplayOverride (bool active, float normalised)
     {
         normalised = juce::jlimit (0.0f, 1.0f, normalised);
@@ -216,14 +223,16 @@ public:
         const auto hole = wheelRect.reduced (kSideOverhang, 0.0f).withTrimmedTop (kDrumProud).withTrimmedBottom (kDrumBelow);
         const auto sil = silhouetteForHole (hole);
         const float sx = sil.getWidth() / (kSilX1 - kSilX0), sy = sil.getHeight() / (kSilY1 - kSilY0);
-        const auto frameRect = juce::Rectangle<float> { sil.getX() - kSilX0 * sx + 3.4f, sil.getY() - kSilY0 * sy + 2.0f,
+        auto frameRect = juce::Rectangle<float> { sil.getX() - kSilX0 * sx + 3.4f, sil.getY() - kSilY0 * sy + 2.0f,
                                                  (float) fw * sx, (float) fh * sy }.expanded (1.0f);
+        if (! opening.isEmpty())
+            frameRect.setY (opening.getY() - kSilY0 * sy);
         shownFrameWidth = frameRect.getWidth();
         juce::Graphics::ScopedSaveState behind (g);
         {
-            juce::Path opening;
-            opening.addRoundedRectangle (hole, kOpeningCorner);
-            g.reduceClipRegion (opening);
+            juce::Path clip;
+            clip.addRoundedRectangle (opening.isEmpty() ? hole : opening, kOpeningCorner);
+            g.reduceClipRegion (clip);
         }
 
         g.setOpacity (1.0f);
@@ -275,6 +284,7 @@ public:
     }
 
 private:
+    juce::Rectangle<float> opening;
     juce::Image scaledFrame;
     float shownFrameWidth = 0.0f;
     int scaledIndex = -1;
