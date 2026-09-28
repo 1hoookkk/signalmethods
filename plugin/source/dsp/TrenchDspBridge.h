@@ -2,7 +2,6 @@
 #include "DeskDrive.h"
 #include "DriveLaw.h"
 #include "KeySnap.h"
-#include "QSoundStage.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -30,7 +29,6 @@ struct TrenchParams
     float morph = 0.0f;
     float q = 0.0f;
     int keySnap = 0;
-    bool fiveD = false;
     float poleDistortion = 0.0f;
     float biteAxis = 0.0f;
     bool noteLatched = false;
@@ -123,7 +121,6 @@ public:
         inputGain.setCurrentAndTargetValue (1.0f);
         outputGain.reset (sampleRateHz, 0.005);
         outputGain.setCurrentAndTargetValue (1.0f);
-        qSound.prepare (sampleRateHz);
         preDeskL.prepare (sampleRateHz);
         preDeskR.prepare (sampleRateHz);
         for (auto* desk : { &preDeskL, &preDeskR })
@@ -294,7 +291,6 @@ public:
         const int samples = buffer.getNumSamples();
         if (channels <= 0 || samples <= 0)
             return;
-        qSound.setEnabled (params.fiveD);
 #if TRENCH_DEV_PANEL
         const double keyRatio = calibrationValid && calibrationValues[trench::calibration::indexOf ("cal_note_track")] > 0.5f
                                     ? transposeRatio (params.noteLatched, params.noteTrackRatio, 0) : 1.0;
@@ -464,10 +460,7 @@ public:
                 const float level = outputGain.getNextValue();
                 outL[sample] = outputStage (postDeskL, postClip (outL[sample])) * level;
                 if (outR != nullptr)
-                {
                     outR[sample] = outputStage (postDeskR, postClip (outR[sample])) * level;
-                    qSound.process (outL[sample], outR[sample]);
-                }
                 caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
 #if TRENCH_DEV_PANEL
                     postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
@@ -536,6 +529,8 @@ public:
     }
 
     void setInputMode (int) noexcept {}
+    void setSpatialMode (int) noexcept {}
+    void setQSoundFallbackPan (float) noexcept {}
     double takePeakState() noexcept { return std::max (left.take_peak_state(), right.take_peak_state()); }
     void setSaturationEnabled (bool enabled) noexcept { bypass.saturate = enabled; }
 
@@ -675,7 +670,6 @@ private:
     juce::SmoothedValue<float> inputGain { 1.0f };
     juce::SmoothedValue<float> outputGain { 1.0f };
     trench::DeskDrive preDeskL, preDeskR;
-    trench::QSoundStage qSound;
     static constexpr double kSlamInTrim = 0.4;
     static constexpr double kSlamOutPad = 0.5;
     float caughtFraction = 0.0f;

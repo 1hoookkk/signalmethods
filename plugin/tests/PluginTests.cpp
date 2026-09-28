@@ -2,7 +2,6 @@
 #include "DriveSlamTests.h"
 #include "DriveLawTests.h"
 #include "FrontendTests.h"
-#include "FiveDTests.h"
 #include "ModulationTimingTests.h"
 #include "UserMotionTests.h"
 #include "PluginEditor.h"
@@ -109,7 +108,6 @@ int main()
     failures += driveSlamTests();
     failures += driveLawTests();
     failures += frontendTests();
-    failures += fiveDTests();
     failures += modulationTimingTests();
     failures += userMotionTests();
 
