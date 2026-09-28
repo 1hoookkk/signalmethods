@@ -33,6 +33,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 #endif
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
+    if (strip.isValid())
+    {
+        strip = strip.createCopy();
+        juce::Image::BitmapData data (strip, juce::Image::BitmapData::readWrite);
+        for (int y = 0; y < data.height; ++y)
+            for (int x = 0; x < data.width; ++x)
+                data.setPixelColour (x, y, data.getPixelColour (x, y).withMultipliedSaturation (0.82f));
+    }
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
