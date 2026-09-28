@@ -176,7 +176,7 @@ void PluginEditor::resized()
         const auto hole = theme.rect ("qWell");
         const auto value = theme.rect ("qReadout");
         const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f,
-                                                  value.getRight() - hole.getX(), value.getHeight());
+                                                  hole.getWidth(), value.getHeight());
         modulationChip->setBounds (chip.getSmallestIntegerContainer());
         const float left = hole.getX();
         const float right = value.getRight();
