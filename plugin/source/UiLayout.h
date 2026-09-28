@@ -43,21 +43,21 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 123.0f, 1120.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
-        layout.elements["inputLabel"].text = "INPUT";
-        layout.elements["outputLabel"]  = { { 397.0f, 1120.0f, 200.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
-        layout.elements["outputLabel"].text = "OUTPUT";
-        layout.elements["inputKnob"]    = { { 133.0f, 1165.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["outputKnob"]   = { { 407.0f, 1165.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 136.0f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["outputReadout"] = { { 410.0f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["slamButton"]   = { { 318.0f, 1232.0f, 84.0f, 46.0f }, {}, {} };
+        layout.elements["inputLabel"]   = { { 159.3f, 1120.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"].text = "INPUT (dB)";
+        layout.elements["outputLabel"]  = { { 433.3f, 1120.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"].text = "OUTPUT (dB)";
+        layout.elements["inputKnob"]    = { { 199.3f, 1165.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 473.3f, 1165.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 202.3f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["outputReadout"] = { { 476.3f, 1307.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["slamButton"]   = { { 384.3f, 1232.0f, 84.0f, 46.0f }, {}, {} };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        juce::Colour lamp (0xff85cdb4);
-        juce::Colour trace (0xffaedbca);
+        juce::Colour lamp (0xff44dede);
+        juce::Colour trace (0xe6b5ffff);
         if (const char* accent = std::getenv ("TRENCH_ACCENT"))
         {
             const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");
@@ -70,16 +70,16 @@ public:
         layout.colours["accent"]             = lamp;
         layout.colours["curveColour"]        = trace;
         layout.colours["curveHighlight"]     = trace;
-        layout.colours["telemetry"]          = juce::Colour (0xff5d8079);
-        layout.colours["dashed"]             = juce::Colour (0xff5d8079);
+        layout.colours["telemetry"]          = juce::Colour (0xff5d8080);
+        layout.colours["dashed"]             = juce::Colour (0xff5d8080);
         layout.colours["rollerIllumination"] = lamp;
         layout.colours["modulationLamp"]     = lamp;
-        layout.colours["phosphor"]           = juce::Colour (0xffa8cbbc);
+        layout.colours["phosphor"]           = juce::Colour (0xffa8cbcb);
 
         layout.colours["amber"]              = juce::Colour (0xffb8862e);
         layout.colours["screenEdge"]         = juce::Colour (0xff171325);
 
-        layout.colours["spectrumGhost"]      = juce::Colour (0xff8fd8bd);
+        layout.colours["spectrumGhost"]      = juce::Colour (0xff8fd8d8);
         layout.colours["glassTop"]           = juce::Colour (0xff070b0e);
         layout.colours["glassBottom"]        = juce::Colour (0xff020405);
         layout.colours["labelInk"]    = juce::Colour (0xff1e262c);

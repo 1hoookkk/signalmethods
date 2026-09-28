@@ -211,7 +211,16 @@ private:
         const int n = juce::jmax (1, (int) rows.size());
         columns = juce::jlimit (1, 3, (n + maxPerColumn - 1) / maxPerColumn);
         perColumn = (n + columns - 1) / columns;
-        const float maxW = (float) faceWidth - 24.0f;
+        const auto orphanHeading = [this, n]
+        {
+            for (int end = perColumn; end < n; end += perColumn)
+                if (rows[(size_t) end - 1].heading)
+                    return true;
+            return false;
+        };
+        while (columns > 1 && perColumn < maxPerColumn && orphanHeading())
+            ++perColumn;
+        const float maxW = (float) faceWidth - 8.0f;
         if (columnW * (float) columns > maxW)
             columnW = maxW / (float) columns;
     }

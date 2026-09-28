@@ -33,7 +33,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 #endif
     if (const char* override = std::getenv ("TRENCH_WHEEL_STRIP"))
         strip = juce::ImageFileFormat::loadFrom (juce::File (juce::String::fromUTF8 (override)));
-    strip = WheelControl::tintLamp (strip, theme.rollerIllumination());
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
     graph = std::make_unique<GraphDisplay> (theme, processor.apvts, juce::String());
@@ -179,8 +178,8 @@ void PluginEditor::resized()
         const auto chip = juce::Rectangle<float> (hole.getX(), hole.getBottom() + 20.0f,
                                                   value.getRight() - hole.getX(), value.getHeight());
         modulationChip->setBounds (chip.getSmallestIntegerContainer());
-        const float left = hole.getX() - 10.0f;
-        const float right = theme.rect ("outputReadout").getRight() + 30.0f;
+        const float left = hole.getX();
+        const float right = value.getRight();
         const float top = chip.getBottom() + 12.0f;
         const float bottom = theme.rect ("outputReadout").getBottom() + 10.0f;
         faceplate->setRoomCaption ("GAIN");
@@ -258,8 +257,8 @@ void PluginEditor::onFrame()
         const auto names = trench::axisNamesForBody (processor.getLoadedBodyIndex());
         const auto follows = [this] (const char* id) { auto* v = processor.apvts.getRawParameterValue (id); return v != nullptr && v->load() > 0.5f; };
         const auto tag = juce::String (juce::CharPointer_UTF8 (" \xc2\xb7 FOLLOW"));
-        labels->setRailLabels (juce::String (names.morph) + (follows ("cal_follow_1") ? tag : juce::String()),
-                               juce::String (names.q) + (follows ("cal_follow_2") ? tag : juce::String()));
+        labels->setRailLabels (juce::String (names.morph) + " (%)" + (follows ("cal_follow_1") ? tag : juce::String()),
+                               juce::String (names.q) + " (%)" + (follows ("cal_follow_2") ? tag : juce::String()));
     }
     const auto read = [this] (const char* paramID)
     {

@@ -32,7 +32,7 @@ public:
             g.setFont (displayFont (fs, strong));
             const auto just = centred ? juce::Justification::centred : juce::Justification::centredLeft;
             g.setColour (t.textColour (id, t.labelInk()).withMultipliedAlpha (alpha));
-            g.drawFittedText (text.toUpperCase(), r.toNearestInt(), just, 1);
+            g.drawFittedText (text.upToFirstOccurrenceOf (" (", false, false).toUpperCase() + text.fromFirstOccurrenceOf (" (", true, false), r.toNearestInt(), just, 1);
         };
         draw ("typeLabel",   t.text ("typeLabel",   "BODY"), true, true);
         draw ("morphLabel",  railUpper, true, true);
