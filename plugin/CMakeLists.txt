@@ -97,6 +97,7 @@ set(TRENCH_PLUGIN_SOURCES
   source/dsp/KeyDetector.h source/dsp/KeyDetector.cpp
   source/dsp/Movement.h source/dsp/SlamStage.h source/dsp/DeskDrive.h source/dsp/TransientDetector.h
   source/dsp/TrenchCleanBody.h source/dsp/TrenchDspBridge.h
+  source/dsp/QSoundStage.h
   source/dsp/TrenchRuntimePreset.h source/dsp/FuncGenPatterns.h
   source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/ModulationChip.h
   source/ui/ParamInteraction.h
