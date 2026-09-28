@@ -5,8 +5,6 @@
 #include <stdexcept>
 #include "CalibrationAudition.h"
 #include "dsp/Movement.h"
-#include "dsp/QSoundStage.h"
-#include <juce_audio_formats/juce_audio_formats.h>
 
 namespace
 {
@@ -522,52 +520,6 @@ int main (int argc, char** argv)
             const double untracked = difference (noted (false, 60), noted (false, 72));
             std::printf ("note tracking: an octave up changes the output by %.6f when on, %.6f when off\n", tracked, untracked);
             require (tracked > 1.0e-3 && untracked == 0.0, "MIDI note tracking transposes the filter only when switched on");
-        }
-        {
-            juce::AudioFormatManager formats;
-            formats.registerBasicFormats();
-            const auto fixture = juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("evidence/authoring/captures/qsound/qcreator_qright90_impulse_11025.wav");
-            std::unique_ptr<juce::AudioFormatReader> reader (formats.createReaderFor (fixture));
-            require (reader != nullptr && reader->numChannels == 2 && reader->sampleRate == 11025.0, "QSound +90 vendor fixture");
-            juce::AudioBuffer<float> vendor (2, 24);
-            reader->read (&vendor, 0, 24, 30000, true, true);
-            trench::QSoundStage stage;
-            stage.prepare (11025.0);
-            stage.setEnabled (true);
-            for (int i = 0; i < 1000; ++i) { float l = 0.0f, r = 0.0f; stage.process (l, r); }
-            double worstError = 0.0;
-            for (int i = 0; i < 24; ++i)
-            {
-                float l = 0.0f, r = i == 0 ? 0.5f : 0.0f;
-                stage.process (l, r);
-                worstError = std::max ({ worstError, (double) std::abs (l - vendor.getSample (0, i)), (double) std::abs (r - vendor.getSample (1, i)) });
-            }
-            std::printf ("QSound pair: largest difference from the QCreator +90 render over 24 samples %.3g\n", worstError);
-            require (worstError < 1.0 / 32768.0, "QSound pair reproduces the QCreator +90 impulse render");
-            const auto qsoundRender = [&] (bool on)
-            {
-                TrenchDspBridge bridge;
-                bridge.prepare (48000, 512);
-                require (bridge.loadCartridgeBytes (body()), "QSound body loads");
-                auto v = trench::calibration::defaults();
-                v[trench::calibration::indexOf ("cal_qsound")] = on ? 1.0f : 0.0f;
-                bridge.applyCalibration (v);
-                TrenchParams params;
-                juce::AudioBuffer<float> audio (2, 512);
-                juce::Random noise (11);
-                std::vector<float> out;
-                for (int k = 0; k < 30; ++k)
-                {
-                    for (int i = 0; i < 512; ++i) { audio.setSample (0, i, 0.3f * (noise.nextFloat() * 2.0f - 1.0f)); audio.setSample (1, i, 0.3f * (noise.nextFloat() * 2.0f - 1.0f)); }
-                    bridge.process (audio, params);
-                    if (k >= 10) out.insert (out.end(), audio.getReadPointer (1), audio.getReadPointer (1) + 512);
-                }
-                return out;
-            };
-            const double qsoundOff = difference (qsoundRender (false), qsoundRender (false));
-            const double qsoundOn = difference (qsoundRender (false), qsoundRender (true));
-            std::printf ("QSound pair: output change when on %.6f, between two off renders %.6f\n", qsoundOn, qsoundOff);
-            require (qsoundOn > 1.0e-3 && qsoundOff == 0.0, "QSound pair changes the Dev output only when switched on");
         }
         {
             const auto worst = [] (int flipEvery, float still)

@@ -2,9 +2,6 @@
 #include "DeskDrive.h"
 #include "DriveLaw.h"
 #include "KeySnap.h"
-#if TRENCH_DEV_PANEL
-#include "QSoundStage.h"
-#endif
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -119,7 +116,6 @@ public:
         sampleRateHz = sampleRate > 0.0 ? sampleRate : 48'000.0;
 #if TRENCH_DEV_PANEL
         calibrationValid = false;
-        qSound.prepare (sampleRateHz);
 #endif
         inputGain.reset (sampleRateHz, 0.005);
         inputGain.setCurrentAndTargetValue (1.0f);
@@ -298,7 +294,6 @@ public:
 #if TRENCH_DEV_PANEL
         const double keyRatio = calibrationValid && calibrationValues[trench::calibration::indexOf ("cal_note_track")] > 0.5f
                                     ? transposeRatio (params.noteLatched, params.noteTrackRatio, 0) : 1.0;
-        qSound.setEnabled (calibrationValid && calibrationValues[trench::calibration::indexOf ("cal_qsound")] > 0.5f);
 #else
         const double keyRatio = 1.0;
 #endif
@@ -466,10 +461,6 @@ public:
                 outL[sample] = outputStage (postDeskL, postClip (outL[sample])) * level;
                 if (outR != nullptr)
                     outR[sample] = outputStage (postDeskR, postClip (outR[sample])) * level;
-#if TRENCH_DEV_PANEL
-                if (outR != nullptr)
-                    qSound.process (outL[sample], outR[sample]);
-#endif
                 caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
 #if TRENCH_DEV_PANEL
                     postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
@@ -688,7 +679,6 @@ private:
 #if TRENCH_DEV_PANEL
     trench::calibration::Values calibrationValues = trench::calibration::defaults();
     bool calibrationValid = false;
-    trench::QSoundStage qSound;
     bool postClipOn = false;
     float postClipKnee = trench::kGuardLinearZone;
     float postClipCeiling = trench::kFinalSafetyCeiling;
