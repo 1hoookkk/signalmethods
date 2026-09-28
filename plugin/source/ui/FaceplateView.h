@@ -143,6 +143,7 @@ public:
         const float overlap = 1.5f;
         const float cy = well.getBottom() - overlap;
         const float rx = well.getWidth() * 0.48f;
+        {
         juce::Graphics::ScopedSaveState save (g);
         g.reduceClipRegion (juce::Rectangle<int> ((int) well.getX(), (int) std::floor (cy),
                                                   (int) well.getWidth(), (int) (castH + overlap)));
@@ -153,6 +154,17 @@ public:
         sh.addColour (0.82, juce::Colours::black.withAlpha (0.26f));
         g.setGradientFill (sh);
         g.fillEllipse (cx - rx, cy - rx, rx * 2.0f, rx * 2.0f);
+        }
+        {
+            juce::Graphics::ScopedSaveState lipState (g);
+            const float lipRx = well.getWidth() * 0.58f, lipRy = 6.0f;
+            g.reduceClipRegion (juce::Rectangle<int> ((int) (cx - lipRx), (int) std::floor (cy), (int) (2.0f * lipRx), (int) lipRy + 1));
+            g.addTransform (juce::AffineTransform::scale (1.0f, lipRy / lipRx, cx, cy));
+            juce::ColourGradient lip (juce::Colours::black.withAlpha (0.75f), cx, cy, juce::Colours::transparentBlack, cx + lipRx, cy, true);
+            lip.addColour (0.88, juce::Colours::black.withAlpha (0.62f));
+            g.setGradientFill (lip);
+            g.fillEllipse (cx - lipRx, cy - lipRx, lipRx * 2.0f, lipRx * 2.0f);
+        }
     }
 private:
 
