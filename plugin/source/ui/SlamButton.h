@@ -23,8 +23,11 @@ public:
         lampOn = juce::ImageCache::getFromMemory (BinaryData::trench_slam_lamp_on_png, BinaryData::trench_slam_lamp_on_pngSize);
     }
     bool isOn() const noexcept { return param != nullptr && param->getValue() > 0.5f; }
+    void mouseDown (const juce::MouseEvent&) override { pressed = true; repaint(); }
     void mouseUp (const juce::MouseEvent& e) override
     {
+        pressed = false;
+        repaint();
         if (param == nullptr || attachment == nullptr || ! getLocalBounds().contains (e.position.toInt()))
             return;
         if (e.mods.isPopupMenu())
@@ -38,16 +41,23 @@ public:
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
     void paint (juce::Graphics& g) override
     {
-        const auto& lamp = isOn() ? lampOn : lampOff;
-        if (! lamp.isValid())
+        if (! lampOff.isValid() || ! lampOn.isValid())
             return;
+        auto area = getLocalBounds().toFloat();
+        if (pressed)
+            area = area.withSizeKeepingCentre (area.getWidth() * 0.94f, area.getHeight() * 0.94f).translated (0.0f, 0.6f);
         g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-        g.setOpacity (isMouseOver() && ! isOn() ? 0.88f : 1.0f);
-        g.drawImage (lamp, getLocalBounds().toFloat(), juce::RectanglePlacement::centred);
+        g.drawImage (isOn() ? lampOn : lampOff, area, juce::RectanglePlacement::centred);
+        if (! isOn() && isMouseOver())
+        {
+            g.setOpacity (0.35f);
+            g.drawImage (lampOn, area, juce::RectanglePlacement::centred);
+        }
     }
 private:
     Theme t;
     juce::Image lampOff, lampOn;
+    bool pressed = false;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SlamButton)

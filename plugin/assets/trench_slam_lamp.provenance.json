@@ -1,13 +1,13 @@
 {
   "job": "jobs\\slam_lamp_ruby.json",
-  "job_sha256": "16fc22f10858c4f26296afa90e6b14d3936eef24399b0a48345cfbd6d4135b7a",
+  "job_sha256": "4be143d682ba2c6ccef4c4c0ec9cf1e39558280693929dcc3554b487f5f82f54",
   "mesh": "sources\\traceparts\\2676_8073.stl",
   "mesh_sha256": "cdfb18afd6458c910e638b27e513d10f8befeb418259c3a29d07a71adedb5327",
   "blender": "5.0.1",
-  "rig_git": "74ff1db3",
+  "rig_git": "dcec1226",
   "preview": false,
   "supersample": 4,
-  "rendered_utc": "2026-09-28T11:27:23+00:00",
+  "rendered_utc": "2026-09-28T11:44:07+00:00",
   "outputs": [
     "slam_lamp_ruby_off.png",
     "slam_lamp_ruby_on.png"
