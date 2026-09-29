@@ -70,5 +70,8 @@ def add_primitive(spec):
     elif kind == "dome":
         bpy.ops.mesh.primitive_uv_sphere_add(radius=spec["radius"], location=(0, 0, spec["z"]), segments=64, ring_count=32)
         bpy.context.object.scale = (1.0, 1.0, spec.get("flatten", 1.0))
+    elif kind == "ring":
+        bpy.ops.mesh.primitive_torus_add(major_radius=spec["radius"], minor_radius=spec["width"] / 2.0, location=(0, 0, spec["z"]),
+                                         major_segments=128, minor_segments=16)
     bpy.ops.object.shade_smooth()
     return bpy.context.object

@@ -1,0 +1,17 @@
+﻿"Symbol";"Value";"Unit";
+"REFERENCE";"704.029.2_221cf6";"";
+"TraceParts.PartVersion";"1.0.8";"";
+"SUPPLIER";"eao";"";
+"Attr2";"Ø 22.3 mm";"";
+"Attr1";"Ø 29 mm";"";
+"Attr7";"Illuminated pushbutton raised, round, screw terminal";"";
+"Attr6";"Red";"";
+"Attr5";"Raised design";"";
+"Attr4";"round";"";
+"TraceParts.PartNumber";"90-29012020-058630";"";
+"Bestellnummer";"704.029.2";"";
+"DESIGN";"Illuminated pushbutton round, Front dimension: Ø 29 mm, Mounting cut-out: Ø 22.3 mm,";"";
+"TraceParts.InstanceId";"90-29012020-0586302N3XX9WWY2MK673V115V3T3RA";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.PartTitle";"Illuminated pushbutton round, Front dimension: Ø 29 mm, Mounting cut-out: Ø 22.3 mm,";"";
+"TRACEPARTS";"TRACEPARTS";"";
