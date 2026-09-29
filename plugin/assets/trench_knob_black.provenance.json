@@ -1,0 +1,15 @@
+{
+  "job": "jobs\\trench_knob_black.json",
+  "job_sha256": "b1aedaf506865d767606ca197760903e683b1f0f02b6f0c7d70e6a9de9c48976",
+  "mesh": "sources\\knob_rig\\trench_knob.stl",
+  "mesh_sha256": "ddfaf4bbebbdd8aa6fba04dcaa975189ceabc0638069b4d1dbcc250d7f580e36",
+  "blender": "5.2.2 LTS",
+  "rig_git": "cbee5540",
+  "preview": false,
+  "supersample": 4,
+  "rendered_utc": "2026-09-29T06:58:48+00:00",
+  "outputs": [
+    "trench_knob_black_shadow.png",
+    "trench_knob_black_default.png"
+  ]
+}

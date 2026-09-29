@@ -22,6 +22,7 @@ public:
         setWantsKeyboardFocus (true);
         setRepaintsOnMouseActivity (true);
         strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_black_strip_png, BinaryData::trench_knob_black_strip_pngSize);
+        shadow = juce::ImageCache::getFromMemory (BinaryData::trench_knob_black_shadow_png, BinaryData::trench_knob_black_shadow_pngSize);
         if (driveParam != nullptr)
             driveAttachment = std::make_unique<juce::ParameterAttachment> (*driveParam, [this] (float) { updateTooltip(); repaint(); });
         updateTooltip();
@@ -68,23 +69,17 @@ public:
 
         if (strip.isValid())
         {
-            {
-                const auto shade = juce::Colour (0xff2a1f12);
-                juce::ColourGradient cast (shade.withAlpha (0.42f), c.x + d * 0.06f, c.y + d * 0.10f,
-                                           shade.withAlpha (0.0f), c.x + d * 0.06f, c.y + d * 0.62f, true);
-                g.setGradientFill (cast);
-                g.fillEllipse (c.x - d * 0.54f + d * 0.06f, c.y - d * 0.54f + d * 0.10f, d * 1.08f, d * 1.08f);
-            }
             constexpr int frameSize = 96, frameCount = 61;
             const int frame = juce::jlimit (0, frameCount - 1,
                                             juce::roundToInt ((1.0f - drive) * (float) (frameCount - 1)));
-            const float frameD = d * (96.0f / 76.0f);
+            const float frameD = d * (96.0f / 64.0f);
             g.setOpacity (1.0f);
             g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
             const float scale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
             const auto snap = [scale] (float v) { return std::round (v * scale) / scale; };
             const float x0 = snap (c.x - frameD * 0.5f), y0 = snap (c.y - frameD * 0.5f);
             const float side = snap (c.x + frameD * 0.5f) - x0;
+            g.drawImage (shadow, { x0, y0, side, side }, juce::RectanglePlacement::stretchToFit);
             g.drawImage (strip.getClippedImage ({ frame * frameSize, 0, frameSize, frameSize }),
                          { x0, y0, side, side }, juce::RectanglePlacement::stretchToFit);
         }
@@ -169,7 +164,7 @@ public:
 
 private:
     bool legendVisible = true;
-    juce::Image strip;
+    juce::Image strip, shadow;
     Theme t;
     juce::RangedAudioParameter* driveParam = nullptr;
     juce::String label;

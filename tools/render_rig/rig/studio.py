@@ -73,6 +73,15 @@ def _softbox(scene, spec):
     return card
 
 
+def shadow_catcher(z, frame_mm):
+    bpy.ops.mesh.primitive_plane_add(size=frame_mm * 4.0, location=(0.0, 0.0, z))
+    plane = bpy.context.object
+    plane.name = "rig_shadow_catcher"
+    plane.is_shadow_catcher = True
+    plane.hide_render = True
+    return plane
+
+
 def build(frame_mm, pixels, overrides=None):
     cfg = dict(STUDIO, **(overrides or {}))
     scene = bpy.context.scene

@@ -21,6 +21,7 @@ public:
             attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
         lampOff = juce::ImageCache::getFromMemory (BinaryData::trench_slam_lamp_off_png, BinaryData::trench_slam_lamp_off_pngSize);
         lampOn = juce::ImageCache::getFromMemory (BinaryData::trench_slam_lamp_on_png, BinaryData::trench_slam_lamp_on_pngSize);
+        shadow = juce::ImageCache::getFromMemory (BinaryData::trench_slam_lamp_shadow_png, BinaryData::trench_slam_lamp_shadow_pngSize);
     }
     bool isOn() const noexcept { return param != nullptr && param->getValue() > 0.5f; }
     void mouseDown (const juce::MouseEvent&) override { pressed = true; repaint(); }
@@ -44,9 +45,10 @@ public:
         if (! lampOff.isValid() || ! lampOn.isValid())
             return;
         auto area = getLocalBounds().toFloat();
+        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
+        g.drawImage (shadow, area, juce::RectanglePlacement::centred);
         if (pressed)
             area = area.withSizeKeepingCentre (area.getWidth() * 0.94f, area.getHeight() * 0.94f).translated (0.0f, 0.6f);
-        g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
         g.drawImage (isOn() ? lampOn : lampOff, area, juce::RectanglePlacement::centred);
         if (! isOn() && isMouseOver())
         {
@@ -56,7 +58,7 @@ public:
     }
 private:
     Theme t;
-    juce::Image lampOff, lampOn;
+    juce::Image lampOff, lampOn, shadow;
     bool pressed = false;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;

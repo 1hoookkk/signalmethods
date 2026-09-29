@@ -6,12 +6,7 @@
     "keep_front_of": 0.0,
     "materials": [
       {
-        "material": "led_glass",
-        "axial_min": 2.4,
-        "radius_max": 5.3
-      },
-      {
-        "material": "satin_nickel"
+        "material": "led_glass"
       }
     ],
     "smooth_angle_deg": 80.0

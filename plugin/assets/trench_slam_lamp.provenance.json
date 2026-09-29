@@ -1,14 +1,15 @@
 {
   "job": "jobs\\slam_button_ruby.json",
-  "job_sha256": "0cc15f73cb2a6fbfaf104d4b085d3e84501f5320b2490bd88a708aa03e749636",
+  "job_sha256": "6573084ecf7424178a4ee30b6bc7b5ae07b47ea7d484abde3d548a5df4050c52",
   "mesh": "sources\\traceparts\\704_029_2_domed.glb",
   "mesh_sha256": "71a29543faf78965a615a54f3d62b96998bbadf345b443d6e904e999750ade4f",
   "blender": "5.2.2 LTS",
-  "rig_git": "f614bb6e",
+  "rig_git": "cbee5540",
   "preview": false,
   "supersample": 4,
-  "rendered_utc": "2026-09-29T06:18:35+00:00",
+  "rendered_utc": "2026-09-29T07:00:13+00:00",
   "outputs": [
+    "slam_button_ruby_shadow.png",
     "slam_button_ruby_off.png",
     "slam_button_ruby_on.png"
   ]

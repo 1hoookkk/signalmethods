@@ -11,6 +11,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import bpy
+from mathutils import Quaternion
 from rig import materials, meshes, post, studio
 
 
@@ -50,18 +51,49 @@ def build_scene(job, job_dir):
     mesh_path = os.path.normpath(os.path.join(job_dir, job["mesh"]))
     obj = meshes.prepare(meshes.load(mesh_path), job["part"])
     extras = [meshes.add_primitive(e) for e in job.get("extras", [])]
-    return scene, obj, extras, mesh_path, ss
+    catcher = studio.shadow_catcher(job["shadow"]["z"], job["frame_mm"]) if "shadow" in job else None
+    return scene, obj, extras, catcher, mesh_path, ss
 
 
 def apply_state(job, obj, extras, state):
     merged = dict(led_colour=job.get("led_colour", "#44DEDE"), lens_off_colour=job.get("lens_off_colour"), **state)
-    obj.data.materials.clear()
-    for rule in job["part"]["materials"]:
-        obj.data.materials.append(materials.resolve(rule, merged))
+    for index, rule in enumerate(job["part"]["materials"]):
+        if index < len(obj.data.materials):
+            obj.data.materials[index] = materials.resolve(rule, merged)
+        else:
+            obj.data.materials.append(materials.resolve(rule, merged))
     for spec, e in zip(job.get("extras", []), extras):
         e.data.materials.clear()
         e.data.materials.append(materials.resolve(spec, merged))
     return merged
+
+
+def render_shadow(scene, path, casters, catcher, spec):
+    background = next(n for n in scene.world.node_tree.nodes if n.type == "BACKGROUND")
+    key = bpy.data.objects["rig_key"]
+    others = [o for o in scene.objects if o.type == "LIGHT" and o is not key]
+    strength = background.inputs["Strength"].default_value
+    placement = key.location.copy(), key.rotation_euler.copy(), key.data.size
+    background.inputs["Strength"].default_value = 0.0
+    key.location, key.rotation_euler, key.data.size = spec["light"]["location"], (0.0, 0.0, 0.0), spec["light"]["size"]
+    for o in others:
+        o.hide_render = True
+    for o in casters:
+        o.visible_camera = False
+    catcher.hide_render = False
+    scene.render.filepath = path
+    bpy.ops.render.render(write_still=True)
+    catcher.hide_render = True
+    for o in casters:
+        o.visible_camera = True
+    for o in others:
+        o.hide_render = False
+    key.location, key.rotation_euler, key.data.size = placement
+    background.inputs["Strength"].default_value = strength
+    shadow = post.read(path)
+    shadow[..., :3] = 0.0
+    shadow[..., 3] = post.blur(shadow[..., 3], spec.get("blur_mm", 0.0) * scene.render.resolution_x / scene.camera.data.ortho_scale) * spec.get("opacity", 1.0)
+    return shadow
 
 
 def render_frame(scene, path, ss, merged):
@@ -84,8 +116,13 @@ def main():
     out_dir = os.path.abspath(os.path.join(a.out, job["name"]))
     raw_dir = os.path.join(out_dir, "raw")
     os.makedirs(raw_dir, exist_ok=True)
-    scene, obj, extras, mesh_path, ss = build_scene(job, os.path.dirname(job_path))
+    scene, obj, extras, catcher, mesh_path, ss = build_scene(job, os.path.dirname(job_path))
     written = []
+    if catcher:
+        shadow = render_shadow(scene, os.path.join(raw_dir, "shadow.png"), [obj, *extras], catcher, job["shadow"])
+        target = os.path.join(out_dir, f"{job['name']}_shadow.png")
+        post.write(target, post.downsample(shadow, ss))
+        written.append(target)
     for name, state in job.get("states", {"default": {}}).items():
         merged = apply_state(job, obj, extras, state)
         strip_spec = job.get("filmstrip")
@@ -94,7 +131,10 @@ def main():
             for i in range(strip_spec["frames"]):
                 t = i / max(1, strip_spec["frames"] - 1)
                 angle = math.radians(strip_spec["start_deg"] + t * strip_spec["sweep_deg"])
-                obj.delta_rotation_euler = (0.0, 0.0, -angle)
+                axis, sign = meshes.AXES[job["part"]["front"]]
+                front = [0.0, 0.0, 0.0]
+                front[axis] = float(sign)
+                obj.delta_rotation_quaternion = Quaternion(front, -angle)
                 frames.append(render_frame(scene, os.path.join(raw_dir, f"{name}_{i:03d}.png"), ss, merged))
             final = post.strip(frames)
         else:

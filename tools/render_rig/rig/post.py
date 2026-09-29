@@ -21,7 +21,7 @@ def write(path, rgba):
     bpy.data.images.remove(img)
 
 
-def _blur(a, radius):
+def blur(a, radius):
     sigma = max(radius / 2.0, 0.5)
     x = np.arange(-int(3 * sigma), int(3 * sigma) + 1)
     k = np.exp(-0.5 * (x / sigma) ** 2)
@@ -35,7 +35,7 @@ def glow(rgba, colour_srgb, radius_px, strength, threshold=0.55):
     lum = rgb.max(axis=2) * rgba[..., 3]
     chroma = rgb.max(axis=2) - rgb.min(axis=2)
     source = np.clip((lum - threshold) / (1.0 - threshold), 0.0, 1.0) * np.clip((chroma - 0.25) / 0.35, 0.0, 1.0)
-    halo = np.clip(_blur(source, radius_px) * strength, 0.0, 1.0)
+    halo = np.clip(blur(source, radius_px) * strength, 0.0, 1.0)
     col = np.asarray(colour_srgb, dtype=np.float32)
     a = rgba[..., 3:4]
     premul = rgb * a

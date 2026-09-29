@@ -1,0 +1,41 @@
+{
+  "name": "trench_knob_black",
+  "mesh": "../sources/knob_rig/trench_knob.stl",
+  "part": {
+    "front": "+z",
+    "materials": [
+      {
+        "material": "bone_plastic",
+        "axial_min": 15.01
+      },
+      {
+        "material": "black_plastic"
+      }
+    ],
+    "smooth_angle_deg": 30.0
+  },
+  "shadow": {
+    "z": 0.0,
+    "light": {
+      "location": [
+        0.0,
+        20.0,
+        200.0
+      ],
+      "size": 30.0
+    },
+    "blur_mm": 0.5,
+    "opacity": 0.55
+  },
+  "frame_mm": 30.0,
+  "pixels": 96,
+  "supersample": 4,
+  "filmstrip": {
+    "frames": 61,
+    "start_deg": 135.0,
+    "sweep_deg": -270.0
+  },
+  "studio": {
+    "hdri_rotation_deg": 45.0
+  }
+}

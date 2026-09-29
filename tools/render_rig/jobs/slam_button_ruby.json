@@ -32,6 +32,19 @@
       "material": "cavity"
     }
   ],
+  "shadow": {
+    "z": -6.72,
+    "light": {
+      "location": [
+        0.0,
+        20.0,
+        200.0
+      ],
+      "size": 30.0
+    },
+    "blur_mm": 0.8,
+    "opacity": 0.55
+  },
   "frame_mm": 50.0,
   "pixels": 128,
   "supersample": 4,
