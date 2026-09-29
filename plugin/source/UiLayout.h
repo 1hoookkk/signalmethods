@@ -43,16 +43,16 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 151.5f, 1225.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 151.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["inputLabel"].text = "INPUT (dB)";
-        layout.elements["outputLabel"]  = { { 401.5f, 1225.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"]  = { { 401.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["outputLabel"].text = "OUTPUT (dB)";
-        layout.elements["inputKnob"]    = { { 191.5f, 1270.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["outputKnob"]   = { { 441.5f, 1270.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 194.3f, 1412.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["outputReadout"] = { { 444.3f, 1412.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["slamButton"]   = { { 346.5f, 1100.0f, 120.0f, 120.0f }, {}, {} };
-        layout.elements["slamLabel"]    = { { 276.5f, 1073.0f, 260.0f, 38.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputKnob"]    = { { 191.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 441.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 194.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["outputReadout"] = { { 444.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["slamButton"]   = { { 346.5f, 1198.8f, 120.0f, 120.0f }, {}, {} };
+        layout.elements["slamLabel"]    = { { 346.5f, 1295.8f, 120.0f, 30.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["slamLabel"].text = "SLAM";
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
