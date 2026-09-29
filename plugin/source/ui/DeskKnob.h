@@ -72,7 +72,7 @@ public:
             constexpr int frameSize = 96, frameCount = 61;
             const int frame = juce::jlimit (0, frameCount - 1,
                                             juce::roundToInt ((1.0f - drive) * (float) (frameCount - 1)));
-            const float frameD = d * (96.0f / 64.0f);
+            const float frameD = d * (96.0f / 76.0f);
             g.setOpacity (1.0f);
             g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
             const float scale = juce::jmax (1.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
