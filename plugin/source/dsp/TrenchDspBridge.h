@@ -141,9 +141,10 @@ public:
         right.set_sample_rate (sampleRateHz);
         left.reset();
         right.reset();
-        smoothedMorph = -1.0f;
-        smoothedQ = -1.0f;
+        smoothedMorph = -1.0;
+        smoothedQ = -1.0;
         controlTick = juce::jmax (1, (int) std::lround (sampleRateHz * 88.0 / 44100.0));
+        sampleGlide = 1.0 - std::pow (1.0 - kControlGlide, 1.0 / (double) controlTick);
         fadeLeft.resize ((size_t) std::max (128, controlTick));
         fadeRight.resize (fadeLeft.size());
         bodyFadeLength = std::max (1, (int) std::lround (sampleRateHz * 0.010));
@@ -349,88 +350,11 @@ public:
         snapshot = &audioSnapshot;
         float* outL = buffer.getWritePointer (0);
         float* outR = channels > 1 ? buffer.getWritePointer (1) : nullptr;
-#if TRENCH_DEV_PANEL
-        const int kBlockSize = juce::jlimit (1, 128, (int) calibrationValues[1]);
-#else
         const int kBlockSize = controlTick;
-#endif
         for (int blockStart = 0; blockStart < samples; blockStart += kBlockSize)
         {
             const int blockLen = std::min (kBlockSize, samples - blockStart);
-            const int targetIdx = blockStart + blockLen - 1;
             const bool first = switched && blockStart == 0;
-            const float morphTarget = juce::jlimit (0.0f, 1.0f, morphPerSample[targetIdx]);
-            const float qTarget = juce::jlimit (0.0f, 1.0f, qPerSample != nullptr ? qPerSample[targetIdx] : params.q);
-            const float glide = 1.0f - (float) std::pow (1.0 - kControlGlide, (double) blockLen / (double) controlTick);
-            smoothedMorph = first || smoothedMorph < 0.0f ? morphTarget : smoothedMorph + glide * (morphTarget - smoothedMorph);
-            smoothedQ = first || smoothedQ < 0.0f ? qTarget : smoothedQ + glide * (qTarget - smoothedQ);
-            if (std::abs (morphTarget - smoothedMorph) < 1.0e-6f) smoothedMorph = morphTarget;
-            if (std::abs (qTarget - smoothedQ) < 1.0e-6f) smoothedQ = qTarget;
-            const float morph = smoothedMorph;
-            const float q = smoothedQ;
-            {
-                bool changed = first;
-                if (first || morph != cachedMorph || q != cachedQ)
-                {
-                    const auto words = snapshot->bank.interpolate_words (morph, q, 0.0f);
-                    if (first || words != cachedWords)
-                    {
-                        cachedWords = words;
-                        cachedBase = cascadeAt (words, snapshot->datumRate, sampleRateHz);
-                        changed = true;
-                    }
-                }
-                if (keyChoice != 0 && keyReferenceHz <= 0.0)
-                    keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz);
-                const double keyTarget = keyChoice != 0 ? trench::KeySnap::offsetSemitones (keyReferenceHz, keyChoice) : 0.0;
-                if (first)
-                    keyOffset = keyTarget;
-                else if (keyOffset != keyTarget)
-                {
-                    keyOffset += trench::KeySnap::glideFor (blockLen, sampleRateHz) * (keyTarget - keyOffset);
-                    if (std::abs (keyTarget - keyOffset) < 1.0e-4)
-                        keyOffset = keyTarget;
-                }
-                keyOffsetForUi.store ((float) keyOffset, std::memory_order_relaxed);
-                const double totalRatio = keyRatio * trench::core::ratio_of_semitones (keyOffset);
-                if (changed || totalRatio != cachedKeyRatio)
-                {
-                    cachedCascade = totalRatio != 1.0 ? trench::core::transpose_cascade (cachedBase, totalRatio, sampleRateHz) : cachedBase;
-                    changed = true;
-                }
-                cachedMorph = morph;
-                cachedQ = q;
-                cachedKeyRatio = totalRatio;
-                heardCascade = cachedCascade;
-                if (changed)
-                {
-#if TRENCH_DEV_PANEL
-                    if (first || calibrationValues[2] < 0.5f)
-                    {
-                        left.set_immediate (heardCascade);
-                        right.set_immediate (heardCascade);
-                    }
-                    else
-#else
-                    if (first)
-                    {
-                        left.set_immediate (heardCascade);
-                        right.set_immediate (heardCascade);
-                    }
-                    else
-#endif
-                    {
-                        const auto encoded = trench::core::encode_cascade (heardCascade);
-                        left.set_target (encoded, (size_t) blockLen);
-                        right.set_target (encoded, (size_t) blockLen);
-                    }
-                }
-                else
-                {
-                    left.zero_kernel_deltas();
-                    right.zero_kernel_deltas();
-                }
-            }
             for (int s = 0; s < blockLen; ++s)
             {
                 const int sample = blockStart + s;
@@ -466,12 +390,70 @@ public:
                     outgoingRight.process (std::span<float> (fadeRight.data(), (size_t) fadeSamples));
                 }
             }
-            left.process (std::span<float> (outL + blockStart, (size_t) blockLen));
-            if (outR != nullptr)
-                right.process (std::span<float> (outR + blockStart, (size_t) blockLen));
             for (int s = 0; s < blockLen; ++s)
             {
                 const int sample = blockStart + s;
+                const bool snapNow = first && s == 0;
+                const double morphTarget = juce::jlimit (0.0, 1.0, (double) morphPerSample[sample]);
+                const double qTarget = juce::jlimit (0.0, 1.0, (double) (qPerSample != nullptr ? qPerSample[sample] : params.q));
+                smoothedMorph = snapNow || smoothedMorph < 0.0 ? morphTarget : smoothedMorph + sampleGlide * (morphTarget - smoothedMorph);
+                smoothedQ = snapNow || smoothedQ < 0.0 ? qTarget : smoothedQ + sampleGlide * (qTarget - smoothedQ);
+                if (std::abs (morphTarget - smoothedMorph) < 1.0e-6) smoothedMorph = morphTarget;
+                if (std::abs (qTarget - smoothedQ) < 1.0e-6) smoothedQ = qTarget;
+                const double morph = smoothedMorph;
+                const double q = smoothedQ;
+
+                bool changed = snapNow;
+                if (snapNow || morph != cachedMorph || q != cachedQ)
+                {
+                    const auto words = snapshot->bank.interpolate_words ((float) morph, (float) q, 0.0f);
+                    if (snapNow || words != cachedWords)
+                    {
+                        cachedWords = words;
+                        cachedBase = cascadeAt (words, snapshot->datumRate, sampleRateHz);
+                        changed = true;
+                    }
+                }
+                if (keyChoice != 0 && keyReferenceHz <= 0.0)
+                    keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz);
+                const double keyTarget = keyChoice != 0 ? trench::KeySnap::offsetSemitones (keyReferenceHz, keyChoice) : 0.0;
+                if (s == 0)
+                {
+                    if (first)
+                        keyOffset = keyTarget;
+                    else if (keyOffset != keyTarget)
+                    {
+                        keyOffset += trench::KeySnap::glideFor (blockLen, sampleRateHz) * (keyTarget - keyOffset);
+                        if (std::abs (keyTarget - keyOffset) < 1.0e-4)
+                            keyOffset = keyTarget;
+                    }
+                    keyOffsetForUi.store ((float) keyOffset, std::memory_order_relaxed);
+                }
+                const double totalRatio = keyRatio * trench::core::ratio_of_semitones (keyOffset);
+                if (changed || totalRatio != cachedKeyRatio)
+                {
+                    cachedCascade = totalRatio != 1.0 ? trench::core::transpose_cascade (cachedBase, totalRatio, sampleRateHz) : cachedBase;
+                    changed = true;
+                }
+                cachedMorph = morph;
+                cachedQ = q;
+                cachedKeyRatio = totalRatio;
+                heardCascade = cachedCascade;
+                if (changed)
+                {
+                    left.set_immediate (heardCascade);
+                    right.set_immediate (heardCascade);
+                }
+                else
+                {
+                    left.zero_kernel_deltas();
+                    right.zero_kernel_deltas();
+                }
+
+                left.process (std::span<float> (outL + sample, 1));
+                if (outR != nullptr)
+                    right.process (std::span<float> (outR + sample, 1));
+
                 if (s < fadeSamples)
                 {
                     const float mix = (float) (bodyFadeLength - bodyFadeRemaining + 1) / (float) bodyFadeLength;
@@ -489,7 +471,7 @@ public:
                     outR[sample] = outputStage (postDeskR, postClip (outR[sample])) * level;
                 caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
 #if TRENCH_DEV_PANEL
-                    postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
+                postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
             }
         }
@@ -559,6 +541,8 @@ public:
         outBoost = 1.0f;
         return activeSnapshot.load (std::memory_order_acquire) != nullptr;
     }
+
+    const trench::core::Cascade& heardCascadeForTests() const noexcept { return heardCascade; }
 
     void setInputMode (int) noexcept {}
     void setSpatialMode (int) noexcept {}
@@ -680,11 +664,12 @@ private:
     bool ringEnabled = true;
     std::uint64_t publishedGeneration = 0;
     std::uint64_t heardGeneration = 0;
-    float cachedMorph = -1.0f;
-    float smoothedMorph = -1.0f, smoothedQ = -1.0f;
+    double cachedMorph = -1.0;
+    double smoothedMorph = -1.0, smoothedQ = -1.0;
     static constexpr double kControlGlide = 0.4509729743;
     int controlTick = 88;
-    float cachedQ = -1.0f;
+    double sampleGlide = 0.0;
+    double cachedQ = -1.0;
     double cachedKeyRatio = 0.0;
     trench::core::Cascade cachedCascade {};
     trench::core::Cascade heardCascade {};

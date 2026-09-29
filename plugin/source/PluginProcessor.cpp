@@ -61,9 +61,7 @@ PluginProcessor::PluginProcessor()
     juce::MemoryBlock startRaw;
     if (trench::bodyRawBytes (startIndex, startRaw))
     {
-        dspBridge.loadCartridgeBytes (startRaw);
-        currentBodyBytes = startRaw;
-        currentBodyDatumRate = TrenchDspBridge::kBodyDatumRate;
+        installBodyForSelection (startRaw, trench::bodyBaseForIndex (startIndex));
         rosterBodyBytes = currentBodyBytes;
     }
     else
@@ -209,6 +207,17 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
                 loadedRuntimePreset.bankWords[(size_t) bank],
                 loadedRuntimePreset.activeStages,
                 loadedRuntimePresetBankRate);
+        }
+    }
+    if (currentBodyBytes.getSize() == 240)
+    {
+        const auto* bank = bankForRate (sampleRate);
+        const juce::MemoryBlock& bankBytes = bank != nullptr ? bank->bytes : currentBodyBytes;
+        const double bankDatum = bank != nullptr ? bank->rate : currentBodyDatumRate;
+        if (bankDatum != installedBankRate)
+        {
+            if (dspBridge.loadCartridgeBytes (bankBytes.getData(), bankBytes.getSize(), bankDatum))
+                installedBankRate = bankDatum;
         }
     }
     setLatencySamples (0);
@@ -571,14 +580,13 @@ void PluginProcessor::handleAsyncUpdate()
     bool ok;
     if (raw.getSize() == 240)
     {
-        ok = dspBridge.reloadCartridgeBytes (raw);
-        currentBodyBytes = raw;
+        ok = installBodyForSelection (raw, trench::bodyBaseForIndex (want));
         uiBodyBytes = raw;
-        currentBodyDatumRate = TrenchDspBridge::kBodyDatumRate;
         rosterBodyBytes = currentBodyBytes;
     }
     else
     {
+        bodySidecarBankCount = 0;
         ok = json.isNotEmpty() && dspBridge.loadCartridge (json);
         captureCurrentBodyBytes (json);
     }
@@ -590,6 +598,70 @@ void PluginProcessor::handleAsyncUpdate()
     juce::Logger::writeToLog (juce::String ("body switch -> ")
                                + trench::bodyDisplayName (want)
                                + (ok ? " ok" : " FAIL"));
+}
+int PluginProcessor::loadSidecarBanksForPath (const juce::String& absoluteBodyPath,
+                                              std::array<BodyRateBank, kBodyRateBankCount>& out) const
+{
+    int count = 0;
+    if (! juce::File::isAbsolutePath (absoluteBodyPath))
+        return 0;
+    const juce::File file (absoluteBodyPath);
+    if (! file.hasFileExtension ("body240"))
+        return 0;
+    const auto stem = file.getFileNameWithoutExtension();
+    const auto directory = file.getParentDirectory();
+    static constexpr double kSidecarRates[kBodyRateBankCount] = { 48'000.0, 96'000.0, 192'000.0 };
+    for (const double rate : kSidecarRates)
+    {
+        const auto sidecar = directory.getChildFile ("_" + stem + "." + juce::String ((juce::int64) rate) + ".body240");
+        juce::MemoryBlock bytes;
+        if (! sidecar.existsAsFile() || ! sidecar.loadFileAsData (bytes) || bytes.getSize() != 240)
+            continue;
+        bool stable = true;
+        for (const float m : { 0.0f, 1.0f })
+            for (const float q : { 0.0f, 1.0f })
+            {
+                float coeffs[trench::kUiCoeffCount] {};
+                float boost = 1.0f;
+                stable = stable
+                    && TrenchDspBridge::probePackedBody (bytes.getData(), bytes.getSize(), m, q, rate, coeffs, boost, rate);
+            }
+        if (! stable)
+            continue;
+        out[(size_t) count] = { rate, bytes };
+        ++count;
+    }
+    return count;
+}
+const PluginProcessor::BodyRateBank* PluginProcessor::bankForRate (double rate) const noexcept
+{
+    for (int i = 0; i < bodySidecarBankCount; ++i)
+        if (std::abs (bodySidecarBanks[(size_t) i].rate - rate) < 0.5)
+            return &bodySidecarBanks[(size_t) i];
+    return nullptr;
+}
+bool PluginProcessor::installBodyForSelection (const juce::MemoryBlock& baseBytes, const juce::String& sourcePath)
+{
+    std::array<BodyRateBank, kBodyRateBankCount> banks {};
+    const int bankCount = sourcePath.isNotEmpty() ? loadSidecarBanksForPath (sourcePath, banks) : 0;
+    const double rate = getSampleRate() > 0.0 ? getSampleRate() : TrenchDspBridge::kBodyDatumRate;
+    const BodyRateBank* bank = nullptr;
+    for (int i = 0; i < bankCount; ++i)
+        if (std::abs (banks[(size_t) i].rate - rate) < 0.5)
+        {
+            bank = &banks[(size_t) i];
+            break;
+        }
+    const juce::MemoryBlock& bytes = bank != nullptr ? bank->bytes : baseBytes;
+    const double datum = bank != nullptr ? bank->rate : TrenchDspBridge::kBodyDatumRate;
+    if (! dspBridge.loadCartridgeBytes (bytes.getData(), bytes.getSize(), datum))
+        return false;
+    currentBodyBytes = baseBytes;
+    currentBodyDatumRate = TrenchDspBridge::kBodyDatumRate;
+    bodySidecarBanks = banks;
+    bodySidecarBankCount = bankCount;
+    installedBankRate = datum;
+    return true;
 }
 void PluginProcessor::captureCurrentBodyBytes (const juce::String& cartridgeJson)
 {
@@ -661,6 +733,8 @@ bool PluginProcessor::installBodyBytes (const void* bytes, size_t len, double da
     currentBodyBytes = juce::MemoryBlock (bytes, len);
     bodyInjected.store (true, std::memory_order_relaxed);
     currentBodyDatumRate = datumRate;
+    bodySidecarBankCount = 0;
+    installedBankRate = datumRate;
     bodyVersionForUi.fetch_add (1, std::memory_order_relaxed);
     lastLoadOk.store (true, std::memory_order_release);
     return true;
@@ -751,11 +825,9 @@ void PluginProcessor::timerCallback()
                 watchedBodyMtime = t;
                 juce::MemoryBlock raw;
                 if (f.loadFileAsData (raw) && raw.getSize() == 240
-                    && dspBridge.loadCartridgeBytes (raw))
+                    && installBodyForSelection (raw, base))
                 {
-                    currentBodyBytes = raw;
                     uiBodyBytes = raw;
-                    currentBodyDatumRate = TrenchDspBridge::kBodyDatumRate;
                     rosterBodyBytes = currentBodyBytes;
                     bodyVersionForUi.fetch_add (1, std::memory_order_relaxed);
                     lastLoadOk.store (true, std::memory_order_release);

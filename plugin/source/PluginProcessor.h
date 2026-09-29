@@ -221,5 +221,18 @@ private:
     juce::MemoryBlock rosterBodyBytes;
     juce::MemoryBlock uiBodyBytes;
     void captureCurrentBodyBytes (const juce::String& cartridgeJson);
+    struct BodyRateBank
+    {
+        double rate = 0.0;
+        juce::MemoryBlock bytes;
+    };
+    static constexpr int kBodyRateBankCount = 3;
+    int loadSidecarBanksForPath (const juce::String& absoluteBodyPath,
+                                std::array<BodyRateBank, kBodyRateBankCount>& out) const;
+    const BodyRateBank* bankForRate (double rate) const noexcept;
+    bool installBodyForSelection (const juce::MemoryBlock& baseBytes, const juce::String& sourcePath);
+    std::array<BodyRateBank, kBodyRateBankCount> bodySidecarBanks {};
+    int bodySidecarBankCount = 0;
+    double installedBankRate = 0.0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

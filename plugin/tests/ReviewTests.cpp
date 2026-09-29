@@ -162,37 +162,46 @@ int main()
 
     std::printf ("== engine budget: seconds of engine per second of audio, per instance ==\n");
     {
+        const juce::MemoryBlock crisp48 = fixtureBody ("_xml_crisp.48000.body240");
+        check (crisp48.getSize() == 240, "48 kHz sidecar bank bytes available", (double) crisp48.getSize(), 240.0);
+
+        const int blocks = (int) (kHostRate / 512.0);
+        const auto measureEngineCost = [blocks] (TrenchDspBridge& bridge, TrenchParams& params)
+        {
+            juce::AudioBuffer<float> buf (2, 512);
+            std::vector<float> morph (512);
+            double phase = 0.0;
+            const auto t0 = std::chrono::steady_clock::now();
+            for (int b = 0; b < blocks; ++b)
+            {
+                fillSine (buf, phase, 220.0, kHostRate, 0.1f);
+                for (int i = 0; i < 512; ++i)
+                    morph[i] = 0.5f + 0.5f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * (b * 512 + i) / kHostRate);
+                bridge.processTrajectory (buf, morph.data(), params);
+            }
+            return std::chrono::duration<double> (std::chrono::steady_clock::now() - t0).count()
+                 / ((double) blocks * 512.0 / kHostRate);
+        };
+
         TrenchDspBridge bridge;
         bridge.prepare (kHostRate, 512);
-        bridge.loadCartridgeBytes (crisp);
+        bridge.loadCartridgeBytes (crisp48.getData(), crisp48.getSize(), kHostRate);
         TrenchParams params;
         params.q = 0.3f;
-        juce::AudioBuffer<float> buf (2, 512);
-        std::vector<float> morph (512);
-        juce::Random rng (3);
-        const int blocks = (int) (kHostRate / 512.0);
-        double phase = 0.0;
-        const auto t0 = std::chrono::steady_clock::now();
-        for (int b = 0; b < blocks; ++b)
-        {
-            fillSine (buf, phase, 220.0, kHostRate, 0.1f);
-            for (int i = 0; i < 512; ++i)
-                morph[i] = 0.5f + 0.5f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * (b * 512 + i) / kHostRate);
-            bridge.processTrajectory (buf, morph.data(), params);
-        }
-        const double engine = std::chrono::duration<double> (std::chrono::steady_clock::now() - t0).count();
-        const double perSecond = engine / ((double) blocks * 512.0 / kHostRate);
-        std::printf ("engine %.4f s per 1 s of stereo audio at 48 kHz, MORPH moving every sample\n", perSecond);
+        const double perSecond = measureEngineCost (bridge, params);
+        std::printf ("engine %.4f s per 1 s of stereo audio at 48 kHz, sidecar bank path (datumRate == host rate)\n", perSecond);
         check (perSecond < 0.05, "one instance costs under 5% of real time at 48 kHz (engine s / audio s)", perSecond, 0.05);
+
+        TrenchDspBridge fallbackBridge;
+        fallbackBridge.prepare (kHostRate, 512);
+        fallbackBridge.loadCartridgeBytes (crisp);
+        TrenchParams fallbackParams;
+        fallbackParams.q = 0.3f;
+        const double fallbackPerSecond = measureEngineCost (fallbackBridge, fallbackParams);
+        std::printf ("engine %.4f s per 1 s of stereo audio at 48 kHz, no-sidecar fallback path (44.1 kHz datum rewarped every sample, not asserted)\n", fallbackPerSecond);
+
         params.keySnap = 7;
-        const auto t1 = std::chrono::steady_clock::now();
-        for (int b = 0; b < blocks; ++b)
-        {
-            fillSine (buf, phase, 220.0, kHostRate, 0.1f);
-            bridge.processTrajectory (buf, morph.data(), params);
-        }
-        const double keyed = std::chrono::duration<double> (std::chrono::steady_clock::now() - t1).count()
-                             / ((double) blocks * 512.0 / kHostRate);
+        const double keyed = measureEngineCost (bridge, params);
         std::printf ("engine %.4f s per 1 s with KEY on\n", keyed);
         check (keyed < 1.5 * std::max (perSecond, 0.005), "KEY on does not double the engine cost", keyed, perSecond);
     }

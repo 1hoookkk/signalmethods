@@ -386,6 +386,143 @@ int main()
         check (worst < 1.0e-7f, "INPUT 0 dB through the identity body is exactly the input: nothing after the filter", worst, 1.0e-7);
     }
 
+    std::printf ("== per-sample word interpolation ==\n");
+    {
+        const juce::MemoryBlock crispForSweep = fixtureBody ("xml_crisp.body240");
+        check (crispForSweep.getSize() == 240, "crisp body available for the per-sample sweep", (double) crispForSweep.getSize(), 240.0);
+        const auto reference = trench::core::PackedBody::from_body_bytes (std::span {
+            static_cast<const std::uint8_t*> (crispForSweep.getData()), crispForSweep.getSize() });
+        TrenchDspBridge sweep;
+        sweep.prepare (44100.0, 1);
+        check (sweep.loadCartridgeBytes (crispForSweep), "crisp body loads for the per-sample sweep");
+        constexpr int n = 4410;
+        constexpr float qFixed = 0.63f;
+        constexpr double kControlGlideMirror = 0.4509729743;
+        constexpr int controlTickMirror = 88;
+        const double sampleGlideMirror = 1.0 - std::pow (1.0 - kControlGlideMirror, 1.0 / (double) controlTickMirror);
+        double m = 0.0;
+        double worstCoeff = 0.0;
+        bool allFinite = true;
+        TrenchParams sweepParams;
+        sweepParams.q = qFixed;
+        for (int i = 0; i < n; ++i)
+        {
+            const float targetFloat = (float) ((double) i / (double) (n - 1));
+            const double target = (double) targetFloat;
+            m = i == 0 ? target : m + sampleGlideMirror * (target - m);
+            if (std::abs (target - m) < 1.0e-6) m = target;
+
+            juce::AudioBuffer<float> one (2, 1);
+            const float x = 0.05f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 440.0 * i / 44100.0);
+            one.setSample (0, 0, x);
+            one.setSample (1, 0, x);
+            sweep.processTrajectory (one, &targetFloat, sweepParams);
+            allFinite = allFinite && std::isfinite (one.getSample (0, 0)) && std::isfinite (one.getSample (1, 0));
+
+            const auto words = reference.interpolate_words ((float) m, qFixed, 0.0f);
+            trench::core::Cascade expected {};
+            for (std::size_t s = 0; s < expected.size(); ++s)
+                expected[s] = trench::core::section_words_to_biquad (words[s]);
+            const auto& heard = sweep.heardCascadeForTests();
+            for (std::size_t s = 0; s < expected.size(); ++s)
+                for (std::size_t c = 0; c < expected[s].size(); ++c)
+                    worstCoeff = std::max (worstCoeff, std::abs (heard[s][c] - expected[s][c]));
+        }
+        std::printf ("  per-sample word path: worst coefficient error %.3e over %d samples\n", worstCoeff, n);
+        check (worstCoeff < 1.0e-12, "every sample's cascade is exactly that sample's own interpolated words, decoded and rate-converted", worstCoeff, 1.0e-12);
+        check (allFinite, "a 100 ms per-sample MORPH ramp keeps the output finite");
+
+        TrenchDspBridge constBridge;
+        constBridge.prepare (44100.0, 256);
+        check (constBridge.loadCartridgeBytes (crispForSweep), "crisp body loads for the constant-morph DF1 reference");
+        constBridge.setRingLeveller (false);
+        TrenchParams constParams;
+        constParams.morph = 0.42f;
+        constParams.q = 0.58f;
+        constexpr int m2 = 2048;
+        std::vector<float> inputSignal ((size_t) m2);
+        juce::AudioBuffer<float> audio (2, m2);
+        for (int i = 0; i < m2; ++i)
+        {
+            const float v = 0.2f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 300.0 * i / 44100.0);
+            inputSignal[(size_t) i] = v;
+            audio.setSample (0, i, v);
+            audio.setSample (1, i, v);
+        }
+        constBridge.process (audio, constParams);
+        const auto& usedCascade = constBridge.heardCascadeForTests();
+        double z1[trench::kUiStageCount] = {}, z2[trench::kUiStageCount] = {}, w1[trench::kUiStageCount] = {}, w2[trench::kUiStageCount] = {};
+        double worstSample = 0.0;
+        bool constFinite = true;
+        for (int i = 0; i < m2; ++i)
+        {
+            double x = (double) inputSignal[(size_t) i];
+            for (int s = 0; s < trench::kUiStageCount; ++s)
+            {
+                const auto& c = usedCascade[(size_t) s];
+                const double y = c[0] * x + c[1] * w1[s] + c[2] * w2[s] - c[3] * z1[s] - c[4] * z2[s];
+                w2[s] = w1[s]; w1[s] = x;
+                z2[s] = z1[s]; z1[s] = y;
+                x = y;
+            }
+            constFinite = constFinite && std::isfinite (audio.getSample (0, i));
+            worstSample = std::max (worstSample, std::abs ((double) audio.getSample (0, i) - x));
+        }
+        std::printf ("  constant-morph six-section DF1 reference: worst sample error %.3e\n", worstSample);
+        check (constFinite, "constant-morph output stays finite");
+        check (worstSample < 1.0e-6, "a held MORPH produces output identical to an independent six-section Direct Form I reference", worstSample, 1.0e-6);
+    }
+
+    std::printf ("== per-sample word interpolation: 48 kHz sidecar bank, no rewarp ==\n");
+    {
+        const juce::MemoryBlock crisp48 = fixtureBody ("_xml_crisp.48000.body240");
+        check (crisp48.getSize() == 240, "48 kHz sidecar bank bytes available for the per-sample sweep", (double) crisp48.getSize(), 240.0);
+        const auto reference48 = trench::core::PackedBody::from_body_bytes (std::span {
+            static_cast<const std::uint8_t*> (crisp48.getData()), crisp48.getSize() });
+        TrenchDspBridge sweep48;
+        sweep48.prepare (48000.0, 1);
+        check (sweep48.loadCartridgeBytes (crisp48.getData(), crisp48.getSize(), 48000.0),
+               "48 kHz sidecar bank loads with datumRate == host rate for the per-sample sweep");
+        constexpr int n = 4800;
+        constexpr float qFixed = 0.63f;
+        constexpr double kControlGlideMirror = 0.4509729743;
+        const int controlTickMirror = juce::jmax (1, (int) std::lround (48000.0 * 88.0 / 44100.0));
+        const double sampleGlideMirror = 1.0 - std::pow (1.0 - kControlGlideMirror, 1.0 / (double) controlTickMirror);
+        double m = 0.0;
+        double worstCoeff = 0.0;
+        bool allFinite = true;
+        TrenchParams sweepParams;
+        sweepParams.q = qFixed;
+        for (int i = 0; i < n; ++i)
+        {
+            const float targetFloat = (float) ((double) i / (double) (n - 1));
+            const double target = (double) targetFloat;
+            m = i == 0 ? target : m + sampleGlideMirror * (target - m);
+            if (std::abs (target - m) < 1.0e-6) m = target;
+
+            juce::AudioBuffer<float> one (2, 1);
+            const float x = 0.05f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 440.0 * i / 48000.0);
+            one.setSample (0, 0, x);
+            one.setSample (1, 0, x);
+            sweep48.processTrajectory (one, &targetFloat, sweepParams);
+            allFinite = allFinite && std::isfinite (one.getSample (0, 0)) && std::isfinite (one.getSample (1, 0));
+
+            const auto words = reference48.interpolate_words ((float) m, qFixed, 0.0f);
+            trench::core::Cascade expected {};
+            for (std::size_t s = 0; s < expected.size(); ++s)
+                expected[s] = trench::core::section_words_to_biquad (words[s]);
+            const auto& heard = sweep48.heardCascadeForTests();
+            for (std::size_t s = 0; s < expected.size(); ++s)
+                for (std::size_t c = 0; c < expected[s].size(); ++c)
+                    worstCoeff = std::max (worstCoeff, std::abs (heard[s][c] - expected[s][c]));
+        }
+        std::printf ("  48 kHz sidecar per-sample word path: worst coefficient error %.3e over %d samples\n", worstCoeff, n);
+        check (worstCoeff < 1.0e-12,
+               "every sample's cascade at the 48 kHz sidecar bank is exactly that sample's own interpolated words, decoded with no rewarp (datumRate == host rate)",
+               worstCoeff, 1.0e-12);
+        check (allFinite, "the sidecar-bank per-sample MORPH ramp keeps the output finite");
+    }
+
     std::printf ("== bridge cost ==\n");
     {
         juce::MemoryBlock crisp;

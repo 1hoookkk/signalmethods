@@ -8,7 +8,9 @@ On this machine Windows redirects Documents, so the actual library is:
 
 `C:\Users\hooki\OneDrive\Documents\TRENCH\User Bodies`
 
-Only top-level `.body240` files of exactly 240 bytes are listed. The datum is 44,100 Hz. Names come from filenames. Hidden files and names beginning with `_` are ignored. Sidecars are documentation, not DSP input. The old `Documents\TRENCH\bodies` shelves and `authoring_slot.json` are not scanned by this route.
+Only top-level `.body240` files of exactly 240 bytes are listed. The datum is 44,100 Hz. Names come from filenames. Hidden files and names beginning with `_` are ignored. Documentation sidecars (`.m6strip`, provenance) are not DSP input. The old `Documents\TRENCH\bodies` shelves and `authoring_slot.json` are not scanned by this route.
+
+**Per-rate sidecar banks.** Morph6 additionally exports hidden `_<name>.48000.body240`, `_<name>.96000.body240` and `_<name>.192000.body240` next to a listed `<name>.body240`: the same 240-byte, four-corner format with every root's `1 - r` already re-gridded for that rate. These never appear in the BODY menu (their name starts with `_`), but they are not inert documentation. When `<name>.body240` is selected, TRENCH reads whichever of the three sidecars exist once, at selection time. If the host's sample rate matches a sidecar's rate exactly (44,100 always matches the base body itself), TRENCH installs that sidecar's words with its own rate as the datum, so the engine's per-sample interpolation runs with no runtime rewarp. DAW-state recall, `copyCurrentBodyBytes`, and the on-screen graph still read only the base 44.1 kHz `.body240`; the sidecar changes which words the engine hears, not the authored body identity. At 44.1 kHz, at a rate no sidecar covers (88.2 kHz, for example), or when a sidecar is missing or not exactly 240 bytes, TRENCH falls back to the base body with the existing runtime rate conversion.
 
 ## Author, publish, play
 
