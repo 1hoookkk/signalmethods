@@ -38,11 +38,6 @@ public:
         draw ("morphLabel",  railUpper, true, true);
         draw ("qLabel",      railLower, true, true);
         draw ("slamLabel",   t.text ("slamLabel",   ""), true, true);
-        if (const auto link = t.rect ("slamLink"); ! link.isEmpty())
-        {
-            g.setColour (t.labelInk().withAlpha (0.55f));
-            g.fillRect (link);
-        }
         draw ("inputLabel",  t.text ("inputLabel",  ""), true, true);
         draw ("outputLabel", t.text ("outputLabel", ""), true, true);
         {
