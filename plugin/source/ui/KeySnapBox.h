@@ -20,7 +20,7 @@ public:
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Key Snap");
         setHelpText ("KEY OFF leaves the body as authored. AUTO follows the key heard in the input and shifts the whole body by up to a semitone so its strongest resonance sits on a note of the key.");
-        setTooltip ("KEY: click for AUTO (follows the key it hears) or OFF");
+        setTooltip ("SNAP TO KEY: click for AUTO (follows the key it hears) or OFF");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (
                 *param, [this] (float) { repaint(); });
@@ -137,32 +137,31 @@ public:
                 return box;
             };
 
-            if (locked)
-            {
-                const auto text = currentChoice() == trench::KeySnap::kAutoChoice
+            const auto state = ! locked ? juce::String ("OFF")
+                : currentChoice() == trench::KeySnap::kAutoChoice
                     ? (first >= 0 ? "AUTO " + shortSuggestionText (first) : juce::String ("AUTO"))
                     : shortChoiceText (currentChoice());
-                const auto box = valueBox (text, bigFont);
-                g.setFont (bigFont);
-                g.setColour (ink);
-                g.drawText (text, box.toNearestInt(), juce::Justification::centred, false);
-            }
+            const auto box = valueBox (state, bigFont);
+            g.setFont (bigFont);
+            g.setColour (ink.withAlpha (locked ? 1.0f : 0.72f));
+            g.drawText (state, box.toNearestInt(), juce::Justification::centred, false);
+
+            const auto labelFont = displayFont (11.5f, true);
+            const juce::String label ("SNAP TO KEY");
+            x -= 5.0f + juce::GlyphArrangement::getStringWidth (labelFont, label);
+            g.setFont (labelFont);
+            g.setColour (juce::Colour (0xff0d0b09).withAlpha (0.92f));
+            g.drawText (label, juce::Rectangle<float> (x, b.getY(), b.getRight() - x, b.getHeight()).toNearestInt(),
+                        juce::Justification::centredLeft, false);
             if (! locked && showingSuggestion)
             {
-                x -= 4.0f;
-                const auto text = shortSuggestionText (first);
-                const auto box = valueBox (text, bigFont);
-                compactAlt = box;
+                const auto hint = "hears " + shortSuggestionText (first);
+                const float w = juce::GlyphArrangement::getStringWidth (bigFont, hint);
+                compactAlt = { x - 8.0f - w, b.getY(), w, b.getHeight() };
                 g.setFont (bigFont);
-                g.setColour (ink.withAlpha (hoveredCandidate >= 0 ? 0.95f : 0.45f));
-                g.drawText (text, box.toNearestInt(), juce::Justification::centred, false);
+                g.setColour (ink.withAlpha (hoveredCandidate >= 0 ? 0.80f : 0.45f));
+                g.drawText (hint, compactAlt.toNearestInt(), juce::Justification::centredRight, false);
             }
-            g.setFont (displayFont (11.5f, true));
-            g.setColour (juce::Colour (0xff0d0b09).withAlpha (
-                (locked || showingSuggestion) ? 0.92f : 0.80f));
-            g.drawText (locked ? "KEY" : "KEY: OFF", juce::Rectangle<float> (b.getX(), b.getY(),
-                                                       x - b.getX() - 4.0f, b.getHeight()).toNearestInt(),
-                        juce::Justification::centredRight, false);
             if (! locked && ! showingSuggestion && isListening())
                 drawListeningHairline (g);
             return;

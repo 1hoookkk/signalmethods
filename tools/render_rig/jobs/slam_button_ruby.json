@@ -5,7 +5,11 @@
     "front": "-y",
     "materials": [
       {
-        "material": "led_glass"
+        "material": "led_glass",
+        "radius_max": 11.9
+      },
+      {
+        "material": "satin_nickel"
       }
     ],
     "smooth_angle_deg": 80.0
@@ -51,7 +55,7 @@
   "led_colour": "#E8203A",
   "states": {
     "off": {
-      "led_strength": 0.0
+      "led_strength": 0.06
     },
     "on": {
       "led_strength": 0.8,
