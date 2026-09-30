@@ -12,10 +12,10 @@
   "input_volts_per_unit": 4,
   "output_volts_per_unit": 16,
   "output_connection": "pin2 minus pin3, each leg loaded by 10 kohm to ground",
-  "training_seconds": 42,
-  "validation_seconds": 9,
-  "holdout_seconds": 9,
-  "heldout_description": "0-3 s Talking Hedz filtered bass at explicit -12.0412 dB before desk; 3-6 s independent percussion; 6-8 s independent bass; 8-9 s recovery. No training or selection on these targets.",
+  "training_seconds": 84,
+  "validation_seconds": 18,
+  "holdout_seconds": 18,
+  "heldout_description": "0-3 s Talking Hedz filtered bass at explicit -12.0412 dB before desk; 3-6 s independent percussion; 6-8 s independent bass; 8-9 s recovery. No training or selection on these targets. 9-18 s: independent onset bursts, ramps, hot percussion and hot recovery.",
   "stimulus_filter_gain": 0.25,
   "normalization": false,
   "automatic_compensation": false,
@@ -25,19 +25,19 @@
   },
   "schematic_sha256": "41f7cb51aba5009722c8aefbe6185d5e37fb0931bfcd2529a410c697ffe3cef3",
   "source_sha256": "fee2626e11941b774456d6a6191f05e03dc522eb5c0ea91530c0d67ffc731d6a",
-  "input_sha256": "00f9c0a42817c94121759d6b0dbe1621212339e54064afd5be72720e51f7bf2c",
+  "input_sha256": "5f9e94007f19a5bc5576deb524b02cbca798f7f6b1ca78db520eff79510e7d3f",
   "input_metrics": {
     "train": {
       "peak_dbfs": -0.6493737906387742,
-      "rms_dbfs": -18.82955317455982
+      "rms_dbfs": -15.234339598826008
     },
     "validation": {
-      "peak_dbfs": -3.2814970778865122,
-      "rms_dbfs": -24.313752779341513
+      "peak_dbfs": -1.913852940074945,
+      "rms_dbfs": -15.657534908820562
     },
     "holdout": {
-      "peak_dbfs": -4.947861940372251,
-      "rms_dbfs": -24.576427831417522
+      "peak_dbfs": -1.9346454205191108,
+      "rms_dbfs": -16.636656538720842
     }
   },
   "estimated_semiconductors": [
@@ -54,16 +54,22 @@
     "meter and monitor branch loads",
     "insert detection circuit"
   ],
-  "target_sha256": "2e0648aecc55d254684a37328018fe5034515f93fc8c2d0e7e713ee85ec4b196",
+  "target_sha256": "cdf5293a0ba1ac33ab54437daca82f94bc40046f6bd8c78251c362510222a673",
   "target_metrics": {
     "peak_dbfs": 8.437525778223305,
-    "rms_dbfs": -1.0496744770784034
+    "rms_dbfs": 1.1253862999121365
   },
   "solver": "Gear, reltol 1e-4, abstol 1e-12, vntol 1e-7, itl4 10; original filesource, 4x maximum timestep and uniform storage",
   "record_samples": 144000,
   "record_seconds": 3,
-  "record_count": 20,
+  "record_count": 40,
   "record_state": "Independent circuit operating point and 0.5 seconds of zero input per record. Training and inference reset recurrent state at the same record boundaries.",
-  "capture_directory": "C:\\Users\\hooki\\trench-native\\output\\rtneural-workshop\\runs\\20260930-1224-8bus-main\\spice-records",
-  "fresh_training": "32-unit model trained from zero on this pair for a plugin CPU budget of about 5 percent of a core per instance"
+  "parent_run": "20260930-2238-8bus-main-h32-interim",
+  "initial_checkpoint_sha256": "af885dffcf4f5f5161201479f8156e192b94807777ccf1d1f5b78e3827733a9a",
+  "refinement_hidden_units": 32,
+  "refinement_initialization": "Copied parent checkpoint (32-unit interim on the 60-second set), then 3500 of 6000 steps on this pair interrupted by a memory kill; resumed from that best checkpoint for the remaining 2500 steps",
+  "extended_from": "20260930-1429-8bus-main-gpu",
+  "extension": "The 60-second study stimulus keeps its records; each split gains the same length again of onset bursts stepping from below to above the clip point into silence, 1-second dB ramps through the clip point and back, hot recovery bursts and hot percussion, none above 0.8 units, every burst with a 5 ms attack and the new material rolled off above 12 kHz. Old records 14-19 keep their circuit renders at their new positions 28-30 and 34-36.",
+  "plugin_asset_run": "20260930-2228-8bus-main-hot3",
+  "plugin_asset_holdout_esr": 0.2057036188489946
 }
