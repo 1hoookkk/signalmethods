@@ -10,26 +10,27 @@ class BodyBrowser final : public juce::Component,
                           private juce::Timer
 {
 public:
-    static constexpr juce::uint32 kField = 0xfffcfcfd, kBorder = 0xff5a5750,
-                                  kHighlight = 0xff3cc8be, kInk = 0xff2a2722;
-
     explicit BodyBrowser (const Theme& theme) : t (theme)
     {
         setInterceptsMouseClicks (true, false);
         setWantsKeyboardFocus (true);
         setTitle ("Bodies");
     }
-    struct Row { juce::String text; int body; bool ticked = false; bool heading = false; };
+    struct Row { juce::String text; int body; bool ticked = false; bool heading = false; juce::String detail; };
     std::function<std::vector<Row>()> rowSource;
     std::function<void (int)> onPreview;
     std::function<void (int)> onCommit;
     std::function<void (int)> onRestore;
 
-    void open (int currentBodyIndex, juce::Rectangle<int> faceLocal)
+    void open (int currentBodyIndex, juce::Rectangle<int> faceLocal, juce::Rectangle<int> anchor)
     {
         current = openedWith = currentBodyIndex;
         buildRows();
-        layOut (faceLocal.getHeight(), faceLocal.getWidth());
+        const auto room = faceLocal.reduced (kMargin);
+        const int below = room.getBottom() - (anchor.getBottom() + kDrop);
+        const bool dropDown = layOut (below, room.getWidth(), anchor.getWidth());
+        if (! dropDown)
+            layOut (room.getHeight(), room.getWidth(), anchor.getWidth());
         highlight = 0;
         for (int r = 0; r < (int) rows.size(); ++r)
             if (isTicked (r))
@@ -37,10 +38,12 @@ public:
                 highlight = r;
                 break;
             }
-        const int w = juce::roundToInt (columnW * (float) columns) + 2;
-        const int h = juce::roundToInt (kRowH * (float) perColumn) + 2;
-        panel = juce::Rectangle<float> ((float) w, (float) h)
-                    .withCentre (faceLocal.getCentre().toFloat());
+        const int w = juce::roundToInt (columnW * (float) columns) + 2 * kInset;
+        const int h = juce::roundToInt (kSheetRowH * (float) perColumn) + 2 * kInset;
+        const int x = juce::jlimit (room.getX(), juce::jmax (room.getX(), room.getRight() - w), anchor.getX());
+        const int y = dropDown ? anchor.getBottom() + kDrop : juce::jmax (room.getY(), anchor.getY() - kDrop);
+        panel = juce::Rectangle<float> ((float) x, (float) juce::jlimit (room.getY(), juce::jmax (room.getY(), room.getBottom() - h), y),
+                                        (float) w, (float) h);
         setBounds (faceLocal);
         setVisible (true);
         toFront (true);
@@ -84,11 +87,17 @@ public:
                        : k == juce::KeyPress::rightKey ?  perColumn : 0;
         if (step == 0)
             return false;
-        setHighlight (highlight + step);
+        setHighlight (highlight + step, true);
         return true;
     }
-    void mouseMove (const juce::MouseEvent&) override
+    void mouseMove (const juce::MouseEvent& e) override
     {
+        const int row = rowAt (e.position);
+        if (row >= 0 && ! rows[(size_t) row].heading && row != highlight)
+        {
+            highlight = row;
+            repaint();
+        }
     }
     void mouseDown (const juce::MouseEvent& e) override
     {
@@ -106,63 +115,30 @@ public:
     void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
     {
         if (w.deltaY != 0.0f)
-            setHighlight (highlight + (w.deltaY > 0.0f ? -1 : 1));
+            setHighlight (highlight + (w.deltaY > 0.0f ? -1 : 1), true);
     }
     void paint (juce::Graphics& g) override
     {
         const auto menuRect = panelBounds();
-        g.setColour (juce::Colour (kField));
-        g.fillRect (menuRect);
-        g.setColour (juce::Colour (kBorder));
-        g.drawRect (menuRect, 1.0f);
-        const auto inner = menuRect.reduced (1.0f);
-        g.setFont (rowFont());
+        drawSheet (g, menuRect);
+        const auto inner = menuRect.reduced ((float) kInset);
+        g.setColour (juce::Colour (kSheetRule));
+        for (int c = 1; c < columns; ++c)
+            g.fillRect (inner.getX() + columnW * (float) c, inner.getY() + 4.0f, 1.0f, inner.getHeight() - 8.0f);
         for (int r = 0; r < (int) rows.size(); ++r)
         {
             const auto cell = cellFor (inner, r);
             if (rows[(size_t) r].heading)
-            {
-                g.setFont (displayFont (10.5f, true));
-                g.setColour (juce::Colour (kInk).withAlpha (0.55f));
-                g.drawText (rows[(size_t) r].text.toUpperCase(), cell.withTrimmedLeft (kGutter).toNearestInt(),
-                            juce::Justification::centredLeft, false);
-                g.setFont (rowFont());
-                continue;
-            }
-            const bool hot = r == highlight;
-            if (hot)
-            {
-                g.setColour (juce::Colour (kHighlight).withAlpha (0.16f));
-                g.fillRect (cell);
-                g.setColour (juce::Colour (kHighlight).withAlpha (0.85f));
-                g.fillRect (cell.withWidth (2.0f).translated (1.0f, 0.0f));
-            }
-            if (isTicked (r))
-            {
-                juce::Path check;
-                const float cx = cell.getX() + 8.0f, cy = cell.getCentreY();
-                check.startNewSubPath (cx - 3.0f, cy);
-                check.lineTo (cx - 1.0f, cy + 2.5f);
-                check.lineTo (cx + 3.5f, cy - 3.0f);
-                g.setColour (juce::Colour (kInk));
-                g.strokePath (check, { 1.3f, juce::PathStrokeType::curved,
-                                       juce::PathStrokeType::rounded });
-            }
-            g.setColour (juce::Colour (kInk));
-            g.drawText (rows[(size_t) r].text,
-                        cell.withTrimmedLeft (kGutter).toNearestInt(),
-                        juce::Justification::centredLeft, false);
+                drawSheetHeading (g, cell, rows[(size_t) r].text, rows[(size_t) r].detail);
+            else
+                drawSheetRow (g, cell, rows[(size_t) r].text, r == highlight, isTicked (r), true, rows[(size_t) r].detail);
         }
     }
 private:
+    static constexpr int kMargin = 6, kDrop = 3, kInset = 4;
     bool isTicked (int r) const
     {
         return rowSource != nullptr ? rows[(size_t) r].ticked : rows[(size_t) r].body == current;
-    }
-    static constexpr float kRowH = 20.0f, kGutter = 16.0f, kPadRight = 12.0f;
-    static juce::Font rowFont()
-    {
-        return displayFont (13.5f, false);
     }
     juce::Rectangle<float> panelBounds() const { return panel; }
     juce::Rectangle<float> cellFor (juce::Rectangle<float> inner, int row) const
@@ -170,19 +146,19 @@ private:
         const int col = row / juce::jmax (1, perColumn);
         const int idx = row % juce::jmax (1, perColumn);
         return { inner.getX() + (float) col * columnW,
-                 inner.getY() + (float) idx * kRowH, columnW, kRowH };
+                 inner.getY() + (float) idx * kSheetRowH, columnW, kSheetRowH };
     }
     int rowAt (juce::Point<float> p) const
     {
-        const auto inner = panelBounds().reduced (1.0f);
+        const auto inner = panelBounds().reduced ((float) kInset);
         if (! inner.contains (p))
             return -1;
         const int col = (int) ((p.x - inner.getX()) / columnW);
-        const int idx = (int) ((p.y - inner.getY()) / kRowH);
+        const int idx = (int) ((p.y - inner.getY()) / kSheetRowH);
         const int r = col * perColumn + idx;
         return r >= 0 && r < (int) rows.size() ? r : -1;
     }
-    void setHighlight (int r)
+    void setHighlight (int r, bool preview)
     {
         r = juce::jlimit (0, juce::jmax (0, (int) rows.size() - 1), r);
         const int dir = r >= highlight ? 1 : -1;
@@ -191,7 +167,7 @@ private:
         if (rows[(size_t) r].heading || r == highlight)
             return;
         highlight = r;
-        startTimer (120);
+        if (preview) startTimer (120);
         repaint();
     }
     void timerCallback() override
@@ -200,16 +176,21 @@ private:
         if (onPreview != nullptr && highlight >= 0 && highlight < (int) rows.size())
             onPreview (rows[(size_t) highlight].body);
     }
-    void layOut (int faceHeight, int faceWidth)
+    bool layOut (int availableHeight, int availableWidth, int anchorWidth)
     {
-        const auto font = rowFont();
-        float widest = 0.0f;
+        float widest = 0.0f, widestDetail = 0.0f;
         for (const auto& r : rows)
-            widest = juce::jmax (widest, juce::GlyphArrangement::getStringWidth (font, r.text));
-        columnW = widest + kGutter + kPadRight;
-        const int maxPerColumn = juce::jmax (1, (int) (((float) faceHeight - 32.0f) / kRowH));
+        {
+            widest = juce::jmax (widest, juce::GlyphArrangement::getStringWidth (r.heading ? sheetHeadingFont() : sheetRowFont (true),
+                                                                                 r.heading ? r.text.toUpperCase() : r.text));
+            if (r.detail.isNotEmpty() && ! r.heading)
+                widestDetail = juce::jmax (widestDetail, juce::GlyphArrangement::getStringWidth (sheetDetailFont(), r.detail) + 14.0f);
+        }
+        columnW = widest + widestDetail + kSheetGutter + kSheetPadRight;
+        const int maxPerColumn = juce::jmax (1, (int) (((float) availableHeight - 2.0f * kInset) / kSheetRowH));
         const int n = juce::jmax (1, (int) rows.size());
-        columns = juce::jlimit (1, 3, (n + maxPerColumn - 1) / maxPerColumn);
+        const float maxW = (float) availableWidth - 2.0f * kInset;
+        columns = juce::jmax (1, (n + maxPerColumn - 1) / maxPerColumn);
         perColumn = (n + columns - 1) / columns;
         const auto orphanHeading = [this, n]
         {
@@ -220,9 +201,12 @@ private:
         };
         while (columns > 1 && perColumn < maxPerColumn && orphanHeading())
             ++perColumn;
-        const float maxW = (float) faceWidth - 8.0f;
-        if (columnW * (float) columns > maxW)
+        if (columns == 1)
+            columnW = juce::jmax (columnW, (float) anchorWidth - 2.0f * kInset);
+        const bool fits = columnW * (float) columns <= maxW;
+        if (! fits)
             columnW = maxW / (float) columns;
+        return fits;
     }
     void buildRows()
     {
@@ -246,14 +230,15 @@ private:
                     rows.push_back ({ category, -1, false, true });
                     heading = category;
                 }
-                rows.push_back ({ trench::bodyDisplayName (i), i });
+                rows.push_back ({ trench::bodyDisplayName (i), i, false, false,
+                                  entries[i].poles > 0 ? juce::String (entries[i].poles) + " pole" : juce::String() });
             }
         for (int i = 0; i < count; ++i)
             if (! trench::bodyIsNoFilter (i) && juce::File::isAbsolutePath (entries[i].base))
             {
                 if (! userHeading)
                 {
-                    rows.push_back ({ "Your bodies", -1, false, true });
+                    rows.push_back ({ "User", -1, false, true });
                     userHeading = true;
                 }
                 rows.push_back ({ trench::bodyDisplayName (i), i });

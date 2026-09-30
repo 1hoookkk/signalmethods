@@ -1106,7 +1106,7 @@ int main()
         int n = 0; trench::bodyRoster (n);
         int bodyIndex = -1;
         for (int i = 0; i < n; ++i)
-            if (trench::bodyDisplayName (i).containsIgnoreCase ("Vowel Ah")) { bodyIndex = i; break; }
+            if (trench::bodyDisplayName (i).containsIgnoreCase ("Yay Sayer")) { bodyIndex = i; break; }
         check (bodyIndex >= 0, "a sharp-peaked body is in the roster", bodyIndex, n);
         if (bodyIndex >= 0)
         {

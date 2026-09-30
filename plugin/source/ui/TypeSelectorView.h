@@ -161,7 +161,7 @@ private:
             if (category != heading && category != "SYSTEM")
             {
                 selector.addSeparator();
-                selector.addSectionHeading (category == "USER" ? juce::String ("Your bodies") : category);
+                selector.addSectionHeading (category == "USER" ? juce::String ("User") : category);
                 heading = category;
             }
             selector.addItem (entries[i].displayName, i + 1);

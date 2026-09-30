@@ -16,6 +16,7 @@ struct BodyEntry
     const char* base;
     const char* category;
     int behavior;
+    int poles;
 };
 enum class TypeBehavior : int
 {
@@ -67,6 +68,7 @@ struct RosterStore
     std::vector<std::string> names;
     std::vector<std::string> bases;
     std::vector<std::string> categories;
+    std::vector<int> poles;
     std::vector<BodyEntry> entries;
 };
 inline std::string prettyBodyName (const std::string& stem)
@@ -121,6 +123,7 @@ inline void buildRosterStore (RosterStore& store)
     store.names.clear();
     store.bases.clear();
     store.categories.clear();
+    store.poles.clear();
     store.entries.clear();
     int bakedCount = 0;
         const auto* baked = bakedRoster (bakedCount);
@@ -131,11 +134,12 @@ inline void buildRosterStore (RosterStore& store)
                                           : prettyBodyName (baked[index].displayName));
             store.bases.emplace_back (baked[index].base);
             store.categories.emplace_back (baked[index].category);
+            store.poles.push_back (baked[index].poles);
         }
         store.entries.reserve (store.names.size());
         for (size_t i = 0; i < store.names.size(); ++i)
             store.entries.push_back ({ store.names[i].c_str(), store.bases[i].c_str(),
-                                       store.categories[i].c_str(), (int) TypeBehavior::Static });
+                                       store.categories[i].c_str(), (int) TypeBehavior::Static, store.poles[i] });
 }
 inline void appendUserBodies (RosterStore& store, const juce::File& directory)
 {
@@ -157,12 +161,13 @@ inline void appendUserBodies (RosterStore& store, const juce::File& directory)
         store.names.push_back (prettyBodyName (bodyStem (file)));
         store.bases.push_back (path);
         store.categories.emplace_back ("USER");
+        store.poles.push_back (0);
     }
     store.entries.clear();
     store.entries.reserve (store.names.size());
     for (size_t i = 0; i < store.names.size(); ++i)
         store.entries.push_back ({ store.names[i].c_str(), store.bases[i].c_str(),
-                                  store.categories[i].c_str(), (int) TypeBehavior::Static });
+                                  store.categories[i].c_str(), (int) TypeBehavior::Static, store.poles[i] });
 }
 struct RosterRegistry
 {
@@ -205,9 +210,9 @@ inline void rescanBodyRoster() { detail::rosterRegistry().refresh(); }
 inline const BodyEntry* bakedRoster (int& countOut) noexcept
 {
     static const BodyEntry entries[] = {
-        { kNoFilterName, "identity", "SYSTEM", (int) TypeBehavior::Static },
-#define TRENCH_PRESET(displayName, resourceStem, categoryName) \
-        { displayName, resourceStem, categoryName, (int) TypeBehavior::Static },
+        { kNoFilterName, "identity", "SYSTEM", (int) TypeBehavior::Static, 0 },
+#define TRENCH_PRESET(displayName, resourceStem, categoryName, poles) \
+        { displayName, resourceStem, categoryName, (int) TypeBehavior::Static, poles },
 #if TRENCH_DEV_PANEL
 #include "../presets/PresetRosterDev.inc"
 #else

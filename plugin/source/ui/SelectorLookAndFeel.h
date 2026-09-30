@@ -3,85 +3,86 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 namespace trench::ui
 {
+inline juce::Component* menuParentFor (juce::Component* owner)
+{
+    for (auto* c = owner; c != nullptr; c = c->getParentComponent())
+        if (c->getComponentID() == "face") return c;
+    return nullptr;
+}
 class SelectorLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    float itemFontSize = 13.5f;
-    int itemHeight = 24;
+    SelectorLookAndFeel()
+    {
+        setColour (juce::PopupMenu::backgroundColourId, juce::Colours::transparentBlack);
+    }
+    static constexpr int kBorder = 10;
     void drawComboBox (juce::Graphics&, int, int, bool, int, int, int, int, juce::ComboBox&) override {}
     juce::Font getComboBoxFont (juce::ComboBox&) override { return displayFont (12.0f, true); }
-    juce::Font getPopupMenuFont() override { return displayFont (itemFontSize, false); }
-    static constexpr juce::uint32 kGlassTop = 0xff10201d, kGlassBot = 0xff0b1715;
-    static constexpr juce::uint32 kInk = 0xffcfe8de, kInkDim = 0xff4e6a63;
-    static constexpr juce::uint32 kLamp = 0xff2bd8c3;
-    void drawPopupMenuBackground (juce::Graphics& g, int width, int height) override
+    juce::Font getPopupMenuFont() override { return sheetRowFont(); }
+    juce::Component* getParentComponentForMenuOptions (const juce::PopupMenu::Options& options) override
     {
-        const auto area = juce::Rectangle<float> (0.0f, 0.0f, (float) width, (float) height);
-        juce::ColourGradient body (juce::Colour (kGlassTop), 0.0f, 0.0f,
-                                   juce::Colour (kGlassBot), 0.0f, (float) height, false);
-        g.setGradientFill (body);
-        g.fillRect (area);
-        g.setColour (juce::Colour (kInk).withAlpha (0.10f));
-        g.drawLine (1.5f, 1.5f, (float) width - 1.5f, 1.5f, 1.0f);
-        g.setColour (juce::Colours::black.withAlpha (0.70f));
-        g.drawRect (area.reduced (0.5f), 1.0f);
+        if (auto* parent = options.getParentComponent()) return parent;
+        return menuParentFor (options.getTargetComponent());
     }
-    void drawPopupMenuItem (juce::Graphics& g, const juce::Rectangle<int>& area,
-                            bool isSeparator, bool isActive, bool isHighlighted,
-                            bool isTicked, bool hasSubMenu, const juce::String& text,
-                            const juce::String&, const juce::Drawable*,
-                            const juce::Colour*) override
+    int getPopupMenuBorderSize() override { return kBorder; }
+    int getPopupMenuBorderSizeWithOptions (const juce::PopupMenu::Options&) override { return kBorder; }
+    void drawResizableFrame (juce::Graphics&, int, int, const juce::BorderSize<int>&) override {}
+    void drawPopupMenuBackgroundWithOptions (juce::Graphics& g, int width, int height, const juce::PopupMenu::Options&) override
+    {
+        drawSheet (g, juce::Rectangle<float> (0.0f, 0.0f, (float) width, (float) height).reduced ((float) kBorder - 3.0f), 4);
+    }
+    void drawPopupMenuSectionHeaderWithOptions (juce::Graphics& g, const juce::Rectangle<int>& area,
+                                                const juce::String& text, const juce::PopupMenu::Options&) override
+    {
+        drawSheetHeading (g, area.toFloat(), text);
+    }
+    void getIdealPopupMenuSectionHeaderSizeWithOptions (const juce::String& text, int, int& idealWidth, int& idealHeight,
+                                                        const juce::PopupMenu::Options&) override
+    {
+        idealHeight = juce::roundToInt (kSheetRowH);
+        idealWidth = juce::roundToInt (juce::GlyphArrangement::getStringWidth (sheetHeadingFont(), text.toUpperCase())
+                                       + kSheetGutter + kSheetPadRight + 40.0f);
+    }
+    void drawPopupMenuItemWithOptions (juce::Graphics& g, const juce::Rectangle<int>& area, bool isHighlighted,
+                                       const juce::PopupMenu::Item& item, const juce::PopupMenu::Options&) override
     {
         auto r = area.toFloat();
-        if (isSeparator)
+        if (item.isSeparator)
         {
-            g.setColour (juce::Colour (kInk).withAlpha (0.10f));
-            g.fillRect (r.reduced (8.0f, 0.0f).withHeight (1.0f).withY (r.getCentreY()));
+            g.setColour (juce::Colour (kSheetRule));
+            g.fillRect (r.getX() + kSheetGutter, r.getCentreY(), r.getWidth() - kSheetGutter - kSheetPadRight, 1.0f);
             return;
         }
-        if (isHighlighted && isActive)
+        drawSheetRow (g, r, item.text, isHighlighted, item.isTicked, item.isEnabled);
+        if (item.subMenu != nullptr)
         {
-            g.setColour (juce::Colour (kLamp).withAlpha (0.10f));
-            g.fillRoundedRectangle (r.reduced (3.0f, 1.0f), 3.0f);
-            auto rail = r.reduced (3.0f, 1.0f);
-            rail.setWidth (2.0f);
-            g.setColour (juce::Colour (kLamp).withAlpha (0.85f));
-            g.fillRect (rail);
-        }
-        const float d = 5.0f;
-        const auto dot = juce::Rectangle<float> (r.getX() + 8.0f, r.getCentreY() - d * 0.5f, d, d);
-        if (isTicked)
-        {
-            g.setColour (juce::Colour (kLamp).withAlpha (0.35f));
-            g.fillEllipse (dot.expanded (2.2f));
-            g.setColour (juce::Colour (kLamp));
-        }
-        else
-            g.setColour (juce::Colours::black.withAlpha (0.50f));
-        g.fillEllipse (dot);
-        const auto textArea = area.reduced (22, 0);
-        g.setFont (displayFont (itemFontSize, isTicked));
-        juce::Colour textCol = isActive ? juce::Colour (kInk) : juce::Colour (kInkDim);
-        if (isTicked) textCol = juce::Colour (kLamp).interpolatedWith (juce::Colour (kInk), 0.35f);
-        g.setColour (textCol.withAlpha (isActive ? 1.0f : 0.75f));
-        g.drawFittedText (text, textArea, juce::Justification::centredLeft, 1);
-        if (hasSubMenu)
-        {
-            const auto arrow = area.toFloat().removeFromRight (14.0f).withSizeKeepingCentre (5.0f, 8.0f);
+            const auto arrow = r.removeFromRight (kSheetPadRight + 2.0f).withSizeKeepingCentre (4.0f, 7.0f);
             juce::Path path;
             path.startNewSubPath (arrow.getX(), arrow.getY());
             path.lineTo (arrow.getRight(), arrow.getCentreY());
             path.lineTo (arrow.getX(), arrow.getBottom());
-            g.setColour (juce::Colour (kInk).withAlpha (0.8f));
+            g.setColour (juce::Colour (kSheetInk).withAlpha (item.isEnabled ? 0.8f : 0.4f));
             g.strokePath (path, juce::PathStrokeType (1.2f));
         }
     }
-    void getIdealPopupMenuItemSize (const juce::String& text, bool isSeparator,
-                                    int standardMenuItemHeight,
-                                    int& idealWidth, int& idealHeight) override
+    void getIdealPopupMenuItemSizeWithOptions (const juce::String& text, bool isSeparator, int,
+                                               int& idealWidth, int& idealHeight, const juce::PopupMenu::Options&) override
     {
-        idealHeight = isSeparator ? 9 : juce::jmax (standardMenuItemHeight, itemHeight);
-        idealWidth = juce::jmax (110, text.length() * 8 + 28);
+        idealHeight = isSeparator ? 9 : juce::roundToInt (kSheetRowH);
+        idealWidth = juce::roundToInt (juce::GlyphArrangement::getStringWidth (sheetRowFont (true), text)
+                                       + kSheetGutter + kSheetPadRight + 16.0f);
+    }
+    void drawPopupMenuUpDownArrowWithOptions (juce::Graphics& g, int width, int height, bool isScrollUpArrow,
+                                              const juce::PopupMenu::Options&) override
+    {
+        const auto r = juce::Rectangle<float> (0.0f, 0.0f, (float) width, (float) height).withSizeKeepingCentre (8.0f, 4.0f);
+        juce::Path path;
+        path.addTriangle (r.getX(), isScrollUpArrow ? r.getBottom() : r.getY(),
+                          r.getRight(), isScrollUpArrow ? r.getBottom() : r.getY(),
+                          r.getCentreX(), isScrollUpArrow ? r.getY() : r.getBottom());
+        g.setColour (juce::Colour (kSheetInk));
+        g.fillPath (path);
     }
 };
 }

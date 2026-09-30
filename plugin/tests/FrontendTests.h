@@ -276,9 +276,9 @@ inline int frontendTests()
                 ordered = ordered && choice >= lastChoice;
                 lastChoice = choice;
             }
-            if (row.body == 20) tide = heading == "Sways" && row.text.endsWith ("4 bars");
-            if (row.body == 5) lands = heading == "Lands" && row.text.endsWith ("1 bar");
-            if (row.body == 22) pulse = heading == "Pulses" && row.text.endsWith ("1/4 bar");
+            if (row.body == 20) tide = heading == "Sways" && row.detail == "4";
+            if (row.body == 5) lands = heading == "Lands" && row.detail == "1";
+            if (row.body == 22) pulse = heading == "Pulses" && row.detail == juce::String::charToString (0x00bc);
         }
         check (onlyMovements && tide && lands && pulse && ordered,
                "the movement browser groups movements by what they do, shortest first, each with its length");

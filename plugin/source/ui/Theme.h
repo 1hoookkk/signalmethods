@@ -235,4 +235,76 @@ inline void drawCrispText (juce::Graphics& g, juce::Rectangle<float> b, const ju
     g.setColour (colour);
     g.drawText (text, b.toNearestInt(), juce::Justification::centred, false);
 }
+
+inline constexpr juce::uint32 kSheetField = 0xfffcfcfd, kSheetFieldLow = 0xfff1f2f3, kSheetBorder = 0xff5a5750,
+                              kSheetInk = 0xff2a2722, kSheetInkDim = 0xff7a766e, kSheetHighlight = 0xff3cc8be,
+                              kSheetRule = 0xffd6d7d9;
+inline constexpr float kSheetRadius = 3.0f, kSheetRowH = 22.0f, kSheetGutter = 18.0f, kSheetPadRight = 14.0f,
+                       kSheetRowPt = 13.0f, kSheetHeadingPt = 10.0f;
+inline juce::Font sheetRowFont (bool emphasis = false) { return displayFont (kSheetRowPt, emphasis); }
+inline juce::Font sheetHeadingFont() { return displayFont (kSheetHeadingPt, true); }
+inline juce::Font sheetDetailFont() { return displayFont (kSheetRowPt - 1.5f, false); }
+inline void drawSheet (juce::Graphics& g, juce::Rectangle<float> r, int shadow = 10)
+{
+    juce::Path outline;
+    outline.addRoundedRectangle (r, kSheetRadius);
+    juce::DropShadow (juce::Colours::black.withAlpha (0.28f), shadow, { 0, shadow / 3 }).drawForPath (g, outline);
+    juce::DropShadow (juce::Colours::black.withAlpha (0.18f), 2, { 0, 1 }).drawForPath (g, outline);
+    juce::ColourGradient field (juce::Colour (kSheetField), 0.0f, r.getY(),
+                                juce::Colour (kSheetFieldLow), 0.0f, r.getBottom(), false);
+    g.setGradientFill (field);
+    g.fillPath (outline);
+    g.setColour (juce::Colour (kSheetBorder).withAlpha (0.9f));
+    g.drawRoundedRectangle (r.reduced (0.5f), kSheetRadius, 1.0f);
+    g.setColour (juce::Colours::white.withAlpha (0.7f));
+    g.drawLine (r.getX() + kSheetRadius, r.getY() + 1.5f, r.getRight() - kSheetRadius, r.getY() + 1.5f, 1.0f);
+}
+inline void drawSheetHeading (juce::Graphics& g, juce::Rectangle<float> cell, const juce::String& text,
+                              const juce::String& detail = {})
+{
+    g.setFont (sheetHeadingFont());
+    g.setColour (juce::Colour (kSheetInkDim));
+    auto label = cell.withTrimmedLeft (kSheetGutter).withTrimmedRight (kSheetPadRight);
+    g.drawText (text.toUpperCase(), label.toNearestInt(), juce::Justification::centredLeft, false);
+    if (detail.isNotEmpty())
+    {
+        g.drawText (detail.toUpperCase(), label.toNearestInt(), juce::Justification::centredRight, false);
+        label.removeFromRight (juce::GlyphArrangement::getStringWidth (sheetHeadingFont(), detail.toUpperCase()) + 8.0f);
+    }
+    const float w = juce::GlyphArrangement::getStringWidth (sheetHeadingFont(), text.toUpperCase());
+    g.setColour (juce::Colour (kSheetRule));
+    g.fillRect (label.getX() + w + 8.0f, cell.getCentreY(), juce::jmax (0.0f, label.getRight() - (label.getX() + w + 8.0f)), 1.0f);
+}
+inline void drawSheetRow (juce::Graphics& g, juce::Rectangle<float> cell, const juce::String& text,
+                          bool hot, bool ticked, bool enabled = true, const juce::String& detail = {})
+{
+    if (hot && enabled)
+    {
+        g.setColour (juce::Colour (kSheetHighlight).withAlpha (0.16f));
+        g.fillRect (cell.reduced (1.0f, 0.0f));
+        g.setColour (juce::Colour (kSheetHighlight).withAlpha (0.9f));
+        g.fillRect (cell.withWidth (2.0f).translated (1.0f, 0.0f));
+    }
+    if (ticked)
+    {
+        juce::Path check;
+        const float cx = cell.getX() + 9.0f, cy = cell.getCentreY();
+        check.startNewSubPath (cx - 3.0f, cy);
+        check.lineTo (cx - 1.0f, cy + 2.5f);
+        check.lineTo (cx + 3.5f, cy - 3.0f);
+        g.setColour (juce::Colour (kSheetInk));
+        g.strokePath (check, { 1.4f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
+    }
+    auto label = cell.withTrimmedLeft (kSheetGutter).withTrimmedRight (kSheetPadRight);
+    if (detail.isNotEmpty())
+    {
+        g.setFont (sheetDetailFont());
+        g.setColour (juce::Colour (kSheetInkDim));
+        g.drawText (detail, label.toNearestInt(), juce::Justification::centredRight, false);
+        label.removeFromRight (juce::GlyphArrangement::getStringWidth (sheetDetailFont(), detail) + 14.0f);
+    }
+    g.setFont (sheetRowFont (ticked));
+    g.setColour (juce::Colour (enabled ? kSheetInk : kSheetInkDim));
+    g.drawText (text, label.toNearestInt(), juce::Justification::centredLeft, false);
+}
 }

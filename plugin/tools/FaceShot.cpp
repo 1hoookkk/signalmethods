@@ -68,6 +68,19 @@ int main()
         save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 1.0f, juce::NativeImageType()), juce::String (stem) + ".png");
         save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 2.0f, juce::NativeImageType()), juce::String (stem) + "_200.png");
         save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 3.0f, juce::NativeImageType()), juce::String (stem) + "_300.png");
+        juce::PopupMenu::dismissAllActiveMenus();
+        settle (50);
+    };
+    const auto findIn = [] (juce::Component& root, auto predicate) -> juce::Component*
+    {
+        std::function<juce::Component* (juce::Component&)> walk = [&] (juce::Component& c) -> juce::Component*
+        {
+            if (predicate (c)) return &c;
+            for (auto* child : c.getChildren())
+                if (auto* hit = walk (*child)) return hit;
+            return nullptr;
+        };
+        return walk (root);
     };
     const auto set = [&] (const char* id, float denorm)
     {
@@ -82,6 +95,41 @@ int main()
             if (trench::bodyDisplayName (i).containsIgnoreCase (name)) return (float) i;
         return n > 1 ? 1.0f : 0.0f;
     };
+
+    if (std::getenv ("TRENCH_FACESHOT_KEY") != nullptr)
+    {
+        auto* face = editor->findChildWithID ("face");
+        trench::ui::KeySnapBox* key = nullptr;
+        if (face != nullptr)
+            for (auto* child : face->getChildren())
+                if (auto* candidate = dynamic_cast<trench::ui::KeySnapBox*> (child)) key = candidate;
+        if (key == nullptr) return 1;
+        int detected = -1;
+        key->setSuggestionProviders ([&] { return detected; });
+        const auto captureKey = [&] (const char* name, int choice, int suggestion)
+        {
+            detected = suggestion;
+            set (ParamID::keySnap, (float) choice);
+            key->refreshSuggestion();
+            settle (50);
+            save (holder.createComponentSnapshot (holder.getLocalBounds(), true, 1.0f, juce::NativeImageType()),
+                  juce::String (name) + ".png");
+            const auto bounds = key->getBounds();
+            key->setSize (99, 22);
+            save (key->createComponentSnapshot (key->getLocalBounds(), true, 2.0f, juce::NativeImageType()),
+                  juce::String (name) + "_key_290_200.png");
+            key->setBounds (bounds);
+        };
+        captureKey ("key_off", 0, -1);
+        captureKey ("key_off_with_detection", 0, 21);
+        captureKey ("key_auto_waiting", trench::KeySnap::kAutoChoice, -1);
+        captureKey ("key_auto_detected", trench::KeySnap::kAutoChoice, 13);
+        captureKey ("key_manual", 2, 21);
+        processor.editorBeingDeleted (editor);
+        holder.removeChildComponent (editor);
+        delete editor;
+        return 0;
+    }
 
     if (std::getenv ("TRENCH_FACESHOT_MOTION") != nullptr)
     {
@@ -292,22 +340,26 @@ int main()
 
     set (ParamID::movePreset, 0.0f);
     set (ParamID::output, 0.0f);
-    set (ParamID::body, bodyIndex ("Vowel Ah"));
+    set (ParamID::body, bodyIndex ("Yay Sayer"));
     set (ParamID::morph, 0.4f);
     set (ParamID::q, 0.5f);
     set (ParamID::keySnap, 10.0f);
     settle (500);
     shoot ("trench_face_key");
-    shoot ("trench_face_motion_list", [] (juce::Component& root)
+    shoot ("trench_face_motion_list", [&] (juce::Component& root)
     {
-        std::function<trench::ui::ModulationChip* (juce::Component&)> find = [&] (juce::Component& c) -> trench::ui::ModulationChip*
-        {
-            if (auto* m = dynamic_cast<trench::ui::ModulationChip*> (&c)) return m;
-            for (auto* child : c.getChildren())
-                if (auto* m = find (*child)) return m;
-            return nullptr;
-        };
-        if (auto* chip = find (root)) chip->showPatterns();
+        if (auto* chip = dynamic_cast<trench::ui::ModulationChip*> (findIn (root, [] (juce::Component& c) { return dynamic_cast<trench::ui::ModulationChip*> (&c) != nullptr; })))
+            chip->showPatterns();
+    });
+    shoot ("trench_face_body_list", [&] (juce::Component& root)
+    {
+        if (auto* type = dynamic_cast<trench::ui::TypeSelectorView*> (findIn (root, [] (juce::Component& c) { return dynamic_cast<trench::ui::TypeSelectorView*> (&c) != nullptr; })))
+            if (type->onOpenBrowser != nullptr) type->onOpenBrowser (type->selectedBody());
+    });
+    shoot ("trench_face_key_menu", [&] (juce::Component& root)
+    {
+        if (auto* key = findIn (root, [] (juce::Component& c) { return dynamic_cast<trench::ui::KeySnapBox*> (&c) != nullptr; }))
+            key->keyPressed (juce::KeyPress (juce::KeyPress::downKey));
     });
     set (ParamID::keySnap, 0.0f);
     set (ParamID::movePreset, 0.0f);

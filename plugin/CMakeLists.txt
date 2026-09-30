@@ -55,7 +55,7 @@ file(STRINGS "${TRENCH_PRESET_ROSTER}" TRENCH_PRESET_ROSTER_LINES
 set(TRENCH_SHIPPING_PRESET_FILES)
 foreach(line IN LISTS TRENCH_PRESET_ROSTER_LINES)
   string(REGEX MATCH
-    "TRENCH_PRESET\\(\"[^\"]+\",[ \t]*\"([^\"]+)\",[ \t]*\"([^\"]+)\"\\)"
+    "TRENCH_PRESET\\(\"[^\"]+\",[ \t]*\"([^\"]+)\",[ \t]*\"([^\"]+)\",[ \t]*[0-9]+\\)"
     matched "${line}")
   if(NOT matched)
     message(FATAL_ERROR "Cannot parse shipping roster line: ${line}")

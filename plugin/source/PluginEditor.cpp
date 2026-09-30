@@ -59,7 +59,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     bodyBrowser->onPreview = [this] (int index) { processor.previewBodyForUi (index); };
     bodyBrowser->onCommit  = [this] (int index) { typeSelector->setSelectedBody (index); processor.restoreBodyForUi (index); };
     bodyBrowser->onRestore = [this] (int index) { processor.restoreBodyForUi (index); };
-    typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, face.getLocalBounds()); };
+    typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, face.getLocalBounds(), typeSelector->getBounds()); };
     morphWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::morph, strip, theme);
     secondaryWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::q, strip, theme);
     morphReadout = std::make_unique<ValueReadout> ("morphReadout", theme);
@@ -89,7 +89,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     motionBrowser->setTitle ("Movement");
     motionBrowser->rowSource = [this] { return modulationChip->browserRows(); };
     motionBrowser->onCommit = [this] (int id) { modulationChip->commitBrowserRow (id); };
-    modulationChip->onEdit = [this] { motionBrowser->open (-1, face.getLocalBounds()); };
+    modulationChip->onEdit = [this] { motionBrowser->open (-1, face.getLocalBounds(), modulationChip->getBounds()); };
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders ([this] { return processor.getDetectedKeyForUi(); });
     keySnapBox->setListeningProvider ([this]
@@ -235,7 +235,8 @@ void PluginEditor::mouseDown (const juce::MouseEvent& e)
     for (const float s : { 1.0f, 1.5f, 2.0f })
         menu.addItem (juce::String (juce::roundToInt (s * 100.0f)) + "%", true, std::abs (uiScale - s) < 0.01f,
                       [safe = juce::Component::SafePointer<PluginEditor> (this), s] { if (safe != nullptr) safe->setUiScale (s); });
-    menu.showMenuAsync (juce::PopupMenu::Options().withTargetScreenArea ({ e.getScreenX(), e.getScreenY(), 1, 1 }),
+    menu.showMenuAsync (juce::PopupMenu::Options().withParentComponent (&face)
+                            .withTargetScreenArea ({ e.getScreenX(), e.getScreenY(), 1, 1 }),
                         [look] (int) {});
 #else
     juce::ignoreUnused (e);

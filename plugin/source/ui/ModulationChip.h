@@ -93,13 +93,19 @@ public:
                           : fraction.isEmpty() ? juce::String (whole) : juce::String (whole) + " " + fraction;
         return number + (bars > 1.0 ? " bars" : " bar");
     }
+    static juce::String barsShort (double bars)
+    {
+        return barsText (bars).upToFirstOccurrenceOf (" bar", false, false)
+                   .replace ("1/4", juce::String::charToString (0x00bc))
+                   .replace ("1/2", juce::String::charToString (0x00bd))
+                   .replace ("3/4", juce::String::charToString (0x00be));
+    }
     std::vector<BodyBrowser::Row> browserRows() const
     {
         std::vector<BodyBrowser::Row> out;
         if (param == nullptr) return out;
         const bool usingCustom = custom != nullptr && custom->getValue() > 0.5f;
         out.push_back ({ "Off", 0, ! usingCustom && selectedPattern() == 0 });
-        const auto separator = " " + juce::String::charToString (0x00b7) + " ";
         for (const auto* group : kRoles)
         {
             bool heading = false;
@@ -110,11 +116,11 @@ public:
                     if (juce::String (role (pattern)) != group || trench::Movement::authoredLengthChoice (pattern) != choice) continue;
                     if (! heading)
                     {
-                        out.push_back ({ group, -1, false, true });
+                        out.push_back ({ group, -1, false, true, "bars" });
                         heading = true;
                     }
-                    out.push_back ({ param->choices[i] + separator + barsText (trench::Movement::rateBars (choice)), i,
-                                     ! usingCustom && selectedPattern() == i });
+                    out.push_back ({ param->choices[i], i, ! usingCustom && selectedPattern() == i, false,
+                                     barsShort (trench::Movement::rateBars (choice)) });
                 }
         }
         const auto saved = savedNames != nullptr ? savedNames() : juce::StringArray();

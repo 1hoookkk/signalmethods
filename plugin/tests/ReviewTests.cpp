@@ -240,7 +240,7 @@ int main()
 
     std::printf ("== processor: body switch is never dry ==\n");
     trench::rescanBodyRoster();
-    const int crispIndex = rosterIndexContaining ("vowel ah");
+    const int crispIndex = rosterIndexContaining ("yay sayer");
     const int otherIndex = anotherPackedBody (crispIndex);
     check (crispIndex >= 0 && otherIndex >= 0, "two packed bodies in the roster", crispIndex, otherIndex);
     if (crispIndex >= 0 && otherIndex >= 0)
