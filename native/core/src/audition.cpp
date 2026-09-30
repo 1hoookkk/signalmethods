@@ -324,11 +324,11 @@ void CascadeRunner::process(std::span<float> block) {
           s.y_prev = y;
           x = y;
         } else {
-          const double out = c[0] * x + c[1] * s.x1 + c[2] * s.x2 - c[3] * s.y1 - c[4] * s.y2;
-          s.x2 = s.x1;
-          s.x1 = x;
-          s.y2 = s.y1;
-          s.y1 = out;
+          const double v = x - (2.0 + c[3]) * s.r1 + (1.0 - c[4]) * s.r2;
+          const double w_next = v + s.r1 + (s.r1 - s.r2);
+          const double out = c[0] * v + (2.0 * c[0] + c[1]) * s.r1 + (c[2] - c[0]) * s.r2;
+          s.r2 = s.r1;
+          s.r1 = w_next;
           double y = stage_saturation_ ? saturate_stage(out, stage_threshold_) : out;
           s.y_prev = y;
           x = y;
@@ -339,12 +339,12 @@ void CascadeRunner::process(std::span<float> block) {
       for (std::size_t si = 0; si < kSectionCount; ++si) {
         const auto& c = coefficients_[si];
         auto& s = state_[si];
-        const double out = c[0] * x + c[1] * s.x1 + c[2] * s.x2 - c[3] * s.y1 - c[4] * s.y2;
-        s.x2 = s.x1;
-        s.x1 = x;
-        s.y2 = s.y1;
-        s.y1 = out;
-        if (c[3] != 0.0 || c[4] != 0.0) peak_state_ = std::max(peak_state_, std::abs(out));
+        const double v = x - (2.0 + c[3]) * s.r1 + (1.0 - c[4]) * s.r2;
+        const double w = v + s.r1 + (s.r1 - s.r2);
+        const double out = c[0] * v + (2.0 * c[0] + c[1]) * s.r1 + (c[2] - c[0]) * s.r2;
+        s.r2 = s.r1;
+        s.r1 = w;
+        if (c[3] != 0.0 || c[4] != 0.0) peak_state_ = std::max(peak_state_, std::abs(w) * std::clamp(1.0 + c[3] + c[4], 1.0e-9, 1.0));
         double y = stage_saturation_ ? saturate_stage(out, stage_threshold_) : out;
         s.y_prev = y;
         x = ring_on_ ? ring_level(s, x, y) : y;
@@ -357,16 +357,18 @@ void CascadeRunner::process(std::span<float> block) {
         auto& s = state_[si];
         const double limit = ceiling;
         const double knee = kGritThreshFraction * limit;
-        double out = c[0] * x + c[1] * s.x1 + c[2] * s.x2 - c[3] * s.y1 - c[4] * s.y2;
+        const double v = x - (2.0 + c[3]) * s.r1 + (1.0 - c[4]) * s.r2;
+        double w = v + s.r1 + (s.r1 - s.r2);
+        double out = c[0] * v + (2.0 * c[0] + c[1]) * s.r1 + (c[2] - c[0]) * s.r2;
         if (std::abs(out) > knee && (c[3] != 0.0 || c[4] != 0.0)) {
           activity_ = std::max(activity_, std::min(1.0, (std::abs(out) - knee) / knee));
-          out = std::copysign(knee + (limit - knee) * std::tanh((std::abs(out) - knee) / (limit - knee)), out);
+          const double clipped = std::copysign(knee + (limit - knee) * std::tanh((std::abs(out) - knee) / (limit - knee)), out);
+          w *= clipped / out;
+          out = clipped;
         }
-        s.x2 = s.x1;
-        s.x1 = x;
-        s.y2 = s.y1;
-        s.y1 = out;
-        if (c[3] != 0.0 || c[4] != 0.0) peak_state_ = std::max(peak_state_, std::abs(out));
+        s.r2 = s.r1;
+        s.r1 = w;
+        if (c[3] != 0.0 || c[4] != 0.0) peak_state_ = std::max(peak_state_, std::abs(w) * std::clamp(1.0 + c[3] + c[4], 1.0e-9, 1.0));
         double y = stage_saturation_ ? saturate_stage(out, stage_threshold_) : out;
         s.y_prev = y;
         x = ring_on_ ? ring_level(s, x, y) : y;

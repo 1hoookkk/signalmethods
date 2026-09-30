@@ -44,10 +44,8 @@ class CascadeRunner {
     Biquad kernel{2.0, 1.0, 2.0, 1.0, 1.0};
     Biquad kdeltas{};
     Biquad ktarget{2.0, 1.0, 2.0, 1.0, 1.0};
-    double x1{};
-    double x2{};
-    double y1{};
-    double y2{};
+    double r1{};
+    double r2{};
     double w1{};
     double w2{};
     double p1{};
