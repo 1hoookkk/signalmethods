@@ -137,15 +137,7 @@ private:
             onAnnounce (selector.getText());
         repaint();
     }
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
-    {
-        const int n = selector.getNumItems();
-        if (n == 0 || w.deltaY == 0.0f)
-            return;
-        const int step = w.deltaY > 0.0f ? -1 : 1;
-        const int idx = juce::jlimit (0, n - 1, selector.getSelectedItemIndex() + step);
-        selector.setSelectedItemIndex (idx, juce::sendNotificationSync);
-    }
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override {}
 public:
     std::function<void (const juce::String&)> onAnnounce;
 private:

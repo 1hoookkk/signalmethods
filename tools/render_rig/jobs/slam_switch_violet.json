@@ -1,0 +1,84 @@
+{
+  "name": "slam_switch_violet",
+  "mesh": "../sources/generated/slam_cap.glb",
+  "part": {
+    "front": "+z",
+    "materials": [
+      {
+        "material": "black_plastic"
+      }
+    ],
+    "smooth_angle_deg": 35.0
+  },
+  "extras": [
+    {
+      "type": "box",
+      "size": [
+        9.4,
+        4.1,
+        0.5
+      ],
+      "z": 2.8,
+      "bevel": 0.18,
+      "material": "smoked_glass"
+    },
+    {
+      "type": "box",
+      "size": [
+        9.0,
+        3.7,
+        0.2
+      ],
+      "z": 2.84,
+      "material": "cavity"
+    },
+    {
+      "type": "text",
+      "text": "SLAM",
+      "size": 2.8,
+      "z": 3.31,
+      "depth": 0.1,
+      "material": "led",
+      "font": "C:/Windows/Fonts/tahomabd.ttf"
+    }
+  ],
+  "shadow": {
+    "z": 0.0,
+    "light": {
+      "location": [
+        0.0,
+        20.0,
+        200.0
+      ],
+      "size": 30.0
+    },
+    "blur_mm": 0.5,
+    "opacity": 0.5
+  },
+  "frame_mm": 18.0,
+  "pixels": 128,
+  "supersample": 4,
+  "led_colour": "#B48CFF",
+  "states": {
+    "off": {
+      "led_strength": 0.0
+    },
+    "on": {
+      "led_strength": 7.0,
+      "glow": [
+        {
+          "radius_px": 5,
+          "strength": 2.2
+        },
+        {
+          "radius_px": 18,
+          "strength": 3.0
+        }
+      ]
+    }
+  },
+  "studio": {
+    "hdri_rotation_deg": 45.0
+  },
+  "led_off_colour": "#B4BAB5"
+}

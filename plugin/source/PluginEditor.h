@@ -15,7 +15,6 @@
 #include "ui/ModulationChip.h"
 #include "ui/ModulationBay.h"
 #include "ui/LabelsLayer.h"
-#include "ui/Onboarding.h"
 #if TRENCH_DEV_PANEL
 #include "ui/DevCalibrationPanel.h"
 #endif
@@ -79,11 +78,8 @@ private:
     std::unique_ptr<trench::ui::ValueReadout>     morphReadout;
     std::unique_ptr<trench::ui::ValueReadout>     secondaryReadout;
     std::unique_ptr<trench::ui::LabelsLayer>      labels;
-    std::unique_ptr<trench::ui::Onboarding>       onboarding;
 #if TRENCH_DEV_PANEL
     std::unique_ptr<trench::ui::DevPanel>         devPanel;
 #endif
-    bool onboardingSeen() const;
-    void markOnboardingSeen();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

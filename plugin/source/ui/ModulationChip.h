@@ -23,7 +23,7 @@ public:
         setWantsKeyboardFocus (true);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Modulation");
-        setTooltip ("Choose a motion pattern, its rate and playback. It moves MORPH around where the wheel sits; hold the wheel to stop it.");
+        setTooltip ("Choose a movement. It moves MORPH around where the wheel sits; hold the wheel to stop it.");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (*param, [this] (float) { repaint(); });
         if (length != nullptr)
@@ -198,12 +198,7 @@ public:
     {
         if (! e.mouseWasDraggedSinceMouseDown() && e.getNumberOfClicks() == 1) showPatterns();
     }
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
-    {
-        if (wheel.deltaY == 0.0f)
-            return;
-        selectPattern (selectedPattern() - (wheel.deltaY > 0.0f ? 1 : -1));
-    }
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override {}
     bool keyPressed (const juce::KeyPress& key) override
     {
         if (key == juce::KeyPress::returnKey || key == juce::KeyPress::spaceKey) { showPatterns(); return true; }

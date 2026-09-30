@@ -1,7 +1,6 @@
 #include "PluginEditor.h"
 #include "BodyAxes.h"
 #include "parameters/CurveMap.h"
-#include "ui/Onboarding.h"
 #include <cstdlib>
 #include "BinaryData.h"
 #include "TrenchBodyRoster.h"
@@ -145,22 +144,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     face.addAndMakeVisible (*outputReadout);
     face.addChildComponent (*bodyBrowser);
     face.addChildComponent (*motionBrowser);
-    onboarding = std::make_unique<Onboarding> (theme);
-    onboarding->onComplete = [this]
-    {
-        markOnboardingSeen();
-        onboarding->setVisible (false);
-    };
-    face.addChildComponent (*onboarding);
-    {
-        const bool headless = std::getenv ("TRENCH_HEADLESS") != nullptr;
-        const bool forced = std::getenv ("TRENCH_SHOW_ONBOARDING") != nullptr;
-        onboarding->setVisible (forced || (! headless && ! onboardingSeen()));
-        if (onboarding->isVisible())
-            onboarding->watch (*this);
-        if (const char* hover = std::getenv ("TRENCH_ONBOARDING_HOVER"))
-            onboarding->forceHover (juce::String (hover).getIntValue());
-    }
 #if TRENCH_DEV_PANEL
     devPanel = std::make_unique<DevPanel> (theme, processor,
         juce::File (TRENCH_TABLE_STITCH_ROOT).getChildFile ("plugin/patterns/loops"));
@@ -217,14 +200,6 @@ void PluginEditor::resized()
 #if TRENCH_DEV_PANEL
     devPanel->setBounds (kEditorWidth, 0, kDevPanelWidth, kDevPanelHeight);
 #endif
-    onboarding->setBounds (base);
-    onboarding->setTargets ({
-        { modulationChip->getBounds(), "MOVE", "choose a movement, its rate and playback" },
-    });
-
-
-
-    onboarding->toFront (false);
 }
 void PluginEditor::setUiScale (float scale)
 {
@@ -257,17 +232,6 @@ void PluginEditor::mouseDown (const juce::MouseEvent& e)
 #else
     juce::ignoreUnused (e);
 #endif
-}
-bool PluginEditor::onboardingSeen() const
-{
-    juce::PropertiesFile file (trenchSettingsOptions());
-    return file.getBoolValue ("onboarding.axes", false);
-}
-void PluginEditor::markOnboardingSeen()
-{
-    juce::PropertiesFile file (trenchSettingsOptions());
-    file.setValue ("onboarding.axes", true);
-    file.saveIfNeeded();
 }
 void PluginEditor::onFrame()
 {

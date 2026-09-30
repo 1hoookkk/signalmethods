@@ -29,6 +29,7 @@ PRESETS = {
     "black_anodised": dict(Base_Color=(0.02, 0.02, 0.022, 1), Metallic=1.0, Roughness=0.35),
     "black_plastic": dict(Base_Color=(0.012, 0.012, 0.013, 1), Roughness=0.42, Coat_Weight=0.3),
     "bone_plastic":  dict(Base_Color=(0.72, 0.71, 0.66, 1), Roughness=0.5),
+    "legend":        dict(Base_Color=(0.92, 0.90, 0.86, 1), Roughness=0.45),
     "cavity":        dict(Base_Color=(0.01, 0.012, 0.013, 1), Roughness=0.6),
     "clear_glass":   dict(Base_Color=(1, 1, 1, 1), Transmission_Weight=1.0, Roughness=0.03, IOR=1.49),
     "smoked_glass":  dict(Base_Color=(0.30, 0.34, 0.35, 1), Transmission_Weight=1.0, Roughness=0.03, IOR=1.49),
@@ -41,11 +42,11 @@ def preset(name):
     return mat
 
 
-def led(name, colour_hex, strength):
+def led(name, colour_hex, strength, off_hex=None):
     mat, bsdf = _principled(name)
     colour = hex_linear(colour_hex)
     lit = strength > 0.0
-    _set(bsdf, Base_Color=colour if lit else (0.03, 0.05, 0.05, 1), Roughness=0.4,
+    _set(bsdf, Base_Color=colour if lit else (hex_linear(off_hex) if off_hex else (0.03, 0.05, 0.05, 1)), Roughness=0.4,
          Emission_Color=colour, Emission_Strength=strength)
     return mat
 
@@ -62,7 +63,7 @@ def tinted_glass(name, colour_hex, lit, off_hex=None):
 def resolve(spec, state):
     kind = spec["material"]
     if kind == "led":
-        return led(spec.get("name", "led"), state.get("led_colour", "#44DEDE"), state.get("led_strength", 0.0))
+        return led(spec.get("name", "led"), state.get("led_colour", "#44DEDE"), state.get("led_strength", 0.0), state.get("led_off_colour"))
     if kind == "led_glass":
         return tinted_glass(spec.get("name", "led_glass"), state.get("led_colour", "#44DEDE"), state.get("led_strength", 0.0) > 0.0,
                             state.get("lens_off_colour"))

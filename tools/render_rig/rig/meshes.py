@@ -44,6 +44,9 @@ def prepare(obj, part):
     cut = part.get("keep_front_of")
     if cut is not None:
         bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(_axial(v.co, axis, sign) < cut for v in f.verts)], context="FACES")
+    keep = part.get("keep_within_radius")
+    if keep is not None:
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(_radial(v.co, axis) > keep for v in f.verts)], context="FACES")
     rules = part["materials"]
     for f in bm.faces:
         c = f.calc_center_median()
@@ -73,5 +76,28 @@ def add_primitive(spec):
     elif kind == "ring":
         bpy.ops.mesh.primitive_torus_add(major_radius=spec["radius"], minor_radius=spec["width"] / 2.0, location=(0, 0, spec["z"]),
                                          major_segments=128, minor_segments=16)
+    elif kind == "box":
+        w, h, d = spec["size"]
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, spec["z"] + d / 2.0))
+        box = bpy.context.object
+        box.scale = (w, h, d)
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        if spec.get("bevel", 0.0) > 0.0:
+            mod = box.modifiers.new("bevel", "BEVEL")
+            mod.width = spec["bevel"]
+            mod.segments = 8
+            mod.limit_method = "ANGLE"
+            bpy.ops.object.modifier_apply(modifier="bevel")
+    elif kind == "text":
+        bpy.ops.object.text_add(location=(0, 0, spec["z"]))
+        t = bpy.context.object
+        t.data.body = spec["text"]
+        t.data.size = spec["size"]
+        t.data.align_x = "CENTER"
+        t.data.align_y = "CENTER"
+        t.data.extrude = spec.get("depth", 0.2) / 2.0
+        if spec.get("font"):
+            t.data.font = bpy.data.fonts.load(spec["font"])
+        bpy.ops.object.convert(target="MESH")
     bpy.ops.object.shade_smooth()
     return bpy.context.object

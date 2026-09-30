@@ -56,7 +56,7 @@ def build_scene(job, job_dir):
 
 
 def apply_state(job, obj, extras, state):
-    merged = dict(led_colour=job.get("led_colour", "#44DEDE"), lens_off_colour=job.get("lens_off_colour"), **state)
+    merged = dict(led_colour=job.get("led_colour", "#44DEDE"), lens_off_colour=job.get("lens_off_colour"), led_off_colour=job.get("led_off_colour"), **state)
     for index, rule in enumerate(job["part"]["materials"]):
         if index < len(obj.data.materials):
             obj.data.materials[index] = materials.resolve(rule, merged)
