@@ -28,14 +28,18 @@ if(NOT TARGET juce::juce_audio_processors)
 endif()
 
 if(NOT TARGET RTNeural)
-  set(RTNEURAL_STL ON CACHE BOOL "Use RTNeural STL backend" FORCE)
+  set(RTNEURAL_XSIMD ON CACHE BOOL "Use RTNeural xsimd backend" FORCE)
+  set(RTNEURAL_STL OFF CACHE BOOL "Use RTNeural STL backend" FORCE)
   FetchContent_Declare(RTNeuralSource
     GIT_REPOSITORY https://github.com/jatinchowdhury18/RTNeural.git
     GIT_TAG 1fb1f075a5d66e85bfc8f488c3f3626840cb3a1d
     GIT_SHALLOW FALSE)
   FetchContent_MakeAvailable(RTNeuralSource)
 endif()
-target_compile_definitions(RTNeural PUBLIC RTNEURAL_NO_DEBUG=1)
+target_compile_definitions(RTNeural PUBLIC RTNEURAL_NO_DEBUG=1 RTNEURAL_DEFAULT_ALIGNMENT=32)
+if(MSVC)
+  target_compile_options(RTNeural INTERFACE /arch:AVX2)
+endif()
 
 set(TRENCH_WORKSPACE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(TRENCH_COMMON_DEFINITIONS
@@ -85,6 +89,7 @@ juce_add_binary_data(TRENCHAssets SOURCES
   assets/trench_display_grid.png
   assets/display_bitmap4613.png
   assets/key_model_rtneural.json
+  assets/trench_8bus_main.json
   assets/svg/knob_body.svg
   assets/svg/knob_body_cream.svg
   assets/svg/knob_pointer.svg

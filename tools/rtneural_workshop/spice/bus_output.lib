@@ -1,0 +1,78 @@
+.subckt NJM2068_EST inp inn vp vn out params: unity=5.5Meg slew=6Meg margin=1.5
+Rinput inp inn 300k
+Bgain 0 dominant I={slew/(2*pi*unity)*.001*tanh(v(inp,inn)*(2*pi*unity)/slew)}
+Rgain dominant 0 1G
+Cdominant dominant 0 {.001/(2*pi*unity)}
+Banti dominant 0 I={(max(v(dominant)-(v(vp)-margin),0)+min(v(dominant)-(v(vn)+margin),0))/10}
+Blimited limited 0 V={min(max(v(dominant),v(vn)+margin),v(vp)-margin)}
+Boutput 0 out I={.04*tanh((v(limited)-v(out))) }
+Routput out 0 100Meg
+.ends NJM2068_EST
+.subckt MACKIE8_CHANNEL_BYPASS input panout params: fader=.366 rail=18
+Vpositive vp 0 {rail}
+Vnegative vn 0 {-rail}
+R226top input wiper {max(10000*(1-fader),.001)}
+R226bottom wiper 0 {max(10000*fader,.001)}
+C232 wiper amp_in 47u
+R274 amp_in 0 15k
+R228 fader_fb fader_out 1.1k
+C226 fader_fb fader_out 220p
+R227 fader_fb 0 510
+XU202B amp_in fader_fb vp vn fader_out NJM4560_EST
+C221 fader_out pan_in 47u
+R229 pan_in 0 100k
+R231A pan_in 0 50k
+R231C pan_in 0 50k
+R232 pan_in 0 36k
+XU203A pan_in pan_amp vp vn pan_amp NJM4560_EST
+C215 pan_amp panout 47u
+R234 panout 0 5.1k
+R236 panout 0 5.1k
+R238 panout 0 5.1k
+R240 panout 0 5.1k
+.ends MACKIE8_CHANNEL_BYPASS
+.subckt MACKIE8_MAIN sum hot cold unbalanced params: master=1 rail=16 unity=5.5Meg slew=6Meg margin=1.5
+Vpositive vp 0 {rail}
+Vnegative vn 0 {-rail}
+R218 sum sum_out 2.7k
+C85 sum sum_out 220p
+R607 sum snubber 20
+C341 snubber 0 220p
+XU57A 0 sum vp vn sum_out NJM2068_EST unity={unity} slew={slew} margin={margin}
+R242 sum_out insert_cap 120
+C108 insert_cap insert 47u
+R305 insert 0 20k
+C86 insert fader_top 47u
+R278top fader_top wiper {max(10000*(1-master),.001)}
+R278bottom wiper 0 {max(10000*master,.001)}
+C292 wiper fader_in 47u
+R578 fader_in 0 15k
+R219 fader_fb fader_out 2.4k
+C97 fader_fb fader_out 100p
+R220 fader_fb 0 1.1k
+XU33A fader_in fader_fb vp vn fader_out NJM2068_EST unity={unity} slew={slew} margin={margin}
+R250 fader_out hot_fb 5.1k
+R221 hot_fb hot_amp 5.1k
+C100 hot_fb hot_amp 20p
+XU35A 0 hot_fb vp vn hot_amp NJM4560_EST
+C98 hot_amp hot_cap 47u
+R246 hot_cap hot 120
+R508 hot 0 20k
+XU35B fader_out cold_amp vp vn cold_amp NJM4560_EST
+C208 cold_amp cold_cap 47u
+R509 cold_cap cold 120
+R579 cold 0 20k
+R226 fader_out unbal_fb 5.1k
+R225 unbal_fb unbal_amp 10k
+C89 unbal_fb unbal_amp 20p
+XU34A 0 unbal_fb vp vn unbal_amp NJM4560_EST
+C90 unbal_amp unbal_cap 47u
+R227 unbal_cap unbalanced 120
+R236 unbalanced 0 20k
+.ends MACKIE8_MAIN
+.subckt MACKIE8_LINE_MAIN tip ring hot cold unbalanced params: trim=0 channel=.366 master=1 unity=5.5Meg slew=6Meg margin=1.5
+Xpre tip ring insert MACKIE8_LINE trim={trim}
+Xchannel insert panout MACKIE8_CHANNEL_BYPASS fader={channel}
+R242 panout sum 5.1k
+Xmain sum hot cold unbalanced MACKIE8_MAIN master={master} unity={unity} slew={slew} margin={margin}
+.ends MACKIE8_LINE_MAIN

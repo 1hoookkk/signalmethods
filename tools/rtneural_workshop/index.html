@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RTNeural workshop</title><link rel="stylesheet" href="/style.css"></head>
+<body><main>
+<header><div class="brand">TRENCH <span>/</span> LAB</div><div class="local"><i></i> LOCAL · 48 kHz</div></header>
+<div class="intro"><div><p class="eyebrow">DISTORTION STUDIES / 01</p><h1>RTNeural workshop<span>.</span></h1><p class="lede">Capture the desk. Train a snapshot. Hear the difference.</p></div><span class="chip">8•BUS STUDY</span></div>
+<div class="workspace">
+<section class="target panel">
+<div class="section-title"><span>01</span><h2>Set the target</h2></div>
+<div class="field"><label for="reference">Reference source</label><select id="reference"><option value="pair" selected>Recorded input / target pair</option><option value="model">Imported capture model</option><option value="native">Mackity · 1202 comparison</option></select></div>
+<div id="pairFields">
+<p class="small muted">For an 8•Bus fit, import a capture of that desk. Hardware identity and settings must come with the recording.</p>
+<div class="pair-files"><label class="file-button" role="button" tabindex="0" for="pairInput">Choose dry input WAV<input id="pairInput" type="file" accept=".wav,audio/wav"></label><span id="pairInputName" class="small muted">No input imported</span><label class="file-button" role="button" tabindex="0" for="pairTarget">Choose recorded target WAV<input id="pairTarget" type="file" accept=".wav,audio/wav"></label><span id="pairTargetName" class="small muted">No target imported</span></div>
+<div class="field"><label for="delay">Target delay · samples</label><input id="delay" type="number" min="-48000" max="48000" step="1" value="0"></div>
+<p class="small muted">Positive = target arrives later. Mono 48 kHz, at least 12 s. No clock-drift correction.</p>
+<div class="field"><label for="description">Capture notes</label><textarea id="description" rows="3" maxlength="500" placeholder="Desk, input route, trim, EQ, output route and interface calibration"></textarea></div>
+<a href="/capture-input.wav" download class="small">Download NAM capture stimulus · 3:10 ↗</a>
+</div>
+<div id="modelFields" hidden>
+<p class="small muted">Mono LSTM + dense RTNeural JSON or a Proteus snapshot. Select its original rate before importing. Hardware identity is not inferred from the file.</p>
+<div class="field"><label for="modelRate">Original model rate</label><select id="modelRate"><option value="44100">44.1 kHz · Proteus default</option><option value="48000">48 kHz</option><option value="88200">88.2 kHz</option><option value="96000">96 kHz</option></select></div>
+<label class="file-button" role="button" tabindex="0" for="modelUpload">Import capture JSON<input id="modelUpload" type="file" accept=".json,application/json"></label><p id="modelName" class="small muted">No model imported</p>
+</div>
+<div id="nativeFields" hidden>
+<p class="small muted">Native Mackity models a pre-VLZ 1202 input. It is a comparison reference, not an 8•Bus capture.</p>
+<div class="drive-display"><span>INPUT DRIVE</span><div><output id="driveValue">32</output><small>dB</small></div></div>
+<label class="sr-only" for="drive">Mackity input drive</label><input id="drive" type="range" min="0" max="60" step="1" value="32"><div class="scale"><span>0 · CLEANER</span><span>60 · HARDER</span></div>
+</div>
+<div class="field"><label for="placement">Stage placement</label><select id="placement"><option value="before">Reference → filter</option><option value="after">Filter → reference</option></select></div>
+<p id="pairPlacementNote" class="small muted">Recorded pairs support filtering after the captured stage. To capture the other order, re-record a filtered stimulus.</p>
+<label class="check"><input id="filter" type="checkbox" checked><span>Talking Hedz filter</span></label>
+<div class="field output-row"><label for="output">Manual OUTPUT <small>After the whole chain</small></label><div><input id="output" type="number" min="-60" max="12" step="1" value="-24"><span>dB</span></div></div>
+<p class="small muted">No normalization or automatic gain compensation.</p>
+<div id="auditionSource" class="source"><span class="eyebrow">AUDITION SOURCE</span><strong id="sourceName">Bass test phrase</strong><span id="sourceDetail" class="small muted">48 kHz · mono</span><label class="file-button" role="button" tabindex="0" for="upload">Choose WAV<input id="upload" type="file" accept=".wav,audio/wav"></label><p class="small muted">48 kHz, up to 60 s. Stereo is mixed to mono.</p></div>
+<button id="audition" class="button secondary">Render reference <span>↗</span></button>
+</section>
+<div class="right">
+<section class="panel train">
+<div class="section-title"><span>02</span><h2>Train the snapshot</h2></div>
+<p id="trainingDetail" class="muted">Paired captures use 70% for training, 15% for validation and the final 15% for audition.</p>
+<div class="objective"><strong>Multi-resolution spectral loss + low-frequency ESR</strong><span>FFT 256 / 1024 / 4096 · bass band 0–300 Hz · weights 1 : 1</span></div>
+<div class="training-options"><div class="field"><label for="hidden">LSTM size</label><select id="hidden"><option value="8">8 units</option><option value="16" selected>16 units</option><option value="32">32 units</option></select></div><div class="field"><label for="steps">Training steps</label><select id="steps"><option value="1000">1,000 · quick study</option><option value="3000">3,000 · longer fit</option><option value="6000">6,000 · extended fit</option></select></div></div>
+<div class="train-actions"><button id="train" class="button primary">Train & compare <span>→</span></button><button id="cancel" class="button quiet" hidden>Cancel</button></div>
+<div class="progress-wrap"><div class="status-line"><span id="status" role="status" aria-live="polite">Import a reference to begin.</span><span id="percent"></span></div><progress id="progress" max="1" value="0" aria-label="Run progress"></progress></div>
+<p id="liveMetric" class="small muted">Best checkpoint = lowest combined validation loss.</p>
+</section>
+<section class="panel listen">
+<div class="section-title"><span>03</span><h2>Compare & export</h2></div>
+<div class="compare-heading"><p id="runLabel" class="muted">Render a reference to start listening.</p><select id="history" aria-label="Saved run"><option>No saved runs</option></select></div>
+<p id="stale" class="notice" hidden>Controls changed. These clips belong to the saved settings shown above.</p>
+<div class="switches" role="group" aria-label="Audition version"><button data-audio="baseline" disabled>Baseline</button><button data-audio="reference" class="selected" disabled>Reference</button><button data-audio="model" disabled>RTNeural model</button></div>
+<div class="player"><button id="play" class="play" disabled aria-label="Play audition">▶</button><div class="transport"><div class="play-title"><strong id="playingLabel">Reference</strong><span id="time">0:00 / 0:00</span></div><label class="sr-only" for="seek">Playback position</label><input id="seek" type="range" min="0" max="1000" value="0" disabled></div><label class="loop"><input id="loop" type="checkbox" checked> Loop</label></div>
+<div class="audio-meta"><span id="peak">— dBFS peak</span><a id="downloadAudio" hidden download>Download WAV ↗</a></div>
+<div class="metrics"><div><span>VALIDATION OBJECTIVE</span><strong id="valMetric">—</strong></div><div><span>HELD-OUT LF ESR</span><strong id="holdMetric">—</strong></div><div><span>EXPORT PARITY</span><strong id="parityMetric">—</strong></div></div>
+<p id="fitNote" class="small muted">Lower loss indicates a closer fit on these signals. Listening is still required.</p>
+<div class="exports"><a id="export" class="button secondary disabled" aria-disabled="true">Export RTNeural JSON <span>↗</span></a><a id="report" hidden>Run report ↗</a></div>
+</section></div></div>
+<footer><span>Reference → PyTorch → native RTNeural</span><span>One fixed setting per model · mono · 48 kHz export</span></footer>
+<div id="error" class="error" role="alert" hidden></div>
+</main><script src="/app.js"></script></body></html>

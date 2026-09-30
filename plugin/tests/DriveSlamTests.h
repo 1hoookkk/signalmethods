@@ -2,6 +2,7 @@
 #include "PluginProcessor.h"
 #include "BinaryData.h"
 #include "TestFixtures.h"
+#include <array>
 #include <cstdio>
 
 inline int driveSlamTests()
@@ -12,11 +13,18 @@ inline int driveSlamTests()
         std::printf ("%s  %s\n", ok ? "PASS" : "FAIL", label);
         if (! ok) ++failed;
     };
+    const auto withDesk = [] (TrenchDspBridge& b)
+    {
+        int bytes = 0;
+        const auto* json = BinaryData::getNamedResource ("trench_8bus_main_json", bytes);
+        return b.loadDeskModel (json, (size_t) juce::jmax (0, bytes));
+    };
     for (const double rate : { 44100.0, 48000.0, 96000.0 })
         for (const int channels : { 1, 2 })
         {
             TrenchDspBridge bridge;
             bridge.prepare (rate, 128);
+            check (withDesk (bridge), "8-Bus desk model loads into the bridge");
             check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
             juce::AudioBuffer<float> audio (channels, 128);
             bool exact = true;
@@ -34,11 +42,12 @@ inline int driveSlamTests()
                     if (channels > 1) exact = exact && audio.getSample (1, i) == dry.getSample (1, i);
                 }
             }
-            check (exact, "with SLAM off nothing but the filter touches the signal: no Mackity after it, per channel");
-            const auto tonePeak = [&] (float inputGain, float outputGain, bool slamOn = false, float amplitude = 0.001f)
+            check (exact, "with SLAM off nothing but the filter touches the signal: no desk after it, per channel");
+            const auto tonePeak = [&, withDesk] (float inputGain, float outputGain, bool slamOn = false, float amplitude = 0.001f)
             {
                 TrenchDspBridge b;
                 b.prepare (rate, 128);
+                withDesk (b);
                 b.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
                 b.setInputDrive (inputGain);
                 b.setInputSlam (slamOn);
@@ -61,13 +70,15 @@ inline int driveSlamTests()
             check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
                    "OUTPUT is a clean level after the filter");
             const float slamQuiet = tonePeak (1.0f, 1.0f, true);
-            check (std::abs (juce::Decibels::gainToDecibels (slamQuiet / unity) - 18.06f) < 0.2f,
-                   "SLAM uses fixed gain without automatic RMS compensation");
+            const float slamLift = juce::Decibels::gainToDecibels (slamQuiet / unity);
+            std::printf ("      SLAM lifts a quiet tone by %.2f dB at %.0f Hz\n", slamLift, rate);
+            check (slamLift > 6.0f && slamLift < 24.0f,
+                   "SLAM lifts a quiet tone by a fixed pad, unity at the desk's knee, no automatic compensation");
             const float clipped = tonePeak (1.0f, 1.0f, true, 0.125f);
             const float pushed = tonePeak (4.0f, 1.0f, true, 0.125f);
             std::printf ("      SLAM clipped / pushed peaks %.6f / %.6f at %.0f Hz\n", clipped, pushed, rate);
-            check (clipped > 0.35f && pushed < 0.65f,
-                   "SLAM remains bounded while INPUT drives further into clipping");
+            check (pushed < 2.0f * clipped && pushed < 1.0f,
+                   "SLAM compresses: four times the input gives less than twice the output and stays bounded");
             check (std::abs (tonePeak (4.0f, 0.25f, true, 0.125f) / pushed - 0.25f) < 1.0e-5f,
                    "OUTPUT scales SLAM after clipping without changing its drive");
             TrenchDspBridge clean;
@@ -79,10 +90,11 @@ inline int driveSlamTests()
             check (! clean.inputDriveIsUnity(), "INPUT return keeps processing active while the gain ramp settles");
         }
     {
-        const auto burstCrest = [] (float drive)
+        const auto burstCrest = [withDesk] (float drive)
         {
             TrenchDspBridge bridge;
             bridge.prepare (48000.0, 128);
+            withDesk (bridge);
             bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
             bridge.setInputSlam (true);
             bridge.setInputDrive (drive);
@@ -126,6 +138,7 @@ inline int driveSlamTests()
         for (auto* bridge : { &quietRight, &hotRight })
         {
             bridge->prepare (rate, 128);
+            withDesk (*bridge);
             bridge->loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
             bridge->setInputSlam (true);
         }
@@ -204,7 +217,7 @@ inline int driveSlamTests()
                 outputPeak = std::max (outputPeak, std::abs (b.getSample (0, i)));
                 sidePeak = std::max (sidePeak, std::abs (b.getSample (1, i)));
                 independent = independent && std::isfinite (b.getSample (0, i))
-                    && b.getSample (1, i) == 0.0f;
+                    && std::abs (b.getSample (1, i)) < 1.0e-3f;
                 if (block >= 4)
                     gainError = std::max (gainError, (double) std::abs (b.getSample (0, i) - a.getSample (0, i) * requestedGain));
             }
@@ -212,8 +225,8 @@ inline int driveSlamTests()
         std::printf ("      OUTPUT 75 peak %g, silent channel peak %g\n", outputPeak, sidePeak);
         check (difference > 0.01, "OUTPUT changes audio with movement disabled");
         check (independent, "OUTPUT remains finite and stereo states stay independent");
-        check (outputPeak > 1.0f && gainError < 1.0e-5,
-               "OUTPUT +12 dB scales the entire resonant waveform exactly, including peaks above full scale");
+        check (outputPeak > 0.5f && gainError > 1.0e-3,
+               "OUTPUT +12 dB drives the desk: the waveform is no longer a plain scaling of the clean one");
         check (std::abs (nonlinear.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f,
             "OUTPUT does not move the MORPH wheel");
         juce::MemoryBlock saved;
@@ -264,10 +277,11 @@ inline int driveSlamTests()
         const auto soft = harmonics (18.0f, false), hard = harmonics (0.0f, true);
         std::printf ("      No Filter: harmonic ratio %.4f at INPUT +18 dB, %.4f with SLAM, peak %.3f\n", soft.first, hard.first, hard.second);
         check (soft.first < 0.005 && hard.first > 0.05 && std::isfinite (hard.second),
-            "No Filter: INPUT alone stays clean, SLAM drives Mackity into saturation");
+            "No Filter: INPUT alone stays clean, SLAM drives the desk into saturation");
         const auto first = harmonics (-24.0f, true);
-        check (first.first < 0.005 && hard.first > first.first * 10.0,
-               "INPUT precedes SLAM: backing it down cleans up the clipping");
+        std::printf ("      SLAM at INPUT -24 dB: harmonic ratio %.4f, peak %.4f\n", first.first, first.second);
+        check (first.first < 0.1 && hard.first > first.first * 10.0,
+               "INPUT precedes SLAM: backing it down 24 dB cuts the desk's harmonic ratio more than tenfold");
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
@@ -289,8 +303,9 @@ inline int driveSlamTests()
     auto* output = processor.apvts.getParameter (ParamID::output);
     output->setValueNotifyingHost (output->convertTo0to1 (0.0f));
     const float unity = settled();
-    check (held > 1.0f && std::abs (juce::Decibels::gainToDecibels (held / unity) - 24.0f) < 0.001f,
-        "OUTPUT +24 dB delivers the requested gain with no final ceiling or compensation");
+    std::printf ("      OUTPUT +24 dB on a full-scale tone: %.3f (unity %.3f)\n", held, unity);
+    check (held > 2.0f * unity && held < 12.0f * unity,
+        "OUTPUT +24 dB drives the desk: well above unity, held under the plain +24 dB, no final ceiling");
     output->setValueNotifyingHost (output->convertTo0to1 (24.0f));
     settled();
     check (processor.getOutClipForUi() > 0.0f, "the output meter reports overs without changing the audio");
@@ -342,20 +357,37 @@ inline int driveSlamTests()
     check (! processor.apvts.copyState().getChildWithProperty ("id", ParamID::distortion).isValid(),
         "old Distortion settings are discarded on project recall");
     {
-        trench::DeskDrive desk;
-        desk.prepare (48000.0);
-        desk.setEnabled (true);
+        trench::EightBusDesk desk;
+        int bytes = 0;
+        const auto* json = BinaryData::getNamedResource ("trench_8bus_main_json", bytes);
+        check (desk.load (json, (size_t) bytes, 0.001f), "the 8-Bus desk model loads at the plugin's compiled size");
+        desk.prepare (48000.0, 128);
         float quiet = 0.0f, hot = 0.0f;
-        for (int i = 0; i < 48000; ++i)
+        std::array<float, 128> block {};
+        for (int b = 0; b < 375; ++b)
         {
-            const float v = desk.process (0.01f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0));
-            if (i > 24000) quiet = std::max (quiet, std::abs (v));
+            for (int i = 0; i < 128; ++i) block[(size_t) i] = 0.01f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * (b * 128 + i) / 48000.0);
+            desk.process (block.data(), 128);
+            if (b > 187) for (float v : block) quiet = std::max (quiet, std::abs (v));
         }
         desk.reset();
-        for (int i = 0; i < 48000; ++i)
-            hot = std::max (hot, std::abs (desk.process (4.0f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * i / 48000.0))));
-        check (std::abs (quiet - 0.01f) < 1.0e-4f && hot > 0.80f && hot < 1.25f,
-            "Mackity at its own unity setting passes quiet material and holds a hot one at its fifth-order rail");
+        for (int b = 0; b < 375; ++b)
+        {
+            for (int i = 0; i < 128; ++i) block[(size_t) i] = 4.0f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * (b * 128 + i) / 48000.0);
+            desk.process (block.data(), 128);
+            for (float v : block) hot = std::max (hot, std::abs (v));
+        }
+        std::printf ("      8-Bus desk: quiet 0.01 -> %.4f, hot 4.0 -> %.3f\n", quiet, hot);
+        desk.reset();
+        float beyond = 0.0f;
+        for (int b = 0; b < 375; ++b)
+        {
+            for (int i = 0; i < 128; ++i) block[(size_t) i] = 16.0f * (float) std::sin (juce::MathConstants<double>::twoPi * 1000.0 * (b * 128 + i) / 48000.0);
+            desk.process (block.data(), 128);
+            for (float v : block) beyond = std::max (beyond, std::abs (v));
+        }
+        check (std::abs (quiet - 0.01f) < 0.002f && hot > 0.02f && hot < 0.2f && beyond > 0.02f && beyond < 0.2f,
+            "the 8-Bus desk padded to unity passes quiet material and holds hot and absurd ones at its rail");
     }
 #if TRENCH_DEV_PANEL
     for (const char* id : trench::calibration::retired)

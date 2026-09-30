@@ -1,0 +1,69 @@
+{
+  "type": "Schematic simulation, not hardware capture",
+  "route": "Balanced line input -> channel fader -> hard-left pan -> main L sum -> main master -> balanced XLR output",
+  "eq": "Bypassed; residual loading from unused EQ/low-cut branches omitted",
+  "settings": {
+    "line_trim_ohms": 0,
+    "channel_fader_electrical_wiper_fraction": 0.366,
+    "main_fader_electrical_wiper_fraction": 1,
+    "channel_rail_volts": 18,
+    "preamp_and_main_rail_volts": 16
+  },
+  "input_volts_per_unit": 4,
+  "output_volts_per_unit": 16,
+  "output_connection": "pin2 minus pin3, each leg loaded by 10 kohm to ground",
+  "training_seconds": 42,
+  "validation_seconds": 9,
+  "holdout_seconds": 9,
+  "heldout_description": "0-3 s Talking Hedz filtered bass at explicit -12.0412 dB before desk; 3-6 s independent percussion; 6-8 s independent bass; 8-9 s recovery. No training or selection on these targets.",
+  "stimulus_filter_gain": 0.25,
+  "normalization": false,
+  "automatic_compensation": false,
+  "library_hashes": {
+    "mackie8bus.lib": "a77078b326eddaaaee9f4212352e3d1be6e683a2e816a3d142d0bd75893c9955",
+    "bus_output.lib": "fe317eadfe282952bfb0a28889a993e845bdb189938508cfc2fede4f74553627"
+  },
+  "schematic_sha256": "41f7cb51aba5009722c8aefbe6185d5e37fb0931bfcd2529a410c697ffe3cef3",
+  "source_sha256": "fee2626e11941b774456d6a6191f05e03dc522eb5c0ea91530c0d67ffc731d6a",
+  "input_sha256": "00f9c0a42817c94121759d6b0dbe1621212339e54064afd5be72720e51f7bf2c",
+  "input_metrics": {
+    "train": {
+      "peak_dbfs": -0.6493737906387742,
+      "rms_dbfs": -18.82955317455982
+    },
+    "validation": {
+      "peak_dbfs": -3.2814970778865122,
+      "rms_dbfs": -24.313752779341513
+    },
+    "holdout": {
+      "peak_dbfs": -4.947861940372251,
+      "rms_dbfs": -24.576427831417522
+    }
+  },
+  "estimated_semiconductors": [
+    "2SA1084",
+    "NJM4560",
+    "NJM2068",
+    "1N4148"
+  ],
+  "omissions": [
+    "PSU sag and coupling",
+    "noise and device variation",
+    "other channels and stereo crosstalk",
+    "EQ and low-cut branch residual loads",
+    "meter and monitor branch loads",
+    "insert detection circuit"
+  ],
+  "target_sha256": "2e0648aecc55d254684a37328018fe5034515f93fc8c2d0e7e713ee85ec4b196",
+  "target_metrics": {
+    "peak_dbfs": 8.437525778223305,
+    "rms_dbfs": -1.0496744770784034
+  },
+  "solver": "Gear, reltol 1e-4, abstol 1e-12, vntol 1e-7, itl4 10; original filesource, 4x maximum timestep and uniform storage",
+  "record_samples": 144000,
+  "record_seconds": 3,
+  "record_count": 20,
+  "record_state": "Independent circuit operating point and 0.5 seconds of zero input per record. Training and inference reset recurrent state at the same record boundaries.",
+  "capture_directory": "C:\\Users\\hooki\\trench-native\\output\\rtneural-workshop\\runs\\20260930-1224-8bus-main\\spice-records",
+  "fresh_training": "32-unit model trained from zero on this pair for a plugin CPU budget of about 5 percent of a core per instance"
+}

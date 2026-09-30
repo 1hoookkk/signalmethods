@@ -10,7 +10,6 @@
 #include "dsp/UserMotion.h"
 #include "dsp/KeyDetector.h"
 #include "dsp/TransientDetector.h"
-#include "dsp/DeskDrive.h"
 #include "dsp/TrenchCleanBody.h"
 #include "dsp/WheelLoop.h"
 #include <array>

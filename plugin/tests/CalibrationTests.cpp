@@ -182,7 +182,7 @@ void liveSliderAudio()
         }
         return audio.getRMSLevel (0, 0, 128);
     };
-    auto* slider = calibrationSlider (*editor, trench::calibration::variables[16].help);
+    auto* slider = calibrationSlider (*editor, trench::calibration::variables[13].help);
     require (slider != nullptr, "missing monitor slider");
     auto* ringAttack = calibrationSlider (*editor, trench::calibration::variables[9].help);
     require (ringAttack != nullptr && ! ringAttack->isEnabled(), "inactive ring control appears active");
@@ -197,7 +197,7 @@ void liveSliderAudio()
     require (std::abs (p.apvts.getRawParameterValue ("cal_output_db")->load() + 24) < 0.001f, "slider did not update APVTS");
     const float after = blockRms();
     require (p.calibrationBlocks.load() >= 16, "audio block acknowledgement missing");
-    require (std::abs (p.calibrationReceived[16].load() + 24) < 0.001f, "audio thread did not acknowledge slider");
+    require (std::abs (p.calibrationReceived[13].load() + 24) < 0.001f, "audio thread did not acknowledge slider");
     const float measuredDb = juce::Decibels::gainToDecibels (after / before);
     std::printf ("LIVE monitor slider: %.3f dB audio change\n", measuredDb);
     require (std::abs (measuredDb + 24) < 0.02f, "live slider did not reach audio");
@@ -251,7 +251,7 @@ void nakedDefaults()
     require (reset != nullptr, "missing naked reset");
     reset->onClick();
     for (const auto* id : { "cal_ramp", "cal_morph_ms", "cal_feedback", "cal_ring",
-                           "cal_desk", "cal_desk_clip", "cal_comp", "cal_guard", "preamp", "movePreset" })
+                           "cal_desk", "cal_guard", "preamp", "movePreset" })
         require (p.apvts.getRawParameterValue (id)->load() == 0, "naked reset left processing active");
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
@@ -621,7 +621,7 @@ int main (int argc, char** argv)
             }
         }
         auto base = trench::calibration::defaults();
-        base[2] = 1; base[5] = 1; base[13] = 1; base[14] = 1;
+        base[2] = 1; base[5] = 1;
         base[12] = 0;
         const auto reference = render (base);
         for (auto [index, value] : { std::pair<size_t,float>{0,1}, {1,128}, {2,0}, {5,0}, {6,12}, {7,1}, {12,1} })
@@ -631,7 +631,7 @@ int main (int argc, char** argv)
             std::printf ("%s audio delta %.9g\n", trench::calibration::variables[index].id, delta);
             require (delta > 1.0e-7, "control does not affect stressed render");
         }
-        for (const auto group : { 7, 12 })
+        for (const auto group : { 7 })
         {
             auto v = base; v[(size_t) group] = 1;
             const auto original = render (v);
@@ -643,7 +643,6 @@ int main (int argc, char** argv)
                 require (delta > 1.0e-8, "conditional control does not affect render");
             };
             if (group == 7) { check (8, 0); check (9, 50); check (10, 700); check (11, -30); }
-            if (group == 12) { check (13, 0); check (14, 0); check (15, 50); }
         }
         auto bench = trench::calibration::defaults();
         render (bench, 0.7f, true); bench[0] = 1; render (bench, 0.7f, true);

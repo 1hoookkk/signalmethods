@@ -130,7 +130,7 @@ void referenceSwitch (double rate, int blockSize, const juce::MemoryBlock& from,
     {
         bridge->prepare (rate, blockSize);
         auto filtersOnly = bridge->getBypass();
-        filtersOnly.mackity = false;
+        filtersOnly.outputDesk = false;
         bridge->setBypass (filtersOnly);
     }
     tested.loadCartridgeBytes (from);

@@ -1,5 +1,5 @@
 #pragma once
-#include "DeskDrive.h"
+#include "EightBusDesk.h"
 #include "DriveLaw.h"
 #include "KeySnap.h"
 
@@ -56,7 +56,7 @@ public:
         bool saturate = false;
         bool dcBlock = false;
         bool x3Movement = true;
-        bool mackity = true;
+        bool outputDesk = true;
         bool operator== (const Bypass&) const noexcept = default;
     };
 
@@ -121,15 +121,14 @@ public:
         inputGain.setCurrentAndTargetValue (1.0f);
         outputGain.reset (sampleRateHz, 0.005);
         outputGain.setCurrentAndTargetValue (1.0f);
-        preDeskL.prepare (sampleRateHz);
-        preDeskR.prepare (sampleRateHz);
-        for (auto* desk : { &preDeskL, &preDeskR })
-            desk->setTrims (kSlamInTrim, kSlamOutPad);
-        postDeskL.prepare (sampleRateHz);
-        postDeskR.prepare (sampleRateHz);
-        postDeskL.setEnabled (outputStageOn);
-        postDeskR.setEnabled (outputStageOn);
+        for (auto* desk : { &slamL, &slamR, &deskL, &deskR })
+            desk->prepare (sampleRateHz, maxBlockSize);
+        deskWasDriven = false;
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+        deskScratchL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+        deskScratchR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+        deskMix.reset (sampleRateHz, kDeskFadeSeconds);
+        deskMix.setCurrentAndTargetValue (0.0f);
         left = trench::core::CascadeRunner {};
         right = trench::core::CascadeRunner {};
         left.set_sample_rate (sampleRateHz);
@@ -174,15 +173,10 @@ public:
             runner->set_ring_leveller (v[7] > 0.5f);
             runner->set_ring_calibration (v[8], v[9], v[10], v[11]);
         }
-        outputStageOn = v[12] > 0.5f;
-        postDeskL.setEnabled (outputStageOn);
-        postDeskR.setEnabled (outputStageOn);
-        postDeskL.setBypassSaturation (v[13] < 0.5f);
-        postDeskR.setBypassSaturation (v[13] < 0.5f);
-        setDeskCoupling (v[15]);
-        postClipOn = v[19] > 0.5f;
-        postClipKnee = v[17];
-        postClipCeiling = std::pow (10.0f, v[18] / 20.0f);
+        outputDeskEnabled = v[12] > 0.5f;
+        postClipOn = v[16] > 0.5f;
+        postClipKnee = v[14];
+        postClipCeiling = std::pow (10.0f, v[15] / 20.0f);
     }
     double declaredDatumForCalibration() const noexcept { return reportedDatum.load(); }
     float preDeskPeakForCalibration() const noexcept { return reportedPreDesk.load(); }
@@ -358,9 +352,15 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                outL[sample] = preDeskL.process (outL[sample] * gain);
+                outL[sample] *= gain;
                 if (outR != nullptr)
-                    outR[sample] = preDeskR.process (outR[sample] * gain);
+                    outR[sample] *= gain;
+            }
+            if (slamOn && slamL.isLoaded())
+            {
+                slamL.process (outL + blockStart, blockLen);
+                if (outR != nullptr)
+                    slamR.process (outR + blockStart, blockLen);
             }
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
@@ -395,12 +395,17 @@ public:
                         cachedWords = words;
                         cachedBase = cascadeAt (words, snapshot->datumRate, sampleRateHz);
                         changed = true;
-                        if (keyChoice != 0)
-                            keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz, keyReferenceHz);
+                        keyReferenceStale = true;
                     }
                 }
-                if (keyChoice != 0 && keyReferenceHz <= 0.0)
-                    keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz);
+                if (keyChoice != 0 && (keyReferenceHz <= 0.0 || (keyReferenceStale && keyReferenceCountdown <= 0)))
+                {
+                    keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz, keyReferenceHz);
+                    keyReferenceStale = false;
+                    keyReferenceCountdown = (int) (sampleRateHz * trench::KeySnap::kTrackSeconds);
+                }
+                if (keyReferenceCountdown > 0)
+                    --keyReferenceCountdown;
                 const double keyTarget = keyChoice != 0 ? trench::KeySnap::offsetSemitones (keyReferenceHz, keyChoice) : 0.0;
                 if (s == 0)
                 {
@@ -451,9 +456,42 @@ public:
                 preDeskPeak = std::max (preDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
 #endif
                 const float level = outputGain.getNextValue();
-                outL[sample] = outputStage (postDeskL, postClip (outL[sample])) * level;
+                outL[sample] = postClip (outL[sample]) * level;
                 if (outR != nullptr)
-                    outR[sample] = outputStage (postDeskR, postClip (outR[sample])) * level;
+                    outR[sample] = postClip (outR[sample]) * level;
+            }
+            const bool driven = outputDeskActive() && outputGain.getTargetValue() > 1.0001f;
+            if (driven != deskWasDriven)
+            {
+                if (driven)
+                {
+                    deskL.reset();
+                    deskR.reset();
+                }
+                deskMix.setTargetValue (driven ? 1.0f : 0.0f);
+            }
+            deskWasDriven = driven;
+            if (driven || deskMix.isSmoothing())
+            {
+                std::copy (outL + blockStart, outL + blockStart + blockLen, deskScratchL.begin());
+                deskL.process (deskScratchL.data(), blockLen);
+                if (outR != nullptr)
+                {
+                    std::copy (outR + blockStart, outR + blockStart + blockLen, deskScratchR.begin());
+                    deskR.process (deskScratchR.data(), blockLen);
+                }
+                for (int s = 0; s < blockLen; ++s)
+                {
+                    const float mix = deskMix.getNextValue();
+                    const int sample = blockStart + s;
+                    outL[sample] += mix * (deskScratchL[(size_t) s] - outL[sample]);
+                    if (outR != nullptr)
+                        outR[sample] += mix * (deskScratchR[(size_t) s] - outR[sample]);
+                }
+            }
+            for (int s = 0; s < blockLen; ++s)
+            {
+                const int sample = blockStart + s;
                 caught += clipEngaged (outL[sample]) || (outR != nullptr && clipEngaged (outR[sample])) ? 1 : 0;
 #if TRENCH_DEV_PANEL
                 postDeskPeak = std::max (postDeskPeak, outR != nullptr ? std::max (std::abs (outL[sample]), std::abs (outR[sample])) : std::abs (outL[sample]));
@@ -488,17 +526,23 @@ public:
     }
     void setInputSlam (bool on) noexcept
     {
-        preDeskL.setEnabled (on);
-        preDeskR.setEnabled (on);
+        if (on && ! slamOn)
+        {
+            slamL.reset();
+            slamR.reset();
+        }
+        slamOn = on;
     }
+    bool loadDeskModel (const void* jsonData, size_t jsonSize)
+    {
+        return slamL.load (jsonData, jsonSize, kSlamKneeUnits) && slamR.load (jsonData, jsonSize, kSlamKneeUnits)
+            && deskL.load (jsonData, jsonSize, kDeskSmallSignalUnits, kDeskDriveUnits) && deskR.load (jsonData, jsonSize, kDeskSmallSignalUnits, kDeskDriveUnits);
+    }
+    bool deskModelLoaded() const noexcept { return slamL.isLoaded() && deskL.isLoaded(); }
+    float slamPadDb() const noexcept { return -slamL.smallSignalGainDb(); }
     void setOutputLevel (float gain) noexcept
     {
         outputGain.setTargetValue (std::clamp (gain, 0.0f, 16.0f));
-    }
-    void setDeskCoupling (float hz)
-    {
-        for (auto* desk : { &postDeskL, &postDeskR })
-            desk->setOutputCoupling ((double) hz);
     }
     float caughtFractionForUi() const noexcept { return caughtFraction; }
     float gritActivity() const noexcept
@@ -604,11 +648,13 @@ private:
     static float postClip (float x) noexcept { return x; }
     static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > 1.0f; }
 #endif
-    float outputStage (trench::DeskDrive& desk, float x) const noexcept
+    bool outputDeskActive() const noexcept
     {
-        if (! bypass.mackity || ! desk.isActive())
-            return x;
-        return desk.process (x);
+#if TRENCH_DEV_PANEL
+        if (! outputDeskEnabled)
+            return false;
+#endif
+        return bypass.outputDesk && deskL.isLoaded();
     }
 
     void publishCascade (const trench::core::Cascade& cascade) noexcept
@@ -655,6 +701,8 @@ private:
     trench::core::Cascade heardCascade {};
     int heardKeyChoice = 0;
     double keyReferenceHz = -1.0;
+    bool keyReferenceStale = false;
+    int keyReferenceCountdown = 0;
     double keyOffset = 0.0;
     trench::core::Cascade cachedBase {};
     trench::core::CornerWords cachedWords {};
@@ -667,14 +715,19 @@ private:
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
     juce::SmoothedValue<float> outputGain { 1.0f };
-    trench::DeskDrive preDeskL, preDeskR;
-    static constexpr double kSlamInTrim = 0.4;
-    static constexpr double kSlamOutPad = 0.5;
+    trench::EightBusDesk slamL, slamR, deskL, deskR;
+    static constexpr float kSlamKneeUnits = 0.2f;
+    static constexpr float kDeskSmallSignalUnits = 0.001f;
+    static constexpr float kDeskDriveUnits = 0.025f;
+    static constexpr double kDeskFadeSeconds = 0.05;
+    juce::SmoothedValue<float> deskMix { 0.0f };
+    std::vector<float> deskScratchL, deskScratchR;
+    bool slamOn = false;
+    bool deskWasDriven = false;
     float caughtFraction = 0.0f;
-    bool outputStageOn = false;
-    trench::DeskDrive postDeskL, postDeskR;
     Bypass bypass;
 #if TRENCH_DEV_PANEL
+    bool outputDeskEnabled = true;
     trench::calibration::Values calibrationValues = trench::calibration::defaults();
     bool calibrationValid = false;
     bool postClipOn = false;

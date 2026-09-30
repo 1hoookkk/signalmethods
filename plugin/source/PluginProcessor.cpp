@@ -90,6 +90,10 @@ PluginProcessor::PluginProcessor()
         const auto* modelJson = BinaryData::getNamedResource ("key_model_rtneural_json", modelBytes);
         const bool modelReady = keyDetector.loadModel (modelJson, (size_t) juce::jmax (0, modelBytes));
         juce::Logger::writeToLog (juce::String ("key model -> ") + (modelReady ? "ready" : "FAILED"));
+        int deskBytes = 0;
+        const auto* deskJson = BinaryData::getNamedResource ("trench_8bus_main_json", deskBytes);
+        const bool deskReady = dspBridge.loadDeskModel (deskJson, (size_t) juce::jmax (0, deskBytes));
+        juce::Logger::writeToLog (juce::String ("8-Bus desk model -> ") + (deskReady ? juce::String ("ready, SLAM pad ") + juce::String (dspBridge.slamPadDb(), 1) + " dB" : juce::String ("FAILED")));
     }
     apvts.addParameterListener (ParamID::body, this);
     startTimer (250);
@@ -536,7 +540,7 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     previousDriveGain = driveGain;
     dspBridge.processTrajectory (buffer, morphBuffer.data(), params, qFollowing ? qBuffer.data() : nullptr);
 #if TRENCH_DEV_PANEL
-    const float monitorGain = std::pow (10.0f, calibration[16] / 20.0f);
+    const float monitorGain = std::pow (10.0f, calibration[13] / 20.0f);
     buffer.applyGainRamp (0, numSamples, calibrationOutputGain, monitorGain);
     calibrationOutputGain = monitorGain;
 #endif

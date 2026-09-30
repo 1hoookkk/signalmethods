@@ -703,9 +703,8 @@ int main (int argc, char** argv)
     const auto saturated = runSine (processor, 0.9f);
     setParam (processor, ParamID::output, 12.0f);
     const auto amplified = runSine (processor, 0.9f);
-    check (saturated.finite && amplified.finite && amplified.peak > 1.0f
-           && std::abs (db (amplified.peak / saturated.peak) - 12.0) < 0.001,
-           "OUTPUT adds exactly 12 dB to saturated material without a final level cap", db (amplified.peak / saturated.peak), 12.0);
+    check (saturated.finite && amplified.finite && saturated.peak > 4.0f && amplified.peak > 1.0f && amplified.peak < saturated.peak,
+           "OUTPUT +12 dB on material already far over full scale: the desk holds it at its rail instead of a plain 4x", amplified.peak, saturated.peak);
     setParam (processor, ParamID::output, 0.0f);
     setParam (processor, ParamID::preamp, 0.0f);
 

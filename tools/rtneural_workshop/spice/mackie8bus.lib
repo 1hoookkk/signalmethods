@@ -1,0 +1,58 @@
+.param pi=3.141592653589793
+.model MPSA06 NPN (IS=8.324f XTI=3 EG=1.11 VAF=100 BF=12.16k NE=1.368
++ ISE=73.27f IKF=.1096 XTB=1.5 BR=11.1 NC=2 ISC=0 IKR=0 RC=.25
++ CJC=18.36p MJC=.3843 VJC=.75 FC=.5 CJE=55.61p MJE=.3834 VJE=.75
++ TR=72.15n TF=516.1p ITF=.5 VTF=4 XTF=6 RB=10)
+.model SA1084_EST PNP (IS=1.33e-13 NF=1 BF=450 VAF=100 IKF=.15
++ BR=5 RB=20 RC=1 RE=.1 CJE=30p VJE=.75 MJE=.33 CJC=8.43p VJC=.75
++ MJC=.33 TF=1.2n TR=20n XTB=1.5 XTI=3 EG=1.11)
+.model D4148_EST D (IS=4n N=1.9 RS=.6 CJO=2p TT=4n BV=100 IBV=100u)
+.subckt NJM4560_EST inp inn vp vn out params: gbw=10Meg sr=4Meg headroom=1 ilim=.04
+Rinput inp inn 5Meg
+Bgain 0 dominant I={sr/(2*pi*gbw)*.001*tanh((v(inp,inn)*.001)/(sr/(2*pi*gbw)*.001))}
+Rgain dominant 0 100Meg
+Cdominant dominant 0 {.001/(2*pi*gbw)}
+Banti dominant 0 I={(max(v(dominant)-(v(vp)-headroom),0)+min(v(dominant)-(v(vn)+headroom),0))/10}
+Blimited limited 0 V={min(max(v(dominant),v(vn)+headroom),v(vp)-headroom)}
+Boutput 0 out I={ilim*tanh((v(limited)-v(out))/(25*ilim))}
+Routput out 0 100Meg
+.ends NJM4560_EST
+.subckt MACKIE8_LINE tip ring send params: trim=100 rail=16 gbw=10Meg sr=4Meg headroom=1
+Vpositive vp 0 {rail}
+Vnegative vn 0 {-rail}
+R105 tip lp 7.32k
+R106 ring lm 7.32k
+C105 lp 0 220p
+C106 lm 0 220p
+C109 lp bp 47u
+C110 lm bm 47u
+R115 bp 0 3.92k
+R114 bm 0 3.92k
+D101 bp vp D4148_EST
+D102 vn bp D4148_EST
+D103 bm vp D4148_EST
+D104 vn bm D4148_EST
+Q103 np bp ep SA1084_EST
+Q104 nm bm em SA1084_EST
+Q101 ep np en MPSA06
+Q102 em nm epout MPSA06
+R107 np en 510
+R108 nm epout 510
+R111 vp ep 2.49k
+R112 vp em 2.49k
+R166 ep trimcap {max(trim,.001)}
+C136 ep 0 100p
+C135 trimcap 0 100p
+C107 trimcap trimr 470u
+R113 trimr em 22
+R109 en vn 825
+R110 epout vn 825
+R117 epout 0 3.92k
+R116 en opout 3.92k
+XU1A epout en vp vn opout NJM4560_EST gbw={gbw} sr={sr} headroom={headroom}
+C108 opout preout 47u
+R118 preout 0 20k
+R175 preout rf 20
+C138 rf 0 2200p
+R121 preout send 120
+.ends MACKIE8_LINE
