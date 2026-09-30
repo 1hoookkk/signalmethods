@@ -44,7 +44,7 @@ public:
         if (choice == trench::KeySnap::kAutoChoice)
         {
             const int detected = suggestion();
-            return detected >= 0 ? "AUTO " + shortSuggestionText (detected) : juce::String ("AUTO");
+            return detected >= 0 ? shortSuggestionText (detected) : juce::String ("AUTO");
         }
         return shortChoiceText (choice);
     }
@@ -83,7 +83,13 @@ public:
         g.setFont (displayFont (11.5f, true));
         g.setColour (t.labelInk());
         g.drawText ("KEY", label.toNearestInt(), juce::Justification::centredLeft, false);
-        drawMutedBoneReadout (g, box, height * 0.17f, hover, t);
+        const bool listening = currentChoice() == trench::KeySnap::kAutoChoice;
+        drawMutedBoneReadout (g, box, height * 0.17f, hover || listening, t);
+        if (listening)
+        {
+            g.setColour (t.rollerIllumination().withAlpha (0.28f));
+            g.fillRoundedRectangle (box.reduced (2.0f), juce::jmax (1.5f, height * 0.17f - 1.5f));
+        }
         g.setFont (displayFont (11.5f));
         g.setColour (juce::Colour (0xff2a2722));
         g.drawText (displayText(), box.reduced (4.0f, 0.0f).toNearestInt(), juce::Justification::centred, false);

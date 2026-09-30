@@ -27,7 +27,7 @@ public:
         layout.elements["qWell"]        = { { 115.0f, 837.0f, 430.0f, 82.0f }, {}, {} };
         layout.elements["typeSelector"] = { { 233.2f, 137.1f, 675.8f, 67.1f },  {}, {} };
 
-        layout.elements["keyBox"]       = { { 639.0f, 64.1f, 270.0f, 61.2f }, {}, {} };
+        layout.elements["keyBox"]       = { { 689.0f, 64.1f, 220.0f, 61.2f }, {}, {} };
 
         layout.elements["morphReadout"] = { { 563.2f, 684.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["qReadout"]     = { { 563.2f, 849.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };

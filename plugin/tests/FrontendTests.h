@@ -74,7 +74,7 @@ inline int frontendTests()
         control.refreshSuggestion();
         check (choice() == 0 && control.displayText() == "OFF", "detecting a key leaves disabled KEY quiet and off");
         control.mouseUp (event);
-        check (choice() == trench::KeySnap::kAutoChoice && control.displayText() == "AUTO A",
+        check (choice() == trench::KeySnap::kAutoChoice && control.displayText() == "A",
                "one click enables automatic KEY and shows the detected key");
         detected = -1;
         control.refreshSuggestion();
