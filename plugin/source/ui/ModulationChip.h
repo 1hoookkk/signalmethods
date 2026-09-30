@@ -32,9 +32,14 @@ public:
             playbackAttachment = std::make_unique<juce::ParameterAttachment> (*playback, [this] (float) { repaint(); });
     }
     int selectedPattern() const noexcept { return param != nullptr ? param->getIndex() : 0; }
+    static constexpr int kEchoRow = 500;
+    std::function<void (bool)> onEcho;
+    std::function<bool()> echoArmed;
+    bool echoOn() const { return echoArmed != nullptr && echoArmed(); }
     void selectPattern (int index)
     {
         if (attachment == nullptr || param == nullptr) return;
+        if (echoOn() && onEcho != nullptr) onEcho (false);
         const int wanted = juce::jlimit (0, param->choices.size() - 1, index);
         const bool wasCustom = custom != nullptr && custom->getValue() > 0.5f;
         if (wasCustom) { custom->beginChangeGesture(); custom->setValueNotifyingHost (0); custom->endChangeGesture(); }
@@ -62,6 +67,7 @@ public:
     }
     juce::String nameText() const
     {
+        if (echoOn()) return "Echo";
         if (custom != nullptr && custom->getValue() > 0.5f && customName != nullptr)
             return customName();
         if (selectedPattern() == 0 || param == nullptr) return "Modulation: off";
@@ -76,7 +82,7 @@ public:
         const juce::String name (pattern.name);
         for (const auto* pulse : { "Triplet Relay", "Rail Switch", "Relay Teeth", "Nerve Tick", "Flip Relay", "Square Bloom" })
             if (name == pulse) return "Pulses";
-        for (const auto* sway : { "Backbeat Bloom", "Eighth Sway", "Quarter Arc", "Pendulum Teeth", "Wide Breath", "Long Arc", "Slow Tide" })
+        for (const auto* sway : { "Backbeat Bloom", "Eighth Sway", "Quarter Arc", "Pendulum Teeth", "Wide Breath", "Long Arc", "Slow Tide", "Orbit" })
             if (name == sway) return "Sways";
         return "Climbs";
     }
@@ -105,7 +111,8 @@ public:
         std::vector<BodyBrowser::Row> out;
         if (param == nullptr) return out;
         const bool usingCustom = custom != nullptr && custom->getValue() > 0.5f;
-        out.push_back ({ "Off", 0, ! usingCustom && selectedPattern() == 0 });
+        out.push_back ({ "Off", 0, ! usingCustom && selectedPattern() == 0 && ! echoOn() });
+        out.push_back ({ "Echo", kEchoRow, echoOn() });
         for (const auto* group : kRoles)
         {
             bool heading = false;
@@ -134,7 +141,12 @@ public:
     }
     void commitBrowserRow (int id)
     {
-        if (id >= 400) { if (onSaved != nullptr) onSaved (id - 400); }
+        if (id == kEchoRow) { if (onEcho != nullptr) onEcho (true); repaint(); }
+        else if (id >= 400)
+        {
+            if (echoOn() && onEcho != nullptr) onEcho (false);
+            if (onSaved != nullptr) onSaved (id - 400);
+        }
         else if (id == 300) { if (onRestart != nullptr) onRestart(); }
         else if (id >= 200) selectPlayback (id - 200);
         else if (id >= 100) selectLength (id - 100);
@@ -181,7 +193,7 @@ public:
                 else safe->selectPattern (result - 1);
             });
     }
-    bool isOn() const { return selectedPattern() > 0 || (custom != nullptr && custom->getValue() > 0.5f); }
+    bool isOn() const { return echoOn() || selectedPattern() > 0 || (custom != nullptr && custom->getValue() > 0.5f); }
     void mouseUp (const juce::MouseEvent& e) override
     {
         if (! e.mouseWasDraggedSinceMouseDown() && e.getNumberOfClicks() == 1) showPatterns();

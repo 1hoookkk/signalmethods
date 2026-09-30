@@ -97,6 +97,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         if (index >= 0 && index < (int) library.size())
             processor.applyUserMotion (library[(size_t) index], true);
     };
+    modulationChip->onEcho = [this] (bool on) { processor.setEchoArmed (on); };
+    modulationChip->echoArmed = [this] { return processor.isEchoArmed(); };
+    secondaryWheel->onGestureStart = [this] { processor.holdQ (true); };
+    secondaryWheel->onGestureEnd = [this] { processor.holdQ (false); };
     motionBrowser = std::make_unique<BodyBrowser> (theme);
     motionBrowser->setTitle ("Movement");
     motionBrowser->rowSource = [this] { return modulationChip->browserRows(); };
@@ -311,7 +315,8 @@ void PluginEditor::onFrame()
     morphWheel->setDisplayOverride (moving, morphValue);
     morphReadout->setNormalised (morphValue);
     const auto* followQ = processor.apvts.getRawParameterValue ("cal_follow_2");
-    const bool qFollowing = followQ != nullptr && followQ->load() > 0.5f && ! secondaryWheel->isMouseButtonDown (true);
+    const bool qFollowing = ((followQ != nullptr && followQ->load() > 0.5f) || processor.isQModulatedForUi())
+                            && ! secondaryWheel->isMouseButtonDown (true);
     const float qValue = qFollowing ? processor.getEffectiveQForUi() : read (ParamID::q);
     secondaryWheel->setDisplayOverride (qFollowing, qValue);
     secondaryReadout->setNormalised (qValue);

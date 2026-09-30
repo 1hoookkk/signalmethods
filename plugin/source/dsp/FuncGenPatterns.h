@@ -66,6 +66,8 @@ inline constexpr float kFgV25[] = { 0.000000000f, 0.062500000f, 0.125000000f, 0.
 inline constexpr unsigned char kFgT25[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 inline constexpr float kFgV26[] = { 0.000000000f, 0.125000000f, 0.218750000f, 0.062500000f, 0.187500000f, 0.281250000f, 0.125000000f, 0.250000000f, 0.343750000f, 0.187500000f, 0.312500000f, 0.406250000f };
 inline constexpr unsigned char kFgT26[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+inline constexpr float kFgV27[] = { 0.000000000f, 0.095670858f, 0.176776695f, 0.230969883f, 0.250000000f, 0.230969883f, 0.176776695f, 0.095670858f, 0.000000000f, -0.095670858f, -0.176776695f, -0.230969883f, -0.250000000f, -0.230969883f, -0.176776695f, -0.095670858f };
+inline constexpr unsigned char kFgT27[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 inline constexpr FuncGenPattern kFuncGenPatterns[] = {
     { "Triplet Relay", 12, 0, false, kFgV0, kFgT0, 0.16666666666666666, 0 },
     { "Rail Switch", 16, 0, false, kFgV1, kFgT1, 0.25, 0 },
@@ -94,6 +96,10 @@ inline constexpr FuncGenPattern kFuncGenPatterns[] = {
     { "Square Bloom", 4, 0, false, kFgV24, kFgT24, 0.5, 0 },
     { "Endless Climb", 16, 0, false, kFgV25, kFgT25, 0.25, 0 },
     { "Three Up", 12, 0, false, kFgV26, kFgT26, 0.25, 0 },
+    { "Orbit", 16, 0, true, kFgV27, kFgT27, 0.5, 0 },
 };
-inline constexpr int kNumFuncGenPatterns = 27;
+inline constexpr int kNumFuncGenPatterns = 28;
+inline constexpr int kOrbitPatternIndex = 28;
+inline constexpr float kOrbitQValues[] = { 0.250000000f, 0.230969883f, 0.176776695f, 0.095670858f, 0.000000000f, -0.095670858f, -0.176776695f, -0.230969883f, -0.250000000f, -0.230969883f, -0.176776695f, -0.095670858f, 0.000000000f, 0.095670858f, 0.176776695f, 0.230969883f };
+inline constexpr FuncGenPattern kOrbitQPattern { "Orbit Q", 16, 0, true, kOrbitQValues, kFgT27, 0.5, 0 };
 }

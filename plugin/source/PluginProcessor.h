@@ -75,6 +75,11 @@ public:
             morphHeld.store (false, std::memory_order_release);
     }
     void holdMorph (bool hold);
+    void holdQ (bool hold);
+    bool isQModulatedForUi() const noexcept { return qModulatedForUi.load (std::memory_order_relaxed); }
+    void setEchoArmed (bool on);
+    bool isEchoArmed() const noexcept { return echoArmed.load (std::memory_order_relaxed); }
+    static constexpr const char* kEchoName = "Echo";
     int  getLoadedBodyIndex() const noexcept { return loadedBodyIndex.load (std::memory_order_relaxed); }
     bool getLastLoadOk()      const noexcept { return lastLoadOk.load (std::memory_order_relaxed); }
     trench::WheelLoop& wheelLoop() noexcept { return wheelLoopSource; }
@@ -144,6 +149,32 @@ private:
     float                         wheelRampFrom = -1.0f;
     std::atomic<bool>             morphHeld { false };
     bool                          morphWasHeld = false;
+    trench::Movement              movementQ;
+    std::atomic<bool>             qHeld { false };
+    bool                          qWasHeld = false;
+    float                         movementDepthQ = 1.0f;
+    std::atomic<bool>             qModulatedForUi { false };
+    std::atomic<bool>             echoArmed { false };
+    struct EchoTake
+    {
+        static constexpr int kMaxPoints = 4096;
+        std::array<float, kMaxPoints> values {};
+        std::array<int, kMaxPoints> at {};
+        int count = 0, samples = 0;
+        double bpm = 120.0, beatsPerBar = 4.0, sampleRate = 48000.0;
+        float release = 0.0f;
+    };
+    EchoTake                      echoTakes[2];
+    int                           echoWriting = 0;
+    bool                          echoRecording = false;
+    std::atomic<int>              echoReady { -1 };
+    struct EchoFinalizer final : juce::AsyncUpdater
+    {
+        explicit EchoFinalizer (PluginProcessor& p) : owner (p) {}
+        void handleAsyncUpdate() override { owner.finishEcho(); }
+        PluginProcessor& owner;
+    } echoFinalizer { *this };
+    void finishEcho();
     float                         movementDepth = 1.0f;
     float                         movementReturnStep = 0.0f;
     std::vector<float>            morphBuffer;

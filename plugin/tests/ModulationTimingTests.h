@@ -1,6 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
 #include "ui/ModulationChip.h"
+#include "parameters/CurveMap.h"
 #include <algorithm>
 #include <vector>
 
@@ -251,6 +252,86 @@ inline int modulationTimingTests()
             low = std::min (low, p.getEffectiveMorphForUi()); high = std::max (high, p.getEffectiveMorphForUi());
         }
         check (high - low > 0.5f, "a movement keeps running on its own clock when the transport stops");
+        p.setPlayHead (nullptr);
+    }
+    {
+        struct Clock final : juce::AudioPlayHead
+        {
+            double ppq = 0.0;
+            juce::Optional<PositionInfo> getPosition() const override
+            {
+                PositionInfo info;
+                info.setIsPlaying (true); info.setBpm (120.0); info.setPpqPosition (ppq);
+                info.setTimeSignature (juce::AudioPlayHead::TimeSignature { 4, 4 });
+                return info;
+            }
+        } clock;
+        PluginProcessor p;
+        p.setPlayHead (&clock);
+        p.setPlayConfigDetails (2, 2, 48000.0, 500);
+        p.prepareToPlay (48000.0, 500);
+        p.setEditorOpen (true);
+        const auto set = [&] (const char* id, float value)
+        {
+            auto* parameter = p.apvts.getParameter (id);
+            parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
+        };
+        juce::AudioBuffer<float> buffer (2, 500);
+        juce::MidiBuffer midi;
+        const auto run = [&] (int blocks, std::vector<float>* morph = nullptr, std::vector<float>* q = nullptr)
+        {
+            for (int b = 0; b < blocks; ++b)
+            {
+                buffer.clear();
+                p.processBlock (buffer, midi);
+                clock.ppq += 500.0 * 120.0 / 60.0 / 48000.0;
+                if (morph != nullptr) morph->push_back (p.getEffectiveMorphForUi());
+                if (q != nullptr) q->push_back (p.getEffectiveQForUi());
+            }
+        };
+        set (ParamID::morph, 0.5f);
+        set (ParamID::q, 0.5f);
+        set (ParamID::movePreset, (float) trench::kOrbitPatternIndex);
+        set (ParamID::moveLength, 3.0f);
+        run (10);
+        std::vector<float> m, qv;
+        run (384, &m, &qv);
+        const auto span = [] (const std::vector<float>& v) { return *std::max_element (v.begin(), v.end()) - *std::min_element (v.begin(), v.end()); };
+        const auto mean = [] (const std::vector<float>& v) { double s = 0.0; for (float x : v) s += x; return (float) (s / (double) v.size()); };
+        const float mMean = mean (m), qMean = mean (qv);
+        bool quadrature = true;
+        for (size_t i = 0; i + 96 < m.size(); ++i)
+            quadrature = quadrature && std::abs ((qv[i] - qMean) - (m[i + 96] - mMean)) < 0.02f;
+        std::printf ("      Orbit over two bars: Morph span %g, Q span %g, quadrature=%d\n", span (m), span (qv), (int) quadrature);
+        check (span (m) > 0.4f && span (qv) > 0.4f && quadrature && p.isQModulatedForUi(),
+               "Orbit turns both wheels, Q a quarter turn ahead of Morph");
+        set (ParamID::movePreset, 0.0f);
+        run (5);
+        check (! p.isQModulatedForUi() && std::abs (p.getEffectiveQForUi() - trench::curves::curveMap (trench::curves::Axis::q, 0.5f)) < 1.0e-5f,
+               "leaving Orbit returns Q to the wheel");
+        p.setEchoArmed (true);
+        run (5);
+        p.holdMorph (true);
+        for (int b = 0; b < 192; ++b)
+        {
+            set (ParamID::morph, 0.2f + 0.4f * (float) b / 191.0f);
+            run (1);
+        }
+        p.holdMorph (false);
+        run (1);
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (50);
+        const auto echo = p.userMotion.get();
+        std::vector<float> replay;
+        run (192, &replay);
+        const auto expected = [] (size_t block) { return trench::curves::curveMap (trench::curves::Axis::morph, 0.2f + 0.4f * (float) block / 192.0f); };
+        bool traced = true;
+        for (size_t i : { (size_t) 60, (size_t) 120, (size_t) 185 })
+            traced = traced && std::abs (replay[i] - expected (i)) < 0.06f;
+        std::printf ("      Echo: name %s, length choice %g, replay at 60/120/185 blocks %g %g %g (gesture there %g %g %g)\n", echo.name.toRawUTF8(),
+                     p.apvts.getRawParameterValue (ParamID::moveLength)->load(), replay[60], replay[120], replay[185], expected (60), expected (120), expected (185));
+        check (p.usingUserMotion() && echo.name == PluginProcessor::kEchoName && echo.steps == 64
+               && p.apvts.getRawParameterValue (ParamID::moveLength)->load() == 2.0f && traced && p.isEchoArmed(),
+               "Echo replays a one-bar sweep of the wheel every bar, from where it started to where it let go");
         p.setPlayHead (nullptr);
     }
     return failures;
