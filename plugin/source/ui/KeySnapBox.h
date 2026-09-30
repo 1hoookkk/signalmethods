@@ -4,7 +4,6 @@
 #include "../dsp/KeySnap.h"
 #include "../parameters/TrenchParameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
-#include <cmath>
 #include <functional>
 #include <memory>
 namespace trench::ui
@@ -17,242 +16,166 @@ public:
         : t (theme), param (apvts.getParameter (ParamID::keySnap))
     {
         setInterceptsMouseClicks (true, false);
+        setWantsKeyboardFocus (true);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Key Snap");
-        setHelpText ("KEY OFF leaves the body as authored. AUTO follows the key heard in the input and shifts the whole body by up to a semitone so its strongest resonance sits on a note of the key.");
-        setTooltip ("SNAP TO KEY: click for AUTO (follows the key it hears) or OFF");
+        setHelpText ("Click to switch automatic key following on or off. Right-click to choose a key.");
         if (param != nullptr)
             attachment = std::make_unique<juce::ParameterAttachment> (
-                *param, [this] (float) { repaint(); });
+                *param, [this] (float) { refreshState(); });
+        refreshState();
     }
     void setSuggestionProviders (std::function<int()> primary)
     {
         primarySuggestion = std::move (primary);
-    }
-    void setListeningProvider (std::function<bool()> provider)
-    {
-        listeningProvider = std::move (provider);
+        refreshSuggestion();
     }
     void refreshSuggestion()
     {
-        const int first = suggestion (primarySuggestion);
-        const bool listeningNow = isListening();
-        if (first != lastSuggestion)
-        {
-            lastSuggestion = first;
-            if (currentChoice() == 0 && first >= 0)
-            {
-                arrivalStartedMs = juce::Time::getMillisecondCounterHiRes();
-                arriving = true;
-            }
-            repaint();
-        }
-        else if (arriving || listeningNow)
-        {
-            if (juce::Time::getMillisecondCounterHiRes() - arrivalStartedMs >= kArrivalDurationMs)
-                arriving = false;
-            repaint();
-        }
-        else if (listeningNow != lastListening)
-        {
-            repaint();
-        }
-        lastListening = listeningNow;
+        const int next = suggestion();
+        if (next == lastSuggestion) return;
+        lastSuggestion = next;
+        if (currentChoice() == trench::KeySnap::kAutoChoice) refreshState();
     }
-
+    juce::String displayText() const
+    {
+        const int choice = currentChoice();
+        if (choice == 0) return "OFF";
+        if (choice == trench::KeySnap::kAutoChoice)
+        {
+            const int detected = suggestion();
+            return detected >= 0 ? "AUTO " + shortSuggestionText (detected) : juce::String ("AUTO");
+        }
+        return shortChoiceText (choice);
+    }
     void mouseEnter (const juce::MouseEvent&) override { hover = true; repaint(); }
-    void mouseExit  (const juce::MouseEvent&) override
-    {
-        hover = false;
-        hoveredCandidate = -1;
-        repaint();
-    }
-    void mouseMove (const juce::MouseEvent& e) override
-    {
-        const int candidate = candidateAt (e.position);
-        if (candidate != hoveredCandidate)
-        {
-            hoveredCandidate = candidate;
-            repaint();
-        }
-    }
-    void mouseDown (const juce::MouseEvent&) override
-    {
-        down = true;
-        repaint();
-    }
+    void mouseExit (const juce::MouseEvent&) override { hover = false; repaint(); }
     void mouseUp (const juce::MouseEvent& e) override
     {
-        down = false;
-        repaint();
-        if (param == nullptr || ! getLocalBounds().contains (e.position.toInt()))
-            return;
-
-        if (e.mods.isPopupMenu())
-        {
-            showParamContextMenu (*this, param);
-            return;
-        }
-        const int next = currentChoice() == 0 ? trench::KeySnap::kAutoChoice : 0;
-        param->beginChangeGesture();
-        param->setValueNotifyingHost (param->convertTo0to1 ((float) next));
-        param->endChangeGesture();
+        if (param == nullptr || ! getLocalBounds().contains (e.position.toInt())) return;
+        if (e.mods.isPopupMenu()) showKeyMenu();
+        else if (e.mods.isLeftButtonDown()) toggle();
     }
-    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& wheel) override
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override {}
+    bool keyPressed (const juce::KeyPress& key) override
     {
-        if (param == nullptr || wheel.deltaY == 0.0f)
-            return;
-        const int last = juce::jmax (0, param->getNumSteps() - 1);
-        const int current = juce::jlimit (
-            0, last, juce::roundToInt (param->convertFrom0to1 (param->getValue())));
-        const int direction = wheel.deltaY > 0.0f ? 1 : -1;
-        const int next = (current + direction + last + 1) % (last + 1);
-        param->beginChangeGesture();
-        param->setValueNotifyingHost (param->convertTo0to1 ((float) next));
-        param->endChangeGesture();
+        if (key == juce::KeyPress::spaceKey || key == juce::KeyPress::returnKey)
+        {
+            toggle();
+            return true;
+        }
+        if (key == juce::KeyPress::downKey)
+        {
+            showKeyMenu();
+            return true;
+        }
+        return false;
     }
+    void focusGained (FocusChangeType) override { repaint(); }
+    void focusLost (FocusChangeType) override { repaint(); }
     void paint (juce::Graphics& g) override
     {
-        const int first = suggestion (primarySuggestion);
-        const bool showingSuggestion = currentChoice() == 0 && first >= 0;
-
-        if (getHeight() < 26)
+        auto b = getLocalBounds().toFloat();
+        const auto label = b.removeFromLeft (26.0f);
+        b.removeFromLeft (4.0f);
+        const float height = juce::jmin (17.0f, b.getHeight());
+        const auto box = b.withSizeKeepingCentre (b.getWidth(), height);
+        g.setFont (displayFont (11.5f, true));
+        g.setColour (t.labelInk());
+        g.drawText ("KEY", label.toNearestInt(), juce::Justification::centredLeft, false);
+        drawMutedBoneReadout (g, box, height * 0.17f, hover, t);
+        g.setFont (displayFont (11.5f));
+        g.setColour (juce::Colour (0xff2a2722));
+        g.drawText (displayText(), box.reduced (4.0f, 0.0f).toNearestInt(), juce::Justification::centred, false);
+        if (hasKeyboardFocus (true))
         {
-
-            const auto ink = juce::Colour (0xff2a2722);
-            const bool locked = currentChoice() != 0;
-            const auto b = getLocalBounds().toFloat();
-            const auto bigFont   = displayFont (11.8f, false);
-            compactAlt = {};
-            float x = b.getRight();
-            const float boxH = juce::jmin (17.0f, b.getHeight());
-            const float boxY = b.getY() + (b.getHeight() - boxH) * 0.5f;
-            const auto valueBox = [&] (const juce::String& text, const juce::Font& f)
-            {
-                const float w = juce::jmax (26.0f,
-                                            juce::GlyphArrangement::getStringWidth (f, text) + 13.0f);
-                x -= w;
-                const auto box = juce::Rectangle<float> (x, boxY, w, boxH);
-                drawMutedBoneReadout (g, box, boxH * 0.17f, hover, t);
-                return box;
-            };
-
-            const auto state = ! locked ? juce::String ("OFF")
-                : currentChoice() == trench::KeySnap::kAutoChoice
-                    ? (first >= 0 ? "AUTO " + shortSuggestionText (first) : juce::String ("AUTO"))
-                    : shortChoiceText (currentChoice());
-            const auto box = valueBox (state, bigFont);
-            g.setFont (bigFont);
-            g.setColour (ink.withAlpha (locked ? 1.0f : 0.72f));
-            g.drawText (state, box.toNearestInt(), juce::Justification::centred, false);
-
-            const auto labelFont = displayFont (11.5f, true);
-            const juce::String label ("SNAP TO KEY");
-            x -= 5.0f + juce::GlyphArrangement::getStringWidth (labelFont, label);
-            g.setFont (labelFont);
-            g.setColour (juce::Colour (0xff0d0b09).withAlpha (0.92f));
-            g.drawText (label, juce::Rectangle<float> (x, b.getY(), b.getRight() - x, b.getHeight()).toNearestInt(),
-                        juce::Justification::centredLeft, false);
-            if (! locked && showingSuggestion)
-            {
-                const auto hint = "hears " + shortSuggestionText (first);
-                const float w = juce::GlyphArrangement::getStringWidth (bigFont, hint);
-                compactAlt = { x - 8.0f - w, b.getY(), w, b.getHeight() };
-                g.setFont (bigFont);
-                g.setColour (ink.withAlpha (hoveredCandidate >= 0 ? 0.80f : 0.45f));
-                g.drawText (hint, compactAlt.toNearestInt(), juce::Justification::centredRight, false);
-            }
-            if (! locked && ! showingSuggestion && isListening())
-                drawListeningHairline (g);
-            return;
+            g.setColour (t.labelInk());
+            g.drawRoundedRectangle (box.reduced (1.0f), height * 0.17f, 1.0f);
         }
-
     }
 private:
-    static constexpr double kArrivalDurationMs = 420.0;
-    void drawListeningHairline (juce::Graphics& g) const
+    void toggle()
     {
-        const double seconds = juce::Time::getMillisecondCounterHiRes() * 0.001;
-        const float phase = (float) std::fmod (seconds, 1.25) / 1.25f;
-        const float x = 20.0f + phase * ((float) getWidth() - 40.0f);
-        const float y = (float) getHeight() * 0.62f;
-        juce::ColourGradient scan (juce::Colours::transparentBlack, x - 6.0f, y,
-                                   juce::Colour (0xff7f948c).withAlpha (0.70f), x, y, false);
-        scan.addColour (0.78, juce::Colour (0xff7f948c).withAlpha (0.30f));
-        scan.addColour (1.0, juce::Colours::transparentBlack);
-        g.setGradientFill (scan);
-        g.fillRect (juce::Rectangle<float> (x - 6.0f, y - 0.5f, 12.0f, 1.0f));
+        selectChoice (currentChoice() == 0 ? trench::KeySnap::kAutoChoice : 0);
     }
-    int candidateAt (juce::Point<float> point) const
+    void selectChoice (int choice)
     {
-        if (currentChoice() != 0 || suggestion (primarySuggestion) < 0)
-            return -1;
-        if (getHeight() < 26)
-            return ! compactAlt.isEmpty() && compactAlt.contains (point) ? 0 : -1;
-        if (juce::Rectangle<float> (8.0f, 11.0f, 33.0f, 26.0f).contains (point))
-            return 0;
-        if (juce::Rectangle<float> (47.0f, 12.0f, 33.0f, 25.0f).contains (point))
-            return 1;
-        return -1;
+        if (param == nullptr) return;
+        param->beginChangeGesture();
+        param->setValueNotifyingHost (param->convertTo0to1 ((float) choice));
+        param->endChangeGesture();
+        if (onAnnounce != nullptr)
+            onAnnounce (choice == 0 ? juce::String ("KEY OFF: THE BODY AS WRITTEN")
+                        : choice == trench::KeySnap::kAutoChoice ? juce::String ("KEY: LISTENING, THE BODY TUNES TO YOUR KEY")
+                        : "KEY: THE BODY TUNED TO " + shortChoiceText (choice));
     }
-    void drawSelected (juce::Graphics& g, const juce::String& text) const
+public:
+    std::function<void (const juce::String&)> onAnnounce;
+private:
+    void showKeyMenu()
     {
-        const auto tile = juce::Rectangle<float> ((float) getWidth() * 0.5f - 17.0f, 13.0f, 34.0f, 21.0f);
-        g.setColour (juce::Colour (0xffaebbb4).withAlpha (hover ? 0.24f : 0.15f));
-        g.fillRoundedRectangle (tile, 2.0f);
-        g.setColour (juce::Colour (0xffc7d3cd).withAlpha (hover ? 0.82f : 0.60f));
-        g.drawRoundedRectangle (tile.reduced (0.5f), 1.8f, 0.7f);
-        g.setFont (displayFont (10.4f, true));
-
-        g.setColour (t.accent().withAlpha (0.95f));
-        g.drawText (text, tile.toNearestInt(), juce::Justification::centred, false);
+        if (param == nullptr) return;
+        const int selected = currentChoice();
+        juce::PopupMenu menu;
+        juce::SharedResourcePointer<SelectorLookAndFeel> look;
+        menu.setLookAndFeel (&*look);
+        menu.addItem (1, "Off", true, selected == 0);
+        menu.addItem (trench::KeySnap::kAutoChoice + 1, "Auto", true, selected == trench::KeySnap::kAutoChoice);
+        menu.addSeparator();
+        for (int note = 0; note < 12; ++note)
+            menu.addItem (note + 14, shortSuggestionText (note), true,
+                          trench::KeySnap::active (selected) && trench::KeySnap::root (selected) == note);
+        if (auto* editor = findParentComponentOfClass<juce::AudioProcessorEditor>();
+            editor != nullptr && editor->getHostContext() != nullptr)
+        {
+            menu.addSeparator();
+            menu.addItem (1000, "Host controls...");
+        }
+        const juce::Component::SafePointer<KeySnapBox> safe (this);
+        menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this),
+            [safe, look] (int result)
+            {
+                if (safe == nullptr || result == 0) return;
+                if (result == 1000) showParamContextMenu (*safe, safe->param);
+                else if (result >= 1 && result <= trench::KeySnap::kAutoChoice + 1)
+                    safe->selectChoice (result - 1);
+            });
     }
-    bool isListening() const
+    void refreshState()
     {
-        return listeningProvider && listeningProvider();
+        setDescription ("KEY " + displayText());
+        setTooltip ("KEY " + displayText() + ". KEY tunes the body's main resonance to the root of the key. Click for AUTO: it listens to what you play and follows. "
+                    "Right-click to pick the key yourself. OFF leaves the body where its corners were written.");
+        repaint();
     }
-    static int suggestion (const std::function<int()>& provider)
+    int suggestion() const
     {
-        return provider ? juce::jlimit (-1, 23, provider()) : -1;
+        return primarySuggestion ? juce::jlimit (-1, 23, primarySuggestion()) : -1;
     }
     static juce::String shortSuggestionText (int label)
     {
-        if (label < 0 || label >= 24)
-            return "--";
+        if (label < 0 || label >= 24) return "--";
         static constexpr const char* notes[] = {
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
         };
-        return juce::String (notes[label % 12]) + (label >= 12 ? "m" : "");
+        return juce::String (notes[label % 12]);
     }
     static juce::String shortChoiceText (int choice)
     {
-        if (choice >= 1 && choice <= 12)
-            return shortSuggestionText (12 + choice - 1);
-        if (choice >= 13 && choice <= 24)
-            return shortSuggestionText (choice - 13);
-        return "--";
+        return trench::KeySnap::active (choice) ? shortSuggestionText (trench::KeySnap::root (choice)) : juce::String ("--");
     }
     int currentChoice() const
     {
-        if (param == nullptr)
-            return 0;
+        if (param == nullptr) return 0;
         const int last = juce::jmax (0, param->getNumSteps() - 1);
-        return juce::jlimit (0, last,
-                             juce::roundToInt (param->convertFrom0to1 (param->getValue())));
+        return juce::jlimit (0, last, juce::roundToInt (param->convertFrom0to1 (param->getValue())));
     }
     Theme t;
     juce::RangedAudioParameter* param = nullptr;
     std::unique_ptr<juce::ParameterAttachment> attachment;
     std::function<int()> primarySuggestion;
-    std::function<bool()> listeningProvider;
     int lastSuggestion = -2;
-    double arrivalStartedMs = 0.0;
-    bool arriving = false;
     bool hover = false;
-    bool down = false;
-    int hoveredCandidate = -1;
-    bool lastListening = false;
-    mutable juce::Rectangle<float> compactAlt;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KeySnapBox)
 };
 }

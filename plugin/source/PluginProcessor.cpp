@@ -189,7 +189,6 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     const juce::ScopedLock bodyLock (bodyStateLock);
     dspBridge.prepare (sampleRate, samplesPerBlock);
 #if TRENCH_DEV_PANEL
-    calibrationMorph = -1.0f;
     calibrationOutputGain = 1.0f;
 #endif
     previousDriveGain = 1.0f;
@@ -226,12 +225,12 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dspBridge.setQSoundFallbackPan (1.0f);
     movement.prepare (sampleRate);
     movementQ.prepare (sampleRate);
+    morphWasHeld = false;
     qWasHeld = false;
     echoRecording = false;
-    morphWasHeld = false;
+    movementDepth = 1.0f;
     movementDepthQ = 1.0f;
     qModulatedForUi.store (false, std::memory_order_relaxed);
-    movementDepth = 1.0f;
     movementReturnStep = (float) (1.0 / (kMovementReturnSeconds * sampleRate));
     morphBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
     qBuffer.assign ((size_t) juce::jmax (samplesPerBlock, 1), 0.0f);
@@ -399,7 +398,8 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     const float wheel = baseMorph;
     if (held && ! morphWasHeld)
     {
-        wheelRampFrom = wheel;
+        movementDepth = 0.0f;
+    }
     if (echoArmed.load (std::memory_order_relaxed))
     {
         auto& take = echoTakes[echoWriting];
@@ -436,21 +436,17 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
     }
     else
         echoRecording = false;
-        movementDepth = 0.0f;
-    }
     morphWasHeld = held;
     float low = 0.0f, high = 0.0f;
     if (customMotion)
         trench::Movement::travel (customPattern, low, high);
     else if (movePreset >= 1 && movePreset <= trench::kNumFuncGenPatterns)
         trench::Movement::travel (trench::kFuncGenPatterns[movePreset - 1], low, high);
-    const float from = wheelRampFrom < 0.0f ? wheel : wheelRampFrom;
-    const float step = (wheel - from) / (float) juce::jmax (1, numSamples);
     for (int i = 0; i < numSamples; ++i)
     {
         movementDepth = held ? 0.0f : juce::jmin (1.0f, movementDepth + movementReturnStep);
         const float room = juce::jmax (0.0f, 1.0f - movementDepth * (high - low));
-        const float place = (from + step * (float) (i + 1)) * room;
+        const float place = wheel * room;
         morphBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, place + movementDepth * (morphBuffer[(size_t) i] - low));
     }
     const bool orbit = ! customMotion && movePreset == trench::kOrbitPatternIndex;
@@ -470,13 +466,13 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
             movementDepthQ = heldQ ? 0.0f : juce::jmin (1.0f, movementDepthQ + movementReturnStep);
             const float room = juce::jmax (0.0f, 1.0f - movementDepthQ * (highQ - lowQ));
             qBuffer[(size_t) i] = juce::jlimit (0.0f, 1.0f, q * room + movementDepthQ * (qBuffer[(size_t) i] - lowQ));
-    qModulatedForUi.store (orbit, std::memory_order_relaxed);
-#if TRENCH_DEV_PANEL
-    wheelLoopSource.process (morphBuffer.data(), numSamples, transport.ppq, transport.playing, transport.bpm, getSampleRate());
         }
         qHeard = qBuffer[(size_t) numSamples - 1];
         qFollowing = true;
     }
+    qModulatedForUi.store (orbit, std::memory_order_relaxed);
+#if TRENCH_DEV_PANEL
+    wheelLoopSource.process (morphBuffer.data(), numSamples, transport.ppq, transport.playing, transport.bpm, getSampleRate());
     {
         using trench::calibration::indexOf;
         const bool follow1 = calibration[indexOf ("cal_follow_1")] > 0.5f;
@@ -568,10 +564,21 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         };
         smoothMeter (inputMeterL, dryPeakL);
         smoothMeter (inputMeterR, dryPeakR);
-        const float effective = morphBuffer[(size_t) numSamples - 1];
+        const float effective =
+#if TRENCH_DEV_PANEL
+            dspBridge.heardMorphForCalibration();
+#else
+            morphBuffer[(size_t) numSamples - 1];
+#endif
         effectiveMorphForUi.store (effective, std::memory_order_relaxed);
         morphUpdatesForUi.fetch_add (1, std::memory_order_relaxed);
-        effectiveQForUi.store (qHeard, std::memory_order_relaxed);
+        effectiveQForUi.store (
+#if TRENCH_DEV_PANEL
+            dspBridge.heardQForCalibration(),
+#else
+            qHeard,
+#endif
+            std::memory_order_relaxed);
         morphModulatedForUi.store (customMotion || (movePreset >= 1 && movePreset <= trench::kNumFuncGenPatterns)
 #if TRENCH_DEV_PANEL
                                    || (wheelLoopSource.currentMode() == trench::WheelLoop::Mode::Playing
@@ -920,6 +927,7 @@ void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = apvts.copyState();
     state.setProperty ("userMotion", juce::JSON::toString (userMotion.get().toJson(), true), nullptr);
+    state.setProperty ("echoArmed", echoArmed.load (std::memory_order_relaxed), nullptr);
 #if TRENCH_DEV_PANEL
     {
         const juce::ScopedLock lock (calibrationArchiveLock);
@@ -927,7 +935,6 @@ void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
     }
 #endif
     state.setProperty ("bodyId",
-    state.setProperty ("echoArmed", echoArmed.load (std::memory_order_relaxed), nullptr);
                        trench::bodyBaseForIndex (
                            juce::roundToInt (apvts.getRawParameterValue (ParamID::body)->load())),
                        nullptr);
@@ -957,6 +964,8 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
         const bool motionValid = trench::UserMotion::fromJson (juce::JSON::parse (tree.getProperty ("userMotion").toString()), restoredMotion);
         userMotion.set (restoredMotion);
         tree.removeProperty ("userMotion", nullptr);
+        echoArmed.store ((bool) tree.getProperty ("echoArmed", false), std::memory_order_relaxed);
+        tree.removeProperty ("echoArmed", nullptr);
 #if TRENCH_DEV_PANEL
         {
             const juce::ScopedLock lock (calibrationArchiveLock);
@@ -964,8 +973,6 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
             calibrationArchive = session.isValid() ? session.createCopy() : juce::ValueTree ("DevCalibrationSession");
             if (session.isValid()) tree.removeChild (session, nullptr);
         }
-        echoArmed.store ((bool) tree.getProperty ("echoArmed", false), std::memory_order_relaxed);
-        tree.removeProperty ("echoArmed", nullptr);
 #endif
         const auto bodyId = tree.getProperty ("bodyId").toString();
         const auto bodyBytesText = tree.getProperty ("bodyBytes").toString();
@@ -1094,13 +1101,6 @@ void PluginProcessor::holdMorph (bool hold)
                                                               effectiveMorphForUi.load (std::memory_order_relaxed)));
     morphHeld.store (hold, std::memory_order_release);
 }
-void PluginProcessor::forceCleanAudioUiState()
-{
-    setParameterDenormalized (ParamID::body, (float) trench::kNoFilterIndex);
-    setParameterDenormalized (ParamID::movePreset, 0.0f);
-    setParameterDenormalized (ParamID::moveTransition, 0.0f);
-    setParameterDenormalized (ParamID::moveLength, 0.0f);
-    setParameterDenormalized (ParamID::movePlayback, 0.0f);
 void PluginProcessor::holdQ (bool hold)
 {
     if (hold && qModulatedForUi.load (std::memory_order_relaxed))
@@ -1180,6 +1180,13 @@ void PluginProcessor::finishEcho()
     echoReady.store (-1, std::memory_order_release);
     applyUserMotion (motion, true);
 }
+void PluginProcessor::forceCleanAudioUiState()
+{
+    setParameterDenormalized (ParamID::body, (float) trench::kNoFilterIndex);
+    setParameterDenormalized (ParamID::movePreset, 0.0f);
+    setParameterDenormalized (ParamID::moveTransition, 0.0f);
+    setParameterDenormalized (ParamID::moveLength, 0.0f);
+    setParameterDenormalized (ParamID::movePlayback, 0.0f);
     setParameterDenormalized (ParamID::moveCustom, 0.0f);
 }
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

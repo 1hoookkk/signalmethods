@@ -366,6 +366,7 @@ int main()
     set (ParamID::distortion, 0.0f);
     set (ParamID::body, bodyIndex ("No filter"));
     set (ParamID::slamDrive, 1.0f);
+    set (ParamID::inputSlam, 1.0f);
     set (ParamID::preamp, 0.6f);
     set (ParamID::morph, 0.5f);
     settle (400);

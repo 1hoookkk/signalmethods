@@ -1,0 +1,5 @@
+m6_notch_glide: the user's own body, exported from morph6 20 Sep 2026 19:18 (output/exports/body.body240), installed byte for byte, sha256 5d55cf2bfb94e381...
+Not passed through the ship gate. Known before installing (report/0920/voice-body/user_body/):
+- Corners: DC -18.06 dB (three 6.02 dB cuts), peaks A +5.9, B +6.1, C +10.3, D +16.8 dB. Notch on the unit circle 3001 Hz at Morph 0, 2216 Hz at Morph 1.
+- Interior is far hotter than any corner: +31.1 dB at Morph 0.80 Q 0, +48.5 dB at Morph 0.60 Q 1, near 1.3 kHz, where pole lanes cross. No unstable pose.
+- In morph6's own playback at -6 dB the limiter pulled down up to 24 dB on fast Morph at Q 1. Start with the plugin output low.

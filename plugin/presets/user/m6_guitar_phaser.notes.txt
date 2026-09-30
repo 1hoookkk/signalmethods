@@ -1,0 +1,5 @@
+construction after E-mu BlissBatz (each section a zero on the unit circle with a pole +0.144 or -0.117 octave beside it, alternating), scaled from its two live sections to six
+notch frequencies are the six deepest true valleys of each measured source between 80 and 5000 Hz; nothing is solved
+Morph 0 corpus/guitars-one/mores_01_ch4.curve.txt: 148 Hz (14 dB deep in the source), 635 Hz (25 dB deep in the source), 1061 Hz (9 dB deep in the source), 1648 Hz (10 dB deep in the source), 3320 Hz (7 dB deep in the source), 4244 Hz (12 dB deep in the source)
+Morph 1 corpus/guitars-one/mores_10_ch4.curve.txt: 137 Hz (15 dB), 283 Hz (12 dB), 664 Hz (15 dB), 925 Hz (12 dB), 1337 Hz (9 dB), 1837 Hz (17 dB)
+pole width = pole frequency / 6 at Q 0, times 0.25 at Q 1; zeros untouched by Q, as in BlissBatz; DC unity, one level word per corner

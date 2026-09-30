@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "MorphSmoothingTests.h"
 #include "DriveSlamTests.h"
 #include "PluginEditor.h"
 #include <cstdio>
@@ -314,7 +315,7 @@ void devMorphDisplay()
     require (p.isMorphModulatedForUi(), "Dev loop does not drive the Morph display with Movement off");
     require (std::abs (p.getEffectiveMorphForUi() - 0.75f) < 0.00001f, "display does not receive loop trajectory");
     p.wheelLoop().stop();
-    p.processBlock (audio, midi);
+    for (int i = 0; i < 8; ++i) p.processBlock (audio, midi);
     require (! p.isMorphModulatedForUi(), "display did not return to manual Morph");
     set (p, "cal_morph_ms", 100);
     set (p, "morph", 0.9f);
@@ -362,6 +363,55 @@ int main (int argc, char** argv)
     juce::ScopedJuceInitialiser_GUI init;
     try
     {
+        if (argc == 3 && juce::String (argv[1]) == "--morph-stress")
+        {
+            const float smoothMs = juce::String (argv[2]).getFloatValue();
+            int failed = 0;
+            for (const double rate : { 44100.0, 48000.0, 96000.0 })
+                for (const int baseFlip : { 31, 44, 63, 88, 100, 127, 151, 176, 223, 271, 352, 511, 701, 1024, 2033, 4410, 8192 })
+                {
+                    TrenchDspBridge bridge;
+                    bridge.prepare (rate, 512);
+                    auto values = trench::calibration::defaults();
+                    values[3] = smoothMs;
+                    bridge.applyCalibration (values);
+                    const auto bytes = body();
+                    require (bridge.loadCartridgeBytes (bytes), "morph stress body loads");
+                    TrenchParams params; params.q = 1.0f;
+                    std::array<float, 512> trajectory {};
+                    juce::AudioBuffer<float> audio (2, 512);
+                    juce::Random noise (7);
+                    const int flip = (int) std::lround (baseFlip * rate / 44100.0);
+                    const int blocks = (int) std::ceil (rate * 5.0 / 512.0);
+                    float peak = 0.0f;
+                    bool finite = true;
+                    for (int block = 0; block < blocks && finite; ++block)
+                    {
+                        for (int i = 0; i < 512; ++i)
+                        {
+                            trajectory[(size_t) i] = ((block * 512 + i) / flip) % 2 == 0 ? 0.0f : 1.0f;
+                            const float x = 0.5f * (noise.nextFloat() * 2.0f - 1.0f);
+                            audio.setSample (0, i, x); audio.setSample (1, i, x);
+                        }
+                        bridge.processTrajectory (audio, trajectory.data(), params);
+                        for (int i = 0; i < 512; ++i)
+                        {
+                            const float y = audio.getSample (0, i);
+                            finite = finite && std::isfinite (y) && std::abs (y) < 1.0e6f;
+                            peak = std::max (peak, std::abs (y));
+                        }
+                    }
+                    std::printf ("%s smooth %.3f ms rate %.0f flip %d peak %.2f dB\n", finite ? "PASS" : "FAIL", smoothMs, rate, flip, juce::Decibels::gainToDecibels (peak));
+                    if (! finite) ++failed;
+                }
+            return failed == 0 ? 0 : 1;
+        }
+        if (argc == 2 && juce::String (argv[1]) == "--morph-smoothing")
+        {
+            require (morphSmoothingTests() == 0, "subtle Morph/Q smoothing contract");
+            devMorphDisplay();
+            return 0;
+        }
         if (argc == 3 && juce::String (argv[1]) == "--audition")
         {
             calibrationAudition (juce::File (juce::String::fromUTF8 (argv[2])));
@@ -400,6 +450,7 @@ int main (int argc, char** argv)
             return 0;
         }
         exactInterpolation();
+        require (morphSmoothingTests() == 0, "subtle Morph/Q smoothing contract");
         require (driveSlamTests() == 0, "DRIVE / soft clip contract");
         for (float x = -8; x < 8; x += 0.013f)
         {
@@ -560,7 +611,7 @@ int main (int argc, char** argv)
                 if (at > still) { still = at; stillAt = (float) k / 20.0f; }
             }
             float fastest = 0.0f;
-            for (const int flip : { 88, 176, 352, 1024, 4410 })
+            for (const int flip : { 44, 63, 88, 100, 176, 352, 1024, 4410 })
             {
                 const float moving = worst (flip, 0.0f);
                 std::printf ("pumping: Morph flips 0<->1 every %d samples at Q 100, peak %.2f dB vs %.2f dB at the loudest still Morph (%.2f)\n", flip,

@@ -1,0 +1,125 @@
+{
+  "name": "m6_my_voice_oui_3",
+  "spec": {
+    "name": "m6_my_voice_oui_3",
+    "brief": "The user's own voice as a filter. Morph 0 is their 'oo', Morph 1 their 'ee', so the morph says 'oui'. Q opens to their 'aa' under Morph 0 and closes to their 'nn' hum under Morph 1. Targets are cepstrally smoothed spectra of the recordings with +6 dB per octave to take the voice source's slope out. The two lowest lanes trade poles across Morph, as Talking Hedz does. Second pass: the ee, aa and oo recordings are whispered, so no slope correction is applied to them (+6 dB per octave only on the voiced hums); every target is held flat below 0.6 x its first peak, because the recording's roll-off down there is microphone and radiation, not the mouth, and a vocal tract is flat towards DC. Version 2, closing the gap to the factory preset heard beside it: the band runs to 10 kHz so the spare poles have the whisper's real top end to draw instead of parking at the band edge, and the Q 1 corners are narrowed to 40 Hz so Q sharpens as well as changing the vowel. Version 3: the one authored zero pair, the zero on the unit circle, is tuned to the voice. In each corner it sits at the deepest point of that recording's own spectrum between 4 and 12 kHz, so it moves with Morph and Q as the factory's does, at frequencies taken from the user and not from any factory preset. The other ten zeros are solved around it.",
+    "cut_steps": 0,
+    "swap_lanes_at_morph_1": [
+      1,
+      2
+    ],
+    "interior_peak_allowance_db": 20,
+    "corners": {
+      "A": {
+        "source": "report/0920/voice/targets/oo.curve.csv",
+        "emphasis": 1.0,
+        "tilt": 0.0,
+        "band": [
+          100,
+          10000
+        ],
+        "rail": 11466.4,
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "B": {
+        "source": "report/0920/voice/targets/ee.curve.csv",
+        "emphasis": 1.0,
+        "tilt": 0.0,
+        "band": [
+          100,
+          10000
+        ],
+        "rail": 11606.4,
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "C": {
+        "source": "report/0920/voice/targets/aa.curve.csv",
+        "emphasis": 1.0,
+        "tilt": 0.0,
+        "band": [
+          100,
+          10000
+        ],
+        "rail": 11638.7,
+        "fraction": 0.05,
+        "floor_hz": 25,
+        "pole_width_hz": 40
+      },
+      "D": {
+        "source": "report/0920/voice/targets/nn.curve.csv",
+        "emphasis": 1.0,
+        "tilt": 0.0,
+        "band": [
+          100,
+          10000
+        ],
+        "rail": 10045.2,
+        "fraction": 0.05,
+        "floor_hz": 25,
+        "pole_width_hz": 40
+      }
+    }
+  },
+  "sha256": "4e0de6f4e920576598f3c0b7f77b6750247a4887e88756408cb0ac43d03eef84",
+  "gates": [
+    {
+      "gate": "corner A accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner B accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner C accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner D accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "editor loads the body and accepts every pose of the field",
+      "pass": true,
+      "detail": "451 poses, 0 refused"
+    },
+    {
+      "gate": "interior peak within the allowance over the hottest corner",
+      "pass": true,
+      "detail": "allowance 20 dB; field +29.17 dB at Morph 0.550 Q 1.0; corners [12.14, 9.63, 21.28, 19.67]"
+    },
+    {
+      "gate": "no pole lanes cross unannounced",
+      "pass": true,
+      "detail": "S1 rises 433 Hz to 2.3 kHz.  S2 falls 863 Hz to 365 Hz.  S3 rises 2.3 kHz to 2.8 kHz.  S4 rises 4.8 kHz to 5.3 kHz.  S5 falls 7.2 kHz to 5.9 kHz.  S6 holds near 7.9 kHz. S1 and S2 cross at 27 % near 684 Hz.  m6_my_voice_oui_3.m6body.json |"
+    },
+    {
+      "gate": "corner A: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5978 dB by the end"
+    },
+    {
+      "gate": "corner B: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5979 dB by the end"
+    },
+    {
+      "gate": "corner C: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5981 dB by the end"
+    },
+    {
+      "gate": "corner D: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5984 dB by the end"
+    }
+  ],
+  "passed": true,
+  "note": "built from this project's own sources; no factory coefficients"
+}

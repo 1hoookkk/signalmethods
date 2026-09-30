@@ -18,7 +18,7 @@ inline constexpr Variable variables[] {
     { "cal_grid", "Interpolation", "", 0, 1, 1, 0, false, "0: packed words > decode > rate conversion. 1: current 65 x 17 coefficient grid. Neither is claimed hardware-exact." },
     { "cal_hop", "Control interval", "samples", 1, 128, 1, 88, true, "Samples between coefficient targets. Kernel ramps are a separate variable." },
     { "cal_ramp", "Kernel ramp", "", 0, 1, 1, 1, false, "0: immediate target. 1: ramp decoded kernel coefficients across the control interval." },
-    { "cal_morph_ms", "Morph smoothing", "ms", 0, 100, 0.1f, 0, false, "0: immediate wheel position, no smoothing. Above zero: sample-rate-aware one-pole smoothing of the complete trajectory." },
+    { "cal_morph_ms", "Morph/Q smoothing", "ms", 0, 100, 0.1f, 1.5f, false, "One smoothing stage for the final Morph and Q trajectories. 0: immediate. 1.5 ms: release default time constant." },
     { "cal_input_db", "Input trim", "dB", -24, 24, 0.1f, 0, false, "Additional drive before the cascade; independent of final monitoring trim." },
     { "cal_feedback", "Feedback clipping", "", 0, 1, 1, 0, false, "Clips the feedback signal of each section, not the section output." },
     { "cal_feedback_db", "Feedback ceiling", "dBFS", -36, 24, 0.1f, 6, false, "Ceiling on each section's resonator state, measured against that section's DC gain. Distortion starts 4.4 dB below it." },
@@ -49,7 +49,7 @@ inline constexpr Variable variables[] {
 inline constexpr const char* retired[] { "cal_stage", "cal_stage_db", "cal_agc", "cal_agc_db", "cal_agc_strength", "cal_agc_recovery", "cal_knee_db", "cal_knee_slope", "cal_release_slow", "cal_release_fast", "cal_hold", "cal_quiet_db", "cal_agc_position" };
 inline constexpr size_t count = std::size (variables);
 inline constexpr const char* taste[] { "cal_feedback", "cal_feedback_db", "cal_follow_1", "cal_follow_2", "cal_follow_attack", "cal_follow_release", "cal_follow_floor", "cal_follow_top", "cal_follow_depth", "cal_follow_depth_2", "cal_swing", "cal_note_track" };
-inline constexpr const char* processing[] { "cal_ramp", "cal_feedback", "cal_desk", "cal_desk_clip", "cal_comp", "cal_guard" };
+inline constexpr const char* processing[] { "cal_ramp", "cal_morph_ms", "cal_feedback", "cal_desk", "cal_desk_clip", "cal_comp", "cal_guard" };
 constexpr size_t indexOf (std::string_view id)
 {
     for (size_t i = 0; i < count; ++i)

@@ -1,0 +1,16 @@
+{
+  "job": "jobs\\slam_switch_white.json",
+  "job_sha256": "953c98ca020c488a6ecb0d252ff999f98da6555dc60ddae0d5884ba180112955",
+  "mesh": "sources\\generated\\slam_cap.glb",
+  "mesh_sha256": "61bb7f7e38ce3b243d3e3912410d7eb2ea2c846ba0edbb5de9ab77b0c772c178",
+  "blender": "5.2.2 LTS",
+  "rig_git": "17db1eaa",
+  "preview": false,
+  "supersample": 4,
+  "rendered_utc": "2026-09-30T11:19:38+00:00",
+  "outputs": [
+    "slam_switch_white_shadow.png",
+    "slam_switch_white_off.png",
+    "slam_switch_white_on.png"
+  ]
+}

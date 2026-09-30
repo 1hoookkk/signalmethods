@@ -138,7 +138,6 @@ private:
     float previousDriveGain = 1.0f;
 #if TRENCH_DEV_PANEL
     std::array<std::atomic<float>*, trench::calibration::count> calibrationParameters {};
-    float calibrationMorph = -1.0f;
     float followEnvelope = 0.0f;
     float followPush = 0.0f;
     float calibrationOutputGain = 1.0f;
@@ -146,9 +145,10 @@ private:
     std::atomic<bool>             noteLatched { false };
     std::atomic<float>            noteTrackRatio { 1.0f };
     std::atomic<float>            noteBite { 0.0f };
-    float                         wheelRampFrom = -1.0f;
     std::atomic<bool>             morphHeld { false };
     bool                          morphWasHeld = false;
+    float                         movementDepth = 1.0f;
+    float                         movementReturnStep = 0.0f;
     trench::Movement              movementQ;
     std::atomic<bool>             qHeld { false };
     bool                          qWasHeld = false;
@@ -175,8 +175,6 @@ private:
         PluginProcessor& owner;
     } echoFinalizer { *this };
     void finishEcho();
-    float                         movementDepth = 1.0f;
-    float                         movementReturnStep = 0.0f;
     std::vector<float>            morphBuffer;
     std::vector<float>            qBuffer;
     int                           preparedBlockSize = 0;

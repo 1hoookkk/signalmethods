@@ -56,6 +56,54 @@ inline int frontendTests()
     check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
     check (slamToggles, "the SLAM button on the face switches the preamp before the filter");
     {
+        const auto layout = trench::UiLayout::defaults();
+        trench::ui::KeySnapBox control (processor.apvts, trench::ui::Theme { layout });
+        control.setSize (99, 22);
+        auto* parameter = processor.apvts.getParameter (ParamID::keySnap);
+        int detected = 21;
+        control.setSuggestionProviders ([&] { return detected; });
+        const auto setChoice = [&] (int choice)
+        {
+            parameter->setValueNotifyingHost (parameter->convertTo0to1 ((float) choice));
+        };
+        const auto choice = [&] { return juce::roundToInt (parameter->convertFrom0to1 (parameter->getValue())); };
+        const auto event = juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 50, 11 },
+            juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            &control, &control, {}, { 50, 11 }, {}, 1, false);
+        setChoice (0);
+        control.refreshSuggestion();
+        check (choice() == 0 && control.displayText() == "OFF", "detecting a key leaves disabled KEY quiet and off");
+        control.mouseUp (event);
+        check (choice() == trench::KeySnap::kAutoChoice && control.displayText() == "AUTO A",
+               "one click enables automatic KEY and shows the detected key");
+        detected = -1;
+        control.refreshSuggestion();
+        check (choice() == trench::KeySnap::kAutoChoice && control.displayText() == "AUTO",
+               "automatic KEY without a detection does not invent a key");
+        control.mouseUp (event);
+        check (choice() == 0 && control.displayText() == "OFF", "a second click turns KEY off");
+        control.keyPressed (juce::KeyPress (juce::KeyPress::spaceKey));
+        check (choice() == trench::KeySnap::kAutoChoice, "keyboard activation uses the same KEY toggle");
+        setChoice (10);
+        detected = 1;
+        control.refreshSuggestion();
+        check (choice() == 10 && control.displayText() == "A", "a manual key remains distinct from automatic detection");
+        bool scrollPreservesChoice = true;
+        for (int selected = 0; selected <= trench::KeySnap::kAutoChoice; ++selected)
+        {
+            setChoice (selected);
+            for (const float delta : { -0.25f, 0.25f })
+            {
+                juce::MouseWheelDetails scroll;
+                scroll.deltaY = delta;
+                control.mouseWheelMove (event, scroll);
+                scrollPreservesChoice = scrollPreservesChoice && choice() == selected;
+            }
+        }
+        check (scrollPreservesChoice, "scrolling over KEY cannot change its mode or selected key");
+        setChoice (0);
+    }
+    {
         trench::UiLayout wheelLayout;
         trench::ui::WheelControl wheel (processor.apvts, ParamID::morph, {}, trench::ui::Theme { wheelLayout });
         wheel.setSize (110, 30);
@@ -107,6 +155,22 @@ inline int frontendTests()
         check (browser->isVisible() && editor->getLocalArea (browser, browser->getLocalBounds()) == editor->getLocalBounds(),
                "body browser remains reachable");
         browser->close (false);
+        int eq = -1, lp = -1;
+        for (int i = 0; i < trench::bodyCount(); ++i)
+        {
+            if (trench::bodyDisplayName (i) == "Hot Spot") eq = i;
+            if (trench::bodyDisplayName (i) == "Ober Easy") lp = i;
+        }
+        auto* q = processor.apvts.getParameter (ParamID::q);
+        q->setValueNotifyingHost (0.0f);
+        if (browser->onCommit) browser->onCommit (eq);
+        const bool flatOnPick = eq >= 0 && std::abs (q->getValue() - 0.5f) < 1.0e-4f;
+        q->setValueNotifyingHost (0.9f);
+        if (browser->onCommit) browser->onCommit (lp);
+        const bool keptForOthers = lp >= 0 && std::abs (q->getValue() - 0.9f) < 1.0e-4f;
+        check (flatOnPick && keptForOthers, "picking a GAIN body lands it flat at 50%; other bodies keep the wheel");
+        q->setValueNotifyingHost (0.0f);
+        processor.apvts.getParameter (ParamID::body)->setValueNotifyingHost (0.0f);
     }
     check (processor.apvts.getParameter (ParamID::distortion) == nullptr && processor.apvts.getParameter (ParamID::output) != nullptr,
            "Distortion is retired and OUTPUT is a host parameter");
@@ -155,22 +219,6 @@ inline int frontendTests()
             check (coarse && shiftHeld && fine && atDb (-3.9f), "gain knob and readout allow fine adjustment mid-drag without a level jump");
             control->mouseUp (event (control, 5));
             setDb (23.0f);
-        int eq = -1, lp = -1;
-        for (int i = 0; i < trench::bodyCount(); ++i)
-        {
-            if (trench::bodyDisplayName (i) == "Hot Spot") eq = i;
-            if (trench::bodyDisplayName (i) == "Ober Easy") lp = i;
-        }
-        auto* q = processor.apvts.getParameter (ParamID::q);
-        q->setValueNotifyingHost (0.0f);
-        if (browser->onCommit) browser->onCommit (eq);
-        const bool flatOnPick = eq >= 0 && std::abs (q->getValue() - 0.5f) < 1.0e-4f;
-        q->setValueNotifyingHost (0.9f);
-        if (browser->onCommit) browser->onCommit (lp);
-        const bool keptForOthers = lp >= 0 && std::abs (q->getValue() - 0.9f) < 1.0e-4f;
-        check (flatOnPick && keptForOthers, "picking a GAIN body lands it flat at 50%; other bodies keep the wheel");
-        q->setValueNotifyingHost (0.0f);
-        processor.apvts.getParameter (ParamID::body)->setValueNotifyingHost (0.0f);
             control->mouseDown (event (control, 20));
             control->mouseDrag (event (control, -1000));
             const bool bounded = atDb (24.0f);

@@ -1,0 +1,135 @@
+{
+  "name": "m6_pig_squeal_3",
+  "spec": {
+    "name": "m6_pig_squeal_3",
+    "brief": "Third pass: in the factory preset Q is not only sharper poles, it is a second vowel axis (Morph 0: 257/1763/2164 Hz becomes 491/1120/1524; Morph 1: the upper poles bunch upward to 2158-3661 Hz and F1 drops to 274). So the Q 1 corners get their own measured sources: an open a under Morph 0, a close i under Morph 1, then narrowed.",
+    "cut_steps": 2,
+    "corners": {
+      "A": {
+        "source": "report/0914/dvtd-smith/curves/measured/s1-02-beet-tense-e.txt",
+        "emphasis": 1.25,
+        "tilt": 0.0,
+        "notch": {
+          "hz": 830,
+          "depth_db": 8,
+          "width_octaves": 0.6
+        },
+        "band": [
+          100,
+          5000
+        ],
+        "rail": "auto",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "B": {
+        "source": "report/0914/dvtd-smith/curves/measured/s1-22-ehe-schwa.txt",
+        "emphasis": 1.25,
+        "tilt": 0.0,
+        "notch": {
+          "hz": 830,
+          "depth_db": 8,
+          "width_octaves": 0.6
+        },
+        "band": [
+          100,
+          5000
+        ],
+        "rail": "auto",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "C": {
+        "source": "report/0914/dvtd-smith/curves/measured/s1-01-bahn-tense-a.txt",
+        "emphasis": 1.25,
+        "tilt": 0.0,
+        "band": [
+          100,
+          5000
+        ],
+        "rail": "auto",
+        "fraction": 0.05,
+        "floor_hz": 25,
+        "pole_width_hz": 30
+      },
+      "D": {
+        "source": "report/0914/dvtd-smith/curves/measured/s1-03-tiere-tense-i.txt",
+        "emphasis": 1.25,
+        "tilt": 0.0,
+        "notch": {
+          "hz": 830,
+          "depth_db": 8,
+          "width_octaves": 0.6
+        },
+        "band": [
+          100,
+          5000
+        ],
+        "rail": "auto",
+        "fraction": 0.05,
+        "floor_hz": 25,
+        "pole_width_hz": 20
+      }
+    }
+  },
+  "sha256": "860245e979ff3d4ed7859e0ab8f7613d91d09b40391c37ecee5f00d004e10e9e",
+  "gates": [
+    {
+      "gate": "corner A accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner B accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner C accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner D accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "editor loads the body and accepts every pose of the field",
+      "pass": true,
+      "detail": "451 poses, 0 refused"
+    },
+    {
+      "gate": "no interior peak more than 6 dB over the hottest corner",
+      "pass": true,
+      "detail": "field +33.43 dB at Morph 0.000 Q 0.8; corners [21.13, 23.35, 30.19, 31.21]"
+    },
+    {
+      "gate": "no pole lanes cross unannounced",
+      "pass": true,
+      "detail": "S1 rises 256 Hz to 340 Hz.  S2 falls 1.8 kHz to 1.6 kHz.  S3 holds near 2.4 kHz.  S4 holds near 3.0 kHz.  S5 holds near 3.6 kHz.  S6 holds near 4.0 kHz. Nothing crosses.  m6_pig_squeal_3.m6body.json |"
+    },
+    {
+      "gate": "corner A: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4329 dB by the end"
+    },
+    {
+      "gate": "corner B: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4327 dB by the end"
+    },
+    {
+      "gate": "corner C: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5499 dB by the end"
+    },
+    {
+      "gate": "corner D: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4311 dB by the end"
+    }
+  ],
+  "passed": true,
+  "note": "built from this project's own sources; no factory coefficients"
+}

@@ -35,19 +35,20 @@ inline int driveSlamTests()
                 }
             }
             check (exact, "with SLAM off nothing but the filter touches the signal: no Mackity after it, per channel");
-            const auto tonePeak = [&] (float inputGain, float outputGain)
+            const auto tonePeak = [&] (float inputGain, float outputGain, bool slamOn = false, float amplitude = 0.001f)
             {
                 TrenchDspBridge b;
                 b.prepare (rate, 128);
                 b.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
                 b.setInputDrive (inputGain);
+                b.setInputSlam (slamOn);
                 b.setOutputLevel (outputGain);
                 juce::AudioBuffer<float> a (channels, 128);
                 float peak = 0.0f;
                 for (int block = 0; block < 200; ++block)
                 {
                     for (int c = 0; c < channels; ++c)
-                        for (int i = 0; i < 128; ++i) a.setSample (c, i, 0.001f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 1000.0 * (block * 128 + i) / rate));
+                        for (int i = 0; i < 128; ++i) a.setSample (c, i, amplitude * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 1000.0 * (block * 128 + i) / rate));
                     b.process (a, {});
                     if (block >= 150) peak = std::max (peak, a.getMagnitude (0, 0, 128));
                 }
@@ -59,40 +60,16 @@ inline int driveSlamTests()
                    "INPUT is a clean level from -24 to +24 dB");
             check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
                    "OUTPUT is a clean level after the filter");
-            {
-                const auto rmsDb = [rate] (bool slamOn, double peakDbfs)
-                {
-                    TrenchDspBridge chain;
-                    chain.prepare (rate, 128);
-                    chain.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-                    chain.setInputSlam (slamOn);
-                    juce::AudioBuffer<float> a (2, 128);
-                    const double amplitude = juce::Decibels::decibelsToGain (peakDbfs);
-                    const int blocks = (int) (rate / 128.0);
-                    double sum = 0.0;
-                    int n = 0;
-                    for (int block = 0; block < blocks; ++block)
-                    {
-                        for (int i = 0; i < 128; ++i)
-                        {
-                            const float x = (float) (amplitude * std::sin (2.0 * juce::MathConstants<double>::pi * 220.0 * (block * 128 + i) / rate));
-                            a.setSample (0, i, x); a.setSample (1, i, x);
-                        }
-                        chain.process (a, {});
-                        if (block >= blocks / 2)
-                            for (int i = 0; i < 128; ++i) { sum += (double) a.getSample (0, i) * a.getSample (0, i); ++n; }
-                    }
-                    return 10.0 * std::log10 (sum / n);
-                };
-                double worst = 0.0;
-                for (const double level : { -40.0, -30.0, -18.0, -6.0, 0.0 })
-                {
-                    const double change = rmsDb (true, level) - rmsDb (false, level);
-                    std::printf ("      SLAM at %+.0f dBFS peak: level change %+.2f dB\n", level, change);
-                    worst = std::max (worst, std::abs (change));
-                }
-                check (worst < 1.0, "SLAM leaves the level it was given within 1 dB from -40 to 0 dBFS");
-            }
+            const float slamQuiet = tonePeak (1.0f, 1.0f, true);
+            check (std::abs (juce::Decibels::gainToDecibels (slamQuiet / unity) - 18.06f) < 0.2f,
+                   "SLAM uses fixed gain without automatic RMS compensation");
+            const float clipped = tonePeak (1.0f, 1.0f, true, 0.125f);
+            const float pushed = tonePeak (4.0f, 1.0f, true, 0.125f);
+            std::printf ("      SLAM clipped / pushed peaks %.6f / %.6f at %.0f Hz\n", clipped, pushed, rate);
+            check (clipped > 0.35f && pushed < 0.65f,
+                   "SLAM remains bounded while INPUT drives further into clipping");
+            check (std::abs (tonePeak (4.0f, 0.25f, true, 0.125f) / pushed - 0.25f) < 1.0e-5f,
+                   "OUTPUT scales SLAM after clipping without changing its drive");
             TrenchDspBridge clean;
             clean.prepare (rate, 128);
             clean.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
@@ -101,6 +78,76 @@ inline int driveSlamTests()
             clean.setInputDrive (1.0f);
             check (! clean.inputDriveIsUnity(), "INPUT return keeps processing active while the gain ramp settles");
         }
+    {
+        const auto burstCrest = [] (float drive)
+        {
+            TrenchDspBridge bridge;
+            bridge.prepare (48000.0, 128);
+            bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+            bridge.setInputSlam (true);
+            bridge.setInputDrive (drive);
+            juce::AudioBuffer<float> audio (1, 128);
+            const std::array<double, 4> starts { 0.25, 0.85, 1.45, 2.05 };
+            const std::array<double, 4> amplitudes { 0.02, 0.08, 0.32, 0.8 };
+            double power = 0.0;
+            float peak = 0.0f;
+            for (int block = 0; block < 1125; ++block)
+            {
+                for (int i = 0; i < 128; ++i)
+                {
+                    const double time = (block * 128 + i) / 48000.0;
+                    double x = 0.0;
+                    for (size_t hit = 0; hit < starts.size(); ++hit)
+                    {
+                        const double age = time - starts[hit];
+                        if (age >= 0.0 && age < 0.12)
+                            x += amplitudes[hit] * std::sin (2.0 * juce::MathConstants<double>::pi * 1000.0 * age) * std::exp (-age / 0.02);
+                    }
+                    audio.setSample (0, i, (float) x);
+                }
+                bridge.process (audio, {});
+                for (int i = 0; i < 128; ++i)
+                {
+                    const auto x = audio.getSample (0, i);
+                    power += (double) x * x;
+                    peak = std::max (peak, std::abs (x));
+                }
+            }
+            return 20.0 * std::log10 (peak / std::sqrt (power / 144000.0));
+        };
+        const double normal = burstCrest (1.0f), pushed = burstCrest (juce::Decibels::decibelsToGain (12.0f));
+        std::printf ("      Transient crest at INPUT 0 / +12 dB: %.3f / %.3f dB\n", normal, pushed);
+        check (normal - pushed > 1.5,
+               "INPUT +12 dB with SLAM reduces transient crest instead of only making the same waveform louder");
+    }
+    for (const double rate : { 44100.0, 48000.0, 96000.0 })
+    {
+        TrenchDspBridge quietRight, hotRight;
+        for (auto* bridge : { &quietRight, &hotRight })
+        {
+            bridge->prepare (rate, 128);
+            bridge->loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+            bridge->setInputSlam (true);
+        }
+        juce::AudioBuffer<float> a (2, 128), b (2, 128);
+        bool independent = true;
+        for (int block = 0; block < 160; ++block)
+        {
+            for (int i = 0; i < 128; ++i)
+            {
+                const auto phase = 2.0 * juce::MathConstants<double>::pi * 1000.0 * (block * 128 + i) / rate;
+                const auto left = 0.002f * (float) std::sin (phase);
+                a.setSample (0, i, left); b.setSample (0, i, left);
+                a.setSample (1, i, 0.0f);
+                b.setSample (1, i, block >= 64 && block < 128 ? 0.9f * (float) std::sin (phase) : 0.0f);
+            }
+            quietRight.process (a, {});
+            hotRight.process (b, {});
+            for (int i = 0; i < 128; ++i)
+                independent = independent && a.getSample (0, i) == b.getSample (0, i);
+        }
+        check (independent, "a transient on one channel cannot ride the other channel's SLAM gain");
+    }
     for (const double radiusMode : { 0.0, 0.01 })
         for (const double feedbackMode : { 0.0, 1.0 })
         {
@@ -219,7 +266,8 @@ inline int driveSlamTests()
         check (soft.first < 0.005 && hard.first > 0.05 && std::isfinite (hard.second),
             "No Filter: INPUT alone stays clean, SLAM drives Mackity into saturation");
         const auto first = harmonics (-24.0f, true);
-        check (first.first > 0.05, "SLAM runs before INPUT: it still saturates the source with INPUT at -24 dB");
+        check (first.first < 0.005 && hard.first > first.first * 10.0,
+               "INPUT precedes SLAM: backing it down cleans up the clipping");
     }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;

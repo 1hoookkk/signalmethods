@@ -1,0 +1,114 @@
+{
+  "name": "m6_pig_squeal",
+  "spec": {
+    "name": "m6_pig_squeal",
+    "brief": "A sibling of the Deep Bouche character, from our own measurements: one narrow low resonance that rises across Morph, a packed run of narrow peaks at 1.7 to 3.9 kHz, nothing between 400 Hz and 1.7 kHz, DC pulled 12 dB down.",
+    "cut_steps": 2,
+    "corners": {
+      "A": {
+        "source": "report/0914/dvtd-smith/curves/measured/s1-02-beet-tense-e.txt",
+        "emphasis": 1.6,
+        "tilt": 0.0,
+        "notch": {
+          "hz": 830,
+          "depth_db": 22,
+          "width_octaves": 0.6
+        },
+        "band": [
+          100,
+          10000
+        ],
+        "rail": "auto",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "B": {
+        "source": "report/0914/dvtd-smith/curves/measured/s1-22-ehe-schwa.txt",
+        "emphasis": 1.6,
+        "tilt": 0.0,
+        "notch": {
+          "hz": 830,
+          "depth_db": 22,
+          "width_octaves": 0.6
+        },
+        "band": [
+          100,
+          10000
+        ],
+        "rail": "auto",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "C": {
+        "derive_from": "A",
+        "pole_width_hz": 20,
+        "leave_poles_wider_than_hz": 1500
+      },
+      "D": {
+        "derive_from": "B",
+        "pole_width_hz": 20,
+        "leave_poles_wider_than_hz": 1500
+      }
+    }
+  },
+  "sha256": "9b35f8a64c1cb17e88f5b2eab8bc6e86a8940d0f72613f3a10775bc51ccee45e",
+  "gates": [
+    {
+      "gate": "corner A accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner B accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner C accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner D accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "editor loads the body and accepts every pose of the field",
+      "pass": true,
+      "detail": "451 poses, 0 refused"
+    },
+    {
+      "gate": "no interior peak more than 6 dB over the hottest corner",
+      "pass": true,
+      "detail": "field +45.56 dB at Morph 0.000 Q 1.0; corners [23.2, 25.02, 45.56, 35.02]"
+    },
+    {
+      "gate": "no pole lanes cross unannounced",
+      "pass": true,
+      "detail": "S1 rises 254 Hz to 336 Hz.  S2 falls 1.8 kHz to 1.6 kHz.  S3 holds near 2.2 kHz.  S4 holds near 3.0 kHz.  S5 holds near 6.3 kHz.  S6 rises 6.7 kHz to 7.9 kHz. Nothing crosses.  m6_pig_squeal.m6body.json |"
+    },
+    {
+      "gate": "corner A: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4333 dB by the end"
+    },
+    {
+      "gate": "corner B: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4335 dB by the end"
+    },
+    {
+      "gate": "corner C: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4312 dB by the end"
+    },
+    {
+      "gate": "corner D: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -4312 dB by the end"
+    }
+  ],
+  "passed": true,
+  "note": "built from this project's own sources; no factory coefficients"
+}

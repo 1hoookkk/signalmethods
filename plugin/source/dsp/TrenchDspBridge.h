@@ -123,11 +123,6 @@ public:
         outputGain.setCurrentAndTargetValue (1.0f);
         preDeskL.prepare (sampleRateHz);
         preDeskR.prepare (sampleRateHz);
-        slamEnvCoeff = 1.0 - std::exp (-1.0 / (0.030 * sampleRateHz));
-        slamFallCoeff = 1.0 - std::exp (-1.0 / (0.005 * sampleRateHz));
-        slamRiseCoeff = 1.0 - std::exp (-1.0 / (0.060 * sampleRateHz));
-        slamInPower = slamOutPower = 0.0;
-        slamMakeup = kSlamMakeupStart;
         for (auto* desk : { &preDeskL, &preDeskR })
             desk->setTrims (kSlamInTrim, kSlamOutPad);
         postDeskL.prepare (sampleRateHz);
@@ -144,7 +139,7 @@ public:
         smoothedMorph = -1.0;
         smoothedQ = -1.0;
         controlTick = juce::jmax (1, (int) std::lround (sampleRateHz * 88.0 / 44100.0));
-        sampleGlide = 1.0 - std::pow (1.0 - kControlGlide, 1.0 / (double) controlTick);
+        sampleGlide = 1.0 - std::exp (-1.0 / (kControlSmoothSeconds * sampleRateHz));
         fadeLeft.resize ((size_t) std::max (128, controlTick));
         fadeRight.resize (fadeLeft.size());
         bodyFadeLength = std::max (1, (int) std::lround (sampleRateHz * 0.010));
@@ -171,6 +166,8 @@ public:
             heardGeneration = 0;
         calibrationValues = v;
         calibrationValid = true;
+        const double smoothSeconds = 0.001 * v[3];
+        sampleGlide = smoothSeconds > 0.0 ? 1.0 - std::exp (-1.0 / (smoothSeconds * sampleRateHz)) : 1.0;
         for (auto* runner : { &left, &right })
         {
             runner->set_feedback_ceiling (std::pow (10.0, v[6] / 20.0));
@@ -190,6 +187,8 @@ public:
     double declaredDatumForCalibration() const noexcept { return reportedDatum.load(); }
     float preDeskPeakForCalibration() const noexcept { return reportedPreDesk.load(); }
     float postDeskPeakForCalibration() const noexcept { return reportedPostDesk.load(); }
+    float heardMorphForCalibration() const noexcept { return (float) smoothedMorph; }
+    float heardQForCalibration() const noexcept { return (float) smoothedQ; }
 #endif
     static constexpr double kStateCeiling = 1.9952623;
 
@@ -359,25 +358,9 @@ public:
             {
                 const int sample = blockStart + s;
                 const float gain = inputGain.getNextValue();
-                const float inL = outL[sample];
-                const float inR = outR != nullptr ? outR[sample] : inL;
-                float slamL = preDeskL.process (inL);
-                float slamR = outR != nullptr ? preDeskR.process (inR) : slamL;
-                if (preDeskL.isActive())
-                {
-                    slamInPower += slamEnvCoeff * (0.5 * ((double) inL * inL + (double) inR * inR) - slamInPower);
-                    slamOutPower += slamEnvCoeff * (0.5 * ((double) slamL * slamL + (double) slamR * slamR) - slamOutPower);
-                    if (slamInPower > 1.0e-12 && slamOutPower > 1.0e-12)
-                    {
-                        const double target = std::clamp (std::sqrt (slamInPower / slamOutPower), kSlamMakeupFloor, kSlamMakeupCeiling);
-                        slamMakeup += (target < slamMakeup ? slamFallCoeff : slamRiseCoeff) * (target - slamMakeup);
-                    }
-                    slamL *= (float) slamMakeup;
-                    slamR *= (float) slamMakeup;
-                }
-                outL[sample] = slamL * gain;
+                outL[sample] = preDeskL.process (outL[sample] * gain);
                 if (outR != nullptr)
-                    outR[sample] = slamR * gain;
+                    outR[sample] = preDeskR.process (outR[sample] * gain);
             }
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
@@ -412,6 +395,8 @@ public:
                         cachedWords = words;
                         cachedBase = cascadeAt (words, snapshot->datumRate, sampleRateHz);
                         changed = true;
+                        if (keyChoice != 0)
+                            keyReferenceHz = trench::KeySnap::referenceHz (cachedBase, sampleRateHz, keyReferenceHz);
                     }
                 }
                 if (keyChoice != 0 && keyReferenceHz <= 0.0)
@@ -503,11 +488,6 @@ public:
     }
     void setInputSlam (bool on) noexcept
     {
-        if (on && ! preDeskL.isActive())
-        {
-            slamInPower = slamOutPower = 0.0;
-            slamMakeup = kSlamMakeupStart;
-        }
         preDeskL.setEnabled (on);
         preDeskR.setEnabled (on);
     }
@@ -666,7 +646,7 @@ private:
     std::uint64_t heardGeneration = 0;
     double cachedMorph = -1.0;
     double smoothedMorph = -1.0, smoothedQ = -1.0;
-    static constexpr double kControlGlide = 0.4509729743;
+    static constexpr double kControlSmoothSeconds = 0.0015;
     int controlTick = 88;
     double sampleGlide = 0.0;
     double cachedQ = -1.0;
@@ -690,11 +670,6 @@ private:
     trench::DeskDrive preDeskL, preDeskR;
     static constexpr double kSlamInTrim = 0.4;
     static constexpr double kSlamOutPad = 0.5;
-    static constexpr double kSlamMakeupStart = 0.125;
-    static constexpr double kSlamMakeupFloor = 0.015625;
-    static constexpr double kSlamMakeupCeiling = 4.0;
-    double slamEnvCoeff = 0.0, slamFallCoeff = 0.0, slamRiseCoeff = 0.0;
-    double slamInPower = 0.0, slamOutPower = 0.0, slamMakeup = kSlamMakeupStart;
     float caughtFraction = 0.0f;
     bool outputStageOn = false;
     trench::DeskDrive postDeskL, postDeskR;

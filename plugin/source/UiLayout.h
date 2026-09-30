@@ -27,7 +27,7 @@ public:
         layout.elements["qWell"]        = { { 115.0f, 837.0f, 430.0f, 82.0f }, {}, {} };
         layout.elements["typeSelector"] = { { 233.2f, 137.1f, 675.8f, 67.1f },  {}, {} };
 
-        layout.elements["keyBox"]       = { { 559.2f, 64.1f, 349.8f, 61.2f }, {}, {} };
+        layout.elements["keyBox"]       = { { 639.0f, 64.1f, 270.0f, 61.2f }, {}, {} };
 
         layout.elements["morphReadout"] = { { 563.2f, 684.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["qReadout"]     = { { 563.2f, 849.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
@@ -43,17 +43,15 @@ public:
         layout.elements["morphLabel"].text = "MORPH";
         layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 151.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 111.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["inputLabel"].text = "INPUT (dB)";
-        layout.elements["outputLabel"]  = { { 401.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"]  = { { 441.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
         layout.elements["outputLabel"].text = "OUTPUT (dB)";
-        layout.elements["inputKnob"]    = { { 191.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["outputKnob"]   = { { 441.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
-        layout.elements["inputReadout"] = { { 194.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["outputReadout"] = { { 444.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["slamButton"]   = { { 346.5f, 1198.8f, 120.0f, 120.0f }, {}, {} };
-        layout.elements["slamLabel"]    = { { 346.5f, 1295.8f, 120.0f, 30.0f },  13.9f, juce::Colour (0xff2a2722) };
-        layout.elements["slamLabel"].text = "SLAM";
+        layout.elements["inputKnob"]    = { { 151.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["outputKnob"]   = { { 481.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
+        layout.elements["inputReadout"] = { { 154.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["outputReadout"] = { { 484.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
+        layout.elements["slamButton"]   = { { 317.5f, 1195.0f, 178.0f, 178.0f }, {}, {} };
 
         layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 

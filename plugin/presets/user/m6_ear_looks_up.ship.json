@@ -1,0 +1,124 @@
+{
+  "name": "m6_ear_looks_up",
+  "spec": {
+    "name": "m6_ear_looks_up",
+    "brief": "One measured human ear (SADIE II subject H5, left ear) as a filter. Morph 0 is a sound arriving from in front and below (elevation -30), Morph 1 from in front and above (+45): the pinna notch climbs from about 6.9 to 11.4 kHz, a moving notch that comes from a measurement. Q turns the head: behind at ear level under Morph 0, to the side and below under Morph 1. Emphasis 2 doubles every peak and dip about the curve's own trend, a designed choice, because a bare ear is only +/-10 dB. All twelve zeros solved, no rail imposed, no factory coefficients.",
+    "cut_steps": 0,
+    "interior_peak_allowance_db": 12,
+    "corners": {
+      "A": {
+        "source": "report/0920/hrtf/curves/front_low.csv",
+        "emphasis": 2.0,
+        "tilt": 0.0,
+        "band": [
+          200,
+          16000
+        ],
+        "rail": "off",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "B": {
+        "source": "report/0920/hrtf/curves/front_high.csv",
+        "emphasis": 2.0,
+        "tilt": 0.0,
+        "band": [
+          200,
+          16000
+        ],
+        "rail": "off",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "C": {
+        "source": "report/0920/hrtf/curves/behind_level.csv",
+        "emphasis": 2.0,
+        "tilt": 0.0,
+        "band": [
+          200,
+          16000
+        ],
+        "rail": "off",
+        "fraction": 0.05,
+        "floor_hz": 25
+      },
+      "D": {
+        "source": "report/0920/hrtf/curves/side_low.csv",
+        "emphasis": 2.0,
+        "tilt": 0.0,
+        "band": [
+          200,
+          16000
+        ],
+        "rail": "off",
+        "fraction": 0.05,
+        "floor_hz": 25
+      }
+    },
+    "notch_lane": 6,
+    "notch_range_hz": [
+      5000,
+      14000
+    ]
+  },
+  "sha256": "d8fb4c1b83223d68d17905d9060e9b69a343e25d1106300bfa0d5d09255fc12b",
+  "gates": [
+    {
+      "gate": "corner A accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner B accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner C accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "corner D accepted by the application model",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "gate": "editor loads the body and accepts every pose of the field",
+      "pass": true,
+      "detail": "451 poses, 0 refused"
+    },
+    {
+      "gate": "interior peak within the allowance over the hottest corner",
+      "pass": true,
+      "detail": "allowance 12 dB; field +16.28 dB at Morph 0.000 Q 0.0; corners [16.28, 4.63, 5.72, 15.9]"
+    },
+    {
+      "gate": "no pole lanes cross unannounced",
+      "pass": true,
+      "detail": "S1 holds near 979 Hz.  S2 falls 2.6 kHz to 2.0 kHz.  S3 holds near 2.8 kHz.  S4 holds near 8.1 kHz.  S5 holds near 12.7 kHz.  S6 holds near 12.7 kHz. Nothing crosses.  m6_ear_looks_up.m6body.json |"
+    },
+    {
+      "gate": "corner A: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5996 dB by the end"
+    },
+    {
+      "gate": "corner B: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5997 dB by the end"
+    },
+    {
+      "gate": "corner C: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -5992 dB by the end"
+    },
+    {
+      "gate": "corner D: 8 s impulse rendered through the stored bytes matches their decoded prediction within 0.01 dB in the scored band",
+      "pass": true,
+      "detail": "-0.00000 to +0.00000 dB; the ring has fallen -6004 dB by the end"
+    }
+  ],
+  "passed": true,
+  "note": "built from this project's own sources; no factory coefficients"
+}

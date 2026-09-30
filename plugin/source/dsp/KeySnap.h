@@ -21,20 +21,7 @@ struct KeySnap
         return label < 12 ? 13 + label : 1 + (label - 12);
     }
 
-    static bool inScale (int midiNote, int choice) noexcept
-    {
-        static constexpr int major[7] = { 0, 2, 4, 5, 7, 9, 11 };
-        static constexpr int minor[7] = { 0, 2, 3, 5, 7, 8, 10 };
-        const bool isMinor = choice <= 12;
-        const int root = (choice - 1) % 12;
-        const int degree = ((midiNote - root) % 12 + 12) % 12;
-        for (int i = 0; i < 7; ++i)
-            if ((isMinor ? minor[i] : major[i]) == degree)
-                return true;
-        return false;
-    }
-
-    static double referenceHz (const core::Cascade& cascade, double fs) noexcept
+    static double referenceHz (const core::Cascade& cascade, double fs, double followHz = -1.0) noexcept
     {
         constexpr int points = 480;
         const double lo = 40.0, hi = std::min (16000.0, 0.45 * fs);
@@ -48,12 +35,29 @@ struct KeySnap
                 power *= std::norm (b[0] + b[1] * z1 + b[2] * z2) / std::max (1.0e-300, std::norm (1.0 + b[3] * z1 + b[4] * z2));
             return std::isfinite (power) && power > 0.0 ? 10.0 * std::log10 (power) : -1.0e9;
         };
+        double db[points];
         int best = -1;
         double bestDb = -1.0e9;
         for (int i = 0; i < points; ++i)
         {
-            const double db = powerDb (lo * std::exp (i * step));
-            if (db > bestDb) { bestDb = db; best = i; }
+            db[i] = powerDb (lo * std::exp (i * step));
+            if (db[i] > bestDb) { bestDb = db[i]; best = i; }
+        }
+        if (followHz > 0.0)
+        {
+            const double followIndex = std::log (followHz / lo) / step;
+            const double reach = 0.5 / step;
+            int nearest = -1;
+            for (int i = 1; i < points - 1; ++i)
+                if (db[i] >= db[i - 1] && db[i] >= db[i + 1] && db[i] > bestDb - 24.0
+                    && std::abs (i - followIndex) < reach
+                    && (nearest < 0 || std::abs (i - followIndex) < std::abs (nearest - followIndex)))
+                    nearest = i;
+            if (nearest >= 0)
+            {
+                best = nearest;
+                bestDb = db[best];
+            }
         }
         if (best < 0)
             return -1.0;
@@ -68,14 +72,16 @@ struct KeySnap
         return lo * std::exp (centre * step);
     }
 
+    static int root (int choice) noexcept { return (choice - 1) % 12; }
+
     static double offsetSemitones (double referenceHz, int choice) noexcept
     {
         if (! active (choice) || ! (referenceHz > 0.0))
             return 0.0;
         const double midi = 69.0 + 12.0 * std::log2 (referenceHz / 440.0);
         double best = 0.0, bestDistance = 1.0e9;
-        for (int n = (int) std::floor (midi) - 2; n <= (int) std::ceil (midi) + 2; ++n)
-            if (inScale (n, choice) && std::abs (midi - n) < bestDistance)
+        for (int n = (int) std::floor (midi) - 7; n <= (int) std::ceil (midi) + 7; ++n)
+            if (((n % 12) + 12) % 12 == root (choice) && std::abs (midi - n) < bestDistance)
             {
                 bestDistance = std::abs (midi - n);
                 best = n - midi;

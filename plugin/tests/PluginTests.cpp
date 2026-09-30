@@ -3,6 +3,7 @@
 #include "DriveLawTests.h"
 #include "FrontendTests.h"
 #include "ModulationTimingTests.h"
+#include "MorphSmoothingTests.h"
 #include "UserMotionTests.h"
 #include "PluginEditor.h"
 #include "BinaryData.h"
@@ -102,13 +103,16 @@ bool anyVisibleOfTitle (juce::Component& root, const juce::String& title)
 }
 }
 
-int main()
+int main (int argc, char** argv)
 {
     juce::ScopedJuceInitialiser_GUI juceInit;
+    if (argc == 2 && juce::String (argv[1]) == "--morph-smoothing")
+        return morphSmoothingTests() == 0 ? 0 : 1;
     failures += driveSlamTests();
     failures += driveLawTests();
     failures += frontendTests();
     failures += modulationTimingTests();
+    failures += morphSmoothingTests();
     failures += userMotionTests();
 
     std::printf ("== shipping curves ==\n");
@@ -397,9 +401,7 @@ int main()
         check (sweep.loadCartridgeBytes (crispForSweep), "crisp body loads for the per-sample sweep");
         constexpr int n = 4410;
         constexpr float qFixed = 0.63f;
-        constexpr double kControlGlideMirror = 0.4509729743;
-        constexpr int controlTickMirror = 88;
-        const double sampleGlideMirror = 1.0 - std::pow (1.0 - kControlGlideMirror, 1.0 / (double) controlTickMirror);
+        const double sampleGlideMirror = 1.0 - std::exp (-1.0 / (0.0015 * 44100.0));
         double m = 0.0;
         double worstCoeff = 0.0;
         bool allFinite = true;
@@ -485,9 +487,7 @@ int main()
                "48 kHz sidecar bank loads with datumRate == host rate for the per-sample sweep");
         constexpr int n = 4800;
         constexpr float qFixed = 0.63f;
-        constexpr double kControlGlideMirror = 0.4509729743;
-        const int controlTickMirror = juce::jmax (1, (int) std::lround (48000.0 * 88.0 / 44100.0));
-        const double sampleGlideMirror = 1.0 - std::pow (1.0 - kControlGlideMirror, 1.0 / (double) controlTickMirror);
+        const double sampleGlideMirror = 1.0 - std::exp (-1.0 / (0.0015 * 48000.0));
         double m = 0.0;
         double worstCoeff = 0.0;
         bool allFinite = true;
@@ -1094,10 +1094,11 @@ int main()
         check (std::abs (ref / truePeak - 1.0) < 2.0e-4, "KEY measures the body's strongest resonance to within a third of a cent", ref, truePeak);
         check (trench::KeySnap::offsetSemitones (ref, 0) == 0.0, "KEY OFF does not shift the body");
         const auto shifted = [] (double hz, int choice) { return hz * trench::core::ratio_of_semitones (trench::KeySnap::offsetSemitones (hz, choice)); };
-        check (std::abs (shifted (ref, 13) - 440.0) < 0.5, "KEY C major moves a 460 Hz reference to A 440", shifted (ref, 13), 440.0);
+        check (std::abs (shifted (ref, 13) - 523.25) < 0.6, "KEY C moves a 460 Hz resonance up to the nearest C, 523.25", shifted (ref, 13), 523.25);
         const double eb = trench::KeySnap::referenceHz (pole (305.0, 0.995), fs);
-        check (std::abs (shifted (eb, 1) - 311.13) < 0.3 && std::abs (shifted (eb, 13) - 293.66) < 0.3,
-               "KEY 305 Hz goes to Eb in C minor and to D in C major", shifted (eb, 1), shifted (eb, 13));
+        check (std::abs (shifted (eb, 1) - 261.63) < 0.3 && std::abs (shifted (eb, 13) - 261.63) < 0.3,
+               "KEY 305 Hz goes down to C 261.63 whether the detector heard minor or major", shifted (eb, 1), shifted (eb, 13));
+        check (std::abs (shifted (ref, 10) - 440.0) < 0.5, "KEY A pulls the 460 Hz resonance onto A 440", shifted (ref, 10), 440.0);
         check (trench::KeySnap::choiceForLabel (21) == 10 && trench::KeySnap::choiceForLabel (0) == 13,
                "detected A minor maps to the A m choice and C major to C M");
     }
@@ -1156,11 +1157,11 @@ int main()
             }
             const double shiftSemitones = 12.0 * std::log2 (firstRatio);
             check (moved >= 3 && worstSpread < 1.0e-4, "KEY moves every resonance of the body by the same ratio", worstSpread, (double) moved);
-            check (std::abs (shiftSemitones) <= 1.0 + 1.0e-6, "KEY shifts the body by at most a semitone", shiftSemitones, 1.0);
+            check (std::abs (shiftSemitones) <= 6.0 + 1.0e-6, "KEY shifts the body by at most six semitones", shiftSemitones, 6.0);
             const double keyedRef = trench::KeySnap::referenceHz (keyed, fsHere);
             const double keyedMidi = 69.0 + 12.0 * std::log2 (keyedRef / 440.0);
-            check (trench::KeySnap::inScale ((int) std::round (keyedMidi), 10) && std::abs (keyedMidi - std::round (keyedMidi)) < 0.05,
-                   "the body's strongest resonance lands on an A minor note", keyedMidi, std::round (keyedMidi));
+            check ((((int) std::round (keyedMidi)) % 12 + 12) % 12 == 9 && std::abs (keyedMidi - std::round (keyedMidi)) < 0.05,
+                   "the body's strongest resonance lands on an A", keyedMidi, std::round (keyedMidi));
             setParam (processor, ParamID::keySnap, 0.0f);
             {
             }

@@ -107,12 +107,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     modulationChip->onEdit = [this] { motionBrowser->open (-1, face.getLocalBounds(), modulationChip->getBounds()); };
     keySnapBox = std::make_unique<KeySnapBox> (processor.apvts, theme);
     keySnapBox->setSuggestionProviders ([this] { return processor.getDetectedKeyForUi(); });
-    keySnapBox->setListeningProvider ([this]
-    {
-        return juce::jmax (processor.getInputMeterLeftForUi().load (std::memory_order_relaxed),
-                           processor.getInputMeterRightForUi().load (std::memory_order_relaxed))
-               > 0.0015f;
-    });
+    keySnapBox->onAnnounce = [this] (const juce::String& s) { graph->announce (s); };
     inputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::preamp, "INPUT");
     outputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::output, "OUTPUT");
     inputKnob->setLegendVisible (false);
