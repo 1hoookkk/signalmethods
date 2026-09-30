@@ -57,7 +57,19 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     typeSelector->onAnnounce   = [this] (const juce::String& s) { graph->announce (s); };
     bodyBrowser = std::make_unique<BodyBrowser> (theme);
     bodyBrowser->onPreview = [this] (int index) { processor.previewBodyForUi (index); };
-    bodyBrowser->onCommit  = [this] (int index) { typeSelector->setSelectedBody (index); processor.restoreBodyForUi (index); };
+    bodyBrowser->onCommit  = [this] (int index)
+    {
+        const bool gainBefore = juce::String (trench::axisNamesForBody (typeSelector->selectedBody()).q) == "GAIN";
+        typeSelector->setSelectedBody (index);
+        processor.restoreBodyForUi (index);
+        if (! gainBefore && juce::String (trench::axisNamesForBody (index).q) == "GAIN")
+            if (auto* q = processor.apvts.getParameter (ParamID::q))
+            {
+                q->beginChangeGesture();
+                q->setValueNotifyingHost (0.5f);
+                q->endChangeGesture();
+            }
+    };
     bodyBrowser->onRestore = [this] (int index) { processor.restoreBodyForUi (index); };
     typeSelector->onOpenBrowser = [this] (int current) { bodyBrowser->open (current, face.getLocalBounds(), typeSelector->getBounds()); };
     morphWheel = std::make_unique<WheelControl> (processor.apvts, ParamID::morph, strip, theme);

@@ -155,6 +155,22 @@ inline int frontendTests()
             check (coarse && shiftHeld && fine && atDb (-3.9f), "gain knob and readout allow fine adjustment mid-drag without a level jump");
             control->mouseUp (event (control, 5));
             setDb (23.0f);
+        int eq = -1, lp = -1;
+        for (int i = 0; i < trench::bodyCount(); ++i)
+        {
+            if (trench::bodyDisplayName (i) == "Hot Spot") eq = i;
+            if (trench::bodyDisplayName (i) == "Ober Easy") lp = i;
+        }
+        auto* q = processor.apvts.getParameter (ParamID::q);
+        q->setValueNotifyingHost (0.0f);
+        if (browser->onCommit) browser->onCommit (eq);
+        const bool flatOnPick = eq >= 0 && std::abs (q->getValue() - 0.5f) < 1.0e-4f;
+        q->setValueNotifyingHost (0.9f);
+        if (browser->onCommit) browser->onCommit (lp);
+        const bool keptForOthers = lp >= 0 && std::abs (q->getValue() - 0.9f) < 1.0e-4f;
+        check (flatOnPick && keptForOthers, "picking a GAIN body lands it flat at 50%; other bodies keep the wheel");
+        q->setValueNotifyingHost (0.0f);
+        processor.apvts.getParameter (ParamID::body)->setValueNotifyingHost (0.0f);
             control->mouseDown (event (control, 20));
             control->mouseDrag (event (control, -1000));
             const bool bounded = atDb (24.0f);
