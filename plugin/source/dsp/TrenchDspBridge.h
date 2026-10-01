@@ -124,6 +124,7 @@ public:
         for (auto* desk : { &slamL, &slamR, &deskL, &deskR })
             desk->prepare (sampleRateHz, maxBlockSize);
         deskWasDriven = false;
+        deskStateKnown = false;
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
         deskScratchL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
         deskScratchR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
@@ -468,8 +469,12 @@ public:
                     deskL.reset();
                     deskR.reset();
                 }
-                deskMix.setTargetValue (driven ? 1.0f : 0.0f);
+                if (deskStateKnown)
+                    deskMix.setTargetValue (driven ? 1.0f : 0.0f);
+                else
+                    deskMix.setCurrentAndTargetValue (driven ? 1.0f : 0.0f);
             }
+            deskStateKnown = true;
             deskWasDriven = driven;
             if (driven || deskMix.isSmoothing())
             {
@@ -724,6 +729,7 @@ private:
     std::vector<float> deskScratchL, deskScratchR;
     bool slamOn = false;
     bool deskWasDriven = false;
+    bool deskStateKnown = false;
     float caughtFraction = 0.0f;
     Bypass bypass;
 #if TRENCH_DEV_PANEL

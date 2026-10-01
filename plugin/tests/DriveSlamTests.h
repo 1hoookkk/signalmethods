@@ -300,6 +300,21 @@ inline int driveSlamTests()
         return peak;
     };
     const float held = settled();
+    {
+        PluginProcessor fromStart;
+        fromStart.setRateAndBufferSizeDetails (48000, 128);
+        auto* out = fromStart.apvts.getParameter (ParamID::output);
+        out->setValueNotifyingHost (out->convertTo0to1 (24.0f));
+        fromStart.prepareToPlay (48000, 128);
+        fromStart.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+        juce::AudioBuffer<float> first (2, 128);
+        for (int c = 0; c < 2; ++c)
+            for (int i = 0; i < 128; ++i) first.setSample (c, i, 0.9f * (float) std::sin (0.05 * i));
+        fromStart.processBlock (first, midi);
+        const float firstPeak = first.getMagnitude (0, 0, 128);
+        std::printf ("      OUTPUT +24 dB from the first block: peak %.3f (settled %.3f)\n", firstPeak, held);
+        check (firstPeak < 2.0f * held, "OUTPUT already above 0 dB when playback starts: the desk is in from the first sample, no plain-gain burst");
+    }
     auto* output = processor.apvts.getParameter (ParamID::output);
     output->setValueNotifyingHost (output->convertTo0to1 (0.0f));
     const float unity = settled();
