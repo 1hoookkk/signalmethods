@@ -71,8 +71,6 @@ public:
         }
         return false;
     }
-    void focusGained (FocusChangeType) override { repaint(); }
-    void focusLost (FocusChangeType) override { repaint(); }
     void paint (juce::Graphics& g) override
     {
         auto b = getLocalBounds().toFloat();
@@ -90,14 +88,20 @@ public:
             g.setColour (t.rollerIllumination().withAlpha (0.28f));
             g.fillRoundedRectangle (box.reduced (2.0f), juce::jmax (1.5f, height * 0.17f - 1.5f));
         }
+        auto text = box.reduced (4.0f, 0.0f);
+        if (hover)
+        {
+            const auto arrow = text.removeFromRight (9.0f).withSizeKeepingCentre (6.0f, 3.5f);
+            juce::Path v;
+            v.startNewSubPath (arrow.getX(), arrow.getY());
+            v.lineTo (arrow.getCentreX(), arrow.getBottom());
+            v.lineTo (arrow.getRight(), arrow.getY());
+            g.setColour (juce::Colour (0xff2a2722));
+            g.strokePath (v, juce::PathStrokeType (1.2f));
+        }
         g.setFont (displayFont (11.5f));
         g.setColour (juce::Colour (0xff2a2722));
-        g.drawText (displayText(), box.reduced (4.0f, 0.0f).toNearestInt(), juce::Justification::centred, false);
-        if (hasKeyboardFocus (true))
-        {
-            g.setColour (t.labelInk());
-            g.drawRoundedRectangle (box.reduced (1.0f), height * 0.17f, 1.0f);
-        }
+        g.drawText (displayText(), text.toNearestInt(), juce::Justification::centred, false);
     }
 private:
     void toggle()

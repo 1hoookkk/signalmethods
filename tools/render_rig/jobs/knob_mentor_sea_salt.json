@@ -14,36 +14,49 @@
     "z": 0.0,
     "light": {
       "location": [
-        -14.0,
+        -24.0,
         18.0,
         200.0
       ],
-      "size": 20.0
+      "size": 60.0
     },
-    "blur_mm": 0.8,
-    "opacity": 0.55
+    "blur_mm": 0.9,
+    "opacity": 0.5,
+    "contact": {
+      "light": {
+        "location": [
+          0.0,
+          0.0,
+          200.0
+        ],
+        "size": 70.0
+      },
+      "blur_mm": 0.25,
+      "opacity": 0.85
+    }
   },
   "frame_mm": 35.4,
   "pixels": 96,
-  "supersample": 4,
+  "supersample": 3,
   "studio": {
     "hdri": null,
-    "world_grey": 0.07,
+    "world_grey": 0.16,
     "key": {
-      "energy": 5200.0,
-      "size": 14.0,
+      "energy": 9000.0,
+      "size": 40.0,
       "shape": "SQUARE",
       "location": [
-        -24.0,
-        24.0,
-        34.0
+        -16.0,
+        18.0,
+        60.0
       ],
       "rotation_deg": [
         40.0,
         -35.0,
         0.0
       ]
-    }
+    },
+    "samples": 96
   },
   "extras": [
     {
@@ -64,12 +77,20 @@
       "type": "box",
       "size": [
         1.0,
-        8.0,
-        1.5
+        10.6,
+        18.5
       ],
-      "y": 5.6,
-      "z": 16.9,
-      "material": "cavity"
+      "x": 0.0,
+      "y": 8.3,
+      "z": 0.0,
+      "material": "ink",
+      "casts_shadow": false
     }
-  ]
+  ],
+  "filmstrip": {
+    "frames": 61,
+    "start_deg": 135.0,
+    "sweep_deg": -270.0
+  },
+  "bake_shadow": true
 }

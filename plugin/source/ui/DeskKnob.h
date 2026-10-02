@@ -22,7 +22,6 @@ public:
         setWantsKeyboardFocus (false);
         setRepaintsOnMouseActivity (true);
         strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_white_strip_png, BinaryData::trench_knob_white_strip_pngSize);
-        shadow = juce::ImageCache::getFromMemory (BinaryData::trench_knob_black_shadow_png, BinaryData::trench_knob_black_shadow_pngSize);
         if (driveParam != nullptr)
             driveAttachment = std::make_unique<juce::ParameterAttachment> (*driveParam, [this] (float) { updateTooltip(); repaint(); });
         updateTooltip();
@@ -80,7 +79,6 @@ public:
             const auto snap = [scale] (float v) { return std::round (v * scale) / scale; };
             const float x0 = snap (c.x - frameD * 0.5f), y0 = snap (c.y - frameD * 0.5f);
             const float side = snap (c.x + frameD * 0.5f) - x0;
-            g.drawImage (shadow, { x0, y0, side, side }, juce::RectanglePlacement::stretchToFit);
             g.drawImage (strip.getClippedImage ({ frame * frameSize, 0, frameSize, frameSize }),
                          { x0, y0, side, side }, juce::RectanglePlacement::stretchToFit);
         }
@@ -165,7 +163,7 @@ public:
 
 private:
     bool legendVisible = true;
-    juce::Image strip, shadow;
+    juce::Image strip;
     Theme t;
     juce::RangedAudioParameter* driveParam = nullptr;
     juce::String label;

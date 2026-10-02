@@ -165,6 +165,14 @@ int main()
 
     if (std::getenv ("TRENCH_FACESHOT_ECHO") != nullptr)
     {
+        if (const char* body = std::getenv ("TRENCH_SHOW_BODY"))
+        {
+            set (ParamID::body, bodyIndex (body));
+            set (ParamID::morph, 0.2f);
+            set (ParamID::q, 0.6f);
+        }
+        if (const char* key = std::getenv ("TRENCH_SHOW_KEY"))
+            set (ParamID::keySnap, (float) std::atoi (key));
         processor.setEchoArmed (true);
         shoot ("trench_face_echo");
         processor.editorBeingDeleted (editor);

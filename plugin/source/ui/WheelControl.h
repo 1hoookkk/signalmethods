@@ -261,7 +261,7 @@ public:
                         const auto c = data.getPixelColour (x, y);
                         if (c.getSaturation() > 0.45f && std::abs (c.getHue() - lampHue) < 0.06f)
                             data.setPixelColour (x, y, juce::Colour::fromHSV (c.getHue(), c.getSaturation() * 0.8f,
-                                                                              juce::jmin (1.0f, c.getBrightness() * 1.6f), c.getFloatAlpha()));
+                                                                              juce::jmin (1.0f, c.getBrightness() * 1.3f), c.getFloatAlpha()));
                     }
             }
             scaledIndex = frame;

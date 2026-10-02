@@ -86,7 +86,6 @@ juce_add_binary_data(TRENCHAssets SOURCES
   assets/trench_knob_strip.png
   assets/trench_knob_front_strip.png
   assets/trench_knob_white_strip.png
-  assets/trench_knob_black_shadow.png
   assets/trench_plate_iridescent.png
   assets/trench_plate_blue.png
   assets/trench_display_grid.png

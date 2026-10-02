@@ -61,5 +61,14 @@ def downsample(rgba, factor):
     return out
 
 
+def over(top, bottom):
+    ta, ba = top[..., 3:4], bottom[..., 3:4]
+    a = ta + ba * (1.0 - ta)
+    out = np.zeros_like(top)
+    out[..., :3] = np.where(a > 1e-6, (top[..., :3] * ta + bottom[..., :3] * ba * (1.0 - ta)) / np.maximum(a, 1e-6), 0.0)
+    out[..., 3:4] = a
+    return out
+
+
 def strip(frames):
     return np.concatenate(frames, axis=1)

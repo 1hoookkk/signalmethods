@@ -99,6 +99,7 @@ def add_primitive(spec):
         if spec.get("font"):
             t.data.font = bpy.data.fonts.load(spec["font"])
         bpy.ops.object.convert(target="MESH")
+    bpy.context.object.visible_shadow = spec.get("casts_shadow", True)
     if kind in ("disc", "box", "text"):
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35.0))
     else:

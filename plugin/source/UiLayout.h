@@ -52,7 +52,7 @@ public:
         layout.elements["inputReadout"] = { { 154.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["outputReadout"] = { { 484.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
 
-        layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xfff4f7fa) };
+        layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
 
         layout.elements["brandLabel"].text = "TRENCH";
         juce::Colour lamp (0xff96e028);

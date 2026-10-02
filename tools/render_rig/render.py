@@ -118,11 +118,17 @@ def main():
     os.makedirs(raw_dir, exist_ok=True)
     scene, obj, extras, catcher, mesh_path, ss = build_scene(job, os.path.dirname(job_path))
     written = []
+    baked = None
     if catcher:
         shadow = render_shadow(scene, os.path.join(raw_dir, "shadow.png"), [obj, *extras], catcher, job["shadow"])
+        if "contact" in job["shadow"]:
+            contact = render_shadow(scene, os.path.join(raw_dir, "contact.png"), [obj, *extras], catcher, job["shadow"]["contact"])
+            shadow[..., 3] = 1.0 - (1.0 - shadow[..., 3]) * (1.0 - contact[..., 3])
         target = os.path.join(out_dir, f"{job['name']}_shadow.png")
         post.write(target, post.downsample(shadow, ss))
         written.append(target)
+        if job.get("bake_shadow"):
+            baked = post.downsample(shadow, ss)
     for name, state in job.get("states", {"default": {}}).items():
         merged = apply_state(job, obj, extras, state)
         strip_spec = job.get("filmstrip")
@@ -131,17 +137,17 @@ def main():
             for i in range(strip_spec["frames"]):
                 t = i / max(1, strip_spec["frames"] - 1)
                 angle = math.radians(strip_spec["start_deg"] + t * strip_spec["sweep_deg"])
-                axis, sign = meshes.AXES[job["part"]["front"]]
-                front = [0.0, 0.0, 0.0]
-                front[axis] = float(sign)
-                obj.delta_rotation_quaternion = Quaternion(front, -angle)
+                obj.delta_rotation_quaternion = Quaternion((0.0, 0.0, 1.0), -angle)
                 for e in extras:
                     e.rotation_mode = "QUATERNION"
                     e.delta_rotation_quaternion = Quaternion((0.0, 0.0, 1.0), -angle)
-                frames.append(render_frame(scene, os.path.join(raw_dir, f"{name}_{i:03d}.png"), ss, merged))
+                frame = render_frame(scene, os.path.join(raw_dir, f"{name}_{i:03d}.png"), ss, merged)
+                frames.append(post.over(frame, baked) if baked is not None else frame)
             final = post.strip(frames)
         else:
             final = render_frame(scene, os.path.join(raw_dir, f"{name}.png"), ss, merged)
+            if baked is not None:
+                final = post.over(final, baked)
         target = os.path.join(out_dir, f"{job['name']}_{name}.png")
         post.write(target, final)
         written.append(target)

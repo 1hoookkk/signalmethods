@@ -203,6 +203,31 @@ inline void drawBayCaption (juce::Graphics& g, juce::Rectangle<float> r,
     g.drawFittedText (text.toUpperCase(), r.toNearestInt(), juce::Justification::centred, 1);
 }
 
+inline void drawEngravedText (juce::Graphics& g, const juce::String& text,
+                              juce::Rectangle<int> area, juce::Justification just,
+                              juce::Colour ink, float catchAlpha = 0.45f,
+                              juce::Colour catchColour = juce::Colour (0xffe7dec9),
+                              bool extraWeight = false)
+{
+    const auto boneWhite = catchColour;
+    const auto edge = boneWhite.withAlpha (catchAlpha);
+    const auto soft = boneWhite.withAlpha (catchAlpha * 0.18f);
+    g.setColour (soft);
+    g.drawFittedText (text, area.translated (-2, 0), just, 1);
+    g.drawFittedText (text, area.translated ( 2, 0), just, 1);
+    g.drawFittedText (text, area.translated (0, -2), just, 1);
+    g.drawFittedText (text, area.translated (0,  2), just, 1);
+    g.setColour (edge);
+    g.drawFittedText (text, area.translated (0, -1), just, 1);
+    g.drawFittedText (text, area.translated (0,  1), just, 1);
+    g.setColour (boneWhite.withAlpha (catchAlpha * 0.72f));
+    g.drawFittedText (text, area.translated (-1, 0), just, 1);
+    g.drawFittedText (text, area.translated ( 1, 0), just, 1);
+    g.setColour (ink);
+    g.drawFittedText (text, area, just, 1);
+    if (extraWeight)
+        g.drawFittedText (text, area.translated (1, 0), just, 1);
+}
 inline void drawCrispText (juce::Graphics& g, juce::Rectangle<float> b, const juce::String& text,
                            float fontSize, juce::Colour colour, bool emphasis = false)
 {
