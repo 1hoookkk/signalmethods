@@ -1,0 +1,15 @@
+{
+  "job": "jobs\\knob_mentor_sea_salt.json",
+  "job_sha256": "0b683d936ab0082ad0e5942d968174c25ff9abfaffad0c21d0cbae216ae25c4f",
+  "mesh": "sources\\traceparts\\4333_6001_body.stl",
+  "mesh_sha256": "19dcc68ccfa1a6460b7cca07e3d52d47b5e1e54089958ce83a57c705aa55ac5c",
+  "blender": "5.2.2 LTS",
+  "rig_git": "57c4c9f9",
+  "preview": false,
+  "supersample": 3,
+  "rendered_utc": "2026-10-02T12:21:07+00:00",
+  "outputs": [
+    "knob_mentor_sea_salt_shadow.png",
+    "knob_mentor_sea_salt_default.png"
+  ]
+}
