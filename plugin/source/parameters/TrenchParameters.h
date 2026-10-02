@@ -19,6 +19,7 @@ namespace ParamID
     inline constexpr auto moveCustom = "moveCustom";
     inline constexpr auto deskPosition = "deskPosition";
     inline constexpr auto inputSlam = "inputSlam";
+    inline constexpr auto desk      = "desk";
 }
 namespace TrenchParameters
 {

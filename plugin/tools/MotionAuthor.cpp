@@ -7,7 +7,7 @@ class MotionAuthor final : public juce::AudioAppComponent
 public:
     explicit MotionAuthor (bool audioDevice = true) : theme { layout }
     {
-        setSize (610, 558);
+        setSize (590, 558);
         source.addItem ("New movement", 1);
         for (int i = 0; i < trench::kNumFuncGenPatterns; ++i)
             source.addItem (trench::kFuncGenPatterns[i].name, i + 2);
@@ -117,7 +117,7 @@ public:
         play.setBounds (12, 42, 122, 26);
         load.setBounds (142, 42, 136, 26);
         if (author) author->setBounds (6, 78, 278, 442);
-        if (preview) preview->setBounds (294, 10, 310, 506);
+        if (preview) preview->setBounds (294, 10, 290, 476);
     }
     void paint (juce::Graphics& g) override
     {

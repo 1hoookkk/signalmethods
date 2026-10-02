@@ -27,7 +27,7 @@ inline constexpr Variable variables[] {
     { "cal_ring_attack", "Ring attack", "ms", 0.1f, 100, 0.1f, 1, true, "Ring-gain attack time." },
     { "cal_ring_release", "Ring release", "ms", 5, 2000, 1, 120, true, "Ring envelope decay and gain-release time." },
     { "cal_ring_floor", "Ring absolute floor", "dBFS", -100, -30, 0.1f, -80, false, "Allows a small absolute tail beyond the relative ring limit." },
-    { "cal_desk", "Output desk", "", 0, 1, 1, 1, false, "ON: the 8-Bus desk model after the filter whenever OUTPUT is above 0 dB. OFF: OUTPUT is a plain gain." },
+    { "cal_desk", "Output desk", "", 0, 1, 1, 1, false, "ON: the 8-Bus desk before the filter when INPUT is above 0 dB and after it when OUTPUT is above 0 dB. OFF: both are plain gains." },
     { "cal_output_db", "Monitor trim", "dB", -36, 6, 0.1f, 0, false, "Final comparison trim after the soft clip that follows the filter. No automatic loudness matching." },
     { "cal_guard_knee", "Final guard linear fraction", "", 0.1f, 0.99f, 0.01f, 0.5f, false, "Linear region as a fraction of the output ceiling. Guard curvature above this point changes distortion." },
     { "cal_guard_ceiling", "Final output ceiling", "dBFS", -12, -0.1f, 0.1f, -0.1f, false, "Ceiling when Final output guard is enabled. No limiting when it is off." },

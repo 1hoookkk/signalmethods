@@ -16,7 +16,7 @@ public:
         : t (theme), param (apvts.getParameter (ParamID::keySnap))
     {
         setInterceptsMouseClicks (true, false);
-        setWantsKeyboardFocus (true);
+        setWantsKeyboardFocus (false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Key Snap");
         setHelpText ("Click to switch automatic key following on or off. Right-click to choose a key.");

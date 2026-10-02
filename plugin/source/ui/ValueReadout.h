@@ -13,7 +13,7 @@ public:
         : id (std::move (elementId)), t (theme)
     {
         setInterceptsMouseClicks (true, true);
-        setWantsKeyboardFocus (true);
+        setWantsKeyboardFocus (false);
     }
     void bindParameter (juce::RangedAudioParameter* p)
     {
@@ -126,8 +126,8 @@ public:
         editor->setJustification (juce::Justification::centred);
         editor->setFont (displayFont (t.fontSize (id, 20.0f), false));
         editor->setColour (juce::TextEditor::backgroundColourId, t.wellTop());
-        editor->setColour (juce::TextEditor::textColourId, t.labelInk());
-        editor->setColour (juce::TextEditor::highlightColourId, t.labelInk().withAlpha (0.25f));
+        editor->setColour (juce::TextEditor::textColourId, t.textColour (id, juce::Colour (0xff4a3520)));
+        editor->setColour (juce::TextEditor::highlightColourId, t.textColour (id, juce::Colour (0xff4a3520)).withAlpha (0.25f));
         editor->setWantsKeyboardFocus (true);
         {
             const float current = isDecibels() ? param->convertFrom0to1 (param->getValue())

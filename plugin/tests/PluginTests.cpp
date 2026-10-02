@@ -157,12 +157,12 @@ int main (int argc, char** argv)
         trench::curves::clearBypassAxis();
     }
 
-    std::printf ("== PREAMP law ==\n");
+    std::printf ("== INPUT and OUTPUT law ==\n");
     {
         PluginProcessor ranges;
         auto* in = ranges.apvts.getParameter (ParamID::preamp);
         auto* out = ranges.apvts.getParameter (ParamID::output);
-        check (in->convertFrom0to1 (in->getDefaultValue()) == 0.0f && out->convertFrom0to1 (out->getDefaultValue()) == 0.0f
+        check (in != nullptr && out != nullptr && in->convertFrom0to1 (in->getDefaultValue()) == 0.0f && out->convertFrom0to1 (out->getDefaultValue()) == 0.0f
                && in->convertFrom0to1 (0.0f) == -24.0f && in->convertFrom0to1 (1.0f) == 24.0f && out->getLabel() == "dB",
                "INPUT and OUTPUT are levels from -24 to +24 dB, 0 dB by default", 0.0, 0.0);
     }
@@ -637,13 +637,17 @@ int main (int argc, char** argv)
     const auto base = runSine (processor, in);
     check (base.finite, "default output finite");
     check (base.peak > in * 0.5f, "nonzero input at default settings is not silenced", base.peak, in);
-    check (std::abs (db (base.peak / in)) < 0.2, "PREAMP 0 = unity through the path", db (base.peak / in), 0.0);
+    check (std::abs (db (base.peak / in)) < 0.2, "INPUT 0 = unity through the path", db (base.peak / in), 0.0);
 
 
     setParam (processor, ParamID::preamp, 20.0f);
     const auto driven = runSine (processor, in);
     check (std::abs (db (driven.peak / base.peak) - 20.0) < 0.1, "INPUT +20 dB adds 20 dB before the filter", db (driven.peak / base.peak), 20.0);
     setParam (processor, ParamID::preamp, 0.0f);
+    setParam (processor, ParamID::output, 20.0f);
+    const auto outDriven = runSine (processor, in);
+    check (std::abs (db (outDriven.peak / base.peak) - 20.0) < 0.1, "OUTPUT +20 dB adds 20 dB after the filter", db (outDriven.peak / base.peak), 20.0);
+    setParam (processor, ParamID::output, 0.0f);
     {
         setParam (processor, ParamID::body, (float) trench::kNoFilterIndex);
         pump (100);
@@ -657,7 +661,7 @@ int main (int argc, char** argv)
         const auto capture = [&] (float inputDrive, float outputDrive, float amplitude = 0.6f)
         {
             setParam (processor, ParamID::preamp, inputDrive);
-            setParam (processor, ParamID::slamDrive, outputDrive);
+            setParam (processor, ParamID::output, outputDrive);
             constexpr int n = 4096;
             std::vector<float> out;
             juce::MidiBuffer midi;
@@ -679,21 +683,25 @@ int main (int argc, char** argv)
                     out.assign (buf.getReadPointer (0), buf.getReadPointer (0) + n);
             }
             setParam (processor, ParamID::preamp, 0.0f);
-            setParam (processor, ParamID::slamDrive, 0.0f);
+            setParam (processor, ParamID::output, 0.0f);
             return out;
         };
-        setParam (processor, ParamID::inputSlam, 1.0f);
         const auto driven = capture (24.0f, 0.0f, 0.25f);
-        setParam (processor, ParamID::inputSlam, 0.0f);
         const double f = goertzel (driven, 37);
         const double h = goertzel (driven, 74) + goertzel (driven, 111) + goertzel (driven, 148) + goertzel (driven, 185);
-        check (f > 0.01 && h / f > 0.02, "SLAM with INPUT at full drives Mackity saturation", h / f, 0.02);
+        check (f > 0.01 && h / f > 0.02, "INPUT at full drives Mackity saturation", h / f, 0.02);
+        const auto outDrive = capture (0.0f, 24.0f, 0.25f);
+        const double fo = goertzel (outDrive, 37);
+        const double ho = goertzel (outDrive, 74) + goertzel (outDrive, 111) + goertzel (outDrive, 148) + goertzel (outDrive, 185);
+        check (fo > 0.01 && ho / fo > 0.02, "OUTPUT at full drives Mackity saturation", ho / fo, 0.02);
         const auto clean = capture (0.0f, 0.0f, 0.25f);
         const double f0 = goertzel (clean, 37);
         const double h0 = goertzel (clean, 74) + goertzel (clean, 111) + goertzel (clean, 148) + goertzel (clean, 185);
-        check (h0 / f0 < 0.005, "INPUT at 0 is the clean path (harmonic ratio)", h0 / f0, 0.005);
+        check (h0 / f0 < 0.005, "INPUT and OUTPUT at 0 are the clean path (harmonic ratio)", h0 / f0, 0.005);
 
-        check (processor.apvts.getParameter (ParamID::slamDrive) == nullptr, "separate SLAM stage has no host control");
+        check (processor.apvts.getParameter (ParamID::slamDrive) == nullptr && processor.apvts.getParameter (ParamID::inputSlam) == nullptr
+               && processor.apvts.getParameter (ParamID::desk) == nullptr && processor.apvts.getParameter (ParamID::preamp) != nullptr,
+               "no separate SLAM or DESK stage has a host control");
     }
     const auto loud = runSine (processor, 0.9f);
     check (loud.finite && loud.peak > 0.1f, "full-scale input at defaults stays finite and audible", loud.peak, 0.9);
@@ -703,8 +711,8 @@ int main (int argc, char** argv)
     const auto saturated = runSine (processor, 0.9f);
     setParam (processor, ParamID::output, 12.0f);
     const auto amplified = runSine (processor, 0.9f);
-    check (saturated.finite && amplified.finite && saturated.peak > 4.0f && amplified.peak > 1.0f && amplified.peak < saturated.peak,
-           "OUTPUT +12 dB on material already far over full scale: the desk holds it at its rail instead of a plain 4x", amplified.peak, saturated.peak);
+    check (saturated.finite && amplified.finite && saturated.peak > 0.1f && amplified.peak > 0.1f,
+           "INPUT +24 dB then OUTPUT +12 dB on a hot sine stays finite and audible", amplified.peak, saturated.peak);
     setParam (processor, ParamID::output, 0.0f);
     setParam (processor, ParamID::preamp, 0.0f);
 

@@ -78,10 +78,10 @@ def add_primitive(spec):
                                          major_segments=128, minor_segments=16)
     elif kind == "box":
         w, h, d = spec["size"]
-        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, spec["z"] + d / 2.0))
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(spec.get("x", 0.0), spec.get("y", 0.0), spec["z"] + d / 2.0))
         box = bpy.context.object
         box.scale = (w, h, d)
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        bpy.ops.object.transform_apply(location=True, rotation=False, scale=True)
         if spec.get("bevel", 0.0) > 0.0:
             mod = box.modifiers.new("bevel", "BEVEL")
             mod.width = spec["bevel"]
@@ -99,5 +99,8 @@ def add_primitive(spec):
         if spec.get("font"):
             t.data.font = bpy.data.fonts.load(spec["font"])
         bpy.ops.object.convert(target="MESH")
-    bpy.ops.object.shade_smooth()
+    if kind in ("disc", "box", "text"):
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35.0))
+    else:
+        bpy.ops.object.shade_smooth()
     return bpy.context.object

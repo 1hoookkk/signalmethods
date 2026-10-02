@@ -19,9 +19,9 @@ public:
           driveParam (apvts.getParameter (paramID)), label (std::move (caption))
     {
         setTitle (label);
-        setWantsKeyboardFocus (true);
+        setWantsKeyboardFocus (false);
         setRepaintsOnMouseActivity (true);
-        strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_black_strip_png, BinaryData::trench_knob_black_strip_pngSize);
+        strip = juce::ImageCache::getFromMemory (BinaryData::trench_knob_white_strip_png, BinaryData::trench_knob_white_strip_pngSize);
         shadow = juce::ImageCache::getFromMemory (BinaryData::trench_knob_black_shadow_png, BinaryData::trench_knob_black_shadow_pngSize);
         if (driveParam != nullptr)
             driveAttachment = std::make_unique<juce::ParameterAttachment> (*driveParam, [this] (float) { updateTooltip(); repaint(); });
@@ -39,7 +39,8 @@ public:
 
     void updateTooltip()
     {
-        const auto role = label == "INPUT" ? "gain before the filter; drives Mackity when SLAM is on" : "final gain after processing";
+        const auto role = label == "INPUT" ? "level into the filter; above 0 dB it drives the 8-Bus desk before the filter"
+                                           : "level after the filter; above 0 dB it drives the 8-Bus desk after the filter";
         const auto help = juce::String (role) + ". Shift for fine adjustment; double-click to reset to 0 dB.";
         setHelpText (help);
         setTooltip (label + ": " + (driveParam != nullptr ? driveParam->getCurrentValueAsText() : juce::String()) + " dB. " + help);

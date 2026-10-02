@@ -16,6 +16,7 @@ public:
     static constexpr float kInputCeiling = 0.9f;
     static constexpr double kBlockerHz = 5.0;
     static constexpr int kWarmSamples = 256;
+    static constexpr int kResampleCushion = 8;
     using Model = RTNeural::ModelT<float, 1, 1, RTNeural::LSTMLayerT<float, 1, kHidden>, RTNeural::DenseT<float, kHidden, 1>>;
 
     EightBusDesk() : model (std::make_unique<Model>()) {}
@@ -53,6 +54,7 @@ public:
         chunk = std::max (maxBlock, 1);
         inFifo.assign ((size_t) chunk + 32, 0.0f);
         midFifo.assign ((size_t) (2 * (int) std::ceil ((double) chunk * kModelRate / rate) + 64), 0.0f);
+        midDry.assign (midFifo.size(), 0.0f);
         blockerCoefficient = (float) std::exp (-2.0 * juce::MathConstants<double>::pi * kBlockerHz / kModelRate);
         reset();
     }
@@ -61,37 +63,49 @@ public:
         model->reset();
         toModel.reset();
         fromModel.reset();
+        fromDry.reset();
         inCount = 0;
-        midCount = 0;
+        midCount = resampling ? std::min (kResampleCushion, (int) midFifo.size()) : 0;
+        std::fill (midFifo.begin(), midFifo.begin() + midCount, 0.0f);
+        std::fill (midDry.begin(), midDry.begin() + midCount, 0.0f);
         blockerIn = 0.0f;
         blockerOut = 0.0f;
         if (loaded)
+        {
             for (int i = 0; i < kWarmSamples; ++i)
                 forward (0.0f);
+            blockerOut = 0.0f;
+        }
     }
     float smallSignalGainDb() const noexcept { return gainDb; }
 
-    void process (float* data, int numSamples) noexcept
+    void process (float* data, int numSamples, float* dry = nullptr) noexcept
     {
         if (! loaded || numSamples <= 0 || (resampling && inFifo.empty()))
             return;
         if (! resampling)
         {
             for (int i = 0; i < numSamples; ++i)
+            {
+                if (dry != nullptr)
+                    dry[i] = data[i];
                 data[i] = forward (data[i]);
+            }
             return;
         }
         while (numSamples > chunk)
         {
-            processChunk (data, chunk);
+            processChunk (data, dry, chunk);
             data += chunk;
+            if (dry != nullptr)
+                dry += chunk;
             numSamples -= chunk;
         }
-        processChunk (data, numSamples);
+        processChunk (data, dry, numSamples);
     }
 
 private:
-    void processChunk (float* data, int numSamples) noexcept
+    void processChunk (float* data, float* dry, int numSamples) noexcept
     {
         std::copy (data, data + numSamples, inFifo.begin() + inCount);
         inCount += numSamples;
@@ -99,7 +113,10 @@ private:
         const int produce = std::clamp ((int) std::floor ((double) (inCount - 1) / up), 0, (int) midFifo.size() - midCount);
         const int used = toModel.process (up, inFifo.data(), midFifo.data() + midCount, produce);
         for (int i = midCount; i < midCount + produce; ++i)
+        {
+            midDry[(size_t) i] = midFifo[(size_t) i];
             midFifo[(size_t) i] = forward (midFifo[(size_t) i]);
+        }
         midCount += produce;
         std::move (inFifo.begin() + used, inFifo.begin() + inCount, inFifo.begin());
         inCount -= used;
@@ -111,10 +128,15 @@ private:
             const int deficit = std::min (need - midCount, (int) midFifo.size() - midCount);
             std::move_backward (midFifo.begin(), midFifo.begin() + midCount, midFifo.begin() + midCount + deficit);
             std::fill (midFifo.begin(), midFifo.begin() + deficit, 0.0f);
+            std::move_backward (midDry.begin(), midDry.begin() + midCount, midDry.begin() + midCount + deficit);
+            std::fill (midDry.begin(), midDry.begin() + deficit, 0.0f);
             midCount += deficit;
         }
         const int usedMid = fromModel.process (down, midFifo.data(), data, numSamples);
+        if (dry != nullptr)
+            fromDry.process (down, midDry.data(), dry, numSamples);
         std::move (midFifo.begin() + usedMid, midFifo.begin() + midCount, midFifo.begin());
+        std::move (midDry.begin() + usedMid, midDry.begin() + midCount, midDry.begin());
         midCount -= usedMid;
     }
     float forward (float x) noexcept
@@ -148,8 +170,8 @@ private:
         model->reset();
     }
     std::unique_ptr<Model> model;
-    juce::Interpolators::Lagrange toModel, fromModel;
-    std::vector<float> inFifo, midFifo;
+    juce::Interpolators::Lagrange toModel, fromModel, fromDry;
+    std::vector<float> inFifo, midFifo, midDry;
     int inCount = 0;
     int midCount = 0;
     int chunk = 1;

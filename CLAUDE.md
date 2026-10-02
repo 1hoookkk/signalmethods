@@ -1,76 +1,178 @@
-# TRENCH
+# CLAUDE.md
 
-This file is canonical. AGENTS.md is a stub; do not rely on it.
+## Operating rules
 
-## What this is
-- `plugin/` is the TRENCH VST3, "a musical filter by Signal Methods". It ships.
-- `native/workstation/` is HEADSPACE, the authoring tool: a JUCE app in the plugin's CMake
-  tree, built alone by the `headspace` preset, linked straight to `native/core`, everything
-  painted by hand in one monospace font on black. A body is four sounds; the tool chooses
-  them and plays what the chip does between them. The stage is the body: corners A B C D are
-  M0 Q1, M1 Q1, M0 Q0, M1 Q0, each with a name box; PRESET loads a factory body; the puck is
-  the plugin's MORPH and Q and plays `PackedBody::interpolate_words` of the four; the rails
-  are the palette, click a card to hear it, slide along a rail to morph to its neighbour,
-  drag a card onto a corner; drop a .wav to read it; Ctrl+S keeps what you hear; W writes
-  `legacy_bytes`. Nothing transforms on the path, the tool passes no verdicts, the ear
-  decides. Read `native/workstation/HEADSPACE_SPEC.md` before touching it.
-- `evidence/` is the ONLY evidence root. Bodies, ROM dumps, manuals, patents, papers and
-  research results live under `C:\Users\hooki\trench-native\evidence`. Do not go to
-  trench-x3-clean or other repos for evidence; if something is needed from there, copy it
-  into `evidence/` first.
-- Keep work in the product the task names. Do not modify unrelated work.
+Read the task before reading broadly.
 
-## The filter, in one paragraph
-The Z-plane filter is a SERIAL cascade of second-order sections: 6 sections (12th order)
-for the Proteus 2000 / X3 bodies, 7 sections (14th order) for the Morpheus cubes. Section
-gains multiply; responses add in dB. There is no parallel bank, no band summing, no
-per-band normalisation. Begin any reply about level, response, interpolation or the tool's
-design by restating this law in one line: in a serial cascade section gains multiply and
-responses add in dB; a corner is six sections of five words, sixty bytes; a body is four corners and the chip's lerp; the
-ear decides.
-A body is a cube: 4 corners (P2K, 240 bytes, morph x q) or 8 corners (Morpheus, morph x
-q x z). MORPH and Q are the raw cube axes, played straight; modulation moves MORPH only.
-Every body carries a datum sample rate: P2K/X3 44,100 Hz, Morpheus 39,062.5 Hz. The
-engine rewarps to the host rate from that datum.
+Current instructions from Tyson outrank repository documentation.
 
-## Body sources
-- 33 Proteus 2000 / X3 bodies: `evidence/factory-data/p2k/bodies/p2k.zip`, extracted for
-  the dev build at `plugin/presets/p2k/`. The hand-voiced standard.
-- 289 Morpheus cubes: `evidence/factory-data/morpheus/` (raw stream, per-cube 560-byte
-  native bodies, decoded JSON, six categories). Datum 39,062.5 Hz. Each record carries its
-  own per-corner gains; do not apply the P2K DC-unity rule to them.
-- 18 `xml_*` WORKHORSE bodies in `plugin/presets/bodies/`: Emulator X Morph Filter
-  Designer compiles, one-dimensional (Q corners are copies). Sketches, not the standard.
-- There is no E-mu hardware in the room: the Morpheus material is its firmware and the 289 cubes. Level truth comes from code (firmware gain path, the X DLL H-chip table, the proven P2K rule), never from captures.
+For HEADSPACE work, the authority is the code and its acceptance suite:
 
-## Builds and tests
-- Every cmake build must run through MSVC vcvars64; a bare shell fails with C1083. Use a
-  .cmd wrapper that calls
-  `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat`.
-- Plugin tree: `out/build/vst3` (Ninja, Release). Targets: TRENCH_VST3 (ship),
-  TRENCH_Dev_VST3 (dev build with the drawer and the 33-body roster), TRENCH_Tests,
-  TRENCH_ReviewTests, TRENCH_FaceShot (headless face render).
-- Workstation: `native/workstation/build_headspace.cmd` configures the `vst3` preset, builds
-  the `headspace` build preset (TRENCH_Headspace_App and TRENCH_QuadTests only) and runs
-  `ctest --preset headspace` (test name trench_quad). The app is
-  `out/build/vst3/plugin/workstation/TRENCH_Headspace_App_artefacts/Release/HEADSPACE.exe`;
-  close it before relinking. No MATLAB, no MEX.
-- All test runs headless. Never open windows on the user's screen. Tests are acceptance
-  tests: fix the code, never loosen a threshold.
-- Install: copy the built .vst3 over `C:\Program Files\Common Files\VST3\...`; if FL holds
-  it, rename the old file aside with an `.inuse-old-<stamp>` suffix and copy.
+1. `native/workstation/Tests/SliceTests.cpp` - the executable contract
+2. `native/workstation/Source/slice/` - the state model it asserts
 
-## Rulings that stand
-- The face is locked (plate, wheels, value boxes, labels, BODY row, knobs, wordmark, mint
-  trace and lamp). BITE is the third axis, a drag on the glass, never a third gain knob.
-  INPUT and OUTPUT are clean gain. No MIX, no LOW KEEP, no transpose knob.
-- Everything must earn its keep on sound and control; never defend a stage because it is
-  implemented or was there before.
-- Authoring, recording, bisection and baking live in the dev build's drawer; the ship face
-  carries none of it. Tyson tunes shipping parameters there and has the final say.
-- Commit native work with explicit pathspecs; other chats stage plugin/ in this checkout.
-- No code comments, in any language.
+The write rule those tests enforce: every control is audition-only, a transient draft edit, or an explicit write. Only the 1-4 stamp, undo and export may be the third.
 
-## Where the record lives
-- `plugin/NEXT_SESSION.md`: the running brief, one entry per decision and measurement.
-- Persistent memory: `C:\Users\hooki\.claude\projects\C--Users-hooki-trench-authoring\memory\`.
+`native/workstation/archive/` holds superseded proposal documents. They are not authority and several of their claims about the tree are false.
+
+`DECISIONS.md`, `FIELD_PUSH.md`, `HEADSPACE_SPEC.md`, old screenshots, old tests, and old implementations are historical context unless the current task explicitly requires them.
+
+Design documents describe intended behaviour. They are not automatically factual descriptions of the current implementation.
+
+For factual claims about code, DSP, file formats, measurements, or historical evidence, verify them from code, reproducible results, or primary evidence before relying on them.
+
+Repeated claims in markdown are not additional evidence.
+
+If sources disagree, identify the disagreement rather than silently reconciling it.
+
+## How to work
+
+Inspect before editing.
+
+Trace actual reads, writes, ownership, state transitions, and call paths. Do not infer architecture from filenames, variable names, comments, or documentation alone.
+
+Distinguish:
+
+- proven from code or measurement
+- intended by current product instructions
+- inferred
+- unknown
+
+When desired product behaviour is already clear, make the smallest correct implementation decision yourself. Do not return internal implementation choices to Tyson.
+
+Fix root causes, not visible symptoms.
+
+Prefer one complete vertical slice over several partial changes.
+
+Do not widen scope while fixing a slice.
+
+Do not refactor unrelated code.
+
+Do not introduce abstractions unless required to make the requested behaviour correct.
+
+Do not add controls, modes, windows, panels, shortcuts, visualisations, state, or workflows that were not requested.
+
+## State and UI
+
+There must be one authoritative source for any product state presented as one thing.
+
+Do not maintain multiple independent interpretations of the same audible or visible state.
+
+The UI must project application state, not invent DSP words, curves, ownership, or hidden product state.
+
+A displayed response must be derived from the same filter words as the corresponding audible state.
+
+Transient audition must not mutate persistent authored state unless an explicit write action requires it.
+
+Selection, audition, and writing are separate operations unless the current task explicitly defines otherwise.
+
+A gesture must perform only the action represented by its control.
+
+If one variable represents product concepts with different permissions, separate those concepts rather than relying on incidental state.
+
+## Tests
+
+Tests are evidence and acceptance checks, not product authority.
+
+Never loosen a threshold merely to obtain green.
+
+Never change an assertion merely because the implementation fails it.
+
+If a historical test contradicts a current explicit product requirement or a reproduced defect, replace it with the smallest test that proves the current required behaviour.
+
+Keep automated tests headless.
+
+Prefer discriminating tests over broad regression additions.
+
+Report only the relevant test lines unless asked for full output.
+
+## HEADSPACE build
+
+Build:
+
+`cmake --build --preset headspace`
+
+Test:
+
+`ctest --preset headspace`
+
+Use repository build and launch scripts when the task specifies them.
+
+Close any running `HEADSPACE.exe` before relinking or launching.
+
+When visual or listening judgement is required:
+
+1. make the relevant implementation correct
+2. make the relevant test green
+3. make the build green
+4. launch HEADSPACE
+5. stop for Tyson's judgement
+
+Do not continue into the next judged slice without his verdict.
+
+## Protected scope
+
+Do not touch `native/core/` unless the task explicitly requires it.
+
+Do not touch `plugin/` unless the task explicitly requires it.
+
+HEADSPACE changes should normally remain inside `native/workstation/`.
+
+`plugin/NEXT_SESSION.md` may be changed only when the task explicitly requires an entry.
+
+Do not commit unless Tyson explicitly says to commit.
+
+Use explicit pathspecs for commits.
+
+Do not stage unrelated changes.
+
+Do not clean, restore, overwrite, or otherwise disturb another session's work.
+
+## Code
+
+No code comments.
+
+Follow existing local style.
+
+Do not add:
+
+- compatibility layers
+- fallback paths
+- duplicate sources of truth
+- speculative future hooks
+- temporary architecture intended to be cleaned up later
+
+unless explicitly required.
+
+Do not silently change:
+
+- DSP topology
+- interpolation law
+- sample-rate datum
+- gain convention
+- section order
+- packed words
+- persistence format
+- export format
+
+Do not normalise, strip zeros, reorder sections, or round-trip through another representation unless explicitly required by the current task.
+
+## Reporting
+
+Be concise.
+
+For implementation work, report:
+
+1. what was wrong
+2. what changed
+3. build result
+4. relevant acceptance-test result
+5. what Tyson should judge
+
+Do not dump implementation narration unless asked.
+
+Do not provide lifestyle or emotional coaching.
+
+Do not ask Tyson to choose between internal implementation details when the desired behaviour is already clear.
+
+If genuinely blocked by an unresolved product decision, state the exact unresolved decision and stop.

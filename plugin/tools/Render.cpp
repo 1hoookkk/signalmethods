@@ -170,7 +170,7 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
             }
             options.bpm = parsed;
         }
-        else if (option == "--input" || option == "--output")
+        else if (option == "--input")
         {
             double db = 0.0;
             if (! parseFiniteDouble (value, db) || db < -24.0 || db > 24.0)
@@ -178,8 +178,19 @@ bool parseArguments (int argc, char** argv, Options& options, juce::String& erro
                 error = option + " must be a level in dB from -24 to 24";
                 return false;
             }
-            (option == "--input" ? options.preamp : options.slam) = db;
-            (option == "--input" ? options.havePreamp : options.haveSlam) = true;
+            options.preamp = db;
+            options.havePreamp = true;
+        }
+        else if (option == "--output")
+        {
+            double db = 0.0;
+            if (! parseFiniteDouble (value, db) || db < -24.0 || db > 24.0)
+            {
+                error = option + " must be a level in dB from -24 to 24";
+                return false;
+            }
+            options.slam = db;
+            options.haveSlam = true;
         }
         else if (option == "--seconds")
         {
@@ -528,8 +539,8 @@ int main (int argc, char** argv)
             setParameter (processor, ParamID::output, (float) options.slam);
         setParameter (processor, ParamID::morph, (float) morphAt (morphCurve, 0.0));
         processor.dspBridge.setRingLeveller (options.ring);
-        if (const char* slam = std::getenv ("TRENCH_SLAM")) setParameter (processor, ParamID::inputSlam, std::atoi (slam) != 0 ? 1.0f : 0.0f);
         if (std::getenv ("TRENCH_NO_OUTPUT_MACKITY") != nullptr) { auto b = processor.dspBridge.getBypass(); b.outputDesk = false; processor.dspBridge.setBypass (b); }
+        if (const char* stageSat = std::getenv ("TRENCH_STAGE_SAT")) processor.dspBridge.setStageSaturation (std::atof (stageSat));
         std::printf ("ring       %s\n", options.ring ? "on" : "off");
 
         std::printf ("body       %s [%d]\n", bodyName.toRawUTF8(), bodyIndex);

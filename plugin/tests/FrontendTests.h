@@ -14,7 +14,7 @@ inline int frontendTests()
     auto* trenchEditor = dynamic_cast<PluginEditor*> (editor.get());
     const float savedScale = trenchEditor != nullptr ? trenchEditor->getUiScale() : 1.0f;
     if (trenchEditor != nullptr) trenchEditor->setUiScale (1.0f);
-    check (editor->getWidth() == 310 && editor->getHeight() == 506, "face retains the requested 310 x 506 size");
+    check (editor->getWidth() == 290 && editor->getHeight() == 476, "face retains the requested 290 x 476 size");
     auto* face = editor->findChildWithID ("face");
     check (face != nullptr, "the face lives in one scalable panel");
     if (face == nullptr) return failed + 1;
@@ -24,8 +24,8 @@ inline int frontendTests()
     trench::ui::GraphDisplay* glass = nullptr;
     std::vector<trench::ui::DeskKnob*> knobs;
     int wheels = 0, values = 0, others = 0;
-    const juce::Rectangle<float> notch { 753.0f * 310.0f / 1024.0f, 1185.0f * 506.0f / 1536.0f, 310.0f, 506.0f };
-    bool insideChassis = true, clearOfNotch = true, key = false, slamToggles = false;
+    const juce::Rectangle<float> notch { 753.0f * 290.0f / 1024.0f, 1185.0f * 476.0f / 1536.0f, 290.0f, 476.0f };
+    bool insideChassis = true, clearOfNotch = true, key = false;
     for (auto* child : face->getChildren())
     {
         if (auto* s = dynamic_cast<trench::ui::TypeSelectorView*> (child)) selector = s;
@@ -38,13 +38,6 @@ inline int frontendTests()
         if (dynamic_cast<trench::ui::WheelControl*> (child)) ++wheels;
         if (dynamic_cast<trench::ui::ValueReadout*> (child)) ++values;
         if (dynamic_cast<trench::ui::KeySnapBox*> (child)) key = true;
-        if (auto* slam = dynamic_cast<trench::ui::SlamButton*> (child))
-        {
-            slam->mouseUp (juce::MouseEvent (juce::Desktop::getInstance().getMainMouseSource(), { 3.0f, 3.0f },
-                juce::ModifierKeys (juce::ModifierKeys::leftButtonModifier), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, slam, slam, {}, { 3.0f, 3.0f }, {}, 1, false));
-            slamToggles = processor.apvts.getRawParameterValue (ParamID::inputSlam)->load() > 0.5f;
-            processor.apvts.getParameter (ParamID::inputSlam)->setValueNotifyingHost (0.0f);
-        }
         if (dynamic_cast<trench::ui::ModulationBay*> (child)
             || dynamic_cast<trench::ui::MixKnob*> (child)) ++others;
         if (dynamic_cast<trench::ui::DeskKnob*> (child) || dynamic_cast<trench::ui::ValueReadout*> (child))
@@ -54,7 +47,17 @@ inline int frontendTests()
     check (selector && chip && key && wheels == 2 && values == 4 && knobs.size() == 2 && others == 0,
            "BODY, KEY, MORPH, Q, the movement chip, INPUT and OUTPUT are the whole face");
     check (clearOfNotch, "INPUT and OUTPUT sit on the plate, clear of the notch");
-    check (slamToggles, "the SLAM button on the face switches the preamp before the filter");
+    check (knobs.size() == 2 && knobs[0]->getTitle() == "INPUT" && knobs[1]->getTitle() == "OUTPUT", "the face has an INPUT knob and an OUTPUT knob and no SLAM button");
+    {
+        std::function<bool (juce::Component&)> takesKeys = [&] (juce::Component& c)
+        {
+            if (c.getWantsKeyboardFocus()) return true;
+            for (auto* child : c.getChildren())
+                if (takesKeys (*child)) return true;
+            return false;
+        };
+        check (! takesKeys (*editor), "nothing on the face takes the keyboard: space and the typing keys stay with the host");
+    }
     {
         const auto layout = trench::UiLayout::defaults();
         trench::ui::KeySnapBox control (processor.apvts, trench::ui::Theme { layout });
@@ -275,7 +278,7 @@ inline int frontendTests()
     {
         trenchEditor->setUiScale (2.0f);
         const auto scaledChip = chip != nullptr ? editor->getLocalArea (chip, chip->getLocalBounds()) : juce::Rectangle<int>();
-        check (editor->getWidth() == 620 && editor->getHeight() == 1012 && face->getBounds() == juce::Rectangle<int> (0, 0, 310, 506)
+        check (editor->getWidth() == 580 && editor->getHeight() == 952 && face->getBounds() == juce::Rectangle<int> (0, 0, 290, 476)
                && chip != nullptr && scaledChip.getWidth() == chip->getWidth() * 2,
                "200% doubles the editor and scales every control with it");
         trenchEditor->setUiScale (savedScale);

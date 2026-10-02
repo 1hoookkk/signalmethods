@@ -22,8 +22,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     uiFontFamily() = layout.string ("fontFamily", kUiFontName);
     uiEmphasisFontFamily() = layout.string ("fontFamilyEmphasis", kUiEmphasisFontName);
     uiBoldEnabled() = layout.param ("fontBold", 0.0) > 0.5;
-    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_sage_png,
-                                                  BinaryData::trench_plate_sage_pngSize);
+    auto panel = juce::ImageCache::getFromMemory (BinaryData::trench_plate_blue_png,
+                                                  BinaryData::trench_plate_blue_pngSize);
     auto strip = juce::ImageCache::getFromMemory (BinaryData::trench_ss3_strip_png,
                                                   BinaryData::trench_ss3_strip_pngSize);
 #if TRENCH_DEV_PANEL
@@ -38,7 +38,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         juce::Image::BitmapData data (strip, juce::Image::BitmapData::readWrite);
         for (int y = 0; y < data.height; ++y)
             for (int x = 0; x < data.width; ++x)
-                data.setPixelColour (x, y, data.getPixelColour (x, y).withMultipliedSaturation (0.82f));
+            {
+                const auto c = data.getPixelColour (x, y);
+                const float hue = c.getHue(), sat = c.getSaturation();
+                const float lit = hue > 0.36f && hue < 0.60f && c.getBrightness() > 0.12f ? juce::jlimit (0.0f, 1.0f, (sat - 0.38f) / 0.17f) : 0.0f;
+                const auto lamp = juce::Colour::fromHSV (theme.rollerIllumination().getHue(), juce::jmin (1.0f, sat * 1.25f),
+                                                         juce::jmin (1.0f, c.getBrightness() * 1.15f), c.getFloatAlpha());
+                data.setPixelColour (x, y, c.withMultipliedSaturation (0.82f).interpolatedWith (lamp, lit));
+            }
     }
     faceplate = std::make_unique<FaceplateView> (panel, theme);
     faceplate->setBufferedToImage (true);
@@ -111,7 +118,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     inputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::preamp, "INPUT");
     outputKnob = std::make_unique<DeskKnob> (processor.apvts, theme, ParamID::output, "OUTPUT");
     inputKnob->setLegendVisible (false);
-    slamButton = std::make_unique<SlamButton> (processor.apvts, theme);
     outputKnob->setLegendVisible (false);
     inputReadout = std::make_unique<ValueReadout> ("inputReadout", theme);
     outputReadout = std::make_unique<ValueReadout> ("outputReadout", theme);
@@ -122,10 +128,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     face.setComponentID ("face");
     face.setInterceptsMouseClicks (false, true);
     addAndMakeVisible (face);
+    face.addAndMakeVisible (*graph);
     face.addAndMakeVisible (*faceplate);
     face.addAndMakeVisible (*morphWheel);
     face.addAndMakeVisible (*secondaryWheel);
-    face.addAndMakeVisible (*graph);
     face.addAndMakeVisible (*typeSelector);
     face.addAndMakeVisible (*morphReadout);
     face.addAndMakeVisible (*secondaryReadout);
@@ -134,7 +140,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     face.addAndMakeVisible (*keySnapBox);
     face.addAndMakeVisible (*inputKnob);
     face.addAndMakeVisible (*outputKnob);
-    face.addAndMakeVisible (*slamButton);
     face.addAndMakeVisible (*inputReadout);
     face.addAndMakeVisible (*outputReadout);
     face.addChildComponent (*bodyBrowser);
@@ -187,7 +192,6 @@ void PluginEditor::resized()
     }
     inputKnob->setBounds (rectOf ("inputKnob"));
     outputKnob->setBounds (rectOf ("outputKnob"));
-    slamButton->setBounds (rectOf ("slamButton"));
     inputReadout->setBounds (rectOf ("inputReadout"));
     outputReadout->setBounds (rectOf ("outputReadout"));
     morphReadout->setBounds (rectOf ("morphReadout"));
@@ -231,6 +235,7 @@ void PluginEditor::mouseDown (const juce::MouseEvent& e)
 void PluginEditor::onFrame()
 {
     modulationChip->setActive (processor.isMorphModulatedForUi());
+    morphWheel->setEchoLit (processor.isEchoArmed());
     {
         const auto names = trench::axisNamesForBody (processor.getLoadedBodyIndex());
         const auto follows = [this] (const char* id) { auto* v = processor.apvts.getRawParameterValue (id); return v != nullptr && v->load() > 0.5f; };

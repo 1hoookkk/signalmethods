@@ -241,18 +241,18 @@ public:
             }
             {
                 juce::ColourGradient vig (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
-                                          juce::Colours::black.withAlpha (0.38f), glass.getX(), glass.getY(), true);
+                                          juce::Colours::black.withAlpha (0.14f), glass.getX(), glass.getY(), true);
                 g.setGradientFill (vig);
                 g.fillRect (glass.expanded (1.0f));
-                juce::ColourGradient lip (juce::Colours::black.withAlpha (0.34f), 0.0f, glass.getY(),
+                juce::ColourGradient lip (juce::Colours::black.withAlpha (0.16f), 0.0f, glass.getY(),
                                           juce::Colours::transparentBlack, 0.0f, glass.getY() + 6.0f, false);
                 g.setGradientFill (lip);
                 g.fillRect (glass.withHeight (6.0f));
-                juce::ColourGradient lipL (juce::Colours::black.withAlpha (0.34f), glass.getX(), 0.0f,
+                juce::ColourGradient lipL (juce::Colours::black.withAlpha (0.16f), glass.getX(), 0.0f,
                                            juce::Colours::transparentBlack, glass.getX() + 6.0f, 0.0f, false);
                 g.setGradientFill (lipL);
                 g.fillRect (glass.withWidth (6.0f));
-                juce::ColourGradient lipR (juce::Colours::black.withAlpha (0.22f), glass.getRight(), 0.0f,
+                juce::ColourGradient lipR (juce::Colours::black.withAlpha (0.10f), glass.getRight(), 0.0f,
                                            juce::Colours::transparentBlack, glass.getRight() - 5.0f, 0.0f, false);
                 g.setGradientFill (lipR);
                 g.fillRect (glass.withLeft (glass.getRight() - 5.0f));
@@ -283,7 +283,7 @@ public:
             if (amountCueAlpha > 0.01f)
             {
                 g.setFont (telemetryFont (9.8f, false));
-                g.setColour (juce::Colour (0xffcfe8de).withAlpha (0.94f * amountCueAlpha));
+                g.setColour (t.curveColour().withAlpha (0.94f * amountCueAlpha));
                 g.drawText (amountCueText,
                             juce::Rectangle<float> (glass.getX() + 8.0f, glass.getY() + 4.0f, 190.0f, 14.0f),
                             juce::Justification::centredLeft, false);
@@ -349,10 +349,8 @@ private:
             return;
         const juce::PathStrokeType::JointStyle joint = juce::PathStrokeType::curved;
         const juce::PathStrokeType::EndCapStyle cap = juce::PathStrokeType::butt;
-        g.setColour (colour.withMultipliedAlpha (0.22f));
-        g.strokePath (path, { 1.7f, joint, cap });
-        g.setColour (colour.interpolatedWith (t.curveHighlight(), 0.30f));
-        g.strokePath (path, { 0.85f, joint, cap });
+        g.setColour (colour);
+        g.strokePath (path, { kTraceWidth, joint, cap });
     }
     void drawResponseTrace (juce::Graphics& g) const
     {
@@ -462,9 +460,7 @@ private:
             if (i == 0) path.startNewSubPath (traceXs[i], y);
             else        path.lineTo (traceXs[i], y);
         }
-        const float heat = pulsePhase == PulseRedraw ? (1.0f - progress) : 1.0f;
-        const auto hot = juce::Colour (0xffe9dfc7).interpolatedWith (juce::Colour (0xffc9853f), 0.38f);
-        const auto col = t.curveColour().interpolatedWith (hot, heat);
+        const auto col = t.curveColour();
 
         g.setColour (col.withMultipliedAlpha (0.05f));
         g.strokePath (path, { kTraceWidth * 1.9f, juce::PathStrokeType::curved,
@@ -480,7 +476,7 @@ private:
     mutable juce::Image gridPlate;
     juce::Path responsePath;
 
-    static constexpr float kTraceWidth = 1.0f;
+    static constexpr float kTraceWidth = 2.0f;
     std::vector<float> traceXs;
     std::vector<float> traceDbs;
     float lastCoeffs[trench::kUiCoeffCount] = {};

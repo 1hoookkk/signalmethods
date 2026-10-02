@@ -13,7 +13,7 @@ public:
     explicit BodyBrowser (const Theme& theme) : t (theme)
     {
         setInterceptsMouseClicks (true, false);
-        setWantsKeyboardFocus (true);
+        setWantsKeyboardFocus (false);
         setTitle ("Bodies");
     }
     struct Row { juce::String text; int body; bool ticked = false; bool heading = false; juce::String detail; };
@@ -38,6 +38,8 @@ public:
                 highlight = r;
                 break;
             }
+        scroll = 0;
+        reveal (columns == 1 ? highlight + visibleRows() / 2 : highlight);
         const int w = juce::roundToInt (columnW * (float) columns) + 2 * kInset;
         const int h = juce::roundToInt (kSheetRowH * (float) perColumn) + 2 * kInset;
         const int x = juce::jlimit (room.getX(), juce::jmax (room.getX(), room.getRight() - w), anchor.getX());
@@ -47,7 +49,6 @@ public:
         setBounds (faceLocal);
         setVisible (true);
         toFront (true);
-        grabKeyboardFocus();
         repaint();
     }
     void close (bool commit)
@@ -68,7 +69,7 @@ public:
         return "current=" + juce::String (current) + " highlight=" + juce::String (highlight)
              + " rows=" + juce::String ((int) rows.size())
              + " columns=" + juce::String (columns) + " perColumn=" + juce::String (perColumn)
-             + " scrolled=no";
+             + " scrolled=" + (overflows() ? "yes" : "no");
     }
     juce::StringArray dumpOrder() const
     {
@@ -114,7 +115,14 @@ public:
     }
     void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override
     {
-        if (w.deltaY != 0.0f)
+        if (w.deltaY == 0.0f)
+            return;
+        if (overflows())
+        {
+            scroll = juce::jlimit (0, maxScroll(), scroll + (w.deltaY > 0.0f ? -1 : 1) * (columns == 1 ? 3 : perColumn));
+            repaint();
+        }
+        else
             setHighlight (highlight + (w.deltaY > 0.0f ? -1 : 1), true);
     }
     void paint (juce::Graphics& g) override
@@ -125,13 +133,21 @@ public:
         g.setColour (juce::Colour (kSheetRule));
         for (int c = 1; c < columns; ++c)
             g.fillRect (inner.getX() + columnW * (float) c, inner.getY() + 4.0f, 1.0f, inner.getHeight() - 8.0f);
-        for (int r = 0; r < (int) rows.size(); ++r)
+        for (int r = scroll; r < juce::jmin ((int) rows.size(), scroll + visibleRows()); ++r)
         {
             const auto cell = cellFor (inner, r);
             if (rows[(size_t) r].heading)
                 drawSheetHeading (g, cell, rows[(size_t) r].text, rows[(size_t) r].detail);
             else
                 drawSheetRow (g, cell, rows[(size_t) r].text, r == highlight, isTicked (r), true, rows[(size_t) r].detail);
+        }
+        if (overflows())
+        {
+            const float span = (float) (maxScroll() + visibleRows());
+            const float top = inner.getY() + inner.getHeight() * (float) scroll / span;
+            g.setColour (juce::Colour (kSheetInkDim).withAlpha (0.5f));
+            g.fillRoundedRectangle (inner.getRight() - 5.0f, top + 2.0f, 3.0f,
+                                    inner.getHeight() * (float) visibleRows() / span - 4.0f, 1.5f);
         }
     }
 private:
@@ -141,10 +157,25 @@ private:
         return rowSource != nullptr ? rows[(size_t) r].ticked : rows[(size_t) r].body == current;
     }
     juce::Rectangle<float> panelBounds() const { return panel; }
+    int visibleRows() const { return columns * perColumn; }
+    bool overflows() const { return (int) rows.size() > visibleRows(); }
+    int maxScroll() const
+    {
+        const int extra = juce::jmax (0, (int) rows.size() - visibleRows());
+        return columns == 1 ? extra : (extra + perColumn - 1) / perColumn * perColumn;
+    }
+    void reveal (int row)
+    {
+        if (row < scroll)
+            scroll = columns == 1 ? row : row / perColumn * perColumn;
+        else if (row >= scroll + visibleRows())
+            scroll = columns == 1 ? row - visibleRows() + 1 : (row / perColumn - columns + 1) * perColumn;
+        scroll = juce::jlimit (0, maxScroll(), scroll);
+    }
     juce::Rectangle<float> cellFor (juce::Rectangle<float> inner, int row) const
     {
-        const int col = row / juce::jmax (1, perColumn);
-        const int idx = row % juce::jmax (1, perColumn);
+        const int col = (row - scroll) / juce::jmax (1, perColumn);
+        const int idx = (row - scroll) % juce::jmax (1, perColumn);
         return { inner.getX() + (float) col * columnW,
                  inner.getY() + (float) idx * kSheetRowH, columnW, kSheetRowH };
     }
@@ -155,7 +186,7 @@ private:
             return -1;
         const int col = (int) ((p.x - inner.getX()) / columnW);
         const int idx = (int) ((p.y - inner.getY()) / kSheetRowH);
-        const int r = col * perColumn + idx;
+        const int r = col * perColumn + idx + scroll;
         return r >= 0 && r < (int) rows.size() ? r : -1;
     }
     void setHighlight (int r, bool preview)
@@ -167,6 +198,7 @@ private:
         if (rows[(size_t) r].heading || r == highlight)
             return;
         highlight = r;
+        reveal (highlight);
         if (preview) startTimer (120);
         repaint();
     }
@@ -190,8 +222,8 @@ private:
         const int maxPerColumn = juce::jmax (1, (int) (((float) availableHeight - 2.0f * kInset) / kSheetRowH));
         const int n = juce::jmax (1, (int) rows.size());
         const float maxW = (float) availableWidth - 2.0f * kInset;
-        columns = juce::jmax (1, (n + maxPerColumn - 1) / maxPerColumn);
-        perColumn = (n + columns - 1) / columns;
+        columns = juce::jmin (juce::jmax (1, (int) (maxW / columnW)), juce::jmax (1, (n + maxPerColumn - 1) / maxPerColumn));
+        perColumn = juce::jmin (maxPerColumn, (n + columns - 1) / columns);
         const auto orphanHeading = [this, n]
         {
             for (int end = perColumn; end < n; end += perColumn)
@@ -203,10 +235,8 @@ private:
             ++perColumn;
         if (columns == 1)
             columnW = juce::jmax (columnW, (float) anchorWidth - 2.0f * kInset);
-        const bool fits = columnW * (float) columns <= maxW;
-        if (! fits)
-            columnW = maxW / (float) columns;
-        return fits;
+        columnW = juce::jmin (columnW, maxW);
+        return ! overflows();
     }
     void buildRows()
     {
@@ -248,7 +278,7 @@ private:
     juce::Rectangle<float> panel;
     std::vector<Row> rows;
     int highlight = 0, current = 0, openedWith = 0;
-    int perColumn = 1, columns = 1;
+    int perColumn = 1, columns = 1, scroll = 0;
     float columnW = 140.0f;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BodyBrowser)
 };

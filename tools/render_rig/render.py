@@ -135,6 +135,9 @@ def main():
                 front = [0.0, 0.0, 0.0]
                 front[axis] = float(sign)
                 obj.delta_rotation_quaternion = Quaternion(front, -angle)
+                for e in extras:
+                    e.rotation_mode = "QUATERNION"
+                    e.delta_rotation_quaternion = Quaternion((0.0, 0.0, 1.0), -angle)
                 frames.append(render_frame(scene, os.path.join(raw_dir, f"{name}_{i:03d}.png"), ss, merged))
             final = post.strip(frames)
         else:

@@ -81,6 +81,10 @@ public:
     }
 
     float shownNormalised() const noexcept { return displayNormalised(); }
+    void setEchoLit (bool lit)
+    {
+        if (echoLit != lit) { echoLit = lit; repaint(); }
+    }
     void mouseEnter (const juce::MouseEvent&) override { hovering = true;  repaint(); }
     void mouseExit  (const juce::MouseEvent&) override { hovering = false; repaint(); }
 
@@ -243,10 +247,25 @@ public:
         const juce::Rectangle<float> dest { snap (frameRect.getX()), snap (frameRect.getY()),
                                             snap (frameRect.getRight()) - snap (frameRect.getX()),
                                             snap (frameRect.getBottom()) - snap (frameRect.getY()) };
-        if (scaledIndex != frame)
+        if (scaledIndex != frame || scaledEcho != echoLit)
         {
             scaledFrame = strip.getClippedImage ({ frame * fw, 0, fw, fh });
+            if (echoLit)
+            {
+                scaledFrame = scaledFrame.createCopy();
+                const float lampHue = t.rollerIllumination().getHue();
+                juce::Image::BitmapData data (scaledFrame, juce::Image::BitmapData::readWrite);
+                for (int y = 0; y < data.height; ++y)
+                    for (int x = 0; x < data.width; ++x)
+                    {
+                        const auto c = data.getPixelColour (x, y);
+                        if (c.getSaturation() > 0.45f && std::abs (c.getHue() - lampHue) < 0.06f)
+                            data.setPixelColour (x, y, juce::Colour::fromHSV (c.getHue(), c.getSaturation() * 0.8f,
+                                                                              juce::jmin (1.0f, c.getBrightness() * 1.6f), c.getFloatAlpha()));
+                    }
+            }
             scaledIndex = frame;
+            scaledEcho = echoLit;
         }
         g.drawImage (scaledFrame, dest, juce::RectanglePlacement::stretchToFit);
 
@@ -288,6 +307,7 @@ private:
     juce::Image scaledFrame;
     float shownFrameWidth = 0.0f;
     int scaledIndex = -1;
+    bool scaledEcho = false;
 
     float currentNormalised() const
     {
@@ -321,6 +341,7 @@ private:
     Theme t;
     bool hovering = false;
     bool pressing = false;
+    bool echoLit = false;
     bool gestureOpen = false;
     bool altRecording = false;
     bool isQControl = false;

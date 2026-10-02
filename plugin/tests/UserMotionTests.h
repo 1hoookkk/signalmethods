@@ -189,7 +189,7 @@ inline int userMotionTests()
         chip.selectPattern (0);
         check (! processor.usingUserMotion(), "Off stops custom modulation as well as factory modulation");
         juce::Component face;
-        face.setSize (310, 506);
+        face.setSize (290, 476);
         trench::ui::ModulationBay bay (processor, chip, theme, root);
         face.addAndMakeVisible (bay);
         bay.setBounds (40, 330, 170, 58);

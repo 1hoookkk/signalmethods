@@ -323,7 +323,7 @@ inline int modulationTimingTests()
         const auto echo = p.userMotion.get();
         std::vector<float> replay;
         run (192, &replay);
-        const auto expected = [] (size_t block) { return trench::curves::curveMap (trench::curves::Axis::morph, 0.2f + 0.4f * (float) block / 192.0f); };
+        const auto expected = [] (size_t block) { return trench::curves::curveMap (trench::curves::Axis::morph, 0.2f + 0.4f * ((float) block / 3.0f - 4.0f) / 60.0f); };
         bool traced = true;
         for (size_t i : { (size_t) 60, (size_t) 120, (size_t) 185 })
             traced = traced && std::abs (replay[i] - expected (i)) < 0.06f;
@@ -332,6 +332,33 @@ inline int modulationTimingTests()
         check (p.usingUserMotion() && echo.name == PluginProcessor::kEchoName && echo.steps == 64
                && p.apvts.getRawParameterValue (ParamID::moveLength)->load() == 2.0f && traced && p.isEchoArmed(),
                "Echo replays a one-bar sweep of the wheel every bar, from where it started to where it let go");
+        const float released = trench::curves::curveMap (trench::curves::Axis::morph, 0.6f);
+        std::printf ("      Echo: wheel after release %g (let go at 0.6), first replay block %g (let go at %g), last %g\n",
+                     p.apvts.getParameter (ParamID::morph)->getValue(), replay[0], released, replay[191]);
+        check (std::abs (p.apvts.getParameter (ParamID::morph)->getValue() - 0.6f) < 1.0e-3f,
+               "Echo leaves the MORPH wheel where the hand let go");
+        check (std::abs (replay[0] - released) < 0.02f && std::abs (replay[191] - released) < 0.03f,
+               "Echo starts from where the hand let go and ends each loop there: no rest and no snap at the seam");
+        float seam = 0.0f;
+        for (size_t i = 1; i < replay.size(); ++i) seam = std::max (seam, std::abs (replay[i] - replay[i - 1]));
+        std::vector<float> second;
+        run (16, &second);
+        seam = std::max (seam, std::abs (second[0] - replay[191]));
+        for (size_t i = 1; i < second.size(); ++i) seam = std::max (seam, std::abs (second[i] - second[i - 1]));
+        std::printf ("      Echo: largest block-to-block move across the loop and its seam %g\n", seam);
+        check (seam < 0.08f, "Echo glides back to the start of the gesture instead of jumping");
+        p.holdMorph (true);
+        run (3);
+        p.holdMorph (false);
+        run (1);
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (50);
+        const float parked = p.apvts.getParameter (ParamID::morph)->getValue();
+        std::vector<float> still;
+        run (40, &still);
+        bool stopped = ! p.usingUserMotion() && p.isEchoArmed();
+        for (float v : still)
+            stopped = stopped && std::abs (v - trench::curves::curveMap (trench::curves::Axis::morph, parked)) < 1.0e-4f;
+        check (stopped, "a tap on the wheel stops the Echo and leaves the wheel where it was touched, still armed");
         p.setPlayHead (nullptr);
     }
     return failures;

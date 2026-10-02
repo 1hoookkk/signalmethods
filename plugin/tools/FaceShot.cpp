@@ -163,13 +163,22 @@ int main()
         return 0;
     }
 
+    if (std::getenv ("TRENCH_FACESHOT_ECHO") != nullptr)
+    {
+        processor.setEchoArmed (true);
+        shoot ("trench_face_echo");
+        processor.editorBeingDeleted (editor);
+        holder.removeChildComponent (editor);
+        delete editor;
+        return 0;
+    }
+
     shoot ("trench_face");
 
     set (ParamID::body, bodyIndex ("Blade"));
     set (ParamID::movePreset, 0.0f);
     set (ParamID::keySnap, 0.0f);
     set (ParamID::preamp, 0.0f);
-    set (ParamID::slamDrive, 0.0f);
     set (ParamID::distortion, 0.0f);
     set (ParamID::morph, 0.68f);
     set (ParamID::q, 0.30f);
@@ -365,8 +374,6 @@ int main()
     set (ParamID::movePreset, 0.0f);
     set (ParamID::distortion, 0.0f);
     set (ParamID::body, bodyIndex ("No filter"));
-    set (ParamID::slamDrive, 1.0f);
-    set (ParamID::inputSlam, 1.0f);
     set (ParamID::preamp, 0.6f);
     set (ParamID::morph, 0.5f);
     settle (400);

@@ -32,32 +32,31 @@ public:
         layout.elements["morphReadout"] = { { 563.2f, 684.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["qReadout"]     = { { 563.2f, 849.6f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
 
-        layout.elements["spectrumGrid"] = { { 128.1f, 245.6f, 768.7f, 342.7f }, {}, {} };
+        layout.elements["spectrumGrid"] = { { 115.0f, 230.0f, 797.0f, 374.0f }, {}, {} };
 
-        layout.elements["typeLabel"]    = { { 128.7f, 137.1f, 98.3f, 67.1f },  12.9f, juce::Colour (0xff2a2722) };
+        layout.elements["typeLabel"]    = { { 128.7f, 137.1f, 98.3f, 67.1f },  12.9f, juce::Colour (0xfff4f7fa) };
         layout.elements["typeLabel"].text = "BODY";
 
         layout.elements["typeName"]     = { { 247.4f, 141.1f, 529.2f, 63.1f },  20.0f, juce::Colour (0xff1a1713) };
         layout.elements["typeArrow"]    = { { 853.3f, 141.1f, 52.7f,  63.1f },  {}, {} };
-        layout.elements["morphLabel"]   = { { 111.3f, 621.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
+        layout.elements["morphLabel"]   = { { 111.3f, 621.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xfff4f7fa) };
         layout.elements["morphLabel"].text = "MORPH";
-        layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xff2a2722) };
+        layout.elements["qLabel"]       = { { 111.3f, 786.25f, 448.9f, 48.0f },  14.6f, juce::Colour (0xfff4f7fa) };
         layout.elements["qLabel"].text = "Q";
-        layout.elements["inputLabel"]   = { { 111.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["inputLabel"]   = { { 111.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xfff4f7fa) };
         layout.elements["inputLabel"].text = "INPUT (dB)";
-        layout.elements["outputLabel"]  = { { 441.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xff2a2722) };
+        layout.elements["outputLabel"]  = { { 441.5f, 1149.0f, 260.0f, 48.0f },  13.9f, juce::Colour (0xfff4f7fa) };
         layout.elements["outputLabel"].text = "OUTPUT (dB)";
         layout.elements["inputKnob"]    = { { 151.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
         layout.elements["outputKnob"]   = { { 481.5f, 1194.0f, 180.0f, 180.0f }, {}, {} };
         layout.elements["inputReadout"] = { { 154.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
         layout.elements["outputReadout"] = { { 484.3f, 1336.0f, 174.4f, 61.2f },  15.5f, juce::Colour (0xff4a3520) };
-        layout.elements["slamButton"]   = { { 317.5f, 1195.0f, 178.0f, 178.0f }, {}, {} };
 
-        layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xff0f0c09) };
+        layout.elements["brandLabel"]   = { { 128.7f, 65.1f, 304.2f, 55.2f }, 17.5f, juce::Colour (0xfff4f7fa) };
 
         layout.elements["brandLabel"].text = "TRENCH";
-        juce::Colour lamp (0xff31aeb0);
-        juce::Colour trace (0xff31aeb0);
+        juce::Colour lamp (0xff96e028);
+        juce::Colour trace (0xff132016);
         if (const char* accent = std::getenv ("TRENCH_ACCENT"))
         {
             const juce::String hex = juce::String (accent).trimCharactersAtStart ("#");
@@ -80,9 +79,9 @@ public:
         layout.colours["screenEdge"]         = juce::Colour (0xff171325);
 
         layout.colours["spectrumGhost"]      = juce::Colour (0xff8fd8d8);
-        layout.colours["glassTop"]           = juce::Colour (0xff070b0e);
-        layout.colours["glassBottom"]        = juce::Colour (0xff020405);
-        layout.colours["labelInk"]    = juce::Colour (0xff1e262c);
+        layout.colours["glassTop"]           = juce::Colour (0xffb1d860);
+        layout.colours["glassBottom"]        = juce::Colour (0xff9cbf55);
+        layout.colours["labelInk"]    = juce::Colour (0xfff4f7fa);
 
         layout.colours["wellTop"]            = juce::Colour (0xffcbd8e6);
         layout.colours["wellBottom"]         = juce::Colour (0xff9db0c4);
@@ -93,8 +92,8 @@ public:
         layout.params["curveDbTop"]        = 84.0;
         layout.params["curveDbBottom"]     = -84.0;
         layout.params["fontBold"]          = 1.0;
-        layout.params["gridBoost"]         = 2.5;
-        layout.colours["gridTint"]           = juce::Colour (0xffa0b4bc);
+        layout.params["gridBoost"]         = 1.9;
+        layout.colours["gridTint"]           = juce::Colour (0xff132016);
 #if TRENCH_DEV_PANEL
         if (const char* themeName = std::getenv ("TRENCH_THEME"))
         {

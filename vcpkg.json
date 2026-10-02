@@ -5,6 +5,8 @@
   "dependencies": [
     "ceres",
     "eigen3",
+    "glfw3",
+    "imgui",
     "nlohmann-json",
     "pocketfft"
   ]

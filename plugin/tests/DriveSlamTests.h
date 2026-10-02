@@ -3,7 +3,11 @@
 #include "BinaryData.h"
 #include "TestFixtures.h"
 #include <array>
+#include <tuple>
 #include <cstdio>
+#include <functional>
+#include <memory>
+#include <vector>
 
 inline int driveSlamTests()
 {
@@ -19,148 +23,530 @@ inline int driveSlamTests()
         const auto* json = BinaryData::getNamedResource ("trench_8bus_main_json", bytes);
         return b.loadDeskModel (json, (size_t) juce::jmax (0, bytes));
     };
-    for (const double rate : { 44100.0, 48000.0, 96000.0 })
+    using Planes = std::vector<std::vector<float>>;
+    const auto gainOf = [] (float db) { return juce::Decibels::decibelsToGain (db); };
+    const auto sineAt = [] (double rate, float amplitude, long n)
+    {
+        return amplitude * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 375.0 * (double) n / rate);
+    };
+    const auto renderBridge = [&] (double rate, int channels, int block, float inputDb, float outputDb, long total,
+                                   const std::function<float (int, long)>& source, bool desks = true)
+    {
+        TrenchDspBridge b;
+        b.prepare (rate, 1024);
+        withDesk (b);
+        b.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+        auto bypass = b.getBypass();
+        bypass.outputDesk = desks;
+        b.setBypass (bypass);
+        b.setInputDrive (gainOf (inputDb));
+        b.setOutputLevel (gainOf (outputDb));
+        Planes out ((size_t) channels, std::vector<float> ((size_t) total));
+        juce::AudioBuffer<float> buffer (channels, 1024);
+        for (long start = 0; start < total; start += block)
+        {
+            const int length = (int) std::min<long> (block, total - start);
+            for (int c = 0; c < channels; ++c)
+                for (int i = 0; i < length; ++i)
+                    buffer.setSample (c, i, source (c, start + i));
+            juce::AudioBuffer<float> view (buffer.getArrayOfWritePointers(), channels, length);
+            b.process (view, {});
+            for (int c = 0; c < channels; ++c)
+                for (int i = 0; i < length; ++i)
+                    out[(size_t) c][(size_t) (start + i)] = view.getSample (c, i);
+        }
+        return out;
+    };
+    const auto tailOf = [] (const std::vector<float>& x, double rate)
+    {
+        const auto n = (size_t) std::lround (rate / 15.0);
+        return std::vector<float> (x.end() - (std::ptrdiff_t) n, x.end());
+    };
+    const auto harmonicRatio = [] (const std::vector<float>& tail, double rate)
+    {
+        double fundamental = 0.0, harmonics = 0.0;
+        for (int k = 1; k <= 7; ++k)
+        {
+            double re = 0.0, im = 0.0;
+            for (size_t i = 0; i < tail.size(); ++i)
+            {
+                const double a = 2.0 * juce::MathConstants<double>::pi * 375.0 * k * (double) i / rate;
+                re += tail[i] * std::cos (a);
+                im += tail[i] * std::sin (a);
+            }
+            (k == 1 ? fundamental : harmonics) += re * re + im * im;
+        }
+        return std::sqrt (harmonics / fundamental);
+    };
+    const auto peakOf = [] (const std::vector<float>& x)
+    {
+        float peak = 0.0f;
+        for (float v : x) peak = std::max (peak, std::abs (v));
+        return peak;
+    };
+    const auto settledDeviation = [&] (const std::vector<float>& out, double rate, float amplitude, float scale)
+    {
+        const long total = (long) out.size();
+        const long n = (long) tailOf (out, rate).size();
+        double worst = 0.0, peak = 0.0;
+        for (long i = total - n; i < total; ++i)
+        {
+            const float want = sineAt (rate, amplitude, i) * scale;
+            worst = std::max (worst, (double) std::abs (out[(size_t) i] - want));
+            peak = std::max (peak, (double) std::abs (want));
+        }
+        return worst / peak;
+    };
+    {
+        TrenchDspBridge bridge;
+        bridge.prepare (48000.0, 128);
+        check (withDesk (bridge), "8-Bus desk model loads into both seats of the bridge");
+        check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
+        check (TrenchDspBridge::deskBlend (0.5f) == 0.0f && TrenchDspBridge::deskBlend (1.0f) == 0.0f
+               && TrenchDspBridge::deskBlend (gainOf (12.0f)) >= 0.999f && TrenchDspBridge::deskBlend (gainOf (24.0f)) == 1.0f
+               && TrenchDspBridge::deskBlend (gainOf (6.0f)) > 0.0f && TrenchDspBridge::deskBlend (gainOf (6.0f)) < 1.0f,
+               "the desk onset is 0 at or below 0 dB and reaches 1 at +12 dB");
+    }
+    const std::array<double, 3> rates { 44100.0, 48000.0, 96000.0 };
+    for (const double rate : rates)
         for (const int channels : { 1, 2 })
         {
-            TrenchDspBridge bridge;
-            bridge.prepare (rate, 128);
-            check (withDesk (bridge), "8-Bus desk model loads into the bridge");
-            check (bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "gain test body loads");
-            juce::AudioBuffer<float> audio (channels, 128);
-            bool exact = true;
-            for (int block = 0; block < 32; ++block)
+            const auto source = [rate] (int c, long n)
             {
-                const float level = block < 16 ? 4.0f : 0.125f;
-                for (int c = 0; c < channels; ++c)
-                    for (int i = 0; i < 128; ++i) audio.setSample (c, i, (c == 0 ? level : 0.125f) * (float) std::sin (0.07 * (block * 128 + i)));
-                juce::AudioBuffer<float> dry;
-                dry.makeCopyOf (audio);
-                bridge.process (audio, {});
-                for (int i = 0; i < 128; ++i)
-                {
-                    exact = exact && audio.getSample (0, i) == dry.getSample (0, i);
-                    if (channels > 1) exact = exact && audio.getSample (1, i) == dry.getSample (1, i);
-                }
-            }
-            check (exact, "with SLAM off nothing but the filter touches the signal: no desk after it, per channel");
-            const auto tonePeak = [&, withDesk] (float inputGain, float outputGain, bool slamOn = false, float amplitude = 0.001f)
-            {
-                TrenchDspBridge b;
-                b.prepare (rate, 128);
-                withDesk (b);
-                b.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-                b.setInputDrive (inputGain);
-                b.setInputSlam (slamOn);
-                b.setOutputLevel (outputGain);
-                juce::AudioBuffer<float> a (channels, 128);
-                float peak = 0.0f;
-                for (int block = 0; block < 200; ++block)
-                {
-                    for (int c = 0; c < channels; ++c)
-                        for (int i = 0; i < 128; ++i) a.setSample (c, i, amplitude * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 1000.0 * (block * 128 + i) / rate));
-                    b.process (a, {});
-                    if (block >= 150) peak = std::max (peak, a.getMagnitude (0, 0, 128));
-                }
-                return peak;
+                const float level = (n / 2048) % 2 == 0 ? 4.0f : 0.125f;
+                return (c == 0 ? level : 0.125f) * (float) std::sin (0.07 * (double) n);
             };
-            const float unity = tonePeak (1.0f, 1.0f);
-            check (std::abs (juce::Decibels::gainToDecibels (tonePeak (juce::Decibels::decibelsToGain (24.0f), 1.0f) / unity) - 24.0f) < 0.1f
-                   && std::abs (juce::Decibels::gainToDecibels (tonePeak (juce::Decibels::decibelsToGain (-24.0f), 1.0f) / unity) + 24.0f) < 0.1f,
-                   "INPUT is a clean level from -24 to +24 dB");
-            check (std::abs (juce::Decibels::gainToDecibels (tonePeak (1.0f, juce::Decibels::decibelsToGain (-12.0f)) / unity) + 12.0f) < 0.1f,
-                   "OUTPUT is a clean level after the filter");
-            const float slamQuiet = tonePeak (1.0f, 1.0f, true);
-            const float slamLift = juce::Decibels::gainToDecibels (slamQuiet / unity);
-            std::printf ("      SLAM lifts a quiet tone by %.2f dB at %.0f Hz\n", slamLift, rate);
-            check (slamLift > 6.0f && slamLift < 24.0f,
-                   "SLAM lifts a quiet tone by a fixed pad, unity at the desk's knee, no automatic compensation");
-            const float clipped = tonePeak (1.0f, 1.0f, true, 0.125f);
-            const float pushed = tonePeak (4.0f, 1.0f, true, 0.125f);
-            std::printf ("      SLAM clipped / pushed peaks %.6f / %.6f at %.0f Hz\n", clipped, pushed, rate);
-            check (pushed < 2.0f * clipped && pushed < 1.0f,
-                   "SLAM compresses: four times the input gives less than twice the output and stays bounded");
-            check (std::abs (tonePeak (4.0f, 0.25f, true, 0.125f) / pushed - 0.25f) < 1.0e-5f,
-                   "OUTPUT scales SLAM after clipping without changing its drive");
-            TrenchDspBridge clean;
-            clean.prepare (rate, 128);
-            clean.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-            clean.setInputDrive (2.0f);
-            clean.process (audio, {});
-            clean.setInputDrive (1.0f);
-            check (! clean.inputDriveIsUnity(), "INPUT return keeps processing active while the gain ramp settles");
+            const auto out = renderBridge (rate, channels, 128, 0.0f, 0.0f, 16384, source);
+            bool exact = true;
+            for (int c = 0; c < channels; ++c)
+                for (long n = 0; n < 16384; ++n)
+                    exact = exact && out[(size_t) c][(size_t) n] == source (c, n);
+            check (exact, "INPUT 0 dB and OUTPUT 0 dB give output bit-identical to input, per channel");
         }
-    {
-        const auto burstCrest = [withDesk] (float drive)
+    for (const double rate : rates)
+        for (const int channels : { 1, 2 })
         {
-            TrenchDspBridge bridge;
-            bridge.prepare (48000.0, 128);
-            withDesk (bridge);
-            bridge.loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-            bridge.setInputSlam (true);
-            bridge.setInputDrive (drive);
-            juce::AudioBuffer<float> audio (1, 128);
-            const std::array<double, 4> starts { 0.25, 0.85, 1.45, 2.05 };
-            const std::array<double, 4> amplitudes { 0.02, 0.08, 0.32, 0.8 };
-            double power = 0.0;
-            float peak = 0.0f;
-            for (int block = 0; block < 1125; ++block)
+            const long total = (long) rate / 2;
+            const auto source = [rate, &sineAt] (int c, long n) { return c == 0 ? sineAt (rate, 0.5f, n) : 0.0f; };
+            std::vector<float> original ((size_t) total);
+            for (long n = 0; n < total; ++n) original[(size_t) n] = sineAt (rate, 0.5f, n);
+            const auto sourceRatio = harmonicRatio (tailOf (original, rate), rate);
+            const float quiet = gainOf (-12.0f);
+            double worstScale = 0.0, worstRatio = 0.0;
+            const std::array<std::array<float, 3>, 3> cases { { { -12.0f, 0.0f, quiet }, { 0.0f, -12.0f, quiet }, { -12.0f, -12.0f, quiet * quiet } } };
+            for (const auto& one : cases)
             {
-                for (int i = 0; i < 128; ++i)
-                {
-                    const double time = (block * 128 + i) / 48000.0;
-                    double x = 0.0;
-                    for (size_t hit = 0; hit < starts.size(); ++hit)
-                    {
-                        const double age = time - starts[hit];
-                        if (age >= 0.0 && age < 0.12)
-                            x += amplitudes[hit] * std::sin (2.0 * juce::MathConstants<double>::pi * 1000.0 * age) * std::exp (-age / 0.02);
-                    }
-                    audio.setSample (0, i, (float) x);
-                }
-                bridge.process (audio, {});
-                for (int i = 0; i < 128; ++i)
-                {
-                    const auto x = audio.getSample (0, i);
-                    power += (double) x * x;
-                    peak = std::max (peak, std::abs (x));
-                }
+                const auto out = renderBridge (rate, channels, 128, one[0], one[1], total, source);
+                worstScale = std::max (worstScale, settledDeviation (out[0], rate, 0.5f, one[2]));
+                worstRatio = std::max (worstRatio, std::abs (harmonicRatio (tailOf (out[0], rate), rate) - sourceRatio));
             }
-            return 20.0 * std::log10 (peak / std::sqrt (power / 144000.0));
+            std::printf ("      INPUT/OUTPUT -12 dB at %.0f Hz, %d ch: worst scaling error %.3g of peak, harmonic ratio change %.3g (source %.3g)\n",
+                         rate, channels, worstScale, worstRatio, sourceRatio);
+            check (worstScale <= 1.0e-5, "INPUT -12 dB and OUTPUT -12 dB are pure scalings, settled");
+            check (worstRatio <= 1.0e-4 * std::max (sourceRatio, 1.0e-3), "scaling below 0 dB leaves the harmonic ratio of the source");
+        }
+    for (const double rate : rates)
+    {
+        const long total = (long) rate;
+        const auto source = [rate, &sineAt] (int, long n) { return sineAt (rate, 0.5f, n); };
+        for (const bool inputKnob : { true, false })
+        {
+            std::printf ("      %s knob at %.0f Hz (other knob 0 dB), 375 Hz sine at 0.5\n", inputKnob ? "INPUT" : "OUTPUT", rate);
+            double previous = -1.0;
+            bool rising = true, finite = true;
+            for (const float db : { 0.0f, 3.0f, 6.0f, 12.0f, 18.0f, 24.0f })
+            {
+                const auto out = renderBridge (rate, 1, 128, inputKnob ? db : 0.0f, inputKnob ? 0.0f : db, total, source);
+                const auto tail = tailOf (out[0], rate);
+                const double ratio = harmonicRatio (tail, rate);
+                const float peak = peakOf (tail);
+                std::printf ("      %s %+5.1f dB  harmonic ratio %.6f  settled peak %.4f\n", inputKnob ? "INPUT " : "OUTPUT", db, ratio, peak);
+                if (db > 0.0f) rising = rising && ratio > previous;
+                finite = finite && std::isfinite (peak) && std::isfinite (ratio);
+                previous = ratio;
+            }
+            check (rising, inputKnob ? "INPUT raises the harmonic ratio monotonically from +3 to +24 dB at OUTPUT 0"
+                                     : "OUTPUT raises the harmonic ratio monotonically from +3 to +24 dB at INPUT 0");
+            check (finite, inputKnob ? "INPUT sweep stays finite" : "OUTPUT sweep stays finite");
+        }
+    }
+    for (const double rate : rates)
+    {
+        const long total = (long) rate;
+        const auto source = [rate, &sineAt] (int, long n) { return sineAt (rate, 0.5f, n); };
+        for (const bool inputKnob : { true, false })
+            for (const float db : { 0.1f, 1.0f })
+            {
+                const auto out = renderBridge (rate, 1, 128, inputKnob ? db : 0.0f, inputKnob ? 0.0f : db, total, source);
+                const double ratio = harmonicRatio (tailOf (out[0], rate), rate);
+                if (rate == 48000.0)
+                {
+                    const double deviation = settledDeviation (out[0], rate, 0.5f, gainOf (db));
+                    std::printf ("      %s +%.1f dB at %.0f Hz: harmonic ratio %.6f, deviation from plain gain %.4f%% of peak\n",
+                                 inputKnob ? "INPUT" : "OUTPUT", db, rate, ratio, 100.0 * deviation);
+                    check (deviation < 0.01, "at 48 kHz the settled waveform just above 0 dB is within 1% of the plain gain: no jump crossing 0 dB");
+                }
+                else
+                    std::printf ("      %s +%.1f dB at %.0f Hz: harmonic ratio %.6f\n", inputKnob ? "INPUT" : "OUTPUT", db, rate, ratio);
+                check (ratio < 0.005, "the first fraction of a dB above 0 is nearly clean: harmonic ratio below 0.5%");
+            }
+    }
+    {
+        const auto run = [&] (float inputDb, float outputDb, std::vector<float>& tail)
+        {
+            const auto pOwner = std::make_unique<PluginProcessor>();
+            auto& p = *pOwner;
+            p.setRateAndBufferSizeDetails (48000, 128);
+            p.prepareToPlay (48000, 128);
+            p.setEditorOpen (true);
+            const auto fixture = fixtureBody ("xml_crisp.body240");
+            const bool loaded = p.installBodyBytes (fixture.getData(), fixture.getSize());
+            auto* in = p.apvts.getParameter (ParamID::preamp);
+            auto* out = p.apvts.getParameter (ParamID::output);
+            in->setValueNotifyingHost (in->convertTo0to1 (inputDb));
+            out->setValueNotifyingHost (out->convertTo0to1 (outputDb));
+            juce::AudioBuffer<float> b (2, 128);
+            juce::MidiBuffer midi;
+            tail.clear();
+            for (int block = 0; block < 150; ++block)
+            {
+                for (int c = 0; c < 2; ++c)
+                    for (int i = 0; i < 128; ++i)
+                        b.setSample (c, i, sineAt (48000.0, 0.2f, (long) block * 128 + i));
+                p.processBlock (b, midi);
+                if (block >= 90) tail.insert (tail.end(), b.getReadPointer (0), b.getReadPointer (0) + 128);
+            }
+            return loaded && std::abs (p.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f;
         };
-        const double normal = burstCrest (1.0f), pushed = burstCrest (juce::Decibels::decibelsToGain (12.0f));
-        std::printf ("      Transient crest at INPUT 0 / +12 dB: %.3f / %.3f dB\n", normal, pushed);
-        check (normal - pushed > 1.5,
-               "INPUT +12 dB with SLAM reduces transient crest instead of only making the same waveform louder");
+        std::vector<float> before, after;
+        const bool a = run (18.0f, 0.0f, before);
+        const bool b = run (0.0f, 18.0f, after);
+        const auto rmsOf = [] (const std::vector<float>& x) { double s = 0.0; for (float v : x) s += (double) v * v; return std::sqrt (s / (double) x.size()); };
+        std::vector<float> difference (before.size());
+        bool finite = true;
+        for (size_t i = 0; i < before.size(); ++i)
+        {
+            difference[i] = before[i] - after[i];
+            finite = finite && std::isfinite (before[i]) && std::isfinite (after[i]);
+        }
+        const double rmsBefore = rmsOf (before), rmsAfter = rmsOf (after), rmsDifference = rmsOf (difference);
+        std::printf ("      resonant body: INPUT +18 / OUTPUT 0  rms %.4f peak %.4f;  INPUT 0 / OUTPUT +18  rms %.4f peak %.4f;  rms of difference %.4f\n",
+                     rmsBefore, peakOf (before), rmsAfter, peakOf (after), rmsDifference);
+        check (a && b && finite, "resonance integration body loads, outputs stay finite and neither knob moves the MORPH wheel");
+        check (rmsDifference > 0.1 * std::min (rmsBefore, rmsAfter), "INPUT +18 dB before the filter and OUTPUT +18 dB after it sound clearly different on a resonant body");
     }
-    for (const double rate : { 44100.0, 48000.0, 96000.0 })
+    for (const double rate : rates)
     {
-        TrenchDspBridge quietRight, hotRight;
-        for (auto* bridge : { &quietRight, &hotRight })
-        {
-            bridge->prepare (rate, 128);
-            withDesk (*bridge);
-            bridge->loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-            bridge->setInputSlam (true);
-        }
-        juce::AudioBuffer<float> a (2, 128), b (2, 128);
-        bool independent = true;
-        for (int block = 0; block < 160; ++block)
-        {
-            for (int i = 0; i < 128; ++i)
-            {
-                const auto phase = 2.0 * juce::MathConstants<double>::pi * 1000.0 * (block * 128 + i) / rate;
-                const auto left = 0.002f * (float) std::sin (phase);
-                a.setSample (0, i, left); b.setSample (0, i, left);
-                a.setSample (1, i, 0.0f);
-                b.setSample (1, i, block >= 64 && block < 128 ? 0.9f * (float) std::sin (phase) : 0.0f);
-            }
-            quietRight.process (a, {});
-            hotRight.process (b, {});
-            for (int i = 0; i < 128; ++i)
-                independent = independent && a.getSample (0, i) == b.getSample (0, i);
-        }
-        check (independent, "a transient on one channel cannot ride the other channel's SLAM gain");
+        const long total = (long) rate;
+        const auto source = [rate, &sineAt] (int, long n) { return sineAt (rate, 0.5f, n); };
+        const auto driven = renderBridge (rate, 1, 128, 12.0f, 0.0f, total, source);
+        const auto drivenQuiet = renderBridge (rate, 1, 128, 12.0f, -12.0f, total, source);
+        const float scale = gainOf (-12.0f);
+        const float peak = peakOf (tailOf (driven[0], rate));
+        const auto drivenTail = tailOf (driven[0], rate), quietTail = tailOf (drivenQuiet[0], rate);
+        double worst = 0.0;
+        for (size_t i = 0; i < drivenTail.size(); ++i)
+            worst = std::max (worst, (double) std::abs (quietTail[i] - drivenTail[i] * scale));
+        std::printf ("      INPUT +12 with OUTPUT -12 vs OUTPUT 0 times 0.2512 at %.0f Hz: worst error %.3g of peak %.4f\n", rate, worst / peak, peak);
+        check (peak > 0.0f && worst <= 1.0e-5 * peak, "OUTPUT at or below 0 dB after a driven INPUT is a pure scaling, sample for sample");
+        const auto lowIn = renderBridge (rate, 1, 128, -12.0f, 12.0f, total, source);
+        const auto zeroIn = renderBridge (rate, 1, 128, 0.0f, 12.0f, total, source);
+        const double lowRatio = harmonicRatio (tailOf (lowIn[0], rate), rate), zeroRatio = harmonicRatio (tailOf (zeroIn[0], rate), rate);
+        std::printf ("      OUTPUT +12 at %.0f Hz: harmonic ratio %.6f with INPUT -12 dB, %.6f with INPUT 0 dB\n", rate, lowRatio, zeroRatio);
+        check (std::isfinite (peakOf (lowIn[0])) && lowRatio < zeroRatio, "backing INPUT down before a driven OUTPUT lowers the output desk's harmonic ratio");
     }
+    {
+        const auto noFilterOwner = std::make_unique<PluginProcessor>();
+        auto& noFilter = *noFilterOwner;
+        noFilter.setRateAndBufferSizeDetails (48000, 128);
+        noFilter.prepareToPlay (48000, 128);
+        const auto selected = noFilter.apvts.getParameter (ParamID::body);
+        selected->setValueNotifyingHost (selected->convertTo0to1 ((float) trench::kNoFilterIndex));
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (50);
+        check (noFilter.getLoadedBodyIndex() == trench::kNoFilterIndex, "No Filter is the selected body");
+        juce::AudioBuffer<float> wet (2, 128);
+        juce::MidiBuffer m;
+        const auto measure = [&] (float inputDb, float outputDb)
+        {
+            auto* in = noFilter.apvts.getParameter (ParamID::preamp);
+            auto* out = noFilter.apvts.getParameter (ParamID::output);
+            in->setValueNotifyingHost (in->convertTo0to1 (inputDb));
+            out->setValueNotifyingHost (out->convertTo0to1 (outputDb));
+            std::vector<float> tail;
+            float peak = 0.0f;
+            for (int block = 0; block < 96; ++block)
+            {
+                for (int i = 0; i < 128; ++i)
+                {
+                    const float v = sineAt (48000.0, 0.25f, (long) block * 128 + i);
+                    wet.setSample (0, i, v);
+                    wet.setSample (1, i, v);
+                }
+                noFilter.processBlock (wet, m);
+                if (block >= 64)
+                {
+                    tail.insert (tail.end(), wet.getReadPointer (0), wet.getReadPointer (0) + 128);
+                    peak = std::max (peak, wet.getMagnitude (0, 0, 128));
+                }
+            }
+            return std::make_pair (harmonicRatio (tail, 48000.0), peak);
+        };
+        const auto clean = measure (0.0f, 0.0f);
+        const auto inputDriven = measure (18.0f, 0.0f);
+        const auto outputDriven = measure (0.0f, 18.0f);
+        std::printf ("      No Filter: harmonic ratio %.6f at 0 dB, %.6f at INPUT +18, %.6f at OUTPUT +18\n", clean.first, inputDriven.first, outputDriven.first);
+        check (clean.first < 0.005 && inputDriven.first > 0.05 && inputDriven.first > 10.0 * clean.first && std::isfinite (inputDriven.second),
+               "No Filter still gets the pre seat: harmonic ratio at INPUT +18 dB is clearly above the 0 dB case");
+        check (outputDriven.first > 0.05 && outputDriven.first > 10.0 * clean.first && std::isfinite (outputDriven.second),
+               "No Filter still gets the post seat: harmonic ratio at OUTPUT +18 dB is clearly above the 0 dB case");
+    }
+    {
+        const auto sourceOwner = std::make_unique<PluginProcessor>();
+        auto& source = *sourceOwner;
+        source.setRateAndBufferSizeDetails (48000, 128);
+        source.prepareToPlay (48000, 128);
+        auto* inputParameter = source.apvts.getParameter (ParamID::preamp);
+        auto* outputParameter = source.apvts.getParameter (ParamID::output);
+        check (inputParameter != nullptr && outputParameter != nullptr
+               && inputParameter->convertFrom0to1 (inputParameter->getDefaultValue()) == 0.0f
+               && outputParameter->convertFrom0to1 (outputParameter->getDefaultValue()) == 0.0f
+               && source.apvts.getRawParameterValue (ParamID::preamp)->load() == 0.0f
+               && source.apvts.getRawParameterValue (ParamID::output)->load() == 0.0f,
+               "INPUT and OUTPUT exist and default to 0 dB");
+        check (source.apvts.getParameter (ParamID::desk) == nullptr && source.apvts.getParameter (ParamID::inputSlam) == nullptr,
+               "DESK and the SLAM switch are not host parameters");
+        inputParameter->setValueNotifyingHost (inputParameter->convertTo0to1 (7.0f));
+        outputParameter->setValueNotifyingHost (outputParameter->convertTo0to1 (-5.0f));
+        juce::MemoryBlock saved;
+        source.getStateInformation (saved);
+        const auto restoredOwner = std::make_unique<PluginProcessor>();
+        auto& restored = *restoredOwner;
+        restored.setRateAndBufferSizeDetails (48000, 128);
+        restored.prepareToPlay (48000, 128);
+        restored.apvts.getParameter (ParamID::preamp)->setValueNotifyingHost (restored.apvts.getParameter (ParamID::preamp)->convertTo0to1 (-9.0f));
+        restored.setStateInformation (saved.getData(), (int) saved.getSize());
+        check (std::abs (restored.apvts.getRawParameterValue (ParamID::preamp)->load() - 7.0f) < 1.0e-3f
+               && std::abs (restored.apvts.getRawParameterValue (ParamID::output)->load() + 5.0f) < 1.0e-3f,
+               "INPUT +7 dB and OUTPUT -5 dB survive project recall");
+    }
+    {
+        const auto legacySourceOwner = std::make_unique<PluginProcessor>();
+        auto& legacySource = *legacySourceOwner;
+        legacySource.setRateAndBufferSizeDetails (48000, 128);
+        legacySource.prepareToPlay (48000, 128);
+        const auto setNative = [&] (const char* id, float value)
+        {
+            auto* parameter = legacySource.apvts.getParameter (id);
+            parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
+        };
+        setNative (ParamID::preamp, 7.0f);
+        setNative (ParamID::output, -5.0f);
+        setNative (ParamID::body, 5.0f);
+        setNative (ParamID::morph, 0.3f);
+        setNative (ParamID::q, 0.7f);
+        setNative (ParamID::movePreset, 3.0f);
+        auto legacy = legacySource.apvts.copyState();
+        const auto addRetired = [&] (const char* id, float value)
+        {
+            juce::ValueTree entry ("PARAM");
+            entry.setProperty ("id", id, nullptr);
+            entry.setProperty ("value", value, nullptr);
+            legacy.addChild (entry, -1, nullptr);
+        };
+        addRetired (ParamID::desk, 0.6f);
+        addRetired (ParamID::inputSlam, 1.0f);
+        addRetired (ParamID::slamDrive, 1.0f);
+        juce::MemoryBlock bytes;
+        juce::AudioProcessor::copyXmlToBinary (*legacy.createXml(), bytes);
+        const auto recalledOwner = std::make_unique<PluginProcessor>();
+        auto& recalled = *recalledOwner;
+        recalled.setRateAndBufferSizeDetails (48000, 128);
+        recalled.prepareToPlay (48000, 128);
+        recalled.setStateInformation (bytes.getData(), (int) bytes.getSize());
+        const auto read = [&] (const char* id) { return recalled.apvts.getRawParameterValue (id)->load(); };
+        const auto kept = recalled.apvts.copyState();
+        check (! kept.getChildWithProperty ("id", ParamID::desk).isValid() && ! kept.getChildWithProperty ("id", ParamID::inputSlam).isValid()
+               && ! kept.getChildWithProperty ("id", ParamID::slamDrive).isValid(),
+               "retired desk, inputSlam and slamDrive entries are discarded on recall");
+        check (std::abs (read (ParamID::preamp) - 7.0f) < 1.0e-3f && std::abs (read (ParamID::output) + 5.0f) < 1.0e-3f
+               && read (ParamID::body) == 5.0f && std::abs (read (ParamID::morph) - 0.3f) < 1.0e-3f
+               && std::abs (read (ParamID::q) - 0.7f) < 1.0e-3f && read (ParamID::movePreset) == 3.0f,
+               "a state carrying retired entries keeps INPUT, OUTPUT, body, Morph, Q and the movement preset");
+        check (recalled.apvts.getParameter (ParamID::desk) == nullptr && recalled.apvts.getParameter (ParamID::inputSlam) == nullptr,
+               "DESK and inputSlam are still not host parameters after recall");
+    }
+    for (const char* id : { ParamID::preamp, ParamID::output })
+    {
+        const auto ramp = [id] (bool automate)
+        {
+            const auto pOwner = std::make_unique<PluginProcessor>();
+            auto& p = *pOwner;
+            p.setRateAndBufferSizeDetails (48000, 128);
+            p.prepareToPlay (48000, 128);
+            p.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+            auto* parameter = p.apvts.getParameter (id);
+            parameter->setValueNotifyingHost (automate ? parameter->convertTo0to1 (0.0f) : parameter->convertTo0to1 (24.0f));
+            juce::AudioBuffer<float> audio (2, 128);
+            juce::MidiBuffer midi;
+            bool finite = true;
+            float previous = 0.0f, jump = 0.0f, seam = 0.0f;
+            constexpr int blocks = 400;
+            for (int block = 0; block < blocks; ++block)
+            {
+                if (automate)
+                {
+                    const float phase = (float) block / (float) (blocks / 2);
+                    parameter->setValueNotifyingHost (parameter->convertTo0to1 (24.0f * (phase <= 1.0f ? phase : 2.0f - phase)));
+                }
+                for (int c = 0; c < 2; ++c)
+                    for (int i = 0; i < 128; ++i)
+                        audio.setSample (c, i, 0.25f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 375.0 * (block * 128 + i) / 48000.0));
+                p.processBlock (audio, midi);
+                for (int i = 0; i < 128; ++i)
+                {
+                    const float v = audio.getSample (0, i);
+                    finite = finite && std::isfinite (v);
+                    if (block > 0 && (automate || block >= blocks / 2))
+                    {
+                        jump = std::max (jump, std::abs (v - previous));
+                        if (i == 0) seam = std::max (seam, std::abs (v - previous));
+                    }
+                    previous = v;
+                }
+            }
+            return std::array<float, 3> { finite ? 1.0f : 0.0f, jump, seam };
+        };
+        const auto steady = ramp (false);
+        const auto automated = ramp (true);
+        const char* name = juce::String (id) == ParamID::preamp ? "INPUT" : "OUTPUT";
+        std::printf ("      %s ramp 0 -> +24 -> 0 dB: largest sample step %.4f, at a block edge %.4f (steady +24 dB: %.4f and %.4f)\n", name, automated[1], automated[2], steady[1], steady[2]);
+        check (steady[0] > 0.5f && automated[0] > 0.5f, juce::String (juce::String (name) + " ramp 0 -> +24 -> 0 dB automated every block produces finite output").toRawUTF8());
+        check (automated[2] <= steady[2] * 1.05f, juce::String (juce::String (name) + " ramp: the step at an automation block edge is no larger than the steady +24 dB waveform's own block-edge step").toRawUTF8());
+    }
+    for (const bool inputKnob : { true, false })
+        for (const double rate : rates)
+        {
+            const long total = (long) rate / 2;
+            const auto reference = [rate, &sineAt] (int c, long n) { return c == 0 ? sineAt (rate, 0.25f, n) : 0.0f; };
+            const auto burst = [rate, &sineAt] (int c, long n)
+            {
+                if (c == 0) return sineAt (rate, 0.25f, n);
+                return n >= (long) rate / 10 && n < (long) rate / 4 ? 0.9f * sineAt (rate, 1.0f, n) : 0.0f;
+            };
+            const auto quiet = renderBridge (rate, 2, 128, inputKnob ? 12.0f : 0.0f, inputKnob ? 0.0f : 12.0f, total, reference);
+            const auto hot = renderBridge (rate, 2, 128, inputKnob ? 12.0f : 0.0f, inputKnob ? 0.0f : 12.0f, total, burst);
+            check (quiet[0] == hot[0] && peakOf (hot[1]) > 0.1f,
+                   inputKnob ? "a hot burst on the right channel does not change the left channel at INPUT +12 dB"
+                             : "a hot burst on the right channel does not change the left channel at OUTPUT +12 dB");
+        }
+    for (const bool inputKnob : { true, false })
+        for (const double rate : rates)
+        {
+            const long total = (long) rate / 2;
+            const auto source = [rate, &sineAt] (int, long n) { return sineAt (rate, 0.25f, n); };
+            const float inDb = inputKnob ? 12.0f : 0.0f, outDb = inputKnob ? 0.0f : 12.0f;
+            const auto reference = renderBridge (rate, 1, 128, inDb, outDb, total, source);
+            bool exact = true, finite = true;
+            for (const int block : { 1, 3, 7, 17, 64, 512, 1000 })
+            {
+                const auto out = renderBridge (rate, 1, block, inDb, outDb, total, source);
+                for (float v : out[0]) finite = finite && std::isfinite (v);
+                exact = exact && out[0] == reference[0];
+            }
+            check (finite && exact, inputKnob ? "the INPUT +12 dB waveform is bit-exact across block sizes 1, 3, 7, 17, 64, 128, 512, 1000 at every rate"
+                                              : "the OUTPUT +12 dB waveform is bit-exact across block sizes 1, 3, 7, 17, 64, 128, 512, 1000 at every rate");
+        }
+    for (const double rate : rates)
+    {
+        const long burstEnd = (long) rate / 10;
+        const long total = burstEnd + (long) rate + 256;
+        const auto source = [rate, burstEnd, &sineAt] (int, long n) { return n < burstEnd ? sineAt (rate, 1.0f, n) : 0.0f; };
+        const auto out = renderBridge (rate, 2, 128, 24.0f, 24.0f, total, source);
+        bool finite = true;
+        for (const auto& plane : out)
+            for (float v : plane) finite = finite && std::isfinite (v);
+        float residual = 0.0f;
+        for (long n = total - 128; n < total; ++n) residual = std::max (residual, std::abs (out[0][(size_t) n]));
+        check (finite && residual < 1.0e-4f, "after 1 s of silence following a full-scale burst with both knobs at +24 dB the output has died away, no NaN or Inf");
+    }
+    for (const bool inputKnob : { true, false })
+        for (const double rate : rates)
+        {
+            TrenchDspBridge bridge, reference;
+            for (auto* b : { &bridge, &reference })
+            {
+                b->prepare (rate, 128);
+                withDesk (*b);
+                b->loadCartridgeBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
+            }
+            const auto setKnob = [&] (float db)
+            {
+                (inputKnob ? bridge.setInputDrive (gainOf (db)) : bridge.setOutputLevel (gainOf (db)));
+            };
+            juce::AudioBuffer<float> audio (2, 128), plain (2, 128);
+            long n = 0;
+            const auto run = [&] (long samples, bool compare)
+            {
+                bool exact = true;
+                double worst = 0.0;
+                for (long done = 0; done < samples; done += 128)
+                {
+                    for (int c = 0; c < 2; ++c)
+                        for (int i = 0; i < 128; ++i)
+                        {
+                            audio.setSample (c, i, sineAt (rate, 0.25f, n + i));
+                            plain.setSample (c, i, sineAt (rate, 0.25f, n + i));
+                        }
+                    bridge.process (audio, {});
+                    reference.process (plain, {});
+                    for (int c = 0; c < 2; ++c)
+                        for (int i = 0; i < 128; ++i)
+                        {
+                            exact = exact && audio.getSample (c, i) == plain.getSample (c, i);
+                            worst = std::max (worst, (double) std::abs (audio.getSample (c, i) - plain.getSample (c, i)));
+                        }
+                    n += 128;
+                }
+                if (compare) std::printf ("      %s back at 0 dB at %.0f Hz: worst difference from the plain-gain path %.3g\n", inputKnob ? "INPUT" : "OUTPUT", rate, worst);
+                return compare ? exact : true;
+            };
+            setKnob (12.0f);
+            run (long (rate * 0.25), false);
+            setKnob (0.0f);
+            run (long (rate * 0.2) + 128, false);
+            check (run (long (rate * 0.1), true),
+                   inputKnob ? "after INPUT returns from +12 dB to 0 dB and 200 ms pass, output is bit-identical to the plain-gain path again"
+                             : "after OUTPUT returns from +12 dB to 0 dB and 200 ms pass, output is bit-identical to the plain-gain path again");
+        }
+    for (const double rate : { 44100.0, 96000.0 })
+        for (const bool inputKnob : { true, false })
+        {
+            uint32_t seed = 12345u;
+            std::vector<float> noise (4096);
+            for (auto& v : noise)
+            {
+                seed = seed * 1664525u + 1013904223u;
+                v = 0.02f * ((float) (seed >> 8) / 8388608.0f - 1.0f);
+            }
+            const long total = 8192;
+            const auto source = [&noise] (int, long n) { return n < (long) noise.size() ? noise[(size_t) n] : 0.0f; };
+            const float inDb = inputKnob ? 0.1f : 0.0f, outDb = inputKnob ? 0.0f : 0.1f;
+            const auto reference = renderBridge (rate, 1, 128, inDb, outDb, total, source, false);
+            const auto engaged = renderBridge (rate, 1, 128, inDb, outDb, total, source, true);
+            double best = -1.0;
+            int bestLag = 0;
+            for (int lag = -64; lag <= 1024; ++lag)
+            {
+                double sum = 0.0;
+                for (long n = 0; n < total; ++n)
+                {
+                    const long m = n - lag;
+                    if (m >= 0 && m < total) sum += (double) engaged[0][(size_t) n] * reference[0][(size_t) m];
+                }
+                if (sum > best) { best = sum; bestLag = lag; }
+            }
+            std::printf ("      %s seat latency at %.0f: %d samples\n", inputKnob ? "pre" : "post", rate, bestLag);
+        }
     for (const double radiusMode : { 0.0, 0.01 })
         for (const double feedbackMode : { 0.0, 1.0 })
         {
@@ -179,110 +565,13 @@ inline int driveSlamTests()
             check (std::isfinite (sample) && std::abs (sample) <= 0.002f,
                 "first section bounds a +40 dBFS peak before downstream attenuation in every processing branch");
         }
-    {
-        PluginProcessor plain, nonlinear;
-        for (auto* p : { &plain, &nonlinear })
-        {
-            p->setRateAndBufferSizeDetails (48000, 128);
-            p->prepareToPlay (48000, 128);
-            p->setEditorOpen (true);
-            {
-                const auto fixture = fixtureBody ("xml_crisp.body240");
-                check (p->installBodyBytes (fixture.getData(), fixture.getSize()), "resonance integration body loads");
-            }
-        }
-        nonlinear.apvts.getParameter (ParamID::output)->setValueNotifyingHost (0.75f);
-        juce::AudioBuffer<float> a (2, 128), b (2, 128);
-        juce::MidiBuffer midi;
-        double difference = 0.0;
-        bool independent = true;
-        double gainError = 0.0;
-        const float requestedGain = juce::Decibels::decibelsToGain (12.0f);
-        float outputPeak = 0.0f, sidePeak = 0.0f;
-        for (int block = 0; block < 80; ++block)
-        {
-            for (int i = 0; i < 128; ++i)
-            {
-                const float x = block < 40 ? 0.9f * std::sin (0.073f * (float) (block * 128 + i)) : 0.0f;
-                a.setSample (0, i, x);
-                b.setSample (0, i, x);
-                a.setSample (1, i, 0.0f);
-                b.setSample (1, i, 0.0f);
-            }
-            plain.processBlock (a, midi);
-            nonlinear.processBlock (b, midi);
-            for (int i = 0; i < 128; ++i)
-            {
-                difference += std::abs (a.getSample (0, i) - b.getSample (0, i));
-                outputPeak = std::max (outputPeak, std::abs (b.getSample (0, i)));
-                sidePeak = std::max (sidePeak, std::abs (b.getSample (1, i)));
-                independent = independent && std::isfinite (b.getSample (0, i))
-                    && std::abs (b.getSample (1, i)) < 1.0e-3f;
-                if (block >= 4)
-                    gainError = std::max (gainError, (double) std::abs (b.getSample (0, i) - a.getSample (0, i) * requestedGain));
-            }
-        }
-        std::printf ("      OUTPUT 75 peak %g, silent channel peak %g\n", outputPeak, sidePeak);
-        check (difference > 0.01, "OUTPUT changes audio with movement disabled");
-        check (independent, "OUTPUT remains finite and stereo states stay independent");
-        check (outputPeak > 0.5f && gainError > 1.0e-3,
-               "OUTPUT +12 dB drives the desk: the waveform is no longer a plain scaling of the clean one");
-        check (std::abs (nonlinear.getEffectiveMorphForUi() - 0.5f) < 1.0e-6f,
-            "OUTPUT does not move the MORPH wheel");
-        juce::MemoryBlock saved;
-        nonlinear.getStateInformation (saved);
-        plain.setStateInformation (saved.getData(), (int) saved.getSize());
-        check (std::abs (plain.apvts.getParameter (ParamID::output)->getValue() - 0.75f) < 1.0e-3f,
-            "OUTPUT survives project recall");
-    }
-    PluginProcessor processor;
+    const auto processorOwner = std::make_unique<PluginProcessor>();
+    auto& processor = *processorOwner;
     processor.setRateAndBufferSizeDetails (48000, 128);
     processor.prepareToPlay (48000, 128);
     processor.setEditorOpen (true);
     check (processor.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size), "output gain test body loads");
     check (processor.apvts.getParameter (ParamID::slamDrive) == nullptr, "separate SLAM parameter is retired");
-    {
-        PluginProcessor colour;
-        colour.setRateAndBufferSizeDetails (48000, 128);
-        colour.prepareToPlay (48000, 128);
-        colour.installBodyBytes (BinaryData::identity_body240, BinaryData::identity_body240Size);
-        juce::AudioBuffer<float> wet (2, 128);
-        juce::MidiBuffer m;
-        auto* in = colour.apvts.getParameter (ParamID::preamp);
-        const auto harmonics = [&] (float db, bool slamOn)
-        {
-            colour.apvts.getParameter (ParamID::inputSlam)->setValueNotifyingHost (slamOn ? 1.0f : 0.0f);
-            in->setValueNotifyingHost (in->convertTo0to1 (db));
-            std::vector<float> tail;
-            float peak = 0.0f;
-            for (int block = 0; block < 64; ++block)
-            {
-                for (int i = 0; i < 128; ++i) { const float v = 0.25f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 375.0 * (block * 128 + i) / 48000.0); wet.setSample (0, i, v); wet.setSample (1, i, v); }
-                colour.processBlock (wet, m);
-                if (block >= 32) { tail.insert (tail.end(), wet.getReadPointer (0), wet.getReadPointer (0) + 128); peak = std::max (peak, wet.getMagnitude (0, 0, 128)); }
-            }
-            double f = 0.0, h = 0.0;
-            for (int k = 1; k <= 7; ++k)
-            {
-                double re = 0.0, im = 0.0;
-                for (size_t i = 0; i < tail.size(); ++i)
-                {
-                    const double a = 2.0 * juce::MathConstants<double>::pi * 375.0 * k * (double) i / 48000.0;
-                    re += tail[i] * std::cos (a); im += tail[i] * std::sin (a);
-                }
-                (k == 1 ? f : h) += re * re + im * im;
-            }
-            return std::make_pair (std::sqrt (h / f), peak);
-        };
-        const auto soft = harmonics (18.0f, false), hard = harmonics (0.0f, true);
-        std::printf ("      No Filter: harmonic ratio %.4f at INPUT +18 dB, %.4f with SLAM, peak %.3f\n", soft.first, hard.first, hard.second);
-        check (soft.first < 0.005 && hard.first > 0.05 && std::isfinite (hard.second),
-            "No Filter: INPUT alone stays clean, SLAM drives the desk into saturation");
-        const auto first = harmonics (-24.0f, true);
-        std::printf ("      SLAM at INPUT -24 dB: harmonic ratio %.4f, peak %.4f\n", first.first, first.second);
-        check (first.first < 0.15 && hard.first > first.first * 4.0,
-               "INPUT precedes SLAM: backing it down 24 dB cuts the desk's harmonic ratio several times over");
-    }
     juce::AudioBuffer<float> audio (2, 128);
     juce::MidiBuffer midi;
     auto* outLevel = processor.apvts.getParameter (ParamID::output);
@@ -301,7 +590,8 @@ inline int driveSlamTests()
     };
     const float held = settled();
     {
-        PluginProcessor fromStart;
+        const auto fromStartOwner = std::make_unique<PluginProcessor>();
+        auto& fromStart = *fromStartOwner;
         fromStart.setRateAndBufferSizeDetails (48000, 128);
         auto* out = fromStart.apvts.getParameter (ParamID::output);
         out->setValueNotifyingHost (out->convertTo0to1 (24.0f));

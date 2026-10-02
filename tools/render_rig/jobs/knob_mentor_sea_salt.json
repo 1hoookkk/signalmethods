@@ -1,0 +1,75 @@
+{
+  "name": "knob_mentor_sea_salt",
+  "mesh": "../sources/traceparts/4333_6001_body.stl",
+  "part": {
+    "front": "+y",
+    "materials": [
+      {
+        "material": "sea_salt_plastic"
+      }
+    ],
+    "smooth_angle_deg": 35.0
+  },
+  "shadow": {
+    "z": 0.0,
+    "light": {
+      "location": [
+        -14.0,
+        18.0,
+        200.0
+      ],
+      "size": 20.0
+    },
+    "blur_mm": 0.8,
+    "opacity": 0.55
+  },
+  "frame_mm": 35.4,
+  "pixels": 96,
+  "supersample": 4,
+  "studio": {
+    "hdri": null,
+    "world_grey": 0.07,
+    "key": {
+      "energy": 5200.0,
+      "size": 14.0,
+      "shape": "SQUARE",
+      "location": [
+        -24.0,
+        24.0,
+        34.0
+      ],
+      "rotation_deg": [
+        40.0,
+        -35.0,
+        0.0
+      ]
+    }
+  },
+  "extras": [
+    {
+      "type": "disc",
+      "radius": 11.0,
+      "depth": 1.6,
+      "z": 16.3,
+      "material": "sea_salt_plastic"
+    },
+    {
+      "type": "dome",
+      "radius": 11.0,
+      "flatten": 0.12,
+      "z": 17.0,
+      "material": "sea_salt_plastic"
+    },
+    {
+      "type": "box",
+      "size": [
+        1.0,
+        8.0,
+        1.5
+      ],
+      "y": 5.6,
+      "z": 16.9,
+      "material": "cavity"
+    }
+  ]
+}

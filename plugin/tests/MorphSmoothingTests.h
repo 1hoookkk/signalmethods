@@ -39,7 +39,7 @@ inline int morphSmoothingTests()
                 p.prepareToPlay (rate, blockSize);
                 check (p.installBodyBytes (body.getData(), body.getSize(), rate), "smoothing gain fixture loads");
                 for (const auto* id : { ParamID::morph, ParamID::q, ParamID::movePreset,
-                                       ParamID::preamp, ParamID::output, ParamID::inputSlam })
+                                       ParamID::preamp, ParamID::output })
                     set (p, id, 0.0f);
                 juce::AudioBuffer<float> audio (2, blockSize);
                 juce::MidiBuffer midi;

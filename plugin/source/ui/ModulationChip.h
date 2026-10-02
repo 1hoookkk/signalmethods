@@ -20,7 +20,7 @@ public:
           playback (dynamic_cast<juce::AudioParameterChoice*> (apvts.getParameter (ParamID::movePlayback)))
     {
         setInterceptsMouseClicks (true, false);
-        setWantsKeyboardFocus (true);
+        setWantsKeyboardFocus (false);
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
         setTitle ("Modulation");
         setTooltip ("Choose a movement. It moves MORPH around where the wheel sits; hold the wheel to stop it.");

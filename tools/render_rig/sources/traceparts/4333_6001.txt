@@ -1,0 +1,18 @@
+﻿"Symbol";"Value";"Unit";
+"REFERENCE";"4333.6001";"";
+"mount";"collet fixing";"";
+"MATERIAL";"plastic";"";
+"SUPPLIER";"MENTOR";"";
+"TraceParts.PartVersion";"1.0.2";"";
+"length";"28";"";
+"TraceParts.PartNumber";"90-19102022-040197";"";
+"TraceParts.InstanceId";"90-19102022-0401972N3XX9WWY2MK673V115V3T3RA";"";
+"height";"17";"";
+"DESIGN";"Turning knob plastic";"";
+"Part_Number_ProductPage_URL";"https://www.mentor.de.com/bauelemente/en/product/en-4333-6001/";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.PartTitle";"Plastic Turning Knob System mat with Collet Fixing with marking";"";
+"color";"black";"";
+"typ";"Turning knob";"";
+"TRACEPARTS";"TRACEPARTS";"";
+"width";"28";"";

@@ -29,6 +29,7 @@ PRESETS = {
     "black_anodised": dict(Base_Color=(0.02, 0.02, 0.022, 1), Metallic=1.0, Roughness=0.35),
     "black_plastic": dict(Base_Color=(0.012, 0.012, 0.013, 1), Roughness=0.42, Coat_Weight=0.3),
     "bone_plastic":  dict(Base_Color=(0.72, 0.71, 0.66, 1), Roughness=0.5),
+    "sea_salt_plastic": dict(Base_Color=(0.93, 0.89, 0.78, 1), Roughness=0.62, Coat_Weight=0.0, Specular_IOR_Level=0.35),
     "legend":        dict(Base_Color=(0.92, 0.90, 0.86, 1), Roughness=0.45),
     "cavity":        dict(Base_Color=(0.01, 0.012, 0.013, 1), Roughness=0.6),
     "clear_glass":   dict(Base_Color=(1, 1, 1, 1), Transmission_Weight=1.0, Roughness=0.03, IOR=1.49),

@@ -121,15 +121,9 @@ public:
         inputGain.setCurrentAndTargetValue (1.0f);
         outputGain.reset (sampleRateHz, 0.005);
         outputGain.setCurrentAndTargetValue (1.0f);
-        for (auto* desk : { &slamL, &slamR, &deskL, &deskR })
-            desk->prepare (sampleRateHz, maxBlockSize);
-        deskWasDriven = false;
-        deskStateKnown = false;
+        preDesk.prepare (sampleRateHz, maxBlockSize);
+        postDesk.prepare (sampleRateHz, maxBlockSize);
         monoScratch.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
-        deskScratchL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
-        deskScratchR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
-        deskMix.reset (sampleRateHz, kDeskFadeSeconds);
-        deskMix.setCurrentAndTargetValue (0.0f);
         left = trench::core::CascadeRunner {};
         right = trench::core::CascadeRunner {};
         left.set_sample_rate (sampleRateHz);
@@ -186,6 +180,7 @@ public:
     float heardQForCalibration() const noexcept { return (float) smoothedQ; }
 #endif
     static constexpr double kStateCeiling = 1.9952623;
+    void setStageSaturation (double threshold) noexcept { stageSaturation = threshold; }
 
     void setBypass (const Bypass& value) noexcept { bypass = value; }
     Bypass getBypass() const noexcept { return bypass; }
@@ -307,8 +302,8 @@ public:
         const double bite = (double) juce::jlimit (0.0f, 1.0f, params.poleDistortion);
         left.set_pole_distortion (bite);
         right.set_pole_distortion (bite);
-        left.set_stage_saturation (false, 1.0);
-        right.set_stage_saturation (false, 1.0);
+        left.set_stage_saturation (stageSaturation > 0.0, stageSaturation);
+        right.set_stage_saturation (stageSaturation > 0.0, stageSaturation);
         int caught = 0;
 #if TRENCH_DEV_PANEL
         float preDeskPeak = 0.0f, postDeskPeak = 0.0f;
@@ -357,12 +352,8 @@ public:
                 if (outR != nullptr)
                     outR[sample] *= gain;
             }
-            if (slamOn && slamL.isLoaded())
-            {
-                slamL.process (outL + blockStart, blockLen);
-                if (outR != nullptr)
-                    slamR.process (outR + blockStart, blockLen);
-            }
+            preDesk.process (outL + blockStart, outR != nullptr ? outR + blockStart : nullptr, blockLen,
+                             desksActive(), inputGain.getTargetValue());
             const int fadeSamples = std::min (blockLen, bodyFadeRemaining);
             if (fadeSamples > 0)
             {
@@ -461,39 +452,8 @@ public:
                 if (outR != nullptr)
                     outR[sample] = postClip (outR[sample]) * level;
             }
-            const bool driven = outputDeskActive() && outputGain.getTargetValue() > 1.0001f;
-            if (driven != deskWasDriven)
-            {
-                if (driven)
-                {
-                    deskL.reset();
-                    deskR.reset();
-                }
-                if (deskStateKnown)
-                    deskMix.setTargetValue (driven ? 1.0f : 0.0f);
-                else
-                    deskMix.setCurrentAndTargetValue (driven ? 1.0f : 0.0f);
-            }
-            deskStateKnown = true;
-            deskWasDriven = driven;
-            if (driven || deskMix.isSmoothing())
-            {
-                std::copy (outL + blockStart, outL + blockStart + blockLen, deskScratchL.begin());
-                deskL.process (deskScratchL.data(), blockLen);
-                if (outR != nullptr)
-                {
-                    std::copy (outR + blockStart, outR + blockStart + blockLen, deskScratchR.begin());
-                    deskR.process (deskScratchR.data(), blockLen);
-                }
-                for (int s = 0; s < blockLen; ++s)
-                {
-                    const float mix = deskMix.getNextValue();
-                    const int sample = blockStart + s;
-                    outL[sample] += mix * (deskScratchL[(size_t) s] - outL[sample]);
-                    if (outR != nullptr)
-                        outR[sample] += mix * (deskScratchR[(size_t) s] - outR[sample]);
-                }
-            }
+            postDesk.process (outL + blockStart, outR != nullptr ? outR + blockStart : nullptr, blockLen,
+                              desksActive(), outputGain.getTargetValue());
             for (int s = 0; s < blockLen; ++s)
             {
                 const int sample = blockStart + s;
@@ -525,26 +485,16 @@ public:
     {
         inputGain.setTargetValue (std::clamp (gain, 0.0f, 16.0f));
     }
-    bool inputDriveIsUnity() const noexcept
-    {
-        return inputGain.getCurrentValue() == 1.0f && inputGain.getTargetValue() == 1.0f;
-    }
-    void setInputSlam (bool on) noexcept
-    {
-        if (on && ! slamOn)
-        {
-            slamL.reset();
-            slamR.reset();
-        }
-        slamOn = on;
-    }
     bool loadDeskModel (const void* jsonData, size_t jsonSize)
     {
-        return slamL.load (jsonData, jsonSize, kSlamKneeUnits) && slamR.load (jsonData, jsonSize, kSlamKneeUnits)
-            && deskL.load (jsonData, jsonSize, kDeskSmallSignalUnits, kDeskDriveUnits) && deskR.load (jsonData, jsonSize, kDeskSmallSignalUnits, kDeskDriveUnits);
+        return preDesk.load (jsonData, jsonSize) && postDesk.load (jsonData, jsonSize);
     }
-    bool deskModelLoaded() const noexcept { return slamL.isLoaded() && deskL.isLoaded(); }
-    float slamPadDb() const noexcept { return -slamL.smallSignalGainDb(); }
+    bool deskModelLoaded() const noexcept { return preDesk.left.isLoaded() && postDesk.left.isLoaded(); }
+    static float deskBlend (float gain) noexcept
+    {
+        const float t = std::clamp (20.0f * std::log10 (std::max (gain, 1.0f)) / kDeskOnsetDb, 0.0f, 1.0f);
+        return t * t * (3.0f - 2.0f * t);
+    }
     void setOutputLevel (float gain) noexcept
     {
         outputGain.setTargetValue (std::clamp (gain, 0.0f, 16.0f));
@@ -653,14 +603,89 @@ private:
     static float postClip (float x) noexcept { return x; }
     static bool clipEngaged (float x) noexcept { return ! std::isfinite (x) || std::abs (x) > 1.0f; }
 #endif
-    bool outputDeskActive() const noexcept
+    bool desksActive() const noexcept
     {
 #if TRENCH_DEV_PANEL
         if (! outputDeskEnabled)
             return false;
 #endif
-        return bypass.outputDesk && deskL.isLoaded();
+        return bypass.outputDesk && postDesk.left.isLoaded();
     }
+
+    static constexpr float kDeskSmallSignalUnits = 0.001f;
+    static constexpr float kDeskDriveUnits = 0.025f;
+    static constexpr float kDeskOnsetDb = 12.0f;
+    static constexpr double kDeskFadeSeconds = 0.05;
+    static constexpr double kDeskBlendSeconds = 0.02;
+
+    struct DeskSeat
+    {
+        trench::EightBusDesk left, right;
+        juce::SmoothedValue<float> fade { 0.0f }, blend { 0.0f };
+        std::vector<float> wetL, wetR, dryL, dryR;
+        bool wasDriven = false, known = false;
+
+        bool load (const void* jsonData, size_t jsonSize)
+        {
+            return left.load (jsonData, jsonSize, kDeskSmallSignalUnits, kDeskDriveUnits)
+                && right.load (jsonData, jsonSize, kDeskSmallSignalUnits, kDeskDriveUnits);
+        }
+        void prepare (double rate, int maxBlock)
+        {
+            left.prepare (rate, maxBlock);
+            right.prepare (rate, maxBlock);
+            for (auto* scratch : { &wetL, &wetR, &dryL, &dryR })
+                scratch->assign ((size_t) std::max (1, maxBlock), 0.0f);
+            fade.reset (rate, kDeskFadeSeconds);
+            fade.setCurrentAndTargetValue (0.0f);
+            blend.reset (rate, kDeskBlendSeconds);
+            blend.setCurrentAndTargetValue (0.0f);
+            wasDriven = false;
+            known = false;
+        }
+        void process (float* l, float* r, int n, bool enabled, float gain) noexcept
+        {
+            const bool driven = enabled && gain > 1.0001f;
+            const float amount = deskBlend (gain);
+            if (driven != wasDriven)
+            {
+                if (driven)
+                {
+                    left.reset();
+                    right.reset();
+                }
+                if (known)
+                    fade.setTargetValue (driven ? 1.0f : 0.0f);
+                else
+                    fade.setCurrentAndTargetValue (driven ? 1.0f : 0.0f);
+            }
+            if (known)
+                blend.setTargetValue (amount);
+            else
+                blend.setCurrentAndTargetValue (amount);
+            known = true;
+            wasDriven = driven;
+            if (! driven && ! fade.isSmoothing())
+            {
+                blend.skip (n);
+                return;
+            }
+            std::copy (l, l + n, wetL.begin());
+            left.process (wetL.data(), n, dryL.data());
+            if (r != nullptr)
+            {
+                std::copy (r, r + n, wetR.begin());
+                right.process (wetR.data(), n, dryR.data());
+            }
+            for (int s = 0; s < n; ++s)
+            {
+                const float f = fade.getNextValue(), b = blend.getNextValue();
+                l[s] += f * (dryL[(size_t) s] + b * (wetL[(size_t) s] - dryL[(size_t) s]) - l[s]);
+                if (r != nullptr)
+                    r[s] += f * (dryR[(size_t) s] + b * (wetR[(size_t) s] - dryR[(size_t) s]) - r[s]);
+            }
+        }
+    };
 
     void publishCascade (const trench::core::Cascade& cascade) noexcept
     {
@@ -720,16 +745,8 @@ private:
     double sourceDatumRate = kBodyDatumRate;
     juce::SmoothedValue<float> inputGain { 1.0f };
     juce::SmoothedValue<float> outputGain { 1.0f };
-    trench::EightBusDesk slamL, slamR, deskL, deskR;
-    static constexpr float kSlamKneeUnits = 0.2f;
-    static constexpr float kDeskSmallSignalUnits = 0.001f;
-    static constexpr float kDeskDriveUnits = 0.025f;
-    static constexpr double kDeskFadeSeconds = 0.05;
-    juce::SmoothedValue<float> deskMix { 0.0f };
-    std::vector<float> deskScratchL, deskScratchR;
-    bool slamOn = false;
-    bool deskWasDriven = false;
-    bool deskStateKnown = false;
+    DeskSeat preDesk, postDesk;
+    double stageSaturation = 0.0;
     float caughtFraction = 0.0f;
     Bypass bypass;
 #if TRENCH_DEV_PANEL

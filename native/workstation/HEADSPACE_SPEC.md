@@ -1,278 +1,156 @@
-# HEADSPACE
+# HEADSPACE vertical-slice specification
 
-The authoring tool for TRENCH bodies. A JUCE app in the plugin's CMake tree, built alone by the
-`headspace` preset, linked straight to `native/core`. One screen, painted by hand through one look:
-charcoal ground, light axes, a fine grid, MATLAB line colours lifted for the dark, no filled
-buttons, no captions. Two more windows: the spectrogram on G, and the stage on E.
+HEADSPACE authors a **240-byte, four-corner filter body**. Each corner is one complete 60-byte state containing six serial biquad sections × five 16-bit words. The application has only two working surfaces: **AUTHOR** and **BODY**.
 
-Rulings of 2026-09-07 not yet built, which the next slices must honour: the look reads
-cartoonish and unserious and is not striking; no icons, words in small caps instead; hairline
-curves and crosshair markers; the keyboard a rule of keys; one hero on the screen. The stage
-stays top right, the hero, and shows what plays at the pad with the working corner's handles;
-there is no E window. The ARMAdillo plot, poles and zeros on the circle in the chip's own
-encoded coordinates, sits behind a key, used last, to place the zeros by hand. Ingest: anything read (a
-frame off the surface, a file, an impulse response, a table row) writes poles only and parks its
-zeros, the row-six ceiling excepted; anything already in the chip's words (the 132 P2K corners,
-the 2,312 Morpheus corners) comes in as a card by byte copy with its zeros; Klatt, Hillenbrand and
-Peterson and Barney are pole-only landmarks. A folder of notes of one instrument is one source,
-averaged frame by frame as the Massie patent's analysis stage does. The tool is Peevers's
-Spectrogram plus the cube: his surface and panel literally (the panel is FORM_Menu_Form.md beside
-the decomp, 50 controls on a 344 x 368 form), and one added gesture, a frame off the surface
-becomes a corner.
+## 1. AUTHOR
 
-## The law
+AUTHOR creates and edits the four corner states.
 
-In a serial cascade section gains multiply and responses add in dB; a corner is six sections of
-five words, sixty bytes; a body is four corners and the chip's lerp; the ear decides.
+```text
+C ───────── D     Q = 100
+A ───────── B     Q = 0
 
-## The hierarchy
+    Morph 0 → 100
+```
 
-SOURCE, TWO ANCHORS, THREE MUSICAL DIRECTIONS, WHAT PLAYS, BAKE. Everything else is
-inspection.
+The two horizontal rows are independent 1D Morph edges: `A→B` and `C→D`. Their Morph sliders are **audition-only** and use the canonical packed-word interpolation. Moving a slider never changes a corner.
 
-Ruling of 2026-09-07, night: the body is one plane through the cube, never four destinations.
-At one stress, A is cube (0, 0, stress), B is cube (1, 0, stress), C is cube (0, 1, stress), D is
-cube (1, 1, stress): A to B and C to D are the same MORPH change, A to C and B to D the same
-FREQUENCY change, and STRESS moves the whole plane. The four cells under the rails show that
-plane live as the rails move, and BAKE, one word, copies it into the shipping corners. 1 and 2
-make what plays anchor A or B; 3 and 4 do nothing in the mother. Putting a single sound into one
-corner of a built body stays possible as an explicit act on the body's own cell, never the main
-road, because four good corners with no shared change make a pad whose diagonals mean nothing.
+At startup the user selects either one or two compatible six-section templates. One template initializes `A=B=C=D`. Two templates initialize `A=first`, `B=second`, then copy `C=A` and `D=B` byte-exact. No Q, bandwidth, gain, or other transformation is applied automatically.
 
-Ruling of the same night: the source carries KEY or FIXED tracking. FIXED holds the source's
-pitch while the key plays the filter through KEY to FREQUENCY, VELOCITY to STRESS and WHEEL to
-MORPH; KEY pitches the source with the note as before. HEADSPACE auditions by default on a
-FIXED pluck with the three routes on, so the keyboard plays the filter's geometry rather than
-transposing the source and the filter together. The stage's one role: inspect or alter the encoded anatomy of the selected endpoint,
-an anchor or a corner. Between corners the stage shows the lerp with no handles; an interpolated
-state is heard and captured, never edited. The ARMAdillo plot is not a zero editor: it is the
-same six sections in the chip's own coordinates, the same selection, the response plot with its
-coordinates changed by a key; zeros are simply easier to place there. No modifier hotkeys.
+The user selects A, B, C, or D and then edits that endpoint. A perceptual/acoustic space, initially the vowel/formant space, writes directly into the **selected endpoint**. Changing the selected acoustic position updates that corner immediately and therefore updates its 1D Morph edge automatically.
 
-## The document and its projections
+### Corner construction
 
-Ruling of 2026-09-07, late night: HEADSPACE is a filter document with projections, never a set
-of interactive panes. The document is Session: the body, the pair and its three directions, the
-selection, the source, the cards, the history. Every screen is a projection of it read through
-`Bridge::state()`, one JSON document at 30 Hz, and every gesture is a name dispatched through
-`Bridge::dispatch`. The page computes no words and no curves; curves arrive sampled on a 96-point
-log grid. The screen is a WebView page, `Source/web/index.html` and `app.js`, served off disk so
-an edit reloads without a relink; Session, Audio and native/core are untouched by it. The
-painted Screen stays only as the tests' harness until the page carries every check.
+New all-pole anchors use six conjugate pole pairs. For every section, zeros and base gain begin parked:
 
-Target layout, to be moved into as slices touch each part:
-domain (FilterWords, Section, Corner, Body, ARMAdillo, Interpolation, Transforms: native/core and
-Quad.h); application (Document, Selection, Command, UndoHistory, Library: Session.cpp and
-Library.cpp); audio (Auditioner, Sources, MidiInput: Audio.cpp); analysis (Peevers, Span, Ingest:
-Peevers.cpp, VectorFit.cpp, the reads in Library.cpp); bridge (Bridge.cpp); ui/web.
+```text
+d0 = 0.25
+d1 = 1.0
+d4 = 0.25
+```
 
-## The loop the tool must pass
+giving:
 
-Load two very different anchors. Hold notes and play a phrase while morphing with the mod wheel.
-Replace one anchor while it keeps sounding. Find an intermediate sound. Copy it to corner A. Keep
-exploring without changing A. Audition and export the canonical grid. Reload it and confirm it
-reproduces its sound. MIDI active throughout. Nothing is built that this loop does not need
-before the loop is green.
+```text
+b0 = 1
+b1 = 0
+b2 = 0
+```
 
-## The screen, four quarters
+Pole frequency `F` and bandwidth `BW` determine:
 
-The mother is the largest quarter, top-left. The stage is top-right. The palette is below the
-mother. The body, the engine and the keyboard are bottom-right. Nothing else.
+```text
+R  = exp(-π BW / fs)
+a1 = -2R cos(2πF/fs)
+a2 = R²
 
-1. The mother. Two anchors, A on the left and B on the right, each a name and its curve, and
-   three rails under them. The anchors are cards: drop a card on one, or click its caret and
-   pick from the palette, and the sound goes on from where it was. The mother's eight corners
-   are not pinned; they are made from the two anchors by the chip's three axes as gestures:
-   - MORPH, the first rail, A to B. The mod wheel rides it.
-   - FREQUENCY, the second rail, the anchor to the anchor transposed. The transpose is
-     `transposed()`: every pole and zero by one ratio, radius^ratio so each row keeps its width
-     in semitones, the fifth word and the ceiling row untouched. The amount is octaves, shown
-     at the rail's right end, one number; the wheel over the rail steps it by a quarter octave
-     between -3 and +3. It boots at +1.
-   - STRESS, the third rail, the relaxed anchor to the anchor. The relaxed anchor is the neutral
-     tube: each live pole of row r slides to 500 (2r + 1) Hz, its zero by the same ratio, widths,
-     fifth words and the ceiling row untouched, then DC unity. Full stress is the anchor verbatim.
-   The probe is the diamond on each rail. What plays is `interpolate_words` of the eight made
-   corners at the three probe positions, the chip's own lerp, and the keyboard strikes it. At
-   MORPH 0, FREQUENCY 0 and full STRESS the words are anchor A's exact words, never a geometry
-   roundtrip; at MORPH 1 the same for B. The tick at the rails' right bakes the plane at this
-   stress into the body: A is M0 Q1, B is M1 Q1, C is M0 Q0, D is M1 Q0, Q being FREQUENCY.
-   Evidence: the Morpheus manual's VowelSpace (Martens): Morph sweeps F1, Frequency sweeps F2,
-   Transform is stress, "all of the vowel frequencies collapse to a relaxed schwa"; the
-   289-cube census `evidence/research-results/morpheus_axis_census.txt`: Frequency moves pitch
-   and width together on 81% of poles at 0.86 oct/oct, Transform moves pitch on 45% of poles,
-   median 706 cents, widths x0.93.
-2. The stage. The working corner's response on the fixed frame, +30 to -30 dB, 20 Hz to 20 kHz,
-   with its six sections as handles: circles on the poles, squares on the zeros, a blade where a
-   zero sits on the circle. Drag a circle for frequency and height; the pole radius is solved
-   against the whole re-levelled cascade so the curve follows the finger. Roll the wheel over a
-   circle for width. Drag a square for the zero's frequency and depth; pull it to the floor and
-   it is on the circle. Drag the blade for the ceiling's frequency. Alt-click drops a zero on the
-   nearest zero-less row. Double-click empty plot to wake a rest row there. Carve, top-right,
-   swings every zero off its pole into the valley above it by the amount dragged. Every edit
-   writes real words through the core's geometry, re-levels the corner to 0 dB at DC, and is one
-   undo. H shows the raw words over the plot.
-3. The palette. The vowel space, F2 high to low across and F1 close to open down, with the 12
-   Klatt vowels and schwa as named landmarks and the 48 Hillenbrand medians as quiet dots. Click
-   to hear, click empty space to make a vowel at that F1 and F2, Shift-drag a vowel to transpose
-   it by its first formant. Beside it one list of cards indexed by family, CAPTURES the top
-   family, each card its name and its curve, the find flattening the list; drop a .wav on the
-   list to read it. Keep, above the chart, keeps what
-   plays as a capture.
-4. The body, the engine, the keyboard. The body is the 2x2 of the shipping corners, A top-left
-   M0 Q1, B top-right M1 Q1, C bottom-left M0 Q0, D bottom-right M1 Q0, each a name and its
-   curve, and it is the pad: the diamond on it is MORPH and Q, drag it anywhere. Click a letter
-   to make that corner the working corner, the one the stage shows and Enter fills; click the
-   caret to pick from the palette; drop a card or a .wav on a cell. The engine is the name of
-   what plays, the write glyph for the 240 bytes, and the sources as words: play, pluck, saw
-   with its note, noise, loop; it has no plot, the live spectrum is on the stage. Pluck strikes
-   the 10 ms burst; play under pluck is an impulse train, twice a second, so the filter rings on
-   its own; the others hold their sound while a key is down and ring down on release. The
-   keyboard is three octaves and fills the band under the body. Space drones without a key.
-   The source carries KEY or FIXED: KEY pitches the source with the note, FIXED holds it, and
-   the default is a FIXED pluck with the three routes on, so the key plays the filter.
+d3 = 1 - a2
+d2 = (a1 + 2 - d3) / 4
+```
 
-## The spectrogram window
+Words 2 and 3 must always be recomputed together when pole frequency or bandwidth changes.
 
-Alan Peevers's Spectrogram, the 1995 SGI build preserved at
-`evidence/research-results/emu-sgi-1993/spectrogram/extracted/spectrogram`, ported verbatim
-from its decompilation in `evidence/research-results/emu-sgi-1993/spectrogram/decompiled/`.
-G opens and closes it. It analyses what plays, tapped after the cascade, so the keyboard, the
-drone, the pluck and the loop excite it, the way his `-l` live input did.
+### Ingest
 
-- The analysis is his, routine for routine, in `Source/dsp/Peevers.*`, each function keeping
-  its name and its arithmetic: `win_calc` and `winmult` with his nine windows (exact Blackman,
-  Blackman, Blackman-Harris 1 to 4, Hamming, Hanning, none), `buildtable`, `bitreverse`, `fft`,
-  `ifft`, `mag2`, `magl`, `log_of`, `findmax`, `normalize`, and for Env the 12th-order LPC by
-  `gal` and `lattice`, the envelope being the FFT of the synthesis filter's impulse response,
-  as his README says. His Filter path is a later slice: `fof_value` and `fof_transf` build one
-  formant wave function (Rodet) per drawn trajectory into a surface, Modify multiplies that
-  surface into each frame, Impulse replaces the frame with an impulse train's spectrum, and
-  `olap` resynthesises through the square-root window; that is how he heard a drawn filter. His defaults: FFT 256, window 256,
-  stride 128, window 7 Hanning, order 12, 500 frames.
-- The display is his: x frequency, y amplitude in dB, z time, the surface drawn slice by slice
-  as `draw_surf_slice` lays it out, tilted by azimuth and declination from a drag as
-  `polarview` was; a 2D toggle, LogF, Axes, Gain and Floor, Mesh cycling line, point, polygon,
-  mesh. Painted through Look with the plot colours; no GL, no colour lookup sliders.
-- Env, FFT size, window size, stride and window are the only numbers; they sit in one line
-  under the surface.
-- Tests, headless: the window's component renders to `artifacts/shots/spectrogram.png`; the
-  window tables match the decompiled formulas at three points each; the FFT of an impulse is
-  flat and of a sine at bin k peaks at k; the LPC-12 envelope of a two-pole signal peaks at
-  the pole within one bin; a held saw through the i corner shows its harmonics at multiples of
-  f0 in the latest frame.
+AUTHOR accepts three source types:
 
-## Words
+**Table/template:** six `{frequency, bandwidth}` pole pairs. Compile the six pole pairs and park all zeros.
 
-Mother, anchor, rail, probe, morph, frequency, stress, bake, stage, corner, cell, card, keep,
-write, body, spectrogram. Not room, tab, table, column, lattice, field, vertex, depth.
+**Audio:** run the defined order-12 LPC extraction and accept only results resolving to exactly six valid complex-conjugate pole pairs. Sort them by frequency, compile them as the six sections, and park the zeros.
 
-## Keys
+**Raw packed state:** byte-copy an already compatible six-section, 30-word corner. Existing zeros and gain are preserved. States using another section count, storage datum, or packed format are not directly accepted into this path.
 
-The Z row is a keyboard: Z is C, S is C sharp, X is D, and so on to M as B, then comma, L and
-full stop for the next C, D and E; Page Up and Page Down lift or drop it an octave and the saw's
-note with it. 1 and 2 make what plays anchor A or B; with a corner targeted on the body, 1 to
-4 put what plays in that corner as an explicit act; Enter puts it in the target. Arrows move the pad by 1, with Ctrl by 0.2. Space
-drones. Ctrl+K keeps. Ctrl+W writes. Ctrl+P pluck, Ctrl+S saw, Ctrl+N noise, Ctrl+L loop.
-[ and ] step the saw's note by a semitone. Ctrl+H shows the raw words. Ctrl+G opens the
-spectrogram. Slash finds a card by name, Enter places the first match in the target (or plays it when nothing
-is targeted), Escape clears. A caret on an anchor or a corner targets it and opens the find, so
-type a name and Enter to fill it; there is no picker list. Ctrl+Z
-and Ctrl+Y undo and redo. Delete removes a selected capture or read. Escape closes the menu.
+### Zero editing
 
-## Files
+Zeros are a second editing stage after a pole scaffold exists.
 
-`Source/app`: `Quad.*` the model, cards, corners, the made corners of the mother
-(`Explore`: a, b, morph, frequency, stress, octaves; `motherBodyOf`, `motherWordsAt`), the
-lerp, the section geometry, the file, the pack; `Library.*` the vowel banks, the measured
-bodies, the made vowel, `transposed`, `relaxed`, the wav reader; `Session.*` selection,
-anchors, the probe, captures, reads, undo, keys, the working corner,
-`banks/HEADSPACE.quad.json`; `Audio.*` the device callback into the core cascade, the burst,
-the sources, MIDI in, the tap for the spectrogram; `Main.cpp`. `Source/ui`: `Look.*` the look
-and feel, palette, axes, handles, glyphs; `Plot.*` the axis maths and the cached curves; one
-file per quarter, `Mother.*`, `Stage.*`, `Palette.*`, `Body.*`, `Engine.*`, `Keyboard.*`,
-`PinMenu.*`; `Screen.*` composes them, lays out the grid, and dispatches the mouse, the keys
-and the drops; `Spectrogram.*` the window. `Source/dsp/Peevers.*` the port.
-`Tests/QuadTests.cpp` the acceptance, headless, rendering `artifacts/shots/headspace*.png` and
-`spectrogram.png` without a window.
+A section zero is initially parked. Enabling it exposes zero frequency and bandwidth. For zero radius `Rz`:
 
-Rulings of 2026-09-07, late, from the running app: the three rails are right and stay. The G
-window is not an analyser of the engine: it has its own source and its own audio path. Load a
-family from the XL bank, `evidence/factory-data/xl1-dsf-aud` (224 notes named "<Family> <Note>"),
-or drop a .wav or a folder; a key plays the nearest sampled note of the loaded family, mixed
-straight to the device, never through the cascade; Peevers's analysis runs on that signal, Env
-and Span's averager; a frame off its surface becomes a corner. The main engine plays the body.
-The bottom right must let you play the filter and see it: the output's spectrum draws on the
-stage over the hero curve while keys are held; the keyboard stays; the arrows, Keep and the
-file name are gone; the sources are words; the sound's name is dragged onto a cell to place it.
+```text
+b1 = -2Rz cos(2πFz/fs)
+b2 = Rz²
 
-Ruling of 2026-09-07, later still: "work directly from the top right and straight into the 2x2
-grid while moving the morph there." The stage stays top right; there is no E window. The stage
-draws what plays at the pad, live as MORPH and Q move, with the working corner's handles on it;
-a drag edits that corner's words and is heard through the morph at once. The ARMAdillo plot for
-the zeros lives on the stage behind a key, as the same plot in the chip's coordinates.
+d1 = 1 - b2
+d0 = (b1 + 2 - d1) / 4
+```
 
-Ruling of 2026-09-07, night, from the running app: "i found the key flow. it is within the
-sliders. and making variations of a and b. i need to click on each of the two top left frames
-and not have it jump back to the 2x2 grid. i tweak them and press the 1234 numbers." A click on
-an anchor makes that anchor the stage's edit target: its name in the stage title, its handles,
-a drag writes its words, the rails sweep the tweaked frame at once. A library card is never
-edited in place: the first edit copies it into a capture and points the anchor at the copy.
-1 and 2 make what plays an anchor; BAKE copies the plane into the grid.
+Words 0 and 1 must be recomputed together whenever the zero moves or changes bandwidth.
 
-Ruling of 2026-09-07, night, "what im editing needs to be true here and everywhere": one
-target. The target is what the pad points at. Pad on a corner: that corner is the target; the
-rails write into it as they move, the stage's handles are its handles, W writes the body with it,
-the engine box shows it. Pad between corners: the box and the stage show the lerp, the handles
-are off, the rails play so you can search, and moving the pad onto a corner makes it the
-target. An anchor clicked top-left is the target until the pad is
-touched. The orange follows the target. There is no separate working corner.
+After zero edits, apply the defined gain-normalization routine through Word 4. The UI must not independently invent another gain law.
 
-Ruling of 2026-09-07, night, on the stage "the plot is lying to me": handles edit "radius and
-angle". A pole handle's sideways drag sets the angle (frequency on the log axis) and its vertical
-drag sets the radius directly (log-scaled 1 - r, the chip's own word), nothing solved against the
-cascade; the curve is drawn from the words, so a handle sits wherever its radius put it. A zero
-handle the same, angle and radius. Nothing else moves during a drag; the 0 dB trim at DC happens
-once on release. A read's zeros stay parked unless placed by hand.
+### Copy hotkeys
 
-## The queue, in order, one slice each
+The selected **endpoint**, never the auditioned interpolation state, is the copy source:
 
-1. The G window as its own instrument: the XL bank sampler on its own audio path, his panel
-   and surface from FORM_Menu_Form.md, and the one added gesture: a frame picked off the
-   surface becomes a corner.
-1a. One target: the pad's corner, or a clicked anchor; rails, stage and W act on it; library
-   cards copied on first edit; handles off between corners; handles edit angle and radius
-   directly, trim on release.
-1c. The stage carries the live spectrum: the output's spectrum in ink over the hero curve while
-   a key is held, fading 300 ms after silence; the engine's plot goes; the bottom right keeps the
-   body, the source words and the rule of keys; thirteen curves, none repeated.
-1d. The patch, bottom right: three routes from what you play into the cube, each a word with
-   a depth under the rule of keys: KEY to FREQUENCY (the note moves the second rail, low notes
-   at the anchor, high at the transposed anchor, the Morpheus's own Freq Tracking axis through
-   the chip's lerp), VELOCITY to STRESS (soft relaxes toward schwa, hard to full excursion),
-   WHEEL to MORPH. Live between corners and in the mother; off when the pad sits on a corner,
-   because a corner is a fixed place. The stage shows the cube move as you play. The pad's
-   nearest corner is the working corner, so the state follows the puck; on the corner it edits.
-2. Span as a mode of the window: the averaged spectrum of what plays from Span's decomp
-   (`evidence/research-results/emu-sgi-1993/span/decompiled/`): `demean`, `xavg` with its
-   feedback constant, power or energy, `draw_axes` and `draw_graph`; keys C reset the averager,
-   S snapshot, X and Y the axis limits; defaults Blackman, 1024, 1024.
-3. The ARMAdillo plot: the RESPONSE key becomes ARMADILLO and the same six sections redraw in
-   the chip's coordinates with the same selection; the POLES and ZEROS mode goes.
-4. Ingest: reads are poles only with parked zeros; the 132 P2K and 2,312 Morpheus corners as
-   cards by byte copy from the canonical export; Peterson and Barney landmarks; a folder of
-   notes as one source.
-5. The FIT read: vector fitting (Gustavsen and Semlyen) of a sound's averaged spectrum, in the
-   z domain, minimum phase reconstructed from the magnitude by the real cepstrum, five pole
-   pairs relocated by the sigma polynomial's roots, residues by least squares, the numerator's
-   roots as the zeros, each pole pair paired with its nearest zero pair into a section, the
-   ceiling row kept, DC unity. Alt-drop a file to fit it; Ctrl+F refits the selected read.
-   A fitted frame carries measured zeros; an LPC read still parks them.
-6. His Filter path: drawn trajectories as formant wave functions, Impulse and Modify, olap.
+```text
+1 → copy selected endpoint to A
+2 → copy selected endpoint to B
+3 → copy selected endpoint to C
+4 → copy selected endpoint to D
+```
 
-## Later, each only when Tyson asks
+The copy is byte-exact over all 30 words.
 
-Formant overlays on the stage and the spectrogram: the Klatt and Hillenbrand F1 and F2 as
-marks. The vector: origin to anchor with a puck between, the push past the anchor, the span
-into four corners. Row reorder on the stage. FOLLOW, key to MORPH, in the plugin. Peterson and
-Barney cards. Measured zeros for reads from an ARMA fit ported to the core.
+There is no operation that captures an in-between 1D Morph position into a corner.
+
+### AUTHOR flow
+
+```text
+select one/two templates
+        ↓
+automatic A/B/C/D initialization
+        ↓
+select endpoint
+        ↓
+edit using acoustic space / poles / zeros
+        ↓
+sweep its 1D Morph edge to listen
+        ↓
+refine endpoint
+        ↓
+optionally copy with 1/2/3/4
+        ↓
+repeat for remaining corners
+```
+
+Audio and the response display always derive from the same currently auditioned 30-word state.
+
+---
+
+## 2. BODY
+
+BODY does not author filter geometry.
+
+It receives only:
+
+```text
+A B C D
+```
+
+and exposes the real runtime Morph × Q surface:
+
+```text
+C ───────── D
+│           │
+│     •     │
+│           │
+A ───────── B
+```
+
+Dragging the pad performs the canonical bilinear packed-word interpolation across the four corners and sends that exact resolved state to both audio and the response display.
+
+BODY is strictly read-only with respect to A/B/C/D. It contains no template controls, perceptual-space editing, pole editing, zero editing, automatic Q generation, or corner capture.
+
+Export serializes the existing four packed states in canonical order:
+
+```text
+A | B | C | D
+```
+
+for exactly **240 bytes**.
+
+## Hard invariants
+
+**Only explicit endpoint editing or the `1–4` copy commands may change a corner.** Both 1D Morph audition and the 2D BODY pad are read-only.
+
+The six sections remain in strict serial cascade. Canonical packed encoding, decoding, interpolation, section order, sample-rate datum, response evaluation, and export logic must be reused from the existing core rather than reimplemented inside ImGui.
