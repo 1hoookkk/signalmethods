@@ -69,6 +69,12 @@ foreach(line IN LISTS TRENCH_PRESET_ROSTER_LINES)
     message(FATAL_ERROR "Shipping preset is missing: ${preset}")
   endif()
   list(APPEND TRENCH_SHIPPING_PRESET_FILES "${preset}")
+  foreach(rate 48000 96000 192000)
+    set(sidecar "${CMAKE_CURRENT_SOURCE_DIR}/presets/bodies/_${CMAKE_MATCH_1}.${rate}.body240")
+    if(EXISTS "${sidecar}")
+      list(APPEND TRENCH_SHIPPING_PRESET_FILES "${sidecar}")
+    endif()
+  endforeach()
 endforeach()
 
 juce_add_binary_data(TRENCHAssets SOURCES
@@ -77,15 +83,12 @@ juce_add_binary_data(TRENCHAssets SOURCES
   assets/thin_wheel_strip.png
   assets/trench_roller_strip.png
   assets/trench_ss3_strip.png
-  assets/trench_slam_cap_off.png
-  assets/trench_slam_cap_on.png
-  assets/trench_slam_cap_shadow.png
   assets/trench_knob_strip.png
   assets/trench_knob_front_strip.png
-  assets/trench_knob_black_strip.png
+  assets/trench_knob_white_strip.png
   assets/trench_knob_black_shadow.png
   assets/trench_plate_iridescent.png
-  assets/trench_plate_sage.png
+  assets/trench_plate_blue.png
   assets/trench_display_grid.png
   assets/display_bitmap4613.png
   assets/key_model_rtneural.json
@@ -110,7 +113,7 @@ set(TRENCH_PLUGIN_SOURCES
   source/ui/FaceplateView.h source/ui/GraphDisplay.h source/ui/LabelsLayer.h source/ui/GlassWords.h source/ui/ModulationChip.h
   source/ui/ParamInteraction.h
   source/ui/SelectorLookAndFeel.h source/ui/Theme.h
-  source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h source/ui/SlamButton.h
+  source/ui/TypeSelectorView.h source/ui/ValueReadout.h source/ui/WheelControl.h
   source/ui/DevPanel.h source/dsp/WheelLoop.h)
 
 add_library(TRENCHPluginCommon STATIC ${TRENCH_PLUGIN_SOURCES})
@@ -301,6 +304,13 @@ target_link_libraries(TRENCH_UserBodyTests PRIVATE TRENCHPluginCommon)
 add_test(NAME trench_user_bodies COMMAND TRENCH_UserBodyTests)
 set_tests_properties(trench_user_bodies PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1")
 set_tests_properties(trench_plugin_review PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 600)
+juce_add_console_app(TRENCH_ResponseTests PRODUCT_NAME "TRENCH Response Tests")
+target_sources(TRENCH_ResponseTests PRIVATE tests/ResponseTests.cpp)
+target_include_directories(TRENCH_ResponseTests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/source")
+target_compile_definitions(TRENCH_ResponseTests PRIVATE ${TRENCH_COMMON_DEFINITIONS} JUCE_MODAL_LOOPS_PERMITTED=1)
+target_link_libraries(TRENCH_ResponseTests PRIVATE TRENCHPluginCommon juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+add_test(NAME trench_response COMMAND TRENCH_ResponseTests --quick)
+set_tests_properties(trench_response PROPERTIES ENVIRONMENT "TRENCH_HEADLESS=1" TIMEOUT 1800)
 add_test(NAME trench_gen_curves
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gen_curves.py"
     WORKING_DIRECTORY "${TRENCH_WORKSPACE_DIR}")

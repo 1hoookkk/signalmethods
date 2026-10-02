@@ -53,7 +53,6 @@ PluginProcessor::PluginProcessor()
     pMoveCustom = apvts.getRawParameterValue (ParamID::moveCustom);
     userMotion.readAudio (audioMotion);
     pKeySnap    = apvts.getRawParameterValue (ParamID::keySnap);
-    pSlam       = apvts.getRawParameterValue (ParamID::inputSlam);
     if (trench::clean_audio::kEnabled())
         forceCleanAudioUiState();
     const int startIndex = juce::jlimit (0, juce::jmax (0, trench::bodyCount() - 1),
@@ -93,7 +92,7 @@ PluginProcessor::PluginProcessor()
         int deskBytes = 0;
         const auto* deskJson = BinaryData::getNamedResource ("trench_8bus_main_json", deskBytes);
         const bool deskReady = dspBridge.loadDeskModel (deskJson, (size_t) juce::jmax (0, deskBytes));
-        juce::Logger::writeToLog (juce::String ("8-Bus desk model -> ") + (deskReady ? juce::String ("ready, SLAM pad ") + juce::String (dspBridge.slamPadDb(), 1) + " dB" : juce::String ("FAILED")));
+        juce::Logger::writeToLog (juce::String ("8-Bus desk model -> ") + (deskReady ? "ready" : "FAILED"));
     }
     apvts.addParameterListener (ParamID::body, this);
     startTimer (250);
@@ -442,9 +441,10 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
         echoRecording = false;
     morphWasHeld = held;
     float low = 0.0f, high = 0.0f;
-    if (customMotion)
+    const bool echoMotion = customMotion && echoArmed.load (std::memory_order_relaxed);
+    if (customMotion && ! echoMotion)
         trench::Movement::travel (customPattern, low, high);
-    else if (movePreset >= 1 && movePreset <= trench::kNumFuncGenPatterns)
+    else if (! customMotion && movePreset >= 1 && movePreset <= trench::kNumFuncGenPatterns)
         trench::Movement::travel (trench::kFuncGenPatterns[movePreset - 1], low, high);
     for (int i = 0; i < numSamples; ++i)
     {
@@ -520,7 +520,6 @@ void PluginProcessor::processChunk (juce::AudioBuffer<float>& buffer, int sample
 #endif
     dspBridge.setInputDrive (juce::Decibels::decibelsToGain (pPreamp->load()));
     dspBridge.setOutputLevel (juce::Decibels::decibelsToGain (pOutput->load()));
-    dspBridge.setInputSlam (pSlam->load() > 0.5f);
     TrenchParams params;
     params.q = qHeard;
     params.poleDistortion = 0.0f;
@@ -668,19 +667,13 @@ int PluginProcessor::loadSidecarBanksForPath (const juce::String& absoluteBodyPa
                                               std::array<BodyRateBank, kBodyRateBankCount>& out) const
 {
     int count = 0;
-    if (! juce::File::isAbsolutePath (absoluteBodyPath))
+    if (absoluteBodyPath.isEmpty() || (juce::File::isAbsolutePath (absoluteBodyPath) && ! juce::File (absoluteBodyPath).hasFileExtension ("body240")))
         return 0;
-    const juce::File file (absoluteBodyPath);
-    if (! file.hasFileExtension ("body240"))
-        return 0;
-    const auto stem = file.getFileNameWithoutExtension();
-    const auto directory = file.getParentDirectory();
     static constexpr double kSidecarRates[kBodyRateBankCount] = { 48'000.0, 96'000.0, 192'000.0 };
     for (const double rate : kSidecarRates)
     {
-        const auto sidecar = directory.getChildFile ("_" + stem + "." + juce::String ((juce::int64) rate) + ".body240");
         juce::MemoryBlock bytes;
-        if (! sidecar.existsAsFile() || ! sidecar.loadFileAsData (bytes) || bytes.getSize() != 240)
+        if (! trench::bodySidecarBytes (absoluteBodyPath, rate, bytes))
             continue;
         bool stable = true;
         for (const float m : { 0.0f, 1.0f })
@@ -985,7 +978,7 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
         for (int i = tree.getNumChildren(); --i >= 0;)
         {
             const auto id = tree.getChild (i).getProperty ("id").toString();
-            if (id == "amount" || id == "outputTrim" || id == ParamID::slamDrive || id == ParamID::chew || id == ParamID::deskPosition
+            if (id == "amount" || id == "outputTrim" || id == ParamID::slamDrive || id == ParamID::desk || id == ParamID::inputSlam || id == ParamID::chew || id == ParamID::deskPosition
                 || id == ParamID::distortion
 #if TRENCH_DEV_PANEL
                 || std::any_of (std::begin (trench::calibration::retired), std::end (trench::calibration::retired),
@@ -1140,13 +1133,14 @@ void PluginProcessor::finishEcho()
     if (take.count < 2 || seconds < 0.05 || highM - lowM < 0.01)
     {
         echoReady.store (-1, std::memory_order_release);
+        setParameterDenormalized (ParamID::moveCustom, 0.0f);
         return;
     }
     int choice = 0;
-    while (choice < trench::Movement::kRateChoices - 1 && trench::Movement::rateBars (choice) < bars - 1.0e-6) ++choice;
+    for (int c = 1; c < trench::Movement::kRateChoices; ++c)
+        if (std::abs (std::log2 (bars / trench::Movement::rateBars (c))) < std::abs (std::log2 (bars / trench::Movement::rateBars (choice))))
+            choice = c;
     const double loopBeats = trench::Movement::rateBars (choice) * take.beatsPerBar;
-    const double gestureBeats = juce::jmin (beats, loopBeats);
-    const double restBeats = loopBeats - gestureBeats;
     const auto valueAt = [&take] (double fraction)
     {
         const double sample = juce::jlimit (0.0, (double) take.samples, fraction * (double) take.samples);
@@ -1169,18 +1163,14 @@ void PluginProcessor::finishEcho()
     motion.loopSteps = 0;
     motion.stepBeats = loopBeats / 64.0;
     motion.rateHz = 0.0;
-    float lowMapped = 1.0f, highMapped = 0.0f;
+    constexpr int glideSteps = 4;
     for (int i = 0; i < 64; ++i)
     {
-        const double t = (double) i / 64.0 * loopBeats;
-        const float m = t < restBeats || gestureBeats <= 0.0 ? take.release : valueAt ((t - restBeats) / gestureBeats);
-        lowMapped = juce::jmin (lowMapped, m);
-        highMapped = juce::jmax (highMapped, m);
+        const float back = (float) i / (float) glideSteps;
+        const float m = i < glideSteps ? take.release + (take.values[0] - take.release) * back * back * (3.0f - 2.0f * back)
+                                       : valueAt ((double) (i - glideSteps) / (double) (64 - glideSteps));
         motion.values[(size_t) i] = juce::jlimit (-1.0f, 1.0f, m - take.release);
     }
-    const float travel = highMapped - lowMapped;
-    const float wheel = travel < 0.999f ? juce::jlimit (0.0f, 1.0f, lowMapped / (1.0f - travel)) : 0.0f;
-    setParameterDenormalized (ParamID::morph, trench::curves::uncurveMap (trench::curves::Axis::morph, wheel));
     echoReady.store (-1, std::memory_order_release);
     applyUserMotion (motion, true);
 }

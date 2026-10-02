@@ -284,6 +284,30 @@ inline bool bodyRawBytes (int index, juce::MemoryBlock& out) noexcept
     }
     return false;
 }
+inline bool bodySidecarBytes (const juce::String& base, double rate, juce::MemoryBlock& out) noexcept
+{
+    const auto suffix = "." + juce::String ((juce::int64) rate) + ".body240";
+    if (juce::File::isAbsolutePath (base))
+    {
+        const juce::File file (base);
+        const auto sidecar = file.getParentDirectory().getChildFile ("_" + file.getFileNameWithoutExtension() + suffix);
+        return sidecar.existsAsFile() && sidecar.loadFileAsData (out) && out.getSize() == 240;
+    }
+    const auto wantedFilename = "_" + base + suffix;
+    for (int resource = 0; resource < BinaryData::namedResourceListSize; ++resource)
+    {
+        if (wantedFilename != BinaryData::originalFilenames[resource])
+            continue;
+        int size = 0;
+        const auto* data = BinaryData::getNamedResource (BinaryData::namedResourceList[resource], size);
+        if (data == nullptr || size != 240)
+            return false;
+        out.setSize (240);
+        out.copyFrom (data, 0, 240);
+        return true;
+    }
+    return false;
+}
 inline juce::String bodyCartridgeJson (int index) noexcept
 {
     int count = 0;
